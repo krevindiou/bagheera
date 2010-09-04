@@ -38,50 +38,105 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Proxies');
 
+        $doctrineAutoloader = array(
+            new \Doctrine\Common\ClassLoader('Application\\Services', realpath(__DIR__ . '/..')),
+            'loadClass'
+        );
+        $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Services\\');
+
+        $doctrineAutoloader = array(
+            new \Doctrine\Common\ClassLoader('Application\\Forms', realpath(__DIR__ . '/..')),
+            'loadClass'
+        );
+        $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Forms\\');
+
         return $autoloader;
     }
 
     protected function _initConfig()
     {
         $config = new Zend_Config_Ini(__DIR__ . '/configs/application.ini', APPLICATION_ENV);
-
-        $registry = Zend_Registry::getInstance();
-        $registry->set('config', $config);
+        Zend_Registry::set('config', $config);
 
         return $config;
     }
 
     protected function _initDoctrine()
     {
-        $config = new \Doctrine\ORM\Configuration;
+        $config = Zend_Registry::get('config');
+
+        $doctrineConfig = new \Doctrine\ORM\Configuration;
 
         // Set up caches
-        $cache = new \Doctrine\Common\Cache\ArrayCache;
-        $config->setMetadataCacheImpl($cache);
-        $config->setQueryCacheImpl($cache);
+        if (1 == $config->cache) {
+            $doctrineCache = new \Doctrine\Common\Cache\ApcCache;
+            $doctrineConfig->setMetadataCacheImpl($doctrineCache);
+            $doctrineConfig->setQueryCacheImpl($doctrineCache);
+        }
 
-        $driverImpl = $config->newDefaultAnnotationDriver(__DIR__ . '/models');
-        $config->setMetadataDriverImpl($driverImpl);
+        $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(__DIR__ . '/models');
+        $doctrineConfig->setMetadataDriverImpl($driverImpl);
 
         // Proxy configuration
-        $config->setProxyDir(__DIR__ . '/proxies');
-        $config->setProxyNamespace('Application\\Proxies');
-        $config->setAutoGenerateProxyClasses(true);
+        $doctrineConfig->setProxyDir(__DIR__ . '/proxies');
+        $doctrineConfig->setProxyNamespace('Application\\Proxies');
+        $doctrineConfig->setAutoGenerateProxyClasses(!(bool)$config->cache);
 
         // Database connection information
-        $registry = Zend_Registry::getInstance();
-        $appConfig = $registry->config;
-
         $connectionOptions = array(
             'driver' => 'pdo_mysql',
-            'dbname' => $appConfig->database->dbname,
-            'user' => $appConfig->database->user,
-            'password' => $appConfig->database->password,
-            'host' => $appConfig->database->host,
+            'dbname' => $config->database->dbname,
+            'user' => $config->database->user,
+            'password' => $config->database->password,
+            'host' => $config->database->host,
         );
 
         // Create EntityManager
-        $em = \Doctrine\ORM\EntityManager::create($connectionOptions, $config);
+        $em = \Doctrine\ORM\EntityManager::create($connectionOptions, $doctrineConfig);
         Zend_Registry::set('em', $em);
+    }
+
+    protected function _initCache()
+    {
+        $config = Zend_Registry::get('config');
+
+        if (1 == $config->cache) {
+            $frontendOptions = array(
+                'lifetime' => 7200,
+                'automatic_serialization' => true
+            );
+
+            $cache = Zend_Cache::factory('Core', 'Apc', $frontendOptions);
+        } else {
+            $cache = null;
+        }
+
+        Zend_Registry::set('cache', $cache);
+
+        return $cache;
+    }
+
+    protected function _initLocale()
+    {
+        $locale = new Zend_Locale('en_US');
+        Zend_Registry::set('Zend_Locale', $locale);
+
+        return $locale;
+    }
+
+    protected function _initTranslate()
+    {
+        $cache = Zend_Registry::get('cache');
+        if (null !== $cache) {
+            Zend_Translate::setCache($cache);
+        }
+
+        $translate = new Zend_Translate('csv', __DIR__ . '/languages/en_US.csv', 'en_US');
+        Zend_Registry::set('Zend_Translate', $translate);
+
+        Zend_Form::setDefaultTranslator($translate);
+        Zend_Validate_Abstract::setDefaultTranslator($translate);
+
+        return $translate;
     }
 }
