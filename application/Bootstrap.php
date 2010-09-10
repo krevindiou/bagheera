@@ -7,6 +7,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         require __DIR__ . '/../library/Doctrine/Common/ClassLoader.php';
 
         $autoloader = Zend_Loader_Autoloader::getInstance();
+        $autoloader->setAutoloaders(array());
+        $autoloader->registerNamespace('Bagheera');
 
         $doctrineAutoloader = array(
             new \Doctrine\Common\ClassLoader('Symfony'),
