@@ -7,11 +7,11 @@
          convertWarningsToExceptions="true"
          processIsolation="true"
          stopOnFailure="true"
-         syntaxCheck="true"
+         syntaxCheck="false"
          testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader">
     <testsuites>
-        <testsuite name="Models">
-            <directory>application/models</directory>
+        <testsuite name="Application">
+            <directory>application</directory>
         </testsuite>
     </testsuites>
 </phpunit>
