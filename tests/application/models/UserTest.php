@@ -22,7 +22,7 @@ class UserTest extends ControllerTestCase
 {
     public function testDefaultParams()
     {
-        $user = new \Application\Models\User();
+        $user = new Application\Models\User();
 
         $this->assertEquals($user->getIsAdmin(), false);
         $this->assertEquals($user->getIsActive(), true);
