@@ -141,4 +141,19 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         return $translate;
     }
+
+    protected function _initView()
+    {
+        $view = new Zend_View();
+        $view->setEncoding('utf-8');
+        $view->doctype('XHTML1_STRICT');
+        $view->headTitle('Bagheera');
+        $view->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf-8')
+                         ->appendHttpEquiv('Content-Language', 'en-US');
+
+        $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('ViewRenderer');
+        $viewRenderer->setView($view);
+
+        return $view;
+    }
 }
