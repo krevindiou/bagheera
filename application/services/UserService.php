@@ -29,7 +29,7 @@ use Application\Models\User,
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class UserService extends ServicesAbstract
+class UserService extends CrudService
 {
     public function getForm($userId, array $params = null)
     {
