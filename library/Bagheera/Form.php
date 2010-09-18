@@ -27,10 +27,22 @@
  */
 class Bagheera_Form extends Zend_Form
 {
+    protected $_entity;
+
     public function init()
     {
         $this->addElementPrefixPath(
             'Bagheera_Validate', __DIR__ . '/Validate', 'validate'
         );
+    }
+
+    public function getEntity()
+    {
+        return $this->_entity;
+    }
+
+    public function setEntity($entity)
+    {
+        $this->_entity = $entity;
     }
 }

@@ -35,7 +35,7 @@ class UserForm extends \Bagheera_Form
         $this->setMethod('post');
 
         $this->addElement('text', 'firstname', array(
-            'label' => 'firstname',
+            'label' => 'userFirstname',
             'required' => true,
             'maxlength' => 64,
             'filters' => array(),
@@ -43,7 +43,7 @@ class UserForm extends \Bagheera_Form
         ));
 
         $this->addElement('text', 'lastname', array(
-            'label' => 'lastname',
+            'label' => 'userLastname',
             'required' => true,
             'maxlength' => 64,
             'filters' => array(),
@@ -51,7 +51,7 @@ class UserForm extends \Bagheera_Form
         ));
 
         $this->addElement('text', 'email', array(
-            'label' => 'email',
+            'label' => 'userEmail',
             'required' => true,
             'maxlength' => 128,
             'filters' => array(),
@@ -63,7 +63,7 @@ class UserForm extends \Bagheera_Form
         ));
 
         $this->addElement('password', 'password', array(
-            'label' => 'password',
+            'label' => 'userPassword',
             'required' => true,
             'maxlength' => 128,
             'filters' => array(),
@@ -78,7 +78,7 @@ class UserForm extends \Bagheera_Form
         ));
 
         $this->addElement('password', 'passwordConfirmation', array(
-            'label' => 'passwordConfirmation',
+            'label' => 'userPasswordConfirmation',
             'required' => true,
             'maxlength' => 128,
             'filters' => array(),
@@ -91,7 +91,7 @@ class UserForm extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'createAccount',
+            'label' => 'userCreateAccount',
             'ignore' => true,
         ));
     }

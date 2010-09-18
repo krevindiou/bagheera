@@ -18,37 +18,37 @@
 
 namespace Application\Services;
 
-use Application\Models\User,
-    Application\Forms\UserForm;
+use Application\Models\Bank,
+    Application\Forms\BankForm;
 
 /**
- * User service
+ * Bank service
  *
  * @category   Application
  * @package    Application_Services
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class UserService extends ServicesAbstract
+class BankService extends ServicesAbstract
 {
-    public function getForm($userId, array $params = null)
+    public function getForm($bankId, array $params = null)
     {
-        $user = $this->_em->find('Application\\Models\\User', $userId);
-        return parent::getForm(new UserForm, $user, $params);
+        $bank = $this->_em->find('Application\\Models\\Bank', $bankId);
+        return parent::getForm(new BankForm, $bank, $params);
     }
 
-    public function add(UserForm $userForm)
+    public function add(BankForm $bankForm)
     {
-        return parent::add($userForm);
+        return parent::add($bankForm);
     }
 
-    public function update(UserForm $userForm)
+    public function update(BankForm $bankForm)
     {
-        return parent::update($userForm);
+        return parent::update($bankForm);
     }
 
-    public function delete(User $user)
+    public function delete(Bank $bank)
     {
-        return parent::delete($user);
+        return parent::delete($bank);
     }
 }
