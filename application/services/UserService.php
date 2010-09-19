@@ -51,4 +51,50 @@ class UserService extends CrudService
     {
         return parent::delete($user);
     }
+
+    /**
+     * Attempts to connect user
+     *
+     * @return boolean
+     */
+    public function login($username, $password)
+    {
+        $adapter = new \Bagheera_Auth_Adapter_Database($username, $password);
+        $auth = \Zend_Auth::getInstance();
+        $result = $auth->authenticate($adapter);
+
+        return $result->isValid();
+    }
+
+    /**
+     * Logs out current user
+     *
+     * @return void
+     */
+    public function logout()
+    {
+        \Zend_Auth::getInstance()->clearIdentity();
+    }
+
+    /**
+     * Returns true if the user is connected
+     *
+     * @return boolean
+     */
+    public function hasIdentity()
+    {
+        return \Zend_Auth::getInstance()->hasIdentity();
+    }
+
+    /**
+     * Returns the current user identity
+     *
+     * @return mixed|null
+     */
+    public function getIdentity()
+    {
+        if ($this->hasIdentity()) {
+            return \Zend_Auth::getInstance()->getIdentity();
+        }
+    }
 }

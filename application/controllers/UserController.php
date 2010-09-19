@@ -20,14 +20,14 @@ use Application\Services\UserService,
     Application\Forms\LoginForm;
 
 /**
- * Index controller
+ * Login controller
  *
  * @category   Application
  * @package    Application_Controllers
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class IndexController extends Zend_Controller_Action
+class UserController extends Zend_Controller_Action
 {
     private $_userService;
 
@@ -38,7 +38,6 @@ class IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        $loginForm = new LoginForm();
-        $this->view->form = $loginForm;
+        $this->view->user = $this->_userService->getIdentity();
     }
 }
