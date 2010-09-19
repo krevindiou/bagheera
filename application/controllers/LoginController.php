@@ -41,15 +41,11 @@ class LoginController extends Zend_Controller_Action
         $loginForm = new LoginForm();
 
         if ($loginForm->isValid($this->_request->getPost())) {
-            if ($this->_userService->login(
+            $this->_userService->login(
                 $this->_request->getPost('email'),
-                $this->_request->getPost('password'))
-            ) {
-                $this->_redirect('/user');
-            }
+                $this->_request->getPost('password')
+            );
         }
-
-        $this->_redirect('/?login=error');
     }
 
     public function logoutAction()

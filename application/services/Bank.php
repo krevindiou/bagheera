@@ -31,9 +31,14 @@ use Application\Models\Bank as BankModel,
  */
 class Bank extends CrudAbstract
 {
-    public function getForm($bankId, array $params = null)
+    public function getForm($bankId = null, array $params = null)
     {
-        $bank = $this->_em->find('Application\\Models\\Bank', $bankId);
+        if (null !== $bankId) {
+            $bank = $this->_em->find('Application\\Models\\Bank', $bankId);
+        } else {
+            $bank = new BankModel();
+        }
+
         return parent::getForm(new BankForm, $bank, $params);
     }
 

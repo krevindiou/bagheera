@@ -151,7 +151,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf-8')
                          ->appendHttpEquiv('Content-Language', 'en-US');
 
-        $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('ViewRenderer');
+        $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
         $viewRenderer->setView($view);
 
         return $view;
@@ -167,5 +167,16 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $front->setRouter($router);
 
         return $router;
+    }
+
+    protected function _initMail()
+    {
+        $config = Zend_Registry::get('config');
+
+        $mailTransportSmtp = new Zend_Mail_Transport_Smtp(
+            $config->mail->host,
+            $config->mail->toArray()
+        );
+        Zend_Mail::setDefaultTransport($mailTransportSmtp);
     }
 }

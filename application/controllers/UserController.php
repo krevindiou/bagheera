@@ -39,4 +39,22 @@ class UserController extends Zend_Controller_Action
     {
         $this->view->user = $this->_userService->getIdentity();
     }
+
+    public function createAccountAction()
+    {
+        $params = $this->_request->getPost();
+
+        $form = $this->_userService->getForm(null, $params);
+
+        if ($this->_request->isPost()) {
+            if (false !== $this->_userService->add($form)) {
+                $this->_userService->login(
+                    $this->_request->getPost('email'),
+                    $this->_request->getPost('password')
+                );
+            }
+        }
+
+        $this->view->form = $form;
+    }
 }

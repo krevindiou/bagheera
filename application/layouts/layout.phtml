@@ -5,7 +5,7 @@
         <?php echo $this->headMeta(), "\n" ?>
     </head>
     <body>
-        <a href="/logout">Logout</a>
+        <a href="/logout"><?php echo $this->translate('logout') ?></a><br/>
         <?php echo $this->layout()->content, "\n"; ?>
     </body>
 </html>

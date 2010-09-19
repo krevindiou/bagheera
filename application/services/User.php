@@ -31,19 +31,63 @@ use Application\Models\User as UserModel,
  */
 class User extends CrudAbstract
 {
-    public function getForm($userId, array $params = null)
+    public function getForm($userId = null, array $params = null)
     {
-        $user = $this->_em->find('Application\\Models\\User', $userId);
+        if (null !== $userId) {
+            $user = $this->_em->find('Application\\Models\\User', $userId);
+        } else {
+            $user = new UserModel();
+        }
+
         return parent::getForm(new UserForm, $user, $params);
     }
 
     public function add(UserForm $userForm)
     {
-        return parent::add($userForm);
+        $password = $userForm->getElement('password');
+        $passwordConfirmation = $userForm->getElement('passwordConfirmation');
+
+        if ('' != $password->getValue()) {
+            $password->setValue(md5($password->getValue()));
+        }
+
+        if ('' != $passwordConfirmation->getValue()) {
+            $passwordConfirmation->setValue(md5($passwordConfirmation->getValue()));
+        }
+
+        if (parent::add($userForm)) {
+            $config = \Zend_Registry::get('config');
+            $translate = \Zend_Registry::get('Zend_Translate');
+
+            $mail = new \Zend_Mail();
+            $mail->setFrom($config->admin->email, $config->admin->name);
+            $mail->addTo(
+                $userForm->getElement('email')->getValue(),
+                $userForm->getElement('firstname')->getValue() . ' ' . $userForm->getElement('lastname')->getValue()
+            );
+            $mail->setSubject($translate->translate('userEmailRegistrationSubject'));
+            $mail->setBodyText($translate->translate('userEmailRegistrationBody'));
+            $mail->send();
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function update(UserForm $userForm)
     {
+        $password = $userForm->getElement('password');
+        $passwordConfirmation = $userForm->getElement('passwordConfirmation');
+
+        if ('' != $password->getValue()) {
+            $password->setValue(md5($password->getValue()));
+        }
+
+        if ('' != $passwordConfirmation->getValue()) {
+            $passwordConfirmation->setValue(md5($passwordConfirmation->getValue()));
+        }
+
         return parent::update($userForm);
     }
 
@@ -57,13 +101,19 @@ class User extends CrudAbstract
      *
      * @return boolean
      */
-    public function login($username, $password)
+    public function login($email, $password)
     {
-        $adapter = new \Bagheera_Auth_Adapter_Database($username, $password);
+        $adapter = new \Bagheera_Auth_Adapter_Database($email, $password);
         $auth = \Zend_Auth::getInstance();
         $result = $auth->authenticate($adapter);
 
-        return $result->isValid();
+        $redirector = \Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+
+        if ($result->isValid()) {
+            $redirector->gotoRoute(array(), 'connected');
+        } else {
+            $redirector->gotoUrl('/?login=error');
+        }
     }
 
     /**

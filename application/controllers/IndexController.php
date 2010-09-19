@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\User as UserService,
-    Application\Forms\Login as LoginForm;
+use Application\Forms\Login as LoginForm;
 
 /**
  * Index controller
@@ -29,13 +28,6 @@ use Application\Services\User as UserService,
  */
 class IndexController extends Zend_Controller_Action
 {
-    private $_userService;
-
-    public function init()
-    {
-        $this->_userService = UserService::getInstance();
-    }
-
     public function indexAction()
     {
         $messages = array();
