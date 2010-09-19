@@ -1,2 +1,11 @@
 <?php
+
+if (!empty($this->messages)) {
+    echo '<ul>';
+    foreach ($this->messages as $message) {
+        echo '<li>', $this->translate($message), '</li>';
+    }
+    echo '</ul>';
+}
+
 echo $this->form;

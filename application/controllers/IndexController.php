@@ -38,7 +38,15 @@ class IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
+        $messages = array();
+        $login = $this->_request->getQuery('login');
+        if ('error' == $login) {
+            $messages[] = 'userInvalidCredential';
+        }
+
         $loginForm = new LoginForm();
+
         $this->view->form = $loginForm;
+        $this->view->messages = $messages;
     }
 }
