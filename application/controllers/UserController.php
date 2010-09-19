@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\UserService,
-    Application\Forms\LoginForm;
+use Application\Services\User as UserService;
 
 /**
  * Login controller

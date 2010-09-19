@@ -18,8 +18,8 @@
 
 namespace Application\Services;
 
-use Application\Models\Bank,
-    Application\Forms\BankForm;
+use Application\Models\Bank as BankModel,
+    Application\Forms\Bank as BankForm;
 
 /**
  * Bank service
@@ -29,7 +29,7 @@ use Application\Models\Bank,
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class BankService extends CrudService
+class Bank extends CrudAbstract
 {
     public function getForm($bankId, array $params = null)
     {
@@ -47,7 +47,7 @@ class BankService extends CrudService
         return parent::update($bankForm);
     }
 
-    public function delete(Bank $bank)
+    public function delete(BankModel $bank)
     {
         return parent::delete($bank);
     }

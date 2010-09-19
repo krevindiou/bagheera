@@ -18,8 +18,8 @@
 
 namespace Application\Services;
 
-use Application\Models\User,
-    Application\Forms\UserForm;
+use Application\Models\User as UserModel,
+    Application\Forms\User as UserForm;
 
 /**
  * User service
@@ -29,7 +29,7 @@ use Application\Models\User,
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class UserService extends CrudService
+class User extends CrudAbstract
 {
     public function getForm($userId, array $params = null)
     {
@@ -47,7 +47,7 @@ class UserService extends CrudService
         return parent::update($userForm);
     }
 
-    public function delete(User $user)
+    public function delete(UserModel $user)
     {
         return parent::delete($user);
     }

@@ -26,7 +26,7 @@ namespace Application\Forms;
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class UserForm extends \Bagheera_Form
+class User extends \Bagheera_Form
 {
     public function init()
     {

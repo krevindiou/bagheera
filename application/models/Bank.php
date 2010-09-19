@@ -18,8 +18,6 @@
 
 namespace Application\Models;
 
-use Application\Models\Bank;
-
 /**
  * Bank entity
  *

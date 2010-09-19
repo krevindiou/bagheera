@@ -19,49 +19,51 @@
 namespace Application\Forms;
 
 /**
- * Bank form
+ * Login form
  *
  * @category   Application
  * @package    Application_Forms
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class BankForm extends \Bagheera_Form
+class Login extends \Bagheera_Form
 {
     public function init()
     {
         parent::init();
 
         $this->setMethod('post');
+        $this->setAction('/login');
 
-        $this->addElement('text', 'name', array(
-            'label' => 'bankName',
+        $this->addElement('text', 'email', array(
+            'label' => 'userEmail',
             'required' => true,
-            'maxlength' => 32,
+            'maxlength' => 128,
             'filters' => array(),
-            'validators' => array()
+            'validators' => array(
+                array(
+                    'validator' => 'EmailAddress',
+                )
+            )
         ));
 
-        $this->addElement('textarea', 'info', array(
-            'label' => 'bankInfo',
-            'required' => false,
-            'cols' => 30,
-            'rows' => 5,
+        $this->addElement('password', 'password', array(
+            'label' => 'userPassword',
+            'required' => true,
+            'maxlength' => 128,
             'filters' => array(),
-            'validators' => array()
-        ));
-
-        $this->addElement('textarea', 'contact', array(
-            'label' => 'bankContact',
-            'required' => false,
-            'cols' => 30,
-            'rows' => 5,
-            'filters' => array(),
-            'validators' => array()
+            'validators' => array(
+                array(
+                    'validator' => 'StringLength',
+                    'options' => array(
+                        'min' => 4
+                    )
+                )
+            )
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'save',
+            'label' => 'userConnect',
             'ignore' => true,
         ));
     }
