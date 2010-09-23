@@ -39,6 +39,6 @@ class IndexController extends Zend_Controller_Action
         $loginForm = new LoginForm();
 
         $this->view->form = $loginForm;
-        $this->view->messages = $messages;
+        $this->view->messages = array_merge($this->view->messages, $messages);
     }
 }

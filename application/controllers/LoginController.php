@@ -45,6 +45,9 @@ class LoginController extends Zend_Controller_Action
                 $this->_request->getPost('email'),
                 $this->_request->getPost('password')
             );
+        } else {
+            $redirector = \Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+            $redirector->gotoUrl('/?login=error');
         }
     }
 

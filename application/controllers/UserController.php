@@ -19,7 +19,7 @@
 use Application\Services\User as UserService;
 
 /**
- * Login controller
+ * User controller
  *
  * @category   Application
  * @package    Application_Controllers
@@ -35,11 +35,6 @@ class UserController extends Zend_Controller_Action
         $this->_userService = UserService::getInstance();
     }
 
-    public function indexAction()
-    {
-        $this->view->user = $this->_userService->getIdentity();
-    }
-
     public function createAccountAction()
     {
         $params = $this->_request->getPost();
@@ -47,14 +42,45 @@ class UserController extends Zend_Controller_Action
         $form = $this->_userService->getForm(null, $params);
 
         if ($this->_request->isPost()) {
-            if (false !== $this->_userService->add($form)) {
-                $this->_userService->login(
-                    $this->_request->getPost('email'),
-                    $this->_request->getPost('password')
-                );
+            if ($this->_userService->add($form)) {
+                $this->_helper->flashMessenger->addMessage('userRegistration');
+                $this->_redirect();
             }
         }
 
         $this->view->form = $form;
+    }
+
+    public function editAction()
+    {
+        $params = $this->_request->getPost();
+
+        $identity = $this->_userService->getIdentity();
+
+        $form = $this->_userService->getForm($identity['userId'], $params);
+
+        if ($this->_request->isPost()) {
+            if (false !== $this->_userService->update($form)) {
+                $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+                $redirector->gotoRoute(array(), 'userEdit');
+            }
+        }
+
+        $this->view->form = $form;
+    }
+
+    public function activateAction()
+    {
+        $key = $this->_request->getParam('key');
+
+        $messages = array();
+        if ($this->_userService->activate($key)) {
+            $messages[] = 'userActivationOk';
+        } else {
+            $messages[] = 'userActivationNotOk';
+        }
+
+        $this->view->messages = array_merge($this->view->messages, $messages);
+        $this->_forward('index', 'index');
     }
 }

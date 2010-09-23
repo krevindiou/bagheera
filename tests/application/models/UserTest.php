@@ -25,6 +25,6 @@ class UserTest extends ControllerTestCase
         $user = new Application\Models\User();
 
         $this->assertEquals($user->getIsAdmin(), false);
-        $this->assertEquals($user->getIsActive(), true);
+        $this->assertEquals($user->getIsActive(), false);
     }
 }

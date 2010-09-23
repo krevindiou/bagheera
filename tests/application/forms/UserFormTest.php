@@ -25,7 +25,7 @@ class UserFormTest extends ControllerTestCase
     public function setUp()
     {
         parent::setUp();
-        $this->_userService = Application\Services\UserService::getInstance();
+        $this->_userService = Application\Services\User::getInstance();
     }
 
     public function getFormValues()
@@ -45,7 +45,7 @@ class UserFormTest extends ControllerTestCase
     {
         $user = new Application\Models\User();
 
-        $userForm = $this->_userService->getForm($user);
+        $userForm = $this->_userService->getForm($user->getUserId());
 
         $this->assertFalse($userForm->isValid(array()));
 

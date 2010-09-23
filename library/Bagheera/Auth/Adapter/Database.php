@@ -125,11 +125,11 @@ class Bagheera_Auth_Adapter_Database implements Zend_Auth_Adapter_Interface
 
             $authResult['code'] = Zend_Auth_Result::SUCCESS;
             $authResult['identity'] = array(
-                'user_id' => $user->getUserId(),
+                'userId' => $user->getUserId(),
                 'firstname' => $user->getFirstname(),
                 'lastname' => $user->getLastname(),
                 'email' => $user->getEmail(),
-                'is_admin' => $user->getIsAdmin(),
+                'isAdmin' => $user->getIsAdmin(),
             );
         } else {
             $authResult['code'] = Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID;

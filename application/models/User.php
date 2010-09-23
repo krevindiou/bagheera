@@ -71,6 +71,14 @@ class User
     protected $_password;
 
     /**
+     * activation attribute
+     *
+     * @var string
+     * @Column(type="string", name="activation")
+     */
+    protected $_activation;
+
+    /**
      * isAdmin attribute
      *
      * @var boolean
@@ -106,7 +114,7 @@ class User
     public function __construct()
     {
         $this->setIsAdmin(false);
-        $this->setIsActive(true);
+        $this->setIsActive(false);
     }
 
     /**
@@ -212,6 +220,27 @@ class User
     public function setPassword($password)
     {
         $this->_password = $password;
+    }
+
+    /**
+     * Gets activation
+     *
+     * @return string
+     */
+    public function getActivation()
+    {
+        return $this->_activation;
+    }
+
+    /**
+     * Sets activation
+     *
+     * @param  string $activation    activation to set
+     * @return void
+     */
+    public function setActivation($activation)
+    {
+        $this->_activation = $activation;
     }
 
     /**

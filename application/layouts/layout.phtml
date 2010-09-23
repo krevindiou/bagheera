@@ -6,6 +6,17 @@
     </head>
     <body>
         <a href="/logout"><?php echo $this->translate('logout') ?></a><br/>
+
+        <?php
+        if (!empty($this->messages)) {
+            echo '<ul>', "\n";
+            foreach ($this->messages as $message) {
+                echo '<li>', $this->translate($message), '</li>', "\n";
+            }
+            echo '</ul>', "\n";
+        }
+        ?>
+
         <?php echo $this->layout()->content, "\n"; ?>
     </body>
 </html>

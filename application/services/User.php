@@ -55,19 +55,39 @@ class User extends CrudAbstract
             $passwordConfirmation->setValue(md5($passwordConfirmation->getValue()));
         }
 
+        // Activation mail sending
         if (parent::add($userForm)) {
             $config = \Zend_Registry::get('config');
             $translate = \Zend_Registry::get('Zend_Translate');
 
+            // Activation link construction
+            $bootstrap = \Zend_Controller_Front::getInstance()->getParam('bootstrap');
+            $router = $bootstrap->getResource('router');
+            $route = $router->getRoute('activate');
+            $key = md5(uniqid(rand(), true));
+            $link = $config->app->url . '/' . $route->assemble(array('key' => $key));
+
+            $body = str_replace(
+                '%link%',
+                $link,
+                $translate->translate('userEmailRegistrationBody')
+            );
+
             $mail = new \Zend_Mail();
-            $mail->setFrom($config->admin->email, $config->admin->name);
+            $mail->setFrom($config->app->admin->email, $config->app->admin->name);
             $mail->addTo(
                 $userForm->getElement('email')->getValue(),
                 $userForm->getElement('firstname')->getValue() . ' ' . $userForm->getElement('lastname')->getValue()
             );
             $mail->setSubject($translate->translate('userEmailRegistrationSubject'));
-            $mail->setBodyText($translate->translate('userEmailRegistrationBody'));
+            $mail->setBodyText($body);
             $mail->send();
+
+            $em = \Zend_Registry::get('em');
+            $user = $userForm->getEntity();
+            $user->setActivation($key);
+            $em->persist($user);
+            $em->flush();
 
             return true;
         } else {
@@ -146,5 +166,30 @@ class User extends CrudAbstract
         if ($this->hasIdentity()) {
             return \Zend_Auth::getInstance()->getIdentity();
         }
+    }
+
+    /**
+     * Activates the user
+     *
+     * @return boolean
+     */
+    public function activate($key)
+    {
+        $dql = 'SELECT u FROM Application\\Models\\User u WHERE u._activation = :key';
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('key', $key);
+        $result = $query->getResult();
+        if (!empty($result)) {
+            $user = $result[0];
+
+            $user->setIsActive(true);
+            $user->setActivation(null);
+            $this->_em->persist($user);
+            $this->_em->flush();
+
+            return true;
+        }
+
+        return false;
     }
 }
