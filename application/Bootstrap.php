@@ -144,12 +144,20 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
     protected function _initView()
     {
+        $config = Zend_Registry::get('config');
+
         $view = new Zend_View();
         $view->setEncoding('utf-8');
         $view->doctype('XHTML1_STRICT');
         $view->headTitle('Bagheera');
         $view->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf-8')
                          ->appendHttpEquiv('Content-Language', 'en-US');
+        $view->headLink()->headLink(array(
+            'rel' => 'stylesheet/less',
+            'href' => $config->resources->frontController->baseUrl . '/css/base.less',
+            'type' => 'text/css'
+        ));
+        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/less-1.0.35.min.js');
 
         $flashMessenger = Zend_Controller_Action_HelperBroker::getStaticHelper('flashMessenger');
         $view->messages = $flashMessenger->getMessages();

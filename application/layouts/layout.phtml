@@ -1,11 +1,12 @@
 <?php echo $this->doctype(), "\n" ?>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <?php echo $this->headTitle(), "\n" ?>
         <?php echo $this->headMeta(), "\n" ?>
+        <?php echo $this->headLink(), "\n" ?>
     </head>
     <body>
-        <a href="/logout"><?php echo $this->translate('logout') ?></a><br/>
+        <p><a href="/logout"><?php echo $this->translate('logout') ?></a><br/></p>
 
         <?php
         if (!empty($this->messages)) {
@@ -18,5 +19,10 @@
         ?>
 
         <?php echo $this->layout()->content, "\n"; ?>
+        <?php echo $this->headScript(), "\n" ?>
+        <script type="text/javascript">
+            less.env = "development";
+            less.watch();
+        </script>
     </body>
 </html>
