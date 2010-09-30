@@ -29,11 +29,113 @@ class Bagheera_Form extends Zend_Form
 {
     protected $_entity;
 
+    protected $_myElementDecorators = array(
+        'main' => array(
+            'ViewHelper',
+            array(
+                'HtmlTag',
+                array('tag' => 'p', 'class' => 'field')
+            ),
+            array(
+                'Label',
+                array(
+                    'tag' => 'p',
+                    'labelClass' => 'label',
+                    'description' => array('tag' => 'span', 'class' => 'description')
+                )
+            ),
+        ),
+        'file' => array(
+            'File',
+            array(
+                'HtmlTag',
+                array('tag' => 'p', 'class' => 'field')
+            ),
+            array(
+                'Label',
+                array(
+                    'tag' => 'p',
+                    'labelClass' => 'label',
+                    'description' => array('tag' => 'span', 'class' => 'description')
+                )
+            ),
+        ),
+        'button' => array(
+            'ViewHelper',
+            'Tooltip',
+        ),
+        'image' => array(
+            'Tooltip',
+            'Image',
+        ),
+        'hidden' => array(
+            'ViewHelper',
+        ),
+        'captcha' => array(
+            array(
+                'HtmlTag',
+                array('tag' => 'p', 'class' => 'field')
+            ),
+            array(
+                'Label',
+                array(
+                    'tag' => 'p',
+                    'labelClass' => 'label',
+                    'description' => array('tag' => 'span', 'class' => 'description')
+                )
+            ),
+        ),
+    );
+
     public function init()
     {
+        $this->setDisableLoadDefaultDecorators(true);
+
+        $this->addDecorator('FormElements')
+             ->addDecorator('Form')
+             ->addDecorator('FormErrors');
+
         $this->addElementPrefixPath(
             'Bagheera_Validate', __DIR__ . '/Validate', 'validate'
         );
+
+        $this->addElementPrefixPath(
+            'Bagheera_Form_Decorator', __DIR__ . '/Form/Decorator', 'decorator'
+        );
+    }
+
+    /**
+     * @see Zend_Form::createElement
+     */
+    public function createElement($type, $name, $options = null)
+    {
+        $element = parent::createElement($type, $name, $options);
+
+        $element->clearDecorators();
+
+        if (!isset($options['decorators']) || empty($options['decorators'])) {
+            if (in_array($type, array('button', 'submit', 'reset'))) {
+                $options['decorators'] = $this->_myElementDecorators['button'];
+            } elseif ('image' == $type) {
+                $options['decorators'] = $this->_myElementDecorators['image'];
+            } elseif ('file' == $type) {
+                $options['decorators'] = $this->_myElementDecorators['file'];
+            } elseif (in_array($type, array('hidden', 'hash'))) {
+                $options['decorators'] = $this->_myElementDecorators['hidden'];
+            } elseif ('captcha' == $type) {
+                $options['decorators'] = $this->_myElementDecorators['captcha'];
+            } else {
+                $options['decorators'] = $this->_myElementDecorators['main'];
+            }
+
+            $element->setDecorators($options['decorators']);
+        }
+
+        if (!isset($options['id'])) {
+            $element->setAttrib('id', $this->getName() . '-' . $name);
+        }
+
+        return $element;
     }
 
     public function getEntity()

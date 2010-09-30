@@ -33,6 +33,7 @@ class Login extends \Bagheera_Form
         parent::init();
 
         $this->setMethod('post');
+        $this->setName('formLogin');
         $this->setAction('/login');
 
         $this->addElement('text', 'email', array(

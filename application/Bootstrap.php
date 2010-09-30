@@ -157,7 +157,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             'href' => $config->resources->frontController->baseUrl . '/css/base.less',
             'type' => 'text/css'
         ));
+        $view->headLink()->headLink(array(
+            'rel' => 'stylesheet/less',
+            'href' => $config->resources->frontController->baseUrl . '/css/main.less',
+            'type' => 'text/css'
+        ));
         $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/less-1.0.35.min.js');
+
+        $view->applicationEnv = APPLICATION_ENV;
 
         $flashMessenger = Zend_Controller_Action_HelperBroker::getStaticHelper('flashMessenger');
         $view->messages = $flashMessenger->getMessages();

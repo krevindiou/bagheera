@@ -33,6 +33,7 @@ class User extends \Bagheera_Form
         parent::init();
 
         $this->setMethod('post');
+        $this->setName('formUser');
 
         $this->addElement('text', 'firstname', array(
             'label' => 'userFirstname',
@@ -64,6 +65,7 @@ class User extends \Bagheera_Form
 
         $this->addElement('password', 'password', array(
             'label' => 'userPassword',
+            'description' => 'userPasswordComment',
             'required' => true,
             'maxlength' => 128,
             'filters' => array(),

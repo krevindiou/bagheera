@@ -33,6 +33,7 @@ class Bank extends \Bagheera_Form
         parent::init();
 
         $this->setMethod('post');
+        $this->setName('formBank');
 
         $this->addElement('text', 'name', array(
             'label' => 'bankName',

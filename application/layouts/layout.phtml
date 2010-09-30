@@ -19,10 +19,13 @@
         ?>
 
         <?php echo $this->layout()->content, "\n"; ?>
+
         <?php echo $this->headScript(), "\n" ?>
+        <?php if ('development' == $this->applicationEnv) { ?>
         <script type="text/javascript">
             less.env = "development";
             less.watch();
         </script>
+        <?php } ?>
     </body>
 </html>
