@@ -93,7 +93,7 @@ class User extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'userCreateAccount',
+            'label' => 'userRegister',
             'ignore' => true,
         ));
     }

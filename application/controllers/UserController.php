@@ -35,7 +35,7 @@ class UserController extends Zend_Controller_Action
         $this->_userService = UserService::getInstance();
     }
 
-    public function createAccountAction()
+    public function registerAction()
     {
         $params = $this->_request->getPost();
 
@@ -43,9 +43,48 @@ class UserController extends Zend_Controller_Action
 
         if ($this->_request->isPost()) {
             if ($this->_userService->add($form)) {
-                $this->_helper->flashMessenger->addMessage('userRegistration');
+                $this->_helper->flashMessenger->addMessage('userRegisterFormConfirmation');
                 $this->_redirect();
             }
+        }
+
+        $this->view->form = $form;
+    }
+
+    public function forgotPasswordAction()
+    {
+
+        $params = $this->_request->getPost();
+
+        $form = $this->_userService->getForgotPasswordForm();
+
+        if ($this->_request->isPost()) {
+            if ($this->_userService->sendResetPasswordEmail($this->_request->getPost('email'))) {
+                $this->_helper->flashMessenger->addMessage('userForgotPasswordFormConfirmation');
+                $this->_redirect();
+            }
+        }
+
+        $this->view->form = $form;
+    }
+
+    public function resetPasswordAction()
+    {
+        $key = $this->_request->getParam('key');
+
+        try {
+            $form = $this->_userService->getResetPasswordForm($key, $this->_request->getPost());
+
+            if ($this->_request->isPost()) {
+                if ($form->isValid($form->getValues())) {
+                    if (false !== $this->_userService->resetPassword($key, $this->_request->getPost('password'))) {
+                        $this->_helper->flashMessenger->addMessage('userResetPasswordFormConfirmation');
+                        $this->_redirect();
+                    }
+                }
+            }
+        } catch (InvalidArgumentException $e) {
+            $form = null;
         }
 
         $this->view->form = $form;

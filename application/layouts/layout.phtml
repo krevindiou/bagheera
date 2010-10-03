@@ -6,7 +6,7 @@
         <?php echo $this->headLink(), "\n" ?>
     </head>
     <body>
-        <p><a href="/logout"><?php echo $this->translate('logout') ?></a><br/></p>
+        <p><?php echo $this->link('logout', $this->translate('logoutLink')) ?><br/></p>
 
         <?php
         if (!empty($this->messages)) {

@@ -19,7 +19,9 @@
 namespace Application\Services;
 
 use Application\Models\User as UserModel,
-    Application\Forms\User as UserForm;
+    Application\Forms\User as UserForm,
+    Application\Forms\UserForgotPassword as UserForgotPasswordForm,
+    Application\Forms\UserResetPassword as UserResetPasswordForm;
 
 /**
  * User service
@@ -114,6 +116,130 @@ class User extends CrudAbstract
     public function delete(UserModel $user)
     {
         return parent::delete($user);
+    }
+
+    public function getForgotPasswordForm()
+    {
+        return new UserForgotPasswordForm();
+    }
+
+    /**
+     * Sends email with reset password link
+     *
+     * @param  string $email    user email
+     * @return boolean
+     */
+    public function sendResetPasswordEmail($email)
+    {
+        $user = $this->_em->getRepository('Application\\Models\\User')
+                          ->findOneBy(array('_email' => $email));
+
+        if (null !== $user) {
+            $config = \Zend_Registry::get('config');
+            $translate = \Zend_Registry::get('Zend_Translate');
+
+            // Reset password link construction
+            $bootstrap = \Zend_Controller_Front::getInstance()->getParam('bootstrap');
+            $router = $bootstrap->getResource('router');
+            $route = $router->getRoute('resetPassword');
+            $key = $this->_createResetPasswordKey($user);
+            $link = $config->app->url . '/' . $route->assemble(array('key' => $key));
+
+            // Mail sending
+            $body = str_replace(
+                '%link%',
+                $link,
+                $translate->translate('userEmailResetPasswordBody')
+            );
+
+            $mail = new \Zend_Mail();
+            $mail->setFrom($config->app->admin->email, $config->app->admin->name);
+            $mail->addTo(
+                $user->getEmail(),
+                $user->getFirstname() . ' ' . $user->getLastname()
+            );
+            $mail->setSubject($translate->translate('userEmailResetPasswordSubject'));
+            $mail->setBodyText($body);
+            $mail->send();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Returns reset password form if key is valid
+     *
+     * @param  string $key       reset key
+     * @param  string $params    form parameters values
+     * @return UserResetPasswordForm
+     */
+    public function getResetPasswordForm($key, array $params = null)
+    {
+        if ($user = $this->_decodeResetPasswordKey($key)) {
+            $form = new UserResetPasswordForm();
+            $form->populate($params);
+            return $form;
+        }
+
+        throw new InvalidArgumentException('Invalid key');
+    }
+
+    /**
+     * Updates user password
+     *
+     * @param  string $key         reset key
+     * @param  string $password    password to set
+     * @return void
+     */
+    public function resetPassword($key, $password)
+    {
+        if ($user = $this->_decodeResetPasswordKey($key)) {
+            $user->setPassword(md5($password));
+            $this->_em->persist($user);
+            $this->_em->flush();
+        }
+    }
+
+    /**
+     * Creates reset password key
+     *
+     * @param  UserModel $user    user model
+     * @return string
+     */
+    protected function _createResetPasswordKey(UserModel $user)
+    {
+        $key = base64_encode(gzdeflate(
+            $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
+        ));
+
+        return $key;
+    }
+
+    /**
+     * Decodes reset password key and return user model
+     *
+     * @param  string $key    reset key
+     * @return UserModel
+     */
+    protected function _decodeResetPasswordKey($key)
+    {
+        if (false !== $key = gzinflate(base64_decode($key))) {
+            $email = substr($key, 0, -33);
+            $md5 = substr($key, -32);
+
+            $user = $this->_em->getRepository('Application\\Models\\User')
+                              ->findOneBy(array('_email' => $email));
+
+            if (null !== $user) {
+                if (md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601)) == $md5) {
+                    return $user;
+                }
+            }
+        }
+
+        throw new InvalidArgumentException('Invalid key');
     }
 
     /**
