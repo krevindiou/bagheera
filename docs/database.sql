@@ -87,8 +87,8 @@ DROP TABLE IF EXISTS `payment_method`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `payment_method` (
   `payment_method_id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` enum('credit card','check','withdrawal','transfer','deposit') NOT NULL DEFAULT 'credit card',
-  `type` enum('debit','credit') NOT NULL DEFAULT 'debit',
+  `name` varchar(16) NOT NULL DEFAULT 'credit_card',
+  `type` varchar(8) NOT NULL DEFAULT 'debit',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`payment_method_id`)
@@ -293,8 +293,8 @@ CREATE TABLE `scheduler` (
   `value_date` date NOT NULL,
   `limit_date` date DEFAULT NULL,
   `notes` text NOT NULL,
-  `frequency_unit` enum('day','week','month','year') NOT NULL DEFAULT 'month',
-  `frequency_value` tinyint(2) unsigned NOT NULL,
+  `frequency_unit` varchar(16) NOT NULL DEFAULT 'month',
+  `frequency_value` tinyint(3) unsigned NOT NULL,
   `is_active` tinyint(1) NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
@@ -325,7 +325,7 @@ CREATE TABLE `search` (
   `value_date_start` date DEFAULT NULL,
   `value_date_end` date DEFAULT NULL,
   `is_reconciled` tinyint(1) DEFAULT NULL,
-  `type` enum('debit','credit') DEFAULT NULL,
+  `type` varchar(8) DEFAULT NULL,
   `amount_inferior_to` decimal(10,2) DEFAULT NULL,
   `amount_inferior_or_equal_to` decimal(10,2) DEFAULT NULL,
   `amount_equal_to` decimal(10,2) DEFAULT NULL,
@@ -385,7 +385,7 @@ DROP TABLE IF EXISTS `shared_account`;
 CREATE TABLE `shared_account` (
   `account_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
-  `access_rights` enum('read','write') NOT NULL,
+  `write_access` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`account_id`,`user_id`),
   KEY `fk_shared_account_account` (`account_id`),
   KEY `fk_shared_account_user` (`user_id`),
@@ -436,7 +436,6 @@ CREATE TABLE `transaction` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`transaction_id`),
-  KEY `category_id` (`category_id`),
   KEY `fk_transaction_payment_method` (`payment_method_id`),
   KEY `fk_transaction_category` (`category_id`),
   KEY `fk_transaction_account` (`account_id`),

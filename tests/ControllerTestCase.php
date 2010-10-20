@@ -22,6 +22,7 @@ require_once 'Zend/Application.php';
 abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 {
     public $application;
+    protected $_conn;
 
     public function setUp()
     {
@@ -30,12 +31,62 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
             APPLICATION_PATH . '/configs/application.ini'
         );
 
+        $config = new Zend_Config_Ini(__DIR__ . '/../application/configs/application.ini', APPLICATION_ENV);
+        Zend_Registry::set('config', $config);
+
         $this->bootstrap = array($this, 'appBootstrap');
+
         parent::setUp();
+
+        $this->createDatabase();
     }
 
     public function appBootstrap()
     {
         $this->application->bootstrap();
+    }
+
+    public function createDatabase()
+    {
+        $config = Zend_Registry::get('config');
+
+        // MySQL schema export
+        $connectionParams = array(
+            'driver' => 'pdo_mysql',
+            'dbname' => $config->database->dbname,
+            'user' => $config->database->user,
+            'password' => $config->database->password,
+            'host' => $config->database->host,
+        );
+
+        try {
+            $conn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
+        } catch (Exception $e) {
+            echo $e->getMessage() . "\n";
+            exit;
+        }
+
+        $sm = $conn->getSchemaManager();
+        try {
+            $sqlite = new Doctrine\DBAL\Driver\PDOSqlite\Driver();
+
+            $schema = $sm->createSchema();
+            $sql = $schema->toSql($sqlite->getDatabasePlatform());
+            $sql = implode(';', $sql);
+        } catch (Exception $e) {
+            echo $e->getMessage() . "\n";
+            exit;
+        }
+
+        // SQLite schema import
+        $connectionParams = array(
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        );
+        $this->_conn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
+
+        $sql = preg_replace('#(CREATE TABLE )([a-z0-9_]+) #i', '$1[$2] ', $sql);
+        $sql = preg_replace('#( ON )([a-z0-9_]+) #i', '$1[$2] ', $sql);
+        $this->_conn->executeUpdate($sql);
     }
 }

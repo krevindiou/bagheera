@@ -53,7 +53,6 @@ class UserController extends Zend_Controller_Action
 
     public function forgotPasswordAction()
     {
-
         $params = $this->_request->getPost();
 
         $form = $this->_userService->getForgotPasswordForm();

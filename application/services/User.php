@@ -301,13 +301,9 @@ class User extends CrudAbstract
      */
     public function activate($key)
     {
-        $dql = 'SELECT u FROM Application\\Models\\User u WHERE u._activation = :key';
-        $query = $this->_em->createQuery($dql);
-        $query->setParameter('key', $key);
-        $result = $query->getResult();
-        if (!empty($result)) {
-            $user = $result[0];
-
+        $user = $this->_em->getRepository('Application\\Models\\User')
+                          ->findOneBy(array('_activation' => $key));
+        if (null !== $user) {
             $user->setIsActive(true);
             $user->setActivation(null);
             $this->_em->persist($user);

@@ -101,7 +101,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $doctrineConfig->setAutoGenerateProxyClasses(!(bool)$config->cache);
 
         // Database connection information
-        $connectionOptions = array(
+        $connectionParams = array(
             'driver' => 'pdo_mysql',
             'dbname' => $config->database->dbname,
             'user' => $config->database->user,
@@ -110,7 +110,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         );
 
         // Create EntityManager
-        $em = \Doctrine\ORM\EntityManager::create($connectionOptions, $doctrineConfig);
+        $em = \Doctrine\ORM\EntityManager::create($connectionParams, $doctrineConfig);
         Zend_Registry::set('em', $em);
     }
 
