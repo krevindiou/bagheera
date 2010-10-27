@@ -104,36 +104,39 @@ class Bagheera_Auth_Adapter_Database implements Zend_Auth_Adapter_Interface
      */
     public function authenticate()
     {
-        $em = Zend_Registry::get('em');
-
         $authResult = array(
             'code'  => Zend_Auth_Result::FAILURE,
             'identity' => array(),
             'messages' => array()
         );
 
-        $dql = 'SELECT u FROM Application\Models\User u ';
-        $dql.= 'WHERE u._isActive = 1 ';
-        $dql.= 'AND u._email = :email ';
-        $dql.= 'AND u._password = :password';
-        $query = $em->createQuery($dql);
-        $query->setParameter('email', $this->getEmail());
-        $query->setParameter('password', md5($this->getPassword()));
-        $result = $query->getResult();
-        if (!empty($result)) {
-            $user = $result[0];
+        try {
+            $em = Zend_Registry::get('em');
 
-            $authResult['code'] = Zend_Auth_Result::SUCCESS;
-            $authResult['identity'] = array(
-                'userId' => $user->getUserId(),
-                'firstname' => $user->getFirstname(),
-                'lastname' => $user->getLastname(),
-                'email' => $user->getEmail(),
-                'isAdmin' => $user->getIsAdmin(),
-            );
-        } else {
-            $authResult['code'] = Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID;
-            $authResult['messages'][] = 'userInvalidCredential';
+            $dql = 'SELECT u FROM Application\Models\User u ';
+            $dql.= 'WHERE u._isActive = 1 ';
+            $dql.= 'AND u._email = :email ';
+            $dql.= 'AND u._password = :password';
+            $query = $em->createQuery($dql);
+            $query->setParameter('email', $this->getEmail());
+            $query->setParameter('password', md5($this->getPassword()));
+            $result = $query->getResult();
+            if (!empty($result)) {
+                $user = $result[0];
+
+                $authResult['code'] = Zend_Auth_Result::SUCCESS;
+                $authResult['identity'] = array(
+                    'userId' => $user->getUserId(),
+                    'firstname' => $user->getFirstname(),
+                    'lastname' => $user->getLastname(),
+                    'email' => $user->getEmail(),
+                    'isAdmin' => $user->getIsAdmin(),
+                );
+            } else {
+                $authResult['code'] = Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID;
+                $authResult['messages'][] = 'userInvalidCredential';
+            }
+        } catch(Exception $e) {
         }
 
         return new Zend_Auth_Result(

@@ -18,6 +18,7 @@
 
 require_once 'Zend/Test/PHPUnit/ControllerTestCase.php';
 require_once 'Zend/Application.php';
+require_once 'Spyc.php';
 
 abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 {
@@ -48,23 +49,8 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 
     public function createDatabase()
     {
-        $config = Zend_Registry::get('config');
-
-        // MySQL schema export
-        $connectionParams = array(
-            'driver' => 'pdo_mysql',
-            'dbname' => $config->database->dbname,
-            'user' => $config->database->user,
-            'password' => $config->database->password,
-            'host' => $config->database->host,
-        );
-
-        try {
-            $conn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
-        } catch (Exception $e) {
-            echo $e->getMessage() . "\n";
-            exit;
-        }
+        $em = Zend_Registry::get('em');
+        $conn = $em->getConnection();
 
         $sm = $conn->getSchemaManager();
         try {
@@ -78,6 +64,7 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
             exit;
         }
 
+
         // SQLite schema import
         $connectionParams = array(
             'driver' => 'pdo_sqlite',
@@ -85,8 +72,31 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
         );
         $this->_conn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
 
+        // SQL table name escaping
         $sql = preg_replace('#(CREATE TABLE )([a-z0-9_]+) #i', '$1[$2] ', $sql);
         $sql = preg_replace('#( ON )([a-z0-9_]+) #i', '$1[$2] ', $sql);
         $this->_conn->executeUpdate($sql);
+
+        // Data import
+        $array = Spyc::YAMLLoad(__DIR__ . '/fixtures.yaml');
+        foreach ($array as $table => $v) {
+            foreach ($v as $data) {
+                $this->_conn->insert($table, $data);
+            }
+        }
+
+
+        $doctrineConfig = new Doctrine\ORM\Configuration;
+
+        $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(__DIR__ . '/models');
+        $doctrineConfig->setMetadataDriverImpl($driverImpl);
+
+        $doctrineConfig->setProxyDir(__DIR__ . '/proxies');
+        $doctrineConfig->setProxyNamespace('Application\\Proxies');
+        $doctrineConfig->setAutoGenerateProxyClasses(true);
+
+        $em = Doctrine\ORM\EntityManager::create($this->_conn, $doctrineConfig);
+
+        Zend_Registry::set('em', $em);
     }
 }
