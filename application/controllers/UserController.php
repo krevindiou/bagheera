@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\User as UserService;
+use Application\Services\User as UserService,
+    Application\Forms\Login as LoginForm;
 
 /**
  * User controller
@@ -33,6 +34,27 @@ class UserController extends Zend_Controller_Action
     public function init()
     {
         $this->_userService = UserService::getInstance();
+    }
+
+    public function loginAction()
+    {
+        $loginForm = new LoginForm();
+
+        if ($loginForm->isValid($this->_request->getPost())) {
+            $this->_userService->login(
+                $this->_request->getPost('email'),
+                $this->_request->getPost('password')
+            );
+        } else {
+            $redirector = \Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+            $redirector->gotoUrl('/?login=error');
+        }
+    }
+
+    public function logoutAction()
+    {
+        $this->_userService->logout();
+        $this->_redirect('/');
     }
 
     public function registerAction()
