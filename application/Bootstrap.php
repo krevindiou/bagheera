@@ -27,43 +27,43 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $autoloader->registerNamespace('Bagheera');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('Symfony'),
+            new \Bagheera\ClassLoader('Symfony'),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Symfony\\');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('Doctrine'),
+            new \Bagheera\ClassLoader('Doctrine'),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Doctrine\\');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('DoctrineExtensions'),
+            new \Bagheera\ClassLoader('DoctrineExtensions'),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'DoctrineExtensions\\');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('Application\\Models', realpath(__DIR__ . '/..')),
+            new \Bagheera\ClassLoader('Application\\Models', realpath(__DIR__ . '/..')),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Models\\');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('Application\\Proxies', realpath(__DIR__ . '/..')),
+            new \Bagheera\ClassLoader('Application\\Proxies', realpath(__DIR__ . '/..')),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Proxies');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('Application\\Services', realpath(__DIR__ . '/..')),
+            new \Bagheera\ClassLoader('Application\\Services', realpath(__DIR__ . '/..')),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Services\\');
 
         $doctrineAutoloader = array(
-            new \Doctrine\Common\ClassLoader('Application\\Forms', realpath(__DIR__ . '/..')),
+            new \Bagheera\ClassLoader('Application\\Forms', realpath(__DIR__ . '/..')),
             'loadClass'
         );
         $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Forms\\');
