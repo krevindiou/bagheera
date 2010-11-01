@@ -29,9 +29,9 @@ namespace Application\Services;
 abstract class ServicesAbstract
 {
     /**
-     * @var Application\Services\ServicesAbstract
+     * @var array of Application\Services\ServicesAbstract
      */
-    private static $_instance;
+    private static $_instances;
 
     /**
      * @var Doctrine\ORM\EntityManager
@@ -50,11 +50,11 @@ abstract class ServicesAbstract
      */
     public static function getInstance()
     {
-        if (null === self::$_instance) {
+        if (!isset(self::$_instances[get_called_class()])) {
             $class = get_called_class();
-            self::$_instance = new $class;
+            self::$_instances[get_called_class()] = new $class;
         }
 
-        return self::$_instance;
+        return self::$_instances[get_called_class()];
     }
 }

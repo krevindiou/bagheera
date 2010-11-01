@@ -1,11 +1,11 @@
 <phpunit backupGlobals="false"
-         backupStaticAttributes="true"
+         backupStaticAttributes="false"
          bootstrap="application/bootstrap.php"
          colors="false"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
-         processIsolation="true"
+         processIsolation="false"
          stopOnFailure="true"
          syntaxCheck="false"
          testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader">
