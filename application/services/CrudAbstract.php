@@ -77,7 +77,6 @@ abstract class CrudAbstract extends ServicesAbstract
             $entity->setUpdatedAt(new \DateTime);
 
             $this->_em->persist($entity);
-            $this->_em->flush();
 
             return true;
         } else {
@@ -106,7 +105,6 @@ abstract class CrudAbstract extends ServicesAbstract
             $entity->setUpdatedAt(new \DateTime);
 
             $this->_em->persist($entity);
-            $this->_em->flush();
 
             return true;
         } else {
@@ -123,6 +121,5 @@ abstract class CrudAbstract extends ServicesAbstract
     public function delete($entity)
     {
         $this->_em->remove($entity);
-        $this->_em->flush();
     }
 }

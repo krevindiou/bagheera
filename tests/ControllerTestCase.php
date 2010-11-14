@@ -23,7 +23,7 @@ require_once 'Spyc.php';
 abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 {
     public $application;
-    protected $_conn;
+    protected static $_conn;
 
     public function setUp()
     {
@@ -32,71 +32,78 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
             APPLICATION_PATH . '/configs/application.ini'
         );
 
-        $config = new Zend_Config_Ini(__DIR__ . '/../application/configs/application.ini', APPLICATION_ENV);
-        Zend_Registry::set('config', $config);
-
         $this->bootstrap = array($this, 'appBootstrap');
 
         parent::setUp();
 
-        $this->createDatabase();
+        self::$_conn = createDatabase();
+        self::$_conn->beginTransaction();
+    }
+
+    public function tearDown()
+    {
+        self::$_conn->rollback();
     }
 
     public function appBootstrap()
     {
         $this->application->bootstrap();
     }
+}
 
-    public function createDatabase()
-    {
+function createDatabase()
+{
+    static $sqliteConn;
+
+    if (null === $sqliteConn) {
         $em = Zend_Registry::get('em');
-        $conn = $em->getConnection();
+        $mysqlConn = $em->getConnection();
 
-        $sm = $conn->getSchemaManager();
+        $sm = $mysqlConn->getSchemaManager();
         try {
             $sqlite = new Doctrine\DBAL\Driver\PDOSqlite\Driver();
 
             $schema = $sm->createSchema();
             $sql = $schema->toSql($sqlite->getDatabasePlatform());
             $sql = implode(';', $sql);
+
+            // SQL table name escaping
+            $sql = preg_replace('#(CREATE TABLE )([a-z0-9_]+) #i', '$1[$2] ', $sql);
+            $sql = preg_replace('#( ON )([a-z0-9_]+) #i', '$1[$2] ', $sql);
         } catch (Exception $e) {
             echo $e->getMessage() . "\n";
             exit;
         }
-
 
         // SQLite schema import
         $connectionParams = array(
             'driver' => 'pdo_sqlite',
             'memory' => true,
         );
-        $this->_conn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
 
-        // SQL table name escaping
-        $sql = preg_replace('#(CREATE TABLE )([a-z0-9_]+) #i', '$1[$2] ', $sql);
-        $sql = preg_replace('#( ON )([a-z0-9_]+) #i', '$1[$2] ', $sql);
-        $this->_conn->executeUpdate($sql);
+        $sqliteConn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
+
+        $sqliteConn->executeUpdate($sql);
 
         // Data import
         $array = Spyc::YAMLLoad(__DIR__ . '/fixtures.yaml');
         foreach ($array as $table => $v) {
             foreach ($v as $data) {
-                $this->_conn->insert($table, $data);
+                $sqliteConn->insert($table, $data);
             }
         }
-
-
-        $doctrineConfig = new Doctrine\ORM\Configuration;
-
-        $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(__DIR__ . '/models');
-        $doctrineConfig->setMetadataDriverImpl($driverImpl);
-
-        $doctrineConfig->setProxyDir(__DIR__ . '/proxies');
-        $doctrineConfig->setProxyNamespace('Application\\Proxies');
-        $doctrineConfig->setAutoGenerateProxyClasses(true);
-
-        $em = Doctrine\ORM\EntityManager::create($this->_conn, $doctrineConfig);
-
-        Zend_Registry::set('em', $em);
     }
+
+    $doctrineConfig = new Doctrine\ORM\Configuration;
+    $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(realpath(__DIR__ . '/../application/models'));
+    $doctrineConfig->setMetadataDriverImpl($driverImpl);
+
+    $doctrineConfig->setProxyDir(realpath(__DIR__ . '/../application/proxies'));
+    $doctrineConfig->setProxyNamespace('Application\\Proxies');
+    $doctrineConfig->setAutoGenerateProxyClasses(true);
+
+    $em = Doctrine\ORM\EntityManager::create($sqliteConn, $doctrineConfig);
+    Zend_Registry::set('em', $em);
+
+    return $sqliteConn;
 }

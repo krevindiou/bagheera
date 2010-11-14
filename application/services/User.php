@@ -63,8 +63,7 @@ class User extends CrudAbstract
             $translate = \Zend_Registry::get('Zend_Translate');
 
             // Activation link construction
-            $bootstrap = \Zend_Controller_Front::getInstance()->getParam('bootstrap');
-            $router = $bootstrap->getResource('router');
+            $router = \Zend_Controller_Front::getInstance()->getRouter();
             $route = $router->getRoute('activate');
             $key = md5(uniqid(rand(), true));
             $link = $config->app->url . '/' . $route->assemble(array('key' => $key));
@@ -85,11 +84,9 @@ class User extends CrudAbstract
             $mail->setBodyText($body);
             $mail->send();
 
-            $em = \Zend_Registry::get('em');
             $user = $userForm->getEntity();
             $user->setActivation($key);
-            $em->persist($user);
-            $em->flush();
+            $this->_em->flush();
 
             return true;
         } else {
@@ -139,8 +136,7 @@ class User extends CrudAbstract
             $translate = \Zend_Registry::get('Zend_Translate');
 
             // Reset password link construction
-            $bootstrap = \Zend_Controller_Front::getInstance()->getParam('bootstrap');
-            $router = $bootstrap->getResource('router');
+            $router = \Zend_Controller_Front::getInstance()->getRouter();
             $route = $router->getRoute('resetPassword');
             $key = $this->_createResetPasswordKey($user);
             $link = $config->app->url . '/' . $route->assemble(array('key' => $key));
@@ -183,7 +179,7 @@ class User extends CrudAbstract
             return $form;
         }
 
-        throw new InvalidArgumentException('Invalid key');
+        throw new \InvalidArgumentException('Invalid key');
     }
 
     /**
@@ -239,7 +235,7 @@ class User extends CrudAbstract
             }
         }
 
-        throw new InvalidArgumentException('Invalid key');
+        throw new \InvalidArgumentException('Invalid key');
     }
 
     /**

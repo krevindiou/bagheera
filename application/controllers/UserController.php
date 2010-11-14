@@ -66,7 +66,7 @@ class UserController extends Zend_Controller_Action
         if ($this->_request->isPost()) {
             if ($this->_userService->add($form)) {
                 $this->_helper->flashMessenger->addMessage('userRegisterFormConfirmation');
-                $this->_redirect();
+                $this->_redirect('');
             }
         }
 
@@ -82,7 +82,7 @@ class UserController extends Zend_Controller_Action
         if ($this->_request->isPost()) {
             if ($this->_userService->sendResetPasswordEmail($this->_request->getPost('email'))) {
                 $this->_helper->flashMessenger->addMessage('userForgotPasswordFormConfirmation');
-                $this->_redirect();
+                $this->_redirect('');
             }
         }
 
@@ -100,7 +100,7 @@ class UserController extends Zend_Controller_Action
                 if ($form->isValid($form->getValues())) {
                     if (false !== $this->_userService->resetPassword($key, $this->_request->getPost('password'))) {
                         $this->_helper->flashMessenger->addMessage('userResetPasswordFormConfirmation');
-                        $this->_redirect();
+                        $this->_redirect('');
                     }
                 }
             }
