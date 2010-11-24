@@ -168,17 +168,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $view->headTitle('Bagheera');
         $view->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=utf-8')
                          ->appendHttpEquiv('Content-Language', 'en-US');
+
         $view->headLink()->headLink(array(
-            'rel' => 'stylesheet/less',
-            'href' => $config->resources->frontController->baseUrl . '/css/base.less',
+            'rel' => 'stylesheet',
+            'href' => $config->resources->frontController->baseUrl . '/css/turbine/css.php?files=main.cssp',
             'type' => 'text/css'
         ));
-        $view->headLink()->headLink(array(
-            'rel' => 'stylesheet/less',
-            'href' => $config->resources->frontController->baseUrl . '/css/main.less',
-            'type' => 'text/css'
-        ));
-        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/less-1.0.35.min.js');
 
         $view->addHelperPath(__DIR__ . '/views/helpers', 'Application_View_Helper');
 
