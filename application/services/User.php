@@ -171,7 +171,7 @@ class User extends CrudAbstract
      * @param  string $params    form parameters values
      * @return UserResetPasswordForm
      */
-    public function getResetPasswordForm($key, array $params = null)
+    public function getResetPasswordForm($key, array $params = array())
     {
         if ($user = $this->_decodeResetPasswordKey($key)) {
             $form = new UserResetPasswordForm();
@@ -221,7 +221,7 @@ class User extends CrudAbstract
      */
     protected function _decodeResetPasswordKey($key)
     {
-        if (false !== $key = gzinflate(base64_decode($key))) {
+        if (false !== ($key = gzinflate(base64_decode($key)))) {
             $email = substr($key, 0, -33);
             $md5 = substr($key, -32);
 
