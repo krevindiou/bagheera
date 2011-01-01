@@ -19,41 +19,33 @@
 namespace Application\Models;
 
 /**
- * Bank entity
+ * Category entity
  *
  * @category   Application
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @Entity
- * @Table(name="bank")
+ * @Table(name="category")
  */
-class Bank
+class Category
 {
     /**
-     * bankId attribute
+     * categoryId attribute
      *
-     * @Id @Column(type="integer", name="bank_id")
+     * @Id @Column(type="integer", name="category_id")
      * @GeneratedValue
      */
-    protected $_bankId;
+    protected $_categoryId;
 
     /**
-     * user id attribute
+     * parentCategory attribute
      *
-     * @var integer
-     * @Column(type="integer", name="user_id")
+     * @var Application\Models\Category
+     * @OneToOne(targetEntity="Category")
+     * @JoinColumn(name="parent_category_id", referencedColumnName="category_id")
      */
-    protected $_userId;
-
-    /**
-     * user attribute
-     *
-     * @var Application\Models\User
-     * @OneToOne(targetEntity="User")
-     * @JoinColumn(name="user_id", referencedColumnName="user_id")
-     */
-    protected $_user;
+    protected $_parentCategory;
 
     /**
      * name attribute
@@ -64,20 +56,12 @@ class Bank
     protected $_name;
 
     /**
-     * info attribute
+     * isActive attribute
      *
-     * @var string
-     * @Column(type="string", name="info")
+     * @var boolean
+     * @Column(type="boolean", name="is_active")
      */
-    protected $_info;
-
-    /**
-     * contact attribute
-     *
-     * @var string
-     * @Column(type="string", name="contact")
-     */
-    protected $_contact;
+    protected $_isActive;
 
     /**
      * createdAt attribute
@@ -96,43 +80,34 @@ class Bank
     protected $_updatedAt;
 
     /**
-     * Accounts list
-     *
-     * @OneToMany(targetEntity="Account", mappedBy="_bank")
-     * @OrderBy({"_name" = "ASC"})
-     */
-    protected $_accounts;
-
-
-    /**
-     * Gets bankId
+     * Gets categoryId
      *
      * @return integer
      */
-    public function getBankId()
+    public function getCategoryId()
     {
-        return $this->_bankId;
+        return $this->_categoryId;
     }
 
     /**
-     * Gets user
+     * Gets parentCategory
      *
-     * @return Application\Models\User
+     * @return Application\Models\Category
      */
-    public function getUser()
+    public function getParentCategory()
     {
-        return $this->_user;
+        return $this->_parentCategory;
     }
 
     /**
-     * Sets user
+     * Sets parentCategory
      *
-     * @param  Application\Models\User $user    user to set
+     * @param  Application\Models\Category $parentCategory    parentCategory to set
      * @return void
      */
-    public function setUser(User $user)
+    public function setParentCategory(Category $parentCategory)
     {
-        $this->_user = $user;
+        $this->_parentCategory = $parentCategory;
     }
 
     /**
@@ -157,45 +132,24 @@ class Bank
     }
 
     /**
-     * Gets info
+     * Gets isActive
      *
-     * @return string
+     * @return boolean
      */
-    public function getInfo()
+    public function getIsActive()
     {
-        return $this->_info;
+        return $this->_isActive;
     }
 
     /**
-     * Sets info
+     * Sets isActive
      *
-     * @param  string $info    info to set
+     * @param  boolean $isActive    isActive to set
      * @return void
      */
-    public function setInfo($info)
+    public function setIsActive($isActive)
     {
-        $this->_info = $info;
-    }
-
-    /**
-     * Gets contact
-     *
-     * @return string
-     */
-    public function getContact()
-    {
-        return $this->_contact;
-    }
-
-    /**
-     * Sets contact
-     *
-     * @param  string $contact    contact to set
-     * @return void
-     */
-    public function setContact($contact)
-    {
-        $this->_contact = $contact;
+        $this->_isActive = (bool)$isActive;
     }
 
     /**
@@ -238,28 +192,5 @@ class Bank
     public function setUpdatedAt(\DateTime $updatedAt)
     {
         $this->_updatedAt = $updatedAt;
-    }
-
-    /**
-     * Gets user's bank account
-     *
-     * @return Doctrine\Common\Collections
-     */
-    public function getAccounts()
-    {
-        return $this->_accounts;
-    }
-
-    public function getBalance()
-    {
-        $em = \Zend_Registry::get('em');
-
-        $balance = 0;
-        $accounts = $this->getAccounts();
-        foreach ($accounts as $account) {
-            $balance+= $account->getBalance();
-        }
-
-        return sprintf('%.2f', $balance);
     }
 }

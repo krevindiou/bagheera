@@ -19,32 +19,24 @@
 namespace Application\Models;
 
 /**
- * Bank entity
+ * ThirdParty entity
  *
  * @category   Application
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @Entity
- * @Table(name="bank")
+ * @Table(name="third_party")
  */
-class Bank
+class ThirdParty
 {
     /**
-     * bankId attribute
+     * thirdPartyId attribute
      *
-     * @Id @Column(type="integer", name="bank_id")
+     * @Id @Column(type="integer", name="third_party_id")
      * @GeneratedValue
      */
-    protected $_bankId;
-
-    /**
-     * user id attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="user_id")
-     */
-    protected $_userId;
+    protected $_thirdPartyId;
 
     /**
      * user attribute
@@ -64,22 +56,6 @@ class Bank
     protected $_name;
 
     /**
-     * info attribute
-     *
-     * @var string
-     * @Column(type="string", name="info")
-     */
-    protected $_info;
-
-    /**
-     * contact attribute
-     *
-     * @var string
-     * @Column(type="string", name="contact")
-     */
-    protected $_contact;
-
-    /**
      * createdAt attribute
      *
      * @var DateTime
@@ -96,22 +72,13 @@ class Bank
     protected $_updatedAt;
 
     /**
-     * Accounts list
-     *
-     * @OneToMany(targetEntity="Account", mappedBy="_bank")
-     * @OrderBy({"_name" = "ASC"})
-     */
-    protected $_accounts;
-
-
-    /**
-     * Gets bankId
+     * Gets thirdPartyId
      *
      * @return integer
      */
-    public function getBankId()
+    public function getThirdPartyId()
     {
-        return $this->_bankId;
+        return $this->_thirdPartyId;
     }
 
     /**
@@ -157,48 +124,6 @@ class Bank
     }
 
     /**
-     * Gets info
-     *
-     * @return string
-     */
-    public function getInfo()
-    {
-        return $this->_info;
-    }
-
-    /**
-     * Sets info
-     *
-     * @param  string $info    info to set
-     * @return void
-     */
-    public function setInfo($info)
-    {
-        $this->_info = $info;
-    }
-
-    /**
-     * Gets contact
-     *
-     * @return string
-     */
-    public function getContact()
-    {
-        return $this->_contact;
-    }
-
-    /**
-     * Sets contact
-     *
-     * @param  string $contact    contact to set
-     * @return void
-     */
-    public function setContact($contact)
-    {
-        $this->_contact = $contact;
-    }
-
-    /**
      * Gets createdAt
      *
      * @return DateTime
@@ -238,28 +163,5 @@ class Bank
     public function setUpdatedAt(\DateTime $updatedAt)
     {
         $this->_updatedAt = $updatedAt;
-    }
-
-    /**
-     * Gets user's bank account
-     *
-     * @return Doctrine\Common\Collections
-     */
-    public function getAccounts()
-    {
-        return $this->_accounts;
-    }
-
-    public function getBalance()
-    {
-        $em = \Zend_Registry::get('em');
-
-        $balance = 0;
-        $accounts = $this->getAccounts();
-        foreach ($accounts as $account) {
-            $balance+= $account->getBalance();
-        }
-
-        return sprintf('%.2f', $balance);
     }
 }

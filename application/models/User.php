@@ -110,11 +110,33 @@ class User
      */
     protected $_updatedAt;
 
+    /**
+     * Banks list
+     *
+     * @OneToMany(targetEntity="Bank", mappedBy="_user")
+     * @OrderBy({"_name" = "ASC"})
+     */
+    protected $_banks;
+
+    /**
+     * Accounts list
+     *
+     * @ManyToMany(targetEntity="Account")
+     * @JoinTable(name="bank",
+     *      joinColumns={@JoinColumn(name="user_id", referencedColumnName="user_id")},
+     *      inverseJoinColumns={@JoinColumn(name="bank_id", referencedColumnName="bank_id", unique=true)}
+     *      )
+     * @OrderBy({"_name" = "ASC"})
+     */
+    protected $_accounts;
+
 
     public function __construct()
     {
         $this->setIsAdmin(false);
         $this->setIsActive(false);
+        $this->_banks = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->_accounts = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -125,17 +147,6 @@ class User
     public function getUserId()
     {
         return $this->_userId;
-    }
-
-    /**
-     * Sets userId
-     *
-     * @param  integer $userId    userId to set
-     * @return void
-     */
-    public function setUserId($userId)
-    {
-        $this->_userId = (int)$userId;
     }
 
     /**
@@ -325,5 +336,38 @@ class User
     public function setUpdatedAt(\DateTime $updatedAt)
     {
         $this->_updatedAt = $updatedAt;
+    }
+
+    /**
+     * Gets user's banks
+     *
+     * @return Doctrine\Common\Collections
+     */
+    public function getBanks()
+    {
+        return $this->_banks;
+    }
+
+    /**
+     * Gets user's accounts
+     *
+     * @return Doctrine\Common\Collections
+     */
+    public function getAccounts()
+    {
+        return $this->_accounts;
+    }
+
+    public function getBalance()
+    {
+        $em = \Zend_Registry::get('em');
+
+        $balance = 0;
+        $banks = $this->getBanks();
+        foreach ($banks as $bank) {
+            $balance+= $bank->getBalance();
+        }
+
+        return sprintf('%.2f', $balance);
     }
 }

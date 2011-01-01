@@ -19,41 +19,24 @@
 namespace Application\Models;
 
 /**
- * Bank entity
+ * PaymentMethod entity
  *
  * @category   Application
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @Entity
- * @Table(name="bank")
+ * @Table(name="payment_method")
  */
-class Bank
+class PaymentMethod
 {
     /**
-     * bankId attribute
+     * paymentMethodId attribute
      *
-     * @Id @Column(type="integer", name="bank_id")
+     * @Id @Column(type="integer", name="payment_method_id")
      * @GeneratedValue
      */
-    protected $_bankId;
-
-    /**
-     * user id attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="user_id")
-     */
-    protected $_userId;
-
-    /**
-     * user attribute
-     *
-     * @var Application\Models\User
-     * @OneToOne(targetEntity="User")
-     * @JoinColumn(name="user_id", referencedColumnName="user_id")
-     */
-    protected $_user;
+    protected $_paymentMethodId;
 
     /**
      * name attribute
@@ -64,20 +47,12 @@ class Bank
     protected $_name;
 
     /**
-     * info attribute
+     * type attribute
      *
      * @var string
-     * @Column(type="string", name="info")
+     * @Column(type="string", name="type")
      */
-    protected $_info;
-
-    /**
-     * contact attribute
-     *
-     * @var string
-     * @Column(type="string", name="contact")
-     */
-    protected $_contact;
+    protected $_type;
 
     /**
      * createdAt attribute
@@ -96,43 +71,36 @@ class Bank
     protected $_updatedAt;
 
     /**
-     * Accounts list
+     * Names list
      *
-     * @OneToMany(targetEntity="Account", mappedBy="_bank")
-     * @OrderBy({"_name" = "ASC"})
+     * @var array
      */
-    protected $_accounts;
-
+    protected $_names = array(
+        'credit_card',
+        'check',
+        'withdrawal',
+        'transfer',
+        'deposit'
+    );
 
     /**
-     * Gets bankId
+     * Types list
+     *
+     * @var array
+     */
+    protected $_types = array(
+        'debit',
+        'credit'
+    );
+
+    /**
+     * Gets paymentMethodId
      *
      * @return integer
      */
-    public function getBankId()
+    public function getPaymentMethodId()
     {
-        return $this->_bankId;
-    }
-
-    /**
-     * Gets user
-     *
-     * @return Application\Models\User
-     */
-    public function getUser()
-    {
-        return $this->_user;
-    }
-
-    /**
-     * Sets user
-     *
-     * @param  Application\Models\User $user    user to set
-     * @return void
-     */
-    public function setUser(User $user)
-    {
-        $this->_user = $user;
+        return $this->_paymentMethodId;
     }
 
     /**
@@ -153,49 +121,28 @@ class Bank
      */
     public function setName($name)
     {
-        $this->_name = $name;
+        $this->_name = in_array($name, $this->_names) ? $name : 'credit_card';
     }
 
     /**
-     * Gets info
+     * Gets type
      *
      * @return string
      */
-    public function getInfo()
+    public function getType()
     {
-        return $this->_info;
+        return $this->_type;
     }
 
     /**
-     * Sets info
+     * Sets type
      *
-     * @param  string $info    info to set
+     * @param  string $type    type to set
      * @return void
      */
-    public function setInfo($info)
+    public function setType($type)
     {
-        $this->_info = $info;
-    }
-
-    /**
-     * Gets contact
-     *
-     * @return string
-     */
-    public function getContact()
-    {
-        return $this->_contact;
-    }
-
-    /**
-     * Sets contact
-     *
-     * @param  string $contact    contact to set
-     * @return void
-     */
-    public function setContact($contact)
-    {
-        $this->_contact = $contact;
+        $this->_type = in_array($type, $this->_types) ? $type : $this->_types[0];
     }
 
     /**
@@ -238,28 +185,5 @@ class Bank
     public function setUpdatedAt(\DateTime $updatedAt)
     {
         $this->_updatedAt = $updatedAt;
-    }
-
-    /**
-     * Gets user's bank account
-     *
-     * @return Doctrine\Common\Collections
-     */
-    public function getAccounts()
-    {
-        return $this->_accounts;
-    }
-
-    public function getBalance()
-    {
-        $em = \Zend_Registry::get('em');
-
-        $balance = 0;
-        $accounts = $this->getAccounts();
-        foreach ($accounts as $account) {
-            $balance+= $account->getBalance();
-        }
-
-        return sprintf('%.2f', $balance);
     }
 }

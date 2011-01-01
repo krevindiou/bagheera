@@ -19,41 +19,41 @@
 namespace Application\Models;
 
 /**
- * Bank entity
+ * Account entity
  *
  * @category   Application
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
- * @Entity
- * @Table(name="bank")
+ * @Entity(repositoryClass="Application\Models\AccountRepository")
+ * @Table(name="account")
  */
-class Bank
+class Account
 {
     /**
-     * bankId attribute
+     * accountId attribute
      *
-     * @Id @Column(type="integer", name="bank_id")
+     * @Id @Column(type="integer", name="account_id")
      * @GeneratedValue
+     */
+    protected $_accountId;
+
+    /**
+     * bank id attribute
+     *
+     * @var integer
+     * @Column(type="integer", name="bank_id")
      */
     protected $_bankId;
 
     /**
-     * user id attribute
+     * bank attribute
      *
-     * @var integer
-     * @Column(type="integer", name="user_id")
+     * @var Application\Models\Bank
+     * @ManyToOne(targetEntity="Bank", inversedBy="_accounts")
+     * @JoinColumn(name="bank_id", referencedColumnName="bank_id")
      */
-    protected $_userId;
-
-    /**
-     * user attribute
-     *
-     * @var Application\Models\User
-     * @OneToOne(targetEntity="User")
-     * @JoinColumn(name="user_id", referencedColumnName="user_id")
-     */
-    protected $_user;
+    protected $_bank;
 
     /**
      * name attribute
@@ -64,20 +64,20 @@ class Bank
     protected $_name;
 
     /**
-     * info attribute
+     * initialBalance attribute
      *
-     * @var string
-     * @Column(type="string", name="info")
+     * @var float
+     * @Column(type="decimal", name="initial_balance")
      */
-    protected $_info;
+    protected $_initialBalance;
 
     /**
-     * contact attribute
+     * overdraftFacility attribute
      *
-     * @var string
-     * @Column(type="string", name="contact")
+     * @var float
+     * @Column(type="decimal", name="overdraft_facility")
      */
-    protected $_contact;
+    protected $_overdraftFacility;
 
     /**
      * createdAt attribute
@@ -95,44 +95,36 @@ class Bank
      */
     protected $_updatedAt;
 
-    /**
-     * Accounts list
-     *
-     * @OneToMany(targetEntity="Account", mappedBy="_bank")
-     * @OrderBy({"_name" = "ASC"})
-     */
-    protected $_accounts;
-
 
     /**
-     * Gets bankId
+     * Gets accountId
      *
      * @return integer
      */
-    public function getBankId()
+    public function getAccountId()
     {
-        return $this->_bankId;
+        return $this->_accountId;
     }
 
     /**
-     * Gets user
+     * Gets bank
      *
-     * @return Application\Models\User
+     * @return Application\Models\Bank
      */
-    public function getUser()
+    public function getBank()
     {
-        return $this->_user;
+        return $this->_bank;
     }
 
     /**
-     * Sets user
+     * Sets bank
      *
-     * @param  Application\Models\User $user    user to set
+     * @param  Application\Models\Bank $bank    bank to set
      * @return void
      */
-    public function setUser(User $user)
+    public function setBank(Bank $bank)
     {
-        $this->_user = $user;
+        $this->_bank = $bank;
     }
 
     /**
@@ -157,45 +149,45 @@ class Bank
     }
 
     /**
-     * Gets info
+     * Gets initialBalance
      *
-     * @return string
+     * @return float
      */
-    public function getInfo()
+    public function getInitialBalance()
     {
-        return $this->_info;
+        return $this->_initialBalance;
     }
 
     /**
-     * Sets info
+     * Sets initialBalance
      *
-     * @param  string $info    info to set
+     * @param  float $initialBalance    initialBalance to set
      * @return void
      */
-    public function setInfo($info)
+    public function setInitialBalance($initialBalance)
     {
-        $this->_info = $info;
+        $this->_initialBalance = $initialBalance;
     }
 
     /**
-     * Gets contact
+     * Gets overdraftFacility
      *
-     * @return string
+     * @return float
      */
-    public function getContact()
+    public function getOverdraftFacility()
     {
-        return $this->_contact;
+        return $this->_overdraftFacility;
     }
 
     /**
-     * Sets contact
+     * Sets overdraftFacility
      *
-     * @param  string $contact    contact to set
+     * @param  float $overdraftFacility    overdraftFacility to set
      * @return void
      */
-    public function setContact($contact)
+    public function setOverdraftFacility($overdraftFacility)
     {
-        $this->_contact = $contact;
+        $this->_overdraftFacility = $overdraftFacility;
     }
 
     /**
@@ -240,26 +232,17 @@ class Bank
         $this->_updatedAt = $updatedAt;
     }
 
-    /**
-     * Gets user's bank account
-     *
-     * @return Doctrine\Common\Collections
-     */
-    public function getAccounts()
-    {
-        return $this->_accounts;
-    }
-
     public function getBalance()
     {
         $em = \Zend_Registry::get('em');
 
-        $balance = 0;
-        $accounts = $this->getAccounts();
-        foreach ($accounts as $account) {
-            $balance+= $account->getBalance();
-        }
+        $dql = 'SELECT (SUM(t._credit) - SUM(t._debit)) ';
+        $dql.= 'FROM Application\\Models\\Transaction t ';
+        $dql.= 'WHERE t._accountId = ?1 ';
+        $query = $em->createQuery($dql);
+        $query->setParameter(1, $this->getAccountId());
+        $balance = $query->getSingleScalarResult();
 
-        return sprintf('%.2f', $balance);
+        return sprintf('%.2f', $this->getInitialBalance() + $balance);
     }
 }
