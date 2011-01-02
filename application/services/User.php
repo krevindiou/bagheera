@@ -19,9 +19,13 @@
 namespace Application\Services;
 
 use Application\Models\User as UserModel,
+    Application\Models\Bank as BankModel,
+    Application\Models\Account as AccountModel,
     Application\Forms\User as UserForm,
     Application\Forms\UserForgotPassword as UserForgotPasswordForm,
-    Application\Forms\UserResetPassword as UserResetPasswordForm;
+    Application\Forms\UserResetPassword as UserResetPasswordForm,
+    Application\Services\Bank as BankService,
+    Application\Services\Account as AccountService;
 
 /**
  * User service
@@ -113,6 +117,26 @@ class User extends CrudAbstract
     public function delete(UserModel $user)
     {
         return parent::delete($user);
+    }
+
+    public function deleteBank(BankModel $bank)
+    {
+        $bankService = BankService::getInstance();
+
+        $currentUser = $this->getCurrentUser();
+        if ($bank->getUser()->getUserId() == $currentUser->getUserId()) {
+            $bankService->delete($bank);
+        }
+    }
+
+    public function deleteAccount(AccountModel $account)
+    {
+        $accountService = AccountService::getInstance();
+
+        $currentUser = $this->getCurrentUser();
+        if ($account->getBank()->getUser()->getUserId() == $currentUser->getUserId()) {
+            $accountService->delete($account);
+        }
     }
 
     public function getForgotPasswordForm()

@@ -1,4 +1,4 @@
-<form id="formAccountList" method="post">
+<form id="formAccountList" method="post" action="">
 <?php
 
 if (count($this->accounts) > 0) {
@@ -6,7 +6,7 @@ if (count($this->accounts) > 0) {
 
     foreach ($this->accounts as $v) {
         echo '<li>';
-        echo '<input type="checkbox" name="bankId[]" value="' . $v['bank']->getBankId() . '"/>';
+        echo '<input type="checkbox" name="banksId[]" value="' . $v['bank']->getBankId() . '"/>';
         echo '<strong>' . $v['bank']->getName() . '</strong>';
 
         if (empty($v['accounts'])) {
@@ -16,7 +16,7 @@ if (count($this->accounts) > 0) {
 
             foreach ($v['accounts'] as $account) {
                 echo '<li>';
-                echo '<input type="checkbox" name="accountId[]" value="' . $account->getAccountId() . '"/>';
+                echo '<input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/>';
                 echo $account->getName();
                 echo '</li>';
             }
@@ -32,6 +32,6 @@ if (count($this->accounts) > 0) {
 
 ?>
 <br/>
-<input type="button" name="" value="<?php echo $this->translate('Delete') ?>"/>
-<input type="button" name="" value="<?php echo $this->translate('Share') ?>"/>
+<input type="submit" name="delete" value="<?php echo $this->translate('buttonDelete') ?>"/>
+<input type="submit" name="share" disabled="disabled" value="<?php echo $this->translate('buttonShare') ?>"/>
 </form>

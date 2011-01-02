@@ -25,7 +25,7 @@ namespace Application\Models;
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
- * @Entity(repositoryClass="Application\Models\AccountRepository")
+ * @Entity
  * @Table(name="account")
  */
 class Account

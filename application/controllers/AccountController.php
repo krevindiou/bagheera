@@ -17,6 +17,8 @@
  */
 
 use Application\Services\User as UserService;
+use Application\Services\Bank as BankService;
+use Application\Services\Account as AccountService;
 
 /**
  * Bank controller
@@ -33,12 +35,12 @@ class AccountController extends Zend_Controller_Action
     public function init()
     {
         $this->_userService = UserService::getInstance();
+        $this->_bankService = BankService::getInstance();
+        $this->_accountService = AccountService::getInstance();
     }
 
     public function summaryAction()
     {
-        $em = Zend_Registry::get('em');
-
         $user = $this->_userService->getCurrentUser();
 
         $bankAccounts = array();
@@ -60,8 +62,6 @@ class AccountController extends Zend_Controller_Action
 
     public function listAction()
     {
-        $em = Zend_Registry::get('em');
-
         $user = $this->_userService->getCurrentUser();
 
         $bankAccounts = array();
@@ -79,5 +79,49 @@ class AccountController extends Zend_Controller_Action
 
         $this->view->user = $user;
         $this->view->accounts = $bankAccounts;
+    }
+
+    public function deleteAction()
+    {
+        $em = Zend_Registry::get('em');
+
+        $banksId = (array)$this->_request->getPost('banksId');
+        $accountsId = (array)$this->_request->getPost('accountsId');
+
+        foreach ($banksId as $bankId) {
+            $bank = $em->find('Application\\Models\\Bank', (int)$bankId);
+
+            if (null !== $bank) {
+                $this->_userService->deleteBank($bank);
+            }
+        }
+
+        foreach ($accountsId as $accountId) {
+            $account = $em->find('Application\\Models\\Account', (int)$accountId);
+
+            if (null !== $account) {
+                $this->_userService->deleteAccount($account);
+            }
+        }
+
+        $this->_helper->flashMessenger->addMessage('accountDeleteMessage');
+
+        $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+        $redirector->gotoRoute(array(), 'accounts');
+    }
+
+    public function shareAction()
+    {
+        $em = Zend_Registry::get('em');
+
+        $banksId = (array)$this->_request->getPost('banksId');
+        $accountsId = (array)$this->_request->getPost('accountsId');
+
+        // ...
+
+        $this->_helper->flashMessenger->addMessage('accountShareMessage');
+
+        $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+        $redirector->gotoRoute(array(), 'accounts');
     }
 }
