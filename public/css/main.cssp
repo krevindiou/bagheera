@@ -17,6 +17,9 @@ a:visited
 a:hover, a:focus, a:active
     color: #00F
 
+strong
+    font-weight: bold
+
 form
     width: 400px
     margin: 0 auto
@@ -45,3 +48,6 @@ form
     input[type=submit], input[type=button], input[type=reset], input[type=image], button
         margin-left: 166px
         margin-bottom: 10px
+
+#menu li li
+    margin-left: 20px;

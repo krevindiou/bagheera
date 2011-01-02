@@ -283,10 +283,10 @@ class User extends CrudAbstract
      *
      * @return mixed|null
      */
-    public function getIdentity()
+    public function getCurrentUser()
     {
         if ($this->hasIdentity()) {
-            return \Zend_Auth::getInstance()->getIdentity();
+            return $this->_em->find('Application\\Models\\User', \Zend_Auth::getInstance()->getIdentity());
         }
     }
 

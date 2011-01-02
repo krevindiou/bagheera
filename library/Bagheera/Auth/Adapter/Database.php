@@ -106,14 +106,14 @@ class Bagheera_Auth_Adapter_Database implements Zend_Auth_Adapter_Interface
     {
         $authResult = array(
             'code'  => Zend_Auth_Result::FAILURE,
-            'identity' => array(),
+            'identity' => null,
             'messages' => array()
         );
 
         try {
             $em = Zend_Registry::get('em');
 
-            $dql = 'SELECT u FROM Application\Models\User u ';
+            $dql = 'SELECT u FROM Application\\Models\\User u ';
             $dql.= 'WHERE u._isActive = 1 ';
             $dql.= 'AND u._email = :email ';
             $dql.= 'AND u._password = :password';
@@ -125,13 +125,7 @@ class Bagheera_Auth_Adapter_Database implements Zend_Auth_Adapter_Interface
                 $user = $result[0];
 
                 $authResult['code'] = Zend_Auth_Result::SUCCESS;
-                $authResult['identity'] = array(
-                    'userId' => $user->getUserId(),
-                    'firstname' => $user->getFirstname(),
-                    'lastname' => $user->getLastname(),
-                    'email' => $user->getEmail(),
-                    'isAdmin' => $user->getIsAdmin(),
-                );
+                $authResult['identity'] = $user->getUserId();
             } else {
                 $authResult['code'] = Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID;
                 $authResult['messages'][] = 'userInvalidCredential';

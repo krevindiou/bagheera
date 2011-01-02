@@ -115,9 +115,9 @@ class UserController extends Zend_Controller_Action
     {
         $params = $this->_request->getPost();
 
-        $identity = $this->_userService->getIdentity();
+        $user = $this->_userService->getCurrentUser();
 
-        $form = $this->_userService->getForm($identity['userId'], $params);
+        $form = $this->_userService->getForm($user->getUserId(), $params);
 
         if ($this->_request->isPost()) {
             if (false !== $this->_userService->update($form)) {

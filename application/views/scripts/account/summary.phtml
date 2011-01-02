@@ -1,0 +1,15 @@
+<?php
+
+foreach ($this->accounts as $v) {
+    echo '# ' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '<br/>';
+    if (empty($v['accounts'])) {
+        echo '<em>No account</em><br/>';
+    } else {
+        foreach ($v['accounts'] as $account) {
+            echo '- ' . $account->getName() . ' - ' . $account->getBalance() . '<br/>';
+        }
+    }
+}
+
+echo '<br/>';
+echo 'TOTAL: ' . $this->user->getBalance();

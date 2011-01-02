@@ -1,0 +1,37 @@
+<form id="formAccountList" method="post">
+<?php
+
+if (count($this->accounts) > 0) {
+    echo '<ul>';
+
+    foreach ($this->accounts as $v) {
+        echo '<li>';
+        echo '<input type="checkbox" name="bankId[]" value="' . $v['bank']->getBankId() . '"/>';
+        echo '<strong>' . $v['bank']->getName() . '</strong>';
+
+        if (empty($v['accounts'])) {
+            echo ' - <em>' . $this->translate('noAccounts'). ' </em><br/>';
+        } else {
+            echo '<ul>';
+
+            foreach ($v['accounts'] as $account) {
+                echo '<li>';
+                echo '<input type="checkbox" name="accountId[]" value="' . $account->getAccountId() . '"/>';
+                echo $account->getName();
+                echo '</li>';
+            }
+
+            echo '</ul>';
+        }
+
+        echo '</li>';
+    }
+
+    echo '</ul>';
+}
+
+?>
+<br/>
+<input type="button" name="" value="<?php echo $this->translate('Delete') ?>"/>
+<input type="button" name="" value="<?php echo $this->translate('Share') ?>"/>
+</form>

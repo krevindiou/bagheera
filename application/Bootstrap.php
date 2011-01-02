@@ -111,6 +111,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         // Create EntityManager
         $em = \Doctrine\ORM\EntityManager::create($connectionParams, $doctrineConfig);
+        $em->getEventManager()->addEventSubscriber(
+            new \Doctrine\DBAL\Event\Listeners\MysqlSessionInit('utf8')
+        );
+
         Zend_Registry::set('em', $em);
     }
 
@@ -174,6 +178,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             'href' => $config->resources->frontController->baseUrl . '/css/turbine/css.php?files=main.cssp',
             'type' => 'text/css'
         ));
+
+        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/jquery-1.4.4.min.js');
+        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/Bagheera.js');
+        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/main.js');
 
         $view->addHelperPath(__DIR__ . '/views/helpers', 'Application_View_Helper');
 
