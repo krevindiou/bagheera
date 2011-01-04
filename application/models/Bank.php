@@ -39,14 +39,6 @@ class Bank
     protected $_bankId;
 
     /**
-     * user id attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="user_id")
-     */
-    protected $_userId;
-
-    /**
      * user attribute
      *
      * @var Application\Models\User
@@ -243,7 +235,7 @@ class Bank
     /**
      * Gets user's bank account
      *
-     * @return Doctrine\Common\Collections
+     * @return Doctrine\Common\Collections\ArrayCollection
      */
     public function getAccounts()
     {

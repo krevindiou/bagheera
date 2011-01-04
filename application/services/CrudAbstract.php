@@ -59,17 +59,25 @@ abstract class CrudAbstract extends ServicesAbstract
      * Adds entity to database
      *
      * @param  Bagheera_Form $form    Form to get values from
+     * @param  array $values          Extra values
      * @return boolean                Success
      */
-    public function add(\Bagheera_Form $form)
+    public function add(\Bagheera_Form $form, array $values = array())
     {
         if ($form->isValid($form->getValues())) {
             $entity = $form->getEntity();
 
+            $tmpValues = array();
             foreach ($form->getElements() as $element) {
-                $setter = 'set' . ucfirst($element->getName());
+                $tmpValues[$element->getName()] = $element->getValue();
+            }
+
+            $values = array_merge($tmpValues, $values);
+
+            foreach ($values as $name => $value) {
+                $setter = 'set' . ucfirst($name);
                 if (is_callable(array($entity, $setter))) {
-                    $entity->$setter($element->getValue());
+                    $entity->$setter($value);
                 }
             }
 
@@ -77,6 +85,7 @@ abstract class CrudAbstract extends ServicesAbstract
             $entity->setUpdatedAt(new \DateTime);
 
             $this->_em->persist($entity);
+            $this->_em->flush();
 
             return true;
         } else {
@@ -88,23 +97,32 @@ abstract class CrudAbstract extends ServicesAbstract
      * Updates entity to database
      *
      * @param  Bagheera_Form $form    Form to get values from
+     * @param  array $values          Extra values
      * @return boolean                Success
      */
-    public function update(\Bagheera_Form $form)
+    public function update(\Bagheera_Form $form, array $values = array())
     {
         if ($form->isValid($form->getValues())) {
             $entity = $form->getEntity();
 
+            $tmpValues = array();
             foreach ($form->getElements() as $element) {
-                $setter = 'set' . ucfirst($element->getName());
+                $tmpValues[$element->getName()] = $element->getValue();
+            }
+
+            $values = array_merge($tmpValues, $values);
+
+            foreach ($values as $name => $value) {
+                $setter = 'set' . ucfirst($name);
                 if (is_callable(array($entity, $setter))) {
-                    $entity->$setter($element->getValue());
+                    $entity->$setter($value);
                 }
             }
 
             $entity->setUpdatedAt(new \DateTime);
 
             $this->_em->persist($entity);
+            $this->_em->flush();
 
             return true;
         } else {
@@ -121,5 +139,6 @@ abstract class CrudAbstract extends ServicesAbstract
     public function delete($entity)
     {
         $this->_em->remove($entity);
+        $this->_em->flush();
     }
 }

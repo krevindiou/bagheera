@@ -39,14 +39,6 @@ class Transaction
     protected $_transactionId;
 
     /**
-     * schedulerId attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="scheduler_id")
-     */
-    protected $_schedulerId;
-
-    /**
      * scheduler attribute
      *
      * @var Application\Models\Scheduler

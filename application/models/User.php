@@ -341,7 +341,7 @@ class User
     /**
      * Gets user's banks
      *
-     * @return Doctrine\Common\Collections
+     * @return Doctrine\Common\Collections\ArrayCollection
      */
     public function getBanks()
     {
@@ -351,7 +351,7 @@ class User
     /**
      * Gets user's accounts
      *
-     * @return Doctrine\Common\Collections
+     * @return Doctrine\Common\Collections\ArrayCollection
      */
     public function getAccounts()
     {
