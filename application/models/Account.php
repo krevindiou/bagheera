@@ -80,6 +80,14 @@ class Account
     protected $_overdraftFacility;
 
     /**
+     * details attribute
+     *
+     * @var string
+     * @Column(type="string", name="details")
+     */
+    protected $_details;
+
+    /**
      * createdAt attribute
      *
      * @var DateTime
@@ -104,6 +112,29 @@ class Account
     public function getAccountId()
     {
         return $this->_accountId;
+    }
+
+    /**
+     * Gets bankId
+     *
+     * @return integer
+     */
+    public function getBankId()
+    {
+        return $this->_bankId;
+    }
+
+    /**
+     * Sets bankId
+     *
+     * @param  int $bankId    bankbankIdto set
+     * @return void
+     */
+    public function setBankId($bankId)
+    {
+        $em = \Zend_Registry::get('em');
+        $this->_bank = $em->find('Application\\Models\\Bank', $bankId);
+        $this->_bankId = $bankId;
     }
 
     /**
@@ -188,6 +219,27 @@ class Account
     public function setOverdraftFacility($overdraftFacility)
     {
         $this->_overdraftFacility = $overdraftFacility;
+    }
+
+    /**
+     * Gets details
+     *
+     * @return string
+     */
+    public function getDetails()
+    {
+        return $this->_details;
+    }
+
+    /**
+     * Sets details
+     *
+     * @param  string $details    details to set
+     * @return void
+     */
+    public function setDetails($details)
+    {
+        $this->_details = $details;
     }
 
     /**

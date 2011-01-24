@@ -44,6 +44,9 @@ class Account extends CrudAbstract
 
     public function add(AccountForm $accountForm)
     {
+        $details = $accountForm->getElement('details');
+        $details->receive();
+
         return parent::add($accountForm);
     }
 

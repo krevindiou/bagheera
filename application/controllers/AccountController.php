@@ -85,22 +85,27 @@ class AccountController extends Zend_Controller_Action
     {
         $em = Zend_Registry::get('em');
 
-        $banksId = (array)$this->_request->getPost('banksId');
         $accountsId = (array)$this->_request->getPost('accountsId');
-
-        foreach ($banksId as $bankId) {
-            $bank = $em->find('Application\\Models\\Bank', (int)$bankId);
-
-            if (null !== $bank) {
-                $this->_userService->deleteBank($bank);
-            }
-        }
+        $banksId = (array)$this->_request->getPost('banksId');
 
         foreach ($accountsId as $accountId) {
             $account = $em->find('Application\\Models\\Account', (int)$accountId);
 
             if (null !== $account) {
                 $this->_userService->deleteAccount($account);
+            }
+        }
+
+        foreach ($banksId as $bankId) {
+            $bank = $em->find('Application\\Models\\Bank', (int)$bankId);
+
+            if (null !== $bank) {
+                $accounts = $bank->getAccounts();
+                foreach ($accounts as $account) {
+                    $this->_userService->deleteAccount($account);
+                }
+
+                $this->_userService->deleteBank($bank);
             }
         }
 
@@ -123,5 +128,21 @@ class AccountController extends Zend_Controller_Action
 
         $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
         $redirector->gotoRoute(array(), 'accounts');
+    }
+
+    public function addAction()
+    {
+        $params = $this->_request->getPost();
+
+        $accountForm = $this->_accountService->getForm(null, $params);
+
+        if ($this->_request->isPost()) {
+            if (false !== $this->_accountService->add($accountForm)) {
+                $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+                $redirector->gotoRoute(array(), 'accounts');
+            }
+        }
+
+        $this->view->form = $accountForm;
     }
 }
