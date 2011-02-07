@@ -82,19 +82,10 @@ class Transaction
     protected $_category;
 
     /**
-     * thirdPartyId attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="third_party_id")
-     */
-    protected $_thirdPartyId;
-
-    /**
      * thirdParty attribute
      *
-     * @var Application\Models\ThirdParty
-     * @OneToOne(targetEntity="ThirdParty")
-     * @JoinColumn(name="third_party_id", referencedColumnName="third_party_id")
+     * @var string
+     * @Column(type="string", name="third_party")
      */
     protected $_thirdParty;
 
@@ -188,6 +179,12 @@ class Transaction
      */
     protected $_updatedAt;
 
+
+    public function __construct()
+    {
+        $this->_isReconciled = false;
+    }
+
     /**
      * Gets transactionId
      *
@@ -264,7 +261,7 @@ class Transaction
     /**
      * Gets thirdParty
      *
-     * @return Application\Models\ThirdParty
+     * @return string
      */
     public function getThirdParty()
     {
@@ -274,10 +271,10 @@ class Transaction
     /**
      * Sets thirdParty
      *
-     * @param  Application\Models\ThirdParty $thirdParty    thirdParty to set
+     * @param  string $thirdParty    thirdParty to set
      * @return void
      */
-    public function setThirdParty(ThirdParty $thirdParty)
+    public function setThirdParty($thirdParty)
     {
         $this->_thirdParty = $thirdParty;
     }

@@ -31,6 +31,8 @@ use Application\Services\Account as AccountService;
 class AccountController extends Zend_Controller_Action
 {
     private $_userService;
+    private $_bankService;
+    private $_accountService;
 
     public function init()
     {

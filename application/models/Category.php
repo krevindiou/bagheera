@@ -39,13 +39,26 @@ class Category
     protected $_categoryId;
 
     /**
+     * parentCategoryId attribute
+     *
+     * @var integer
+     * @Column(type="integer", name="parent_category_id")
+     */
+    protected $_parentCategoryId;
+
+    /**
      * parentCategory attribute
      *
      * @var Application\Models\Category
-     * @OneToOne(targetEntity="Category")
+     * @OneToOne(targetEntity="Category", inversedBy="_subCategories")
      * @JoinColumn(name="parent_category_id", referencedColumnName="category_id")
      */
     protected $_parentCategory;
+
+    /**
+     * @OneToMany(targetEntity="Category", mappedBy="_parentCategory")
+     */
+    protected $_subCategories;
 
     /**
      * name attribute
@@ -79,6 +92,12 @@ class Category
      */
     protected $_updatedAt;
 
+
+    public function __construct()
+    {
+        $this->_subCategories = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
     /**
      * Gets categoryId
      *
@@ -108,6 +127,16 @@ class Category
     public function setParentCategory(Category $parentCategory)
     {
         $this->_parentCategory = $parentCategory;
+    }
+
+    /**
+     * Gets subCategories
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getSubCategories()
+    {
+        return $this->_subCategories;
     }
 
     /**

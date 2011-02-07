@@ -21,7 +21,7 @@ namespace Application\Forms;
 use Application\Services\User as UserService;
 
 /**
- * Bank form
+ * Account form
  *
  * @category   Application
  * @package    Application_Forms

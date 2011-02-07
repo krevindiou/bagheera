@@ -266,12 +266,10 @@ DROP TABLE IF EXISTS `report_third_party`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `report_third_party` (
   `report_id` int(10) unsigned NOT NULL,
-  `third_party_id` int(10) unsigned NOT NULL,
+  `third_party` varchar(64) NOT NULL,
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_third_party_third_party` (`third_party_id`),
   KEY `fk_report_third_party_report_common` (`report_id`),
-  CONSTRAINT `fk_report_third_party_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_report_third_party_third_party` FOREIGN KEY (`third_party_id`) REFERENCES `third_party` (`third_party_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `fk_report_third_party_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -287,7 +285,7 @@ CREATE TABLE `scheduler` (
   `account_id` int(10) unsigned NOT NULL,
   `transfer_account_id` int(10) unsigned DEFAULT NULL,
   `category_id` smallint(5) unsigned NOT NULL,
-  `third_party_id` int(10) unsigned NOT NULL,
+  `third_party` varchar(64) NOT NULL,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
   `debit` decimal(10,2) unsigned DEFAULT NULL,
   `credit` decimal(10,2) unsigned DEFAULT NULL,
@@ -304,11 +302,9 @@ CREATE TABLE `scheduler` (
   KEY `fk_scheduler_payment_method` (`payment_method_id`),
   KEY `fk_scheduler_category` (`category_id`),
   KEY `fk_scheduler_account` (`account_id`),
-  KEY `fk_scheduler_third_party` (`third_party_id`),
   CONSTRAINT `fk_scheduler_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_scheduler_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_scheduler_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_scheduler_third_party` FOREIGN KEY (`third_party_id`) REFERENCES `third_party` (`third_party_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `fk_scheduler_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -396,25 +392,6 @@ CREATE TABLE `shared_account` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `third_party`
---
-
-DROP TABLE IF EXISTS `third_party`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `third_party` (
-  `third_party_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) unsigned NOT NULL,
-  `name` varchar(64) DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`third_party_id`),
-  KEY `fk_third_party_user` (`user_id`),
-  CONSTRAINT `fk_third_party_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `transaction`
 --
 
@@ -427,7 +404,7 @@ CREATE TABLE `transaction` (
   `account_id` int(10) unsigned NOT NULL,
   `transfer_account_id` int(10) unsigned DEFAULT NULL,
   `category_id` smallint(5) unsigned NOT NULL,
-  `third_party_id` int(10) unsigned NOT NULL,
+  `third_party` varchar(64) NOT NULL,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
   `debit` decimal(10,2) unsigned DEFAULT NULL,
   `credit` decimal(10,2) unsigned DEFAULT NULL,
@@ -441,12 +418,10 @@ CREATE TABLE `transaction` (
   KEY `fk_transaction_category` (`category_id`),
   KEY `fk_transaction_account` (`account_id`),
   KEY `fk_transaction_scheduler` (`scheduler_id`),
-  KEY `fk_transaction_third_party` (`third_party_id`),
   CONSTRAINT `fk_transaction_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_transaction_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_transaction_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_transaction_scheduler` FOREIGN KEY (`scheduler_id`) REFERENCES `scheduler` (`scheduler_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_transaction_third_party` FOREIGN KEY (`third_party_id`) REFERENCES `third_party` (`third_party_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `fk_transaction_scheduler` FOREIGN KEY (`scheduler_id`) REFERENCES `scheduler` (`scheduler_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
