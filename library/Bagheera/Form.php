@@ -91,9 +91,9 @@ class Bagheera_Form extends Zend_Form
     {
         $this->setDisableLoadDefaultDecorators(true);
 
-        $this->addDecorator('FormElements')
-             ->addDecorator('Form')
-             ->addDecorator('FormErrors');
+        $this->addDecorator('FormErrors')
+             ->addDecorator('FormElements')
+             ->addDecorator('Form');
 
         $this->addElementPrefixPath(
             'Bagheera_Validate', __DIR__ . '/Validate', 'validate'
@@ -101,6 +101,10 @@ class Bagheera_Form extends Zend_Form
 
         $this->addElementPrefixPath(
             'Bagheera_Form_Decorator', __DIR__ . '/Form/Decorator', 'decorator'
+        );
+
+        $this->addElementPrefixPath(
+            'Bagheera_Filter', __DIR__ . '/Filter', 'filter'
         );
     }
 

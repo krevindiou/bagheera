@@ -106,7 +106,7 @@ DROP TABLE IF EXISTS `report`;
 CREATE TABLE `report` (
   `report_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
-  `type` enum('sum','average','distribution','estimate') NOT NULL DEFAULT 'sum',
+  `type` varchar(16) NOT NULL DEFAULT 'sum',
   `title` varchar(255) NOT NULL,
   `display_on_homepage` tinyint(1) NOT NULL,
   `created_at` datetime NOT NULL,
@@ -144,7 +144,7 @@ DROP TABLE IF EXISTS `report_average`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `report_average` (
   `report_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `display` enum('week','month','quarter','year','all') NOT NULL,
+  `display` varchar(16) NOT NULL,
   PRIMARY KEY (`report_id`),
   KEY `fk_report_average_report_common` (`report_id`),
   CONSTRAINT `fk_report_average_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -196,7 +196,7 @@ DROP TABLE IF EXISTS `report_distribution`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `report_distribution` (
   `report_id` int(10) unsigned NOT NULL,
-  `display` enum('category','third_party','payment_method') NOT NULL,
+  `display` varchar(16) NOT NULL,
   `significant_transaction_nb` smallint(6) NOT NULL DEFAULT '0',
   PRIMARY KEY (`report_id`),
   KEY `fk_report_distribution_report_common` (`report_id`),
@@ -215,7 +215,7 @@ CREATE TABLE `report_estimate` (
   `report_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `month_expenses` decimal(10,2) NOT NULL,
   `month_incomes` decimal(10,2) NOT NULL,
-  `duration_scale_unit` enum('month','year') NOT NULL DEFAULT 'month',
+  `duration_scale_unit` varchar(8) NOT NULL DEFAULT 'month',
   `duration_scale_value` tinyint(3) NOT NULL,
   PRIMARY KEY (`report_id`),
   KEY `fk_report_estimate_report` (`report_id`),
@@ -250,7 +250,7 @@ DROP TABLE IF EXISTS `report_sum`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `report_sum` (
   `report_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `display` enum('week','month','quarter','year','all') NOT NULL,
+  `display` varchar(8) NOT NULL,
   PRIMARY KEY (`report_id`),
   KEY `fk_report_sum_report_common` (`report_id`),
   CONSTRAINT `fk_report_sum_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION

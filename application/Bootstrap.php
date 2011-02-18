@@ -179,13 +179,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             'type' => 'text/css'
         ));
 
-        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/jquery-1.4.4.min.js');
-        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/Bagheera.js');
-        $view->headScript()->appendFile($config->resources->frontController->baseUrl . '/js/main.js');
-
         $view->addHelperPath(__DIR__ . '/views/helpers', 'Application_View_Helper');
 
         $view->applicationEnv = APPLICATION_ENV;
+        $view->baseUrl = $config->resources->frontController->baseUrl;
 
         $flashMessenger = Zend_Controller_Action_HelperBroker::getStaticHelper('flashMessenger');
         $view->messages = $flashMessenger->getMessages();

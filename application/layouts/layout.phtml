@@ -4,6 +4,17 @@
         <?php echo $this->headTitle(), "\n" ?>
         <?php echo $this->headMeta(), "\n" ?>
         <?php echo $this->headLink(), "\n" ?>
+        <script type="text/javascript" src="<?php echo $this->baseUrl; ?>/js/head.load.min.js"></script>
+        <script type="text/javascript">
+        head.js(
+            "<?php echo $this->baseUrl; ?>/js/jquery-1.5.min.js",
+            "<?php echo $this->baseUrl; ?>/js/Bagheera.js",
+            function(){
+                Bagheera.baseUrl = "<?php echo $this->baseUrl; ?>";
+                Bagheera.init();
+            }
+        );
+        </script>
     </head>
     <body>
         <p><?php echo $this->link('logout', $this->translate('logoutLink')) ?><br/><br/></p>

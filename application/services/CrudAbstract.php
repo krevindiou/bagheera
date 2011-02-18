@@ -70,6 +70,13 @@ abstract class CrudAbstract extends ServicesAbstract
             $tmpValues = array();
             foreach ($form->getElements() as $element) {
                 $tmpValues[$element->getName()] = $element->getValue();
+
+                foreach ($element->getValidators() as $validatorName => $validator) {
+                    if ('Zend_Validate_Date' == $validatorName) {
+                        $tmpValues[$element->getName()] = new \DateTime($tmpValues[$element->getName()]);
+                        break;
+                    }
+                }
             }
 
             $values = array_merge($tmpValues, $values);
@@ -108,6 +115,13 @@ abstract class CrudAbstract extends ServicesAbstract
             $tmpValues = array();
             foreach ($form->getElements() as $element) {
                 $tmpValues[$element->getName()] = $element->getValue();
+
+                foreach ($element->getValidators() as $validatorName => $validator) {
+                    if ('Zend_Validate_Date' == $validatorName) {
+                        $tmpValues[$element->getName()] = new \DateTime($tmpValues[$element->getName()]);
+                        break;
+                    }
+                }
             }
 
             $values = array_merge($tmpValues, $values);

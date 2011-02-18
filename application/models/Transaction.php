@@ -48,14 +48,6 @@ class Transaction
     protected $_scheduler;
 
     /**
-     * accountId attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="account_id")
-     */
-    protected $_accountId;
-
-    /**
      * account attribute
      *
      * @var Application\Models\Account
@@ -63,14 +55,6 @@ class Transaction
      * @JoinColumn(name="account_id", referencedColumnName="account_id")
      */
     protected $_account;
-
-    /**
-     * categoryId attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="category_id")
-     */
-    protected $_categoryId;
 
     /**
      * category attribute
@@ -88,14 +72,6 @@ class Transaction
      * @Column(type="string", name="third_party")
      */
     protected $_thirdParty;
-
-    /**
-     * paymentMethodId attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="payment_method_id")
-     */
-    protected $_paymentMethodId;
 
     /**
      * paymentMethod attribute
@@ -145,14 +121,6 @@ class Transaction
      * @Column(type="string", name="notes")
      */
     protected $_notes;
-
-    /**
-     * transferAccountId attribute
-     *
-     * @var integer
-     * @Column(type="integer", name="transfer_account_id")
-     */
-    protected $_transferAccountId;
 
     /**
      * transferAccount attribute
