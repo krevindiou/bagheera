@@ -19,7 +19,7 @@
 use Application\Services\Transaction as TransactionService;
 
 /**
- * Bank controller
+ * Transaction controller
  *
  * @category   Application
  * @package    Application_Controllers
@@ -37,6 +37,17 @@ class TransactionController extends Zend_Controller_Action
 
     public function listAction()
     {
+        $accountId = $this->_request->getParam('accountId');
+
+        $em = Zend_Registry::get('em');
+
+        $account = $em->find(
+            'Application\\Models\\Account',
+            $accountId
+        );
+
+        $transactions = $this->_transactionService->getTransactions($account);
+        $this->view->transactions = $transactions;
     }
 
     public function deleteAction()
@@ -45,17 +56,15 @@ class TransactionController extends Zend_Controller_Action
 
     public function addAction()
     {
-        $params = $this->_request->getPost();
-
-        $transactionForm = $this->_transactionService->getForm(null, $params);
+        $transactionForm = $this->_transactionService->getForm(null, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if (false !== $this->_transactionService->add($transactionForm)) {
-                $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-                $redirector->gotoRoute(array(), 'transactions');
+            if ($this->_transactionService->add($transactionForm)) {
+                $this->_helper->flashMessenger('transactionFormOk');
+                $this->_helper->redirector->gotoRoute(array(), 'transactionsList', true);
             }
         }
 
-        $this->view->form = $transactionForm;
+        $this->view->transactionForm = $transactionForm;
     }
 }

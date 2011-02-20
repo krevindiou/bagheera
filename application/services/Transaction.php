@@ -19,6 +19,7 @@
 namespace Application\Services;
 
 use Application\Models\Transaction as TransactionModel,
+    Application\Models\Account as AccountModel,
     Application\Forms\Transaction as TransactionForm;
 
 /**
@@ -42,6 +43,19 @@ class Transaction extends CrudAbstract
         return parent::getForm(new TransactionForm, $transaction, $params);
     }
 
+    public function getTransactions(AccountModel $account)
+    {
+        $dql = 'SELECT t ';
+        $dql.= 'FROM Application\\Models\\Transaction t ';
+        $dql.= 'WHERE t._account = ?1 ';
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter(1, $account);
+
+        $transactions = $query->getResult();
+
+        return $transactions;
+    }
+
     public function add(TransactionForm $transactionForm)
     {
         $amount = $transactionForm->getElement('amount')->getValue();
@@ -58,7 +72,7 @@ class Transaction extends CrudAbstract
         $values = array(
             'account' => $this->_em->find(
                 'Application\\Models\\Account',
-                1 // @todo
+                $transactionForm->getElement('accountId')->getValue()
             ),
             'category' => $this->_em->find(
                 'Application\\Models\\Category',

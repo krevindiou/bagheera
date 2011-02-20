@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\User as UserService,
-    Application\Forms\Login as LoginForm;
+use Application\Services\User as UserService;
 
 /**
  * User controller
@@ -38,109 +37,98 @@ class UserController extends Zend_Controller_Action
 
     public function loginAction()
     {
-        $loginForm = new LoginForm();
+        $loginForm = $this->_userService->getLoginForm($this->_request->getPost());
 
-        if ($loginForm->isValid($this->_request->getPost())) {
-            $this->_userService->login(
-                $this->_request->getPost('email'),
-                $this->_request->getPost('password')
-            );
-        } else {
-            $redirector = \Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-            $redirector->gotoUrl('/?login=error');
+        if ($this->_request->isPost()) {
+            if ($this->_userService->login($loginForm)) {
+                $this->_helper->redirector->gotoRoute(array(), 'connected', true);
+            }
         }
+
+        $this->view->loginForm = $loginForm;
     }
 
     public function logoutAction()
     {
         $this->_userService->logout();
-        $this->_redirect('/');
+        $this->_helper->redirector->gotoRoute(array(), 'login', true);
     }
 
     public function registerAction()
     {
-        $params = $this->_request->getPost();
-
-        $form = $this->_userService->getForm(null, $params);
+        $registerForm = $this->_userService->getForm(null, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if ($this->_userService->add($form)) {
-                $this->_helper->flashMessenger->addMessage('userRegisterFormConfirmation');
-                $this->_redirect('');
+            if ($this->_userService->add($registerForm)) {
+                $this->_helper->flashMessenger('userRegisterFormConfirmation');
+                $this->_helper->redirector->gotoRoute(array(), 'login', true);
             }
         }
 
-        $this->view->form = $form;
+        $this->view->registerForm = $registerForm;
     }
 
     public function forgotPasswordAction()
     {
-        $params = $this->_request->getPost();
-
-        $form = $this->_userService->getForgotPasswordForm();
+        $forgotPasswordForm = $this->_userService->getForgotPasswordForm($this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if ($this->_userService->sendResetPasswordEmail($this->_request->getPost('email'))) {
-                $this->_helper->flashMessenger->addMessage('userForgotPasswordFormConfirmation');
-                $this->_redirect('');
+            if ($this->_userService->sendResetPasswordEmail($forgotPasswordForm)) {
+                $this->_helper->flashMessenger('userForgotPasswordFormConfirmation');
+                $this->_helper->redirector->gotoRoute(array(), 'forgotPassword', true);
             }
         }
 
-        $this->view->form = $form;
+        $this->view->forgotPasswordForm = $forgotPasswordForm;
     }
 
     public function resetPasswordAction()
     {
         $key = $this->_request->getParam('key');
 
-        try {
-            $form = $this->_userService->getResetPasswordForm($key, $this->_request->getPost());
+        $resetPasswordForm = $this->_userService->getResetPasswordForm($key, $this->_request->getPost());
 
+        if (null !== $resetPasswordForm) {
             if ($this->_request->isPost()) {
-                if ($form->isValid($form->getValues())) {
-                    if (false !== $this->_userService->resetPassword($key, $this->_request->getPost('password'))) {
-                        $this->_helper->flashMessenger->addMessage('userResetPasswordFormConfirmation');
-                        $this->_redirect('');
-                    }
+                if ($this->_userService->resetPassword($resetPasswordForm, $key)) {
+                    $this->_helper->flashMessenger('userResetPasswordFormConfirmation');
+                    $this->_helper->redirector->gotoRoute(array(), 'login', true);
                 }
             }
-        } catch (InvalidArgumentException $e) {
-            $form = null;
+        } else {
+            $this->_helper->flashMessenger('userResetPasswordError');
+            $this->_helper->redirector->gotoRoute(array(), 'login', true);
         }
 
-        $this->view->form = $form;
+        $this->view->resetPasswordForm = $resetPasswordForm;
     }
 
     public function editAction()
     {
-        $params = $this->_request->getPost();
-
         $user = $this->_userService->getCurrentUser();
 
-        $form = $this->_userService->getForm($user->getUserId(), $params);
+        $editForm = $this->_userService->getForm($user->getUserId(), $this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if (false !== $this->_userService->update($form)) {
-                $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-                $redirector->gotoRoute(array(), 'userEdit');
+            if ($this->_userService->update($editForm)) {
+                $this->_helper->flashMessenger('userEditFormConfirmation');
+                $this->_helper->redirector->gotoRoute(array(), 'profile', true);
             }
         }
 
-        $this->view->form = $form;
+        $this->view->editForm = $editForm;
     }
 
     public function activateAction()
     {
         $key = $this->_request->getParam('key');
 
-        $messages = array();
         if ($this->_userService->activate($key)) {
-            $messages[] = 'userActivationOk';
+            $this->_helper->flashMessenger('userActivationOk');
         } else {
-            $messages[] = 'userActivationNotOk';
+            $this->_helper->flashMessenger('userActivationNotOk');
         }
 
-        $this->view->messages = array_merge($this->view->messages, $messages);
-        $this->_forward('index', 'index');
+        $this->_helper->redirector->gotoRoute(array(), 'login', true);
     }
 }

@@ -215,4 +215,10 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         );
         Zend_Mail::setDefaultTransport($mailTransportSmtp);
     }
+
+    protected function _initPlugin()
+    {
+        $frontController = Zend_Controller_Front::getInstance();
+        $frontController->registerPlugin(new Bagheera_Controller_Plugin_Auth());
+    }
 }

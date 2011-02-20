@@ -6,7 +6,7 @@ foreach ($this->accounts as $v) {
         echo '<em>' . $this->translate('noAccounts'). '</em><br/>';
     } else {
         foreach ($v['accounts'] as $account) {
-            echo '- ' . $account->getName() . ' - ' . $account->getBalance() . '<br/>';
+            echo '- <a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a> - ' . $account->getBalance() . '<br/>';
         }
     }
 }

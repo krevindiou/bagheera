@@ -26,15 +26,14 @@ namespace Application\Forms;
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class Login extends \Bagheera_Form
+class UserLogin extends \Bagheera_Form
 {
     public function init()
     {
         parent::init();
 
         $this->setMethod('post');
-        $this->setName('formLogin');
-        $this->setAction('/login');
+        $this->setName('formUserLogin');
 
         $this->addElement('text', 'email', array(
             'label' => 'userEmail',

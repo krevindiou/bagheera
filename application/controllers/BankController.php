@@ -37,17 +37,15 @@ class BankController extends Zend_Controller_Action
 
     public function addAction()
     {
-        $params = $this->_request->getPost();
-
-        $bankForm = $this->_bankService->getForm(null, $params);
+        $bankForm = $this->_bankService->getForm(null, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if (false !== $this->_bankService->add($bankForm)) {
-                $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-                $redirector->gotoRoute(array(), 'accounts');
+            if ($this->_bankService->add($bankForm)) {
+                $this->_helper->flashMessenger('bankFormOk');
+                $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
             }
         }
 
-        $this->view->form = $bankForm;
+        $this->view->bankForm = $bankForm;
     }
 }

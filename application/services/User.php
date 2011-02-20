@@ -22,6 +22,7 @@ use Application\Models\User as UserModel,
     Application\Models\Bank as BankModel,
     Application\Models\Account as AccountModel,
     Application\Forms\User as UserForm,
+    Application\Forms\UserLogin as UserLoginForm,
     Application\Forms\UserForgotPassword as UserForgotPasswordForm,
     Application\Forms\UserResetPassword as UserResetPasswordForm,
     Application\Services\Bank as BankService,
@@ -37,6 +38,14 @@ use Application\Models\User as UserModel,
  */
 class User extends CrudAbstract
 {
+    public function getLoginForm(array $params = null)
+    {
+        $userLoginForm = new UserLoginForm();
+        $userLoginForm->populate($params);
+
+        return $userLoginForm;
+    }
+
     public function getForm($userId = null, array $params = null)
     {
         if (null !== $userId) {
@@ -139,9 +148,12 @@ class User extends CrudAbstract
         }
     }
 
-    public function getForgotPasswordForm()
+    public function getForgotPasswordForm(array $params = null)
     {
-        return new UserForgotPasswordForm();
+        $userForgotPasswordForm = new UserForgotPasswordForm();
+        $userForgotPasswordForm->populate($params);
+
+        return $userForgotPasswordForm;
     }
 
     /**
@@ -150,42 +162,49 @@ class User extends CrudAbstract
      * @param  string $email    user email
      * @return boolean
      */
-    public function sendResetPasswordEmail($email)
+    public function sendResetPasswordEmail(UserForgotPasswordForm $forgotPasswordForm)
     {
-        $user = $this->_em->getRepository('Application\\Models\\User')
-                          ->findOneBy(array('_email' => $email));
+        $isValid = false;
 
-        if (null !== $user) {
-            $config = \Zend_Registry::get('config');
+        if ($forgotPasswordForm->isValid($forgotPasswordForm->getValues())) {
+            $user = $this->_em->getRepository('Application\\Models\\User')
+                              ->findOneBy(array('_email' => $forgotPasswordForm->getElement('email')->getValue()));
+
             $translate = \Zend_Registry::get('Zend_Translate');
 
-            // Reset password link construction
-            $router = \Zend_Controller_Front::getInstance()->getRouter();
-            $route = $router->getRoute('resetPassword');
-            $key = $this->_createResetPasswordKey($user);
-            $link = $config->app->url . '/' . $route->assemble(array('key' => $key));
+            if (null !== $user) {
+                $config = \Zend_Registry::get('config');
 
-            // Mail sending
-            $body = str_replace(
-                '%link%',
-                $link,
-                $translate->translate('userEmailResetPasswordBody')
-            );
+                // Reset password link construction
+                $router = \Zend_Controller_Front::getInstance()->getRouter();
+                $route = $router->getRoute('resetPassword');
+                $key = $this->_createResetPasswordKey($user);
+                $link = $config->app->url . '/' . $route->assemble(array('key' => $key));
 
-            $mail = new \Zend_Mail();
-            $mail->setFrom($config->app->admin->email, $config->app->admin->name);
-            $mail->addTo(
-                $user->getEmail(),
-                $user->getFirstname() . ' ' . $user->getLastname()
-            );
-            $mail->setSubject($translate->translate('userEmailResetPasswordSubject'));
-            $mail->setBodyText($body);
-            $mail->send();
+                // Mail sending
+                $body = str_replace(
+                    '%link%',
+                    $link,
+                    $translate->translate('userEmailResetPasswordBody')
+                );
 
-            return true;
-        } else {
-            return false;
+                $mail = new \Zend_Mail();
+                $mail->setFrom($config->app->admin->email, $config->app->admin->name);
+                $mail->addTo(
+                    $user->getEmail(),
+                    $user->getFirstname() . ' ' . $user->getLastname()
+                );
+                $mail->setSubject($translate->translate('userEmailResetPasswordSubject'));
+                $mail->setBodyText($body);
+                $mail->send();
+
+                $isValid = true;
+            } else {
+                $forgotPasswordForm->addErrorMessage($translate->translate('userForgotPasswordFormError'));
+            }
         }
+
+        return $isValid;
     }
 
     /**
@@ -197,13 +216,11 @@ class User extends CrudAbstract
      */
     public function getResetPasswordForm($key, array $params = array())
     {
-        if ($user = $this->_decodeResetPasswordKey($key)) {
+        if (null !== $this->_decodeResetPasswordKey($key)) {
             $form = new UserResetPasswordForm();
             $form->populate($params);
             return $form;
         }
-
-        throw new \InvalidArgumentException('Invalid key');
     }
 
     /**
@@ -213,13 +230,24 @@ class User extends CrudAbstract
      * @param  string $password    password to set
      * @return void
      */
-    public function resetPassword($key, $password)
+    public function resetPassword(UserResetPasswordForm $resetPasswordForm, $key)
     {
-        if ($user = $this->_decodeResetPasswordKey($key)) {
-            $user->setPassword(md5($password));
-            $this->_em->persist($user);
-            $this->_em->flush();
+        $isValid = false;
+
+        if ($resetPasswordForm->isValid($resetPasswordForm->getValues())) {
+            if (null !== ($user = $this->_decodeResetPasswordKey($key))) {
+                $user->setPassword(md5($resetPasswordForm->getElement('password')->getValue()));
+                $this->_em->persist($user);
+                $this->_em->flush();
+
+                $isValid = true;
+            } else {
+                $translate = \Zend_Registry::get('Zend_Translate');
+                $resetPasswordForm->addErrorMessage($translate->translate('userResetPasswordFormError'));
+            }
         }
+
+        return $isValid;
     }
 
     /**
@@ -258,8 +286,6 @@ class User extends CrudAbstract
                 }
             }
         }
-
-        throw new \InvalidArgumentException('Invalid key');
     }
 
     /**
@@ -267,19 +293,27 @@ class User extends CrudAbstract
      *
      * @return boolean
      */
-    public function login($email, $password)
+    public function login(UserLoginForm $userLoginForm)
     {
-        $adapter = new \Bagheera_Auth_Adapter_Database($email, $password);
-        $auth = \Zend_Auth::getInstance();
-        $result = $auth->authenticate($adapter);
+        $isValid = false;
 
-        $redirector = \Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
+        if ($userLoginForm->isValid($userLoginForm->getValues())) {
+            $adapter = new \Bagheera_Auth_Adapter_Database(
+                $userLoginForm->getElement('email')->getValue(),
+                $userLoginForm->getElement('password')->getValue()
+            );
+            $auth = \Zend_Auth::getInstance();
+            $result = $auth->authenticate($adapter);
 
-        if ($result->isValid()) {
-            $redirector->gotoRoute(array(), 'connected');
-        } else {
-            $redirector->gotoUrl('/?login=error');
+            $isValid = $result->isValid();
+
+            if (!$isValid) {
+                $translate = \Zend_Registry::get('Zend_Translate');
+                $userLoginForm->addErrorMessage($translate->translate('loginError'));
+            }
         }
+
+        return $isValid;
     }
 
     /**

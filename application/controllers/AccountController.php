@@ -21,7 +21,7 @@ use Application\Services\Bank as BankService;
 use Application\Services\Account as AccountService;
 
 /**
- * Bank controller
+ * Account controller
  *
  * @category   Application
  * @package    Application_Controllers
@@ -64,6 +64,7 @@ class AccountController extends Zend_Controller_Action
 
     public function listAction()
     {
+/*
         $user = $this->_userService->getCurrentUser();
 
         $bankAccounts = array();
@@ -81,6 +82,8 @@ class AccountController extends Zend_Controller_Action
 
         $this->view->user = $user;
         $this->view->accounts = $bankAccounts;
+*/
+        $this->_forward('summary');
     }
 
     public function deleteAction()
@@ -111,10 +114,8 @@ class AccountController extends Zend_Controller_Action
             }
         }
 
-        $this->_helper->flashMessenger->addMessage('accountDeleteMessage');
-
-        $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-        $redirector->gotoRoute(array(), 'accounts');
+        $this->_helper->flashMessenger('accountDeleteMessage');
+        $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
     }
 
     public function shareAction()
@@ -126,25 +127,21 @@ class AccountController extends Zend_Controller_Action
 
         // ...
 
-        $this->_helper->flashMessenger->addMessage('accountShareMessage');
-
-        $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-        $redirector->gotoRoute(array(), 'accounts');
+        $this->_helper->flashMessenger('accountShareMessage');
+        $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
     }
 
     public function addAction()
     {
-        $params = $this->_request->getPost();
-
-        $accountForm = $this->_accountService->getForm(null, $params);
+        $accountForm = $this->_accountService->getForm(null, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if (false !== $this->_accountService->add($accountForm)) {
-                $redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
-                $redirector->gotoRoute(array(), 'accounts');
+            if ($this->_accountService->add($accountForm)) {
+                $this->_helper->flashMessenger('accountFormOk');
+                $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
             }
         }
 
-        $this->view->form = $accountForm;
+        $this->view->accountForm = $accountForm;
     }
 }
