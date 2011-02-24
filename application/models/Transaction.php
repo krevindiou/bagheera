@@ -102,7 +102,7 @@ class Transaction
      * valueDate attribute
      *
      * @var DateTime
-     * @Column(type="datetime", name="value_date")
+     * @Column(type="date", name="value_date")
      */
     protected $_valueDate;
 
@@ -127,7 +127,7 @@ class Transaction
      *
      * @var Application\Models\Account
      * @OneToOne(targetEntity="Account")
-     * @JoinColumn(name="transfer_account_id", referencedColumnName="transfer_account_id")
+     * @JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
      */
     protected $_transferAccount;
 
@@ -275,7 +275,7 @@ class Transaction
      */
     public function getDebit()
     {
-        return $this->_debit;
+        return sprintf('%.2f', $this->_debit);
     }
 
     /**
@@ -296,7 +296,7 @@ class Transaction
      */
     public function getCredit()
     {
-        return $this->_credit;
+        return sprintf('%.2f', $this->_credit);
     }
 
     /**
@@ -381,6 +381,17 @@ class Transaction
     public function getTransferAccount()
     {
         return $this->_transferAccount;
+    }
+
+    /**
+     * Sets transferAccount
+     *
+     * @param  Application\Models\Account $transferAccount    transferAccount to set
+     * @return void
+     */
+    public function setTransferAccount(\Application\Models\Account $transferAccount = null)
+    {
+        $this->_transferAccount = $transferAccount;
     }
 
     /**

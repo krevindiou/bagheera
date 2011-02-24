@@ -43,8 +43,14 @@ abstract class CrudAbstract extends ServicesAbstract
         foreach ($form->getElements() as $element) {
             if (!isset($params[$element->getName()])) {
                 $getter = 'get' . ucfirst($element->getName());
+
                 if (is_callable(array($entity, $getter))) {
                     $value = $entity->$getter();
+
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d');
+                    }
+
                     $params[$element->getName()] = $value;
                 }
             }
@@ -125,7 +131,6 @@ abstract class CrudAbstract extends ServicesAbstract
             }
 
             $values = array_merge($tmpValues, $values);
-
             foreach ($values as $name => $value) {
                 $setter = 'set' . ucfirst($name);
                 if (is_callable(array($entity, $setter))) {

@@ -79,6 +79,12 @@ class Transaction extends \Bagheera_Form
         $this->setMethod('post');
         $this->setName('formTransaction');
 
+        $this->addElement('hidden', 'transactionId', array(
+            'required' => false,
+            'filters' => array(),
+            'validators' => array()
+        ));
+
         $this->addElement('hidden', 'accountId', array(
             'required' => false,
             'filters' => array(),

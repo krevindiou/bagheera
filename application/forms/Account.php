@@ -108,7 +108,7 @@ class Account extends \Bagheera_Form
         $this->addElement('file', 'details', array(
             'label' => 'accountDetails',
             'required' => false,
-            'destination' => __DIR__ . '/../../data',
+            'destination' => __DIR__ . '/../../data/bankDetails',
             'valueDisabled' => true,
             'validators' => array(
                 array('Count', false, 1),

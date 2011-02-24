@@ -6,20 +6,23 @@ var Bagheera = {
         $(document).ready(function(){
             Bagheera.accounts();
             Bagheera.dropDownPaymentMethod();
+            Bagheera.dropDownTransferAccount();
         });
     },
 
     accounts: function(){
-        $("input[type=checkbox][name='banksId[]']").change(function(){
-            $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("checked", $(this).attr("checked"));
-            $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("disabled", $(this).attr("checked"));
-        });
+        if ($("input[type=checkbox][name='banksId[]']").length > 0) {
+            $("input[type=checkbox][name='banksId[]']").change(function(){
+                $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("checked", $(this).attr("checked"));
+                $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("disabled", $(this).attr("checked"));
+            });
 
-        $("input[type=submit][name=delete], input[type=submit][name=share]").click(function(){
-            if (confirm("confirmDelete")) {
-                $(this).parents("form").attr("action", "account/" + $(this).attr("name"));
-            }
-        });
+            $("input[type=submit][name=delete], input[type=submit][name=share]").click(function(){
+                if (confirm("confirmDelete")) {
+                    $(this).parents("form").attr("action", "account/" + $(this).attr("name"));
+                }
+            });
+        }
     },
 
     dropDownPaymentMethod: function(){
@@ -56,6 +59,27 @@ var Bagheera = {
             $("input[name=debitCredit]").change(function(){
                 filldropDownPaymentMethod($(this).val());
             });
+        }
+    },
+
+    dropDownTransferAccount: function(){
+        toggleTransferAccountList($("select[name=paymentMethodId]").val());
+
+        $("select[name=paymentMethodId]").change(function(){
+            toggleTransferAccountList($(this).val());
+        });
+
+        $("input[name=debitCredit]").change(function(){
+            toggleTransferAccountList($("select[name=paymentMethodId]").val());
+        });
+
+        function toggleTransferAccountList(paymentMethodId)
+        {
+            if (4 == paymentMethodId || 6 == paymentMethodId) {
+                $("select[name=transferAccountId]").parent().show().prev().show();
+            } else {
+                $("select[name=transferAccountId]").parent().hide().prev().hide();
+            }
         }
     }
 };

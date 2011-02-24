@@ -64,7 +64,6 @@ class AccountController extends Zend_Controller_Action
 
     public function listAction()
     {
-/*
         $user = $this->_userService->getCurrentUser();
 
         $bankAccounts = array();
@@ -82,8 +81,6 @@ class AccountController extends Zend_Controller_Action
 
         $this->view->user = $user;
         $this->view->accounts = $bankAccounts;
-*/
-        $this->_forward('summary');
     }
 
     public function deleteAction()

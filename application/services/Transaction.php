@@ -36,8 +36,35 @@ class Transaction extends CrudAbstract
     {
         if (null !== $transactionId) {
             $transaction = $this->_em->find('Application\\Models\\Transaction', $transactionId);
+
+            $account = $transaction->getAccount();
+            $category = $transaction->getCategory();
+            $paymentMethod = $transaction->getPaymentMethod();
+            $transferAccount = $transaction->getTransferAccount();
+            $debit = $transaction->getDebit();
+            $credit = $transaction->getCredit();
+
+            if (!isset($params['accountId']) && null !== $account) {
+                $params['accountId'] = $account->getAccountId();
+            }
+            if (!isset($params['categoryId']) && null !== $category) {
+                $params['categoryId'] = $category->getCategoryId();
+            }
+            if (!isset($params['paymentMethodId']) && null !== $paymentMethod) {
+                $params['paymentMethodId'] = $paymentMethod->getPaymentMethodId();
+            }
+            if (!isset($params['transferAccountId']) && null !== $transferAccount) {
+                $params['transferAccountId'] = $transferAccount->getAccountId();
+            }
+            if (!isset($params['amount'])) {
+                $params['amount'] = ($debit > 0) ? $debit : $credit;
+            }
+            if (!isset($params['debitCredit'])) {
+                $params['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
+            }
         } else {
             $transaction = new TransactionModel();
+            $transaction->setValueDate(new \DateTime);
         }
 
         return parent::getForm(new TransactionForm, $transaction, $params);
@@ -95,11 +122,73 @@ class Transaction extends CrudAbstract
 
     public function update(TransactionForm $transactionForm)
     {
-        return parent::update($transactionForm);
+        $amount = $transactionForm->getElement('amount')->getValue();
+        $debitCredit = $transactionForm->getElement('debitCredit')->getValue();
+
+        if ('credit' == $debitCredit) {
+            $debit = 0;
+            $credit = $amount;
+        } else {
+            $debit = $amount;
+            $credit = 0;
+        }
+
+        $values = array(
+            'account' => $this->_em->find(
+                'Application\\Models\\Account',
+                $transactionForm->getElement('accountId')->getValue()
+            ),
+            'category' => $this->_em->find(
+                'Application\\Models\\Category',
+                $transactionForm->getElement('categoryId')->getValue()
+            ),
+            'paymentMethod' => $this->_em->find(
+                'Application\\Models\\PaymentMethod',
+                $transactionForm->getElement('paymentMethodId')->getValue()
+            ),
+            'transferAccount' => $this->_em->find(
+                'Application\\Models\\Account',
+                $transactionForm->getElement('transferAccountId')->getValue()
+            ),
+            'debit' => $debit,
+            'credit' => $credit,
+        );
+
+        if (!in_array($values['paymentMethod']->getPaymentMethodId(), array(4, 6))) {
+            $values['transferAccount'] = null;
+        }
+
+        return parent::update($transactionForm, $values);
     }
 
-    public function delete(TransactionModel $transaction)
+    public function delete(array $transactionsId)
     {
-        return parent::delete($transaction);
+        foreach ($transactionsId as $transactionId) {
+            $transaction = $this->_em->find(
+                'Application\\Models\\Transaction',
+                $transactionId
+            );
+
+            if (null !== $transaction) {
+                parent::delete($transaction);
+            }
+        }
+    }
+
+    public function reconcile(array $transactionsId)
+    {
+        foreach ($transactionsId as $transactionId) {
+            $transaction = $this->_em->find(
+                'Application\\Models\\Transaction',
+                $transactionId
+            );
+
+            if (null !== $transaction) {
+                $transaction->setIsReconciled(true);
+                $this->_em->persist($transaction);
+            }
+        }
+
+        $this->_em->flush();
     }
 }

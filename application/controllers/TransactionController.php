@@ -37,9 +37,28 @@ class TransactionController extends Zend_Controller_Action
 
     public function listAction()
     {
-        $accountId = $this->_request->getParam('accountId');
-
         $em = Zend_Registry::get('em');
+
+        $accountId = $this->_request->getParam('accountId');
+        $delete = $this->_request->getPost('delete');
+        $reconcile = $this->_request->getPost('reconcile');
+        $transactions = $this->_request->getPost('transactions');
+
+        if (!empty($transactions)) {
+            if ($delete) {
+                $this->_transactionService->delete($transactions);
+                $this->_helper->flashMessenger('transactionDeleteOk');
+            } elseif ($reconcile) {
+                $this->_transactionService->reconcile($transactions);
+                $this->_helper->flashMessenger('transactionReconcileOk');
+            }
+
+            $this->_helper->redirector->gotoRoute(
+                array('accountId' => $accountId),
+                'transactionsList',
+                true
+            );
+        }
 
         $account = $em->find(
             'Application\\Models\\Account',
@@ -48,6 +67,8 @@ class TransactionController extends Zend_Controller_Action
 
         $transactions = $this->_transactionService->getTransactions($account);
         $this->view->transactions = $transactions;
+        $this->view->accountId = $accountId;
+        $this->view->balance = $account->getBalance();
     }
 
     public function deleteAction()
@@ -56,15 +77,56 @@ class TransactionController extends Zend_Controller_Action
 
     public function addAction()
     {
-        $transactionForm = $this->_transactionService->getForm(null, $this->_request->getPost());
+        $accountId = $this->_request->getParam('accountId');
+
+        $transactionForm = $this->_transactionService->getForm(
+            null,
+            array_merge(
+                $this->_request->getPost(),
+                array('accountId' => $accountId)
+            )
+        );
 
         if ($this->_request->isPost()) {
             if ($this->_transactionService->add($transactionForm)) {
                 $this->_helper->flashMessenger('transactionFormOk');
-                $this->_helper->redirector->gotoRoute(array(), 'transactionsList', true);
+                $this->_helper->redirector->gotoRoute(
+                    array('accountId' => $transactionForm->getElement('accountId')->getValue()),
+                    'transactionsList',
+                    true
+                );
             }
         }
 
         $this->view->transactionForm = $transactionForm;
+    }
+
+    public function editAction()
+    {
+        $transactionId = $this->_request->getParam('transactionId');
+        $accountId = $this->_request->getParam('accountId');
+
+        $transactionForm = $this->_transactionService->getForm(
+            $transactionId,
+            array_merge(
+                $this->_request->getPost(),
+                array('accountId' => $accountId)
+            )
+        );
+
+        if ($this->_request->isPost()) {
+            if ($this->_transactionService->update($transactionForm)) {
+                $this->_helper->flashMessenger('transactionFormOk');
+                $this->_helper->redirector->gotoRoute(
+                    array('accountId' => $transactionForm->getElement('accountId')->getValue()),
+                    'transactionsList',
+                    true
+                );
+            }
+        }
+
+        $this->view->transactionForm = $transactionForm;
+
+        $this->render('add');
     }
 }
