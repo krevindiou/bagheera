@@ -76,7 +76,7 @@ class PaymentMethod
      * @var array
      */
     protected $_names = array(
-        'credit_card',
+        'creditCard',
         'check',
         'withdrawal',
         'transfer',
@@ -121,7 +121,7 @@ class PaymentMethod
      */
     public function setName($name)
     {
-        $this->_name = in_array($name, $this->_names) ? $name : 'credit_card';
+        $this->_name = in_array($name, $this->_names) ? $name : $this->_names[0];
     }
 
     /**

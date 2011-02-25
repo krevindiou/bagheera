@@ -71,43 +71,13 @@ class TransactionController extends Zend_Controller_Action
         $this->view->balance = $account->getBalance();
     }
 
-    public function deleteAction()
-    {
-    }
-
-    public function addAction()
-    {
-        $accountId = $this->_request->getParam('accountId');
-
-        $transactionForm = $this->_transactionService->getForm(
-            null,
-            array_merge(
-                $this->_request->getPost(),
-                array('accountId' => $accountId)
-            )
-        );
-
-        if ($this->_request->isPost()) {
-            if ($this->_transactionService->add($transactionForm)) {
-                $this->_helper->flashMessenger('transactionFormOk');
-                $this->_helper->redirector->gotoRoute(
-                    array('accountId' => $transactionForm->getElement('accountId')->getValue()),
-                    'transactionsList',
-                    true
-                );
-            }
-        }
-
-        $this->view->transactionForm = $transactionForm;
-    }
-
-    public function editAction()
+    public function saveAction()
     {
         $transactionId = $this->_request->getParam('transactionId');
         $accountId = $this->_request->getParam('accountId');
 
         $transactionForm = $this->_transactionService->getForm(
-            $transactionId,
+            ('' != $transactionId) ? $transactionId : null,
             array_merge(
                 $this->_request->getPost(),
                 array('accountId' => $accountId)
@@ -115,7 +85,7 @@ class TransactionController extends Zend_Controller_Action
         );
 
         if ($this->_request->isPost()) {
-            if ($this->_transactionService->update($transactionForm)) {
+            if ($this->_transactionService->save($transactionForm)) {
                 $this->_helper->flashMessenger('transactionFormOk');
                 $this->_helper->redirector->gotoRoute(
                     array('accountId' => $transactionForm->getElement('accountId')->getValue()),
@@ -126,7 +96,5 @@ class TransactionController extends Zend_Controller_Action
         }
 
         $this->view->transactionForm = $transactionForm;
-
-        $this->render('add');
     }
 }

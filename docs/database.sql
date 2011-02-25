@@ -88,13 +88,23 @@ DROP TABLE IF EXISTS `payment_method`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `payment_method` (
   `payment_method_id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(16) NOT NULL DEFAULT 'credit_card',
+  `name` varchar(16) NOT NULL DEFAULT 'creditCard',
   `type` varchar(8) NOT NULL DEFAULT 'debit',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`payment_method_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `payment_method`
+--
+
+LOCK TABLES `payment_method` WRITE;
+/*!40000 ALTER TABLE `payment_method` DISABLE KEYS */;
+INSERT INTO `payment_method` VALUES (1,'creditCard','debit',NOW(),NOW()),(2,'check','debit',NOW(),NOW()),(3,'withdrawal','debit',NOW(),NOW()),(4,'transfer','debit',NOW(),NOW()),(5,'check','credit',NOW(),NOW()),(6,'transfer','credit',NOW(),NOW()),(7,'deposit','credit',NOW(),NOW());
+/*!40000 ALTER TABLE `payment_method` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `report`

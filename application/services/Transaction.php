@@ -83,44 +83,7 @@ class Transaction extends CrudAbstract
         return $transactions;
     }
 
-    public function add(TransactionForm $transactionForm)
-    {
-        $amount = $transactionForm->getElement('amount')->getValue();
-        $debitCredit = $transactionForm->getElement('debitCredit')->getValue();
-
-        if ('credit' == $debitCredit) {
-            $debit = 0;
-            $credit = $amount;
-        } else {
-            $debit = $amount;
-            $credit = 0;
-        }
-
-        $values = array(
-            'account' => $this->_em->find(
-                'Application\\Models\\Account',
-                $transactionForm->getElement('accountId')->getValue()
-            ),
-            'category' => $this->_em->find(
-                'Application\\Models\\Category',
-                $transactionForm->getElement('categoryId')->getValue()
-            ),
-            'paymentMethod' => $this->_em->find(
-                'Application\\Models\\PaymentMethod',
-                $transactionForm->getElement('paymentMethodId')->getValue()
-            ),
-            'transferAccount' => $this->_em->find(
-                'Application\\Models\\Account',
-                $transactionForm->getElement('transferAccountId')->getValue()
-            ),
-            'debit' => $debit,
-            'credit' => $credit,
-        );
-
-        return parent::add($transactionForm, $values);
-    }
-
-    public function update(TransactionForm $transactionForm)
+    public function save(TransactionForm $transactionForm)
     {
         $amount = $transactionForm->getElement('amount')->getValue();
         $debitCredit = $transactionForm->getElement('debitCredit')->getValue();
@@ -158,7 +121,11 @@ class Transaction extends CrudAbstract
             $values['transferAccount'] = null;
         }
 
-        return parent::update($transactionForm, $values);
+        if ('' != $transactionForm->getElement('transactionId')->getValue()) {
+            return parent::update($transactionForm, $values);
+        } else {
+            return parent::add($transactionForm, $values);
+        }
     }
 
     public function delete(array $transactionsId)

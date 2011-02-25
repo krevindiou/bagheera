@@ -19,33 +19,24 @@
 namespace Application\Models;
 
 /**
- * Transaction entity
+ * Scheduler entity
  *
  * @category   Application
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @Entity
- * @Table(name="transaction")
+ * @Table(name="scheduler")
  */
-class Transaction
+class Scheduler
 {
     /**
-     * transactionId attribute
+     * schedulerId attribute
      *
-     * @Id @Column(type="integer", name="transaction_id")
+     * @Id @Column(type="integer", name="scheduler_id")
      * @GeneratedValue
      */
-    protected $_transactionId;
-
-    /**
-     * scheduler attribute
-     *
-     * @var Application\Models\Scheduler
-     * @OneToOne(targetEntity="Scheduler")
-     * @JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
-     */
-    protected $_scheduler;
+    protected $_schedulerId;
 
     /**
      * account attribute
@@ -55,6 +46,15 @@ class Transaction
      * @JoinColumn(name="account_id", referencedColumnName="account_id")
      */
     protected $_account;
+
+    /**
+     * transferAccount attribute
+     *
+     * @var Application\Models\Account
+     * @OneToOne(targetEntity="Account")
+     * @JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
+     */
+    protected $_transferAccount;
 
     /**
      * category attribute
@@ -107,12 +107,12 @@ class Transaction
     protected $_valueDate;
 
     /**
-     * isReconciled attribute
+     * limitDate attribute
      *
-     * @var boolean
-     * @Column(type="boolean", name="is_reconciled")
+     * @var DateTime
+     * @Column(type="date", name="limit_date")
      */
-    protected $_isReconciled;
+    protected $_limitDate;
 
     /**
      * notes attribute
@@ -123,13 +123,28 @@ class Transaction
     protected $_notes;
 
     /**
-     * transferAccount attribute
+     * frequencyUnit attribute
      *
-     * @var Application\Models\Account
-     * @OneToOne(targetEntity="Account")
-     * @JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
+     * @var string
+     * @Column(type="string", name="frequency_unit")
      */
-    protected $_transferAccount;
+    protected $_frequencyUnit;
+
+    /**
+     * frequencyValue attribute
+     *
+     * @var integer
+     * @Column(type="integer", name="frequency_value")
+     */
+    protected $_frequencyValue;
+
+    /**
+     * isActive attribute
+     *
+     * @var boolean
+     * @Column(type="boolean", name="is_active")
+     */
+    protected $_isActive;
 
     /**
      * createdAt attribute
@@ -147,41 +162,23 @@ class Transaction
      */
     protected $_updatedAt;
 
-
-    public function __construct()
-    {
-        $this->_isReconciled = false;
-    }
+    /**
+     * Frequency values list
+     *
+     * @var array
+     */
+    protected $_frequencyValues = array(
+        'day','week','month','year'
+    );
 
     /**
-     * Gets transactionId
+     * Gets schedulerId
      *
      * @return integer
      */
-    public function getTransactionId()
+    public function getSchedulerId()
     {
-        return $this->_transactionId;
-    }
-
-    /**
-     * Gets scheduler
-     *
-     * @return Application\Models\Scheduler
-     */
-    public function getScheduler()
-    {
-        return $this->_scheduler;
-    }
-
-    /**
-     * Sets scheduler
-     *
-     * @param  Application\Models\Scheduler $scheduler    scheduler to set
-     * @return void
-     */
-    public function setScheduler(Scheduler $scheduler = null)
-    {
-        $this->_scheduler = $scheduler;
+        return $this->_schedulerId;
     }
 
     /**
@@ -203,6 +200,27 @@ class Transaction
     public function setAccount(Account $account)
     {
         $this->_account = $account;
+    }
+
+    /**
+     * Gets transferAccount
+     *
+     * @return Application\Models\Account
+     */
+    public function getTransferAccount()
+    {
+        return $this->_transferAccount;
+    }
+
+    /**
+     * Sets transferAccount
+     *
+     * @param  Application\Models\Account $transferAccount    transferAccount to set
+     * @return void
+     */
+    public function setTransferAccount(Account $transferAccount = null)
+    {
+        $this->_transferAccount = $transferAccount;
     }
 
     /**
@@ -332,24 +350,24 @@ class Transaction
     }
 
     /**
-     * Gets isReconciled
+     * Gets limitDate
      *
-     * @return boolean
+     * @return DateTime
      */
-    public function getIsReconciled()
+    public function getLimitDate()
     {
-        return $this->_isReconciled;
+        return $this->_limitDate;
     }
 
     /**
-     * Sets isReconciled
+     * Sets limitDate
      *
-     * @param  boolean $isReconciled    isReconciled to set
+     * @param  DateTime $limitDate    limitDate to set
      * @return void
      */
-    public function setIsReconciled($isReconciled)
+    public function setLimitDate(\DateTime $limitDate)
     {
-        $this->_isReconciled = (bool)$isReconciled;
+        $this->_limitDate = $limitDate;
     }
 
     /**
@@ -374,24 +392,66 @@ class Transaction
     }
 
     /**
-     * Gets transferAccount
+     * Gets frequencyUnit
      *
-     * @return Application\Models\Account
+     * @return string
      */
-    public function getTransferAccount()
+    public function getFrequencyUnit()
     {
-        return $this->_transferAccount;
+        return $this->_frequencyUnit;
     }
 
     /**
-     * Sets transferAccount
+     * Sets frequencyUnit
      *
-     * @param  Application\Models\Account $transferAccount    transferAccount to set
+     * @param  string $frequencyUnit    frequencyUnit to set
      * @return void
      */
-    public function setTransferAccount(Account $transferAccount = null)
+    public function setFrequencyUnit($frequencyUnit)
     {
-        $this->_transferAccount = $transferAccount;
+        $this->_frequencyUnit = in_array($frequencyUnit, $this->_frequencyValues) ? $frequencyUnit : 'month';
+    }
+
+    /**
+     * Gets frequencyValue
+     *
+     * @return integer
+     */
+    public function getFrequencyValue()
+    {
+        return $this->_frequencyValue;
+    }
+
+    /**
+     * Sets frequencyValue
+     *
+     * @param  integer $frequencyValue    frequencyValue to set
+     * @return void
+     */
+    public function setFrequencyValue($frequencyValue)
+    {
+        $this->_frequencyValue = (int)$frequencyValue;
+    }
+
+    /**
+     * Gets isActive
+     *
+     * @return boolean
+     */
+    public function getIsActive()
+    {
+        return $this->_isActive;
+    }
+
+    /**
+     * Sets isActive
+     *
+     * @param  boolean $isActive    isActive to set
+     * @return void
+     */
+    public function setIsActive($isActive)
+    {
+        $this->_isActive = (bool)$isActive;
     }
 
     /**
