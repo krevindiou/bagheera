@@ -78,8 +78,10 @@ class Transaction extends \Bagheera_Form
     {
         parent::populate($values);
 
+        $translator = $this->getTranslator();
+
         $this->getElement('transferAccountId')->setMultiOptions(
-            array('' => '') + $this->_getTransferAccountsOptions()
+            array('' => $translator->translate('externalAccount')) + $this->_getTransferAccountsOptions()
         );
 
         return $this;
@@ -107,6 +109,7 @@ class Transaction extends \Bagheera_Form
         $this->addElement('radio', 'debitCredit', array(
             'label' => 'transactionDebitCredit',
             'multiOptions' => array('debit' => 'transactionDebit', 'credit' => 'transactionCredit'),
+            'separator' => '',
             'value' => 'debit',
             'required' => true,
             'filters' => array(),
@@ -180,6 +183,7 @@ class Transaction extends \Bagheera_Form
         $this->addElement('radio', 'isReconciled', array(
             'label' => 'transactionIsReconciled',
             'multiOptions' => array('1' => 'yes', '0' => 'no'),
+            'separator' => '',
             'required' => true,
             'filters' => array(),
             'validators' => array()

@@ -4,40 +4,40 @@
 @media screen
 
 body
-    font-family: Arial, Helvetica, sans-serif
+    font-family: "DejaVu Sans", "Bitstream Vera Sans", monospace
+    font-size: 14px
+    background-color: #eee
 
 a
     text-decoration: underline
     img
         border: none
-a:link
-    color: #11C
-a:visited
-    color: #339
-a:hover, a:focus, a:active
-    color: #00F
+a, a:link, a:visited, a:hover, a:focus, a:active
+    color: #000
+a:hover
+    text-decoration: none
 
 strong
     font-weight: bold
 
 form
-    width: 400px
+    width: 800px
     margin: 0 auto
     padding: 14px
     .label
         float: left
-        width: 150px
+        width: 200px
         padding: 4px 2px
         font-weight: bold
         text-align: right
     .field
         float: left
-        width: 200px
+        width: 500px
         padding: 4px 2px
         margin: 0 0 10px 10px
     .description
         display: block
-        width: 150px
+        width: 200px
         color: #666
         font-size: 11px
         font-weight: normal
@@ -46,8 +46,21 @@ form
     input[type=radio], input[type=checkbox]
         border: 0
     input[type=submit], input[type=button], input[type=reset], input[type=image], button
-        margin-left: 166px
+        margin-left: 216px
         margin-bottom: 10px
 
 #menu li li
     margin-left: 20px;
+
+#sidebar
+    float: left
+    width: 300px
+    background-color: #ccc
+
+#content
+    float: left
+    width: 900px
+    background-color: #ddd
+
+table.data tr.notReconciled
+    color: #777

@@ -75,6 +75,7 @@ class Transaction extends CrudAbstract
         $dql = 'SELECT t ';
         $dql.= 'FROM Application\\Models\\Transaction t ';
         $dql.= 'WHERE t._account = ?1 ';
+        $dql.= 'ORDER BY t._valueDate DESC ';
         $query = $this->_em->createQuery($dql);
         $query->setParameter(1, $account);
 
@@ -118,7 +119,10 @@ class Transaction extends CrudAbstract
             'credit' => $credit,
         );
 
-        if (!in_array($values['paymentMethod']->getPaymentMethodId(), array(4, 6))) {
+        if (
+            null !== $values['paymentMethod']
+            && !in_array($values['paymentMethod']->getPaymentMethodId(), array(4, 6))
+        ) {
             $values['transferAccount'] = null;
         }
 

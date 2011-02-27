@@ -103,20 +103,20 @@ class UserController extends Zend_Controller_Action
         $this->view->resetPasswordForm = $resetPasswordForm;
     }
 
-    public function editAction()
+    public function profileAction()
     {
         $user = $this->_userService->getCurrentUser();
 
-        $editForm = $this->_userService->getForm($user->getUserId(), $this->_request->getPost());
+        $profileForm = $this->_userService->getForm($user->getUserId(), $this->_request->getPost());
 
         if ($this->_request->isPost()) {
-            if ($this->_userService->update($editForm)) {
+            if ($this->_userService->update($profileForm)) {
                 $this->_helper->flashMessenger('userEditFormConfirmation');
                 $this->_helper->redirector->gotoRoute(array(), 'profile', true);
             }
         }
 
-        $this->view->editForm = $editForm;
+        $this->view->profileForm = $profileForm;
     }
 
     public function activateAction()
@@ -130,5 +130,13 @@ class UserController extends Zend_Controller_Action
         }
 
         $this->_helper->redirector->gotoRoute(array(), 'login', true);
+    }
+
+    public function listAction()
+    {
+    }
+
+    public function saveAction()
+    {
     }
 }

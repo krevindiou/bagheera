@@ -128,7 +128,7 @@ class AccountController extends Zend_Controller_Action
         $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
     }
 
-    public function addAction()
+    public function saveAction()
     {
         $accountForm = $this->_accountService->getForm(null, $this->_request->getPost());
 

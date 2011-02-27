@@ -214,8 +214,8 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     {
         Zend_Paginator::setConfig(new Zend_Config(
             array(
-                'itemcountperpage' => 1,
-                'pagerange' => 3
+                'itemcountperpage' => 20,
+                'pagerange' => 9
             )
         ));
 

@@ -5,7 +5,7 @@ echo $this->link('newTransaction', $this->translate('newTransaction'), array(), 
 echo '<form method="post" action="">';
 
 if (count($this->transactions) > 0) {
-    echo '<table>';
+    echo '<table class="data">';
     echo '<tr>';
     echo '<th></th>';
     echo '<th></th>';
@@ -33,8 +33,8 @@ if (count($this->transactions) > 0) {
         echo '<td>' . $transaction->getCategory()->getName() . '</td>';
         echo '<td>' . $transaction->getNotes() . '</td>';
         echo '<td>' . $transaction->getPaymentMethod()->getName() . '</td>';
-        echo '<td>' . $transaction->getDebit() . '</td>';
-        echo '<td>' . $transaction->getCredit() . '</td>';
+        echo '<td class="debit">' . ((0 != $transaction->getDebit()) ? $transaction->getDebit() : '') . '</td>';
+        echo '<td class="credit">' . ((0 != $transaction->getCredit()) ? $transaction->getCredit() : '') . '</td>';
         echo '<td>' . $transaction->getValueDate()->format('Y-m-d') . '</td>';
         echo '<td>' . $this->link('editTransaction', $this->translate('editTransaction'), array(), array('transactionId' => $transaction->getTransactionId())) . '</td>';
         echo '</tr>';

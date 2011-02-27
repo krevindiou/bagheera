@@ -16,36 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\Bank as BankService;
+use Application\Services\PaymentMethod as PaymentMethodService;
 
 /**
- * Bank controller
+ * PaymentMethod controller
  *
- * @category   Application
+ * @paymentMethod   Application
  * @package    Application_Controllers
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class BankController extends Zend_Controller_Action
+class PaymentMethodController extends Zend_Controller_Action
 {
-    private $_bankService;
+    private $_paymentMethodService;
 
     public function init()
     {
-        $this->_bankService = BankService::getInstance();
+        //$this->_paymentMethodService = PaymentMethodService::getInstance();
+    }
+
+    public function listAction()
+    {
     }
 
     public function saveAction()
     {
-        $bankForm = $this->_bankService->getForm(null, $this->_request->getPost());
-
-        if ($this->_request->isPost()) {
-            if ($this->_bankService->add($bankForm)) {
-                $this->_helper->flashMessenger('bankFormOk');
-                $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
-            }
-        }
-
-        $this->view->bankForm = $bankForm;
     }
 }
