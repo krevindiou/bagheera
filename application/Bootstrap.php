@@ -27,12 +27,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $autoloader->registerNamespace('Bagheera');
 
         $doctrineAutoloader = array(
-            new \Bagheera\ClassLoader('Symfony'),
-            'loadClass'
-        );
-        $autoloader->pushAutoloader($doctrineAutoloader, 'Symfony\\');
-
-        $doctrineAutoloader = array(
             new \Bagheera\ClassLoader('Doctrine'),
             'loadClass'
         );
@@ -214,6 +208,18 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             $config->mail->toArray()
         );
         Zend_Mail::setDefaultTransport($mailTransportSmtp);
+    }
+
+    protected function _initPaginator()
+    {
+        Zend_Paginator::setConfig(new Zend_Config(
+            array(
+                'itemcountperpage' => 1,
+                'pagerange' => 3
+            )
+        ));
+
+        Zend_View_Helper_PaginationControl::setDefaultViewPartial('paginator.phtml');
     }
 
     protected function _initPlugin()

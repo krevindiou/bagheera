@@ -40,6 +40,8 @@ if (count($this->transactions) > 0) {
         echo '</tr>';
     }
     echo '</table>';
+
+    echo $this->paginationControl($this->transactions);
 }
 
 echo '<input type="submit" name="delete" value="Delete" />';

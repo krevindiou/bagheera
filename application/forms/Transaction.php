@@ -62,14 +62,27 @@ class Transaction extends \Bagheera_Form
         $currentUser = $userService->getCurrentUser();
 
         foreach ($currentUser->getAccounts() as $account) {
-            $transferAccountsOptions[$account->getAccountId()] = sprintf(
-                '%s - %s',
-                $account->getBank()->getName(),
-                $account->getName()
-            );
+            if ($this->getElement('accountId')->getValue() != $account->getAccountId()) {
+                $transferAccountsOptions[$account->getAccountId()] = sprintf(
+                    '%s - %s',
+                    $account->getBank()->getName(),
+                    $account->getName()
+                );
+            }
         }
 
         return $transferAccountsOptions;
+    }
+
+    public function populate(array $values)
+    {
+        parent::populate($values);
+
+        $this->getElement('transferAccountId')->setMultiOptions(
+            array('' => '') + $this->_getTransferAccountsOptions()
+        );
+
+        return $this;
     }
 
     public function init()
@@ -126,7 +139,7 @@ class Transaction extends \Bagheera_Form
 
         $this->addElement('select', 'transferAccountId', array(
             'label' => 'transactionTransferAccount',
-            'multiOptions' => array('' => '') + $this->_getTransferAccountsOptions(),
+            'multiOptions' => array(),
             'required' => false,
             'filters' => array(),
             'validators' => array()

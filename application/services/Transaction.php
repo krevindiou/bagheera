@@ -70,7 +70,7 @@ class Transaction extends CrudAbstract
         return parent::getForm(new TransactionForm, $transaction, $params);
     }
 
-    public function getTransactions(AccountModel $account)
+    public function getTransactions(AccountModel $account, $page = 1)
     {
         $dql = 'SELECT t ';
         $dql.= 'FROM Application\\Models\\Transaction t ';
@@ -78,9 +78,10 @@ class Transaction extends CrudAbstract
         $query = $this->_em->createQuery($dql);
         $query->setParameter(1, $account);
 
-        $transactions = $query->getResult();
+        $paginator = new \Zend_Paginator(new \DoctrineExtensions\Paginate\PaginationAdapter($query));
+        $paginator->setCurrentPageNumber($page);
 
-        return $transactions;
+        return $paginator;
     }
 
     public function save(TransactionForm $transactionForm)

@@ -40,6 +40,7 @@ class TransactionController extends Zend_Controller_Action
         $em = Zend_Registry::get('em');
 
         $accountId = $this->_request->getParam('accountId');
+        $page = (int)$this->_request->getParam('page', 1);
         $delete = $this->_request->getPost('delete');
         $reconcile = $this->_request->getPost('reconcile');
         $transactions = $this->_request->getPost('transactions');
@@ -65,7 +66,8 @@ class TransactionController extends Zend_Controller_Action
             $accountId
         );
 
-        $transactions = $this->_transactionService->getTransactions($account);
+        $transactions = $this->_transactionService->getTransactions($account, $page);
+
         $this->view->transactions = $transactions;
         $this->view->accountId = $accountId;
         $this->view->balance = $account->getBalance();

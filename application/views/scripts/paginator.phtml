@@ -1,0 +1,27 @@
+<?php if ($this->pageCount) { ?>
+    <ul class="paginationControl">
+    <?php
+    if (isset($this->previous) && !in_array($this->first, $this->pagesInRange)) {
+        echo '<li class="first">';
+        echo $this->link('transactionsList', $this->first, array(), array('page' => $this->first));
+        echo '</li>';
+    }
+
+    foreach ($this->pagesInRange as $page) {
+        echo '<li>';
+        if ($page != $this->current) {
+            echo $this->link('transactionsList', $page, array(), array('page' => $page));
+        } else {
+            echo $page;
+        }
+        echo '</li>';
+    }
+
+    if (isset($this->next) && !in_array($this->last, $this->pagesInRange)) {
+        echo '<li class="last">';
+        echo $this->link('transactionsList', $this->last, array(), array('page' => $this->last));
+        echo '</li>';
+    }
+    ?>
+    </ul>
+<?php } ?>
