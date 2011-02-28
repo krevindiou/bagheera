@@ -39,7 +39,7 @@ class SchedulerController extends Zend_Controller_Action
     {
     }
 
-    public function duetransactionsAction()
+    public function dueTransactionsAction()
     {
     }
 

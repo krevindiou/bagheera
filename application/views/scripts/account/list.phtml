@@ -17,14 +17,20 @@ if (count($this->accounts) > 0) {
         echo '<strong>' . $v['bank']->getName() . '</strong>';
 
         if (empty($v['accounts'])) {
-            echo ' - <em>' . $this->translate('noAccounts'). ' </em><br/>';
-        } else {
+            echo ' - <em>' . $this->translate('noAccounts'). ' </em>';
+        }
+
+        echo ' ' . $this->link('editBank', $this->translate('editBank'), array(), array('bankId' => $v['bank']->getBankId()));
+        echo '<br/>';
+
+        if (!empty($v['accounts'])) {
             echo '<ul>';
 
             foreach ($v['accounts'] as $account) {
                 echo '<li>';
                 echo '<input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/>';
-                echo $account->getName();
+                echo $account->getName() . ' ';
+                echo $this->link('editAccount', $this->translate('editAccount'), array(), array('accountId' => $account->getAccountId()));
                 echo '</li>';
             }
 

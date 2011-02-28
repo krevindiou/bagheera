@@ -35,6 +35,12 @@ class User extends \Bagheera_Form
         $this->setMethod('post');
         $this->setName('formUser');
 
+        $this->addElement('hidden', 'userId', array(
+            'required' => false,
+            'filters' => array(),
+            'validators' => array()
+        ));
+
         $this->addElement('text', 'firstname', array(
             'label' => 'userFirstname',
             'required' => true,

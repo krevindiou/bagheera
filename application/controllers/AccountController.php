@@ -112,7 +112,7 @@ class AccountController extends Zend_Controller_Action
         }
 
         $this->_helper->flashMessenger('accountDeleteMessage');
-        $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
+        $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
     }
 
     public function shareAction()
@@ -125,20 +125,65 @@ class AccountController extends Zend_Controller_Action
         // ...
 
         $this->_helper->flashMessenger('accountShareMessage');
-        $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
+        $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
     }
 
     public function saveAction()
     {
-        $accountForm = $this->_accountService->getForm(null, $this->_request->getPost());
+        $accountId = $this->_request->getParam('accountId');
+
+        $accountForm = $this->_accountService->getForm(
+            ('' != $accountId) ? $accountId : null,
+            $this->_request->getPost()
+        );
 
         if ($this->_request->isPost()) {
-            if ($this->_accountService->add($accountForm)) {
+            if ($this->_accountService->save($accountForm)) {
                 $this->_helper->flashMessenger('accountFormOk');
-                $this->_helper->redirector->gotoRoute(array(), 'accounts', true);
+                $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
             }
         }
 
+        $account = $accountForm->getEntity();
+
         $this->view->accountForm = $accountForm;
+        $this->view->accountId = $accountId;
+        $this->view->hasAccountDetails = ('' != $account->getDetails());
+    }
+
+    public function detailsAction()
+    {
+        $em = Zend_Registry::get('em');
+
+        $accountId = $this->_request->getParam('accountId');
+
+        $this->_helper->layout()->disableLayout();
+        $this->_helper->viewRenderer->setNoRender(true);
+
+        $account = $em->find('Application\\Models\\Account', $accountId);
+        if (null !== $account) {
+            $filename = __DIR__ . '/../../data/bankDetails/' . $account->getDetails();
+            if (file_exists($filename)) {
+                $extension = substr(strrchr($filename, '.'), 1);
+
+                $mimeTypes = array(
+                    'pdf' => 'application/pdf',
+                    'gif' => 'image/gif',
+                    'jpg' => 'image/jpeg',
+                    'jpeg' => 'image/jpeg',
+                    'png' => 'image/png',
+                );
+
+                $mimeType = $mimeTypes[$extension];
+
+                $this->_response->setHeader('Content-Type', $mimeType);
+                $this->_response->setHeader(
+                    'Content-Disposition',
+                    'attachment; filename=accountDetails' . $accountId . '.' . $extension
+                );
+                $this->_response->setHeader('Content-Length', filesize($filename));
+                $this->_response->setBody(file_get_contents($filename));
+            }
+        }
     }
 }

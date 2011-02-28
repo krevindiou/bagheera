@@ -35,6 +35,12 @@ class Bank extends \Bagheera_Form
         $this->setMethod('post');
         $this->setName('formBank');
 
+        $this->addElement('hidden', 'bankId', array(
+            'required' => false,
+            'filters' => array(),
+            'validators' => array()
+        ));
+
         $this->addElement('text', 'name', array(
             'label' => 'bankName',
             'required' => true,

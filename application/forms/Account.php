@@ -72,6 +72,12 @@ class Account extends \Bagheera_Form
         $this->setMethod('post');
         $this->setName('formAccount');
 
+        $this->addElement('hidden', 'accountId', array(
+            'required' => false,
+            'filters' => array(),
+            'validators' => array()
+        ));
+
         $this->addElement('select', 'bankId', array(
             'label' => 'accountBank',
             'multiOptions' => array('' => '') + $this->_getBanksOptions(),

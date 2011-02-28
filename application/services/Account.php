@@ -42,17 +42,16 @@ class Account extends CrudAbstract
         return parent::getForm(new AccountForm, $account, $params);
     }
 
-    public function add(AccountForm $accountForm)
+    public function save(AccountForm $accountForm)
     {
         $details = $accountForm->getElement('details');
         $details->receive();
 
-        return parent::add($accountForm);
-    }
-
-    public function update(AccountForm $accountForm)
-    {
-        return parent::update($accountForm);
+        if ('' != $accountForm->getElement('accountId')->getValue()) {
+            return parent::update($accountForm);
+        } else {
+            return parent::add($accountForm);
+        }
     }
 
     public function delete(AccountModel $account)

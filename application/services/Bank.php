@@ -42,7 +42,7 @@ class Bank extends CrudAbstract
         return parent::getForm(new BankForm, $bank, $params);
     }
 
-    public function add(BankForm $bankForm)
+    public function save(BankForm $bankForm)
     {
         $userService = User::getInstance();
         $currentUser = $userService->getCurrentUser();
@@ -51,12 +51,11 @@ class Bank extends CrudAbstract
             'user' => $currentUser
         );
 
-        return parent::add($bankForm, $values);
-    }
-
-    public function update(BankForm $bankForm)
-    {
-        return parent::update($bankForm, $values);
+        if ('' != $bankForm->getElement('bankId')->getValue()) {
+            return parent::update($bankForm, $values);
+        } else {
+            return parent::add($bankForm, $values);
+        }
     }
 
     public function delete(BankModel $bank)

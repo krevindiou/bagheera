@@ -1,6 +1,7 @@
 <?php
 
-echo $this->link('newTransaction', $this->translate('newTransaction'), array(), array('accountId' => $this->accountId));
+echo $this->link('newTransaction', $this->translate('newTransaction'), array(), array('accountId' => $this->accountId)) . '<br/>';
+echo $this->link('searchTransactions', $this->translate('searchTransactions'), array(), array('accountId' => $this->accountId)) . '<br/>';
 
 echo '<form method="post" action="">';
 

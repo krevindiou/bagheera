@@ -73,6 +73,10 @@ class TransactionController extends Zend_Controller_Action
         $this->view->balance = $account->getBalance();
     }
 
+    public function searchAction()
+    {
+    }
+
     public function saveAction()
     {
         $transactionId = $this->_request->getParam('transactionId');
