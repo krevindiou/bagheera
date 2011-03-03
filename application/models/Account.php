@@ -284,13 +284,17 @@ class Account
         $this->_updatedAt = $updatedAt;
     }
 
-    public function getBalance()
+    public function getBalance($reconciledOnly = false)
     {
         $em = \Zend_Registry::get('em');
 
         $dql = 'SELECT (SUM(t._credit) - SUM(t._debit)) ';
         $dql.= 'FROM Application\\Models\\Transaction t ';
         $dql.= 'WHERE t._account = ?1 ';
+        if ($reconciledOnly) {
+            $dql.= 'AND t._isReconciled = 1 ';
+        }
+
         $query = $em->createQuery($dql);
         $query->setParameter(1, $this);
         $balance = $query->getSingleScalarResult();

@@ -115,6 +115,14 @@ class Scheduler
     protected $_limitDate;
 
     /**
+     * isReconciled attribute
+     *
+     * @var boolean
+     * @Column(type="boolean", name="is_reconciled")
+     */
+    protected $_isReconciled;
+
+    /**
      * notes attribute
      *
      * @var string
@@ -170,6 +178,13 @@ class Scheduler
     protected $_frequencyValues = array(
         'day','week','month','year'
     );
+
+
+    public function __construct()
+    {
+        $this->_isReconciled = false;
+        $this->_isActive = true;
+    }
 
     /**
      * Gets schedulerId
@@ -368,6 +383,27 @@ class Scheduler
     public function setLimitDate(\DateTime $limitDate)
     {
         $this->_limitDate = $limitDate;
+    }
+
+    /**
+     * Gets isReconciled
+     *
+     * @return boolean
+     */
+    public function getIsReconciled()
+    {
+        return $this->_isReconciled;
+    }
+
+    /**
+     * Sets isReconciled
+     *
+     * @param  boolean $isReconciled    isReconciled to set
+     * @return void
+     */
+    public function setIsReconciled($isReconciled)
+    {
+        $this->_isReconciled = (bool)$isReconciled;
     }
 
     /**

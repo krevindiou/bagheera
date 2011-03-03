@@ -71,6 +71,7 @@ class TransactionController extends Zend_Controller_Action
         $this->view->transactions = $transactions;
         $this->view->accountId = $accountId;
         $this->view->balance = $account->getBalance();
+        $this->view->reconciledBalance = $account->getBalance(true);
     }
 
     public function searchAction()

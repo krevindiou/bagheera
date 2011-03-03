@@ -32,18 +32,69 @@ class SchedulerController extends Zend_Controller_Action
 
     public function init()
     {
-        //$this->_schedulerService = SchedulerService::getInstance();
+        $this->_schedulerService = SchedulerService::getInstance();
     }
 
     public function listAction()
     {
+        $em = Zend_Registry::get('em');
+
+        $accountId = $this->_request->getParam('accountId');
+        $delete = $this->_request->getPost('delete');
+        $schedulers = $this->_request->getPost('schedulers');
+
+        if (!empty($schedulers)) {
+            if ($delete) {
+                $this->_schedulerService->delete($schedulers);
+                $this->_helper->flashMessenger('schedulerDeleteOk');
+            }
+
+            $this->_helper->redirector->gotoRoute(
+                array('accountId' => $accountId),
+                'schedulersList',
+                true
+            );
+        }
+
+        $account = $em->find(
+            'Application\\Models\\Account',
+            $accountId
+        );
+
+        $schedulers = $this->_schedulerService->getSchedulers($account);
+
+        $this->view->schedulers = $schedulers;
+        $this->view->accountId = $accountId;
     }
 
-    public function dueTransactionsAction()
+    public function dueSchedulersAction()
     {
     }
 
     public function saveAction()
     {
+        $schedulerId = $this->_request->getParam('schedulerId');
+        $accountId = $this->_request->getParam('accountId');
+
+        $schedulerForm = $this->_schedulerService->getForm(
+            ('' != $schedulerId) ? $schedulerId : null,
+            array_merge(
+                $this->_request->getPost(),
+                array('accountId' => $accountId)
+            )
+        );
+
+        if ($this->_request->isPost()) {
+            if ($this->_schedulerService->save($schedulerForm)) {
+                $this->_helper->flashMessenger('schedulerFormOk');
+                $this->_helper->redirector->gotoRoute(
+                    array('accountId' => $schedulerForm->getElement('accountId')->getValue()),
+                    'schedulersList',
+                    true
+                );
+            }
+        }
+
+        $this->view->schedulerForm = $schedulerForm;
     }
 }

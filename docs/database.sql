@@ -301,6 +301,7 @@ CREATE TABLE `scheduler` (
   `credit` decimal(10,2) unsigned DEFAULT NULL,
   `value_date` date NOT NULL,
   `limit_date` date DEFAULT NULL,
+  `is_reconciled` tinyint(1) unsigned NOT NULL,
   `notes` text NOT NULL,
   `frequency_unit` varchar(16) NOT NULL DEFAULT 'month',
   `frequency_value` tinyint(3) unsigned NOT NULL,
