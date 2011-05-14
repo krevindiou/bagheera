@@ -136,10 +136,6 @@ class UserController extends Zend_Controller_Action
     {
     }
 
-    public function searchAction()
-    {
-    }
-
     public function saveAction()
     {
     }

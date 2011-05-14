@@ -67,10 +67,6 @@ class SchedulerController extends Zend_Controller_Action
         $this->view->accountId = $accountId;
     }
 
-    public function dueSchedulersAction()
-    {
-    }
-
     public function saveAction()
     {
         $schedulerId = $this->_request->getParam('schedulerId');
