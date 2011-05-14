@@ -320,14 +320,14 @@ CREATE TABLE `scheduler` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `search`
+-- Table structure for table `transaction_search`
 --
 
-DROP TABLE IF EXISTS `search`;
+DROP TABLE IF EXISTS `transaction_search`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `search` (
-  `search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE `transaction_search` (
+  `transaction_search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` int(10) unsigned NOT NULL,
   `third_party` varchar(64) NOT NULL,
   `value_date_start` date DEFAULT NULL,
@@ -341,45 +341,45 @@ CREATE TABLE `search` (
   `amount_superior_to` decimal(10,2) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`search_id`),
-  KEY `fk_search_account` (`account_id`),
-  CONSTRAINT `fk_search_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  PRIMARY KEY (`transaction_search_id`),
+  KEY `fk_transaction_search_account` (`account_id`),
+  CONSTRAINT `fk_transaction_search_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `search_category`
+-- Table structure for table `transaction_search_category`
 --
 
-DROP TABLE IF EXISTS `search_category`;
+DROP TABLE IF EXISTS `transaction_search_category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `search_category` (
-  `search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE `transaction_search_category` (
+  `transaction_search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `category_id` smallint(5) unsigned NOT NULL,
-  PRIMARY KEY (`search_id`),
-  KEY `fk_search_category_search` (`search_id`),
-  KEY `fk_search_category_category` (`category_id`),
-  CONSTRAINT `fk_search_category_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_search_category_search` FOREIGN KEY (`search_id`) REFERENCES `search` (`search_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  PRIMARY KEY (`transaction_search_id`),
+  KEY `fk_transaction_search_category_transaction_search` (`transaction_search_id`),
+  KEY `fk_transaction_search_category_category` (`category_id`),
+  CONSTRAINT `fk_transaction_search_category_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_transaction_search_category_transaction_search` FOREIGN KEY (`transaction_search_id`) REFERENCES `transaction_search` (`transaction_search_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `search_payment_method`
+-- Table structure for table `transaction_search_payment_method`
 --
 
-DROP TABLE IF EXISTS `search_payment_method`;
+DROP TABLE IF EXISTS `transaction_search_payment_method`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `search_payment_method` (
-  `search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE `transaction_search_payment_method` (
+  `transaction_search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
-  PRIMARY KEY (`search_id`),
-  KEY `fk_search_payment_method_search` (`search_id`),
-  KEY `fk_search_payment_method_payment_method` (`payment_method_id`),
-  CONSTRAINT `fk_search_payment_method_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_search_payment_method_search` FOREIGN KEY (`search_id`) REFERENCES `search` (`search_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  PRIMARY KEY (`transaction_search_id`),
+  KEY `fk_transaction_search_payment_method_transaction_search` (`transaction_search_id`),
+  KEY `fk_transaction_search_payment_method_payment_method` (`payment_method_id`),
+  CONSTRAINT `fk_transaction_search_payment_method_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_transaction_search_payment_method_transaction_search` FOREIGN KEY (`transaction_search_id`) REFERENCES `transaction_search` (`transaction_search_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
