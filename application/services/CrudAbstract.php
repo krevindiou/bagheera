@@ -62,6 +62,41 @@ abstract class CrudAbstract extends ServicesAbstract
     }
 
     /**
+     * Populates form entity
+     *
+     * @param  Bagheera_Form $form    Form to get values from
+     * @param  array $values          Extra values
+     */
+    protected function _populateFormEntity(\Bagheera_Form $form, array $values = array())
+    {
+        $entity = $form->getEntity();
+
+        $tmpValues = array();
+        foreach ($form->getElements() as $element) {
+            $tmpValues[$element->getName()] = $element->getValue();
+
+            foreach ($element->getValidators() as $validatorName => $validator) {
+                if ('Zend_Validate_Date' == $validatorName) {
+                    if ('' != $tmpValues[$element->getName()]) {
+                        $tmpValues[$element->getName()] = new \DateTime($tmpValues[$element->getName()]);
+                    } else {
+                        $tmpValues[$element->getName()] = null;
+                    }
+                    break;
+                }
+            }
+        }
+
+        $values = array_merge($tmpValues, $values);
+        foreach ($values as $name => $value) {
+            $setter = 'set' . ucfirst($name);
+            if (is_callable(array($entity, $setter))) {
+                $entity->$setter($value);
+            }
+        }
+    }
+
+    /**
      * Adds entity to database
      *
      * @param  Bagheera_Form $form    Form to get values from
@@ -71,28 +106,9 @@ abstract class CrudAbstract extends ServicesAbstract
     public function add(\Bagheera_Form $form, array $values = array())
     {
         if ($form->isValid($form->getValues())) {
+            $this->_populateFormEntity($form, $values);
+
             $entity = $form->getEntity();
-
-            $tmpValues = array();
-            foreach ($form->getElements() as $element) {
-                $tmpValues[$element->getName()] = $element->getValue();
-
-                foreach ($element->getValidators() as $validatorName => $validator) {
-                    if ('Zend_Validate_Date' == $validatorName) {
-                        $tmpValues[$element->getName()] = new \DateTime($tmpValues[$element->getName()]);
-                        break;
-                    }
-                }
-            }
-
-            $values = array_merge($tmpValues, $values);
-
-            foreach ($values as $name => $value) {
-                $setter = 'set' . ucfirst($name);
-                if (is_callable(array($entity, $setter))) {
-                    $entity->$setter($value);
-                }
-            }
 
             $entity->setCreatedAt(new \DateTime);
             $entity->setUpdatedAt(new \DateTime);
@@ -116,27 +132,9 @@ abstract class CrudAbstract extends ServicesAbstract
     public function update(\Bagheera_Form $form, array $values = array())
     {
         if ($form->isValid($form->getValues())) {
+            $this->_populateFormEntity($form, $values);
+
             $entity = $form->getEntity();
-
-            $tmpValues = array();
-            foreach ($form->getElements() as $element) {
-                $tmpValues[$element->getName()] = $element->getValue();
-
-                foreach ($element->getValidators() as $validatorName => $validator) {
-                    if ('Zend_Validate_Date' == $validatorName) {
-                        $tmpValues[$element->getName()] = new \DateTime($tmpValues[$element->getName()]);
-                        break;
-                    }
-                }
-            }
-
-            $values = array_merge($tmpValues, $values);
-            foreach ($values as $name => $value) {
-                $setter = 'set' . ucfirst($name);
-                if (is_callable(array($entity, $setter))) {
-                    $entity->$setter($value);
-                }
-            }
 
             $entity->setUpdatedAt(new \DateTime);
 
