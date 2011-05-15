@@ -45,25 +45,25 @@ class UserFormTest extends ControllerTestCase
     {
         $user = new Application\Models\User();
 
-        $userForm = $this->_userService->getForm($user->getUserId());
+        $userProfileForm = $this->_userService->getProfileForm($user->getUserId());
 
-        $this->assertFalse($userForm->isValid(array()));
+        $this->assertFalse($userProfileForm->isValid(array()));
 
         $formValues = $this->getFormValues();
-        $this->assertTrue($userForm->isValid($formValues));
+        $this->assertTrue($userProfileForm->isValid($formValues));
 
         $formValues = $this->getFormValues();
         $formValues['email'] = 'a';
-        $this->assertFalse($userForm->isValid($formValues));
+        $this->assertFalse($userProfileForm->isValid($formValues));
 
         $formValues = $this->getFormValues();
         $formValues['password'] = 'a';
         $formValues['passwordConfirmation'] = 'a';
-        $this->assertFalse($userForm->isValid($formValues));
+        $this->assertFalse($userProfileForm->isValid($formValues));
 
         $formValues = $this->getFormValues();
         $formValues['password'] = 'aaaa';
         $formValues['passwordConfirmation'] = 'bbbb';
-        $this->assertFalse($userForm->isValid($formValues));
+        $this->assertFalse($userProfileForm->isValid($formValues));
     }
 }

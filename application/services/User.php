@@ -21,7 +21,8 @@ namespace Application\Services;
 use Application\Models\User as UserModel,
     Application\Models\Bank as BankModel,
     Application\Models\Account as AccountModel,
-    Application\Forms\User as UserForm,
+    Application\Forms\UserRegister as UserRegisterForm,
+    Application\Forms\UserProfile as UserProfileForm,
     Application\Forms\UserLogin as UserLoginForm,
     Application\Forms\UserForgotPassword as UserForgotPasswordForm,
     Application\Forms\UserResetPassword as UserResetPasswordForm,
@@ -46,7 +47,12 @@ class User extends CrudAbstract
         return $userLoginForm;
     }
 
-    public function getForm($userId = null, array $params = null)
+    public function getRegisterForm(array $params = null)
+    {
+        return parent::getForm(new UserRegisterForm, new UserModel(), $params);
+    }
+
+    public function getProfileForm($userId = null, array $params = null)
     {
         if (null !== $userId) {
             $user = $this->_em->find('Application\\Models\\User', $userId);
@@ -54,13 +60,13 @@ class User extends CrudAbstract
             $user = new UserModel();
         }
 
-        return parent::getForm(new UserForm, $user, $params);
+        return parent::getForm(new UserProfileForm, $user, $params);
     }
 
-    public function add(UserForm $userForm)
+    public function add(UserRegisterForm $userRegisterForm)
     {
-        $password = $userForm->getElement('password');
-        $passwordConfirmation = $userForm->getElement('passwordConfirmation');
+        $password = $userRegisterForm->getElement('password');
+        $passwordConfirmation = $userRegisterForm->getElement('passwordConfirmation');
 
         if ('' != $password->getValue()) {
             $password->setValue(md5($password->getValue()));
@@ -71,7 +77,7 @@ class User extends CrudAbstract
         }
 
         // Activation mail sending
-        if (parent::add($userForm)) {
+        if (parent::add($userRegisterForm)) {
             $config = \Zend_Registry::get('config');
             $translate = \Zend_Registry::get('Zend_Translate');
 
@@ -90,14 +96,14 @@ class User extends CrudAbstract
             $mail = new \Zend_Mail();
             $mail->setFrom($config->app->admin->email, $config->app->admin->name);
             $mail->addTo(
-                $userForm->getElement('email')->getValue(),
-                $userForm->getElement('firstname')->getValue() . ' ' . $userForm->getElement('lastname')->getValue()
+                $userRegisterForm->getElement('email')->getValue(),
+                $userRegisterForm->getElement('firstname')->getValue() . ' ' . $userRegisterForm->getElement('lastname')->getValue()
             );
             $mail->setSubject($translate->translate('userEmailRegistrationSubject'));
             $mail->setBodyText($body);
             $mail->send();
 
-            $user = $userForm->getEntity();
+            $user = $userRegisterForm->getEntity();
             $user->setActivation($key);
             $this->_em->flush();
 
@@ -107,10 +113,10 @@ class User extends CrudAbstract
         }
     }
 
-    public function update(UserForm $userForm)
+    public function update(UserProfileForm $userProfileForm)
     {
-        $password = $userForm->getElement('password');
-        $passwordConfirmation = $userForm->getElement('passwordConfirmation');
+        $password = $userProfileForm->getElement('password');
+        $passwordConfirmation = $userProfileForm->getElement('passwordConfirmation');
 
         if ('' != $password->getValue()) {
             $password->setValue(md5($password->getValue()));
@@ -120,7 +126,7 @@ class User extends CrudAbstract
             $passwordConfirmation->setValue(md5($passwordConfirmation->getValue()));
         }
 
-        return parent::update($userForm);
+        return parent::update($userProfileForm);
     }
 
     public function delete(UserModel $user)

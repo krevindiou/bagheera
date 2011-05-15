@@ -56,7 +56,7 @@ class UserController extends Zend_Controller_Action
 
     public function registerAction()
     {
-        $registerForm = $this->_userService->getForm(null, $this->_request->getPost());
+        $registerForm = $this->_userService->getRegisterForm($this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ($this->_userService->add($registerForm)) {
@@ -107,7 +107,7 @@ class UserController extends Zend_Controller_Action
     {
         $user = $this->_userService->getCurrentUser();
 
-        $profileForm = $this->_userService->getForm($user->getUserId(), $this->_request->getPost());
+        $profileForm = $this->_userService->getProfileForm($user->getUserId(), $this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ($this->_userService->update($profileForm)) {
