@@ -16,7 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\User as UserService;
+use Application\Models\User as UserModel,
+    Application\Services\User as UserService;
 
 /**
  * User controller
@@ -75,7 +76,7 @@ class UserController extends Zend_Controller_Action
         if ($this->_request->isPost()) {
             if ($this->_userService->sendResetPasswordEmail($forgotPasswordForm)) {
                 $this->_helper->flashMessenger('userForgotPasswordFormConfirmation');
-                $this->_helper->redirector->gotoRoute(array(), 'forgotPassword', true);
+                $this->_helper->redirector->gotoRoute(array(), 'login', true);
             }
         }
 
@@ -96,7 +97,7 @@ class UserController extends Zend_Controller_Action
                 }
             }
         } else {
-            $this->_helper->flashMessenger('userResetPasswordError');
+            $this->_helper->flashMessenger('userResetPasswordFormError');
             $this->_helper->redirector->gotoRoute(array(), 'login', true);
         }
 
@@ -111,7 +112,7 @@ class UserController extends Zend_Controller_Action
 
         if ($this->_request->isPost()) {
             if ($this->_userService->update($profileForm)) {
-                $this->_helper->flashMessenger('userEditFormConfirmation');
+                $this->_helper->flashMessenger('userProfileFormConfirmation');
                 $this->_helper->redirector->gotoRoute(array(), 'profile', true);
             }
         }
@@ -134,6 +135,27 @@ class UserController extends Zend_Controller_Action
 
     public function listAction()
     {
+        $em = Zend_Registry::get('em');
+
+        $page = (int)$this->_request->getParam('page', 1);
+        $toggleDeactivation = $this->_request->getPost('toggleDeactivation');
+        $users = $this->_request->getPost('users');
+
+        if (!empty($users)) {
+            if ($toggleDeactivation) {
+                $this->_userService->toggleDeactivation($users);
+                $this->_helper->flashMessenger('userToggleDeactivationOk');
+            }
+
+            $this->_helper->redirector->gotoRoute(array(), 'usersList', true);
+        }
+
+        $users = $this->_userService->getUsers(
+            new UserModel(),
+            $page
+        );
+
+        $this->view->users = $users;
     }
 
     public function saveAction()

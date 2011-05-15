@@ -113,6 +113,7 @@ class User
     /**
      * Banks list
      *
+     * @var Doctrine\Common\Collections\ArrayCollection
      * @OneToMany(targetEntity="Bank", mappedBy="_user")
      * @OrderBy({"_name" = "ASC"})
      */
@@ -121,6 +122,7 @@ class User
     /**
      * Accounts list
      *
+     * @var Doctrine\Common\Collections\ArrayCollection
      * @ManyToMany(targetEntity="Account")
      * @JoinTable(name="bank",
      *      joinColumns={@JoinColumn(name="user_id", referencedColumnName="user_id")},

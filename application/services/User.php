@@ -129,9 +129,21 @@ class User extends CrudAbstract
         return parent::update($userProfileForm);
     }
 
-    public function delete(UserModel $user)
+    public function toggleDeactivation(array $usersId)
     {
-        return parent::delete($user);
+        foreach ($usersId as $userId) {
+            $user = $this->_em->find(
+                'Application\\Models\\User',
+                $userId
+            );
+
+            if (null !== $user) {
+                $user->setIsActive(!$user->getIsActive());
+
+                $this->_em->persist($user);
+                $this->_em->flush();
+            }
+        }
     }
 
     public function deleteBank(BankModel $bank)
@@ -373,5 +385,53 @@ class User extends CrudAbstract
         }
 
         return false;
+    }
+
+    public function getUsers(UserModel $user = null, $page = 1)
+    {
+        $dql = 'SELECT u ';
+        $dql.= 'FROM Application\\Models\\User u ';
+        $dql.= 'WHERE 1 = 1 ';
+        if (null !== $user) {
+            if ('' != $user->getFirstname()) {
+                $dql.= 'AND u._firstname LIKE :firstname ';
+            }
+            if ('' != $user->getLastname()) {
+                $dql.= 'AND u._lastname LIKE :lastname ';
+            }
+            if ('' != $user->getEmail()) {
+                $dql.= 'AND u._email LIKE :email ';
+            }
+            if ('' != $user->getIsActive()) {
+                $dql.= 'AND u._isActive = :isActive ';
+            }
+            if ('' != $user->getIsAdmin()) {
+                $dql.= 'AND u._isAdmin = :isAdmin ';
+            }
+        }
+        $dql.= 'ORDER BY u._createdAt DESC ';
+        $query = $this->_em->createQuery($dql);
+        if (null !== $user) {
+            if ('' != $user->getFirstname()) {
+                $query->setParameter('firstname', $user->getFirstname() . '%');
+            }
+            if ('' != $user->getLastname()) {
+                $query->setParameter('lastname', $user->getLastname() . '%');
+            }
+            if ('' != $user->getEmail()) {
+                $query->setParameter('email', $user->getEmail() . '%');
+            }
+            if ('' != $user->getIsActive()) {
+                $query->setParameter('isActive', $user->getIsActive());
+            }
+            if ('' != $user->getIsAdmin()) {
+                $query->setParameter('isAdmin', $user->getIsAdmin());
+            }
+        }
+
+        $paginator = new \Zend_Paginator(new \DoctrineExtensions\Paginate\PaginationAdapter($query));
+        $paginator->setCurrentPageNumber($page);
+
+        return $paginator;
     }
 }
