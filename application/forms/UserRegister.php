@@ -103,4 +103,33 @@ class UserRegister extends \Bagheera_Form
             'ignore' => true,
         ));
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isValid($data)
+    {
+        $translate = \Zend_Registry::get('Zend_Translate');
+        $em = \Zend_Registry::get('em');
+
+        $dql = 'SELECT u ';
+        $dql.= 'FROM Application\\Models\\User u ';
+        $dql.= 'WHERE u._email = :email ';
+
+        $query = $em->createQuery($dql);
+        $query->setParameter('email', $data['email']);
+
+        $isValid = parent::isValid($data);
+        if ($isValid) {
+            try {
+                $query->getSingleResult();
+
+                $this->addError($translate->translate('userEmailFound'));
+                $isValid = false;
+            } catch (\Doctrine\ORM\NoResultException $e) {
+            }
+        }
+
+        return $isValid;
+    }
 }

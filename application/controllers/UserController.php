@@ -160,5 +160,26 @@ class UserController extends Zend_Controller_Action
 
     public function saveAction()
     {
+        $userId = $this->_request->getParam('userId');
+
+        $profileForm = $this->_userService->getProfileForm(
+            ('' != $userId) ? $userId : null,
+            $this->_request->getPost()
+        );
+
+        if ($this->_request->isPost()) {
+            if ('' != $userId) {
+                $formOk = $this->_userService->update($profileForm);
+            } else {
+                $formOk = $this->_userService->add($profileForm);
+            }
+
+            if ($formOk) {
+                $this->_helper->flashMessenger('userFormOk');
+                $this->_helper->redirector->gotoRoute(array(), 'usersList', true);
+            }
+        }
+
+        $this->view->profileForm = $profileForm;
     }
 }
