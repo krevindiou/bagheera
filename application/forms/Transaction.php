@@ -32,7 +32,7 @@ use Application\Services\User as UserService,
  */
 class Transaction extends \Bagheera_Form
 {
-    private function _getCategoriesOptions()
+    protected function _getCategoriesOptions()
     {
         $userService = UserService::getInstance();
         $categoryService = CategoryService::getInstance();
@@ -41,7 +41,7 @@ class Transaction extends \Bagheera_Form
         return $options;
     }
 
-    private function _getPaymentMethodsOptions()
+    protected function _getPaymentMethodsOptions()
     {
         $paymentMethodService = PaymentMethodService::getInstance();
         $paymentMethods = $paymentMethodService->getPaymentMethods();
@@ -54,7 +54,7 @@ class Transaction extends \Bagheera_Form
         return $options;
     }
 
-    private function _getTransferAccountsOptions()
+    protected function _getTransferAccountsOptions()
     {
         $transferAccountsOptions = array();
 
@@ -190,7 +190,7 @@ class Transaction extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'save',
+            'label' => 'saveAction',
             'ignore' => true,
         ));
     }

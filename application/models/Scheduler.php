@@ -380,7 +380,7 @@ class Scheduler
      * @param  DateTime $limitDate    limitDate to set
      * @return void
      */
-    public function setLimitDate(\DateTime $limitDate)
+    public function setLimitDate(\DateTime $limitDate = null)
     {
         $this->_limitDate = $limitDate;
     }

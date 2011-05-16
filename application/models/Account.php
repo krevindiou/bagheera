@@ -290,13 +290,13 @@ class Account
 
         $dql = 'SELECT (SUM(t._credit) - SUM(t._debit)) ';
         $dql.= 'FROM Application\\Models\\Transaction t ';
-        $dql.= 'WHERE t._account = ?1 ';
+        $dql.= 'WHERE t._account = :account ';
         if ($reconciledOnly) {
             $dql.= 'AND t._isReconciled = 1 ';
         }
 
         $query = $em->createQuery($dql);
-        $query->setParameter(1, $this);
+        $query->setParameter('account', $this);
         $balance = $query->getSingleScalarResult();
 
         return sprintf('%.2f', $this->getInitialBalance() + $balance);

@@ -161,7 +161,7 @@ class AccountController extends Zend_Controller_Action
         $this->_helper->viewRenderer->setNoRender(true);
 
         $account = $em->find('Application\\Models\\Account', $accountId);
-        if (null !== $account) {
+        if (null !== $account && '' != $account->getDetails()) {
             $filename = __DIR__ . '/../../data/bankDetails/' . $account->getDetails();
             if (file_exists($filename)) {
                 $extension = substr(strrchr($filename, '.'), 1);

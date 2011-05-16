@@ -74,10 +74,10 @@ class Scheduler extends CrudAbstract
     {
         $dql = 'SELECT t ';
         $dql.= 'FROM Application\\Models\\Scheduler t ';
-        $dql.= 'WHERE t._account = ?1 ';
+        $dql.= 'WHERE t._account = :account ';
         $dql.= 'ORDER BY t._valueDate DESC ';
         $query = $this->_em->createQuery($dql);
-        $query->setParameter(1, $account);
+        $query->setParameter('account', $account);
 
         return $query->getResult();
     }

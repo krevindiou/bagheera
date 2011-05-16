@@ -46,6 +46,7 @@ form
     input[type=radio], input[type=checkbox]
         border: 0
     input[type=submit], input[type=button], input[type=reset], input[type=image], button
+        float: left
         margin-left: 216px
         margin-bottom: 10px
 
