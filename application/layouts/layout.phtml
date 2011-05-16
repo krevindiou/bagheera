@@ -18,7 +18,7 @@
     </head>
     <body>
         <div id="sidebar">
-            <p><?php echo $this->link('logout', $this->translate('logoutLink')) ?><br/><br/></p>
+            <p><?php echo $this->link('logout', $this->translate('userLogoutLink')) ?><br/><br/></p>
 
             <ul id="menu">
                 <li><?php echo $this->link('home', $this->translate('menuHome')) ?></li>
@@ -34,9 +34,9 @@
                 <li>
                     <?php echo $this->link('usersList', $this->translate('menuAdmin')) ?>
                     <ul>
-                        <li><?php echo $this->link('usersList', $this->translate('menuUsers')) ?></li>
-                        <li><?php echo $this->link('categoriesList', $this->translate('menuCategories')) ?></li>
-                        <li><?php echo $this->link('paymentMethodsList', $this->translate('menuPaymentMethods')) ?></li>
+                        <li><?php echo $this->link('usersList', $this->translate('menuAdminUsers')) ?></li>
+                        <li><?php echo $this->link('categoriesList', $this->translate('menuAdminCategories')) ?></li>
+                        <li><?php echo $this->link('paymentMethodsList', $this->translate('menuAdminPaymentMethods')) ?></li>
                     </ul>
                 </li>
             </ul>

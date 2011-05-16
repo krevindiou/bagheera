@@ -30,4 +30,10 @@ use Application\Forms\UserRegister as UserRegisterForm;
  */
 class UserProfile extends UserRegisterForm
 {
+    public function init()
+    {
+        parent::init();
+
+        $this->getElement('save')->setLabel('saveAction');
+    }
 }

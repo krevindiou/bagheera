@@ -63,7 +63,7 @@ class UserLogin extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'userConnect',
+            'label' => 'userConnectAction',
             'ignore' => true,
         ));
     }

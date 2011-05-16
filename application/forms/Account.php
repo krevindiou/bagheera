@@ -126,7 +126,7 @@ class Account extends \Bagheera_Form
         $adapter->addFilter('Rename', array('target' => $this->_getDetailsFilename(), 'overwrite' => false));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'save',
+            'label' => 'saveAction',
             'ignore' => true,
         ));
     }

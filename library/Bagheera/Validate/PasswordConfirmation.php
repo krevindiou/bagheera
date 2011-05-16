@@ -27,10 +27,10 @@
  */
 class Bagheera_Validate_PasswordConfirmation extends Zend_Validate_Abstract
 {
-    const DOES_NOT_MATCH = 'passwordConfirmationDoesNotMatch';
+    const DOES_NOT_MATCH = 'userPasswordConfirmationDoesNotMatch';
 
     protected $_messageTemplates = array(
-        self::DOES_NOT_MATCH => 'passwordConfirmationDoesNotMatch'
+        self::DOES_NOT_MATCH => 'userPasswordConfirmationDoesNotMatch'
     );
 
     protected $_fieldsToMatch = array();

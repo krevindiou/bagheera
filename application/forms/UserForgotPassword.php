@@ -48,7 +48,7 @@ class UserForgotPassword extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'userSendResetPasswordLink',
+            'label' => 'userSendResetPasswordAction',
             'ignore' => true,
         ));
     }

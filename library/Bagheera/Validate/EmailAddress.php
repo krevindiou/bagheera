@@ -30,7 +30,7 @@ class Bagheera_Validate_EmailAddress extends Zend_Validate_EmailAddress
     public function __construct()
     {
         foreach ($this->_messageTemplates as $k => $v) {
-            $this->_messageTemplates[$k] = 'invalidEmailAddress';
+            $this->_messageTemplates[$k] = 'userInvalidEmailAddress';
         }
 
         parent::__construct();

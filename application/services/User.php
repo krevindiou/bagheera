@@ -68,16 +68,16 @@ class User extends CrudAbstract
         $password = $userRegisterForm->getElement('password');
         $passwordConfirmation = $userRegisterForm->getElement('passwordConfirmation');
 
+        $values = array();
         if ('' != $password->getValue()) {
-            $password->setValue(md5($password->getValue()));
+            $values['password'] = md5($password->getValue());
         }
-
         if ('' != $passwordConfirmation->getValue()) {
-            $passwordConfirmation->setValue(md5($passwordConfirmation->getValue()));
+            $values['passwordConfirmation'] = md5($passwordConfirmation->getValue());
         }
 
         // Activation mail sending
-        if (parent::add($userRegisterForm)) {
+        if (parent::add($userRegisterForm, $values)) {
             $config = \Zend_Registry::get('config');
             $translate = \Zend_Registry::get('Zend_Translate');
 
@@ -118,15 +118,15 @@ class User extends CrudAbstract
         $password = $userProfileForm->getElement('password');
         $passwordConfirmation = $userProfileForm->getElement('passwordConfirmation');
 
+        $values = array();
         if ('' != $password->getValue()) {
-            $password->setValue(md5($password->getValue()));
+            $values['password'] = md5($password->getValue());
         }
-
         if ('' != $passwordConfirmation->getValue()) {
-            $passwordConfirmation->setValue(md5($passwordConfirmation->getValue()));
+            $values['passwordConfirmation'] = md5($passwordConfirmation->getValue());
         }
 
-        return parent::update($userProfileForm);
+        return parent::update($userProfileForm, $values);
     }
 
     public function toggleDeactivation(array $usersId)
@@ -327,7 +327,7 @@ class User extends CrudAbstract
 
             if (!$isValid) {
                 $translate = \Zend_Registry::get('Zend_Translate');
-                $userLoginForm->addErrorMessage($translate->translate('loginError'));
+                $userLoginForm->addErrorMessage($translate->translate('userLoginError'));
             }
         }
 

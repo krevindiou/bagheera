@@ -71,7 +71,7 @@ class UserRegister extends \Bagheera_Form
 
         $this->addElement('password', 'password', array(
             'label' => 'userPassword',
-            'description' => 'userPasswordComment',
+            'description' => 'userPasswordDescription',
             'required' => true,
             'maxlength' => 128,
             'filters' => array(),
@@ -99,7 +99,7 @@ class UserRegister extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'userRegister',
+            'label' => 'userRegisterAction',
             'ignore' => true,
         ));
     }

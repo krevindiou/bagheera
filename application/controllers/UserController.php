@@ -125,9 +125,9 @@ class UserController extends Zend_Controller_Action
         $key = $this->_request->getParam('key');
 
         if ($this->_userService->activate($key)) {
-            $this->_helper->flashMessenger('userActivationOk');
+            $this->_helper->flashMessenger('userActivationConfirmation');
         } else {
-            $this->_helper->flashMessenger('userActivationNotOk');
+            $this->_helper->flashMessenger('userActivationError');
         }
 
         $this->_helper->redirector->gotoRoute(array(), 'login', true);
@@ -150,10 +150,7 @@ class UserController extends Zend_Controller_Action
             $this->_helper->redirector->gotoRoute(array(), 'usersList', true);
         }
 
-        $users = $this->_userService->getUsers(
-            new UserModel(),
-            $page
-        );
+        $users = $this->_userService->getUsers(new UserModel(), $page);
 
         $this->view->users = $users;
     }
@@ -175,7 +172,7 @@ class UserController extends Zend_Controller_Action
             }
 
             if ($formOk) {
-                $this->_helper->flashMessenger('userFormOk');
+                $this->_helper->flashMessenger('userFormConfirmation');
                 $this->_helper->redirector->gotoRoute(array(), 'usersList', true);
             }
         }

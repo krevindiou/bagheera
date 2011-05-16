@@ -37,7 +37,7 @@ class UserResetPassword extends \Bagheera_Form
 
         $this->addElement('password', 'password', array(
             'label' => 'userPassword',
-            'description' => 'userPasswordComment',
+            'description' => 'userPasswordDescription',
             'required' => true,
             'maxlength' => 128,
             'filters' => array(),
@@ -65,7 +65,7 @@ class UserResetPassword extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'userResetPassword',
+            'label' => 'userResetPasswordAction',
             'ignore' => true,
         ));
     }

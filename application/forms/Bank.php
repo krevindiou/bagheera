@@ -68,7 +68,7 @@ class Bank extends \Bagheera_Form
         ));
 
         $this->addElement('submit', 'save', array(
-            'label' => 'save',
+            'label' => 'saveAction',
             'ignore' => true,
         ));
     }
