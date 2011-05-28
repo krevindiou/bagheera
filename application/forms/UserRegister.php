@@ -115,9 +115,15 @@ class UserRegister extends \Bagheera_Form
         $dql = 'SELECT u ';
         $dql.= 'FROM Application\\Models\\User u ';
         $dql.= 'WHERE u._email = :email ';
+        if ('' != $data['userId']) {
+            $dql.= 'AND u._userId != :userId ';
+        }
 
         $query = $em->createQuery($dql);
         $query->setParameter('email', $data['email']);
+        if ('' != $data['userId']) {
+            $query->setParameter('userId', $data['userId']);
+        }
 
         $isValid = parent::isValid($data);
         if ($isValid) {

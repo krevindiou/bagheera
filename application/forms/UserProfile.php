@@ -34,6 +34,9 @@ class UserProfile extends UserRegisterForm
     {
         parent::init();
 
+        $this->getElement('password')->setRequired(false);
+        $this->getElement('passwordConfirmation')->setRequired(false);
+
         $this->getElement('save')->setLabel('saveAction');
     }
 }

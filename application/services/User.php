@@ -60,7 +60,13 @@ class User extends CrudAbstract
             $user = new UserModel();
         }
 
-        return parent::getForm(new UserProfileForm, $user, $params);
+        $userProfileForm = new UserProfileForm;
+        if (null === $userId) {
+            $userProfileForm->getElement('password')->setRequired(true);
+            $userProfileForm->getElement('passwordConfirmation')->setRequired(true);
+        }
+
+        return parent::getForm($userProfileForm, $user, $params);
     }
 
     public function add(UserRegisterForm $userRegisterForm)
@@ -115,15 +121,21 @@ class User extends CrudAbstract
 
     public function update(UserProfileForm $userProfileForm)
     {
+        $currentPassword = $userProfileForm->getEntity()->getPassword();
+
         $password = $userProfileForm->getElement('password');
         $passwordConfirmation = $userProfileForm->getElement('passwordConfirmation');
 
         $values = array();
         if ('' != $password->getValue()) {
             $values['password'] = md5($password->getValue());
+        } else {
+            $password->setValue($currentPassword);
         }
         if ('' != $passwordConfirmation->getValue()) {
             $values['passwordConfirmation'] = md5($passwordConfirmation->getValue());
+        } else {
+            $passwordConfirmation->setValue($currentPassword);
         }
 
         return parent::update($userProfileForm, $values);
