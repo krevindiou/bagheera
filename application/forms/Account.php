@@ -113,6 +113,7 @@ class Account extends \Bagheera_Form
         $this->setAttrib('enctype', 'multipart/form-data');
         $this->addElement('file', 'details', array(
             'label' => 'accountDetails',
+            'description' => '(jpeg, png, gif, pdf)',
             'required' => false,
             'destination' => __DIR__ . '/../../data/bankDetails',
             'valueDisabled' => true,

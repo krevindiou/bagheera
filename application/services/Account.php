@@ -47,8 +47,15 @@ class Account extends CrudAbstract
         $details = $accountForm->getElement('details');
         $details->receive();
 
+        $currentDetails = $accountForm->getEntity()->getDetails();
+
         if ('' != $accountForm->getElement('accountId')->getValue()) {
-            return parent::update($accountForm);
+            $values = array();
+            if ('' == $details->getValue()) {
+                $values['details'] = $currentDetails;
+            }
+
+            return parent::update($accountForm, $values);
         } else {
             return parent::add($accountForm);
         }

@@ -186,7 +186,7 @@ class Account
      */
     public function getInitialBalance()
     {
-        return $this->_initialBalance;
+        return sprintf('%.2f', $this->_initialBalance);
     }
 
     /**
@@ -207,7 +207,7 @@ class Account
      */
     public function getOverdraftFacility()
     {
-        return $this->_overdraftFacility;
+        return sprintf('%.2f', $this->_overdraftFacility);
     }
 
     /**
