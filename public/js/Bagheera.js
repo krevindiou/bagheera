@@ -1,6 +1,6 @@
 var Bagheera = {
     baseUrl: "",
-    paymentMethodOptions: {},
+    paymentMethodOptions: [],
 
     init: function(){
         $(document).ready(function(){
@@ -17,40 +17,49 @@ var Bagheera = {
                 $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("disabled", $(this).attr("checked"));
             });
 
-            $("input[type=submit][name=delete], input[type=submit][name=share]").click(function(){
-                if (confirm("confirmDelete")) {
+            $("input[type=submit][name=delete], input[type=submit][name=share]").click(function(event){
+                if (confirm(Bagheera.translations.confirm)) {
                     $(this).parents("form").attr("action", "account/" + $(this).attr("name"));
+                } else {
+                    event.preventDefault();
                 }
             });
         }
     },
 
     dropDownPaymentMethod: function(){
-        if ($("select[name=paymentMethodId]").length > 0) {
-            $("select[name=paymentMethodId]").find("optgroup").each(function(){
+        if ($("select[name^=paymentMethodId]").length > 0) {
+            $("select[name^=paymentMethodId] optgroup").each(function(){
                 var type = $(this).attr("label");
 
+                Bagheera.paymentMethodOptions[type] = [];
+
+                $("select[name^=paymentMethodId] > option").each(function(){
+                    Bagheera.paymentMethodOptions[type].push({value: $(this).val(), text: $(this).text()});
+                });
+
                 $(this).find("option").each(function(){
-                    Bagheera.paymentMethodOptions[type] = Bagheera.paymentMethodOptions[type] || [];
-                    Bagheera.paymentMethodOptions[type][$(this).val()] = $(this).text();
+                    Bagheera.paymentMethodOptions[type].push({value: $(this).val(), text: $(this).text()});
                 });
             });
 
             function filldropDownPaymentMethod(debitCredit) {
-                if (debitCredit != "") {
-                    var paymentMethodId = $("select[name=paymentMethodId]").val();
+                if ("" != debitCredit) {
+                    var paymentMethodId = $("select[name^=paymentMethodId]").val();
 
-                    $("select[name=paymentMethodId]").html("<option value=\"\"></option>");
+                    $("select[name^=paymentMethodId]").html("");
 
-                    for (var value in Bagheera.paymentMethodOptions[debitCredit]) {
-                        $("select[name=paymentMethodId]").append(
-                            $("<option></option>").val(value).html(
-                                Bagheera.paymentMethodOptions[debitCredit][value]
-                            )
+                    for (var key in Bagheera.paymentMethodOptions[debitCredit]) {
+                        var option = Bagheera.paymentMethodOptions[debitCredit][key];
+
+                        $("select[name^=paymentMethodId]").append(
+                            $("<option></option>").val(option.value).html(option.text)
                         );
                     }
 
-                    $("select[name=paymentMethodId]").val(paymentMethodId);
+                    if (null != paymentMethodId) {
+                        $("select[name^=paymentMethodId]").val(paymentMethodId);
+                    }
                 }
             }
 
@@ -63,14 +72,14 @@ var Bagheera = {
     },
 
     dropDownTransferAccount: function(){
-        toggleTransferAccountList($("select[name=paymentMethodId]").val());
+        toggleTransferAccountList($("select[name^=paymentMethodId]").val());
 
-        $("select[name=paymentMethodId]").change(function(){
+        $("select[name^=paymentMethodId]").change(function(){
             toggleTransferAccountList($(this).val());
         });
 
         $("input[name=debitCredit]").change(function(){
-            toggleTransferAccountList($("select[name=paymentMethodId]").val());
+            toggleTransferAccountList($("select[name^=paymentMethodId]").val());
         });
 
         function toggleTransferAccountList(paymentMethodId)
