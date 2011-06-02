@@ -16,15 +16,13 @@ var Bagheera = {
                 $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("checked", $(this).attr("checked"));
                 $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("disabled", $(this).attr("checked"));
             });
-
-            $("input[type=submit][name=delete], input[type=submit][name=share]").click(function(event){
-                if (confirm(Bagheera.translations.confirm)) {
-                    $(this).parents("form").attr("action", "account/" + $(this).attr("name"));
-                } else {
-                    event.preventDefault();
-                }
-            });
         }
+
+        $("input[type=submit][name=delete], input[type=submit][name=share], input[type=submit][name=reconcile]").click(function(event){
+            if (!confirm(Bagheera.translations.confirm)) {
+                event.preventDefault();
+            }
+        });
     },
 
     dropDownPaymentMethod: function(){

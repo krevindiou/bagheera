@@ -64,23 +64,36 @@ class AccountController extends Zend_Controller_Action
 
     public function listAction()
     {
-        $user = $this->_userService->getCurrentUser();
+        $delete = $this->_request->getPost('delete');
+        $share = $this->_request->getPost('share');
+        $accountsId = (array)$this->_request->getPost('accountsId');
+        $banksId = (array)$this->_request->getPost('banksId');
 
-        $bankAccounts = array();
-        $banks = $user->getBanks();
-        foreach ($banks as $bank) {
-            $bankAccounts[$bank->getBankId()] = array(
-                'bank' => $bank,
-                'accounts' => array()
-            );
-        }
-        $accounts = $user->getAccounts();
-        foreach ($accounts as $account) {
-            $bankAccounts[$account->getBank()->getBankId()]['accounts'][$account->getAccountId()] = $account;
-        }
+        if (!empty($accountsId) || !empty($banksId)) {
+            if ($delete) {
+                $this->_forward('delete');
+            } elseif ($share) {
+                $this->_forward('share');
+            }
+        } else {
+            $user = $this->_userService->getCurrentUser();
 
-        $this->view->user = $user;
-        $this->view->accounts = $bankAccounts;
+            $bankAccounts = array();
+            $banks = $user->getBanks();
+            foreach ($banks as $bank) {
+                $bankAccounts[$bank->getBankId()] = array(
+                    'bank' => $bank,
+                    'accounts' => array()
+                );
+            }
+            $accounts = $user->getAccounts();
+            foreach ($accounts as $account) {
+                $bankAccounts[$account->getBank()->getBankId()]['accounts'][$account->getAccountId()] = $account;
+            }
+
+            $this->view->user = $user;
+            $this->view->accounts = $bankAccounts;
+        }
     }
 
     public function deleteAction()
@@ -119,8 +132,8 @@ class AccountController extends Zend_Controller_Action
     {
         $em = Zend_Registry::get('em');
 
-        $banksId = (array)$this->_request->getPost('banksId');
         $accountsId = (array)$this->_request->getPost('accountsId');
+        $banksId = (array)$this->_request->getPost('banksId');
 
         // ...
 
