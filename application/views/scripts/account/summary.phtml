@@ -3,7 +3,7 @@
 foreach ($this->accounts as $v) {
     echo '# ' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '<br/>';
     if (empty($v['accounts'])) {
-        echo '<em>' . $this->translate('noAccounts'). '</em><br/>';
+        echo '<em>' . $this->translate('noAccount'). '</em><br/>';
     } else {
         foreach ($v['accounts'] as $account) {
             echo '- <a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a> - ' . $account->getBalance() . '<br/>';
@@ -12,4 +12,4 @@ foreach ($this->accounts as $v) {
 }
 
 echo '<br/>';
-echo 'TOTAL: ' . $this->user->getBalance();
+echo $this->translate('totalBalance') . ' : ' . $this->user->getBalance();

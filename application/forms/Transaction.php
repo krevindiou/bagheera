@@ -43,12 +43,14 @@ class Transaction extends \Bagheera_Form
 
     protected function _getPaymentMethodsOptions()
     {
+        $translator = $this->getTranslator();
+
         $paymentMethodService = PaymentMethodService::getInstance();
         $paymentMethods = $paymentMethodService->getPaymentMethods();
 
         $options = array();
         foreach ($paymentMethods as $paymentMethod) {
-            $options[$paymentMethod->getType()][$paymentMethod->getPaymentMethodId()] = $paymentMethod->getName();
+            $options[$paymentMethod->getType()][$paymentMethod->getPaymentMethodId()] = $translator->translate('paymentMethod' . ucfirst($paymentMethod->getName()));
         }
 
         return $options;

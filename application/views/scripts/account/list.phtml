@@ -1,7 +1,7 @@
 <?php
 
-echo $this->link('newBank', $this->translate('newBank')) . '<br/>';
-echo $this->link('newAccount', $this->translate('newAccount')) . '<br/>';
+echo $this->link('newBank', $this->translate('bankNew')) . '<br/>';
+echo $this->link('newAccount', $this->translate('accountNew')) . '<br/>';
 
 ?>
 
@@ -17,10 +17,10 @@ if (count($this->accounts) > 0) {
         echo '<strong>' . $v['bank']->getName() . '</strong>';
 
         if (empty($v['accounts'])) {
-            echo ' - <em>' . $this->translate('noAccounts'). ' </em>';
+            echo ' - <em>' . $this->translate('noAccount'). ' </em>';
         }
 
-        echo ' ' . $this->link('editBank', $this->translate('editBank'), array(), array('bankId' => $v['bank']->getBankId()));
+        echo ' ' . $this->link('editBank', $this->translate('bankEdit'), array(), array('bankId' => $v['bank']->getBankId()));
         echo '<br/>';
 
         if (!empty($v['accounts'])) {
@@ -30,7 +30,7 @@ if (count($this->accounts) > 0) {
                 echo '<li>';
                 echo '<input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/>';
                 echo $account->getName() . ' ';
-                echo $this->link('editAccount', $this->translate('editAccount'), array(), array('accountId' => $account->getAccountId()));
+                echo $this->link('editAccount', $this->translate('accountEdit'), array(), array('accountId' => $account->getAccountId()));
                 echo '</li>';
             }
 
@@ -45,6 +45,6 @@ if (count($this->accounts) > 0) {
 
 ?>
 <br/>
-<input type="submit" name="delete" value="<?php echo $this->translate('buttonDelete') ?>"/>
-<input type="submit" name="share" disabled="disabled" value="<?php echo $this->translate('buttonShare') ?>"/>
+<input type="submit" name="delete" value="<?php echo $this->translate('deleteAction') ?>"/>
+<input type="submit" name="share" disabled="disabled" value="<?php echo $this->translate('shareAction') ?>"/>
 </form>

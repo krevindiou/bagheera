@@ -1,8 +1,8 @@
 <?php
 
-echo $this->link('newTransaction', $this->translate('newTransaction'), array(), array('accountId' => $this->accountId)) . '<br/>';
-echo $this->link('searchTransactions', $this->translate('searchTransactions'), array(), array('accountId' => $this->accountId)) . '<br/>';
-echo $this->link('schedulersList', $this->translate('schedulersList'), array(), array('accountId' => $this->accountId)) . '<br/>';
+echo $this->link('newTransaction', $this->translate('transactionNew'), array(), array('accountId' => $this->accountId)) . '<br/>';
+echo $this->link('searchTransactions', $this->translate('transactionSearch'), array(), array('accountId' => $this->accountId)) . '<br/>';
+echo $this->link('schedulersList', $this->translate('schedulerList'), array(), array('accountId' => $this->accountId)) . '<br/>';
 
 echo '<form method="post" action="">';
 
@@ -11,13 +11,13 @@ if (count($this->transactions) > 0) {
     echo '<tr>';
     echo '<th></th>';
     echo '<th></th>';
-    echo '<th>Third Party</th>';
-    echo '<th>Category</th>';
-    echo '<th>Notes</th>';
-    echo '<th>Payment method</th>';
-    echo '<th>Debit</th>';
-    echo '<th>Credit</th>';
-    echo '<th>Value date</th>';
+    echo '<th>' . $this->translate('transactionThirdParty') . '</th>';
+    echo '<th>' . $this->translate('transactionCategory') . '</th>';
+    echo '<th>' . $this->translate('transactionNotes') . '</th>';
+    echo '<th>' . $this->translate('transactionPaymentMethod') . '</th>';
+    echo '<th>' . $this->translate('transactionDebit') . '</th>';
+    echo '<th>' . $this->translate('transactionCredit') . '</th>';
+    echo '<th>' . $this->translate('transactionValueDate') . '</th>';
     echo '<th></th>';
     echo '</tr>';
     foreach ($this->transactions as $transaction) {
@@ -34,11 +34,11 @@ if (count($this->transactions) > 0) {
         echo '<td>' . $transaction->getThirdParty() . '</td>';
         echo '<td>' . $transaction->getCategory()->getName() . '</td>';
         echo '<td>' . $transaction->getNotes() . '</td>';
-        echo '<td>' . $transaction->getPaymentMethod()->getName() . '</td>';
+        echo '<td>' . $this->translate('paymentMethod' . ucfirst($transaction->getPaymentMethod()->getName())) . '</td>';
         echo '<td class="debit">' . ((0 != $transaction->getDebit()) ? $transaction->getDebit() : '') . '</td>';
         echo '<td class="credit">' . ((0 != $transaction->getCredit()) ? $transaction->getCredit() : '') . '</td>';
         echo '<td>' . $transaction->getValueDate()->format('Y-m-d') . '</td>';
-        echo '<td>' . $this->link('editTransaction', $this->translate('editTransaction'), array(), array('transactionId' => $transaction->getTransactionId())) . '</td>';
+        echo '<td>' . $this->link('editTransaction', $this->translate('transactionEdit'), array(), array('transactionId' => $transaction->getTransactionId())) . '</td>';
         echo '</tr>';
     }
     echo '</table>';
@@ -46,10 +46,10 @@ if (count($this->transactions) > 0) {
     echo $this->paginationControl($this->transactions);
 }
 
-echo '<input type="submit" name="delete" value="Delete" />';
-echo '<input type="submit" name="reconcile" value="Reconcile" />';
+echo '<input type="submit" name="delete" value="' . $this->translate('deleteAction') . '" />';
+echo '<input type="submit" name="reconcile" value="' . $this->translate('reconcileAction') . '" />';
 
 echo '</form>';
 
-echo 'Balance : ' . $this->balance . '<br/>';
-echo 'Reconciled balance : ' . $this->reconciledBalance . '<br/>';
+echo $this->translate('balance') . ' : ' . $this->balance . '<br/>';
+echo $this->translate('reconciledBalance') . ' : ' . $this->reconciledBalance . '<br/>';
