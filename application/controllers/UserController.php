@@ -106,9 +106,10 @@ class UserController extends Zend_Controller_Action
 
     public function profileAction()
     {
-        $user = $this->_userService->getCurrentUser();
-
-        $profileForm = $this->_userService->getProfileForm($user->getUserId(), $this->_request->getPost());
+        $profileForm = $this->_userService->getProfileForm(
+            $this->_userService->getCurrentUser(),
+            $this->_request->getPost()
+        );
 
         if ($this->_request->isPost()) {
             if ($this->_userService->update($profileForm)) {
@@ -159,10 +160,13 @@ class UserController extends Zend_Controller_Action
     {
         $userId = $this->_request->getParam('userId');
 
-        $profileForm = $this->_userService->getProfileForm(
-            ('' != $userId) ? $userId : null,
-            $this->_request->getPost()
-        );
+        $user = null;
+        if ('' != $userId) {
+            $em = Zend_Registry::get('em');
+            $user = $em->find('Application\\Models\\User', $userId);
+        }
+
+        $profileForm = $this->_userService->getProfileForm($user, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ('' != $userId) {

@@ -47,26 +47,24 @@ class User extends CrudAbstract
         return $userLoginForm;
     }
 
-    public function getRegisterForm(array $params = null)
+    public function getRegisterForm(array $extraValues = null)
     {
-        return parent::getForm(new UserRegisterForm, new UserModel(), $params);
+        return parent::getForm(new UserRegisterForm(), new UserModel(), $extraValues);
     }
 
-    public function getProfileForm($userId = null, array $params = null)
+    public function getProfileForm(UserModel $user = null, array $extraValues = null)
     {
-        if (null !== $userId) {
-            $user = $this->_em->find('Application\\Models\\User', $userId);
-        } else {
+        if (null === $user) {
             $user = new UserModel();
         }
 
-        $userProfileForm = new UserProfileForm;
-        if (null === $userId) {
+        $userProfileForm = new UserProfileForm();
+        if (null === $user->getUserId()) {
             $userProfileForm->getElement('password')->setRequired(true);
             $userProfileForm->getElement('passwordConfirmation')->setRequired(true);
         }
 
-        return parent::getForm($userProfileForm, $user, $params);
+        return parent::getForm($userProfileForm, $user, $extraValues);
     }
 
     public function add(UserRegisterForm $userRegisterForm)

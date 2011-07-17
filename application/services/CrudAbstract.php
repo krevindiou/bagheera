@@ -33,15 +33,19 @@ abstract class CrudAbstract extends ServicesAbstract
      *
      * @param  Bagheera_Form $form    Form to populate
      * @param  object $entity         Entity to get values from
-     * @param  array $params          Extra params to get values from
+     * @param  array $extraValues     Extra params to get values from
      * @return Bagheera_Form          Form with data
      */
-    public function getForm(\Bagheera_Form $form, $entity, array $params = null)
+    public function getForm(\Bagheera_Form $form, $entity, array $extraValues = null)
     {
         $form->setEntity($entity);
 
+        $formValues = array();
+
         foreach ($form->getElements() as $element) {
-            if (!isset($params[$element->getName()])) {
+            if (isset($extraValues[$element->getName()])) {
+                $formValues[$element->getName()] = $extraValues[$element->getName()];
+            } else {
                 $getter = 'get' . ucfirst($element->getName());
 
                 if (is_callable(array($entity, $getter))) {
@@ -51,12 +55,12 @@ abstract class CrudAbstract extends ServicesAbstract
                         $value = $value->format('Y-m-d');
                     }
 
-                    $params[$element->getName()] = $value;
+                    $formValues[$element->getName()] = $value;
                 }
             }
         }
 
-        $form->populate($params);
+        $form->populate($formValues);
 
         return $form;
     }
@@ -65,9 +69,9 @@ abstract class CrudAbstract extends ServicesAbstract
      * Populates form entity
      *
      * @param  Bagheera_Form $form    Form to get values from
-     * @param  array $values          Extra values
+     * @param  array $extraValues     Extra values
      */
-    protected function _populateFormEntity(\Bagheera_Form $form, array $values = array())
+    protected function _populateFormEntity(\Bagheera_Form $form, array $extraValues = array())
     {
         $entity = $form->getEntity();
 
@@ -87,7 +91,7 @@ abstract class CrudAbstract extends ServicesAbstract
             }
         }
 
-        $values = array_merge($tmpValues, $values);
+        $values = array_merge($tmpValues, $extraValues);
         foreach ($values as $name => $value) {
             $setter = 'set' . ucfirst($name);
             if (is_callable(array($entity, $setter))) {
@@ -100,13 +104,13 @@ abstract class CrudAbstract extends ServicesAbstract
      * Adds entity to database
      *
      * @param  Bagheera_Form $form    Form to get values from
-     * @param  array $values          Extra values
+     * @param  array $extraValues     Extra values
      * @return boolean                Success
      */
-    public function add(\Bagheera_Form $form, array $values = array())
+    public function add(\Bagheera_Form $form, array $extraValues = array())
     {
         if ($form->isValid($form->getValues())) {
-            $this->_populateFormEntity($form, $values);
+            $this->_populateFormEntity($form, $extraValues);
 
             $entity = $form->getEntity();
 
@@ -126,13 +130,13 @@ abstract class CrudAbstract extends ServicesAbstract
      * Updates entity to database
      *
      * @param  Bagheera_Form $form    Form to get values from
-     * @param  array $values          Extra values
+     * @param  array $extraValues     Extra values
      * @return boolean                Success
      */
-    public function update(\Bagheera_Form $form, array $values = array())
+    public function update(\Bagheera_Form $form, array $extraValues = array())
     {
         if ($form->isValid($form->getValues())) {
-            $this->_populateFormEntity($form, $values);
+            $this->_populateFormEntity($form, $extraValues);
 
             $entity = $form->getEntity();
 
