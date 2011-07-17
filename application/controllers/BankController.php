@@ -28,10 +28,12 @@ use Application\Services\Bank as BankService;
  */
 class BankController extends Zend_Controller_Action
 {
+    private $_em;
     private $_bankService;
 
     public function init()
     {
+        $this->_em = Zend_Registry::get('em');
         $this->_bankService = BankService::getInstance();
     }
 
@@ -39,10 +41,12 @@ class BankController extends Zend_Controller_Action
     {
         $bankId = $this->_request->getParam('bankId');
 
-        $bankForm = $this->_bankService->getForm(
-            ('' != $bankId) ? $bankId : null,
-            $this->_request->getPost()
-        );
+        $bank = null;
+        if (null !== $bankId) {
+            $bank = $this->_em->find('Application\\Models\\Bank', $bankId);
+        }
+
+        $bankForm = $this->_bankService->getForm($bank, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ($this->_bankService->save($bankForm)) {

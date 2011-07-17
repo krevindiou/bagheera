@@ -31,24 +31,21 @@ use Application\Models\Bank as BankModel,
  */
 class Bank extends CrudAbstract
 {
-    public function getForm($bankId = null, array $params = null)
+    public function getForm(BankModel $bank = null, array $extraValues = null)
     {
-        if (null !== $bankId) {
-            $bank = $this->_em->find('Application\\Models\\Bank', $bankId);
-        } else {
+        if (null === $bank) {
             $bank = new BankModel();
         }
 
-        return parent::getForm(new BankForm, $bank, $params);
+        return parent::getForm(new BankForm(), $bank, $extraValues);
     }
 
     public function save(BankForm $bankForm)
     {
         $userService = User::getInstance();
-        $currentUser = $userService->getCurrentUser();
 
         $values = array(
-            'user' => $currentUser
+            'user' => $userService->getCurrentUser()
         );
 
         if ('' != $bankForm->getElement('bankId')->getValue()) {
