@@ -263,7 +263,7 @@ class UserControllerTest extends ControllerTestCase
 
         $this->request->setMethod('GET');
         $this->dispatch('/users/page-1');
-        $this->assertQueryCount('table.data tr', 2);
+        $this->assertQueryCount('table.data tr', 3);
 
         $this->_logout();
     }

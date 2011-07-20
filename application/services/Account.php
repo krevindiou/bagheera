@@ -31,15 +31,13 @@ use Application\Models\Account as AccountModel,
  */
 class Account extends CrudAbstract
 {
-    public function getForm($accountId = null, array $params = null)
+    public function getForm(AccountModel $account = null, array $extraValues = null)
     {
-        if (null !== $accountId) {
-            $account = $this->_em->find('Application\\Models\\Account', $accountId);
-        } else {
+        if (null === $account) {
             $account = new AccountModel();
         }
 
-        return parent::getForm(new AccountForm, $account, $params);
+        return parent::getForm(new AccountForm(), $account, $extraValues);
     }
 
     public function save(AccountForm $accountForm)

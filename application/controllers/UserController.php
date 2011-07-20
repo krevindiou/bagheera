@@ -29,10 +29,12 @@ use Application\Models\User as UserModel,
  */
 class UserController extends Zend_Controller_Action
 {
+    private $_em;
     private $_userService;
 
     public function init()
     {
+        $this->_em = Zend_Registry::get('em');
         $this->_userService = UserService::getInstance();
     }
 
@@ -162,8 +164,7 @@ class UserController extends Zend_Controller_Action
 
         $user = null;
         if ('' != $userId) {
-            $em = Zend_Registry::get('em');
-            $user = $em->find('Application\\Models\\User', $userId);
+            $user = $this->_em->find('Application\\Models\\User', $userId);
         }
 
         $profileForm = $this->_userService->getProfileForm($user, $this->_request->getPost());

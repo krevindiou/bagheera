@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-use Application\Services\User as UserService;
-use Application\Services\Bank as BankService;
-use Application\Services\Account as AccountService;
+use Application\Services\User as UserService,
+    Application\Services\Bank as BankService,
+    Application\Services\Account as AccountService;
 
 /**
  * Account controller
@@ -30,12 +30,14 @@ use Application\Services\Account as AccountService;
  */
 class AccountController extends Zend_Controller_Action
 {
+    private $_em;
     private $_userService;
     private $_bankService;
     private $_accountService;
 
     public function init()
     {
+        $this->_em = Zend_Registry::get('em');
         $this->_userService = UserService::getInstance();
         $this->_bankService = BankService::getInstance();
         $this->_accountService = AccountService::getInstance();
@@ -98,13 +100,11 @@ class AccountController extends Zend_Controller_Action
 
     public function deleteAction()
     {
-        $em = Zend_Registry::get('em');
-
         $accountsId = (array)$this->_request->getPost('accountsId');
         $banksId = (array)$this->_request->getPost('banksId');
 
         foreach ($accountsId as $accountId) {
-            $account = $em->find('Application\\Models\\Account', (int)$accountId);
+            $account = $this->_em->find('Application\\Models\\Account', (int)$accountId);
 
             if (null !== $account) {
                 $this->_userService->deleteAccount($account);
@@ -112,7 +112,7 @@ class AccountController extends Zend_Controller_Action
         }
 
         foreach ($banksId as $bankId) {
-            $bank = $em->find('Application\\Models\\Bank', (int)$bankId);
+            $bank = $this->_em->find('Application\\Models\\Bank', (int)$bankId);
 
             if (null !== $bank) {
                 $accounts = $bank->getAccounts();
@@ -135,7 +135,7 @@ class AccountController extends Zend_Controller_Action
         $accountsId = (array)$this->_request->getPost('accountsId');
         $banksId = (array)$this->_request->getPost('banksId');
 
-        // ...
+        // @todo
 
         $this->_helper->flashMessenger('accountShareMessage');
         $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
@@ -145,10 +145,12 @@ class AccountController extends Zend_Controller_Action
     {
         $accountId = $this->_request->getParam('accountId');
 
-        $accountForm = $this->_accountService->getForm(
-            ('' != $accountId) ? $accountId : null,
-            $this->_request->getPost()
-        );
+        $account = null;
+        if (null !== $accountId) {
+            $account = $this->_em->find('Application\\Models\\Account', $accountId);
+        }
+
+        $accountForm = $this->_accountService->getForm($account, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ($this->_accountService->save($accountForm)) {
@@ -157,23 +159,19 @@ class AccountController extends Zend_Controller_Action
             }
         }
 
-        $account = $accountForm->getEntity();
-
         $this->view->accountForm = $accountForm;
         $this->view->accountId = $accountId;
-        $this->view->hasAccountDetails = ('' != $account->getDetails());
+        $this->view->hasAccountDetails = (null !== $account && '' != $account->getDetails());
     }
 
     public function detailsAction()
     {
-        $em = Zend_Registry::get('em');
-
         $accountId = $this->_request->getParam('accountId');
 
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
 
-        $account = $em->find('Application\\Models\\Account', $accountId);
+        $account = $this->_em->find('Application\\Models\\Account', $accountId);
         if (null !== $account && '' != $account->getDetails()) {
             $filename = __DIR__ . '/../../data/bankDetails/' . $account->getDetails();
             if (file_exists($filename)) {
