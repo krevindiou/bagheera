@@ -39,7 +39,7 @@ class Account
     protected $_accountId;
 
     /**
-     * bank id attribute
+     * bankId attribute
      *
      * @var integer
      * @Column(type="integer", name="bank_id")
@@ -127,7 +127,7 @@ class Account
     /**
      * Sets bankId
      *
-     * @param  int $bankId    bankbankIdto set
+     * @param  int $bankId    bankId to set
      * @return void
      */
     public function setBankId($bankId)
