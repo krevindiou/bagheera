@@ -196,4 +196,13 @@ class Transaction extends \Bagheera_Form
             'ignore' => true,
         ));
     }
+
+    public function __clone()
+    {
+        $entity = $this->getEntity();
+        if (null !== $entity) {
+            $clonedEntity = clone $entity;
+            $this->setEntity($clonedEntity);
+        }
+    }
 }

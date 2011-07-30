@@ -123,23 +123,11 @@ class Transaction
     protected $_notes;
 
     /**
-     * transferAccount attribute
-     *
-     * @var Application\Models\Account
-     * @OneToOne(targetEntity="Account")
-     * @JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
-     */
-    protected $_transferAccount;
-
-    /**
      * transferTransaction attribute
      *
      * @var Application\Models\Transaction
-     * @ManyToMany(targetEntity="Transaction")
-     * @JoinTable(name="transfer",
-     *      joinColumns={@JoinColumn(name="from_transaction_id", referencedColumnName="transaction_id")},
-     *      inverseJoinColumns={@JoinColumn(name="to_transaction_id", referencedColumnName="transaction_id", unique=true)}
-     *      )
+     * @OneToOne(targetEntity="Transaction")
+     * @JoinColumn(name="transfer_transaction_id", referencedColumnName="transaction_id")
      */
     protected $_transferTransaction;
 
@@ -213,7 +201,9 @@ class Transaction
      */
     public function getAccountId()
     {
-        return $this->_account->getAccountId();
+        if (null !== $this->_account) {
+            return $this->_account->getAccountId();
+        }
     }
 
     /**
@@ -244,7 +234,9 @@ class Transaction
      */
     public function getCategoryId()
     {
-        return $this->_category->getCategoryId();
+        if (null !== $this->_category) {
+            return $this->_category->getCategoryId();
+        }
     }
 
     /**
@@ -296,7 +288,9 @@ class Transaction
      */
     public function getPaymentMethodId()
     {
-        return $this->_paymentMethod->getPaymentMethodId();
+        if (null !== $this->_paymentMethod) {
+            return $this->_paymentMethod->getPaymentMethodId();
+        }
     }
 
     /**
@@ -426,46 +420,15 @@ class Transaction
     }
 
     /**
-     * Gets transferAccountId
-     *
-     * @return integer
-     */
-    public function getTransferAccountId()
-    {
-        if (null !== $this->_transferAccount) {
-            return $this->_transferAccount->getAccountId();
-        }
-    }
-
-    /**
-     * Gets transferAccount
-     *
-     * @return Application\Models\Account
-     */
-    public function getTransferAccount()
-    {
-        return $this->_transferAccount;
-    }
-
-    /**
-     * Sets transferAccount
-     *
-     * @param  Application\Models\Account $transferAccount    transferAccount to set
-     * @return void
-     */
-    public function setTransferAccount(Account $transferAccount = null)
-    {
-        $this->_transferAccount = $transferAccount;
-    }
-
-    /**
      * Gets transferTransactionId
      *
      * @return integer
      */
     public function getTransferTransactionId()
     {
-        return $this->_transferTransaction->getTransferTransactionId();
+        if (null !== $this->_transferTransaction) {
+            return $this->_transferTransaction->getTransactionId();
+        }
     }
 
     /**
@@ -529,5 +492,10 @@ class Transaction
     public function setUpdatedAt(\DateTime $updatedAt)
     {
         $this->_updatedAt = $updatedAt;
+    }
+
+    public function __clone()
+    {
+        $this->_transactionId = null;
     }
 }

@@ -413,7 +413,7 @@ CREATE TABLE `transaction` (
   `transaction_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `scheduler_id` int(10) unsigned DEFAULT NULL,
   `account_id` int(10) unsigned NOT NULL,
-  `transfer_account_id` int(10) unsigned DEFAULT NULL,
+  `transfer_transaction_id` int(10) unsigned DEFAULT NULL,
   `category_id` smallint(5) unsigned NOT NULL,
   `third_party` varchar(64) NOT NULL,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
@@ -433,24 +433,6 @@ CREATE TABLE `transaction` (
   CONSTRAINT `fk_transaction_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_transaction_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_transaction_scheduler` FOREIGN KEY (`scheduler_id`) REFERENCES `scheduler` (`scheduler_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `transfer`
---
-
-DROP TABLE IF EXISTS `transfer`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `transfer` (
-  `from_transaction_id` int(10) unsigned NOT NULL,
-  `to_transaction_id` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`from_transaction_id`,`to_transaction_id`),
-  KEY `fk_transfer_transaction` (`from_transaction_id`),
-  KEY `fk_transfer_transaction1` (`to_transaction_id`),
-  CONSTRAINT `transfer_ibfk_1` FOREIGN KEY (`from_transaction_id`) REFERENCES `transaction` (`transaction_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `transfer_ibfk_2` FOREIGN KEY (`to_transaction_id`) REFERENCES `transaction` (`transaction_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

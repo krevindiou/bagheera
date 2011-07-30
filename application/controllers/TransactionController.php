@@ -28,29 +28,29 @@ use Application\Services\Transaction as TransactionService;
  */
 class TransactionController extends Zend_Controller_Action
 {
+    private $_em;
     private $_transactionService;
 
     public function init()
     {
+        $this->_em = Zend_Registry::get('em');
         $this->_transactionService = TransactionService::getInstance();
     }
 
     public function listAction()
     {
-        $em = Zend_Registry::get('em');
-
         $accountId = $this->_request->getParam('accountId');
         $page = (int)$this->_request->getParam('page', 1);
         $delete = $this->_request->getPost('delete');
         $reconcile = $this->_request->getPost('reconcile');
-        $transactions = $this->_request->getPost('transactions');
+        $transactionsId = $this->_request->getPost('transactions');
 
-        if (!empty($transactions)) {
+        if (!empty($transactionsId)) {
             if ($delete) {
-                $this->_transactionService->delete($transactions);
+                $this->_transactionService->delete($transactionsId);
                 $this->_helper->flashMessenger('transactionDeleteOk');
             } elseif ($reconcile) {
-                $this->_transactionService->reconcile($transactions);
+                $this->_transactionService->reconcile($transactionsId);
                 $this->_helper->flashMessenger('transactionReconcileOk');
             }
 
@@ -59,37 +59,44 @@ class TransactionController extends Zend_Controller_Action
                 'transactionsList',
                 true
             );
+        } else {
+            $account = $this->_em->find(
+                'Application\\Models\\Account',
+                $accountId
+            );
+
+            $transactions = $this->_transactionService->getTransactions($account, $page);
+
+            $this->view->transactions = $transactions;
+            $this->view->accountId = $accountId;
+            $this->view->balance = $account->getBalance();
+            $this->view->reconciledBalance = $account->getBalance(true);
+            $this->view->route = 'transactionsList';
         }
-
-        $account = $em->find(
-            'Application\\Models\\Account',
-            $accountId
-        );
-
-        $transactions = $this->_transactionService->getTransactions($account, $page);
-
-        $this->view->transactions = $transactions;
-        $this->view->accountId = $accountId;
-        $this->view->balance = $account->getBalance();
-        $this->view->reconciledBalance = $account->getBalance(true);
-    }
-
-    public function searchAction()
-    {
     }
 
     public function saveAction()
     {
-        $transactionId = $this->_request->getParam('transactionId');
         $accountId = $this->_request->getParam('accountId');
+        $transactionId = $this->_request->getParam('transactionId');
 
-        $transactionForm = $this->_transactionService->getForm(
-            ('' != $transactionId) ? $transactionId : null,
-            array_merge(
-                $this->_request->getPost(),
-                array('accountId' => $accountId)
-            )
-        );
+        $transaction = null;
+        if (null !== $transactionId) {
+            $transaction = $this->_em->find('Application\\Models\\Transaction', $transactionId);
+        } else {
+            $transaction = new Application\Models\Transaction();
+        }
+
+        $account = null;
+        if (null !== $accountId) {
+            $account = $this->_em->find('Application\\Models\\Account', $accountId);
+
+            if (null !== $transaction) {
+                $transaction->setAccount($account);
+            }
+        }
+
+        $transactionForm = $this->_transactionService->getForm($transaction, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ($this->_transactionService->save($transactionForm)) {

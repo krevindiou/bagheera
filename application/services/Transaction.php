@@ -32,52 +32,45 @@ use Application\Models\Transaction as TransactionModel,
  */
 class Transaction extends CrudAbstract
 {
-    public function getForm($transactionId = null, array $params = null)
+    public function getForm(TransactionModel $transaction = null, array $extraValues = null)
     {
-        if (null !== $transactionId) {
-            $transaction = $this->_em->find('Application\\Models\\Transaction', $transactionId);
-
-            $account = $transaction->getAccount();
-            $category = $transaction->getCategory();
-            $paymentMethod = $transaction->getPaymentMethod();
-            $transferAccount = $transaction->getTransferAccount();
-            $debit = $transaction->getDebit();
-            $credit = $transaction->getCredit();
-
-            if (!isset($params['accountId']) && null !== $account) {
-                $params['accountId'] = $account->getAccountId();
-            }
-            if (!isset($params['categoryId']) && null !== $category) {
-                $params['categoryId'] = $category->getCategoryId();
-            }
-            if (!isset($params['paymentMethodId']) && null !== $paymentMethod) {
-                $params['paymentMethodId'] = $paymentMethod->getPaymentMethodId();
-            }
-            if (!isset($params['transferAccountId']) && null !== $transferAccount) {
-                $params['transferAccountId'] = $transferAccount->getAccountId();
-            }
-            if (!isset($params['amount'])) {
-                $params['amount'] = ($debit > 0) ? $debit : $credit;
-            }
-            if (!isset($params['debitCredit'])) {
-                $params['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
-            }
-        } else {
+        if (null === $transaction) {
             $transaction = new TransactionModel();
+        }
+
+        if ('' == $transaction->getValueDate()) {
             $transaction->setValueDate(new \DateTime);
         }
 
-        return parent::getForm(new TransactionForm, $transaction, $params);
+        $debit = $transaction->getDebit();
+        $credit = $transaction->getCredit();
+
+        if (!isset($extraValues['amount'])) {
+            $extraValues['amount'] = ($debit > 0) ? $debit : $credit;
+        }
+
+        if (!isset($extraValues['debitCredit'])) {
+            $extraValues['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
+        }
+
+        if (!isset($extraValues['transferAccountId'])) {
+            $transferTransaction = $transaction->getTransferTransaction();
+            if (null !== $transferTransaction) {
+                $extraValues['transferAccountId'] = $transferTransaction->getAccountId();
+            }
+        }
+
+        return parent::getForm(new TransactionForm(), $transaction, $extraValues);
     }
 
     public function getTransactions(AccountModel $account, $page = 1)
     {
         $dql = 'SELECT t ';
         $dql.= 'FROM Application\\Models\\Transaction t ';
-        $dql.= 'WHERE t._account = ?1 ';
+        $dql.= 'WHERE t._account = :account ';
         $dql.= 'ORDER BY t._valueDate DESC ';
         $query = $this->_em->createQuery($dql);
-        $query->setParameter(1, $account);
+        $query->setParameter('account', $account);
 
         $paginator = new \Zend_Paginator(new \DoctrineExtensions\Paginate\PaginationAdapter($query));
         $paginator->setCurrentPageNumber($page);
@@ -111,26 +104,84 @@ class Transaction extends CrudAbstract
                 'Application\\Models\\PaymentMethod',
                 $transactionForm->getElement('paymentMethodId')->getValue()
             ),
-            'transferAccount' => $this->_em->find(
-                'Application\\Models\\Account',
-                $transactionForm->getElement('transferAccountId')->getValue()
-            ),
             'debit' => $debit,
             'credit' => $credit,
         );
 
+        $internalTransferAccount = null;
         if (
-            null !== $values['paymentMethod']
-            && !in_array($values['paymentMethod']->getPaymentMethodId(), array(4, 6))
+            null !== $values['paymentMethod'] &&
+            in_array($values['paymentMethod']->getPaymentMethodId(), array(4, 6)) &&
+            null !== $transactionForm->getElement('transferAccountId')->getValue()
         ) {
-            $values['transferAccount'] = null;
+            $internalTransferAccount = $this->_em->find(
+                'Application\\Models\\Account',
+                $transactionForm->getElement('transferAccountId')->getValue()
+            );
         }
 
+        $transaction = $transactionForm->getEntity();
+        $internalTransferAccountBeforeSave = $transaction->getTransferTransaction();
+
         if ('' != $transactionForm->getElement('transactionId')->getValue()) {
-            return parent::update($transactionForm, $values);
+            $saveOk = parent::update($transactionForm, $values);
         } else {
-            return parent::add($transactionForm, $values);
+            $saveOk = parent::add($transactionForm, $values);
         }
+
+        if ($saveOk) {
+            if (null !== $internalTransferAccount) {
+                // update transfer => transfer
+                if (null !== $internalTransferAccountBeforeSave) {
+                    $transferTransaction = $transaction->getTransferTransaction();
+                    $transferTransaction->setUpdatedAt(new \DateTime);
+
+                // update check => transfer
+                } else {
+                    $transferTransaction = new TransactionModel();
+                    $transferTransaction->setTransferTransaction($transaction);
+                    $transferTransaction->setCreatedAt(new \DateTime);
+                    $transferTransaction->setUpdatedAt(new \DateTime);
+
+                    $transaction->setTransferTransaction($transferTransaction);
+                    $this->_em->persist($transaction);
+                }
+
+                $transferTransaction->setAccount(
+                    $this->_em->find(
+                        'Application\\Models\\Account',
+                        $transactionForm->getElement('transferAccountId')->getValue()
+                    )
+                );
+
+                $transferTransaction->setDebit($transaction->getCredit());
+                $transferTransaction->setCredit($transaction->getDebit());
+                $transferTransaction->setThirdParty($transaction->getThirdParty());
+                $transferTransaction->setCategory($transaction->getCategory());
+                $transferTransaction->setPaymentMethod(
+                    $this->_em->find(
+                        'Application\\Models\\PaymentMethod',
+                        (4 == $transaction->getPaymentMethod()->getPaymentMethodId()) ? 6 : 4
+                    )
+                );
+                $transferTransaction->setValueDate($transaction->getValueDate());
+                $transferTransaction->setNotes($transaction->getNotes());
+
+                $this->_em->persist($transferTransaction);
+                $this->_em->flush();
+            } else {
+                // update transfer => check
+                if (null !== $internalTransferAccountBeforeSave) {
+                    $transaction = $transactionForm->getEntity();
+                    $transaction->setTransferTransaction(null);
+                    $this->_em->persist($transaction);
+                    $this->_em->remove($internalTransferAccountBeforeSave);
+                    $this->_em->flush();
+                }
+            }
+        }
+
+        return $saveOk;
     }
 
     public function delete(array $transactionsId)
