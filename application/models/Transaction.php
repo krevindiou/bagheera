@@ -126,7 +126,7 @@ class Transaction
      * transferTransaction attribute
      *
      * @var Application\Models\Transaction
-     * @OneToOne(targetEntity="Transaction")
+     * @OneToOne(targetEntity="Transaction", cascade={"all"})
      * @JoinColumn(name="transfer_transaction_id", referencedColumnName="transaction_id")
      */
     protected $_transferTransaction;
