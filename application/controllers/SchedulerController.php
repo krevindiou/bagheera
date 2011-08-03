@@ -28,10 +28,12 @@ use Application\Services\Scheduler as SchedulerService;
  */
 class SchedulerController extends Zend_Controller_Action
 {
+    private $_em;
     private $_schedulerService;
 
     public function init()
     {
+        $this->_em = Zend_Registry::get('em');
         $this->_schedulerService = SchedulerService::getInstance();
     }
 
@@ -69,11 +71,16 @@ class SchedulerController extends Zend_Controller_Action
 
     public function saveAction()
     {
-        $schedulerId = $this->_request->getParam('schedulerId');
         $accountId = $this->_request->getParam('accountId');
+        $schedulerId = $this->_request->getParam('schedulerId');
+
+        $scheduler = null;
+        if (null !== $schedulerId) {
+            $scheduler = $this->_em->find('Application\\Models\\Scheduler', $schedulerId);
+        }
 
         $schedulerForm = $this->_schedulerService->getForm(
-            ('' != $schedulerId) ? $schedulerId : null,
+            $scheduler,
             array_merge(
                 $this->_request->getPost(),
                 array('accountId' => $accountId)

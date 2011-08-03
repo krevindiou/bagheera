@@ -42,22 +42,36 @@ class Transaction extends CrudAbstract
             $transaction->setValueDate(new \DateTime);
         }
 
+        $account = $transaction->getAccount();
+        $category = $transaction->getCategory();
+        $paymentMethod = $transaction->getPaymentMethod();
+        $transferAccount = null;
+        if (null !== $transaction->getTransferTransaction()) {
+            $transferAccount = $transaction->getTransferTransaction()->getAccount();
+        }
         $debit = $transaction->getDebit();
         $credit = $transaction->getCredit();
 
+        if (!isset($extraValues['accountId']) && null !== $account) {
+            $extraValues['accountId'] = $account->getAccountId();
+        }
+        if (!isset($extraValues['categoryId']) && null !== $category) {
+            $extraValues['categoryId'] = $category->getCategoryId();
+        }
+        if (!isset($extraValues['paymentMethodId']) && null !== $paymentMethod) {
+            $extraValues['paymentMethodId'] = $paymentMethod->getPaymentMethodId();
+        }
+        if (!isset($extraValues['transferAccountId']) && null !== $transferAccount) {
+            $extraValues['transferAccountId'] = $transferAccount->getAccountId();
+        }
         if (!isset($extraValues['amount'])) {
             $extraValues['amount'] = ($debit > 0) ? $debit : $credit;
         }
-
         if (!isset($extraValues['debitCredit'])) {
             $extraValues['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
         }
-
-        if (!isset($extraValues['transferAccountId'])) {
-            $transferTransaction = $transaction->getTransferTransaction();
-            if (null !== $transferTransaction) {
-                $extraValues['transferAccountId'] = $transferTransaction->getAccountId();
-            }
+        if (!isset($extraValues['isReconciled'])) {
+            $extraValues['isReconciled'] = (int)$transaction->getIsReconciled();
         }
 
         return parent::getForm(new TransactionForm(), $transaction, $extraValues);
@@ -139,6 +153,7 @@ class Transaction extends CrudAbstract
                 // update check => transfer
                 } else {
                     $transferTransaction = new TransactionModel();
+                    $transferTransaction->setScheduler($transaction->getScheduler());
                     $transferTransaction->setTransferTransaction($transaction);
                     $transferTransaction->setCreatedAt(new \DateTime);
                     $transferTransaction->setUpdatedAt(new \DateTime);

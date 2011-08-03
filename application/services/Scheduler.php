@@ -20,7 +20,12 @@ namespace Application\Services;
 
 use Application\Models\Scheduler as SchedulerModel,
     Application\Models\Account as AccountModel,
-    Application\Forms\Scheduler as SchedulerForm;
+    Application\Models\Transaction as TransactionModel,
+    Application\Forms\Scheduler as SchedulerForm,
+    Application\Forms\Transaction as TransactionForm,
+    Application\Services\User as UserService,
+    Application\Services\Transaction as TransactionService,
+    Application\Services\Scheduler as SchedulerService;
 
 /**
  * Scheduler service
@@ -32,42 +37,46 @@ use Application\Models\Scheduler as SchedulerModel,
  */
 class Scheduler extends CrudAbstract
 {
-    public function getForm($schedulerId = null, array $params = null)
+    public function getForm(SchedulerModel $scheduler = null, array $extraValues = null)
     {
-        if (null !== $schedulerId) {
-            $scheduler = $this->_em->find('Application\\Models\\Scheduler', $schedulerId);
-
-            $account = $scheduler->getAccount();
-            $category = $scheduler->getCategory();
-            $paymentMethod = $scheduler->getPaymentMethod();
-            $transferAccount = $scheduler->getTransferAccount();
-            $debit = $scheduler->getDebit();
-            $credit = $scheduler->getCredit();
-
-            if (!isset($params['accountId']) && null !== $account) {
-                $params['accountId'] = $account->getAccountId();
-            }
-            if (!isset($params['categoryId']) && null !== $category) {
-                $params['categoryId'] = $category->getCategoryId();
-            }
-            if (!isset($params['paymentMethodId']) && null !== $paymentMethod) {
-                $params['paymentMethodId'] = $paymentMethod->getPaymentMethodId();
-            }
-            if (!isset($params['transferAccountId']) && null !== $transferAccount) {
-                $params['transferAccountId'] = $transferAccount->getAccountId();
-            }
-            if (!isset($params['amount'])) {
-                $params['amount'] = ($debit > 0) ? $debit : $credit;
-            }
-            if (!isset($params['debitCredit'])) {
-                $params['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
-            }
-        } else {
+        if (null === $scheduler) {
             $scheduler = new SchedulerModel();
+        }
+
+        if ('' == $scheduler->getValueDate()) {
             $scheduler->setValueDate(new \DateTime);
         }
 
-        return parent::getForm(new SchedulerForm, $scheduler, $params);
+        $account = $scheduler->getAccount();
+        $category = $scheduler->getCategory();
+        $paymentMethod = $scheduler->getPaymentMethod();
+        $transferAccount = $scheduler->getTransferAccount();
+        $debit = $scheduler->getDebit();
+        $credit = $scheduler->getCredit();
+
+        if (!isset($extraValues['accountId']) && null !== $account) {
+            $extraValues['accountId'] = $account->getAccountId();
+        }
+        if (!isset($extraValues['categoryId']) && null !== $category) {
+            $extraValues['categoryId'] = $category->getCategoryId();
+        }
+        if (!isset($extraValues['paymentMethodId']) && null !== $paymentMethod) {
+            $extraValues['paymentMethodId'] = $paymentMethod->getPaymentMethodId();
+        }
+        if (!isset($extraValues['transferAccountId']) && null !== $transferAccount) {
+            $extraValues['transferAccountId'] = $transferAccount->getAccountId();
+        }
+        if (!isset($extraValues['amount'])) {
+            $extraValues['amount'] = ($debit > 0) ? $debit : $credit;
+        }
+        if (!isset($extraValues['debitCredit'])) {
+            $extraValues['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
+        }
+        if (!isset($extraValues['isReconciled'])) {
+            $extraValues['isReconciled'] = (int)$scheduler->getIsReconciled();
+        }
+
+        return parent::getForm(new SchedulerForm(), $scheduler, $extraValues);
     }
 
     public function getSchedulers(AccountModel $account)
@@ -126,7 +135,14 @@ class Scheduler extends CrudAbstract
         if ('' != $schedulerForm->getElement('schedulerId')->getValue()) {
             return parent::update($schedulerForm, $values);
         } else {
-            return parent::add($schedulerForm, $values);
+            $ok = parent::add($schedulerForm, $values);
+
+            if ($ok) {
+                $schedulerService = SchedulerService::getInstance();
+                $schedulerService->runSchedulers();
+            }
+
+            return $ok;
         }
     }
 
@@ -140,6 +156,91 @@ class Scheduler extends CrudAbstract
 
             if (null !== $scheduler) {
                 parent::delete($scheduler);
+            }
+        }
+    }
+
+    public function runSchedulers()
+    {
+        $userService = UserService::getInstance();
+        $currentUser = $userService->getCurrentUser();
+
+        $accounts = $currentUser->getAccounts();
+
+        $schedulers = new \Doctrine\Common\Collections\ArrayCollection();
+        foreach ($accounts as $account) {
+            foreach ($account->getSchedulers() as $scheduler) {
+                if ($scheduler->getIsActive()) {
+                    $schedulers->add($scheduler);
+                }
+            }
+        }
+
+        foreach ($schedulers as $scheduler) {
+            $startDate = $scheduler->getValueDate();
+
+            $dql = 'SELECT t._valueDate ';
+            $dql.= 'FROM Application\\Models\\Transaction t ';
+            $dql.= 'WHERE t._scheduler = :scheduler ';
+            $dql.= 'AND t._valueDate >= :valueDate ';
+            $dql.= 'ORDER BY t._valueDate DESC ';
+            $q = $this->_em->createQuery($dql);
+            $q->setMaxResults(1);
+            $q->setParameter('scheduler', $scheduler);
+            $q->setParameter('valueDate', $scheduler->getValueDate()->format(\DateTime::ISO8601));
+            $result = $q->getResult();
+
+            $lastTransactionDate = null;
+            if (isset($result[0]['_valueDate'])) {
+                $startDate = $lastTransactionDate = new \DateTime($result[0]['_valueDate']);
+            }
+
+            $endDate = new \DateTime();
+            if ($scheduler->getLimitDate() != null && $scheduler->getLimitDate() < $endDate) {
+                $endDate = $scheduler->getLimitDate();
+            }
+
+            $dates = array();
+            $date = clone $startDate;
+
+            while ($date <= $endDate) {
+                if ($date != $startDate || null === $lastTransactionDate) {
+                    $dates[] = $date->format(\DateTime::ISO8601);
+                }
+
+                $date->add(
+                    new \DateInterval(
+                        sprintf(
+                            'P%d%s',
+                            $scheduler->getFrequencyValue(),
+                            substr(strtoupper($scheduler->getFrequencyUnit()), 0, 1)
+                        )
+                    )
+                );
+            }
+
+            foreach ($dates as $date) {
+                $transactionService = TransactionService::getInstance();
+
+                $transaction = new TransactionModel();
+                $transaction->setScheduler($scheduler);
+                $transaction->setAccount($scheduler->getAccount());
+                $transaction->setCategory($scheduler->getCategory());
+                $transaction->setThirdParty($scheduler->getThirdParty());
+                $transaction->setPaymentMethod($scheduler->getPaymentMethod());
+                $transaction->setDebit($scheduler->getDebit());
+                $transaction->setCredit($scheduler->getCredit());
+                $transaction->setValueDate(new \DateTime($date));
+                $transaction->setIsReconciled($scheduler->getIsReconciled());
+                $transaction->setNotes($scheduler->getNotes());
+
+                $values = array();
+                if (null !== $scheduler->getTransferAccount()) {
+                    $values['transferAccountId'] = $scheduler->getTransferAccount()->getAccountId();
+                }
+
+                $transactionForm = $transactionService->getForm($transaction, $values);
+                $transactionService->save($transactionForm);
             }
         }
     }

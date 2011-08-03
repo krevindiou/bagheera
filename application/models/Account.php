@@ -103,6 +103,14 @@ class Account
      */
     protected $_updatedAt;
 
+    /**
+     * Schedulers list
+     *
+     * @var Doctrine\Common\Collections\ArrayCollection
+     * @OneToMany(targetEntity="Scheduler", mappedBy="_account")
+     */
+    protected $_schedulers;
+
 
     /**
      * Gets accountId
@@ -271,6 +279,16 @@ class Account
     public function getUpdatedAt()
     {
         return $this->_updatedAt;
+    }
+
+    /**
+     * Gets account's schedulers
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getSchedulers()
+    {
+        return $this->_schedulers;
     }
 
     /**

@@ -17,7 +17,8 @@
  */
 
 use Application\Models\User as UserModel,
-    Application\Services\User as UserService;
+    Application\Services\User as UserService,
+    Application\Services\Scheduler as SchedulerService;
 
 /**
  * User controller
@@ -36,6 +37,7 @@ class UserController extends Zend_Controller_Action
     {
         $this->_em = Zend_Registry::get('em');
         $this->_userService = UserService::getInstance();
+        $this->_schedulerService = SchedulerService::getInstance();
     }
 
     public function loginAction()
@@ -44,6 +46,7 @@ class UserController extends Zend_Controller_Action
 
         if ($this->_request->isPost()) {
             if ($this->_userService->login($loginForm)) {
+                $this->_schedulerService->runSchedulers();
                 $this->_helper->redirector->gotoRoute(array(), 'connected', true);
             }
         }
