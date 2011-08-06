@@ -28,7 +28,7 @@ CREATE TABLE `account` (
   `name` varchar(32) NOT NULL,
   `initial_balance` decimal(10,2) NOT NULL,
   `overdraft_facility` decimal(10,2) NOT NULL,
-  `details` varchar(64) NOT NULL DEFAULT '',
+  `details` varchar(64) DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`account_id`),
