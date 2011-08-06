@@ -402,7 +402,7 @@ CREATE TABLE `transaction` (
   `scheduler_id` int(10) unsigned DEFAULT NULL,
   `account_id` int(10) unsigned NOT NULL,
   `transfer_transaction_id` int(10) unsigned DEFAULT NULL,
-  `category_id` smallint(5) unsigned NOT NULL,
+  `category_id` smallint(5) unsigned DEFAULT NULL,
   `third_party` varchar(64) NOT NULL,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
   `debit` decimal(10,2) unsigned DEFAULT NULL,

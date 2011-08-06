@@ -31,7 +31,7 @@ if (count($this->transactions) > 0) {
         echo '<td><input type="checkbox" name="transactions[]" value="' . $transaction->getTransactionId() . '" /></td>';
         echo '<td>' . ((null !== $scheduler) ? 'scheduler' : '') . '</td>';
         echo '<td>' . $transaction->getThirdParty() . '</td>';
-        echo '<td>' . $transaction->getCategory()->getName() . '</td>';
+        echo '<td>' . ((null !== $transaction->getCategory()) ? $transaction->getCategory()->getName() : '') . '</td>';
         echo '<td>' . $transaction->getNotes() . '</td>';
         echo '<td>' . $this->translate('paymentMethod' . ucfirst($transaction->getPaymentMethod()->getName())) . '</td>';
         echo '<td class="debit">' . ((0 != $transaction->getDebit()) ? $transaction->getDebit() : '') . '</td>';
