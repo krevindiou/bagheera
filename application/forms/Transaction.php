@@ -34,9 +34,15 @@ class Transaction extends \Bagheera_Form
 {
     protected function _getCategoriesOptions()
     {
-        $userService = UserService::getInstance();
         $categoryService = CategoryService::getInstance();
-        $options = $categoryService->getList($userService->getCurrentUser());
+        $categories = $categoryService->getList();
+
+        $options = array();
+        foreach ($categories as $type => $category) {
+            foreach ($category as $categoryId => $name) {
+                $options[$type][$categoryId] = $name;
+            }
+        }
 
         return $options;
     }

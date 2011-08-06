@@ -68,6 +68,7 @@ DROP TABLE IF EXISTS `category`;
 CREATE TABLE `category` (
   `category_id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
   `parent_category_id` smallint(5) unsigned DEFAULT NULL,
+  `type` varchar(8) DEFAULT NULL,
   `name` varchar(32) NOT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL,

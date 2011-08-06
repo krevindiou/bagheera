@@ -1,11 +1,13 @@
 var Bagheera = {
     baseUrl: "",
     paymentMethodOptions: [],
+    categoryOptions: [],
 
     init: function(){
         $(document).ready(function(){
             Bagheera.accounts();
             Bagheera.dropDownPaymentMethod();
+            Bagheera.dropDownCategory();
             Bagheera.dropDownTransferAccount();
         });
     },
@@ -65,6 +67,50 @@ var Bagheera = {
 
             $("input[name=debitCredit]").change(function(){
                 filldropDownPaymentMethod($(this).val());
+            });
+        }
+    },
+
+    dropDownCategory: function(){
+        if ($("select[name^=categoryId]").length > 0) {
+            $("select[name^=categoryId] optgroup").each(function(){
+                var type = $(this).attr("label");
+
+                Bagheera.categoryOptions[type] = [];
+
+                $("select[name^=categoryId] > option").each(function(){
+                    Bagheera.categoryOptions[type].push({value: $(this).val(), text: $(this).text()});
+                });
+
+                $(this).find("option").each(function(){
+                    Bagheera.categoryOptions[type].push({value: $(this).val(), text: $(this).text()});
+                });
+            });
+
+            function filldropDownCategory(debitCredit) {
+                if ("" != debitCredit) {
+                    var categoryId = $("select[name^=categoryId]").val();
+
+                    $("select[name^=categoryId]").html("");
+
+                    for (var key in Bagheera.categoryOptions[debitCredit]) {
+                        var option = Bagheera.categoryOptions[debitCredit][key];
+
+                        $("select[name^=categoryId]").append(
+                            $("<option></option>").val(option.value).html(option.text)
+                        );
+                    }
+
+                    if (null != categoryId) {
+                        $("select[name^=categoryId]").val(categoryId);
+                    }
+                }
+            }
+
+            filldropDownCategory($("input[name=debitCredit]:checked").val());
+
+            $("input[name=debitCredit]").change(function(){
+                filldropDownCategory($(this).val());
             });
         }
     },

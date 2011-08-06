@@ -32,7 +32,7 @@ class Category extends CrudAbstract
     {
         $list = array();
 
-        $dql = 'SELECT c1._name c1_name, c1._categoryId c1_categoryId, ';
+        $dql = 'SELECT c1._type c1_type, c1._name c1_name, c1._categoryId c1_categoryId, ';
         $dql.= 'c2._name c2_name, c2._categoryId c2_categoryId, ';
         $dql.= 'c3._name c3_name, c3._categoryId c3_categoryId ';
         $dql.= 'FROM Application\\Models\\Category c1 ';
@@ -46,8 +46,13 @@ class Category extends CrudAbstract
         foreach ($categories as $category) {
             foreach ($category as $k => $v) {
                 if ('_categoryId' == substr($k, -11) && '' != $v) {
-                    $list[$v] = str_repeat('..', substr($k, 1, 1) - 1);
-                    $list[$v].= $category[substr($k, 0, 2) . '_name'];
+                    $list[$category['c1_type']][$v] = '';
+
+                    for ($i = 1; $i <= substr($k, 1, 1); $i++) {
+                        $list[$category['c1_type']][$v].= $category[substr($k, 0, 1) . $i . '_name'] . ' > ';
+                    }
+
+                    $list[$category['c1_type']][$v] = trim($list[$category['c1_type']][$v], '> ');
                 }
             }
         }

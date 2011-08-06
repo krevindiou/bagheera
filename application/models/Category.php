@@ -61,6 +61,14 @@ class Category
     protected $_subCategories;
 
     /**
+     * type attribute
+     *
+     * @var string
+     * @Column(type="string", name="type")
+     */
+    protected $_type;
+
+    /**
      * name attribute
      *
      * @var string
@@ -137,6 +145,27 @@ class Category
     public function getSubCategories()
     {
         return $this->_subCategories;
+    }
+
+    /**
+     * Gets type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->_type;
+    }
+
+    /**
+     * Sets type
+     *
+     * @param  string $type    type to set
+     * @return void
+     */
+    public function setType($type)
+    {
+        $this->_type = $type;
     }
 
     /**
