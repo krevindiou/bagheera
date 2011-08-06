@@ -73,7 +73,6 @@ CREATE TABLE `category` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`category_id`),
-  KEY `parent_category_id` (`parent_category_id`),
   KEY `fk_category_category` (`parent_category_id`),
   CONSTRAINT `fk_category_category` FOREIGN KEY (`parent_category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -139,7 +138,6 @@ CREATE TABLE `report_account` (
   `account_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`report_id`),
   KEY `fk_report_account_account` (`account_id`),
-  KEY `fk_report_account_report_common` (`report_id`),
   CONSTRAINT `fk_report_account_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_report_account_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -156,7 +154,6 @@ CREATE TABLE `report_average` (
   `report_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `display` varchar(16) NOT NULL,
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_average_report_common` (`report_id`),
   CONSTRAINT `fk_report_average_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -173,7 +170,6 @@ CREATE TABLE `report_category` (
   `category_id` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`report_id`),
   KEY `fk_report_category_category` (`category_id`),
-  KEY `fk_report_category_report_common` (`report_id`),
   CONSTRAINT `fk_report_category_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_report_category_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -192,7 +188,6 @@ CREATE TABLE `report_common` (
   `value_date_end` date DEFAULT NULL,
   `reconciled_only` tinyint(1) NOT NULL,
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_common_report` (`report_id`),
   CONSTRAINT `fk_report_common_report` FOREIGN KEY (`report_id`) REFERENCES `report` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -209,7 +204,6 @@ CREATE TABLE `report_distribution` (
   `display` varchar(16) NOT NULL,
   `significant_transaction_nb` smallint(6) NOT NULL DEFAULT '0',
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_distribution_report_common` (`report_id`),
   CONSTRAINT `fk_report_distribution_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -228,7 +222,6 @@ CREATE TABLE `report_estimate` (
   `duration_scale_unit` varchar(8) NOT NULL DEFAULT 'month',
   `duration_scale_value` tinyint(3) NOT NULL,
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_estimate_report` (`report_id`),
   CONSTRAINT `fk_report_estimate_report` FOREIGN KEY (`report_id`) REFERENCES `report` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -245,7 +238,6 @@ CREATE TABLE `report_payment_method` (
   `payment_method_id` tinyint(3) unsigned NOT NULL,
   PRIMARY KEY (`report_id`),
   KEY `fk_report_payment_method_payment_method` (`payment_method_id`),
-  KEY `fk_report_payment_method_report_common` (`report_id`),
   CONSTRAINT `fk_report_payment_method_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_report_payment_method_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -262,7 +254,6 @@ CREATE TABLE `report_sum` (
   `report_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `display` varchar(8) NOT NULL,
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_sum_report_common` (`report_id`),
   CONSTRAINT `fk_report_sum_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -278,7 +269,6 @@ CREATE TABLE `report_third_party` (
   `report_id` int(10) unsigned NOT NULL,
   `third_party` varchar(64) NOT NULL,
   PRIMARY KEY (`report_id`),
-  KEY `fk_report_third_party_report_common` (`report_id`),
   CONSTRAINT `fk_report_third_party_report_common` FOREIGN KEY (`report_id`) REFERENCES `report_common` (`report_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -311,7 +301,6 @@ CREATE TABLE `scheduler` (
   PRIMARY KEY (`scheduler_id`),
   KEY `category_id` (`category_id`),
   KEY `fk_scheduler_payment_method` (`payment_method_id`),
-  KEY `fk_scheduler_category` (`category_id`),
   KEY `fk_scheduler_account` (`account_id`),
   CONSTRAINT `fk_scheduler_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_scheduler_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
@@ -358,7 +347,6 @@ CREATE TABLE `transaction_search_category` (
   `transaction_search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `category_id` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`transaction_search_id`),
-  KEY `fk_transaction_search_category_transaction_search` (`transaction_search_id`),
   KEY `fk_transaction_search_category_category` (`category_id`),
   CONSTRAINT `fk_transaction_search_category_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_transaction_search_category_transaction_search` FOREIGN KEY (`transaction_search_id`) REFERENCES `transaction_search` (`transaction_search_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -376,7 +364,6 @@ CREATE TABLE `transaction_search_payment_method` (
   `transaction_search_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
   PRIMARY KEY (`transaction_search_id`),
-  KEY `fk_transaction_search_payment_method_transaction_search` (`transaction_search_id`),
   KEY `fk_transaction_search_payment_method_payment_method` (`payment_method_id`),
   CONSTRAINT `fk_transaction_search_payment_method_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_transaction_search_payment_method_transaction_search` FOREIGN KEY (`transaction_search_id`) REFERENCES `transaction_search` (`transaction_search_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
