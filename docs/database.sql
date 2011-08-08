@@ -285,7 +285,7 @@ CREATE TABLE `scheduler` (
   `scheduler_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` int(10) unsigned NOT NULL,
   `transfer_account_id` int(10) unsigned DEFAULT NULL,
-  `category_id` smallint(5) unsigned NOT NULL,
+  `category_id` smallint(5) unsigned DEFAULT NULL,
   `third_party` varchar(64) NOT NULL,
   `payment_method_id` tinyint(3) unsigned NOT NULL,
   `debit` decimal(10,2) unsigned DEFAULT NULL,
@@ -303,7 +303,9 @@ CREATE TABLE `scheduler` (
   KEY `category_id` (`category_id`),
   KEY `fk_scheduler_payment_method` (`payment_method_id`),
   KEY `fk_scheduler_account` (`account_id`),
+  KEY `fk_scheduler_account2` (`transfer_account_id`),
   CONSTRAINT `fk_scheduler_account` FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_scheduler_account2` FOREIGN KEY (`transfer_account_id`) REFERENCES `account` (`account_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_scheduler_category` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_scheduler_payment_method` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

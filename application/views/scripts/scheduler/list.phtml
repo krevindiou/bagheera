@@ -22,7 +22,7 @@ if (count($this->schedulers) > 0) {
         echo '<tr>';
         echo '<td><input type="checkbox" name="schedulers[]" value="' . $scheduler->getSchedulerId() . '" /></td>';
         echo '<td>' . $scheduler->getThirdParty() . '</td>';
-        echo '<td>' . $scheduler->getCategory()->getName() . '</td>';
+        echo '<td>' . ((null !== $scheduler->getCategory()) ? $scheduler->getCategory()->getName() : '') . '</td>';
         echo '<td>' . $scheduler->getNotes() . '</td>';
         echo '<td>' . $this->translate('paymentMethod' . ucfirst($scheduler->getPaymentMethod()->getName())) . '</td>';
         echo '<td class="debit">' . ((0 != $scheduler->getDebit()) ? $scheduler->getDebit() : '') . '</td>';

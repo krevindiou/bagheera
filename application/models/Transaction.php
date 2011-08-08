@@ -255,7 +255,7 @@ class Transaction
      * @param  Application\Models\Category $category    category to set
      * @return void
      */
-    public function setCategory(Category $category)
+    public function setCategory(Category $category = null)
     {
         $this->_category = $category;
     }

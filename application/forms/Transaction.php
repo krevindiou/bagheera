@@ -135,7 +135,7 @@ class Transaction extends \Bagheera_Form
         $this->addElement('select', 'categoryId', array(
             'label' => 'transactionCategory',
             'multiOptions' => array('' => '') + $this->_getCategoriesOptions(),
-            'required' => true,
+            'required' => false,
             'filters' => array(),
             'validators' => array()
         ));
