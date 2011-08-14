@@ -63,10 +63,15 @@ class SchedulerController extends Zend_Controller_Action
             $accountId
         );
 
-        $schedulers = $this->_schedulerService->getSchedulers($account);
+        if (null !== $account) {
+            $schedulers = $this->_schedulerService->getSchedulers($account);
 
-        $this->view->schedulers = $schedulers;
-        $this->view->accountId = $accountId;
+            $this->view->schedulers = $schedulers;
+            $this->view->accountId = $accountId;
+            $this->view->selectedAccount = $account;
+        } else {
+            $this->_helper->redirector->gotoRoute(array(), 'home', true);
+        }
     }
 
     public function saveAction()
@@ -77,15 +82,20 @@ class SchedulerController extends Zend_Controller_Action
         $scheduler = null;
         if (null !== $schedulerId) {
             $scheduler = $this->_em->find('Application\\Models\\Scheduler', $schedulerId);
+        } else {
+            $scheduler = new Application\Models\Scheduler();
         }
 
-        $schedulerForm = $this->_schedulerService->getForm(
-            $scheduler,
-            array_merge(
-                $this->_request->getPost(),
-                array('accountId' => $accountId)
-            )
-        );
+        $account = null;
+        if (null !== $accountId) {
+            $account = $this->_em->find('Application\\Models\\Account', $accountId);
+
+            if (null !== $scheduler) {
+                $scheduler->setAccount($account);
+            }
+        }
+
+        $schedulerForm = $this->_schedulerService->getForm($scheduler, $this->_request->getPost());
 
         if ($this->_request->isPost()) {
             if ($this->_schedulerService->save($schedulerForm)) {
@@ -98,6 +108,8 @@ class SchedulerController extends Zend_Controller_Action
             }
         }
 
+        $this->view->accountId = $scheduler->getAccount()->getAccountId();
         $this->view->schedulerForm = $schedulerForm;
+        $this->view->selectedAccount = (null !== $scheduler) ? $scheduler->getAccount() : null;
     }
 }
