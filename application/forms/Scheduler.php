@@ -48,6 +48,8 @@ class Scheduler extends \Application\Forms\Transaction
     {
         parent::init();
 
+        $nbElements = count($this);
+
         $this->setName('formScheduler');
 
         $this->removeElement('transactionId');
@@ -61,7 +63,9 @@ class Scheduler extends \Application\Forms\Transaction
         $this->addElement('text', 'limitDate', array(
             'label' => 'schedulerLimitDate',
             'required' => false,
+            'size' => 10,
             'maxlength' => 10,
+            'order' => ++$nbElements,
             'filters' => array(),
             'validators' => array(
                 array(
@@ -73,18 +77,21 @@ class Scheduler extends \Application\Forms\Transaction
             )
         ));
 
-        $this->addElement('text', 'frequencyValue', array(
-            'label' => 'schedulerFrequencyValue',
-            'required' => true,
-            'maxlength' => 2,
-            'filters' => array(),
-            'validators' => array()
-        ));
-
         $this->addElement('select', 'frequencyUnit', array(
             'label' => 'schedulerFrequencyUnit',
             'multiOptions' => array('' => '') + $this->_getFrequencyUnitsOptions(),
             'required' => true,
+            'order' => ++$nbElements,
+            'filters' => array(),
+            'validators' => array()
+        ));
+
+        $this->addElement('text', 'frequencyValue', array(
+            'label' => 'schedulerFrequencyValue',
+            'required' => true,
+            'size' => 3,
+            'maxlength' => 2,
+            'order' => ++$nbElements,
             'filters' => array(),
             'validators' => array()
         ));
@@ -93,9 +100,12 @@ class Scheduler extends \Application\Forms\Transaction
             'label' => 'schedulerIsActive',
             'multiOptions' => array('1' => 'yes', '0' => 'no'),
             'separator' => '',
+            'order' => ++$nbElements,
             'required' => true,
             'filters' => array(),
             'validators' => array()
         ));
+
+        $this->getElement('save')->setOrder(++$nbElements);
     }
 }

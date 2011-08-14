@@ -89,6 +89,7 @@ class Account extends \Bagheera_Form
         $this->addElement('text', 'name', array(
             'label' => 'accountName',
             'required' => true,
+            'size' => 30,
             'maxlength' => 32,
             'filters' => array(),
             'validators' => array()
@@ -97,6 +98,7 @@ class Account extends \Bagheera_Form
         $this->addElement('text', 'initialBalance', array(
             'label' => 'accountInitialBalance',
             'required' => false,
+            'size' => 10,
             'maxlength' => 10,
             'filters' => array(),
             'validators' => array()
@@ -105,6 +107,7 @@ class Account extends \Bagheera_Form
         $this->addElement('text', 'overdraftFacility', array(
             'label' => 'accountOverdraftFacility',
             'required' => false,
+            'size' => 10,
             'maxlength' => 10,
             'filters' => array(),
             'validators' => array()

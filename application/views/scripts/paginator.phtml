@@ -1,5 +1,5 @@
 <?php if ($this->pageCount) { ?>
-    <ul class="paginationControl">
+    <ul class="pager">
     <?php
     if (isset($this->previous) && !in_array($this->first, $this->pagesInRange)) {
         echo '<li class="first">';
@@ -12,7 +12,7 @@
         if ($page != $this->current) {
             echo $this->link($this->route, $page, array(), array('page' => $page));
         } else {
-            echo $page;
+            echo '<span>' . $page . '</span>';
         }
         echo '</li>';
     }

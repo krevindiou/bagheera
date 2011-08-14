@@ -1,7 +1,7 @@
 <?php
 
-echo $this->link('newBank', $this->translate('bankNew')) . '<br/>';
-echo $this->link('newAccount', $this->translate('accountNew')) . '<br/>';
+echo $this->link('newBank', $this->translate('bankNew'), array('class' => 'new'));
+echo $this->link('newAccount', $this->translate('accountNew'), array('class' => 'new'));
 
 ?>
 
@@ -44,7 +44,9 @@ if (count($this->accounts) > 0) {
 }
 
 ?>
-<br/>
-<input type="submit" name="delete" value="<?php echo $this->translate('deleteAction') ?>"/>
-<input type="submit" name="share" disabled="disabled" value="<?php echo $this->translate('shareAction') ?>"/>
+
+<div class="listActions">
+    <input type="submit" name="delete" value="<?php echo $this->translate('deleteAction') ?>"/>
+    <input type="submit" name="share" disabled="disabled" value="<?php echo $this->translate('shareAction') ?>"/>
+</div>
 </form>

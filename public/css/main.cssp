@@ -1,5 +1,5 @@
 @turbine
-    plugins: resetstyle
+    plugins: resetstyle, borderradius, backgroundgradient, boxshadow
 
 @media screen
 
@@ -7,13 +7,12 @@ body
     font-family: "DejaVu Sans", "Bitstream Vera Sans", monospace
     font-size: 14px
     background-color: #eee
+    color: #313131
 
 a
     text-decoration: underline
     img
         border: none
-a, a:link, a:visited, a:hover, a:focus, a:active
-    color: #000
 a:hover
     text-decoration: none
 
@@ -21,47 +20,233 @@ strong
     font-weight: bold
 
 form
-    width: 800px
-    margin: 0 auto
-    padding: 14px
     .label
-        float: left
+        display: inline-block;
         width: 200px
-        padding: 4px 2px
-        font-weight: bold
         text-align: right
+        height: 23px
+        vertical-align: top
+        margin: 10px 0 10px 15px
+    label
+        font-weight: bold
+        input[type=radio], input[type=checkbox]
+            margin-top: 10px
     .field
-        float: left
-        width: 500px
-        padding: 4px 2px
+        display: inline-block;
+        width: 700px
         margin: 0 0 10px 10px
     .description
         display: block
         width: 200px
-        color: #666
         font-size: 11px
         font-weight: normal
     input, textarea, select, button
+        font-size: 14px
         border: solid 1px #aacfe4
+        border: 1px solid rgba(0, 0, 0, 0.3);
+        padding: 7px
+        border-radius: 6px
+        background-image: linear-gradient(top, #fff, #eee)
+        :hover
+            outline: medium none
+            border-color: #093c75
     input[type=radio], input[type=checkbox]
         border: 0
     input[type=submit], input[type=button], input[type=reset], input[type=image], button
         float: left
-        margin-left: 216px
-        margin-bottom: 10px
+        margin-left: 230px
+        border-radius: 5px
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.4)
+        background-image: linear-gradient(top, #fff, #b9b9b9)
+        border: 1px solid rgba(0, 0, 0, 0.5)
+        padding: 5px
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8)
+        cursor: pointer
+    .listActions
+        margin: 20px 0 20px 30px
+        input
+            float: none
+            margin: 0
+            margin-right: 15px
+        .pager
+            float: right
+            li
+                display: inline
+                a, span
+                    float: left
+                    border-radius: 5px
+                    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4)
+                    border: 1px solid rgba(0, 0, 0, 0.5)
+                    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8)
+                    padding: 5px
+                    margin: 0 4px
+                    text-decoration: none
+                    background-image: linear-gradient(top, #fff, #b9b9b9)
+                a
+                    cursor: pointer
+                span
+                    color: rgba(0, 0, 0, 0.3)
+                    border: 1px solid #ddd
 
-#menu li li
-    margin-left: 20px;
+#top
+    position: relative
+    clear: left
+    margin: auto
+    width: 970px
+    padding: 10px
+    height: 100px
+    background-color: #b5dcf1
+    background-image: linear-gradient(top, #b5dcf1, #83b0c9)
+    text-shadow: 0 1px 0 #cae9f9
+    border-bottom: 1px solid #558199
+    box-shadow: 0 1px 0 #fff
+    border-left: 1px solid #bbb
+    border-right: 1px solid #bbb
+    .logout
+        float: right
+        margin: 55px 10px 0 0
+    a
+        font-weight: bold
+        text-decoration: none
+        padding: 3px 5px
+        margin: 2px
+    a:hover
+        border-radius: 5px
+        background-color: #fff
 
-#sidebar
-    float: left
-    width: 300px
-    background-color: #ccc
+h1
+    font-size: 22px
+    margin: 10px 0 0 10px
+
+#menu
+    margin-top: 50px
+    li
+        display: inline
+    a
+        display: inline-block;
+
+#accountInfo
+    padding: 5px 10px
+    background-color: #fff
+    border-radius: 8px
+    border: 2px solid #666
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-image: linear-gradient(top , #fff, #d9d9d9);
 
 #content
-    float: left
-    width: 900px
+    width: 950px
+    padding: 20px 20px 20px 20px
+    margin: auto
     background-color: #ddd
+    border: 1px solid #bbb
+    border-top: 0
+    .clear
+        clear: both
 
-table.data tr.notReconciled
-    color: #777
+#footer
+    margin: auto
+    width: 970px
+    padding: 10px
+    height: 10px
+    border: 1px solid #bbb
+    border-top: 0
+    background-color: #fff
+    font-size: 11px
+    position: relative
+    #copyright
+        position: absolute
+        right: 10px
+        top: 10px
+        color: #777
+
+table.data
+    width: 100%
+    th
+        background-image: linear-gradient(top, #b5dcf1, #83b0c9)
+        font-weight: bold
+        font-size: 13px
+        padding: 5px
+        border-top: 1px solid #fff
+        border-bottom: 1px solid #558199
+        text-align: left
+    td
+        font-size: 12px
+        padding: 4px
+        border-bottom: 1px solid #ccc
+        vertical-align: middle
+    tr:nth-child(odd) td
+        background-color: #eaeaea
+    tr:hover td
+        background-color: #c2deed
+        cursor: pointer
+    tr.notReconciled
+        color: #777
+        font-style: italic
+    tr.selected td
+        background-color: #ffc
+
+#accountsSummary
+    li li
+        margin: 5px 0 5px 10px
+    > li
+        width: 400px
+        background-color: #eee
+        border-radius: 7px
+        margin-bottom: 10px;
+        padding: 15px;
+        p
+            font-size: 15px
+            font-weight: bold
+
+#totalBalance
+    margin: 30px 0 0 16px
+    font-size: 16px
+    font-weight: bold
+
+.form-errors
+    background-color: #ff7a7a
+    border-radius: 6px
+    border: 2px solid #f72c2c
+    padding: 5px
+    margin: 0 0 10px 230px
+    display: inline-block
+    color: #fff
+    > li
+        list-style-type: square
+        list-style-position: inside
+        margin: 0 0 10px 5px
+    > li:last-child
+        margin-bottom: 0
+
+.info
+    margin: 0 0 10px 0
+    display: inline-block
+    > li
+        list-style-type: square
+        list-style-position: inside
+        margin: 0 0 10px 5px
+    > li:last-child
+        margin-bottom: 0
+
+a.new
+    display: inline-block
+    text-decoration: none
+    margin: 3px 20px 10px 0
+    border-radius: 5px
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.4)
+    background: url(/images/plus.png) no-repeat 5px 7px, linear-gradient(top, #fff, #b9b9b9)
+    border: 1px solid rgba(0, 0, 0, 0.5)
+    padding: 8px
+    padding-left: 24px
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8)
+    cursor: pointer
+
+#formAccountList
+    ul li li input
+        margin-right: 20px
+    > ul > li
+        margin-bottom: 10px
+    > ul > li:last-child
+        margin-bottom: 0

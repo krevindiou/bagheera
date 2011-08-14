@@ -1,17 +1,16 @@
 <?php
 
-echo $this->link('newUser', $this->translate('userNew')) . '<br/>';
-
-echo '<form method="post" action="">';
+echo $this->link('newUser', $this->translate('userNew'), array('class' => 'new'));
 
 if (count($this->users) > 0) {
+    echo '<form method="post" action="">';
     echo '<table class="data">';
     echo '<tr>';
     echo '<th></th>';
     echo '<th>' . $this->translate('userName') . '</th>';
     echo '<th>' . $this->translate('userEmail') . '</th>';
     echo '<th>' . $this->translate('userActive') . '</th>';
-    echo '<th></th>';
+    echo '<th class="edit"></th>';
     echo '</tr>';
     foreach ($this->users as $user) {
         echo '<tr>';
@@ -19,14 +18,14 @@ if (count($this->users) > 0) {
         echo '<td>' . $user->getFirstname() . ' ' . $user->getLastname() . '</td>';
         echo '<td>' . $user->getEmail() . '</td>';
         echo '<td class="' . ($user->getIsActive() ? 'active' : 'inactive') . '">' . ($user->getIsActive() ? 'yes' : 'no') . '</td>';
-        echo '<td>' . $this->link('editUser', $this->translate('userEdit'), array(), array('userId' => $user->getUserId())) . '</td>';
+        echo '<td class="edit">' . $this->link('editUser', $this->translate('userEdit'), array(), array('userId' => $user->getUserId())) . '</td>';
         echo '</tr>';
     }
     echo '</table>';
 
+    echo '<div class="listActions">';
+    echo '<input type="submit" name="toggleDeactivation" value="' . $this->translate('userActivateDeactivateAction') . '" />';
     echo $this->paginationControl($this->users);
+    echo '</div>';
+    echo '</form>';
 }
-
-echo '<input type="submit" name="toggleDeactivation" value="' . $this->translate('userActivateDeactivateAction') . '" />';
-
-echo '</form>';

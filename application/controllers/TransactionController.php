@@ -72,6 +72,7 @@ class TransactionController extends Zend_Controller_Action
             $this->view->balance = $account->getBalance();
             $this->view->reconciledBalance = $account->getBalance(true);
             $this->view->route = 'transactionsList';
+            $this->view->selectedAccount = $account;
         }
     }
 
@@ -110,5 +111,6 @@ class TransactionController extends Zend_Controller_Action
         }
 
         $this->view->transactionForm = $transactionForm;
+        $this->view->selectedAccount = $transaction->getAccount();
     }
 }

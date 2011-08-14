@@ -45,7 +45,7 @@ class Application_View_Helper_Link extends Zend_View_Helper_Abstract
         if (!empty($params)) {
             $paramsString.= ' ';
             foreach ($params as $paramName => $paramValue) {
-                $paramsString.= $this->escape($paramName) . '="' . $this->escape($paramValue) . '"';
+                $paramsString.= $this->view->escape($paramName) . '="' . $this->view->escape($paramValue) . '"';
             }
         }
 

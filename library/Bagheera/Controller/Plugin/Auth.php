@@ -43,5 +43,8 @@ class Bagheera_Controller_Plugin_Auth extends Zend_Controller_Plugin_Abstract
                 $redirector->gotoRoute(array(), 'login', true);
             }
         }
+
+        $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
+        $viewRenderer->view->currentUser = $currentUser;
     }
 }

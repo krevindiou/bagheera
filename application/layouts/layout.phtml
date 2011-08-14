@@ -18,43 +18,53 @@
         </script>
     </head>
     <body>
-        <div id="sidebar">
-            <p><?php echo $this->link('logout', $this->translate('userLogoutLink')) ?><br/><br/></p>
+        <div id="top">
+            <h1>Bagheera</h1>
+
+            <?php if (null !== $this->currentUser) { ?>
+            <p class="logout"><?php echo $this->link('logout', $this->translate('userLogoutLink')) ?></p>
 
             <ul id="menu">
                 <li><?php echo $this->link('home', $this->translate('menuHome')) ?></li>
-                <li>
-                    <?php echo $this->link('myInfos', $this->translate('menuMyInfos')) ?>
-                    <ul>
-                        <li><?php echo $this->link('profile', $this->translate('menuProfile')) ?></li>
-                        <li><?php echo $this->link('accountsList', $this->translate('menuAccounts')) ?></li>
-                        <li><?php echo $this->link('sharesList', $this->translate('menuShares')) ?></li>
-                    </ul>
-                </li>
+                <li><?php echo $this->link('profile', $this->translate('menuProfile')) ?></li>
+                <li><?php echo $this->link('accountsList', $this->translate('menuAccounts')) ?></li>
+                <li><?php echo $this->link('sharesList', $this->translate('menuShares')) ?></li>
                 <li><?php echo $this->link('reportsList', $this->translate('menuReports')) ?></li>
-                <li>
-                    <?php echo $this->link('usersList', $this->translate('menuAdmin')) ?>
-                    <ul>
-                        <li><?php echo $this->link('usersList', $this->translate('menuAdminUsers')) ?></li>
-                        <li><?php echo $this->link('categoriesList', $this->translate('menuAdminCategories')) ?></li>
-                        <li><?php echo $this->link('paymentMethodsList', $this->translate('menuAdminPaymentMethods')) ?></li>
-                    </ul>
-                </li>
+                <li><?php echo $this->link('usersList', $this->translate('menuAdminUsers')) ?></li>
+                <li><?php echo $this->link('categoriesList', $this->translate('menuAdminCategories')) ?></li>
+                <li><?php echo $this->link('paymentMethodsList', $this->translate('menuAdminPaymentMethods')) ?></li>
             </ul>
+            <?php } ?>
+
+            <?php if ($this->selectedAccount) { ?>
+            <div id="accountInfo">
+                <strong><?php echo $this->selectedAccount->getBank()->getName() . ' - ' . $this->selectedAccount->getName() ?></strong><br/>
+                <?php
+                echo $this->translate('balance') . ' : ' . $this->selectedAccount->getBalance() . '<br/>';
+                echo $this->translate('reconciledBalance') . ' : ' . $this->selectedAccount->getBalance(true);
+                ?>
+            </div>
+            <?php } ?>
         </div>
 
         <div id="content">
             <?php
             if (!empty($this->messages)) {
-                echo '<ul>', "\n";
+                echo '<ul class="info">', "\n";
                 foreach ($this->messages as $message) {
                     echo '<li>', $this->translate($message), '</li>', "\n";
                 }
                 echo '</ul>', "\n";
+                echo '<div class="clear"></div>';
             }
 
             echo $this->layout()->content, "\n";
             ?>
+            <div class="clear"></div>
+        </div>
+
+        <div id="footer">
+            <p id="copyright">Bagheera © 2011</p>
         </div>
 
         <?php echo $this->headScript(), "\n" ?>

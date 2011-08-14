@@ -9,6 +9,25 @@ var Bagheera = {
             Bagheera.dropDownPaymentMethod();
             Bagheera.dropDownCategory();
             Bagheera.dropDownTransferAccount();
+
+            $("table.data td.edit, table.data th.edit").hide();
+
+            $("table.data tr td").click(function(){
+                if ($(this).find("input").length == 0) {
+                    var link = $(this).parent().find("td.edit a");
+                    if (link) {
+                        document.location.href = link.attr("href");
+                    }
+                }
+            });
+
+            $("table.data input[type=checkbox]").change(function(){
+                if ($(this).attr("checked")) {
+                    $(this).parent().parent().addClass("selected");
+                } else {
+                    $(this).parent().parent().removeClass("selected");
+                }
+            });
         });
     },
 

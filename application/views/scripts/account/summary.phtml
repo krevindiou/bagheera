@@ -1,15 +1,19 @@
 <?php
 
+echo '<ul id="accountsSummary">';
 foreach ($this->accounts as $v) {
-    echo '# ' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '<br/>';
+    echo '<li><p>' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '</p>';
     if (empty($v['accounts'])) {
-        echo '<em>' . $this->translate('noAccount'). '</em><br/>';
+        echo '<br/><em>' . $this->translate('noAccount'). '</em><br/>';
     } else {
+        echo '<ul>';
         foreach ($v['accounts'] as $account) {
-            echo '- <a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a> - ' . $account->getBalance() . '<br/>';
+            echo '<li><a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a> - ' . $account->getBalance() . '</li>';
         }
+        echo '</ul>';
     }
+    echo '</li>';
 }
+echo '</ul>';
 
-echo '<br/>';
-echo $this->translate('totalBalance') . ' : ' . $this->user->getBalance();
+echo '<p id="totalBalance">' . $this->translate('totalBalance') . ' : ' . $this->user->getBalance() . '</p>';

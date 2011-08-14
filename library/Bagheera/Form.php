@@ -91,9 +91,9 @@ class Bagheera_Form extends Zend_Form
     {
         $this->setDisableLoadDefaultDecorators(true);
 
-        $this->addDecorator('FormErrors')
-             ->addDecorator('FormElements')
-             ->addDecorator('Form');
+        $this->addDecorator('FormElements')
+             ->addDecorator('Form')
+             ->addDecorator('FormErrors', array('placement' => Zend_Form_Decorator_FormErrors::PREPEND));
 
         $this->addElementPrefixPath(
             'Bagheera_Validate', __DIR__ . '/Validate', 'validate'

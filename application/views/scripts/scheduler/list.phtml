@@ -1,40 +1,38 @@
 <?php
 
-echo $this->link('newScheduler', $this->translate('schedulerNew'), array(), array('accountId' => $this->accountId)) . '<br/>';
-
-echo '<form method="post" action="">';
+echo $this->link('newScheduler', $this->translate('schedulerNew'), array('class' => 'new'), array('accountId' => $this->accountId));
 
 if (count($this->schedulers) > 0) {
+    echo '<form method="post" action="">';
     echo '<table class="data">';
     echo '<tr>';
     echo '<th></th>';
     echo '<th>' . $this->translate('transactionThirdParty') . '</th>';
     echo '<th>' . $this->translate('transactionCategory') . '</th>';
-    echo '<th>' . $this->translate('transactionNotes') . '</th>';
     echo '<th>' . $this->translate('transactionPaymentMethod') . '</th>';
     echo '<th>' . $this->translate('transactionDebit') . '</th>';
     echo '<th>' . $this->translate('transactionCredit') . '</th>';
     echo '<th>' . $this->translate('transactionFrequencyValue') . '</th>';
     echo '<th>' . $this->translate('transactionFrequencyUnit') . '</th>';
-    echo '<th></th>';
+    echo '<th class="edit"></th>';
     echo '</tr>';
     foreach ($this->schedulers as $scheduler) {
         echo '<tr>';
         echo '<td><input type="checkbox" name="schedulers[]" value="' . $scheduler->getSchedulerId() . '" /></td>';
         echo '<td>' . $scheduler->getThirdParty() . '</td>';
         echo '<td>' . ((null !== $scheduler->getCategory()) ? $scheduler->getCategory()->getName() : '') . '</td>';
-        echo '<td>' . $scheduler->getNotes() . '</td>';
         echo '<td>' . $this->translate('paymentMethod' . ucfirst($scheduler->getPaymentMethod()->getName())) . '</td>';
         echo '<td class="debit">' . ((0 != $scheduler->getDebit()) ? $scheduler->getDebit() : '') . '</td>';
         echo '<td class="credit">' . ((0 != $scheduler->getCredit()) ? $scheduler->getCredit() : '') . '</td>';
         echo '<td>' . $scheduler->getFrequencyValue() . '</td>';
         echo '<td>' . $scheduler->getFrequencyUnit() . '</td>';
-        echo '<td>' . $this->link('editScheduler', $this->translate('schedulerEdit'), array(), array('schedulerId' => $scheduler->getSchedulerId())) . '</td>';
+        echo '<td class="edit">' . $this->link('editScheduler', $this->translate('schedulerEdit'), array(), array('schedulerId' => $scheduler->getSchedulerId())) . '</td>';
         echo '</tr>';
     }
     echo '</table>';
+
+    echo '<div class="listActions">';
+    echo '<input type="submit" name="delete" value="' . $this->translate('deleteAction') . '" />';
+    echo '</div>';
+    echo '</form>';
 }
-
-echo '<input type="submit" name="delete" value="' . $this->translate('deleteAction') . '" />';
-
-echo '</form>';

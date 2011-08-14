@@ -127,6 +127,7 @@ class Transaction extends \Bagheera_Form
         $this->addElement('text', 'thirdParty', array(
             'label' => 'transactionThirdParty',
             'required' => true,
+            'size' => 30,
             'maxlength' => 64,
             'filters' => array(),
             'validators' => array()
@@ -159,6 +160,7 @@ class Transaction extends \Bagheera_Form
         $this->addElement('text', 'valueDate', array(
             'label' => 'transactionValueDate',
             'required' => true,
+            'size' => 10,
             'maxlength' => 10,
             'filters' => array(),
             'validators' => array(
@@ -174,6 +176,7 @@ class Transaction extends \Bagheera_Form
         $this->addElement('text', 'amount', array(
             'label' => 'transactionAmount',
             'required' => true,
+            'size' => 10,
             'maxlength' => 10,
             'filters' => array('amount'),
             'validators' => array()

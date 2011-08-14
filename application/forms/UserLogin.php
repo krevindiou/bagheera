@@ -39,6 +39,7 @@ class UserLogin extends \Bagheera_Form
             'label' => 'userEmail',
             'required' => true,
             'maxlength' => 128,
+            'size' => 40,
             'filters' => array(),
             'validators' => array(
                 array(
