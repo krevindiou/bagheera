@@ -104,6 +104,14 @@ class Account
     protected $_updatedAt;
 
     /**
+     * Transactions list
+     *
+     * @var Doctrine\Common\Collections\ArrayCollection
+     * @OneToMany(targetEntity="Transaction", mappedBy="_account", cascade={"all"})
+     */
+    protected $_transactions;
+
+    /**
      * Schedulers list
      *
      * @var Doctrine\Common\Collections\ArrayCollection
