@@ -114,6 +114,7 @@ class TransactionController extends Zend_Controller_Action
             }
         }
 
+        $this->view->accountId = $transaction->getAccount()->getAccountId();
         $this->view->transactionForm = $transactionForm;
         $this->view->selectedAccount = (null !== $transaction) ? $transaction->getAccount() : null;
     }

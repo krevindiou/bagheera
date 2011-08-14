@@ -1,5 +1,6 @@
 <?php
 
+echo $this->link('home', $this->translate('back'), array('class' => 'back'));
 echo $this->link('newTransaction', $this->translate('transactionNew'), array('class' => 'new'), array('accountId' => $this->accountId));
 echo $this->link('schedulersList', $this->translate('schedulerList'), array(), array('accountId' => $this->accountId));
 

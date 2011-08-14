@@ -1,5 +1,6 @@
 <?php
 
+echo $this->link('transactionsList', $this->translate('back'), array('class' => 'back'), array('accountId' => $this->accountId));
 echo $this->link('newScheduler', $this->translate('schedulerNew'), array('class' => 'new'), array('accountId' => $this->accountId));
 
 if (count($this->schedulers) > 0) {
