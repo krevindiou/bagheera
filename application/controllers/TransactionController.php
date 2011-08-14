@@ -65,14 +65,18 @@ class TransactionController extends Zend_Controller_Action
                 $accountId
             );
 
-            $transactions = $this->_transactionService->getTransactions($account, $page);
+            if (null !== $account) {
+                $transactions = $this->_transactionService->getTransactions($account, $page);
 
-            $this->view->transactions = $transactions;
-            $this->view->accountId = $accountId;
-            $this->view->balance = $account->getBalance();
-            $this->view->reconciledBalance = $account->getBalance(true);
-            $this->view->route = 'transactionsList';
-            $this->view->selectedAccount = $account;
+                $this->view->transactions = $transactions;
+                $this->view->accountId = $accountId;
+                $this->view->balance = $account->getBalance();
+                $this->view->reconciledBalance = $account->getBalance(true);
+                $this->view->route = 'transactionsList';
+                $this->view->selectedAccount = $account;
+            } else {
+                $this->_helper->redirector->gotoRoute(array(), 'home', true);
+            }
         }
     }
 
@@ -111,6 +115,6 @@ class TransactionController extends Zend_Controller_Action
         }
 
         $this->view->transactionForm = $transactionForm;
-        $this->view->selectedAccount = $transaction->getAccount();
+        $this->view->selectedAccount = (null !== $transaction) ? $transaction->getAccount() : null;
     }
 }
