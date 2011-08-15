@@ -1,7 +1,3 @@
-~
-\.buildpath
-\.project
-\.settings
 application/proxies/
 data/bankDetails/
 public/css/turbine/cache/
