@@ -31,6 +31,9 @@ form
         font-weight: bold
         input[type=radio], input[type=checkbox]
             margin-top: 10px
+    label.required:after
+        content: " *"
+        color: red
     .field
         display: inline-block;
         width: 700px
