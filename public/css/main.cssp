@@ -206,12 +206,12 @@ table.data
     font-weight: bold
 
 .form-errors
+    width: 400px
     background-color: #ff7a7a
     border-radius: 6px
     border: 2px solid #f72c2c
     padding: 5px
     margin: 0 0 10px 230px
-    display: inline-block
     color: #fff
     > li
         list-style-type: square
@@ -255,6 +255,10 @@ a.back
     padding-left: 28px
     text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8)
     cursor: pointer
+
+input.delete
+    background: url(/images/trash.png) no-repeat 4px 4px, linear-gradient(top, #fff, #b9b9b9) !important
+    padding-left: 26px !important
 
 #formAccountList
     ul li li input
