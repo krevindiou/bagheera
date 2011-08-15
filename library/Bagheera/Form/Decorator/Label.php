@@ -156,7 +156,7 @@ class Bagheera_Form_Decorator_Label extends Zend_Form_Decorator_Label
             $decorator = new Zend_Form_Decorator_Description($description);
             $decorator->setElement($element);
 
-            $label = str_replace('</label>', $decorator->render('') . '</label>', $label);
+            $label = str_replace('</label>', '</label>' . $decorator->render(''), $label);
         }
 
         if (null !== $tag) {
