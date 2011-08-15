@@ -90,6 +90,10 @@ form
                 span
                     color: rgba(0, 0, 0, 0.3)
                     border: 1px solid #ddd
+            li.last a:before
+                content: "... "
+            li.first a:after
+                content: " ..."
 
 #top
     position: relative
