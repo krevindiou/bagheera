@@ -179,7 +179,14 @@ class Transaction extends \Bagheera_Form
             'size' => 10,
             'maxlength' => 10,
             'filters' => array('amount'),
-            'validators' => array()
+            'validators' => array(
+                array(
+                    'validator' => 'GreaterThan',
+                    'options' => array(
+                        'min' => 0,
+                    )
+                )
+            )
         ));
 
         $this->addElement('textarea', 'notes', array(
