@@ -255,10 +255,10 @@ input.delete
     padding-left: 26px !important
 
 #formAccountList
-    width: 400px
     > ul li
         margin-top: 5px
     > ul > li
+        width: 400px
         background-color: #eee
         border-radius: 7px
         margin-bottom: 10px;
