@@ -68,7 +68,11 @@ class Transaction extends CrudAbstract
             $extraValues['amount'] = ($debit > 0) ? $debit : $credit;
         }
         if (!isset($extraValues['debitCredit'])) {
-            $extraValues['debitCredit'] = ($debit > 0) ? 'debit' : 'credit';
+            if ($debit > 0) {
+                $extraValues['debitCredit'] = 'debit';
+            } elseif ($credit > 0) {
+                $extraValues['debitCredit'] = 'credit';
+            }
         }
         if (!isset($extraValues['isReconciled'])) {
             $extraValues['isReconciled'] = (int)$transaction->getIsReconciled();
