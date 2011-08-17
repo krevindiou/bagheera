@@ -30,9 +30,11 @@
                 <li><?php echo $this->link('accountsList', $this->translate('menuAccounts')) ?></li>
                 <!-- <li><?php //echo $this->link('sharesList', $this->translate('menuShares')) ?></li> -->
                 <!-- <li><?php //echo $this->link('reportsList', $this->translate('menuReports')) ?></li> -->
+                <?php if ($this->currentUser->getIsAdmin()) { ?>
                 <li><?php echo $this->link('usersList', $this->translate('menuAdminUsers')) ?></li>
                 <!-- <li><?php //echo $this->link('categoriesList', $this->translate('menuAdminCategories')) ?></li> -->
                 <!-- <li><?php //echo $this->link('paymentMethodsList', $this->translate('menuAdminPaymentMethods')) ?></li> -->
+                <?php } ?>
             </ul>
             <?php } ?>
 

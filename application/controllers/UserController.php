@@ -141,6 +141,11 @@ class UserController extends Zend_Controller_Action
 
     public function listAction()
     {
+        $currentUser = $this->_userService->getCurrentUser();
+        if (null === $currentUser || !$currentUser->getIsAdmin()) {
+            exit;
+        }
+
         $em = Zend_Registry::get('em');
 
         $page = (int)$this->_request->getParam('page', 1);
@@ -163,6 +168,11 @@ class UserController extends Zend_Controller_Action
 
     public function saveAction()
     {
+        $currentUser = $this->_userService->getCurrentUser();
+        if (null === $currentUser || !$currentUser->getIsAdmin()) {
+            exit;
+        }
+
         $userId = $this->_request->getParam('userId');
 
         $user = null;

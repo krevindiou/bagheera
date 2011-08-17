@@ -32,7 +32,12 @@ class PaymentMethodController extends Zend_Controller_Action
 
     public function init()
     {
-        //$this->_paymentMethodService = PaymentMethodService::getInstance();
+        $this->_userService = UserService::getInstance();
+
+        $currentUser = $this->_userService->getCurrentUser();
+        if (null === $currentUser || !$currentUser->getIsAdmin()) {
+            exit;
+        }
     }
 
     public function listAction()
