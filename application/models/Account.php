@@ -115,7 +115,7 @@ class Account
      * Schedulers list
      *
      * @var Doctrine\Common\Collections\ArrayCollection
-     * @OneToMany(targetEntity="Scheduler", mappedBy="_account")
+     * @OneToMany(targetEntity="Scheduler", mappedBy="_account", cascade={"all"})
      */
     protected $_schedulers;
 
