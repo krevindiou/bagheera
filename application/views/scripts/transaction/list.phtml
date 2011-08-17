@@ -21,14 +21,12 @@ if (count($this->transactions) > 0) {
     foreach ($this->transactions as $transaction) {
         $scheduler = $transaction->getScheduler();
 
-        if (!$transaction->getIsReconciled()) {
-            echo '<tr class="notReconciled">';
-        } else {
-            echo '<tr>';
-        }
-
+        echo '<tr>';
         echo '<td><input type="checkbox" name="transactions[]" value="' . $transaction->getTransactionId() . '" /></td>';
-        echo '<td>' . ((null !== $scheduler) ? '<img src="/images/scheduler.png" alt="S"/>' : '') . '</td>';
+        echo '<td>';
+        echo ($transaction->getIsReconciled() ? '<img src="/images/reconciled.png" alt="R"/> ' : '');
+        echo ((null !== $scheduler) ? '<img src="/images/scheduler.png" alt="S"/>' : '');
+        echo '</td>';
         echo '<td>' . $transaction->getThirdParty() . '</td>';
         echo '<td>' . ((null !== $transaction->getCategory()) ? $transaction->getCategory()->getName() : '') . '</td>';
         echo '<td>' . $this->translate('paymentMethod' . ucfirst($transaction->getPaymentMethod()->getName())) . '</td>';

@@ -188,9 +188,6 @@ table.data
     tr:hover td
         background-color: #c2deed
         cursor: pointer
-    tr.notReconciled
-        color: #777
-        font-style: italic
     tr.selected td
         background-color: #ffc
 
