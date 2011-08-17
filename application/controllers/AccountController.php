@@ -45,27 +45,6 @@ class AccountController extends Zend_Controller_Action
 
     public function summaryAction()
     {
-        $user = $this->_userService->getCurrentUser();
-
-        $bankAccounts = array();
-        $banks = $user->getBanks();
-        foreach ($banks as $bank) {
-            $bankAccounts[$bank->getBankId()] = array(
-                'bank' => $bank,
-                'accounts' => array()
-            );
-        }
-        $accounts = $user->getAccounts();
-        foreach ($accounts as $account) {
-            $bankAccounts[$account->getBank()->getBankId()]['accounts'][$account->getAccountId()] = $account;
-        }
-
-        $this->view->user = $user;
-        $this->view->accounts = $bankAccounts;
-    }
-
-    public function listAction()
-    {
         $delete = $this->_request->getPost('delete');
         $share = $this->_request->getPost('share');
         $accountsId = (array)$this->_request->getPost('accountsId');
@@ -125,7 +104,7 @@ class AccountController extends Zend_Controller_Action
         }
 
         $this->_helper->flashMessenger('accountDeleteMessage');
-        $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
+        $this->_helper->redirector->gotoRoute(array(), 'index', true);
     }
 
     public function shareAction()
@@ -138,7 +117,7 @@ class AccountController extends Zend_Controller_Action
         // @todo
 
         $this->_helper->flashMessenger('accountShareMessage');
-        $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
+        $this->_helper->redirector->gotoRoute(array(), 'index', true);
     }
 
     public function saveAction()
@@ -155,7 +134,7 @@ class AccountController extends Zend_Controller_Action
         if ($this->_request->isPost()) {
             if ($this->_accountService->save($accountForm)) {
                 $this->_helper->flashMessenger('accountFormOk');
-                $this->_helper->redirector->gotoRoute(array(), 'accountsList', true);
+                $this->_helper->redirector->gotoRoute(array(), 'index', true);
             }
         }
 

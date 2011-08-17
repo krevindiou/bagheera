@@ -194,19 +194,6 @@ table.data
     tr.selected td
         background-color: #ffc
 
-#accountsSummary
-    li li
-        margin: 5px 0 5px 10px
-    > li
-        width: 400px
-        background-color: #eee
-        border-radius: 7px
-        margin-bottom: 10px;
-        padding: 15px;
-        p
-            font-size: 15px
-            font-weight: bold
-
 #totalBalance
     margin: 30px 0 0 16px
     font-size: 16px
@@ -268,9 +255,17 @@ input.delete
     padding-left: 26px !important
 
 #formAccountList
-    ul li li input
-        margin-right: 20px
+    width: 400px
+    > ul li
+        margin-top: 5px
     > ul > li
-        margin-bottom: 10px
-    > ul > li:last-child
-        margin-bottom: 0
+        background-color: #eee
+        border-radius: 7px
+        margin-bottom: 10px;
+        padding: 15px;
+        span
+            margin-left: 5px
+            font-size: 15px
+            font-weight: bold
+        li input
+            margin-right: 20px

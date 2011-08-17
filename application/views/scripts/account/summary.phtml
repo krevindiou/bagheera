@@ -1,19 +1,42 @@
 <?php
 
-echo '<ul id="accountsSummary">';
-foreach ($this->accounts as $v) {
-    echo '<li><p>' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '</p>';
-    if (empty($v['accounts'])) {
-        echo '<br/><em>' . $this->translate('noAccount'). '</em><br/>';
-    } else {
-        echo '<ul>';
-        foreach ($v['accounts'] as $account) {
-            echo '<li><a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a> - ' . $account->getBalance() . '</li>';
-        }
-        echo '</ul>';
-    }
-    echo '</li>';
-}
-echo '</ul>';
+echo $this->link('newBank', $this->translate('bankNew'), array('class' => 'new'));
 
-echo '<p id="totalBalance">' . $this->translate('totalBalance') . ' : ' . $this->user->getBalance() . '</p>';
+if (count($this->accounts) > 0) {
+    echo $this->link('newAccount', $this->translate('accountNew'), array('class' => 'new'));
+
+    echo '<form id="formAccountList" method="post" action="">';
+    echo '<ul>';
+    foreach ($this->accounts as $v) {
+        echo '<li>';
+        echo '<input type="checkbox" name="banksId[]" value="' . $v['bank']->getBankId() . '"/>';
+        echo '<span>' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '</span>';
+        echo ' ' . $this->link('editBank', '<img src="/images/edit.png" alt="' . $this->translate('bankEdit') . '"/>', array(), array('bankId' => $v['bank']->getBankId()));
+
+        if (empty($v['accounts'])) {
+            echo '<br/><em>' . $this->translate('noAccount'). '</em>';
+        } else {
+            echo '<ul>';
+
+            foreach ($v['accounts'] as $account) {
+                echo '<li>';
+                echo '<input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/>';
+                echo '<a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a>  - ' . $account->getBalance();
+                echo ' ' . $this->link('editAccount', '<img src="/images/edit.png" alt="' . $this->translate('accountEdit') . '"/>', array(), array('accountId' => $account->getAccountId()));
+                echo '</li>';
+            }
+
+            echo '</ul>';
+        }
+        echo '</li>';
+    }
+    echo '</ul>';
+
+    echo '<div class="listActions">';
+    echo '<input type="submit" name="delete" class="delete" value="' . $this->translate('deleteAction') . '"/>';
+    echo '<input type="submit" name="share" disabled="disabled" value="' . $this->translate('shareAction') . '"/>';
+    echo '</div>';
+    echo '</form>';
+
+    echo '<p id="totalBalance">' . $this->translate('totalBalance') . ' : ' . $this->user->getBalance() . '</p>';
+}
