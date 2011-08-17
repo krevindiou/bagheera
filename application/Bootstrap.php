@@ -92,7 +92,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         // Proxy configuration
         $doctrineConfig->setProxyDir(__DIR__ . '/proxies');
         $doctrineConfig->setProxyNamespace('Application\\Proxies');
-        $doctrineConfig->setAutoGenerateProxyClasses(!(bool)$config->cache);
+        $doctrineConfig->setAutoGenerateProxyClasses(true);
 
         // Database connection information
         $connectionParams = array(
