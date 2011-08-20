@@ -247,22 +247,37 @@ a.back
     text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8)
     cursor: pointer
 
-input.delete
-    background: url(/images/trash.png) no-repeat 4px 4px, linear-gradient(top, #fff, #b9b9b9) !important
+input[type=submit].delete
+    background: url(/images/trash.png) no-repeat 4px 4px, linear-gradient(top, #fff, #b9b9b9)
     padding-left: 26px !important
 
-#formAccountList
-    > ul li
-        margin-top: 5px
-    > ul > li
-        width: 400px
-        background-color: #eee
-        border-radius: 7px
-        margin-bottom: 10px;
-        padding: 15px;
-        span
-            margin-left: 5px
+#formAccountList li
+    margin-top: 5px
+    width: 400px
+    background-color: #eee
+    border-radius: 7px
+    margin-bottom: 10px
+    padding: 15px
+    table
+        width: 100%
+        th
+            text-align: left
+        th.bankName
             font-size: 15px
             font-weight: bold
-        li input
-            margin-right: 20px
+        td.checkbox, th.checkbox
+            width: 25px
+            text-align: center
+        td.accountName
+            padding-left: 20px
+        td.balance, th.balance
+            text-align: right
+            font-weight: bold
+        td.positive, th.positive
+            color: #1ca553
+        td.negative, th.negative
+            color: red
+        td.edit, th.edit
+            width: 30px
+            text-align: right
+            vertical-align: middle

@@ -5,29 +5,35 @@ echo $this->link('newBank', $this->translate('bankNew'), array('class' => 'new')
 if (count($this->accounts) > 0) {
     echo $this->link('newAccount', $this->translate('accountNew'), array('class' => 'new'));
 
-    echo '<form id="formAccountList" method="post" action="">';
-    echo '<ul>';
+    echo '<form method="post" action="">';
+    echo '<ul id="formAccountList">';
     foreach ($this->accounts as $v) {
         echo '<li>';
-        echo '<input type="checkbox" name="banksId[]" value="' . $v['bank']->getBankId() . '"/>';
-        echo '<span>' . $v['bank']->getName() . ' - ' . $v['bank']->getBalance() . '</span>';
-        echo ' ' . $this->link('editBank', '<img src="/images/edit.png" alt="' . $this->translate('bankEdit') . '"/>', array(), array('bankId' => $v['bank']->getBankId()));
+        echo '<table>';
+        echo '<tr>';
+        echo '<th class="checkbox"><input type="checkbox" name="banksId[]" value="' . $v['bank']->getBankId() . '"/></th>';
+        echo '<th class="bankName">' . $v['bank']->getName() . '</th>';
+        echo '<th class="balance ' . ($v['bank']->getBalance() < 0 ? 'negative' : 'positive') . '">' . $v['bank']->getBalance() . '</th>';
+        echo '<th class="edit">' . $this->link('editBank', '<img src="/images/edit.png" alt="' . $this->translate('bankEdit') . '"/>', array(), array('bankId' => $v['bank']->getBankId())) . '</th>';
+        echo '</tr>';
 
         if (empty($v['accounts'])) {
-            echo '<br/><em>' . $this->translate('noAccount'). '</em>';
+            echo '<tr>';
+            echo '<td></td>';
+            echo '<td colspan="3"><em>' . $this->translate('noAccount'). '</em></td>';
+            echo '</tr>';
         } else {
-            echo '<ul>';
-
             foreach ($v['accounts'] as $account) {
-                echo '<li>';
-                echo '<input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/>';
-                echo '<a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a>  - ' . $account->getBalance();
-                echo ' ' . $this->link('editAccount', '<img src="/images/edit.png" alt="' . $this->translate('accountEdit') . '"/>', array(), array('accountId' => $account->getAccountId()));
-                echo '</li>';
+                echo '<tr>';
+                echo '<td class="checkbox"><input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/></td>';
+                echo '<td class="accountName"><a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a></td>';
+                echo '<td class="balance ' . ($account->getBalance() < 0 ? 'negative' : 'positive') . '">' . $account->getBalance() . '</td>';
+                echo '<td class="edit">' . $this->link('editAccount', '<img src="/images/edit.png" alt="' . $this->translate('accountEdit') . '"/>', array(), array('accountId' => $account->getAccountId())) . '</td>';
+                echo '</tr>';
             }
-
-            echo '</ul>';
         }
+
+        echo '</table>';
         echo '</li>';
     }
     echo '</ul>';

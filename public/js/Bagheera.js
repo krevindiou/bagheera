@@ -34,8 +34,8 @@ var Bagheera = {
     accounts: function(){
         if ($("input[type=checkbox][name='banksId[]']").length > 0) {
             $("input[type=checkbox][name='banksId[]']").change(function(){
-                $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("checked", $(this).attr("checked"));
-                $(this).parent().find("input[type=checkbox][name='accountsId[]']").attr("disabled", $(this).attr("checked"));
+                $(this).parents('table').find("td input[type=checkbox][name='accountsId[]']").attr("checked", $(this).attr("checked"));
+                $(this).parents('table').find("td input[type=checkbox][name='accountsId[]']").attr("disabled", $(this).attr("checked"));
             });
         }
 
