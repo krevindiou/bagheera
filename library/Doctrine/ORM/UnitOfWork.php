@@ -975,7 +975,7 @@ class UnitOfWork implements PropertyChangedListener
             if ($this->isInIdentityMap($entity)) {
                 $this->removeFromIdentityMap($entity);
             }
-            unset($this->entityInsertions[$oid]);
+            unset($this->entityInsertions[$oid], $this->entityStates[$oid]);
             return; // entity has not been persisted yet, so nothing more to do.
         }
 
@@ -990,6 +990,7 @@ class UnitOfWork implements PropertyChangedListener
         }
         if ( ! isset($this->entityDeletions[$oid])) {
             $this->entityDeletions[$oid] = $entity;
+            $this->entityStates[$oid] = self::STATE_REMOVED;
         }
     }
 
@@ -1446,7 +1447,8 @@ class UnitOfWork implements PropertyChangedListener
                         }
                         if ($assoc2['isCascadeMerge']) {
                             $managedCol->initialize();
-                            if (!$managedCol->isEmpty()) {
+                            // clear and set dirty a managed collection if its not also the same collection to merge from.
+                            if (!$managedCol->isEmpty() && $managedCol != $mergeCol) {
                                 $managedCol->unwrap()->clear();
                                 $managedCol->setDirty(true);
                                 if ($assoc2['isOwningSide'] && $assoc2['type'] == ClassMetadata::MANY_TO_MANY && $class->isChangeTrackingNotify()) {
@@ -1645,6 +1647,10 @@ class UnitOfWork implements PropertyChangedListener
             }
             $relatedEntities = $class->reflFields[$assoc['fieldName']]->getValue($entity);
             if ($relatedEntities instanceof Collection) {
+                if ($relatedEntities === $class->reflFields[$assoc['fieldName']]->getValue($managedCopy)) {
+                    continue;
+                }
+
                 if ($relatedEntities instanceof PersistentCollection) {
                     // Unwrap so that foreach() does not initialize
                     $relatedEntities = $relatedEntities->unwrap();
