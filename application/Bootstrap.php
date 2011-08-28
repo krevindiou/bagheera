@@ -81,7 +81,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         // Set up caches
         if (1 == $config->cache) {
-            $doctrineCache = new \Doctrine\Common\Cache\ApcCache;
+            if (extension_loaded('apc')) {
+                $doctrineCache = new \Doctrine\Common\Cache\ApcCache;
+            } else {
+                $doctrineCache = new \Doctrine\Common\Cache\ArrayCache;
+            }
+
             $doctrineConfig->setMetadataCacheImpl($doctrineCache);
             $doctrineConfig->setQueryCacheImpl($doctrineCache);
         }
@@ -122,7 +127,16 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
                 'automatic_serialization' => true
             );
 
-            $cache = Zend_Cache::factory('Core', 'Apc', $frontendOptions);
+            if (extension_loaded('apc')) {
+                $cache = Zend_Cache::factory('Core', 'Apc', $frontendOptions);
+            } else {
+                $cache = Zend_Cache::factory(
+                    'Core',
+                    'File',
+                    $frontendOptions,
+                    array('cache_dir' => realpath(__DIR__ . '/../tmp'))
+                );
+            }
         } else {
             $cache = null;
         }
