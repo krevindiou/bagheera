@@ -45,6 +45,12 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Models\\');
 
         $doctrineAutoloader = array(
+            new \Bagheera\ClassLoader('Application\\Models\\Repositories', realpath(__DIR__ . '/..')),
+            'loadClass'
+        );
+        $autoloader->pushAutoloader($doctrineAutoloader, 'Application\\Models\\Repositories\\');
+
+        $doctrineAutoloader = array(
             new \Bagheera\ClassLoader('Application\\Proxies', realpath(__DIR__ . '/..')),
             'loadClass'
         );

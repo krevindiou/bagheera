@@ -25,7 +25,7 @@ namespace Application\Models;
  * @package    Application_Models
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
- * @Entity
+ * @Entity(repositoryClass="Application\Models\Repositories\AccountRepository")
  * @Table(name="account")
  */
 class Account
@@ -290,16 +290,6 @@ class Account
     }
 
     /**
-     * Gets account's schedulers
-     *
-     * @return Doctrine\Common\Collections\ArrayCollection
-     */
-    public function getSchedulers()
-    {
-        return $this->_schedulers;
-    }
-
-    /**
      * Sets updatedAt
      *
      * @param  DateTime $updatedAt    updatedAt to set
@@ -310,6 +300,21 @@ class Account
         $this->_updatedAt = $updatedAt;
     }
 
+    /**
+     * Gets account's schedulers
+     *
+     * @return Doctrine\Common\Collections\ArrayCollection
+     */
+    public function getSchedulers()
+    {
+        return $this->_schedulers;
+    }
+
+    /**
+     * Gets balance
+     *
+     * @return float
+     */
     public function getBalance($reconciledOnly = false)
     {
         $em = \Zend_Registry::get('em');
