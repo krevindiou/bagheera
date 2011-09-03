@@ -327,7 +327,7 @@ class Account
         }
 
         $query = $em->createQuery($dql);
-        $query->setParameter('account', $this);
+        $query->setParameter('account', $em->find('Application\Models\Account', $this->getAccountId()));
         $balance = $query->getSingleScalarResult();
 
         return sprintf('%.2f', $this->getInitialBalance() + $balance);
