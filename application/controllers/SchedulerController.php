@@ -84,13 +84,9 @@ class SchedulerController extends Zend_Controller_Action
             $scheduler = $this->_em->find('Application\\Models\\Scheduler', $schedulerId);
         } else {
             $scheduler = new Application\Models\Scheduler();
-        }
 
-        $account = null;
-        if (null !== $accountId) {
-            $account = $this->_em->find('Application\\Models\\Account', $accountId);
-
-            if (null !== $scheduler) {
+            if (null !== $accountId) {
+                $account = $this->_em->find('Application\\Models\\Account', $accountId);
                 $scheduler->setAccount($account);
             }
         }

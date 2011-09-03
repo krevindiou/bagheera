@@ -90,13 +90,9 @@ class TransactionController extends Zend_Controller_Action
             $transaction = $this->_em->find('Application\\Models\\Transaction', $transactionId);
         } else {
             $transaction = new Application\Models\Transaction();
-        }
 
-        $account = null;
-        if (null !== $accountId) {
-            $account = $this->_em->find('Application\\Models\\Account', $accountId);
-
-            if (null !== $transaction) {
+            if (null !== $accountId) {
+                $account = $this->_em->find('Application\\Models\\Account', $accountId);
                 $transaction->setAccount($account);
             }
         }
