@@ -64,7 +64,7 @@ class BankControllerTest extends ControllerTestCase
                  'contact' => '',
              ));
         $this->dispatch('/bank-1');
-        $this->assertRedirectTo('/accounts');
+        $this->assertRedirectTo('/home');
 
         $this->_logout();
     }

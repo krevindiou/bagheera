@@ -67,6 +67,7 @@ class AccountController extends Zend_Controller_Action
                     'accounts' => array()
                 );
             }
+
             $accounts = $user->getAccounts();
             foreach ($accounts as $account) {
                 $bankAccounts[$account->getBank()->getBankId()]['accounts'][$account->getAccountId()] = $account;
@@ -104,7 +105,8 @@ class AccountController extends Zend_Controller_Action
         }
 
         $this->_helper->flashMessenger('accountDeleteMessage');
-        $this->_helper->redirector->gotoRoute(array(), 'index', true);
+        $this->_helper->redirector->gotoRoute(array(), 'home', true);
+        return;
     }
 
     public function shareAction()
@@ -117,7 +119,7 @@ class AccountController extends Zend_Controller_Action
         // @todo
 
         $this->_helper->flashMessenger('accountShareMessage');
-        $this->_helper->redirector->gotoRoute(array(), 'index', true);
+        $this->_helper->redirector->gotoRoute(array(), 'home', true);
     }
 
     public function saveAction()
@@ -134,7 +136,7 @@ class AccountController extends Zend_Controller_Action
         if ($this->_request->isPost()) {
             if ($this->_accountService->save($accountForm)) {
                 $this->_helper->flashMessenger('accountFormOk');
-                $this->_helper->redirector->gotoRoute(array(), 'index', true);
+                $this->_helper->redirector->gotoRoute(array(), 'home', true);
             }
         }
 

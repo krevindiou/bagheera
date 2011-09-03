@@ -32,16 +32,12 @@ class AccountControllerTest extends ControllerTestCase
         Zend_Auth::getInstance()->clearIdentity();
     }
 
-    public function testSummaryNotOk()
-    {
-    }
-
     public function testListOk()
     {
         $this->_login();
 
         $this->request->setMethod('GET');
-        $this->dispatch('/accounts');
+        $this->dispatch('/home');
         $this->assertQueryCount('input[type="checkbox"]', 5);
         $this->resetRequest();
         $this->resetResponse();
@@ -51,21 +47,27 @@ class AccountControllerTest extends ControllerTestCase
 
     public function testDeleteOk()
     {
-        $this->_login();
+      $this->_login();
 
-        $this->request
-             ->setMethod('POST')
-             ->setPost(array(
-                'delete' => 'Delete',
-                'banksId' => array(),
-                'accountsId' => array(1),
-             ));
-        $this->dispatch('/accounts');
-        $this->assertRedirectTo('/accounts');
-        $this->resetRequest();
-        $this->resetResponse();
+      $this->request
+           ->setMethod('POST')
+           ->setPost(array(
+              'delete' => 'Delete',
+              'banksId' => array(),
+              'accountsId' => array(1),
+           ));
+      $this->dispatch('/home');
+      $this->assertRedirectTo('/home');
+      $this->resetRequest();
+      $this->resetResponse();
 
-        $this->_logout();
+      $this->request->setMethod('GET');
+      $this->dispatch('/home');
+      $this->assertQueryCount('input[type="checkbox"]', 4);
+      $this->resetRequest();
+      $this->resetResponse();
+
+      $this->_logout();
     }
 
     public function testShare()
@@ -74,42 +76,58 @@ class AccountControllerTest extends ControllerTestCase
 
     public function testSaveNotOk()
     {
-        $this->_login();
+      $this->_login();
 
-        $this->request
-             ->setMethod('POST')
-             ->setPost(array(
-                'accountId' => 1,
-                'bankId' => 1,
-                'name' => '',
-                'initialBalance' => 123,
-                'overdraftFacility' => 0,
-                'details' => '',
-             ));
-        $this->dispatch('/account-1');
-        $this->assertNotRedirect();
-        $this->resetRequest();
-        $this->resetResponse();
+      $this->request
+           ->setMethod('POST')
+           ->setPost(array(
+              'accountId' => 1,
+              'bankId' => 1,
+              'name' => '',
+              'initialBalance' => 123,
+              'overdraftFacility' => 0,
+              'details' => '',
+           ));
+      $this->dispatch('/account-1');
+      $this->assertNotRedirect();
+      $this->resetRequest();
+      $this->resetResponse();
 
-        $this->_logout();
+      $this->_logout();
     }
 
     public function testSaveOk()
     {
-        $this->_login();
+      $this->_login();
+
+      $_FILES = array(
+          'details' => array(
+              'name' => '',
+              'type' => '',
+              'tmp_name' => '',
+                'error' => '4',
+                'size' => '0',
+            )
+        );
 
         $this->request
              ->setMethod('POST')
              ->setPost(array(
-                'accountId' => 1,
+                'accountId' => '',
                 'bankId' => 1,
-                'name' => 'Checking account #1',
-                'initialBalance' => 123,
+                'name' => 'Checking account #3',
+                'initialBalance' => 99,
                 'overdraftFacility' => 0,
                 'details' => '',
              ));
-        $this->dispatch('/account-1');
-        //$this->assertRedirectTo('/accounts');
+        $this->dispatch('/new-account');
+        $this->assertRedirectTo('/home');
+        $this->resetRequest();
+        $this->resetResponse();
+
+        $this->request->setMethod('GET');
+        $this->dispatch('/home');
+        $this->assertQueryCount('input[type="checkbox"]', 6);
         $this->resetRequest();
         $this->resetResponse();
 

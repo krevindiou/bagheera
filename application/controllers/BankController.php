@@ -51,7 +51,7 @@ class BankController extends Zend_Controller_Action
         if ($this->_request->isPost()) {
             if ($this->_bankService->save($bankForm)) {
                 $this->_helper->flashMessenger('bankFormOk');
-                $this->_helper->redirector->gotoRoute(array(), 'index', true);
+                $this->_helper->redirector->gotoRoute(array(), 'home', true);
             }
         }
 

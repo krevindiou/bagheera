@@ -223,10 +223,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     {
         $config = Zend_Registry::get('config');
 
-        $mailTransportSmtp = new Zend_Mail_Transport_Smtp(
-            $config->mail->host,
-            $config->mail->toArray()
-        );
+        if ('' != $config->mail->host) {
+            $mailTransportSmtp = new Zend_Mail_Transport_Smtp(
+                $config->mail->host,
+                $config->mail->toArray()
+            );
+        } else {
+            $mailTransportSmtp = new Bagheera_Mail_Transport_Array();
+        }
+
         Zend_Mail::setDefaultTransport($mailTransportSmtp);
     }
 
