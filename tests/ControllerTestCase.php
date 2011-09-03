@@ -23,7 +23,7 @@ require_once 'Spyc.php';
 abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 {
     public $application;
-    protected static $_conn;
+    protected static $_em;
 
     public function setUp()
     {
@@ -36,13 +36,14 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 
         parent::setUp();
 
-        self::$_conn = createDatabase();
-        self::$_conn->beginTransaction();
+        self::$_em = createDatabase();
+        self::$_em->clear();
+        self::$_em->getConnection()->beginTransaction();
     }
 
     public function tearDown()
     {
-        self::$_conn->rollback();
+        self::$_em->getConnection()->rollback();
     }
 
     public function appBootstrap()
@@ -53,16 +54,15 @@ abstract class ControllerTestCase extends Zend_Test_PHPUnit_ControllerTestCase
 
 function createDatabase()
 {
-    static $sqliteConn;
+    static $emTest;
 
-    if (null === $sqliteConn) {
+    if (null === $emTest) {
         $em = Zend_Registry::get('em');
-        $mysqlConn = $em->getConnection();
 
-        $sm = $mysqlConn->getSchemaManager();
         try {
             $sqlite = new Doctrine\DBAL\Driver\PDOSqlite\Driver();
 
+            $sm = $em->getConnection()->getSchemaManager();
             $schema = $sm->createSchema();
             $sql = $schema->toSql($sqlite->getDatabasePlatform());
             $sql = implode(';', $sql);
@@ -75,35 +75,44 @@ function createDatabase()
             exit;
         }
 
-        // SQLite schema import
+        $doctrineConfig = new \Doctrine\ORM\Configuration;
+
+        if (extension_loaded('apc')) {
+            $doctrineCache = new \Doctrine\Common\Cache\ApcCache;
+        } else {
+            $doctrineCache = new \Doctrine\Common\Cache\ArrayCache;
+        }
+
+        $doctrineConfig->setMetadataCacheImpl($doctrineCache);
+        $doctrineConfig->setQueryCacheImpl($doctrineCache);
+
+        $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(__DIR__ . '/../application/models');
+        $doctrineConfig->setMetadataDriverImpl($driverImpl);
+
+        // Proxy configuration
+        $doctrineConfig->setProxyDir(__DIR__ . '/../application/proxies');
+        $doctrineConfig->setProxyNamespace('Application\\Proxies');
+        $doctrineConfig->setAutoGenerateProxyClasses(true);
+
+        // Database connection information
         $connectionParams = array(
             'driver' => 'pdo_sqlite',
             'memory' => true,
         );
+        $emTest = \Doctrine\ORM\EntityManager::create($connectionParams, $doctrineConfig);
 
-        $sqliteConn = Doctrine\DBAL\DriverManager::getConnection($connectionParams);
-
-        $sqliteConn->executeUpdate($sql);
+        $emTest->getConnection()->executeUpdate($sql);
 
         // Data import
         $array = Spyc::YAMLLoad(__DIR__ . '/fixtures.yaml');
         foreach ($array as $table => $v) {
             foreach ($v as $data) {
-                $sqliteConn->insert($table, $data);
+                $emTest->getConnection()->insert($table, $data);
             }
         }
     }
 
-    $doctrineConfig = new Doctrine\ORM\Configuration;
-    $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(realpath(__DIR__ . '/../application/models'));
-    $doctrineConfig->setMetadataDriverImpl($driverImpl);
+    Zend_Registry::set('em', $emTest);
 
-    $doctrineConfig->setProxyDir(realpath(__DIR__ . '/../application/proxies'));
-    $doctrineConfig->setProxyNamespace('Application\\Proxies');
-    $doctrineConfig->setAutoGenerateProxyClasses(true);
-
-    $em = Doctrine\ORM\EntityManager::create($sqliteConn, $doctrineConfig);
-    Zend_Registry::set('em', $em);
-
-    return $sqliteConn;
+    return $emTest;
 }
