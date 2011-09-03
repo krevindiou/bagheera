@@ -37,6 +37,12 @@ class Account extends CrudAbstract
             $account = new AccountModel();
         }
 
+        $bank = $account->getBank();
+
+        if (!isset($extraValues['bankId']) && null !== $bank) {
+            $extraValues['bankId'] = $bank->getBankId();
+        }
+
         return parent::getForm(new AccountForm(), $account, $extraValues);
     }
 
