@@ -107,7 +107,7 @@ class Account
      * Transactions list
      *
      * @var Doctrine\Common\Collections\ArrayCollection
-     * @OneToMany(targetEntity="Transaction", mappedBy="_account", cascade={"all"})
+     * @OneToMany(targetEntity="Transaction", mappedBy="_account", cascade={"all"}, fetch="LAZY")
      */
     protected $_transactions;
 
@@ -115,7 +115,7 @@ class Account
      * Schedulers list
      *
      * @var Doctrine\Common\Collections\ArrayCollection
-     * @OneToMany(targetEntity="Scheduler", mappedBy="_account", cascade={"all"})
+     * @OneToMany(targetEntity="Scheduler", mappedBy="_account", cascade={"all"}, fetch="LAZY")
      */
     protected $_schedulers;
 

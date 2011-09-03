@@ -90,7 +90,7 @@ class Bank
     /**
      * Accounts list
      *
-     * @OneToMany(targetEntity="Account", mappedBy="_bank")
+     * @OneToMany(targetEntity="Account", mappedBy="_bank", cascade={"all"}, fetch="LAZY")
      * @OrderBy({"_name" = "ASC"})
      */
     protected $_accounts;

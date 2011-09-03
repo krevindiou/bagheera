@@ -110,35 +110,11 @@ class User
      */
     protected $_updatedAt;
 
-    /**
-     * Banks list
-     *
-     * @var Doctrine\Common\Collections\ArrayCollection
-     * @OneToMany(targetEntity="Bank", mappedBy="_user")
-     * @OrderBy({"_name" = "ASC"})
-     */
-    protected $_banks;
-
-    /**
-     * Accounts list
-     *
-     * @var Doctrine\Common\Collections\ArrayCollection
-     * @ManyToMany(targetEntity="Account")
-     * @JoinTable(name="bank",
-     *      joinColumns={@JoinColumn(name="user_id", referencedColumnName="user_id")},
-     *      inverseJoinColumns={@JoinColumn(name="bank_id", referencedColumnName="bank_id", unique=true)}
-     *      )
-     * @OrderBy({"_name" = "ASC"})
-     */
-    protected $_accounts;
-
 
     public function __construct()
     {
         $this->setIsAdmin(false);
         $this->setIsActive(false);
-        $this->_banks = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->_accounts = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -343,21 +319,23 @@ class User
     /**
      * Gets user's banks
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return array
      */
     public function getBanks()
     {
-        return $this->_banks;
+        $em = \Zend_Registry::get('em');
+        return $em->getRepository('Application\Models\Bank')->getUserBanks($this);
     }
 
     /**
      * Gets user's accounts
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return array
      */
     public function getAccounts()
     {
-        return $this->_accounts;
+        $em = \Zend_Registry::get('em');
+        return $em->getRepository('Application\Models\Account')->getUserAccounts($this);
     }
 
     public function getBalance()
