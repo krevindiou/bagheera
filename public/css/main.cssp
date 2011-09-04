@@ -140,7 +140,7 @@ h1
     position: absolute;
     right: 10px;
     top: 10px;
-    background-image: linear-gradient(top , #fff, #d9d9d9);
+    background-image: linear-gradient(top , #fff, #e9e9e9);
 
 #content
     width: 950px
@@ -273,11 +273,17 @@ input[type=submit].delete
         td.balance, th.balance
             text-align: right
             font-weight: bold
-        td.positive, th.positive
-            color: #1ca553
-        td.negative, th.negative
-            color: red
         td.edit, th.edit
             width: 30px
             text-align: right
             vertical-align: middle
+
+.positive
+    color: #1ca553
+.positive:before
+    content: "+"
+
+.negative
+    color: red
+.negative:before
+    content: "-"

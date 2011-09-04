@@ -30,8 +30,8 @@ if (count($this->transactions) > 0) {
         echo '<td>' . $transaction->getThirdParty() . '</td>';
         echo '<td>' . ((null !== $transaction->getCategory()) ? $transaction->getCategory()->getName() : '') . '</td>';
         echo '<td>' . $this->translate('paymentMethod' . ucfirst($transaction->getPaymentMethod()->getName())) . '</td>';
-        echo '<td class="debit">' . ((0 != $transaction->getDebit()) ? $transaction->getDebit() : '') . '</td>';
-        echo '<td class="credit">' . ((0 != $transaction->getCredit()) ? $transaction->getCredit() : '') . '</td>';
+        echo '<td class="debit' . ((0 != $transaction->getDebit()) ? ' negative' : '') . '">' . ((0 != $transaction->getDebit()) ? $transaction->getDebit() : '') . '</td>';
+        echo '<td class="credit' . ((0 != $transaction->getCredit()) ? ' positive' : '') . '">' . ((0 != $transaction->getCredit()) ? $transaction->getCredit() : '') . '</td>';
         echo '<td>' . $transaction->getValueDate()->format('Y-m-d') . '</td>';
         echo '<td class="edit">' . $this->link('editTransaction', $this->translate('transactionEdit'), array(), array('transactionId' => $transaction->getTransactionId())) . '</td>';
         echo '</tr>';

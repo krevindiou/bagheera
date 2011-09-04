@@ -27,7 +27,7 @@ if (count($this->accounts) > 0) {
                 echo '<tr>';
                 echo '<td class="checkbox"><input type="checkbox" name="accountsId[]" value="' . $account->getAccountId() . '"/></td>';
                 echo '<td class="accountName"><a href="' . $this->url(array('accountId' => $account->getAccountId()), 'transactionsList', true) . '">' . $account->getName() . '</a></td>';
-                echo '<td class="balance ' . ($account->getBalance() < 0 ? 'negative' : 'positive') . '">' . $account->getBalance() . '</td>';
+                echo '<td class="balance ' . ($account->getBalance() < 0 ? 'negative' : 'positive') . '">' . sprintf('%.2f', abs($account->getBalance())) . '</td>';
                 echo '<td class="edit">' . $this->link('editAccount', '<img src="/images/edit.png" alt="' . $this->translate('accountEdit') . '"/>', array(), array('accountId' => $account->getAccountId())) . '</td>';
                 echo '</tr>';
             }
@@ -44,5 +44,5 @@ if (count($this->accounts) > 0) {
     echo '</div>';
     echo '</form>';
 
-    echo '<p id="totalBalance">' . $this->translate('totalBalance') . ' : ' . $this->user->getBalance() . '</p>';
+    echo '<p id="totalBalance">' . $this->translate('totalBalance') . ' : <strong class="' . ($this->user->getBalance() < 0 ? 'negative' : 'positive') . '">' . sprintf('%.2f', abs($this->user->getBalance())) . '</strong></p>';
 }

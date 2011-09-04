@@ -23,8 +23,8 @@ if (count($this->schedulers) > 0) {
         echo '<td>' . $scheduler->getThirdParty() . '</td>';
         echo '<td>' . ((null !== $scheduler->getCategory()) ? $scheduler->getCategory()->getName() : '') . '</td>';
         echo '<td>' . $this->translate('paymentMethod' . ucfirst($scheduler->getPaymentMethod()->getName())) . '</td>';
-        echo '<td class="debit">' . ((0 != $scheduler->getDebit()) ? $scheduler->getDebit() : '') . '</td>';
-        echo '<td class="credit">' . ((0 != $scheduler->getCredit()) ? $scheduler->getCredit() : '') . '</td>';
+        echo '<td class="debit' . ((0 != $scheduler->getDebit()) ? ' negative' : '') . '">' . ((0 != $scheduler->getDebit()) ? $scheduler->getDebit() : '') . '</td>';
+        echo '<td class="credit' . ((0 != $scheduler->getCredit()) ? ' positive' : '') . '">' . ((0 != $scheduler->getCredit()) ? $scheduler->getCredit() : '') . '</td>';
         echo '<td>' . $scheduler->getFrequencyValue() . '</td>';
         echo '<td>' . $scheduler->getFrequencyUnit() . '</td>';
         echo '<td class="edit">' . $this->link('editScheduler', $this->translate('schedulerEdit'), array(), array('schedulerId' => $scheduler->getSchedulerId())) . '</td>';

@@ -41,8 +41,8 @@
             <div id="accountInfo">
                 <strong><?php echo $this->selectedAccount->getBank()->getName() . ' - ' . $this->selectedAccount->getName() ?></strong><br/>
                 <?php
-                echo $this->translate('balance') . ' : ' . $this->selectedAccount->getBalance() . '<br/>';
-                echo $this->translate('reconciledBalance') . ' : ' . $this->selectedAccount->getBalance(true);
+                echo $this->translate('balance') . ' : <strong class="' . ($this->selectedAccount->getBalance() < 0 ? 'negative' : 'positive') . '">' . sprintf('%.2f', abs($this->selectedAccount->getBalance())) . '</strong><br/>';
+                echo $this->translate('reconciledBalance') . ' : <strong class="' . ($this->selectedAccount->getBalance(true) < 0 ? 'negative' : 'positive') . '">' . sprintf('%.2f', abs($this->selectedAccount->getBalance(true))) . '</strong>';
                 ?>
             </div>
             <?php } ?>
