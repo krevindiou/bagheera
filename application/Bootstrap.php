@@ -85,17 +85,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 
         $doctrineConfig = new \Doctrine\ORM\Configuration;
 
-        // Set up caches
-        if (1 == $config->cache) {
-            if (extension_loaded('apc')) {
-                $doctrineCache = new \Doctrine\Common\Cache\ApcCache;
-            } else {
-                $doctrineCache = new \Doctrine\Common\Cache\ArrayCache;
-            }
-
-            $doctrineConfig->setMetadataCacheImpl($doctrineCache);
-            $doctrineConfig->setQueryCacheImpl($doctrineCache);
+        if ('production' == APPLICATION_ENV && extension_loaded('apc')) {
+            $doctrineCache = new \Doctrine\Common\Cache\ApcCache;
+        } else {
+            $doctrineCache = new \Doctrine\Common\Cache\ArrayCache;
         }
+
+        $doctrineConfig->setMetadataCacheImpl($doctrineCache);
+        $doctrineConfig->setQueryCacheImpl($doctrineCache);
 
         $driverImpl = $doctrineConfig->newDefaultAnnotationDriver(__DIR__ . '/models');
         $doctrineConfig->setMetadataDriverImpl($driverImpl);
