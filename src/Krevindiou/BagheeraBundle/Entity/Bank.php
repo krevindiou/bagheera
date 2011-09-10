@@ -99,9 +99,15 @@ class Bank
      */
     public function prePersist()
     {
-        if (null == $this->getBankId()) {
-            $this->setCreatedAt(new \DateTime());
-        }
+        $this->setCreatedAt(new \DateTime());
+        $this->setUpdatedAt(new \DateTime());
+    }
+
+    /**
+     * @ORM\preUpdate
+     */
+    public function preUpdate()
+    {
         $this->setUpdatedAt(new \DateTime());
     }
 

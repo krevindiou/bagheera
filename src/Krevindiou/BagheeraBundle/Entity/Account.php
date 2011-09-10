@@ -119,6 +119,7 @@ class Account
      * @var Doctrine\Common\Collections\ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Transaction", mappedBy="account", cascade={"all"}, fetch="LAZY")
+     * @ORM\OrderBy({"valueDate" = "DESC"})
      */
     private $transactions;
 
@@ -126,6 +127,7 @@ class Account
      * @var Doctrine\Common\Collections\ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="LAZY")
+     * @ORM\OrderBy({"valueDate" = "DESC"})
      */
     private $schedulers;
 
@@ -140,9 +142,15 @@ class Account
      */
     public function prePersist()
     {
-        if (null == $this->getAccountId()) {
-            $this->setCreatedAt(new \DateTime());
-        }
+        $this->setCreatedAt(new \DateTime());
+        $this->setUpdatedAt(new \DateTime());
+    }
+
+    /**
+     * @ORM\preUpdate
+     */
+    public function preUpdate()
+    {
         $this->setUpdatedAt(new \DateTime());
     }
 
