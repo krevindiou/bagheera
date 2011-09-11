@@ -141,7 +141,8 @@ class Transaction
 
     public function __construct()
     {
-        $this->_isReconciled = false;
+        $this->notes = '';
+        $this->isReconciled = false;
     }
 
     /**

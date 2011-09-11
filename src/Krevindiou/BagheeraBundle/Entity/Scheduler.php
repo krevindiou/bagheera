@@ -170,8 +170,9 @@ class Scheduler
 
     public function __construct()
     {
-        $this->_isReconciled = false;
-        $this->_isActive = true;
+        $this->notes = '';
+        $this->isReconciled = false;
+        $this->isActive = true;
     }
 
     /**
