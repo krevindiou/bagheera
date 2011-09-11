@@ -32,9 +32,9 @@ use Doctrine\ORM\Mapping as ORM;
 class PaymentMethod
 {
     /**
-     * @var boolean $paymentMethodId
+     * @var integer $paymentMethodId
      *
-     * @ORM\Column(name="payment_method_id", type="boolean", nullable=false)
+     * @ORM\Column(name="payment_method_id", type="smallint", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -112,7 +112,7 @@ class PaymentMethod
     /**
      * Get paymentMethodId
      *
-     * @return boolean
+     * @return integer
      */
     public function getPaymentMethodId()
     {

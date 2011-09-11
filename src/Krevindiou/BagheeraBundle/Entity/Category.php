@@ -32,7 +32,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Category
 {
     /**
-     * @var smallint $categoryId
+     * @var integer $categoryId
      *
      * @ORM\Column(name="category_id", type="smallint", nullable=false)
      * @ORM\Id
@@ -78,7 +78,7 @@ class Category
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $parentCategory
      *
-     * @ORM\ManyToOne(targetEntity="Category")
+     * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
      * })

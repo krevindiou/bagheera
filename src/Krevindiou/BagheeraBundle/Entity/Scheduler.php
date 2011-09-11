@@ -127,7 +127,7 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $account
      *
-     * @ORM\ManyToOne(targetEntity="Account")
+     * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * })
@@ -137,30 +137,24 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $transferAccount
      *
-     * @ORM\ManyToOne(targetEntity="Account")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
-     * })
+     * @ORM\OneToOne(targetEntity="Account")
+     * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
      */
     private $transferAccount;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
-     * @ORM\ManyToOne(targetEntity="Category")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     * })
+     * @ORM\OneToOne(targetEntity="Category")
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
      */
     private $category;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
      *
-     * @ORM\ManyToOne(targetEntity="PaymentMethod")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
-     * })
+     * @ORM\OneToOne(targetEntity="PaymentMethod")
+     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
      */
     private $paymentMethod;
 

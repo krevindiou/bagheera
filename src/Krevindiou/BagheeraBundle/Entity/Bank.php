@@ -78,7 +78,7 @@ class Bank
     /**
      * @var Krevindiou\BagheeraBundle\Entity\User $user
      *
-     * @ORM\ManyToOne(targetEntity="User")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="banks")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
      * })
