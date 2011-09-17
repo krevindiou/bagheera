@@ -117,7 +117,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
-     * @ORM\OneToOne(targetEntity="Category")
+     * @ORM\ManyToOne(targetEntity="Category")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
      */
     private $category;
@@ -125,7 +125,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
      *
-     * @ORM\OneToOne(targetEntity="PaymentMethod")
+     * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
      */
     private $paymentMethod;
@@ -133,7 +133,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Scheduler $scheduler
      *
-     * @ORM\OneToOne(targetEntity="Scheduler")
+     * @ORM\ManyToOne(targetEntity="Scheduler")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
      */
     private $scheduler;

@@ -137,7 +137,7 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $transferAccount
      *
-     * @ORM\OneToOne(targetEntity="Account")
+     * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
      */
     private $transferAccount;
@@ -145,7 +145,7 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
-     * @ORM\OneToOne(targetEntity="Category")
+     * @ORM\ManyToOne(targetEntity="Category")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
      */
     private $category;
@@ -153,7 +153,7 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
      *
-     * @ORM\OneToOne(targetEntity="PaymentMethod")
+     * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
      */
     private $paymentMethod;
