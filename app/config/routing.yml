@@ -7,3 +7,11 @@ KrevindiouBagheeraBundle:
 #_internal:
 #   resource: "@FrameworkBundle/Resources/config/routing/internal.xml"
 #   prefix:   /_internal
+
+login:
+    pattern:   /login
+    defaults:  { _controller: KrevindiouBagheeraBundle:User:login }
+login_check:
+    pattern:   /login_check
+logout:
+    pattern:   /logout
