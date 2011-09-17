@@ -111,22 +111,6 @@ class User
      */
     private $banks;
 
-    /**
-     * @var Doctrine\Common\Collections\ArrayCollection $accounts
-     *
-     * @ORM\ManyToMany(targetEntity="Account", cascade={"all"}, fetch="LAZY")
-     * @ORM\JoinTable(name="bank",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
-     *   }
-     * )
-     * @ORM\OrderBy({"name" = "ASC"})
-     */
-    private $accounts;
-
 
     public function __construct()
     {
@@ -349,16 +333,6 @@ class User
     public function getBanks()
     {
         return $this->banks;
-    }
-
-    /**
-     * Get user accounts
-     *
-     * @return Doctrine\Common\Collections\ArrayCollection
-     */
-    public function getAccounts()
-    {
-        return $this->accounts;
     }
 
     /**

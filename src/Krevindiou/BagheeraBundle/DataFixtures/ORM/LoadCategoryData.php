@@ -40,6 +40,14 @@ class LoadCategoryData extends AbstractFixture implements OrderedFixtureInterfac
         $em->persist($cat21);
         $this->addReference('category-cat21', $cat21);
 
+        $cat22 = new Category();
+        $cat22->setParentCategory($cat2);
+        $cat22->setType('debit');
+        $cat22->setName('Cat 2.2');
+        $cat22->setIsActive(true);
+        $em->persist($cat22);
+        $this->addReference('category-cat22', $cat22);
+
         $em->flush();
     }
 
