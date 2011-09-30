@@ -18,7 +18,8 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM,
+    Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\Scheduler
@@ -44,6 +45,8 @@ class Scheduler
      * @var string $thirdParty
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(64)
      */
     private $thirdParty;
 
@@ -51,6 +54,7 @@ class Scheduler
      * @var float $debit
      *
      * @ORM\Column(name="debit", type="decimal", nullable=true)
+     * @Assert\Type("float")
      */
     private $debit;
 
@@ -58,6 +62,7 @@ class Scheduler
      * @var float $credit
      *
      * @ORM\Column(name="credit", type="decimal", nullable=true)
+     * @Assert\Type("float")
      */
     private $credit;
 
@@ -65,6 +70,8 @@ class Scheduler
      * @var DateTime $valueDate
      *
      * @ORM\Column(name="value_date", type="date", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
      */
     private $valueDate;
 
@@ -72,6 +79,7 @@ class Scheduler
      * @var DateTime $limitDate
      *
      * @ORM\Column(name="limit_date", type="date", nullable=true)
+     * @Assert\DateTime()
      */
     private $limitDate;
 
@@ -79,6 +87,7 @@ class Scheduler
      * @var boolean $isReconciled
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
+     * @Assert\Type("bool")
      */
     private $isReconciled;
 
@@ -93,6 +102,8 @@ class Scheduler
      * @var string $frequencyUnit
      *
      * @ORM\Column(name="frequency_unit", type="string", length=16, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Choice(choices = {"day", "week", "month", "year"})
      */
     private $frequencyUnit;
 
@@ -100,6 +111,8 @@ class Scheduler
      * @var integer $frequencyValue
      *
      * @ORM\Column(name="frequency_value", type="integer", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Type("integer")
      */
     private $frequencyValue;
 
@@ -107,6 +120,7 @@ class Scheduler
      * @var boolean $isActive
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @Assert\Type("bool")
      */
     private $isActive;
 
@@ -114,6 +128,7 @@ class Scheduler
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $createdAt;
 
@@ -121,6 +136,7 @@ class Scheduler
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $updatedAt;
 
@@ -131,6 +147,7 @@ class Scheduler
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * })
+     * @Assert\NotBlank()
      */
     private $account;
 
@@ -155,6 +172,7 @@ class Scheduler
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
+     * @Assert\NotBlank()
      */
     private $paymentMethod;
 
@@ -164,7 +182,7 @@ class Scheduler
      * @var array
      */
     private $frequencyValues = array(
-        'day','week','month','year'
+        'day', 'week', 'month', 'year'
     );
 
 

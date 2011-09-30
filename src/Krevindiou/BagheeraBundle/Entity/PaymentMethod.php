@@ -18,7 +18,8 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM,
+    Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\PaymentMethod
@@ -44,6 +45,8 @@ class PaymentMethod
      * @var string $name
      *
      * @ORM\Column(name="name", type="string", length=16, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Choice(choices = {"creditCard", "check", "withdrawal", "transfer", "deposit"})
      */
     private $name;
 
@@ -51,6 +54,8 @@ class PaymentMethod
      * @var string $type
      *
      * @ORM\Column(name="type", type="string", length=8, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Choice(choices = {"debit", "credit"})
      */
     private $type;
 
@@ -58,6 +63,7 @@ class PaymentMethod
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $createdAt;
 
@@ -65,6 +71,7 @@ class PaymentMethod
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $updatedAt;
 

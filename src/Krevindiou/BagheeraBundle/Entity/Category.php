@@ -18,7 +18,8 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM,
+    Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\Category
@@ -44,6 +45,8 @@ class Category
      * @var string $type
      *
      * @ORM\Column(name="type", type="string", length=8, nullable=true)
+     * @Assert\NotBlank()
+     * @Assert\Choice(choices = {"debit", "credit"})
      */
     private $type;
 
@@ -51,6 +54,8 @@ class Category
      * @var string $name
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(32)
      */
     private $name;
 
@@ -58,6 +63,7 @@ class Category
      * @var boolean $isActive
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @Assert\Type("bool")
      */
     private $isActive;
 
@@ -65,6 +71,7 @@ class Category
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $createdAt;
 
@@ -72,6 +79,7 @@ class Category
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $updatedAt;
 

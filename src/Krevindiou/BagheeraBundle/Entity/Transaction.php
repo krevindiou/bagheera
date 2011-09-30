@@ -18,7 +18,8 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM,
+    Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\Transaction
@@ -52,6 +53,8 @@ class Transaction
      * @var string $thirdParty
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(64)
      */
     private $thirdParty;
 
@@ -59,6 +62,7 @@ class Transaction
      * @var float $debit
      *
      * @ORM\Column(name="debit", type="decimal", nullable=true)
+     * @Assert\Type("float")
      */
     private $debit;
 
@@ -66,6 +70,7 @@ class Transaction
      * @var float $credit
      *
      * @ORM\Column(name="credit", type="decimal", nullable=true)
+     * @Assert\Type("float")
      */
     private $credit;
 
@@ -73,6 +78,8 @@ class Transaction
      * @var DateTime $valueDate
      *
      * @ORM\Column(name="value_date", type="date", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
      */
     private $valueDate;
 
@@ -80,6 +87,7 @@ class Transaction
      * @var boolean $isReconciled
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
+     * @Assert\Type("bool")
      */
     private $isReconciled;
 
@@ -94,6 +102,7 @@ class Transaction
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $createdAt;
 
@@ -101,6 +110,7 @@ class Transaction
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $updatedAt;
 
@@ -111,6 +121,7 @@ class Transaction
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * })
+     * @Assert\NotBlank()
      */
     private $account;
 
@@ -127,6 +138,7 @@ class Transaction
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
+     * @Assert\NotBlank()
      */
     private $paymentMethod;
 

@@ -18,7 +18,8 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping as ORM,
+    Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\Account
@@ -44,6 +45,8 @@ class Account
      * @var string $name
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(32)
      */
     private $name;
 
@@ -51,6 +54,7 @@ class Account
      * @var float $initialBalance
      *
      * @ORM\Column(name="initial_balance", type="decimal", nullable=false)
+     * @Assert\Type("float")
      */
     private $initialBalance;
 
@@ -58,6 +62,7 @@ class Account
      * @var float $overdraftFacility
      *
      * @ORM\Column(name="overdraft_facility", type="decimal", nullable=false)
+     * @Assert\Type("float")
      */
     private $overdraftFacility;
 
@@ -65,6 +70,11 @@ class Account
      * @var string $details
      *
      * @ORM\Column(name="details", type="string", length=64, nullable=true)
+     * @Assert\MaxLength(64)
+     * @Assert\File(
+     *     maxSize = "10M",
+     *     mimeTypes = {"application/pdf", "application/x-pdf", "image/pjpeg", "image/jpeg", "image/gif", "image/png", "image/x-png"}
+     * )
      */
     private $details;
 
@@ -72,6 +82,7 @@ class Account
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $createdAt;
 
@@ -79,6 +90,7 @@ class Account
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $updatedAt;
 
@@ -95,6 +107,7 @@ class Account
      *   }
      * )
      * @ORM\OrderBy({"lastname" = "ASC"})
+     * @Assert\Collection()
      */
     private $sharedWith;
 
@@ -112,6 +125,7 @@ class Account
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
      * })
+     * @Assert\NotBlank()
      */
     private $bank;
 

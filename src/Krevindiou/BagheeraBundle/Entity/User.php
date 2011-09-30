@@ -19,7 +19,9 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
-    Symfony\Component\Security\Core\User\UserInterface;
+    Symfony\Component\Security\Core\User\UserInterface,
+    Symfony\Component\Validator\Constraints as Assert,
+    Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\User
@@ -29,6 +31,7 @@ use Doctrine\ORM\Mapping as ORM,
  * @ORM\Entity
  * @ORM\Table(name="user")
  * @ORM\HasLifecycleCallbacks()
+ * @DoctrineAssert\UniqueEntity("email")
  */
 class User implements UserInterface
 {
@@ -45,6 +48,8 @@ class User implements UserInterface
      * @var string $firstname
      *
      * @ORM\Column(name="firstname", type="string", length=64, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(64)
      */
     private $firstname;
 
@@ -52,6 +57,8 @@ class User implements UserInterface
      * @var string $lastname
      *
      * @ORM\Column(name="lastname", type="string", length=64, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(64)
      */
     private $lastname;
 
@@ -59,13 +66,18 @@ class User implements UserInterface
      * @var string $email
      *
      * @ORM\Column(name="email", type="string", length=128, unique=true, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Email()
+     * @Assert\MaxLength(128)
      */
     private $email;
 
     /**
      * @var string $password
      *
-     * @ORM\Column(name="password", type="string", length=40, nullable=false)
+     * @ORM\Column(name="password", type="string", length=128, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MinLength(8)
      */
     private $password;
 
@@ -73,6 +85,8 @@ class User implements UserInterface
      * @var string $activation
      *
      * @ORM\Column(name="activation", type="string", length=32, nullable=true)
+     * @Assert\MinLength(32)
+     * @Assert\MaxLength(32)
      */
     private $activation;
 
@@ -80,6 +94,7 @@ class User implements UserInterface
      * @var boolean $isAdmin
      *
      * @ORM\Column(name="is_admin", type="boolean", nullable=false)
+     * @Assert\Type("bool")
      */
     private $isAdmin;
 
@@ -87,6 +102,7 @@ class User implements UserInterface
      * @var boolean $isActive
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @Assert\Type("bool")
      */
     private $isActive;
 
@@ -94,6 +110,7 @@ class User implements UserInterface
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $createdAt;
 
@@ -101,6 +118,7 @@ class User implements UserInterface
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
      */
     private $updatedAt;
 
@@ -358,7 +376,7 @@ class User implements UserInterface
      */
     public function getRoles()
     {
-        return array('ROLE_USER');
+        return $this->getIsAdmin() ? array('ROLE_ADMIN') : array('ROLE_USER');
     }
 
     /**
