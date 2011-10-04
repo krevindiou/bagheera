@@ -31,7 +31,7 @@ use Doctrine\ORM\Mapping as ORM,
  * @ORM\Entity
  * @ORM\Table(name="user")
  * @ORM\HasLifecycleCallbacks()
- * @DoctrineAssert\UniqueEntity("email")
+ * @DoctrineAssert\UniqueEntity(fields="email", groups={"register", "profile"})
  */
 class User implements UserInterface
 {
@@ -48,8 +48,8 @@ class User implements UserInterface
      * @var string $firstname
      *
      * @ORM\Column(name="firstname", type="string", length=64, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
+     * @Assert\NotBlank(groups={"register", "profile"})
+     * @Assert\MaxLength(limit=64, groups={"register", "profile"})
      */
     private $firstname;
 
@@ -57,8 +57,8 @@ class User implements UserInterface
      * @var string $lastname
      *
      * @ORM\Column(name="lastname", type="string", length=64, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
+     * @Assert\NotBlank(groups={"register", "profile"})
+     * @Assert\MaxLength(limit=64, groups={"register", "profile"})
      */
     private $lastname;
 
@@ -66,9 +66,9 @@ class User implements UserInterface
      * @var string $email
      *
      * @ORM\Column(name="email", type="string", length=128, unique=true, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\Email()
-     * @Assert\MaxLength(128)
+     * @Assert\NotBlank(groups={"register", "profile"})
+     * @Assert\Email(groups={"register", "profile"})
+     * @Assert\MaxLength(limit=128, groups={"register", "profile"})
      */
     private $email;
 
@@ -76,8 +76,8 @@ class User implements UserInterface
      * @var string $password
      *
      * @ORM\Column(name="password", type="string", length=128, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MinLength(8)
+     * @Assert\NotBlank(groups={"register", "profile"})
+     * @Assert\MinLength(limit=8, groups={"register", "profile"})
      */
     private $password;
 
@@ -85,8 +85,8 @@ class User implements UserInterface
      * @var string $activation
      *
      * @ORM\Column(name="activation", type="string", length=32, nullable=true)
-     * @Assert\MinLength(32)
-     * @Assert\MaxLength(32)
+     * @Assert\MinLength(limit=32, groups={"register", "profile"})
+     * @Assert\MaxLength(limit=32, groups={"register", "profile"})
      */
     private $activation;
 
@@ -94,7 +94,7 @@ class User implements UserInterface
      * @var boolean $isAdmin
      *
      * @ORM\Column(name="is_admin", type="boolean", nullable=false)
-     * @Assert\Type("bool")
+     * @Assert\Type(type="bool", groups={"register", "profile"})
      */
     private $isAdmin;
 
@@ -102,7 +102,7 @@ class User implements UserInterface
      * @var boolean $isActive
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
-     * @Assert\Type("bool")
+     * @Assert\Type(type="bool", groups={"register", "profile"})
      */
     private $isActive;
 
@@ -110,7 +110,7 @@ class User implements UserInterface
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
-     * @Assert\DateTime()
+     * @Assert\DateTime(groups={"register", "profile"})
      */
     private $createdAt;
 
@@ -118,7 +118,7 @@ class User implements UserInterface
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
-     * @Assert\DateTime()
+     * @Assert\DateTime(groups={"register", "profile"})
      */
     private $updatedAt;
 

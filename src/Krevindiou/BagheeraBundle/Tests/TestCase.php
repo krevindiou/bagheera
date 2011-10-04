@@ -25,7 +25,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase,
 class TestCase extends WebTestCase
 {
     static protected $_em;
-    protected $_application;
+    static protected $_application;
+    static protected $_container;
 
     public function __construct()
     {
@@ -34,10 +35,12 @@ class TestCase extends WebTestCase
             $kernel = new $kernelNameClass('test', true);
             $kernel->boot();
 
-            self::$_em = $kernel->getContainer()->get('doctrine.orm.entity_manager');
+            self::$_container = $kernel->getContainer();
 
-            $this->_application = new Application($kernel);
-            $this->_application->setAutoExit(false);
+            self::$_em = self::$_container->get('doctrine.orm.entity_manager');
+
+            self::$_application = new Application($kernel);
+            self::$_application->setAutoExit(false);
 
             $this->_runConsole('doctrine:schema:create');
             $this->_runConsole('doctrine:fixtures:load', array('--append' => ''));
@@ -47,7 +50,12 @@ class TestCase extends WebTestCase
     protected function _runConsole($command, array $options = array())
     {
         $options = array_merge($options, array('command' => $command));
-        return $this->_application->run(new ArrayInput($options));
+        return self::$_application->run(new ArrayInput($options));
+    }
+
+    public function get($service)
+    {
+        return self::$_container->get($service);
     }
 
     public function setUp()

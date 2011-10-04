@@ -1,0 +1,54 @@
+parameters:
+    krevindiou_bagheera.config:
+
+services:
+    twig.extension.bagheera:
+        class: Krevindiou\BagheeraBundle\Extension\TwigExtension
+        tags:
+            -  { name: twig.extension }
+
+    bagheera.user:
+        class: Krevindiou\BagheeraBundle\Service\UserService
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @security.context
+            - @mailer
+            - %krevindiou_bagheera.config%
+            - @translator
+            - @router
+            - @form.factory
+
+    bagheera.bank:
+        class: Krevindiou\BagheeraBundle\Service\BankService
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @security.context
+            - @bagheera.user
+
+    bagheera.account:
+        class: Krevindiou\BagheeraBundle\Service\AccountService
+        arguments:
+            - @doctrine.orm.entity_manager
+
+    bagheera.transaction:
+        class: Krevindiou\BagheeraBundle\Service\TransactionService
+        arguments:
+            - @doctrine.orm.entity_manager
+
+    bagheera.scheduler:
+        class: Krevindiou\BagheeraBundle\Service\SchedulerService
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @security.context
+            - @bagheera.user
+            - @bagheera.transaction
+
+    bagheera.category:
+        class: Krevindiou\BagheeraBundle\Service\CategoryService
+        arguments:
+            - @doctrine.orm.entity_manager
+
+    bagheera.payment_method:
+        class: Krevindiou\BagheeraBundle\Service\PaymentMethodService
+        arguments:
+            - @doctrine.orm.entity_manager

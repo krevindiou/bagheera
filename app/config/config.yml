@@ -57,3 +57,7 @@ swiftmailer:
 jms_security_extra:
     secure_controllers:  true
     secure_all_services: false
+
+krevindiou_bagheera:
+    sender_name: Bagheera
+    sender_email: bagheera@example.net
