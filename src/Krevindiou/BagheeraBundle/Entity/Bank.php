@@ -53,14 +53,14 @@ class Bank
     /**
      * @var string $info
      *
-     * @ORM\Column(name="info", type="text", nullable=false)
+     * @ORM\Column(name="info", type="text", nullable=true)
      */
     private $info;
 
     /**
      * @var string $contact
      *
-     * @ORM\Column(name="contact", type="text", nullable=false)
+     * @ORM\Column(name="contact", type="text", nullable=true)
      */
     private $contact;
 
@@ -87,6 +87,8 @@ class Bank
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
      * })
+     * @Assert\NotBlank()
+     * @Assert\Valid()
      */
     private $user;
 

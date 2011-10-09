@@ -20,7 +20,8 @@ namespace Krevindiou\BagheeraBundle\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase,
     Symfony\Bundle\FrameworkBundle\Console\Application,
-    Symfony\Component\Console\Input\ArrayInput;
+    Symfony\Component\Console\Input\ArrayInput,
+    Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class TestCase extends WebTestCase
 {
@@ -66,5 +67,12 @@ class TestCase extends WebTestCase
     public function tearDown()
     {
         self::$_em->getConnection()->rollback();
+    }
+
+    public function connectUser($userId)
+    {
+        $user = self::$_em->find('KrevindiouBagheeraBundle:User', $userId);
+        $token = new UsernamePasswordToken($user, null, 'main', $user->getRoles());
+        self::$_container->get('security.context')->setToken($token);
     }
 }

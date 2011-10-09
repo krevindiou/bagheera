@@ -11,7 +11,6 @@ services:
         class: Krevindiou\BagheeraBundle\Service\UserService
         arguments:
             - @doctrine.orm.entity_manager
-            - @security.context
             - @mailer
             - %krevindiou_bagheera.config%
             - @translator
@@ -24,6 +23,7 @@ services:
             - @doctrine.orm.entity_manager
             - @security.context
             - @bagheera.user
+            - @form.factory
 
     bagheera.account:
         class: Krevindiou\BagheeraBundle\Service\AccountService
