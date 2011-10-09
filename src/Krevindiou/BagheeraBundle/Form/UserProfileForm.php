@@ -41,6 +41,8 @@ class UserProfileForm extends UserRegisterForm
     {
         parent::buildForm($builder, $options);
 
+        $builder->get('password')->setRequired(false);
+
         if ($this->_noPassword) {
             $builder->remove('password');
         }
