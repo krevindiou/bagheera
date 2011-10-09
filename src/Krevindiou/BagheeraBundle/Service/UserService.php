@@ -20,15 +20,12 @@ namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
     Swift_Mailer,
-    Symfony\Component\Security\Core\SecurityContext,
     Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\HttpFoundation\Request,
     Symfony\Bundle\FrameworkBundle\Translation\Translator,
     Symfony\Bundle\FrameworkBundle\Routing\Router,
     Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Form\UserRegisterForm,
     Krevindiou\BagheeraBundle\Form\UserProfileForm,
     Krevindiou\BagheeraBundle\Form\UserForgotPasswordForm,
@@ -46,11 +43,6 @@ class UserService
      * @var EntityManager
      */
     protected $_em;
-
-    /**
-     * @var SecurityContext
-     */
-    protected $_context;
 
     /**
      * @var Swift_Mailer
@@ -80,7 +72,6 @@ class UserService
 
     public function __construct(
         EntityManager $em,
-        SecurityContext $context,
         Swift_Mailer $mailer,
         array $config,
         Translator $translator,
@@ -88,7 +79,6 @@ class UserService
         FormFactory $formFactory)
     {
         $this->_em = $em;
-        $this->_context = $context;
         $this->_mailer = $mailer;
         $this->_config = $config;
         $this->_translator = $translator;

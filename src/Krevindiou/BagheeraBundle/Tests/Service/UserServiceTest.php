@@ -20,8 +20,7 @@ namespace Krevindiou\BagheeraBundle\Tests\Service;
 
 use Symfony\Component\HttpFoundation\Request,
     Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Service\UserService,
-    Krevindiou\BagheeraBundle\Entity\User;
+    Krevindiou\BagheeraBundle\Service\UserService;
 
 /**
  * Krevindiou\BagheeraBundle\Tests\Service\UserServiceTest
