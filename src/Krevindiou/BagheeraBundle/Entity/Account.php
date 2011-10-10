@@ -61,7 +61,7 @@ class Account
     /**
      * @var float $overdraftFacility
      *
-     * @ORM\Column(name="overdraft_facility", type="decimal", nullable=false)
+     * @ORM\Column(name="overdraft_facility", type="decimal", nullable=true)
      * @Assert\Type("float")
      */
     private $overdraftFacility;

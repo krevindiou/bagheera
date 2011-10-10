@@ -29,6 +29,7 @@ services:
         class: Krevindiou\BagheeraBundle\Service\AccountService
         arguments:
             - @doctrine.orm.entity_manager
+            - @form.factory
 
     bagheera.transaction:
         class: Krevindiou\BagheeraBundle\Service\TransactionService
