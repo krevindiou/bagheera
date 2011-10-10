@@ -21,8 +21,6 @@ services:
         class: Krevindiou\BagheeraBundle\Service\BankService
         arguments:
             - @doctrine.orm.entity_manager
-            - @security.context
-            - @bagheera.user
             - @form.factory
 
     bagheera.account:

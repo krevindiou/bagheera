@@ -19,12 +19,10 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
-    Symfony\Component\Security\Core\SecurityContext,
     Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\HttpFoundation\Request,
     Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Service\UserService,
     Krevindiou\BagheeraBundle\Form\BankForm;
 
 /**
@@ -41,16 +39,6 @@ class BankService
     protected $_em;
 
     /**
-     * @var SecurityContext
-     */
-    protected $_context;
-
-    /**
-     * @var UserService
-     */
-    protected $_userService;
-
-    /**
      * @var FormFactory
      */
     protected $_formFactory;
@@ -58,13 +46,9 @@ class BankService
 
     public function __construct(
         EntityManager $em,
-        SecurityContext $context,
-        UserService $userService,
         FormFactory $formFactory)
     {
         $this->_em = $em;
-        $this->_context = $context;
-        $this->_userService = $userService;
         $this->_formFactory = $formFactory;
     }
 
@@ -75,27 +59,15 @@ class BankService
      * @param  Request $request Post data
      * @return Form
      */
-    public function getForm(Bank $bank = null, Request $request)
+    public function getForm(Bank $bank, Request $request)
     {
-        $token = $this->_context->getToken();
-        if (null !== $token) {
-            $user = $token->getUser();
-            if (is_object($user)) {
-                if (null === $bank) {
-                    $bank = new Bank();
-                }
+        $form = $this->_formFactory->create(new BankForm(), $bank);
 
-                $bank->setUser($user);
-
-                $form = $this->_formFactory->create(new BankForm(), $bank);
-
-                if ($request->getMethod() == 'POST') {
-                    $form->bindRequest($request);
-                }
-
-                return $form;
-            }
+        if ($request->getMethod() == 'POST') {
+            $form->bindRequest($request);
         }
+
+        return $form;
     }
 
     /**

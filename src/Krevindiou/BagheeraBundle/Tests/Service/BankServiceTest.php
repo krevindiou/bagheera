@@ -19,7 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
 use Symfony\Component\HttpFoundation\Request,
-	Krevindiou\BagheeraBundle\Tests\TestCase,
+    Krevindiou\BagheeraBundle\Tests\TestCase,
     Krevindiou\BagheeraBundle\Service\BankService,
     Krevindiou\BagheeraBundle\Entity\Bank;
 
@@ -31,12 +31,6 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class BankServiceTest extends TestCase
 {
-    public function setUp()
-    {
-        parent::setUp();
-        $this->connectUser(1);
-    }
-
     public function testGetForm()
     {
         $bank = new Bank();
@@ -50,10 +44,13 @@ class BankServiceTest extends TestCase
 
     public function testSaveEmpty()
     {
+        $bank = new Bank();
+        $bank->setUser(self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
+
         $request = new Request();
         $request->setMethod('POST');
 
-        $form = $this->get('bagheera.bank')->getForm(null, $request);
+        $form = $this->get('bagheera.bank')->getForm($bank, $request);
 
         $ok = $this->get('bagheera.bank')->save($form);
 
@@ -62,6 +59,9 @@ class BankServiceTest extends TestCase
 
     public function testSaveAddOk()
     {
+        $bank = new Bank();
+        $bank->setUser(self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
+
         $post = array(
             'krevindiou_bagheerabundle_banktype' => array(
                 'name' => 'Citigroup',
@@ -73,7 +73,7 @@ class BankServiceTest extends TestCase
         $request = new Request(array(), $post);
         $request->setMethod('POST');
 
-        $form = $this->get('bagheera.bank')->getForm(null, $request);
+        $form = $this->get('bagheera.bank')->getForm($bank, $request);
 
         $ok = $this->get('bagheera.bank')->save($form);
 
