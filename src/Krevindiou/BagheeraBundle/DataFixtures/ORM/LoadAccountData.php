@@ -6,7 +6,7 @@ use Doctrine\Common\DataFixtures\AbstractFixture,
     Doctrine\Common\DataFixtures\OrderedFixtureInterface,
     Krevindiou\BagheeraBundle\Entity\Account;
 
-class LoadAcountData extends AbstractFixture implements OrderedFixtureInterface
+class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
 {
     public function load($em)
     {
