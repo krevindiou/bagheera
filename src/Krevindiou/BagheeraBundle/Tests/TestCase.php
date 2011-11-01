@@ -68,11 +68,4 @@ class TestCase extends WebTestCase
     {
         self::$_em->getConnection()->rollback();
     }
-
-    public function connectUser($userId)
-    {
-        $user = self::$_em->find('KrevindiouBagheeraBundle:User', $userId);
-        $token = new UsernamePasswordToken($user, null, 'main', $user->getRoles());
-        self::$_container->get('security.context')->setToken($token);
-    }
 }
