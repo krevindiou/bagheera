@@ -2,9 +2,9 @@
     database_driver="pdo_mysql"
     database_host="localhost"
     database_port=""
-    database_name="bagheera"
-    database_user="user"
-    database_password="password"
+    database_name="database name"
+    database_user="database user"
+    database_password="database password"
 
     mailer_transport="smtp"
     mailer_host="localhost"
@@ -13,4 +13,4 @@
 
     locale="en"
 
-    secret="b73ea64f233032d9a7815f7fac1b7a6e"
+    secret="secret"
