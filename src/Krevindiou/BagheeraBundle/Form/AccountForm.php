@@ -33,8 +33,20 @@ class AccountForm extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('initialBalance')
-            ->add('overdraftFacility')
+            ->add(
+                'initialBalance',
+                'money',
+                array(
+                    'currency' => false
+                )
+            )
+            ->add(
+                'overdraftFacility',
+                'money',
+                array(
+                    'currency' => false
+                )
+            )
             ->add('details')
         ;
     }
