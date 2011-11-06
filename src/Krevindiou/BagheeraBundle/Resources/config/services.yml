@@ -33,6 +33,7 @@ services:
         class: Krevindiou\BagheeraBundle\Service\TransactionService
         arguments:
             - @doctrine.orm.entity_manager
+            - @form.factory
 
     bagheera.scheduler:
         class: Krevindiou\BagheeraBundle\Service\SchedulerService
