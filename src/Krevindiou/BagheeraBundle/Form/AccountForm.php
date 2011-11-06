@@ -53,9 +53,9 @@ class AccountForm extends AbstractType
 
     public function getDefaultOptions(array $options)
     {
-        return array(
-            'data_class' => 'Krevindiou\BagheeraBundle\Entity\Account'
-        );
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Account';
+
+        return $options;
     }
 
     public function getName()

@@ -38,9 +38,9 @@ class UserForgotPasswordForm extends AbstractType
 
     public function getDefaultOptions(array $options)
     {
-        return array(
-            'data_class' => 'Krevindiou\BagheeraBundle\Entity\User',
-        );
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
+
+        return $options;
     }
 
     public function getName()

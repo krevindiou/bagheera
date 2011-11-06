@@ -50,10 +50,10 @@ class UserProfileForm extends UserRegisterForm
 
     public function getDefaultOptions(array $options)
     {
-        return array(
-            'data_class' => 'Krevindiou\BagheeraBundle\Entity\User',
-            'validation_groups' => array('profile')
-        );
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
+        $options['validation_groups'] = array('profile');
+
+        return $options;
     }
 
     public function getName()

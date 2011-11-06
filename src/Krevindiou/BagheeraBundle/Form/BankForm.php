@@ -40,9 +40,9 @@ class BankForm extends AbstractType
 
     public function getDefaultOptions(array $options)
     {
-        return array(
-            'data_class' => 'Krevindiou\BagheeraBundle\Entity\Bank'
-        );
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Bank';
+
+        return $options;
     }
 
     public function getName()
