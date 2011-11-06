@@ -39,7 +39,7 @@ class Scheduler
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $schedulerId;
+    protected $schedulerId;
 
     /**
      * @var string $thirdParty
@@ -48,7 +48,7 @@ class Scheduler
      * @Assert\NotBlank()
      * @Assert\MaxLength(64)
      */
-    private $thirdParty;
+    protected $thirdParty;
 
     /**
      * @var float $debit
@@ -56,7 +56,7 @@ class Scheduler
      * @ORM\Column(name="debit", type="decimal", nullable=true)
      * @Assert\Type("float")
      */
-    private $debit;
+    protected $debit;
 
     /**
      * @var float $credit
@@ -64,7 +64,7 @@ class Scheduler
      * @ORM\Column(name="credit", type="decimal", nullable=true)
      * @Assert\Type("float")
      */
-    private $credit;
+    protected $credit;
 
     /**
      * @var DateTime $valueDate
@@ -73,7 +73,7 @@ class Scheduler
      * @Assert\NotBlank()
      * @Assert\DateTime()
      */
-    private $valueDate;
+    protected $valueDate;
 
     /**
      * @var DateTime $limitDate
@@ -81,7 +81,7 @@ class Scheduler
      * @ORM\Column(name="limit_date", type="date", nullable=true)
      * @Assert\DateTime()
      */
-    private $limitDate;
+    protected $limitDate;
 
     /**
      * @var boolean $isReconciled
@@ -89,14 +89,14 @@ class Scheduler
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    private $isReconciled;
+    protected $isReconciled;
 
     /**
      * @var string $notes
      *
      * @ORM\Column(name="notes", type="text", nullable=false)
      */
-    private $notes;
+    protected $notes;
 
     /**
      * @var string $frequencyUnit
@@ -105,7 +105,7 @@ class Scheduler
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"day", "week", "month", "year"})
      */
-    private $frequencyUnit;
+    protected $frequencyUnit;
 
     /**
      * @var integer $frequencyValue
@@ -114,7 +114,7 @@ class Scheduler
      * @Assert\NotBlank()
      * @Assert\Type("integer")
      */
-    private $frequencyValue;
+    protected $frequencyValue;
 
     /**
      * @var boolean $isActive
@@ -122,7 +122,7 @@ class Scheduler
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    private $isActive;
+    protected $isActive;
 
     /**
      * @var DateTime $createdAt
@@ -130,7 +130,7 @@ class Scheduler
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -138,7 +138,7 @@ class Scheduler
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $account
@@ -148,24 +148,27 @@ class Scheduler
      *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * })
      * @Assert\NotBlank()
+     * @Assert\Valid()
      */
-    private $account;
+    protected $account;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $transferAccount
      *
      * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
+     * @Assert\Valid()
      */
-    private $transferAccount;
+    protected $transferAccount;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
      * @ORM\ManyToOne(targetEntity="Category")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
+     * @Assert\Valid()
      */
-    private $category;
+    protected $category;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
@@ -173,17 +176,9 @@ class Scheduler
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
      * @Assert\NotBlank()
+     * @Assert\Valid()
      */
-    private $paymentMethod;
-
-    /**
-     * Frequency values list
-     *
-     * @var array
-     */
-    private $frequencyValues = array(
-        'day', 'week', 'month', 'year'
-    );
+    protected $paymentMethod;
 
 
     public function __construct()
@@ -367,7 +362,7 @@ class Scheduler
      */
     public function setFrequencyUnit($frequencyUnit)
     {
-        $this->frequencyUnit = in_array($frequencyUnit, $this->frequencyValues) ? $frequencyUnit : 'month';
+        $this->frequencyUnit = $frequencyUnit;
     }
 
     /**

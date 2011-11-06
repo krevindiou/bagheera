@@ -39,7 +39,7 @@ class PaymentMethod
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $paymentMethodId;
+    protected $paymentMethodId;
 
     /**
      * @var string $name
@@ -48,7 +48,7 @@ class PaymentMethod
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"creditCard", "check", "withdrawal", "transfer", "deposit"})
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string $type
@@ -57,7 +57,7 @@ class PaymentMethod
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"debit", "credit"})
      */
-    private $type;
+    protected $type;
 
     /**
      * @var DateTime $createdAt
@@ -65,7 +65,7 @@ class PaymentMethod
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -73,30 +73,7 @@ class PaymentMethod
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $updatedAt;
-
-    /**
-     * Names list
-     *
-     * @var array
-     */
-    private $names = array(
-        'creditCard',
-        'check',
-        'withdrawal',
-        'transfer',
-        'deposit'
-    );
-
-    /**
-     * Types list
-     *
-     * @var array
-     */
-    private $types = array(
-        'debit',
-        'credit'
-    );
+    protected $updatedAt;
 
 
     /**
@@ -133,7 +110,7 @@ class PaymentMethod
      */
     public function setName($name)
     {
-        $this->name = in_array($name, $this->names) ? $name : $this->names[0];
+        $this->name = $name;
     }
 
     /**
@@ -153,7 +130,7 @@ class PaymentMethod
      */
     public function setType($type)
     {
-        $this->type = in_array($type, $this->types) ? $type : $this->types[0];
+        $this->type = $type;
     }
 
     /**
@@ -204,5 +181,10 @@ class PaymentMethod
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
     }
 }

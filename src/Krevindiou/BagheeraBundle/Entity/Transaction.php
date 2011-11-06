@@ -39,15 +39,16 @@ class Transaction
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $transactionId;
+    protected $transactionId;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Transaction $transferTransaction
      *
      * @ORM\OneToOne(targetEntity="Transaction", cascade={"all"})
      * @ORM\JoinColumn(name="transfer_transaction_id", referencedColumnName="transaction_id")
+     * @Assert\Valid()
      */
-    private $transferTransaction;
+    protected $transferTransaction;
 
     /**
      * @var string $thirdParty
@@ -56,23 +57,21 @@ class Transaction
      * @Assert\NotBlank()
      * @Assert\MaxLength(64)
      */
-    private $thirdParty;
+    protected $thirdParty;
 
     /**
      * @var float $debit
      *
      * @ORM\Column(name="debit", type="decimal", nullable=true)
-     * @Assert\Type("float")
      */
-    private $debit;
+    protected $debit;
 
     /**
      * @var float $credit
      *
      * @ORM\Column(name="credit", type="decimal", nullable=true)
-     * @Assert\Type("float")
      */
-    private $credit;
+    protected $credit;
 
     /**
      * @var DateTime $valueDate
@@ -81,7 +80,7 @@ class Transaction
      * @Assert\NotBlank()
      * @Assert\DateTime()
      */
-    private $valueDate;
+    protected $valueDate;
 
     /**
      * @var boolean $isReconciled
@@ -89,14 +88,14 @@ class Transaction
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    private $isReconciled;
+    protected $isReconciled;
 
     /**
      * @var string $notes
      *
-     * @ORM\Column(name="notes", type="text", nullable=false)
+     * @ORM\Column(name="notes", type="text", nullable=true)
      */
-    private $notes;
+    protected $notes;
 
     /**
      * @var DateTime $createdAt
@@ -104,7 +103,7 @@ class Transaction
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -112,7 +111,7 @@ class Transaction
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $account
@@ -122,16 +121,18 @@ class Transaction
      *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * })
      * @Assert\NotBlank()
+     * @Assert\Valid()
      */
-    private $account;
+    protected $account;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
      * @ORM\ManyToOne(targetEntity="Category")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
+     * @Assert\Valid()
      */
-    private $category;
+    protected $category;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
@@ -139,16 +140,18 @@ class Transaction
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
      * @Assert\NotBlank()
+     * @Assert\Valid()
      */
-    private $paymentMethod;
+    protected $paymentMethod;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Scheduler $scheduler
      *
      * @ORM\ManyToOne(targetEntity="Scheduler")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
+     * @Assert\Valid()
      */
-    private $scheduler;
+    protected $scheduler;
 
 
     public function __construct()
@@ -229,7 +232,7 @@ class Transaction
      *
      * @param float $debit
      */
-    public function setDebit($debit)
+    public function setDebit($debit = null)
     {
         $this->debit = $debit;
     }
@@ -249,7 +252,7 @@ class Transaction
      *
      * @param float $credit
      */
-    public function setCredit($credit)
+    public function setCredit($credit = null)
     {
         $this->credit = $credit;
     }
@@ -269,7 +272,7 @@ class Transaction
      *
      * @param DateTime $valueDate
      */
-    public function setValueDate(\DateTime $valueDate)
+    public function setValueDate(\DateTime $valueDate = null)
     {
         $this->valueDate = $valueDate;
     }

@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -39,7 +40,7 @@ class Account
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $accountId;
+    protected $accountId;
 
     /**
      * @var string $name
@@ -48,23 +49,21 @@ class Account
      * @Assert\NotBlank()
      * @Assert\MaxLength(32)
      */
-    private $name;
+    protected $name;
 
     /**
      * @var float $initialBalance
      *
      * @ORM\Column(name="initial_balance", type="decimal", nullable=false)
-     * @Assert\Type("float")
      */
-    private $initialBalance;
+    protected $initialBalance;
 
     /**
      * @var float $overdraftFacility
      *
      * @ORM\Column(name="overdraft_facility", type="decimal", nullable=true)
-     * @Assert\Type("float")
      */
-    private $overdraftFacility;
+    protected $overdraftFacility;
 
     /**
      * @var string $details
@@ -73,10 +72,18 @@ class Account
      * @Assert\MaxLength(64)
      * @Assert\File(
      *     maxSize = "10M",
-     *     mimeTypes = {"application/pdf", "application/x-pdf", "image/pjpeg", "image/jpeg", "image/gif", "image/png", "image/x-png"}
+     *     mimeTypes = {
+     *         "application/pdf",
+     *         "application/x-pdf",
+     *         "image/pjpeg",
+     *         "image/jpeg",
+     *         "image/gif",
+     *         "image/png",
+     *         "image/x-png"
+     *     }
      * )
      */
-    private $details;
+    protected $details;
 
     /**
      * @var DateTime $createdAt
@@ -84,7 +91,7 @@ class Account
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -92,7 +99,7 @@ class Account
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection $sharedWith
@@ -107,16 +114,15 @@ class Account
      *   }
      * )
      * @ORM\OrderBy({"lastname" = "ASC"})
-     * @Assert\Collection()
      */
-    private $sharedWith;
+    protected $sharedWith;
 
     /**
      * @var integer $bankId
      *
      * @ORM\Column(name="bank_id", type="integer", nullable=false)
      */
-    private $bankId;
+    protected $bankId;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Bank $bank
@@ -126,29 +132,32 @@ class Account
      *   @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
      * })
      * @Assert\NotBlank()
+     * @Assert\Valid()
      */
-    private $bank;
+    protected $bank;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="account", cascade={"all"}, fetch="LAZY")
+     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
      */
-    private $transactions;
+    protected $transactions;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="LAZY")
+     * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
      */
-    private $schedulers;
+    protected $schedulers;
 
 
     public function __construct()
     {
-        $this->sharedWith = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->sharedWith = new ArrayCollection();
+        $this->transactions = new ArrayCollection();
+        $this->schedulers = new ArrayCollection();
     }
 
     /**
@@ -358,26 +367,8 @@ class Account
         return $this->schedulers;
     }
 
-    /**
-     * Get balance
-     *
-     * @return float
-     */
-/*
-    public function getBalance($reconciledOnly = false)
+    public function __toString()
     {
-        $dql = 'SELECT (SUM(t._credit) - SUM(t._debit)) ';
-        $dql.= 'FROM Application\\Models\\Transaction t ';
-        $dql.= 'WHERE t._account = :account ';
-        if ($reconciledOnly) {
-            $dql.= 'AND t._isReconciled = 1 ';
-        }
-
-        $query = $em->createQuery($dql);
-        $query->setParameter('account', $em->find('Application\Models\Account', $this->getAccountId()));
-        $balance = $query->getSingleScalarResult();
-
-        return sprintf('%.2f', $this->getInitialBalance() + $balance);
+        return $this->getName();
     }
-*/
 }

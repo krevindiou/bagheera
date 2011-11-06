@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -39,7 +40,7 @@ class Category
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $categoryId;
+    protected $categoryId;
 
     /**
      * @var string $type
@@ -48,7 +49,7 @@ class Category
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"debit", "credit"})
      */
-    private $type;
+    protected $type;
 
     /**
      * @var string $name
@@ -57,7 +58,7 @@ class Category
      * @Assert\NotBlank()
      * @Assert\MaxLength(32)
      */
-    private $name;
+    protected $name;
 
     /**
      * @var boolean $isActive
@@ -65,7 +66,7 @@ class Category
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    private $isActive;
+    protected $isActive;
 
     /**
      * @var DateTime $createdAt
@@ -73,7 +74,7 @@ class Category
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -81,7 +82,7 @@ class Category
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $parentCategory
@@ -90,20 +91,21 @@ class Category
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
      * })
+     * @Assert\Valid()
      */
-    private $parentCategory;
+    protected $parentCategory;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection $subCategories
      *
-     * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory")
+     * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory", fetch="EXTRA_LAZY")
      */
-    private $subCategories;
+    protected $subCategories;
 
 
     public function __construct()
     {
-        $this->subCategories = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->subCategories = new ArrayCollection();
     }
 
     /**
@@ -261,5 +263,10 @@ class Category
     public function getSubCategories()
     {
         return $this->subCategories;
+    }
+
+    public function __toString()
+    {
+        return $this->getName();
     }
 }

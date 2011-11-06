@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Security\Core\User\UserInterface,
     Symfony\Component\Validator\Constraints as Assert,
     Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
@@ -42,7 +43,7 @@ class User implements UserInterface
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $userId;
+    protected $userId;
 
     /**
      * @var string $firstname
@@ -51,7 +52,7 @@ class User implements UserInterface
      * @Assert\NotBlank(groups={"register", "profile"})
      * @Assert\MaxLength(limit=64, groups={"register", "profile"})
      */
-    private $firstname;
+    protected $firstname;
 
     /**
      * @var string $lastname
@@ -60,7 +61,7 @@ class User implements UserInterface
      * @Assert\NotBlank(groups={"register", "profile"})
      * @Assert\MaxLength(limit=64, groups={"register", "profile"})
      */
-    private $lastname;
+    protected $lastname;
 
     /**
      * @var string $email
@@ -70,7 +71,7 @@ class User implements UserInterface
      * @Assert\Email(groups={"register", "profile"})
      * @Assert\MaxLength(limit=128, groups={"register", "profile"})
      */
-    private $email;
+    protected $email;
 
     /**
      * @var string $password
@@ -79,7 +80,7 @@ class User implements UserInterface
      * @Assert\NotBlank(groups={"register", "profile"})
      * @Assert\MinLength(limit=8, groups={"register", "profile"})
      */
-    private $password;
+    protected $password;
 
     /**
      * @var string $activation
@@ -88,7 +89,7 @@ class User implements UserInterface
      * @Assert\MinLength(limit=32, groups={"register", "profile"})
      * @Assert\MaxLength(limit=32, groups={"register", "profile"})
      */
-    private $activation;
+    protected $activation;
 
     /**
      * @var boolean $isAdmin
@@ -96,7 +97,7 @@ class User implements UserInterface
      * @ORM\Column(name="is_admin", type="boolean", nullable=false)
      * @Assert\Type(type="bool", groups={"register", "profile"})
      */
-    private $isAdmin;
+    protected $isAdmin;
 
     /**
      * @var boolean $isActive
@@ -104,7 +105,7 @@ class User implements UserInterface
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type(type="bool", groups={"register", "profile"})
      */
-    private $isActive;
+    protected $isActive;
 
     /**
      * @var DateTime $createdAt
@@ -112,7 +113,7 @@ class User implements UserInterface
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime(groups={"register", "profile"})
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -120,21 +121,22 @@ class User implements UserInterface
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime(groups={"register", "profile"})
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection $banks
      *
-     * @ORM\OneToMany(targetEntity="Bank", mappedBy="user", cascade={"all"}, fetch="LAZY")
+     * @ORM\OneToMany(targetEntity="Bank", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})
      */
-    private $banks;
+    protected $banks;
 
 
     public function __construct()
     {
         $this->isAdmin = false;
         $this->isActive = false;
+        $this->banks = new ArrayCollection();
     }
 
     /**
@@ -354,23 +356,6 @@ class User implements UserInterface
         return $this->banks;
     }
 
-    /**
-     * Get user total balance
-     *
-     * @return float
-     */
-/*
-    public function getBalance()
-    {
-        $balance = 0;
-        $banks = $this->getBanks();
-        foreach ($banks as $bank) {
-            $balance+= $bank->getBalance();
-        }
-
-        return sprintf('%.2f', $balance);
-    }
-*/
     /**
      * {@inheritdoc}
      */

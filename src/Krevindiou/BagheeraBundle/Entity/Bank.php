@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -39,7 +40,7 @@ class Bank
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $bankId;
+    protected $bankId;
 
     /**
      * @var string $name
@@ -48,21 +49,21 @@ class Bank
      * @Assert\NotBlank()
      * @Assert\MaxLength(32)
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string $info
      *
      * @ORM\Column(name="info", type="text", nullable=true)
      */
-    private $info;
+    protected $info;
 
     /**
      * @var string $contact
      *
      * @ORM\Column(name="contact", type="text", nullable=true)
      */
-    private $contact;
+    protected $contact;
 
     /**
      * @var DateTime $createdAt
@@ -70,7 +71,7 @@ class Bank
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $createdAt;
+    protected $createdAt;
 
     /**
      * @var DateTime $updatedAt
@@ -78,7 +79,7 @@ class Bank
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Assert\DateTime()
      */
-    private $updatedAt;
+    protected $updatedAt;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\User $user
@@ -90,16 +91,21 @@ class Bank
      * @Assert\NotBlank()
      * @Assert\Valid()
      */
-    private $user;
+    protected $user;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection $accounts
      *
-     * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="LAZY")
+     * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})
      */
-    private $accounts;
+    protected $accounts;
 
+
+    public function __construct()
+    {
+        $this->accounts = new ArrayCollection();
+    }
 
     /**
      * @ORM\prePersist
@@ -257,16 +263,9 @@ class Bank
     {
         return $this->accounts;
     }
-/*
-    public function getBalance()
-    {
-        $balance = 0;
-        $accounts = $this->getAccounts();
-        foreach ($accounts as $account) {
-            $balance+= $account->getBalance();
-        }
 
-        return sprintf('%.2f', $balance);
+    public function __toString()
+    {
+        return $this->getName();
     }
-*/
 }
