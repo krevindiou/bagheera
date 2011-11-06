@@ -16,12 +16,14 @@ services:
             - @translator
             - @router
             - @form.factory
+            - @bagheera.bank
 
     bagheera.bank:
         class: Krevindiou\BagheeraBundle\Service\BankService
         arguments:
             - @doctrine.orm.entity_manager
             - @form.factory
+            - @bagheera.account
 
     bagheera.account:
         class: Krevindiou\BagheeraBundle\Service\AccountService

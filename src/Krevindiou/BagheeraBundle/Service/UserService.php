@@ -29,7 +29,8 @@ use Doctrine\ORM\EntityManager,
     Krevindiou\BagheeraBundle\Form\UserRegisterForm,
     Krevindiou\BagheeraBundle\Form\UserProfileForm,
     Krevindiou\BagheeraBundle\Form\UserForgotPasswordForm,
-    Krevindiou\BagheeraBundle\Form\UserResetPasswordForm;
+    Krevindiou\BagheeraBundle\Form\UserResetPasswordForm,
+    Krevindiou\BagheeraBundle\Service\BankService;
 
 /**
  * User service
@@ -61,13 +62,18 @@ class UserService
 
     /**
      * @var Router
-     */
+     *,/
     protected $_router;
 
     /**
      * @var FormFactory
      */
     protected $_formFactory;
+
+    /**
+     * @var BankService
+     */
+    protected $_bankService;
 
 
     public function __construct(
@@ -76,7 +82,8 @@ class UserService
         array $config,
         Translator $translator,
         Router $router,
-        FormFactory $formFactory)
+        FormFactory $formFactory,
+        BankService $bankService)
     {
         $this->_em = $em;
         $this->_mailer = $mailer;
@@ -84,6 +91,7 @@ class UserService
         $this->_translator = $translator;
         $this->_router = $router;
         $this->_formFactory = $formFactory;
+        $this->_bankService = $bankService;
     }
 
     /**
@@ -449,5 +457,21 @@ class UserService
         }
 
         return $query->getResult();
+    }
+
+    /**
+     * Get user balance
+     *
+     * @return float
+     */
+    public function getBalance(User $user)
+    {
+        $balance = 0;
+        $banks = $user->getBanks();
+        foreach ($banks as $bank) {
+            $balance+= $this->_bankService->getBalance($bank);
+        }
+
+        return sprintf('%.2f', $balance);
     }
 }

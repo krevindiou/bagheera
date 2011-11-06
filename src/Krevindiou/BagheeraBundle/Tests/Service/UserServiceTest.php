@@ -19,8 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
 use Symfony\Component\HttpFoundation\Request,
-    Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Service\UserService;
+    Krevindiou\BagheeraBundle\Tests\TestCase;
 
 /**
  * Krevindiou\BagheeraBundle\Tests\Service\UserServiceTest
@@ -414,5 +413,14 @@ class UserServiceTest extends TestCase
         $users = $this->get('bagheera.user')->getUsers($params);
 
         $this->assertEquals(count($users), 2);
+    }
+
+    public function testGetBalance()
+    {
+        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+
+        $balance = $this->get('bagheera.user')->getBalance($user);
+
+        $this->assertEquals($balance, 210.92);
     }
 }

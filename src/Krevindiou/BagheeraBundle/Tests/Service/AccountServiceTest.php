@@ -20,7 +20,6 @@ namespace Krevindiou\BagheeraBundle\Tests\Service;
 
 use Symfony\Component\HttpFoundation\Request,
     Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Service\AccountService,
     Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
@@ -116,5 +115,14 @@ class AccountServiceTest extends TestCase
 
         $accounts = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
         $this->assertEquals(count($accounts), 3);
+    }
+
+    public function testGetBalance()
+    {
+        $account = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+
+        $balance = $this->get('bagheera.account')->getBalance($account);
+
+        $this->assertEquals($balance, 102.07);
     }
 }

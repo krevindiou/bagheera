@@ -23,7 +23,8 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\HttpFoundation\Request,
     Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Form\BankForm;
+    Krevindiou\BagheeraBundle\Form\BankForm,
+    Krevindiou\BagheeraBundle\Service\AccountService;
 
 /**
  * Bank service
@@ -43,13 +44,20 @@ class BankService
      */
     protected $_formFactory;
 
+    /**
+     * @var AccountService
+     */
+    protected $_accountService;
+
 
     public function __construct(
         EntityManager $em,
-        FormFactory $formFactory)
+        FormFactory $formFactory,
+        AccountService $accountService)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
+        $this->_accountService = $accountService;
     }
 
     /**
@@ -109,5 +117,21 @@ class BankService
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Get bank balance
+     *
+     * @return float
+     */
+    public function getBalance(Bank $bank)
+    {
+        $balance = 0;
+        $accounts = $bank->getAccounts();
+        foreach ($accounts as $account) {
+            $balance+= $this->_accountService->getBalance($account);
+        }
+
+        return sprintf('%.2f', $balance);
     }
 }

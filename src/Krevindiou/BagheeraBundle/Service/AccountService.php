@@ -110,4 +110,25 @@ class AccountService
             return false;
         }
     }
+
+    /**
+     * Get account balance
+     *
+     * @return float
+     */
+    public function getBalance(Account $account, $reconciledOnly = false)
+    {
+        $dql = 'SELECT (SUM(t.credit) - SUM(t.debit)) ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:Transaction t ';
+        $dql.= 'WHERE t.account = :account ';
+        if ($reconciledOnly) {
+            $dql.= 'AND t.isReconciled = 1 ';
+        }
+
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('account', $account);
+        $balance = $query->getSingleScalarResult();
+
+        return sprintf('%.2f', $account->getInitialBalance() + $balance);
+    }
 }
