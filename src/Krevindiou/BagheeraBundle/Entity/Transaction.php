@@ -44,7 +44,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Transaction $transferTransaction
      *
-     * @ORM\OneToOne(targetEntity="Transaction", cascade={"all"})
+     * @ORM\OneToOne(targetEntity="Transaction", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_transaction_id", referencedColumnName="transaction_id")
      * @Assert\Valid()
      */
@@ -128,7 +128,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
-     * @ORM\ManyToOne(targetEntity="Category")
+     * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
      * @Assert\Valid()
      */
@@ -147,7 +147,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Scheduler $scheduler
      *
-     * @ORM\ManyToOne(targetEntity="Scheduler")
+     * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
      * @Assert\Valid()
      */
