@@ -118,11 +118,11 @@ class AccountService
      */
     public function getBalance(Account $account, $reconciledOnly = false)
     {
-        $dql = 'SELECT (SUM(t.credit) - SUM(t.debit)) ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Transaction t ';
-        $dql.= 'WHERE t.account = :account ';
+        $dql = 'SELECT (SUM(o.credit) - SUM(o.debit)) ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+        $dql.= 'WHERE o.account = :account ';
         if ($reconciledOnly) {
-            $dql.= 'AND t.isReconciled = 1 ';
+            $dql.= 'AND o.isReconciled = 1 ';
         }
 
         $query = $this->_em->createQuery($dql);

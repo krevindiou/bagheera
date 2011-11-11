@@ -19,32 +19,32 @@
 namespace Krevindiou\BagheeraBundle\Tests\Entity;
 
 use Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Entity\Transaction;
+    Krevindiou\BagheeraBundle\Entity\Operation;
 
 /**
- * Krevindiou\BagheeraBundle\Tests\Entity\Transaction
+ * Krevindiou\BagheeraBundle\Tests\Entity\Operation
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class TransactionTest extends TestCase
+class OperationTest extends TestCase
 {
     public function testFindAll()
     {
-        $transactions = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Transaction')->findAll();
+        $operations = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Operation')->findAll();
 
-        $this->assertEquals(count($transactions), 10);
+        $this->assertEquals(count($operations), 10);
     }
 
-    public function testTransaction()
+    public function testOperation()
     {
-        $transaction = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Transaction', 1);
+        $operation = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Operation', 1);
 
-        $this->assertEquals($transaction->getThirdParty(), 'Third party 1');
-        $this->assertEquals($transaction->getTransferTransaction()->getAccount()->getName(), 'Home savings account');
-        $this->assertEquals($transaction->getAccount()->getName(), 'Checking account #1');
-        $this->assertEquals($transaction->getCategory()->getName(), 'Cat 2');
-        $this->assertEquals($transaction->getPaymentMethod()->getName(), 'transfer');
-        $this->assertEquals($transaction->getScheduler(), null);
+        $this->assertEquals($operation->getThirdParty(), 'Third party 1');
+        $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'Home savings account');
+        $this->assertEquals($operation->getAccount()->getName(), 'Checking account #1');
+        $this->assertEquals($operation->getCategory()->getName(), 'Cat 2');
+        $this->assertEquals($operation->getPaymentMethod()->getName(), 'transfer');
+        $this->assertEquals($operation->getScheduler(), null);
     }
 }

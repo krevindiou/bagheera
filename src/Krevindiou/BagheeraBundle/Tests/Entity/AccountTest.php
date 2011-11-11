@@ -42,7 +42,7 @@ class AccountTest extends TestCase
 
         $this->assertEquals($checkingAccount1->getName(), 'Checking account #1');
         $this->assertEquals($checkingAccount1->getBank()->getName(), 'HSBC');
-        $this->assertEquals(count($checkingAccount1->getTransactions()), 4);
+        $this->assertEquals(count($checkingAccount1->getOperations()), 4);
         $this->assertEquals(count($checkingAccount1->getSchedulers()), 0);
     }
 
@@ -52,7 +52,7 @@ class AccountTest extends TestCase
 
         $this->assertEquals($homeSavingsAccount->getName(), 'Home savings account');
         $this->assertEquals($homeSavingsAccount->getBank()->getName(), 'HSBC');
-        $this->assertEquals(count($homeSavingsAccount->getTransactions()), 2);
+        $this->assertEquals(count($homeSavingsAccount->getOperations()), 2);
         $this->assertEquals(count($homeSavingsAccount->getSchedulers()), 0);
     }
 
@@ -62,7 +62,7 @@ class AccountTest extends TestCase
 
         $this->assertEquals($checkingAccount2->getName(), 'Checking account #2');
         $this->assertEquals($checkingAccount2->getBank()->getName(), 'Bank of America');
-        $this->assertEquals(count($checkingAccount2->getTransactions()), 2);
+        $this->assertEquals(count($checkingAccount2->getOperations()), 2);
         $this->assertEquals(count($checkingAccount2->getSchedulers()), 0);
     }
 
@@ -72,7 +72,7 @@ class AccountTest extends TestCase
 
         $this->assertEquals($securitiesAccount->getName(), 'Securities account');
         $this->assertEquals($securitiesAccount->getBank()->getName(), 'BNP Paribas');
-        $this->assertEquals(count($securitiesAccount->getTransactions()), 2);
+        $this->assertEquals(count($securitiesAccount->getOperations()), 2);
         $this->assertEquals(count($securitiesAccount->getSchedulers()), 0);
     }
 }

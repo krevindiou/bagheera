@@ -23,14 +23,14 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Security\Core\SecurityContext,
     Krevindiou\BagheeraBundle\Entity\Scheduler,
     Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\Transaction,
+    Krevindiou\BagheeraBundle\Entity\Operation,
     Application\Forms\Scheduler as SchedulerForm,
-    Application\Forms\Transaction as TransactionForm,
+    Application\Forms\Operation as OperationForm,
     Krevindiou\BagheeraBundle\Service\UserService,
-    Krevindiou\BagheeraBundle\Service\TransactionService,
+    Krevindiou\BagheeraBundle\Service\OperationService,
     Krevindiou\BagheeraBundle\Service\SchedulerService,
     Krevindiou\BagheeraBundle\Service\UserService,
-    Krevindiou\BagheeraBundle\Service\TransactionService;
+    Krevindiou\BagheeraBundle\Service\OperationService;
 
 /**
  * Scheduler service
@@ -56,17 +56,17 @@ class SchedulerService extends CrudAbstract
     protected $_userService;
 
     /**
-     * @var TransactionService
+     * @var OperationService
      */
-    protected $_transactionService;
+    protected $_operationService;
 
 
-    public function __construct(EntityManager $em, SecurityContext $context, UserService $userService, TransactionService $transactionService)
+    public function __construct(EntityManager $em, SecurityContext $context, UserService $userService, OperationService $operationService)
     {
         $this->_em = $em;
         $this->_context = $context;
         $this->_userService = $userService;
-        $this->_transactionService = $transactionService;
+        $this->_operationService = $operationService;
     }
 
     public function getForm(Scheduler $scheduler = null, array $extraValues = null)
@@ -113,10 +113,10 @@ class SchedulerService extends CrudAbstract
 
     public function getSchedulers(Account $account)
     {
-        $dql = 'SELECT t ';
-        $dql.= 'FROM Scheduler t ';
-        $dql.= 'WHERE t.account = :account ';
-        $dql.= 'ORDER BY t.valueDate DESC ';
+        $dql = 'SELECT s ';
+        $dql.= 'FROM Scheduler s ';
+        $dql.= 'WHERE s.account = :account ';
+        $dql.= 'ORDER BY s.valueDate DESC ';
         $query = $this->_em->createQuery($dql);
         $query->setParameter('account', $account);
 
@@ -206,20 +206,20 @@ class SchedulerService extends CrudAbstract
         foreach ($schedulers as $scheduler) {
             $startDate = $scheduler->getValueDate();
 
-            $dql = 'SELECT t.valueDate ';
-            $dql.= 'FROM Transaction t ';
-            $dql.= 'WHERE t.scheduler = :scheduler ';
-            $dql.= 'AND t.valueDate >= :valueDate ';
-            $dql.= 'ORDER BY t.valueDate DESC ';
+            $dql = 'SELECT o.valueDate ';
+            $dql.= 'FROM Operation o ';
+            $dql.= 'WHERE o.scheduler = :scheduler ';
+            $dql.= 'AND o.valueDate >= :valueDate ';
+            $dql.= 'ORDER BY o.valueDate DESC ';
             $q = $this->_em->createQuery($dql);
             $q->setMaxResults(1);
             $q->setParameter('scheduler', $scheduler);
             $q->setParameter('valueDate', $scheduler->getValueDate()->format(\DateTime::ISO8601));
             $result = $q->getResult();
 
-            $lastTransactionDate = null;
+            $lastOperationDate = null;
             if (isset($result[0]['valueDate'])) {
-                $startDate = $lastTransactionDate = new \DateTime($result[0]['valueDate']);
+                $startDate = $lastOperationDate = new \DateTime($result[0]['valueDate']);
             }
 
             $endDate = new \DateTime();
@@ -231,7 +231,7 @@ class SchedulerService extends CrudAbstract
             $date = clone $startDate;
 
             while ($date <= $endDate) {
-                if ($date != $startDate || null === $lastTransactionDate) {
+                if ($date != $startDate || null === $lastOperationDate) {
                     $dates[] = $date->format(\DateTime::ISO8601);
                 }
 
@@ -247,27 +247,27 @@ class SchedulerService extends CrudAbstract
             }
 
             foreach ($dates as $date) {
-                $transactionService = TransactionService::getInstance();
+                $operationService = OperationService::getInstance();
 
-                $transaction = new Transaction();
-                $transaction->setScheduler($scheduler);
-                $transaction->setAccount($scheduler->getAccount());
-                $transaction->setCategory($scheduler->getCategory());
-                $transaction->setThirdParty($scheduler->getThirdParty());
-                $transaction->setPaymentMethod($scheduler->getPaymentMethod());
-                $transaction->setDebit($scheduler->getDebit());
-                $transaction->setCredit($scheduler->getCredit());
-                $transaction->setValueDate(new \DateTime($date));
-                $transaction->setIsReconciled($scheduler->getIsReconciled());
-                $transaction->setNotes($scheduler->getNotes());
+                $operation = new Operation();
+                $operation->setScheduler($scheduler);
+                $operation->setAccount($scheduler->getAccount());
+                $operation->setCategory($scheduler->getCategory());
+                $operation->setThirdParty($scheduler->getThirdParty());
+                $operation->setPaymentMethod($scheduler->getPaymentMethod());
+                $operation->setDebit($scheduler->getDebit());
+                $operation->setCredit($scheduler->getCredit());
+                $operation->setValueDate(new \DateTime($date));
+                $operation->setIsReconciled($scheduler->getIsReconciled());
+                $operation->setNotes($scheduler->getNotes());
 
                 $values = array();
                 if (null !== $scheduler->getTransferAccount()) {
                     $values['transferAccountId'] = $scheduler->getTransferAccount()->getAccountId();
                 }
 
-                $transactionForm = $transactionService->getForm($transaction, $values);
-                $transactionService->save($transactionForm);
+                $operationForm = $operationService->getForm($operation, $values);
+                $operationService->save($operationForm);
             }
         }
     }

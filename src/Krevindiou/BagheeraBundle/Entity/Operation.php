@@ -22,33 +22,33 @@ use Doctrine\ORM\Mapping as ORM,
     Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\Transaction
+ * Krevindiou\BagheeraBundle\Entity\Operation
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @ORM\Entity
- * @ORM\Table(name="`transaction`")
+ * @ORM\Table(name="operation")
  * @ORM\HasLifecycleCallbacks()
  */
-class Transaction
+class Operation
 {
     /**
-     * @var integer $transactionId
+     * @var integer $operationId
      *
-     * @ORM\Column(name="transaction_id", type="integer", nullable=false)
+     * @ORM\Column(name="operation_id", type="integer", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $transactionId;
+    protected $operationId;
 
     /**
-     * @var Krevindiou\BagheeraBundle\Entity\Transaction $transferTransaction
+     * @var Krevindiou\BagheeraBundle\Entity\Operation $transferOperation
      *
-     * @ORM\OneToOne(targetEntity="Transaction", cascade={"all"}, fetch="EAGER")
-     * @ORM\JoinColumn(name="transfer_transaction_id", referencedColumnName="transaction_id")
+     * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
+     * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id")
      * @Assert\Valid()
      */
-    protected $transferTransaction;
+    protected $transferOperation;
 
     /**
      * @var string $thirdParty
@@ -116,7 +116,7 @@ class Transaction
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $account
      *
-     * @ORM\ManyToOne(targetEntity="Account", inversedBy="transactions")
+     * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * })
@@ -178,33 +178,33 @@ class Transaction
     }
 
     /**
-     * Get transactionId
+     * Get operationId
      *
      * @return integer
      */
-    public function getTransactionId()
+    public function getOperationId()
     {
-        return $this->transactionId;
+        return $this->operationId;
     }
 
     /**
-     * Set transferTransaction
+     * Set transferOperation
      *
-     * @param Krevindiou\BagheeraBundle\Entity\Transaction $transferTransaction
+     * @param Krevindiou\BagheeraBundle\Entity\Operation $transferOperation
      */
-    public function setTransferTransaction(Transaction $transferTransaction = null)
+    public function setTransferOperation(Operation $transferOperation = null)
     {
-        $this->transferTransaction = $transferTransaction;
+        $this->transferOperation = $transferOperation;
     }
 
     /**
-     * Get transferTransaction
+     * Get transferOperation
      *
-     * @return Krevindiou\BagheeraBundle\Entity\Transaction
+     * @return Krevindiou\BagheeraBundle\Entity\Operation
      */
-    public function getTransferTransaction()
+    public function getTransferOperation()
     {
-        return $this->transferTransaction;
+        return $this->transferOperation;
     }
 
     /**
@@ -449,6 +449,6 @@ class Transaction
 
     public function __clone()
     {
-        $this->transactionId = null;
+        $this->operationId = null;
     }
 }

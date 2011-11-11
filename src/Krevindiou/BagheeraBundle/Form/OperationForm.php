@@ -26,12 +26,12 @@ use Symfony\Component\Form\CallbackValidator;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Transaction form
+ * Operation form
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class TransactionForm extends AbstractType
+class OperationForm extends AbstractType
 {
     public function buildForm(FormBuilder $builder, array $options)
     {
@@ -110,13 +110,13 @@ class TransactionForm extends AbstractType
 
     public function getDefaultOptions(array $options)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Transaction';
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Operation';
 
         return $options;
     }
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_transactiontype';
+        return 'krevindiou_bagheerabundle_operationtype';
     }
 }

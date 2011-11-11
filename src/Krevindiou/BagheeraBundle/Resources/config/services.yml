@@ -31,8 +31,8 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
 
-    bagheera.transaction:
-        class: Krevindiou\BagheeraBundle\Service\TransactionService
+    bagheera.operation:
+        class: Krevindiou\BagheeraBundle\Service\OperationService
         arguments:
             - @doctrine.orm.entity_manager
             - @form.factory
@@ -43,7 +43,7 @@ services:
             - @doctrine.orm.entity_manager
             - @security.context
             - @bagheera.user
-            - @bagheera.transaction
+            - @bagheera.operation
 
     bagheera.category:
         class: Krevindiou\BagheeraBundle\Service\CategoryService

@@ -139,10 +139,10 @@ class Account
     /**
      * @var Doctrine\Common\Collections\ArrayCollection
      *
-     * @ORM\OneToMany(targetEntity="Transaction", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Operation", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
      */
-    protected $transactions;
+    protected $operations;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection
@@ -156,7 +156,7 @@ class Account
     public function __construct()
     {
         $this->sharedWith = new ArrayCollection();
-        $this->transactions = new ArrayCollection();
+        $this->operations = new ArrayCollection();
         $this->schedulers = new ArrayCollection();
     }
 
@@ -348,13 +348,13 @@ class Account
     }
 
     /**
-     * Get account transactions
+     * Get account operations
      *
      * @return Doctrine\Common\Collections\ArrayCollection
      */
-    public function getTransactions()
+    public function getOperations()
     {
-        return $this->transactions;
+        return $this->operations;
     }
 
     /**
