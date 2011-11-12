@@ -97,16 +97,13 @@ class UserService
     /**
      * Returns register form
      *
-     * @param  Request $request Post data
+     * @param  array $values Post data
      * @return Form
      */
-    public function getRegisterForm(Request $request)
+    public function getRegisterForm(array $values = array())
     {
         $form = $this->_formFactory->create(new UserRegisterForm(), new User());
-
-        if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
-        }
+        $form->bind($values);
 
         return $form;
     }
@@ -158,33 +155,27 @@ class UserService
      * Returns profile form
      *
      * @param  User $user       User entity
-     * @param  Request $request Post data
+     * @param  array $values    Post data
      * @return Form
      */
-    public function getProfileForm(User $user = null, Request $request)
+    public function getProfileForm(User $user = null, array $values = array())
     {
         if (null === $user) {
             $user = new User();
         }
 
         $noPassword = false;
-        $password = $request->request->get('krevindiou_bagheerabundle_userprofiletype[password]', null, true);
-        if (null === $password || '' == $password['userPassword']) {
+        if (!isset($values['password']['userPassword']) || '' == $values['password']['userPassword']) {
             $noPassword = true;
         }
 
         $form = $this->_formFactory->create(new UserProfileForm($noPassword), $user);
 
-        if ($noPassword) {
-            $post = $request->request->all();
-            unset($post['krevindiou_bagheerabundle_userprofiletype']['password']);
-
-            $request = $request->duplicate(array(), $post);
+        if ($noPassword && isset($values['password'])) {
+            unset($values['password']);
         }
 
-        if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
-        }
+        $form->bind($values);
 
         return $form;
     }
@@ -238,16 +229,13 @@ class UserService
     /**
      * Returns forgot password form
      *
-     * @param  Request $request Post data
+     * @param  array $values Post data
      * @return Form
      */
-    public function getForgotPasswordForm(Request $request)
+    public function getForgotPasswordForm(array $values = array())
     {
         $form = $this->_formFactory->create(new UserForgotPasswordForm(), new User());
-
-        if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
-        }
+        $form->bind($values);
 
         return $form;
     }
@@ -297,18 +285,15 @@ class UserService
     /**
      * Returns reset password form if key is valid
      *
-     * @param  string $key       Reset key
-     * @param  Request $request  Post data
+     * @param  string $key      Reset key
+     * @param  array $values    Post data
      * @return Form
      */
-    public function getResetPasswordForm($key, Request $request)
+    public function getResetPasswordForm($key, array $values = array())
     {
         if (null !== $this->_decodeResetPasswordKey($key)) {
             $form = $this->_formFactory->create(new UserResetPasswordForm(), new User());
-
-            if ($request->getMethod() == 'POST') {
-                $form->bindRequest($request);
-            }
+            $form->bind($values);
 
             return $form;
         }

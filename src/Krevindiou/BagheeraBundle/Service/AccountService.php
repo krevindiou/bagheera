@@ -44,9 +44,7 @@ class AccountService
     protected $_formFactory;
 
 
-    public function __construct(
-        EntityManager $em,
-        FormFactory $formFactory)
+    public function __construct(EntityManager $em, FormFactory $formFactory)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
@@ -56,16 +54,13 @@ class AccountService
      * Returns account form
      *
      * @param  Account $account Account entity
-     * @param  Request $request Post data
+     * @param  array $values    Post data
      * @return Form
      */
-    public function getForm(Account $account, Request $request)
+    public function getForm(Account $account, array $values = array())
     {
         $form = $this->_formFactory->create(new AccountForm(), $account);
-
-        if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
-        }
+        $form->bind($values);
 
         return $form;
     }

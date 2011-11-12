@@ -34,9 +34,7 @@ class BankServiceTest extends TestCase
     {
         $bank = new Bank();
 
-        $request = new Request();
-
-        $form = $this->get('bagheera.bank')->getForm($bank, $request);
+        $form = $this->get('bagheera.bank')->getForm($bank);
 
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -46,10 +44,7 @@ class BankServiceTest extends TestCase
         $bank = new Bank();
         $bank->setUser(self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
 
-        $request = new Request();
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.bank')->getForm($bank, $request);
+        $form = $this->get('bagheera.bank')->getForm($bank);
 
         $ok = $this->get('bagheera.bank')->save($form);
 
@@ -61,18 +56,13 @@ class BankServiceTest extends TestCase
         $bank = new Bank();
         $bank->setUser(self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
 
-        $post = array(
-            'krevindiou_bagheerabundle_banktype' => array(
-                'name' => 'Citigroup',
-                'info' => '',
-                'contact' => '',
-            ),
+        $values = array(
+            'name' => 'Citigroup',
+            'info' => '',
+            'contact' => '',
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.bank')->getForm($bank, $request);
+        $form = $this->get('bagheera.bank')->getForm($bank, $values);
 
         $ok = $this->get('bagheera.bank')->save($form);
 
@@ -83,18 +73,13 @@ class BankServiceTest extends TestCase
     {
         $bank = self::$_em->find('KrevindiouBagheeraBundle:Bank', 1);
 
-        $post = array(
-            'krevindiou_bagheerabundle_banktype' => array(
-                'name' => 'HSBC',
-                'info' => '',
-                'contact' => '',
-            ),
+        $values = array(
+            'name' => 'HSBC',
+            'info' => '',
+            'contact' => '',
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.bank')->getForm($bank, $request);
+        $form = $this->get('bagheera.bank')->getForm($bank, $values);
 
         $ok = $this->get('bagheera.bank')->save($form);
 

@@ -64,16 +64,13 @@ class BankService
      * Returns bank form
      *
      * @param  Bank $bank       Bank entity
-     * @param  Request $request Post data
+     * @param  array $values    Post data
      * @return Form
      */
-    public function getForm(Bank $bank, Request $request)
+    public function getForm(Bank $bank, array $values = array())
     {
         $form = $this->_formFactory->create(new BankForm(), $bank);
-
-        if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
-        }
+        $form->bind($values);
 
         return $form;
     }

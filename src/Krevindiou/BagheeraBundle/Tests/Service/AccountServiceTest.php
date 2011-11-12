@@ -34,9 +34,7 @@ class AccountServiceTest extends TestCase
     {
         $account = new Account();
 
-        $request = new Request();
-
-        $form = $this->get('bagheera.account')->getForm($account, $request);
+        $form = $this->get('bagheera.account')->getForm($account);
 
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -45,10 +43,7 @@ class AccountServiceTest extends TestCase
     {
         $account = new Account();
 
-        $request = new Request();
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.account')->getForm($account, $request);
+        $form = $this->get('bagheera.account')->getForm($account);
 
         $ok = $this->get('bagheera.account')->save($form);
 
@@ -62,19 +57,14 @@ class AccountServiceTest extends TestCase
         $account = new Account();
         $account->setBank($bank);
 
-        $post = array(
-            'krevindiou_bagheerabundle_accounttype' => array(
-                'name' => 'Checking account #1',
-                'initialBalance' => '0',
-                'overdraftFacility' => '',
-                'details' => '',
-            ),
+        $values = array(
+            'name' => 'Checking account #1',
+            'initialBalance' => '0',
+            'overdraftFacility' => '',
+            'details' => '',
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.account')->getForm($account, $request);
+        $form = $this->get('bagheera.account')->getForm($account, $values);
 
         $ok = $this->get('bagheera.account')->save($form);
 
@@ -85,19 +75,14 @@ class AccountServiceTest extends TestCase
     {
         $account = self::$_em->find('KrevindiouBagheeraBundle:Account', 1);
 
-        $post = array(
-            'krevindiou_bagheerabundle_accounttype' => array(
-                'name' => 'Checking account #1',
-                'initialBalance' => '0',
-                'overdraftFacility' => '',
-                'details' => '',
-            ),
+        $values = array(
+            'name' => 'Checking account #1',
+            'initialBalance' => '0',
+            'overdraftFacility' => '',
+            'details' => '',
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.account')->getForm($account, $request);
+        $form = $this->get('bagheera.account')->getForm($account, $values);
 
         $ok = $this->get('bagheera.account')->save($form);
 

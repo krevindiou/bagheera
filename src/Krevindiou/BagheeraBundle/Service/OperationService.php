@@ -45,9 +45,7 @@ class OperationService
     protected $_formFactory;
 
 
-    public function __construct(
-        EntityManager $em,
-        FormFactory $formFactory)
+    public function __construct(EntityManager $em, FormFactory $formFactory)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
@@ -56,17 +54,14 @@ class OperationService
     /**
      * Returns operation form
      *
-     * @param  Operation $operation         Operation entity
-     * @param  Request $request             Post data
+     * @param  Operation $operation Operation entity
+     * @param  array $values        Post data
      * @return Form
      */
-    public function getForm(Operation $operation, Request $request)
+    public function getForm(Operation $operation, array $values = array())
     {
         $form = $this->_formFactory->create(new OperationForm(), $operation);
-
-        if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
-        }
+        $form->bind($values);
 
         return $form;
     }

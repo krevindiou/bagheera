@@ -34,9 +34,7 @@ class OperationServiceTest extends TestCase
     {
         $operation = new Operation();
 
-        $request = new Request();
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $request);
+        $form = $this->get('bagheera.operation')->getForm($operation);
 
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -46,10 +44,7 @@ class OperationServiceTest extends TestCase
         $operation = new Operation();
         $operation->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
-        $request = new Request();
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $request);
+        $form = $this->get('bagheera.operation')->getForm($operation);
 
         $ok = $this->get('bagheera.operation')->save($form);
         $this->assertFalse($ok);
@@ -60,24 +55,19 @@ class OperationServiceTest extends TestCase
         $operation = new Operation();
         $operation->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
-        $post = array(
-            'krevindiou_bagheerabundle_operationtype' => array(
-                'debitCredit' => 'debit',
-                'thirdParty' => 'Test',
-                'amount' => '5.00',
-                'valueDate' => array('year' => 2011, 'month' => 10, 'day' => 11),
-                'isReconciled' => '0',
-                'notes' => 'Note #1',
-                'transferAccount' => '',
-                'category' => '',
-                'paymentMethod' => '1',
-            ),
+        $values = array(
+            'debitCredit' => 'debit',
+            'thirdParty' => 'Test',
+            'amount' => '5.00',
+            'valueDate' => array('year' => 2011, 'month' => 10, 'day' => 11),
+            'isReconciled' => '0',
+            'notes' => 'Note #1',
+            'transferAccount' => '',
+            'category' => '',
+            'paymentMethod' => '1',
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $request);
+        $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
         $ok = $this->get('bagheera.operation')->save($form);
         $this->assertTrue($ok);
@@ -101,24 +91,19 @@ class OperationServiceTest extends TestCase
 
         $valueDate = $operation->getValueDate();
 
-        $post = array(
-            'krevindiou_bagheerabundle_operationtype' => array(
-                'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
-                'thirdParty' => $operation->getThirdParty(),
-                'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-                'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
-                'isReconciled' => $operation->getIsReconciled(),
-                'notes' => $operation->getNotes(),
-                'transferAccount' => null,
-                'category' => $operation->getCategory()->getCategoryId(),
-                'paymentMethod' => 5,
-            ),
+        $values = array(
+            'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
+            'thirdParty' => $operation->getThirdParty(),
+            'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
+            'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
+            'isReconciled' => $operation->getIsReconciled(),
+            'notes' => $operation->getNotes(),
+            'transferAccount' => null,
+            'category' => $operation->getCategory()->getCategoryId(),
+            'paymentMethod' => 5,
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $request);
+        $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
         $ok = $this->get('bagheera.operation')->save($form);
         $this->assertTrue($ok);
@@ -155,24 +140,19 @@ class OperationServiceTest extends TestCase
 
         $valueDate = $operation->getValueDate();
 
-        $post = array(
-            'krevindiou_bagheerabundle_operationtype' => array(
-                'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
-                'thirdParty' => $operation->getThirdParty(),
-                'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-                'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
-                'isReconciled' => $operation->getIsReconciled(),
-                'notes' => $operation->getNotes(),
-                'transferAccount' => 3,
-                'category' => $operation->getCategory()->getCategoryId(),
-                'paymentMethod' => $operation->getPaymentMethod()->getPaymentMethodId(),
-            ),
+        $values = array(
+            'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
+            'thirdParty' => $operation->getThirdParty(),
+            'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
+            'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
+            'isReconciled' => $operation->getIsReconciled(),
+            'notes' => $operation->getNotes(),
+            'transferAccount' => 3,
+            'category' => $operation->getCategory()->getCategoryId(),
+            'paymentMethod' => $operation->getPaymentMethod()->getPaymentMethodId(),
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $request);
+        $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
         $ok = $this->get('bagheera.operation')->save($form);
         $this->assertTrue($ok);
@@ -210,24 +190,19 @@ class OperationServiceTest extends TestCase
         $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
         $valueDate = $operation->getValueDate();
 
-        $post = array(
-            'krevindiou_bagheerabundle_operationtype' => array(
-                'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
-                'thirdParty' => $operation->getThirdParty(),
-                'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-                'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
-                'isReconciled' => $operation->getIsReconciled(),
-                'notes' => $operation->getNotes(),
-                'transferAccount' => 3,
-                'category' => $operation->getCategory()->getCategoryId(),
-                'paymentMethod' => 4,
-            ),
+        $values = array(
+            'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
+            'thirdParty' => $operation->getThirdParty(),
+            'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
+            'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
+            'isReconciled' => $operation->getIsReconciled(),
+            'notes' => $operation->getNotes(),
+            'transferAccount' => 3,
+            'category' => $operation->getCategory()->getCategoryId(),
+            'paymentMethod' => 4,
         );
 
-        $request = new Request(array(), $post);
-        $request->setMethod('POST');
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $request);
+        $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
         $ok = $this->get('bagheera.operation')->save($form);
         $this->assertTrue($ok);
