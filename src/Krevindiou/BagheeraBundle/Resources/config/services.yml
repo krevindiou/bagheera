@@ -41,8 +41,7 @@ services:
         class: Krevindiou\BagheeraBundle\Service\SchedulerService
         arguments:
             - @doctrine.orm.entity_manager
-            - @security.context
-            - @bagheera.user
+            - @form.factory
             - @bagheera.operation
 
     bagheera.category:

@@ -45,6 +45,6 @@ class OperationTest extends TestCase
         $this->assertEquals($operation->getAccount()->getName(), 'Checking account #1');
         $this->assertEquals($operation->getCategory()->getName(), 'Cat 2');
         $this->assertEquals($operation->getPaymentMethod()->getName(), 'transfer');
-        $this->assertEquals($operation->getScheduler(), null);
+        $this->assertEquals($operation->getScheduler()->getThirdParty(), 'Third party 1');
     }
 }

@@ -20,6 +20,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation1->setCredit(null);
         $operation1->setValueDate(new \DateTime('2011-09-01'));
         $operation1->setIsReconciled(true);
+        $operation1->setScheduler($this->getReference('scheduler-john-1'));
         $em->persist($operation1);
 
         $operation = new Operation();
@@ -116,6 +117,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
         $operation->setIsReconciled(true);
+        $operation->setScheduler($this->getReference('scheduler-jane-1'));
         $em->persist($operation);
 
         $operation = new Operation();
@@ -135,6 +137,6 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
 
     public function getOrder()
     {
-        return 6;
+        return 7;
     }
 }

@@ -54,7 +54,6 @@ class Scheduler
      * @var float $debit
      *
      * @ORM\Column(name="debit", type="decimal", nullable=true)
-     * @Assert\Type("float")
      */
     protected $debit;
 
@@ -62,7 +61,6 @@ class Scheduler
      * @var float $credit
      *
      * @ORM\Column(name="credit", type="decimal", nullable=true)
-     * @Assert\Type("float")
      */
     protected $credit;
 
@@ -155,7 +153,7 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $transferAccount
      *
-     * @ORM\ManyToOne(targetEntity="Account")
+     * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
      * @Assert\Valid()
      */
@@ -164,7 +162,7 @@ class Scheduler
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Category $category
      *
-     * @ORM\ManyToOne(targetEntity="Category")
+     * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
      * @Assert\Valid()
      */
@@ -240,7 +238,7 @@ class Scheduler
      *
      * @param float $debit
      */
-    public function setDebit($debit)
+    public function setDebit($debit = null)
     {
         $this->debit = $debit;
     }
@@ -260,7 +258,7 @@ class Scheduler
      *
      * @param float $credit
      */
-    public function setCredit($credit)
+    public function setCredit($credit = null)
     {
         $this->credit = $credit;
     }
@@ -280,7 +278,7 @@ class Scheduler
      *
      * @param DateTime $valueDate
      */
-    public function setValueDate(\DateTime $valueDate)
+    public function setValueDate(\DateTime $valueDate = null)
     {
         $this->valueDate = $valueDate;
     }
