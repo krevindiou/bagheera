@@ -66,6 +66,7 @@ class TestCase extends WebTestCase
 
     public function tearDown()
     {
+        self::$_em->getUnitOfWork()->clear();
         self::$_em->getConnection()->rollback();
     }
 }
