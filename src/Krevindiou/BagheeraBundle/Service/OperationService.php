@@ -19,9 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
-    Symfony\Component\HttpFoundation\Request,
     Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Form\OperationForm;
@@ -58,114 +56,113 @@ class OperationService
      * @param  array $values        Post data
      * @return Form
      */
-    public function getForm(Operation $operation, array $values = array())
+    public function getForm(Operation $operation, array $values = null)
     {
         $form = $this->_formFactory->create(new OperationForm(), $operation);
-        $form->bind($values);
+        if (null !== $values) {
+            $form->bind($values);
+        }
 
         return $form;
     }
 
     /**
-     * Saves form values to database
+     * Saves operation
      *
-     * @param  Form $operationForm Form to get values from
+     * @param  Operation $operation     Operation entity
+     * @param  string $debitCredit      'debit' or 'credit'
+     * @param  float $amount            Operation amount
+     * @param  Account $transferAccount Operation transferAccount
      * @return boolean
      */
-    public function save(Form $operationForm)
+    public function save(Operation $operation, $debitCredit = null, $amount = null, Account $transferAccount = null)
     {
-        $operation = $operationForm->getData();
-
-        $debitCredit = $operationForm->get('debitCredit')->getData();
-        $amount = $operationForm->get('amount')->getData();
-        $transferAccount = $operationForm->get('transferAccount')->getData();
-
-        if ('debit' == $debitCredit) {
-            $operation->setDebit($amount);
-            $operation->setCredit(null);
-        } else {
-            $operation->setDebit(null);
-            $operation->setCredit($amount);
+        if (null !== $debitCredit && null !== $amount) {
+            if ('debit' == $debitCredit) {
+                $operation->setDebit($amount);
+                $operation->setCredit(null);
+            } else {
+                $operation->setDebit(null);
+                $operation->setCredit($amount);
+            }
         }
 
-        if ($operationForm->isValid()) {
-            if (!in_array($operation->getPaymentMethod()->getPaymentMethodId(), array(4, 6))) {
-                $transferAccount = null;
+        if (!in_array($operation->getPaymentMethod()->getPaymentMethodId(), array(4, 6))) {
+            $transferAccount = null;
+        }
+
+        $transferOperationBeforeSave = null;
+        if (null !== $operation->getOperationId()) {
+            $operationBeforeSave = $this->_em->find(
+                'KrevindiouBagheeraBundle:Operation',
+                $operation->getOperationId()
+            );
+
+            if (null !== $operationBeforeSave->getTransferOperation()) {
+                $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
             }
+        }
 
-            $transferOperationBeforeSave = null;
-            if (null !== $operation->getOperationId()) {
-                $operationBeforeSave = $this->_em->find(
-                    'KrevindiouBagheeraBundle:Operation',
-                    $operation->getOperationId()
-                );
+        if (null !== $transferAccount) {
+            // update transfer => transfer
+            if (null !== $transferOperationBeforeSave) {
+                $transferOperation = $operation->getTransferOperation();
 
-                if (null !== $operationBeforeSave->getTransferOperation()) {
-                    $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
-                }
-            }
-
-            if (null !== $transferAccount) {
-                // update transfer => transfer
-                if (null !== $transferOperationBeforeSave) {
-                    $transferOperation = $operation->getTransferOperation();
-
-                // update check => transfer
-                } else {
-                    $transferOperation = new Operation();
-                    $transferOperation->setScheduler($operation->getScheduler());
-                    $transferOperation->setTransferOperation($operation);
-
-                    $operation->setTransferOperation($transferOperation);
-                }
-
-                $transferOperation->setAccount($transferAccount);
-                $transferOperation->setDebit($operation->getCredit());
-                $transferOperation->setCredit($operation->getDebit());
-                $transferOperation->setThirdParty($operation->getThirdParty());
-                $transferOperation->setCategory($operation->getCategory());
-                $transferOperation->setPaymentMethod(
-                    $this->_em->find(
-                        'KrevindiouBagheeraBundle:PaymentMethod',
-                        (4 == $operation->getPaymentMethod()->getPaymentMethodId()) ? 6 : 4
-                    )
-                );
-                $transferOperation->setValueDate($operation->getValueDate());
-                $transferOperation->setNotes($operation->getNotes());
-
-                try {
-                    $this->_em->persist($transferOperation);
-                } catch (\Exception $e) {
-                    return false;
-                }
+            // update check => transfer
             } else {
-                // update transfer => check
-                if (null !== $transferOperationBeforeSave) {
-                    $operation->setTransferOperation(null);
+                $transferOperation = new Operation();
+                $transferOperation->setScheduler($operation->getScheduler());
+                $transferOperation->setTransferOperation($operation);
 
-                    try {
-                        $this->_em->remove($transferOperationBeforeSave);
-                    } catch (\Exception $e) {
-                        return false;
-                    }
-                }
+                $operation->setTransferOperation($transferOperation);
             }
+
+            $transferOperation->setAccount($transferAccount);
+            $transferOperation->setDebit($operation->getCredit());
+            $transferOperation->setCredit($operation->getDebit());
+            $transferOperation->setThirdParty($operation->getThirdParty());
+            $transferOperation->setCategory($operation->getCategory());
+            $transferOperation->setPaymentMethod(
+                $this->_em->find(
+                    'KrevindiouBagheeraBundle:PaymentMethod',
+                    (4 == $operation->getPaymentMethod()->getPaymentMethodId()) ? 6 : 4
+                )
+            );
+            $transferOperation->setValueDate($operation->getValueDate());
+            $transferOperation->setNotes($operation->getNotes());
 
             try {
-                $this->_em->persist($operation);
-                $this->_em->flush();
-
-                return true;
+                $this->_em->persist($transferOperation);
             } catch (\Exception $e) {
                 return false;
             }
+        } else {
+            // update transfer => check
+            if (null !== $transferOperationBeforeSave) {
+                $operation->setTransferOperation(null);
+
+                try {
+                    $this->_em->remove($transferOperationBeforeSave);
+                } catch (\Exception $e) {
+                    return false;
+                }
+            }
+        }
+
+        try {
+            $this->_em->persist($operation);
+            $this->_em->flush();
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
         }
 
         return false;
     }
 
     /**
-     * Deletes objects from database
+     * Deletes operations
      *
      * @param  array $operationsId Operations id to delete
      * @return boolean

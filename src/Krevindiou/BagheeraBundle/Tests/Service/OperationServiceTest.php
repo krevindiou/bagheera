@@ -44,10 +44,24 @@ class OperationServiceTest extends TestCase
         $operation = new Operation();
         $operation->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
-        $form = $this->get('bagheera.operation')->getForm($operation);
+        $values = array(
+            'debitCredit' => '',
+            'thirdParty' => '',
+            'amount' => '',
+            'valueDate' => array(
+                'year' => '',
+                'month' => '',
+                'day' => ''
+            ),
+            'isReconciled' => '',
+            'notes' => '',
+            'transferAccount' => '',
+            'category' => '',
+            'paymentMethod' => '',
+        );
 
-        $ok = $this->get('bagheera.operation')->save($form);
-        $this->assertFalse($ok);
+        $form = $this->get('bagheera.operation')->getForm($operation, $values);
+        $this->assertFalse($form->isValid());
     }
 
     public function testSaveAddOk()
@@ -59,7 +73,11 @@ class OperationServiceTest extends TestCase
             'debitCredit' => 'debit',
             'thirdParty' => 'Test',
             'amount' => '5.00',
-            'valueDate' => array('year' => 2011, 'month' => 10, 'day' => 11),
+            'valueDate' => array(
+                'year' => 2011,
+                'month' => 10,
+                'day' => 11
+            ),
             'isReconciled' => '0',
             'notes' => 'Note #1',
             'transferAccount' => '',
@@ -69,25 +87,25 @@ class OperationServiceTest extends TestCase
 
         $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
-        $ok = $this->get('bagheera.operation')->save($form);
-        $this->assertTrue($ok);
+        $isValid = $form->isValid();
+        $this->assertTrue($isValid);
+
+        if ($isValid) {
+            $ok = $this->get('bagheera.operation')->save(
+                $form->getData(),
+                $form->get('debitCredit')->getData(),
+                $form->get('amount')->getData(),
+                $form->get('transferAccount')->getData()
+            );
+            $this->assertTrue($ok);
+        }
     }
 
     public function testEditAndRemoveTransfer()
     {
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'JOIN o.transferOperation o2 ';
-        $dql.= 'WHERE o.operationId = :operationId ';
-        $query = self::$_em->createQuery($dql);
-        $query->setParameter('operationId', 6);
-        try {
-            $operation = $query->getSingleResult();
-            $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
-            $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $this->fail('transferOperation not found');
-        }
+        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
+        $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
 
         $valueDate = $operation->getValueDate();
 
@@ -95,7 +113,11 @@ class OperationServiceTest extends TestCase
             'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
             'thirdParty' => $operation->getThirdParty(),
             'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-            'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
+            'valueDate' => array(
+                'year' => $valueDate->format('Y'),
+                'month' => $valueDate->format('m'),
+                'day' => $valueDate->format('d')
+            ),
             'isReconciled' => $operation->getIsReconciled(),
             'notes' => $operation->getNotes(),
             'transferAccount' => null,
@@ -105,38 +127,28 @@ class OperationServiceTest extends TestCase
 
         $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
-        $ok = $this->get('bagheera.operation')->save($form);
-        $this->assertTrue($ok);
+        $isValid = $form->isValid();
+        $this->assertTrue($isValid);
 
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'JOIN o.transferOperation o2 ';
-        $dql.= 'WHERE o.operationId = :operationId ';
-        $query = self::$_em->createQuery($dql);
-        $query->setParameter('operationId', 6);
-        try {
-            $operation = $query->getSingleResult();
-            $this->fail('transferOperation found');
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $this->assertTrue(true);
+        if ($isValid) {
+            $ok = $this->get('bagheera.operation')->save(
+                $form->getData(),
+                $form->get('debitCredit')->getData(),
+                $form->get('amount')->getData(),
+                $form->get('transferAccount')->getData()
+            );
+            $this->assertTrue($ok);
+
+            $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+            $this->assertNull($operation->getTransferOperation());
         }
     }
 
     public function testEditAndChangeTransfer()
     {
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'JOIN o.transferOperation o2 ';
-        $dql.= 'WHERE o.operationId = :operationId ';
-        $query = self::$_em->createQuery($dql);
-        $query->setParameter('operationId', 6);
-        try {
-            $operation = $query->getSingleResult();
-            $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
-            $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $this->fail('transferOperation not found');
-        }
+        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
+        $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
 
         $valueDate = $operation->getValueDate();
 
@@ -144,7 +156,11 @@ class OperationServiceTest extends TestCase
             'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
             'thirdParty' => $operation->getThirdParty(),
             'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-            'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
+            'valueDate' => array(
+                'year' => $valueDate->format('Y'),
+                'month' => $valueDate->format('m'),
+                'day' => $valueDate->format('d')
+            ),
             'isReconciled' => $operation->getIsReconciled(),
             'notes' => $operation->getNotes(),
             'transferAccount' => 3,
@@ -154,38 +170,28 @@ class OperationServiceTest extends TestCase
 
         $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
-        $ok = $this->get('bagheera.operation')->save($form);
-        $this->assertTrue($ok);
+        $isValid = $form->isValid();
+        $this->assertTrue($isValid);
 
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'JOIN o.transferOperation o2 ';
-        $dql.= 'WHERE o.operationId = :operationId ';
-        $query = self::$_em->createQuery($dql);
-        $query->setParameter('operationId', 6);
-        try {
-            $operation = $query->getSingleResult();
+        if ($isValid) {
+            $ok = $this->get('bagheera.operation')->save(
+                $form->getData(),
+                $form->get('debitCredit')->getData(),
+                $form->get('amount')->getData(),
+                $form->get('transferAccount')->getData()
+            );
+            $this->assertTrue($ok);
+
+            $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
             $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
             $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $this->fail('transferOperation not found');
         }
     }
 
     public function testEditAndSetTransfer()
     {
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'JOIN o.transferOperation o2 ';
-        $dql.= 'WHERE o.operationId = :operationId ';
-        $query = self::$_em->createQuery($dql);
-        $query->setParameter('operationId', 2);
-        try{
-            $operation = $query->getSingleResult();
-            $this->fail('transferOperation found');
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $this->assertTrue(true);
-        }
+        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
+        $this->assertNull($operation->getTransferOperation());
 
         $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
         $valueDate = $operation->getValueDate();
@@ -194,7 +200,11 @@ class OperationServiceTest extends TestCase
             'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
             'thirdParty' => $operation->getThirdParty(),
             'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-            'valueDate' => array('year' => $valueDate->format('Y'), 'month' => $valueDate->format('m'), 'day' => $valueDate->format('d')),
+            'valueDate' => array(
+                'year' => $valueDate->format('Y'),
+                'month' => $valueDate->format('m'),
+                'day' => $valueDate->format('d')
+            ),
             'isReconciled' => $operation->getIsReconciled(),
             'notes' => $operation->getNotes(),
             'transferAccount' => 3,
@@ -204,21 +214,20 @@ class OperationServiceTest extends TestCase
 
         $form = $this->get('bagheera.operation')->getForm($operation, $values);
 
-        $ok = $this->get('bagheera.operation')->save($form);
-        $this->assertTrue($ok);
+        $isValid = $form->isValid();
+        $this->assertTrue($isValid);
 
+        if ($isValid) {
+            $ok = $this->get('bagheera.operation')->save(
+                $form->getData(),
+                $form->get('debitCredit')->getData(),
+                $form->get('amount')->getData(),
+                $form->get('transferAccount')->getData()
+            );
+            $this->assertTrue($ok);
 
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'JOIN o.transferOperation o2 ';
-        $dql.= 'WHERE o.operationId = :operationId ';
-        $query = self::$_em->createQuery($dql);
-        $query->setParameter('operationId', 2);
-        try {
-            $operation = $query->getSingleResult();
+            $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
             $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
-        } catch (\Doctrine\ORM\NoResultException $e) {
-            $this->fail('transferOperation not found');
         }
     }
 
