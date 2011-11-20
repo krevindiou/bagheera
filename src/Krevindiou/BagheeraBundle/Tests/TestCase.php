@@ -20,43 +20,34 @@ namespace Krevindiou\BagheeraBundle\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase,
     Symfony\Bundle\FrameworkBundle\Console\Application,
-    Symfony\Component\Console\Input\ArrayInput,
-    Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+    Doctrine\ORM\Tools\SchemaTool,
+    Doctrine\Common\DataFixtures\Loader,
+    Doctrine\Common\DataFixtures\Purger\ORMPurger,
+    Doctrine\Common\DataFixtures\Executor\ORMExecutor;
 
 class TestCase extends WebTestCase
 {
     static protected $_em;
-    static protected $_application;
-    static protected $_container;
+    static protected $_kernel;
 
     public function __construct()
     {
-        if (null === self::$_em) {
+        if (null === self::$_kernel) {
             $kernelNameClass = $this->getKernelClass();
             $kernel = new $kernelNameClass('test', true);
             $kernel->boot();
 
-            self::$_container = $kernel->getContainer();
+            self::$_kernel = $kernel;
+            self::$_em = $this->get('doctrine.orm.entity_manager');
 
-            self::$_em = self::$_container->get('doctrine.orm.entity_manager');
-
-            self::$_application = new Application($kernel);
-            self::$_application->setAutoExit(false);
-
-            $this->_runConsole('doctrine:schema:create');
-            $this->_runConsole('doctrine:fixtures:load', array('--append' => ''));
+            $this->_createDatabase();
+            $this->_importFixtures();
         }
-    }
-
-    protected function _runConsole($command, array $options = array())
-    {
-        $options = array_merge($options, array('command' => $command));
-        return self::$_application->run(new ArrayInput($options));
     }
 
     public function get($service)
     {
-        return self::$_container->get($service);
+        return self::$_kernel->getContainer()->get($service);
     }
 
     public function setUp()
@@ -68,5 +59,22 @@ class TestCase extends WebTestCase
     {
         self::$_em->getUnitOfWork()->clear();
         self::$_em->getConnection()->rollback();
+    }
+
+    protected function _createDatabase()
+    {
+        $classes = self::$_em->getMetadataFactory()->getAllMetadata();
+        $tool = new SchemaTool(self::$_em);
+        $tool->createSchema($classes);
+    }
+
+    protected function _importFixtures()
+    {
+        $loader = new Loader();
+        $loader->loadFromDirectory(__DIR__ . '/../DataFixtures');
+
+        $purger = new ORMPurger();
+        $executor = new ORMExecutor(self::$_em, $purger);
+        $executor->execute($loader->getFixtures(), true);
     }
 }
