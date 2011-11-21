@@ -28,4 +28,11 @@ use Krevindiou\BagheeraBundle\Tests\TestCase;
  */
 class CategoryServiceTest extends TestCase
 {
+    public function testGetList()
+    {
+        $list = $this->get('bagheera.category')->getList();
+
+        $this->assertEquals(count($list['credit']), 2);
+        $this->assertEquals(count($list['debit']), 3);
+    }
 }
