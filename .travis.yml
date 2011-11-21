@@ -4,6 +4,8 @@ php:
   - 5.3
   - 5.4
 
-before_script: php bin/vendors install
+before_script:
+  - cp app/config/parameters.ini.dist app/config/parameters.ini
+  - php bin/vendors install
 
 script: phpunit -c app
