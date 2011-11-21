@@ -64,3 +64,6 @@
 [DoctrineFixturesBundle]
     git=http://github.com/symfony/DoctrineFixturesBundle.git
     target=/bundles/Symfony/Bundle/DoctrineFixturesBundle
+
+[lessphp]
+    git=http://github.com/leafo/lessphp.git
