@@ -18,8 +18,8 @@ security:
             pattern:  ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        login:
-            pattern:  ^/login$
+        anonymous:
+            pattern:  ^/(login|register|activate\/.*|forgot-password|reset-password\/.*)$
             security: false
 
         secured_area:
