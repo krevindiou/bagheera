@@ -22,6 +22,7 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\Account,
+    Krevindiou\BagheeraBundle\Entity\PaymentMethod,
     Krevindiou\BagheeraBundle\Form\OperationForm;
 
 /**
@@ -87,7 +88,13 @@ class OperationService
             }
         }
 
-        if (!in_array($operation->getPaymentMethod()->getPaymentMethodId(), array(4, 6))) {
+        if (!in_array(
+            $operation->getPaymentMethod()->getPaymentMethodId(),
+            array(
+                PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+            )
+        )) {
             $transferAccount = null;
         }
 
@@ -117,17 +124,22 @@ class OperationService
                 $operation->setTransferOperation($transferOperation);
             }
 
+            if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
+                $paymentMethod = $this->_em->find(
+                    'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                );
+            } else {
+                $paymentMethod = $this->_em->find(
+                    'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                );
+            }
+
             $transferOperation->setAccount($transferAccount);
             $transferOperation->setDebit($operation->getCredit());
             $transferOperation->setCredit($operation->getDebit());
             $transferOperation->setThirdParty($operation->getThirdParty());
             $transferOperation->setCategory($operation->getCategory());
-            $transferOperation->setPaymentMethod(
-                $this->_em->find(
-                    'KrevindiouBagheeraBundle:PaymentMethod',
-                    (4 == $operation->getPaymentMethod()->getPaymentMethodId()) ? 6 : 4
-                )
-            );
+            $transferOperation->setPaymentMethod($paymentMethod);
             $transferOperation->setValueDate($operation->getValueDate());
             $transferOperation->setNotes($operation->getNotes());
 

@@ -32,6 +32,9 @@ use Doctrine\ORM\Mapping as ORM,
  */
 class PaymentMethod
 {
+    const PAYMENT_METHOD_ID_DEBIT_TRANSFER = 4;
+    const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
+
     /**
      * @var integer $paymentMethodId
      *

@@ -25,6 +25,7 @@ use Doctrine\ORM\EntityManager,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\Scheduler,
+    Krevindiou\BagheeraBundle\Entity\PaymentMethod,
     Krevindiou\BagheeraBundle\Form\SchedulerForm,
     Krevindiou\BagheeraBundle\Service\OperationService;
 
@@ -96,7 +97,13 @@ class SchedulerService
             }
         }
 
-        if (!in_array($scheduler->getPaymentMethod()->getPaymentMethodId(), array(4, 6))) {
+        if (!in_array(
+            $scheduler->getPaymentMethod()->getPaymentMethodId(),
+            array(
+                PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+            )
+        )) {
             $scheduler->setTransferAccount(null);
         }
 
