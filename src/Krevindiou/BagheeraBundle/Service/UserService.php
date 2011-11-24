@@ -62,7 +62,7 @@ class UserService
 
     /**
      * @var Router
-     *,/
+     */
     protected $_router;
 
     /**
