@@ -155,6 +155,8 @@ class Account
 
     public function __construct()
     {
+        $this->setInitialBalance(0);
+        $this->setOverdraftFacility(0);
         $this->sharedWith = new ArrayCollection();
         $this->operations = new ArrayCollection();
         $this->schedulers = new ArrayCollection();
@@ -165,6 +167,8 @@ class Account
      */
     public function prePersist()
     {
+        $this->setInitialBalance((float)$this->getInitialBalance());
+        $this->setOverdraftFacility((float)$this->getOverdraftFacility());
         $this->setCreatedAt(new \DateTime());
         $this->setUpdatedAt(new \DateTime());
     }
@@ -174,6 +178,8 @@ class Account
      */
     public function preUpdate()
     {
+        $this->setInitialBalance((float)$this->getInitialBalance());
+        $this->setOverdraftFacility((float)$this->getOverdraftFacility());
         $this->setUpdatedAt(new \DateTime());
     }
 
