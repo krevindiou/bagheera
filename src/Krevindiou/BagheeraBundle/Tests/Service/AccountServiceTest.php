@@ -52,7 +52,7 @@ class AccountServiceTest extends TestCase
 
     public function testSaveAddOk()
     {
-        $bank = self::$_em->find('KrevindiouBagheeraBundle:Bank', 1);
+        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
 
         $account = new Account();
         $account->setBank($bank);
@@ -73,7 +73,7 @@ class AccountServiceTest extends TestCase
 
     public function testSaveEditOk()
     {
-        $account = self::$_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
         $values = array(
             'name' => 'Checking account #1',
@@ -91,20 +91,20 @@ class AccountServiceTest extends TestCase
 
     public function testDelete()
     {
-        $accounts = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
+        $accounts = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
         $this->assertEquals(count($accounts), 4);
 
-        $account = self::$_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
         $ok = $this->get('bagheera.account')->delete($account);
         $this->assertTrue($ok);
 
-        $accounts = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
+        $accounts = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
         $this->assertEquals(count($accounts), 3);
     }
 
     public function testGetBalance()
     {
-        $account = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
 
         $balance = $this->get('bagheera.account')->getBalance($account);
 

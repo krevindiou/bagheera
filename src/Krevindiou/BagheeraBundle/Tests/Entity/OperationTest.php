@@ -31,14 +31,14 @@ class OperationTest extends TestCase
 {
     public function testFindAll()
     {
-        $operations = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Operation')->findAll();
+        $operations = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Operation')->findAll();
 
         $this->assertEquals(count($operations), 10);
     }
 
     public function testOperation()
     {
-        $operation = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Operation', 1);
+        $operation = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Operation', 1);
 
         $this->assertEquals($operation->getThirdParty(), 'Third party 1');
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'Home savings account');

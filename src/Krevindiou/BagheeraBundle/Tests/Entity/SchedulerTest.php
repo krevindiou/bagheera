@@ -31,14 +31,14 @@ class SchedulerTest extends TestCase
 {
     public function testFindAll()
     {
-        $schedulers = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Scheduler')->findAll();
+        $schedulers = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Scheduler')->findAll();
 
         $this->assertEquals(count($schedulers), 3);
     }
 
     public function testScheduler()
     {
-        $scheduler = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Scheduler', 1);
+        $scheduler = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Scheduler', 1);
 
         $this->assertEquals($scheduler->getThirdParty(), 'Third party 1');
         $this->assertEquals($scheduler->getTransferAccount()->getName(), 'Home savings account');

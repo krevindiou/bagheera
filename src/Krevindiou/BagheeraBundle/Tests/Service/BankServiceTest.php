@@ -42,7 +42,7 @@ class BankServiceTest extends TestCase
     public function testSaveEmpty()
     {
         $bank = new Bank();
-        $bank->setUser(self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
+        $bank->setUser($this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
 
         $form = $this->get('bagheera.bank')->getForm($bank);
 
@@ -54,7 +54,7 @@ class BankServiceTest extends TestCase
     public function testSaveAddOk()
     {
         $bank = new Bank();
-        $bank->setUser(self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
+        $bank->setUser($this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
 
         $values = array(
             'name' => 'Citigroup',
@@ -71,7 +71,7 @@ class BankServiceTest extends TestCase
 
     public function testSaveEditOk()
     {
-        $bank = self::$_em->find('KrevindiouBagheeraBundle:Bank', 1);
+        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
 
         $values = array(
             'name' => 'HSBC',
@@ -88,20 +88,20 @@ class BankServiceTest extends TestCase
 
     public function testDelete()
     {
-        $banks = self::$_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
+        $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
         $this->assertEquals(count($banks), 3);
 
-        $bank = self::$_em->find('KrevindiouBagheeraBundle:Bank', 1);
+        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
         $ok = $this->get('bagheera.bank')->delete($bank);
         $this->assertTrue($ok);
 
-        $banks = self::$_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
+        $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
         $this->assertEquals(count($banks), 2);
     }
 
     public function testGetBalance()
     {
-        $bank = self::$_em->getRepository('KrevindiouBagheeraBundle:Bank')->find(1);
+        $bank = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->find(1);
 
         $balance = $this->get('bagheera.bank')->getBalance($bank);
 

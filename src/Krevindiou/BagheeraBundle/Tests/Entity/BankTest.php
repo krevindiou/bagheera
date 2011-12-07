@@ -31,14 +31,14 @@ class BankTest extends TestCase
 {
     public function testFindAll()
     {
-        $banks = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Bank')->findAll();
+        $banks = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Bank')->findAll();
 
         $this->assertEquals(count($banks), 3);
     }
 
     public function testHsbc()
     {
-        $hsbc = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
+        $hsbc = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
 
         $this->assertEquals($hsbc->getName(), 'HSBC');
         $this->assertEquals($hsbc->getUser()->getFirstname(), 'John');
@@ -47,7 +47,7 @@ class BankTest extends TestCase
 
     public function testBankOfAmerica()
     {
-        $bankOfAmerica = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 2);
+        $bankOfAmerica = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 2);
 
         $this->assertEquals($bankOfAmerica->getName(), 'Bank of America');
         $this->assertEquals($bankOfAmerica->getUser()->getFirstname(), 'John');
@@ -56,7 +56,7 @@ class BankTest extends TestCase
 
     public function testBnpParibas()
     {
-        $bnpParibas = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 3);
+        $bnpParibas = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 3);
 
         $this->assertEquals($bnpParibas->getName(), 'BNP Paribas');
         $this->assertEquals($bnpParibas->getUser()->getFirstname(), 'Jane');

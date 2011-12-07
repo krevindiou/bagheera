@@ -42,7 +42,7 @@ class OperationServiceTest extends TestCase
     public function testSaveEmpty()
     {
         $operation = new Operation();
-        $operation->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
+        $operation->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
         $values = array(
             'debitCredit' => '',
@@ -67,7 +67,7 @@ class OperationServiceTest extends TestCase
     public function testSaveAddOk()
     {
         $operation = new Operation();
-        $operation->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
+        $operation->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
         $values = array(
             'debitCredit' => 'debit',
@@ -103,7 +103,7 @@ class OperationServiceTest extends TestCase
 
     public function testEditAndRemoveTransfer()
     {
-        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
         $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
 
@@ -139,14 +139,14 @@ class OperationServiceTest extends TestCase
             );
             $this->assertTrue($ok);
 
-            $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+            $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
             $this->assertNull($operation->getTransferOperation());
         }
     }
 
     public function testEditAndChangeTransfer()
     {
-        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
         $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
 
@@ -182,7 +182,7 @@ class OperationServiceTest extends TestCase
             );
             $this->assertTrue($ok);
 
-            $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+            $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
             $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
             $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         }
@@ -190,10 +190,10 @@ class OperationServiceTest extends TestCase
 
     public function testEditAndSetTransfer()
     {
-        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
+        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
         $this->assertNull($operation->getTransferOperation());
 
-        $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
+        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
         $valueDate = $operation->getValueDate();
 
         $values = array(
@@ -226,14 +226,14 @@ class OperationServiceTest extends TestCase
             );
             $this->assertTrue($ok);
 
-            $operation = self::$_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
+            $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
             $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         }
     }
 
     public function testGetOperationsAccount1()
     {
-        $account = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
         $operations = $this->get('bagheera.operation')->getOperations($account);
 
         $this->assertEquals(count($operations), 4);
@@ -241,7 +241,7 @@ class OperationServiceTest extends TestCase
 
     public function testDelete()
     {
-        $account = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
 
         $operationsBeforeDelete = $this->get('bagheera.operation')->getOperations($account);
 
@@ -259,7 +259,7 @@ class OperationServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.isReconciled = 1 ';
-        $query = self::$_em->createQuery($dql);
+        $query = $this->_em->createQuery($dql);
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
         $operationsId = array(2);
@@ -269,7 +269,7 @@ class OperationServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.isReconciled = 1 ';
-        $query = self::$_em->createQuery($dql);
+        $query = $this->_em->createQuery($dql);
         $operationsAfterReconcile = $query->getSingleScalarResult();
 
         $this->assertEquals($operationsAfterReconcile, $operationsBeforeReconcile + 1);

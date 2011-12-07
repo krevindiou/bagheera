@@ -31,14 +31,14 @@ class CategoryTest extends TestCase
 {
     public function testFindAll()
     {
-        $categories = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Category')->findAll();
+        $categories = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Category')->findAll();
 
         $this->assertEquals(count($categories), 5);
     }
 
     public function testCat1()
     {
-        $cat1 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Category', 1);
+        $cat1 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Category', 1);
 
         $this->assertEquals($cat1->getName(), 'Cat 1');
         $this->assertEquals($cat1->getParentCategory(), null);
@@ -47,7 +47,7 @@ class CategoryTest extends TestCase
 
     public function testCat11()
     {
-        $cat11 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Category', 2);
+        $cat11 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Category', 2);
 
         $this->assertEquals($cat11->getName(), 'Cat 1.1');
         $this->assertEquals($cat11->getParentCategory()->getName(), 'Cat 1');
@@ -56,7 +56,7 @@ class CategoryTest extends TestCase
 
     public function testCat2()
     {
-        $cat2 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Category', 3);
+        $cat2 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Category', 3);
 
         $this->assertEquals($cat2->getName(), 'Cat 2');
         $this->assertEquals($cat2->getParentCategory(), null);
@@ -65,7 +65,7 @@ class CategoryTest extends TestCase
 
     public function testCat21()
     {
-        $cat21 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Category', 4);
+        $cat21 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Category', 4);
 
         $this->assertEquals($cat21->getName(), 'Cat 2.1');
         $this->assertEquals($cat21->getParentCategory()->getName(), 'Cat 2');
@@ -74,7 +74,7 @@ class CategoryTest extends TestCase
 
     public function testCat22()
     {
-        $cat22 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Category', 5);
+        $cat22 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Category', 5);
 
         $this->assertEquals($cat22->getName(), 'Cat 2.2');
         $this->assertEquals($cat22->getParentCategory()->getName(), 'Cat 2');

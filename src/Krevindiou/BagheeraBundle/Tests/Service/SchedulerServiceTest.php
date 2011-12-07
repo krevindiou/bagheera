@@ -42,7 +42,7 @@ class SchedulerServiceTest extends TestCase
     public function testSaveEmpty()
     {
         $scheduler = new Scheduler();
-        $scheduler->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
+        $scheduler->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
         $values = array(
             'debitCredit' => '',
@@ -75,7 +75,7 @@ class SchedulerServiceTest extends TestCase
     public function testSaveAddOk()
     {
         $scheduler = new Scheduler();
-        $scheduler->setAccount(self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
+        $scheduler->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
 
         $values = array(
             'debitCredit' => 'debit',
@@ -118,7 +118,7 @@ class SchedulerServiceTest extends TestCase
 
     public function testGetSchedulersAccount1()
     {
-        $account = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
         $schedulers = $this->get('bagheera.scheduler')->getSchedulers($account);
 
         $this->assertEquals(count($schedulers), 2);
@@ -126,7 +126,7 @@ class SchedulerServiceTest extends TestCase
 
     public function testDelete()
     {
-        $account = self::$_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
 
         $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getSchedulers($account);
 
@@ -144,17 +144,17 @@ class SchedulerServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 1 ';
-        $query = self::$_em->createQuery($dql);
+        $query = $this->_em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
         $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 1 ';
-        $query = self::$_em->createQuery($dql);
+        $query = $this->_em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
 
@@ -183,17 +183,17 @@ class SchedulerServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 2 ';
-        $query = self::$_em->createQuery($dql);
+        $query = $this->_em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
         $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 2 ';
-        $query = self::$_em->createQuery($dql);
+        $query = $this->_em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
         $this->assertEquals(count($operationsBefore), count($operationsAfter));

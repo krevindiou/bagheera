@@ -31,14 +31,14 @@ class AccountTest extends TestCase
 {
     public function testFindAll()
     {
-        $accounts = self::$_em->getRepository('Krevindiou\BagheeraBundle\Entity\Account')->findAll();
+        $accounts = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Account')->findAll();
 
         $this->assertEquals(count($accounts), 4);
     }
 
     public function testCheckingAccount1()
     {
-        $checkingAccount1 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Account', 1);
+        $checkingAccount1 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Account', 1);
 
         $this->assertEquals($checkingAccount1->getName(), 'Checking account #1');
         $this->assertEquals($checkingAccount1->getBank()->getName(), 'HSBC');
@@ -48,7 +48,7 @@ class AccountTest extends TestCase
 
     public function testHomeSavingsAccount()
     {
-        $homeSavingsAccount = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Account', 2);
+        $homeSavingsAccount = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Account', 2);
 
         $this->assertEquals($homeSavingsAccount->getName(), 'Home savings account');
         $this->assertEquals($homeSavingsAccount->getBank()->getName(), 'HSBC');
@@ -58,7 +58,7 @@ class AccountTest extends TestCase
 
     public function testCheckingAccount2()
     {
-        $checkingAccount2 = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Account', 3);
+        $checkingAccount2 = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Account', 3);
 
         $this->assertEquals($checkingAccount2->getName(), 'Checking account #2');
         $this->assertEquals($checkingAccount2->getBank()->getName(), 'Bank of America');
@@ -68,7 +68,7 @@ class AccountTest extends TestCase
 
     public function testSecuritiesAccount()
     {
-        $securitiesAccount = self::$_em->find('Krevindiou\BagheeraBundle\Entity\Account', 4);
+        $securitiesAccount = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Account', 4);
 
         $this->assertEquals($securitiesAccount->getName(), 'Securities account');
         $this->assertEquals($securitiesAccount->getBank()->getName(), 'BNP Paribas');

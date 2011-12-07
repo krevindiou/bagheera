@@ -123,7 +123,7 @@ class UserServiceTest extends TestCase
 
     public function testGetProfileForm()
     {
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
 
         $profileForm = $this->get('bagheera.user')->getProfileForm($user);
 
@@ -142,7 +142,7 @@ class UserServiceTest extends TestCase
             ),
         );
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
 
         $profileForm = $this->get('bagheera.user')->getProfileForm($user, $values);
 
@@ -163,7 +163,7 @@ class UserServiceTest extends TestCase
             ),
         );
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
 
         $profileForm = $this->get('bagheera.user')->getProfileForm($user, $values);
 
@@ -184,7 +184,7 @@ class UserServiceTest extends TestCase
             ),
         );
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
 
         $profileForm = $this->get('bagheera.user')->getProfileForm($user, $values);
 
@@ -199,7 +199,7 @@ class UserServiceTest extends TestCase
 
         $this->get('bagheera.user')->toggleDeactivation($usersId);
 
-        $users = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->findByIsActive(true);
+        $users = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->findByIsActive(true);
 
         $this->assertEquals(count($users), 0);
     }
@@ -239,7 +239,7 @@ class UserServiceTest extends TestCase
 
     public function testGetResetPasswordFormNotOk()
     {
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
         $key = base64_encode(gzdeflate('badkey'));
 
         $resetPasswordForm = $this->get('bagheera.user')->getResetPasswordForm($key);
@@ -249,7 +249,7 @@ class UserServiceTest extends TestCase
 
     public function testGetResetPasswordFormOk()
     {
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
         $key = base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
         ));
@@ -268,7 +268,7 @@ class UserServiceTest extends TestCase
             ),
         );
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
         $key = base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
         ));
@@ -288,7 +288,7 @@ class UserServiceTest extends TestCase
             ),
         );
 
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
         $key = base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
         ));
@@ -350,7 +350,7 @@ class UserServiceTest extends TestCase
 
     public function testGetBalance()
     {
-        $user = self::$_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
 
         $balance = $this->get('bagheera.user')->getBalance($user);
 
