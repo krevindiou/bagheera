@@ -36,23 +36,18 @@ class OperationForm extends AbstractType
     public function buildForm(FormBuilder $builder, array $options)
     {
         $builder
-            ->add(
-                'debitCredit',
-                'choice',
-                 array(
-                    'property_path' => false,
-                    'choices' => array(
-                        'debit' => 'debit',
-                        'credit' => 'credit',
-                    )
-                )
-            )
             ->add('thirdParty')
             ->add(
-                'amount',
+                'debit',
                 'money',
                 array(
-                    'property_path' => false,
+                    'currency' => false
+                )
+            )
+            ->add(
+                'credit',
+                'money',
+                array(
                     'currency' => false
                 )
             )
@@ -78,29 +73,10 @@ class OperationForm extends AbstractType
                     $validator = new Assert\NotBlankValidator();
                     $constraint = new Assert\NotBlank();
 
-                    if (!$validator->isValid($form['debitCredit']->getData(), $constraint)) {
-                        $form->addError(new FormError($constraint->message));
-                    }
-
-
-                    $validator = new Assert\ChoiceValidator();
-                    $constraint = new Assert\Choice(array('choices' => array('debit', 'credit')));
-
-                    if (!$validator->isValid($form['debitCredit']->getData(), $constraint)) {
-                        $form->addError(new FormError($constraint->message));
-                    }
-                }
-            )
-        );
-
-        $builder->addValidator(
-            new CallbackValidator(
-                function(FormInterface $form)
-                {
-                    $validator = new Assert\NotBlankValidator();
-                    $constraint = new Assert\NotBlank();
-
-                    if (!$validator->isValid($form['amount']->getData(), $constraint)) {
+                    if (
+                        !$validator->isValid($form['debit']->getData(), $constraint)
+                        && !$validator->isValid($form['credit']->getData(), $constraint)
+                    ) {
                         $form->addError(new FormError($constraint->message));
                     }
                 }
