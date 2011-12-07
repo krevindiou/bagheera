@@ -32,6 +32,13 @@ class AccountForm extends AbstractType
     public function buildForm(FormBuilder $builder, array $options)
     {
         $builder
+            ->add(
+                'bank',
+                null,
+                array(
+                    'empty_value' => ''
+                )
+            )
             ->add('name')
             ->add(
                 'initialBalance',
