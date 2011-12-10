@@ -42,6 +42,15 @@ class Operation
     protected $operationId;
 
     /**
+     * @var Krevindiou\BagheeraBundle\Entity\Account $transferAccount
+     *
+     * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
+     * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
+     * @Assert\Valid()
+     */
+    protected $transferAccount;
+
+    /**
      * @var Krevindiou\BagheeraBundle\Entity\Operation $transferOperation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
@@ -188,12 +197,40 @@ class Operation
     }
 
     /**
+     * Set transferAccount
+     *
+     * @param Krevindiou\BagheeraBundle\Entity\Account $transferAccount
+     */
+    public function setTransferAccount(Account $transferAccount = null)
+    {
+        $this->transferAccount = $transferAccount;
+    }
+
+    /**
+     * Get transferAccount
+     *
+     * @return Krevindiou\BagheeraBundle\Entity\Account
+     */
+    public function getTransferAccount()
+    {
+        return $this->transferAccount;
+    }
+
+    /**
      * Set transferOperation
      *
      * @param Krevindiou\BagheeraBundle\Entity\Operation $transferOperation
      */
     public function setTransferOperation(Operation $transferOperation = null)
     {
+        if (null !== $transferOperation) {
+            if (null !== $transferOperation->getAccount()) {
+                $this->setTransferAccount($transferOperation->getAccount());
+            }
+        } else {
+            $this->setTransferAccount(null);
+        }
+
         $this->transferOperation = $transferOperation;
     }
 
@@ -445,10 +482,5 @@ class Operation
     public function getScheduler()
     {
         return $this->scheduler;
-    }
-
-    public function __clone()
-    {
-        $this->operationId = null;
     }
 }

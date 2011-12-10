@@ -54,14 +54,7 @@ class OperationForm extends AbstractType
             ->add('valueDate')
             ->add('isReconciled')
             ->add('notes')
-            ->add(
-                'transferAccount',
-                'entity',
-                 array(
-                    'property_path' => false,
-                    'class' => 'KrevindiouBagheeraBundle:Account',
-                )
-            )
+            ->add('transferAccount')
             ->add('category')
             ->add('paymentMethod')
         ;
