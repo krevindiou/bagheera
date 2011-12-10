@@ -19,9 +19,9 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
-    Symfony\Component\HttpFoundation\Request,
+    Symfony\Component\Validator\Validator,
+    Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
     Krevindiou\BagheeraBundle\Form\BankForm,
     Krevindiou\BagheeraBundle\Service\AccountService;
@@ -45,6 +45,11 @@ class BankService
     protected $_formFactory;
 
     /**
+     * @var Validator
+     */
+    protected $_validator;
+
+    /**
      * @var AccountService
      */
     protected $_accountService;
@@ -53,45 +58,56 @@ class BankService
     public function __construct(
         EntityManager $em,
         FormFactory $formFactory,
+        Validator $validator,
         AccountService $accountService)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
+        $this->_validator = $validator;
         $this->_accountService = $accountService;
     }
 
     /**
      * Returns bank form
      *
-     * @param  Bank $bank       Bank entity
-     * @param  array $values    Post data
+     * @param  User $user User entity
+     * @param  Bank $bank Bank entity
      * @return Form
      */
-    public function getForm(Bank $bank, array $values = array())
+    public function getForm(User $user, Bank $bank = null)
     {
+        if (null === $bank) {
+            $bank = new Bank();
+            $bank->setUser($user);
+        } elseif ($user !== $bank->getUser()) {
+            return;
+        }
+
         $form = $this->_formFactory->create(new BankForm(), $bank);
-        $form->bind($values);
 
         return $form;
     }
 
     /**
-     * Saves form values to database
+     * Saves bank
      *
-     * @param  Form $bankForm Form to get values from
+     * @param  User $user User entity
+     * @param  Bank $bank Bank entity
      * @return boolean
      */
-    public function save(Form $bankForm)
+    public function save(User $user, Bank $bank)
     {
-        if ($bankForm->isValid()) {
-            $bank = $bankForm->getData();
+        if ($user === $bank->getUser()) {
+            $errors = $this->_validator->validate($bank);
 
-            try {
-                $this->_em->persist($bank);
-                $this->_em->flush();
+            if (0 == count($errors)) {
+                try {
+                    $this->_em->persist($bank);
+                    $this->_em->flush();
 
-                return true;
-            } catch (\Exception $e) {
+                    return true;
+                } catch (\Exception $e) {
+                }
             }
         }
 
@@ -99,34 +115,50 @@ class BankService
     }
 
     /**
-     * Deletes object from database
+     * Deletes banks
      *
-     * @param  Bank $bank Object to delete
+     * @param  User $user     User entity
+     * @param  array $banksId Banks id to delete
      * @return boolean
      */
-    public function delete(Bank $bank)
+    public function delete(User $user, array $banksId)
     {
         try {
-            $this->_em->remove($bank);
-            $this->_em->flush();
+            foreach ($banksId as $bankId) {
+                $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', $bankId);
 
-            return true;
+                if (null !== $bank) {
+                    if ($user === $bank->getUser()) {
+                        $this->_em->remove($bank);
+                    }
+                }
+            }
+
+            $this->_em->flush();
         } catch (\Exception $e) {
             return false;
         }
+
+        return true;
     }
 
     /**
-     * Get bank balance
+     * Gets bank balance
      *
+     * @param  User $user User entity
+     * @param  Bank $bank Bank entity
      * @return float
      */
-    public function getBalance(Bank $bank)
+    public function getBalance(User $user, Bank $bank)
     {
         $balance = 0;
-        $accounts = $bank->getAccounts();
-        foreach ($accounts as $account) {
-            $balance+= $this->_accountService->getBalance($account);
+
+        if ($user === $bank->getUser()) {
+            $accounts = $bank->getAccounts();
+            foreach ($accounts as $account) {
+                $balance+= $this->_accountService->getBalance($account);
+            }
+
         }
 
         return sprintf('%.2f', $balance);

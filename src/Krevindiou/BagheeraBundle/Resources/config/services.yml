@@ -23,6 +23,7 @@ services:
         arguments:
             - @doctrine.orm.entity_manager
             - @form.factory
+            - @validator
             - @bagheera.account
 
     bagheera.account:

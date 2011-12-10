@@ -18,8 +18,7 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
-use Symfony\Component\HttpFoundation\Request,
-    Krevindiou\BagheeraBundle\Tests\TestCase,
+use Krevindiou\BagheeraBundle\Tests\TestCase,
     Krevindiou\BagheeraBundle\Entity\Bank;
 
 /**
@@ -30,80 +29,91 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class BankServiceTest extends TestCase
 {
-    public function testGetForm()
+    public function setUp()
     {
-        $bank = new Bank();
+        parent::setUp();
 
-        $form = $this->get('bagheera.bank')->getForm($bank);
+        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+    }
 
+    public function testGetFormNotOk()
+    {
+        $bnp = $this->_em->find('KrevindiouBagheeraBundle:Bank', 3);
+        $form = $this->get('bagheera.bank')->getForm($this->john, $bnp);
+        $this->assertNull($form);
+    }
+
+    public function testGetFormOk()
+    {
+        $form = $this->get('bagheera.bank')->getForm($this->john);
+        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+
+        $hsbc = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
+        $form = $this->get('bagheera.bank')->getForm($this->john, $hsbc);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveEmpty()
+    public function testSaveAddNotOk()
     {
         $bank = new Bank();
-        $bank->setUser($this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
+        $this->assertFalse($this->get('bagheera.bank')->save($this->john, $bank));
 
-        $form = $this->get('bagheera.bank')->getForm($bank);
-
-        $ok = $this->get('bagheera.bank')->save($form);
-
-        $this->assertFalse($ok);
+        $bank = new Bank();
+        $bank->setUser($this->jane);
+        $bank->setName('Citigroup');
+        $this->assertFalse($this->get('bagheera.bank')->save($this->john, $bank));
     }
 
     public function testSaveAddOk()
     {
         $bank = new Bank();
-        $bank->setUser($this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1));
+        $bank->setUser($this->john);
+        $bank->setName('Citigroup');
+        $this->assertTrue($this->get('bagheera.bank')->save($this->john, $bank));
+    }
 
-        $values = array(
-            'name' => 'Citigroup',
-            'info' => '',
-            'contact' => '',
-        );
+    public function testSaveEditNotOk()
+    {
+        $hsbc = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
+        $hsbc->setName('');
+        $this->assertFalse($this->get('bagheera.bank')->save($this->john, $hsbc));
 
-        $form = $this->get('bagheera.bank')->getForm($bank, $values);
-
-        $ok = $this->get('bagheera.bank')->save($form);
-
-        $this->assertTrue($ok);
+        $bnp = $this->_em->find('KrevindiouBagheeraBundle:Bank', 3);
+        $this->assertFalse($this->get('bagheera.bank')->save($this->john, $bnp));
     }
 
     public function testSaveEditOk()
     {
-        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
-
-        $values = array(
-            'name' => 'HSBC',
-            'info' => '',
-            'contact' => '',
-        );
-
-        $form = $this->get('bagheera.bank')->getForm($bank, $values);
-
-        $ok = $this->get('bagheera.bank')->save($form);
-
-        $this->assertTrue($ok);
+        $hsbc = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
+        $this->assertTrue($this->get('bagheera.bank')->save($this->john, $hsbc));
     }
 
     public function testDelete()
     {
         $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
-        $this->assertEquals(count($banks), 3);
+        $banksNb = count($banks);
 
-        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
-        $ok = $this->get('bagheera.bank')->delete($bank);
-        $this->assertTrue($ok);
+        $this->assertTrue($this->get('bagheera.bank')->delete($this->john, array(1)));
 
         $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
-        $this->assertEquals(count($banks), 2);
+        $this->assertEquals(count($banks), $banksNb - 1);
     }
 
-    public function testGetBalance()
+    public function testGetBalanceNotOk()
     {
-        $bank = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->find(1);
+        $bnp = $this->_em->find('KrevindiouBagheeraBundle:Bank', 3);
 
-        $balance = $this->get('bagheera.bank')->getBalance($bank);
+        $balance = $this->get('bagheera.bank')->getBalance($this->john, $bnp);
+
+        $this->assertEquals($balance, 0);
+    }
+
+    public function testGetBalanceOk()
+    {
+        $hsbc = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
+
+        $balance = $this->get('bagheera.bank')->getBalance($this->john, $hsbc);
 
         $this->assertEquals($balance, 205.46);
     }
