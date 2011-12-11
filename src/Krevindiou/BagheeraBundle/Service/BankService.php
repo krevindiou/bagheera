@@ -156,7 +156,7 @@ class BankService
         if ($user === $bank->getUser()) {
             $accounts = $bank->getAccounts();
             foreach ($accounts as $account) {
-                $balance+= $this->_accountService->getBalance($account);
+                $balance+= $this->_accountService->getBalance($user, $account);
             }
 
         }

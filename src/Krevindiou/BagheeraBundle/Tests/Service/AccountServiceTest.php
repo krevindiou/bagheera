@@ -18,8 +18,7 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
-use Symfony\Component\HttpFoundation\Request,
-    Krevindiou\BagheeraBundle\Tests\TestCase,
+use Krevindiou\BagheeraBundle\Tests\TestCase,
     Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
@@ -30,83 +29,95 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class AccountServiceTest extends TestCase
 {
-    public function testGetForm()
+    public function setUp()
     {
-        $account = new Account();
+        parent::setUp();
 
-        $form = $this->get('bagheera.account')->getForm($account);
+        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+    }
 
+    public function testGetFormNotOk()
+    {
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 4);
+        $form = $this->get('bagheera.account')->getForm($this->john, $account);
+        $this->assertNull($form);
+    }
+
+    public function testGetFormOk()
+    {
+        $form = $this->get('bagheera.account')->getForm($this->john);
+        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $form = $this->get('bagheera.account')->getForm($this->john, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveEmpty()
+    public function testSaveAddNotOk()
     {
         $account = new Account();
+        $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
 
-        $form = $this->get('bagheera.account')->getForm($account);
-
-        $ok = $this->get('bagheera.account')->save($form);
-
-        $this->assertFalse($ok);
+        $account = new Account();
+        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
+        $account->setName('Checking account #1');
+        $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
     public function testSaveAddOk()
     {
-        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
-
         $account = new Account();
-        $account->setBank($bank);
+        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 1));
+        $account->setName('Checking account #1');
+        $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
+    }
 
-        $values = array(
-            'name' => 'Checking account #1',
-            'initialBalance' => '0',
-            'overdraftFacility' => '',
-            'details' => '',
-        );
+    public function testSaveEditNotOk()
+    {
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account->setName('');
+        $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
 
-        $form = $this->get('bagheera.account')->getForm($account, $values);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
+        $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
 
-        $ok = $this->get('bagheera.account')->save($form);
-
-        $this->assertTrue($ok);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 4);
+        $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
     public function testSaveEditOk()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-
-        $values = array(
-            'name' => 'Checking account #1',
-            'initialBalance' => '0',
-            'overdraftFacility' => '',
-            'details' => '',
-        );
-
-        $form = $this->get('bagheera.account')->getForm($account, $values);
-
-        $ok = $this->get('bagheera.account')->save($form);
-
-        $this->assertTrue($ok);
+        $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
     }
 
     public function testDelete()
     {
         $accounts = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
-        $this->assertEquals(count($accounts), 4);
+        $accountsNb = count($accounts);
 
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-        $ok = $this->get('bagheera.account')->delete($account);
-        $this->assertTrue($ok);
+        $this->assertTrue($this->get('bagheera.account')->delete($this->john, array(1)));
 
         $accounts = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->findAll();
-        $this->assertEquals(count($accounts), 3);
+        $this->assertEquals(count($accounts), $accountsNb - 1);
     }
 
-    public function testGetBalance()
+    public function testGetBalanceNotOk()
+    {
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(4);
+
+        $balance = $this->get('bagheera.account')->getBalance($this->john, $account);
+
+        $this->assertEquals($balance, 0);
+    }
+
+    public function testGetBalanceOk()
     {
         $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
 
-        $balance = $this->get('bagheera.account')->getBalance($account);
+        $balance = $this->get('bagheera.account')->getBalance($this->john, $account);
 
         $this->assertEquals($balance, 102.07);
     }

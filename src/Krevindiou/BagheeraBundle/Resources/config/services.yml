@@ -31,6 +31,7 @@ services:
         arguments:
             - @doctrine.orm.entity_manager
             - @form.factory
+            - @validator
 
     bagheera.operation:
         class: Krevindiou\BagheeraBundle\Service\OperationService

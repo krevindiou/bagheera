@@ -19,9 +19,9 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
-    Symfony\Component\HttpFoundation\Request,
+    Symfony\Component\Validator\Validator,
+    Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Form\AccountForm;
 
@@ -43,45 +43,66 @@ class AccountService
      */
     protected $_formFactory;
 
+    /**
+     * @var Validator
+     */
+    protected $_validator;
 
-    public function __construct(EntityManager $em, FormFactory $formFactory)
+
+    public function __construct(EntityManager $em, FormFactory $formFactory, Validator $validator)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
+        $this->_validator = $validator;
     }
 
     /**
      * Returns account form
      *
+     * @param  User $user       User entity
      * @param  Account $account Account entity
-     * @param  array $values    Post data
      * @return Form
      */
-    public function getForm(Account $account, array $values = array())
+    public function getForm(User $user, Account $account = null)
     {
+        if (null === $account) {
+            $account = new Account();
+        } elseif ($user !== $account->getBank()->getUser()) {
+            return;
+        }
+
         $form = $this->_formFactory->create(new AccountForm(), $account);
-        $form->bind($values);
 
         return $form;
     }
 
     /**
-     * Saves form values to database
+     * Saves account
      *
-     * @param  Form $accountForm Form to get values from
+     * @param  User $user       User entity
+     * @param  Account $account Account entity
      * @return boolean
      */
-    public function save(Form $accountForm)
+    public function save(User $user, Account $account)
     {
-        if ($accountForm->isValid()) {
-            $account = $accountForm->getData();
+        if (null !== $account->getAccountId()) {
+            $oldAccount = $this->_em->getUnitOfWork()->getOriginalEntityData($account);
 
-            try {
-                $this->_em->persist($account);
-                $this->_em->flush();
+            if ($user !== $oldAccount['bank']->getUser()) {
+                return false;
+            }
+        }
 
-                return true;
-            } catch (\Exception $e) {
+        $errors = $this->_validator->validate($account);
+        if (0 == count($errors)) {
+            if ($user === $account->getBank()->getUser()) {
+                try {
+                    $this->_em->persist($account);
+                    $this->_em->flush();
+
+                    return true;
+                } catch (\Exception $e) {
+                }
             }
         }
 
@@ -89,41 +110,58 @@ class AccountService
     }
 
     /**
-     * Deletes object from database
+     * Deletes accounts
      *
-     * @param  Account $account Object to delete
+     * @param  User $user        User entity
+     * @param  array $accountsId Accounts id to delete
      * @return boolean
      */
-    public function delete(Account $account)
+    public function delete(User $user, array $accountsId)
     {
         try {
-            $this->_em->remove($account);
-            $this->_em->flush();
+            foreach ($accountsId as $accountId) {
+                $account = $this->_em->find('KrevindiouBagheeraBundle:Account', $accountId);
 
-            return true;
+                if (null !== $account) {
+                    if ($user === $account->getBank()->getUser()) {
+                        $this->_em->remove($account);
+                    }
+                }
+            }
+
+            $this->_em->flush();
         } catch (\Exception $e) {
             return false;
         }
+
+        return true;
     }
 
     /**
-     * Get account balance
+     * Gets account balance
      *
+     * @param  User $user              User entity
+     * @param  Account $account        Account entity
+     * @param  boolean $reconciledOnly Only consider reconciled operations
      * @return float
      */
-    public function getBalance(Account $account, $reconciledOnly = false)
+    public function getBalance(User $user, Account $account, $reconciledOnly = false)
     {
-        $dql = 'SELECT (SUM(o.credit) - SUM(o.debit)) ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'WHERE o.account = :account ';
-        if ($reconciledOnly) {
-            $dql.= 'AND o.isReconciled = 1 ';
+        $balance = 0;
+
+        if ($user === $account->getBank()->getUser()) {
+            $dql = 'SELECT (SUM(o.credit) - SUM(o.debit)) ';
+            $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+            $dql.= 'WHERE o.account = :account ';
+            if ($reconciledOnly) {
+                $dql.= 'AND o.isReconciled = 1 ';
+            }
+
+            $query = $this->_em->createQuery($dql);
+            $query->setParameter('account', $account);
+            $balance = $account->getInitialBalance() + $query->getSingleScalarResult();
         }
 
-        $query = $this->_em->createQuery($dql);
-        $query->setParameter('account', $account);
-        $balance = $query->getSingleScalarResult();
-
-        return sprintf('%.2f', $account->getInitialBalance() + $balance);
+        return sprintf('%.2f', $balance);
     }
 }
