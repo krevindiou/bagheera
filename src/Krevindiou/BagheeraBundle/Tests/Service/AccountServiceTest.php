@@ -37,35 +37,41 @@ class AccountServiceTest extends TestCase
         $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
     }
 
-    public function testGetFormNotOk()
+    public function testGetFormForForeignUser()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 4);
-        $form = $this->get('bagheera.account')->getForm($this->john, $account);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $form = $this->get('bagheera.account')->getForm($this->jane, $account);
         $this->assertNull($form);
     }
 
-    public function testGetFormOk()
+    public function testGetFormForNewAccount()
     {
         $form = $this->get('bagheera.account')->getForm($this->john);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+    }
 
+    public function testGetFormForExistingAccount()
+    {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
         $form = $this->get('bagheera.account')->getForm($this->john, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveAddNotOk()
+    public function testSaveNewAccountWithNoData()
     {
         $account = new Account();
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
+    }
 
+    public function testSaveNewAccountWithForeignBank()
+    {
         $account = new Account();
         $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
         $account->setName('Checking account #1');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
-    public function testSaveAddOk()
+    public function testSaveNewAccount()
     {
         $account = new Account();
         $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 1));
@@ -73,21 +79,27 @@ class AccountServiceTest extends TestCase
         $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
     }
 
-    public function testSaveEditNotOk()
+    public function testSaveExistingAccountWithBadData()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
         $account->setName('');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
+    }
 
+    public function testSaveExistingAccountWithForeignBank()
+    {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
         $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
-
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 4);
-        $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
-    public function testSaveEditOk()
+    public function testSaveExistingAccountWithForeignUser()
+    {
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $this->assertFalse($this->get('bagheera.account')->save($this->jane, $account));
+    }
+
+    public function testSaveExistingAccount()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
         $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
