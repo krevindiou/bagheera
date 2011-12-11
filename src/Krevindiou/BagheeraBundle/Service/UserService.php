@@ -22,6 +22,7 @@ use Doctrine\ORM\EntityManager,
     Swift_Mailer,
     Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
+    Symfony\Component\Validator\Validator,
     Symfony\Component\HttpFoundation\Request,
     Symfony\Bundle\FrameworkBundle\Translation\Translator,
     Symfony\Bundle\FrameworkBundle\Routing\Router,
@@ -71,6 +72,11 @@ class UserService
     protected $_formFactory;
 
     /**
+     * @var Validator
+     */
+    protected $_validator;
+
+    /**
      * @var BankService
      */
     protected $_bankService;
@@ -83,6 +89,7 @@ class UserService
         Translator $translator,
         Router $router,
         FormFactory $formFactory,
+        Validator $validator,
         BankService $bankService)
     {
         $this->_em = $em;
@@ -91,35 +98,36 @@ class UserService
         $this->_translator = $translator;
         $this->_router = $router;
         $this->_formFactory = $formFactory;
+        $this->_validator = $validator;
         $this->_bankService = $bankService;
     }
 
     /**
      * Returns register form
      *
-     * @param  array $values Post data
+     * @param  User $user User entity
      * @return Form
      */
-    public function getRegisterForm(array $values = array())
+    public function getRegisterForm()
     {
         $form = $this->_formFactory->create(new UserRegisterForm(), new User());
-        $form->bind($values);
 
         return $form;
     }
 
     /**
-     * Adds form values to database
+     * Adds user
      *
-     * @param  Form $userRegisterForm Form to get values from
+     * @param  User $user User entity
      * @return boolean
      */
-    public function add(Form $userRegisterForm)
+    public function add(User $user)
     {
-        if ($userRegisterForm->isValid()) {
-            $user = $userRegisterForm->getData();
+        $errors = $this->_validator->validate($user);
 
+        if (0 == count($errors)) {
             // Activation link construction
+
             $key = md5(uniqid(rand(), true));
             $link = $this->_router->generate('user_activate', array('key' => $key), true);
 
@@ -154,16 +162,11 @@ class UserService
     /**
      * Returns profile form
      *
-     * @param  User $user       User entity
-     * @param  array $values    Post data
+     * @param  User $user User entity
      * @return Form
      */
-    public function getProfileForm(User $user = null, array $values = array())
+    public function getProfileForm(User $user)
     {
-        if (null === $user) {
-            $user = new User();
-        }
-
         $noPassword = false;
         if (!isset($values['password']['userPassword']) || '' == $values['password']['userPassword']) {
             $noPassword = true;
@@ -175,22 +178,24 @@ class UserService
             unset($values['password']);
         }
 
-        $form->bind($values);
+        if (!empty($values)) {
+            $form->bind($values);
+        }
 
         return $form;
     }
 
     /**
-     * Updates form values to database
+     * Updates user
      *
-     * @param  Form $userProfileForm Form to get values from
+     * @param  User $user User entity
      * @return boolean
      */
-    public function update(Form $userProfileForm)
+    public function update(User $user)
     {
-        if ($userProfileForm->isValid()) {
-            $user = $userProfileForm->getData();
+        $errors = $this->_validator->validate($user);
 
+        if (0 == count($errors)) {
             try {
                 $this->_em->persist($user);
                 $this->_em->flush();
@@ -229,13 +234,11 @@ class UserService
     /**
      * Returns forgot password form
      *
-     * @param  array $values Post data
      * @return Form
      */
-    public function getForgotPasswordForm(array $values = array())
+    public function getForgotPasswordForm()
     {
         $form = $this->_formFactory->create(new UserForgotPasswordForm(), new User());
-        $form->bind($values);
 
         return $form;
     }
@@ -285,15 +288,13 @@ class UserService
     /**
      * Returns reset password form if key is valid
      *
-     * @param  string $key      Reset key
-     * @param  array $values    Post data
+     * @param  string $key Reset key
      * @return Form
      */
-    public function getResetPasswordForm($key, array $values = array())
+    public function getResetPasswordForm($key)
     {
         if (null !== $this->_decodeResetPasswordKey($key)) {
             $form = $this->_formFactory->create(new UserResetPasswordForm(), new User());
-            $form->bind($values);
 
             return $form;
         }
@@ -445,7 +446,7 @@ class UserService
     }
 
     /**
-     * Get user balance
+     * Gets user balance
      *
      * @return float
      */
@@ -454,7 +455,7 @@ class UserService
         $balance = 0;
         $banks = $user->getBanks();
         foreach ($banks as $bank) {
-            $balance+= $this->_bankService->getBalance($bank);
+            $balance+= $this->_bankService->getBalance($user, $bank);
         }
 
         return sprintf('%.2f', $balance);

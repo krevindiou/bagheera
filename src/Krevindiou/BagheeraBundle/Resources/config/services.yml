@@ -16,6 +16,7 @@ services:
             - @translator
             - @router
             - @form.factory
+            - @validator
             - @bagheera.bank
 
     bagheera.bank:

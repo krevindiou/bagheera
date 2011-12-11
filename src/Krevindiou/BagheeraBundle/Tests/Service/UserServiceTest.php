@@ -18,8 +18,8 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
-use Symfony\Component\HttpFoundation\Request,
-    Krevindiou\BagheeraBundle\Tests\TestCase;
+use Krevindiou\BagheeraBundle\Tests\TestCase,
+    Krevindiou\BagheeraBundle\Entity\User;
 
 /**
  * Krevindiou\BagheeraBundle\Tests\Service\UserServiceTest
@@ -29,6 +29,14 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class UserServiceTest extends TestCase
 {
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+    }
+
     public function testGetRegisterForm()
     {
         $registerForm = $this->get('bagheera.user')->getRegisterForm();
@@ -36,161 +44,47 @@ class UserServiceTest extends TestCase
         $this->assertEquals(get_class($registerForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testRegisterEmpty()
+    public function testAddUserWithNoData()
     {
-        $registerForm = $this->get('bagheera.user')->getRegisterForm();
-
-        $ok = $this->get('bagheera.user')->add($registerForm);
-
-        $this->assertFalse($ok);
+        $user = new User();
+        $this->assertFalse($this->get('bagheera.user')->add($user));
     }
 
-    public function testRegisterEmailExists()
+    public function testAddUser()
     {
-        $values = array(
-            'firstname' => 'James',
-            'lastname' => 'Doe',
-            'email' => 'john@example.net',
-            'password' => array(
-                'userPassword' => 'james123',
-                'userPasswordConfirmation' => 'james123',
-            ),
-        );
+        $user = new User();
+        $user->setFirstname('James');
+        $user->setLastname('Doe');
+        $user->setEmail('james@example.net');
 
-        $registerForm = $this->get('bagheera.user')->getRegisterForm($values);
+        $encoder = $this->get('security.encoder_factory')->getEncoder($user);
+        $user->setPassword($encoder->encodePassword('james123', $user->getSalt()));
 
-        $ok = $this->get('bagheera.user')->add($registerForm);
-
-        $this->assertFalse($ok);
-    }
-
-    public function testRegisterPasswordsMismatch()
-    {
-        $values = array(
-            'firstname' => 'James',
-            'lastname' => 'Doe',
-            'email' => 'james@example.net',
-            'password' => array(
-                'userPassword' => 'james123',
-                'userPasswordConfirmation' => 'james456',
-            ),
-        );
-
-        $registerForm = $this->get('bagheera.user')->getRegisterForm($values);
-
-        $ok = $this->get('bagheera.user')->add($registerForm);
-
-        $this->assertFalse($ok);
-    }
-
-    public function testRegisterPasswordsTooShort()
-    {
-        $values = array(
-            'firstname' => 'James',
-            'lastname' => 'Doe',
-            'email' => 'james@example.net',
-            'password' => array(
-                'userPassword' => 'james12',
-                'userPasswordConfirmation' => 'james12',
-            ),
-        );
-
-        $registerForm = $this->get('bagheera.user')->getRegisterForm($values);
-
-        $ok = $this->get('bagheera.user')->add($registerForm);
-
-        $this->assertFalse($ok);
-    }
-
-    public function testRegisterOk()
-    {
-        $values = array(
-            'firstname' => 'James',
-            'lastname' => 'Doe',
-            'email' => 'james@example.net',
-            'password' => array(
-                'userPassword' => 'james123',
-                'userPasswordConfirmation' => 'james123',
-            ),
-        );
-
-        $registerForm = $this->get('bagheera.user')->getRegisterForm($values);
-
-        $ok = $this->get('bagheera.user')->add($registerForm);
-
-        $this->assertTrue($ok);
+        $this->assertTrue($this->get('bagheera.user')->add($user));
     }
 
     public function testGetProfileForm()
     {
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
 
         $profileForm = $this->get('bagheera.user')->getProfileForm($user);
 
         $this->assertEquals(get_class($profileForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testProfilePasswordsMismatch()
+    public function testUpdateUserWithNoData()
     {
-        $values = array(
-            'firstname' => 'John',
-            'lastname' => 'Doe',
-            'email' => 'john@example.net',
-            'password' => array(
-                'userPassword' => 'john1234',
-                'userPasswordConfirmation' => 'john12345',
-            ),
-        );
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $user->setFirstname('');
 
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
-
-        $profileForm = $this->get('bagheera.user')->getProfileForm($user, $values);
-
-        $ok = $this->get('bagheera.user')->update($profileForm);
-
-        $this->assertFalse($ok);
+        $this->assertFalse($this->get('bagheera.user')->update($user));
     }
 
-    public function testProfileUpdatePassword()
+    public function testUpdateUser()
     {
-        $values = array(
-            'firstname' => 'John',
-            'lastname' => 'Doe',
-            'email' => 'john@example.net',
-            'password' => array(
-                'userPassword' => 'john1234',
-                'userPasswordConfirmation' => 'john1234',
-            ),
-        );
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
 
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
-
-        $profileForm = $this->get('bagheera.user')->getProfileForm($user, $values);
-
-        $ok = $this->get('bagheera.user')->update($profileForm);
-
-        $this->assertTrue($ok);
-    }
-
-    public function testProfileWithoutPassword()
-    {
-        $values = array(
-            'firstname' => 'John',
-            'lastname' => 'Doe',
-            'email' => 'john@example.net',
-            'password' => array(
-                'userPassword' => '',
-                'userPasswordConfirmation' => '',
-            ),
-        );
-
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
-
-        $profileForm = $this->get('bagheera.user')->getProfileForm($user, $values);
-
-        $ok = $this->get('bagheera.user')->update($profileForm);
-
-        $this->assertTrue($ok);
+        $this->assertTrue($this->get('bagheera.user')->update($user));
     }
 
     public function testToggleDeactivation()
@@ -211,35 +105,9 @@ class UserServiceTest extends TestCase
         $this->assertEquals(get_class($forgotPasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testSendResetPasswordEmailNotOk()
+    public function testGetResetPasswordFormWithBadKey()
     {
-        $values = array(
-            'email' => 'james@example.net',
-        );
-
-        $forgotPasswordForm = $this->get('bagheera.user')->getForgotPasswordForm($values);
-
-        $ok = $this->get('bagheera.user')->sendResetPasswordEmail($forgotPasswordForm);
-
-        $this->assertFalse($ok);
-    }
-
-    public function testSendResetPasswordEmailOk()
-    {
-        $values = array(
-            'email' => 'john@example.net',
-        );
-
-        $forgotPasswordForm = $this->get('bagheera.user')->getForgotPasswordForm($values);
-
-        $ok = $this->get('bagheera.user')->sendResetPasswordEmail($forgotPasswordForm);
-
-        $this->assertTrue($ok);
-    }
-
-    public function testGetResetPasswordFormNotOk()
-    {
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
         $key = base64_encode(gzdeflate('badkey'));
 
         $resetPasswordForm = $this->get('bagheera.user')->getResetPasswordForm($key);
@@ -249,7 +117,7 @@ class UserServiceTest extends TestCase
 
     public function testGetResetPasswordFormOk()
     {
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
         $key = base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
         ));
@@ -259,47 +127,7 @@ class UserServiceTest extends TestCase
         $this->assertEquals(get_class($resetPasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testResetPasswordNotOk()
-    {
-        $values = array(
-            'password' => array(
-                'userPassword' => 'john1234',
-                'userPasswordConfirmation' => 'john12345',
-            ),
-        );
-
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
-        $key = base64_encode(gzdeflate(
-            $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
-        ));
-
-        $resetPasswordForm = $this->get('bagheera.user')->getResetPasswordForm($key, $values);
-        $ok = $this->get('bagheera.user')->resetPassword($resetPasswordForm, $key);
-
-        $this->assertFalse($ok);
-    }
-
-    public function testResetPasswordOk()
-    {
-        $values = array(
-            'password' => array(
-                'userPassword' => 'john1234',
-                'userPasswordConfirmation' => 'john1234',
-            ),
-        );
-
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
-        $key = base64_encode(gzdeflate(
-            $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
-        ));
-
-        $resetPasswordForm = $this->get('bagheera.user')->getResetPasswordForm($key, $values);
-        $ok = $this->get('bagheera.user')->resetPassword($resetPasswordForm, $key);
-
-        $this->assertTrue($ok);
-    }
-
-    public function testActivateNotOk()
+    public function testActivateWithBadKey()
     {
         $key = 'badkey';
 
@@ -317,7 +145,7 @@ class UserServiceTest extends TestCase
         $this->assertTrue($ok);
     }
 
-    public function testGetUsersNone()
+    public function testGetUsersNoResult()
     {
         $params = array(
             'email' => 'james@example.net'
@@ -350,7 +178,7 @@ class UserServiceTest extends TestCase
 
     public function testGetBalance()
     {
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
 
         $balance = $this->get('bagheera.user')->getBalance($user);
 
