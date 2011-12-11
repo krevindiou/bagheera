@@ -18,8 +18,7 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
-use Symfony\Component\HttpFoundation\Request,
-    Krevindiou\BagheeraBundle\Tests\TestCase,
+use Krevindiou\BagheeraBundle\Tests\TestCase,
     Krevindiou\BagheeraBundle\Entity\Scheduler;
 
 /**
@@ -30,110 +29,108 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class SchedulerServiceTest extends TestCase
 {
-    public function testGetForm()
+    public function setUp()
     {
-        $scheduler = new Scheduler();
+        parent::setUp();
 
-        $form = $this->get('bagheera.scheduler')->getForm($scheduler);
+        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+    }
 
+    public function testGetFormForForeignUser()
+    {
+        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $form = $this->get('bagheera.scheduler')->getForm($this->jane, $scheduler);
+        $this->assertNull($form);
+    }
+
+    public function testGetFormForNewScheduler()
+    {
+        $form = $this->get('bagheera.scheduler')->getForm($this->john);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveEmpty()
+    public function testGetFormForExistingScheduler()
     {
-        $scheduler = new Scheduler();
-        $scheduler->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
-
-        $values = array(
-            'debitCredit' => '',
-            'thirdParty' => '',
-            'amount' => '',
-            'valueDate' => array(
-                'year' => '',
-                'month' => '',
-                'day' => ''
-            ),
-            'limitDate' => array(
-                'year' => '',
-                'month' => '',
-                'day' => ''
-            ),
-            'isReconciled' => '',
-            'isActive' => '',
-            'frequencyUnit' => '',
-            'frequencyValue' => '',
-            'notes' => '',
-            'transferAccount' => '',
-            'category' => '',
-            'paymentMethod' => '',
-        );
-
-        $form = $this->get('bagheera.scheduler')->getForm($scheduler, $values);
-        $this->assertFalse($form->isValid());
+        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $form = $this->get('bagheera.scheduler')->getForm($this->john, $scheduler);
+        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveAddOk()
+    public function testSaveNewSchedulerWithNoData()
     {
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
-
-        $values = array(
-            'debitCredit' => 'debit',
-            'thirdParty' => 'Test',
-            'amount' => '5.00',
-            'valueDate' => array(
-                'year' => '2011',
-                'month' => '10',
-                'day' => '11'
-            ),
-            'limitDate' => array(
-                'year' => '',
-                'month' => '',
-                'day' => ''
-            ),
-            'isReconciled' => '0',
-            'isActive' => '1',
-            'frequencyUnit' => 'month',
-            'frequencyValue' => '1',
-            'notes' => 'Note #1',
-            'transferAccount' => '',
-            'category' => '',
-            'paymentMethod' => '1',
-        );
-
-        $form = $this->get('bagheera.scheduler')->getForm($scheduler, $values);
-
-        $isValid = $form->isValid();
-        $this->assertTrue($isValid);
-
-        if ($isValid) {
-            $ok = $this->get('bagheera.scheduler')->save(
-                $form->getData(),
-                $form->get('debitCredit')->getData(),
-                $form->get('amount')->getData()
-            );
-            $this->assertTrue($ok);
-        }
+        $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
     }
 
-    public function testGetSchedulersAccount1()
+    public function testSaveNewSchedulerWithForeignAccount()
     {
-        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
-        $schedulers = $this->get('bagheera.scheduler')->getSchedulers($account);
+        $scheduler = new Scheduler();
+        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $scheduler->setThirdParty('Test');
+        $scheduler->setValueDate(new \DateTime());
+        $scheduler->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $scheduler->setFrequencyUnit('month');
+        $scheduler->setFrequencyValue(1);
+        $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
+    }
+
+    public function testSaveNewScheduler()
+    {
+        $scheduler = new Scheduler();
+        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
+        $scheduler->setThirdParty('Test');
+        $scheduler->setValueDate(new \DateTime());
+        $scheduler->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $scheduler->setFrequencyUnit('month');
+        $scheduler->setFrequencyValue(1);
+        $this->assertTrue($this->get('bagheera.scheduler')->save($this->john, $scheduler));
+    }
+
+    public function testSaveExistingSchedulerWithBadData()
+    {
+        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler->setThirdParty('');
+        $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
+    }
+
+    public function testSaveExistingSchedulerWithForeignAccount()
+    {
+        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
+    }
+
+    public function testSaveExistingSchedulerWithForeignUser()
+    {
+        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $this->assertFalse($this->get('bagheera.scheduler')->save($this->jane, $scheduler));
+    }
+
+    public function testSaveExistingScheduler()
+    {
+        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $this->assertTrue($this->get('bagheera.scheduler')->save($this->john, $scheduler));
+    }
+
+    public function testGetSchedulers()
+    {
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $schedulers = $this->get('bagheera.scheduler')->getSchedulers($this->john, $account);
 
         $this->assertEquals(count($schedulers), 2);
     }
 
     public function testDelete()
     {
-        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
-        $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getSchedulers($account);
+        $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getSchedulers($this->john, $account);
 
-        $schedulersId = array(1);
-        $this->get('bagheera.scheduler')->delete($schedulersId);
+        $schedulersId = array(2);
+        $this->get('bagheera.scheduler')->delete($this->john, $schedulersId);
 
-        $schedulersAfterDelete = $this->get('bagheera.scheduler')->getSchedulers($account);
+        $schedulersAfterDelete = $this->get('bagheera.scheduler')->getSchedulers($this->john, $account);
 
         $this->assertEquals(count($schedulersAfterDelete), count($schedulersBeforeDelete) - 1);
     }
@@ -147,7 +144,7 @@ class SchedulerServiceTest extends TestCase
         $query = $this->_em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
         $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
@@ -186,7 +183,7 @@ class SchedulerServiceTest extends TestCase
         $query = $this->_em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')->find(1);
+        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
         $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';

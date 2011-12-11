@@ -38,12 +38,14 @@ services:
         arguments:
             - @doctrine.orm.entity_manager
             - @form.factory
+            - @validator
 
     bagheera.scheduler:
         class: Krevindiou\BagheeraBundle\Service\SchedulerService
         arguments:
             - @doctrine.orm.entity_manager
             - @form.factory
+            - @validator
             - @bagheera.operation
 
     bagheera.category:

@@ -21,6 +21,7 @@ namespace Krevindiou\BagheeraBundle\Service;
 use Doctrine\ORM\EntityManager,
     Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Form\FormFactory,
+    Symfony\Component\Validator\Validator,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Entity\Operation,
@@ -48,31 +49,44 @@ class SchedulerService
     protected $_formFactory;
 
     /**
+     * @var Validator
+     */
+    protected $_validator;
+
+    /**
      * @var OperationService
      */
     protected $_operationService;
 
 
-    public function __construct(EntityManager $em, FormFactory $formFactory, OperationService $operationService)
+    public function __construct(
+        EntityManager $em,
+        FormFactory $formFactory,
+        Validator $validator,
+        OperationService $operationService)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
+        $this->_validator = $validator;
         $this->_operationService = $operationService;
     }
 
     /**
      * Returns scheduler form
      *
+     * @param  User $user           User entity
      * @param  Scheduler $scheduler Scheduler entity
-     * @param  array $values        Post data
      * @return Form
      */
-    public function getForm(Scheduler $scheduler, array $values = null)
+    public function getForm(User $user, Scheduler $scheduler = null)
     {
-        $form = $this->_formFactory->create(new SchedulerForm(), $scheduler);
-        if (null !== $values) {
-            $form->bind($values);
+        if (null === $scheduler) {
+            $scheduler = new Scheduler();
+        } elseif ($user !== $scheduler->getAccount()->getBank()->getUser()) {
+            return;
         }
+
+        $form = $this->_formFactory->create(new SchedulerForm(), $scheduler);
 
         return $form;
     }
@@ -80,40 +94,41 @@ class SchedulerService
     /**
      * Saves scheduler
      *
+     * @param  User $user           User entity
      * @param  Scheduler $scheduler Scheduler entity
-     * @param  string $debitCredit  'debit' or 'credit'
-     * @param  float $amount        Scheduler amount
      * @return boolean
      */
-    public function save(Scheduler $scheduler, $debitCredit = null, $amount = null)
+    public function save(User $user, Scheduler $scheduler)
     {
-        if (null !== $debitCredit && null !== $amount) {
-            if ('debit' == $debitCredit) {
-                $scheduler->setDebit($amount);
-                $scheduler->setCredit(null);
-            } else {
-                $scheduler->setDebit(null);
-                $scheduler->setCredit($amount);
+        if (null !== $scheduler->getSchedulerId()) {
+            $oldScheduler = $this->_em->getUnitOfWork()->getOriginalEntityData($scheduler);
+
+            if ($user !== $oldScheduler['account']->getBank()->getUser()) {
+                return false;
             }
         }
 
-        if (!in_array(
-            $scheduler->getPaymentMethod()->getPaymentMethodId(),
-            array(
-                PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-            )
-        )) {
-            $scheduler->setTransferAccount(null);
-        }
+        $errors = $this->_validator->validate($scheduler);
+        if (0 == count($errors)) {
+            if ($user === $scheduler->getAccount()->getBank()->getUser()) {
+                if (!in_array(
+                    $scheduler->getPaymentMethod()->getPaymentMethodId(),
+                    array(
+                        PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                        PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                    )
+                )) {
+                    $scheduler->setTransferAccount(null);
+                }
 
-        try {
-            $this->_em->persist($scheduler);
-            $this->_em->flush();
+                try {
+                    $this->_em->persist($scheduler);
+                    $this->_em->flush();
 
-            return true;
-        } catch (\Exception $e) {
-            return false;
+                    return true;
+                } catch (\Exception $e) {
+                }
+            }
         }
 
         return false;
@@ -122,24 +137,23 @@ class SchedulerService
     /**
      * Deletes schedulers
      *
+     * @param  User $user          User entity
      * @param  array $schedulersId Schedulers id to delete
      * @return boolean
      */
-    public function delete(array $schedulersId)
+    public function delete(User $user, array $schedulersId)
     {
-        foreach ($schedulersId as $schedulerId) {
-            $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', $schedulerId);
+        try {
+            foreach ($schedulersId as $schedulerId) {
+                $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', $schedulerId);
 
-            if (null !== $scheduler) {
-                try {
-                    $this->_em->remove($scheduler);
-                } catch (\Exception $e) {
-                    return false;
+                if (null !== $scheduler) {
+                    if ($user === $scheduler->getAccount()->getBank()->getUser()) {
+                        $this->_em->remove($scheduler);
+                    }
                 }
             }
-        }
 
-        try {
             $this->_em->flush();
         } catch (\Exception $e) {
             return false;
@@ -151,20 +165,23 @@ class SchedulerService
     /**
      * Gets schedulers list
      *
+     * @param  User $user       User entity
      * @param  Account $account Account entity
      * @param  integer $page    Page number
      * @return array
      */
-    public function getSchedulers(Account $account, $page = 1)
+    public function getSchedulers(User $user, Account $account, $page = 1)
     {
-        $dql = 'SELECT s ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Scheduler s ';
-        $dql.= 'WHERE s.account = :account ';
-        $dql.= 'ORDER BY s.valueDate DESC ';
-        $query = $this->_em->createQuery($dql);
-        $query->setParameter('account', $account);
+        if ($user === $account->getBank()->getUser()) {
+            $dql = 'SELECT s ';
+            $dql.= 'FROM KrevindiouBagheeraBundle:Scheduler s ';
+            $dql.= 'WHERE s.account = :account ';
+            $dql.= 'ORDER BY s.valueDate DESC ';
+            $query = $this->_em->createQuery($dql);
+            $query->setParameter('account', $account);
 
-        return $query->getResult();
+            return $query->getResult();
+        }
     }
 
     /**
@@ -249,13 +266,9 @@ class SchedulerService
                 $operation->setValueDate(new \DateTime($date));
                 $operation->setIsReconciled($scheduler->getIsReconciled());
                 $operation->setNotes($scheduler->getNotes());
+                $operation->setTransferAccount($scheduler->getTransferAccount());
 
-                $this->_operationService->save(
-                    $operation,
-                    null,
-                    null,
-                    $scheduler->getTransferAccount()
-                );
+                $this->_operationService->save($user, $operation);
             }
         }
     }
