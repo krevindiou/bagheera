@@ -20,6 +20,8 @@ namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
+    Symfony\Component\Validator\Validator,
+    Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Entity\PaymentMethod,
@@ -43,26 +45,35 @@ class OperationService
      */
     protected $_formFactory;
 
+    /**
+     * @var Validator
+     */
+    protected $_validator;
 
-    public function __construct(EntityManager $em, FormFactory $formFactory)
+
+    public function __construct(EntityManager $em, FormFactory $formFactory, Validator $validator)
     {
         $this->_em = $em;
         $this->_formFactory = $formFactory;
+        $this->_validator = $validator;
     }
 
     /**
      * Returns operation form
      *
+     * @param  User $user           User entity
      * @param  Operation $operation Operation entity
-     * @param  array $values        Post data
      * @return Form
      */
-    public function getForm(Operation $operation, array $values = null)
+    public function getForm(User $user, Operation $operation = null)
     {
-        $form = $this->_formFactory->create(new OperationForm(), $operation);
-        if (null !== $values) {
-            $form->bind($values);
+        if (null === $operation) {
+            $operation = new Operation();
+        } elseif ($user !== $operation->getAccount()->getBank()->getUser()) {
+            return;
         }
+
+        $form = $this->_formFactory->create(new OperationForm(), $operation);
 
         return $form;
     }
@@ -70,104 +81,105 @@ class OperationService
     /**
      * Saves operation
      *
-     * @param  Operation $operation     Operation entity
-     * @param  string $debitCredit      'debit' or 'credit'
-     * @param  float $amount            Operation amount
-     * @param  Account $transferAccount Operation transferAccount
+     * @param  User $user           User entity
+     * @param  Operation $operation Operation entity
      * @return boolean
      */
-    public function save(Operation $operation, $debitCredit = null, $amount = null, Account $transferAccount = null)
+    public function save(User $user, Operation $operation)
     {
-        if (null !== $debitCredit && null !== $amount) {
-            if ('debit' == $debitCredit) {
-                $operation->setDebit($amount);
-                $operation->setCredit(null);
-            } else {
-                $operation->setDebit(null);
-                $operation->setCredit($amount);
-            }
-        }
-
-        if (!in_array(
-            $operation->getPaymentMethod()->getPaymentMethodId(),
-            array(
-                PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-            )
-        )) {
-            $transferAccount = null;
-        }
-
-        $transferOperationBeforeSave = null;
         if (null !== $operation->getOperationId()) {
-            $operationBeforeSave = $this->_em->find(
-                'KrevindiouBagheeraBundle:Operation',
-                $operation->getOperationId()
-            );
+            $oldOperation = $this->_em->getUnitOfWork()->getOriginalEntityData($operation);
 
-            if (null !== $operationBeforeSave->getTransferOperation()) {
-                $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
-            }
-        }
-
-        if (null !== $transferAccount) {
-            // update transfer => transfer
-            if (null !== $transferOperationBeforeSave) {
-                $transferOperation = $operation->getTransferOperation();
-
-            // update check => transfer
-            } else {
-                $transferOperation = new Operation();
-                $transferOperation->setScheduler($operation->getScheduler());
-                $transferOperation->setTransferOperation($operation);
-
-                $operation->setTransferOperation($transferOperation);
-            }
-
-            if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
-                $paymentMethod = $this->_em->find(
-                    'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                );
-            } else {
-                $paymentMethod = $this->_em->find(
-                    'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
-                );
-            }
-
-            $transferOperation->setAccount($transferAccount);
-            $transferOperation->setDebit($operation->getCredit());
-            $transferOperation->setCredit($operation->getDebit());
-            $transferOperation->setThirdParty($operation->getThirdParty());
-            $transferOperation->setCategory($operation->getCategory());
-            $transferOperation->setPaymentMethod($paymentMethod);
-            $transferOperation->setValueDate($operation->getValueDate());
-            $transferOperation->setNotes($operation->getNotes());
-
-            try {
-                $this->_em->persist($transferOperation);
-            } catch (\Exception $e) {
+            if ($user !== $oldOperation['account']->getBank()->getUser()) {
                 return false;
             }
-        } else {
-            // update transfer => check
-            if (null !== $transferOperationBeforeSave) {
-                $operation->setTransferOperation(null);
-
-                try {
-                    $this->_em->remove($transferOperationBeforeSave);
-                } catch (\Exception $e) {
-                    return false;
-                }
-            }
         }
 
-        try {
-            $this->_em->persist($operation);
-            $this->_em->flush();
+        $errors = $this->_validator->validate($operation);
+        if (0 == count($errors)) {
+            if ($user === $operation->getAccount()->getBank()->getUser()) {
+                if (!in_array(
+                    $operation->getPaymentMethod()->getPaymentMethodId(),
+                    array(
+                        PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                        PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                    )
+                )) {
+                    $operation->setTransferAccount(null);
+                }
 
-            return true;
-        } catch (\Exception $e) {
-            return false;
+                $transferOperationBeforeSave = null;
+                if (null !== $operation->getOperationId()) {
+                    $operationBeforeSave = $this->_em->find(
+                        'KrevindiouBagheeraBundle:Operation',
+                        $operation->getOperationId()
+                    );
+
+                    if (null !== $operationBeforeSave->getTransferOperation()) {
+                        $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
+                    }
+                }
+
+                if (null !== $operation->getTransferAccount()) {
+                    // update transfer => transfer
+                    if (null !== $transferOperationBeforeSave) {
+                        $transferOperation = $operation->getTransferOperation();
+
+                    // update check => transfer
+                    } else {
+                        $transferOperation = new Operation();
+                        $transferOperation->setScheduler($operation->getScheduler());
+                        $transferOperation->setTransferOperation($operation);
+
+                        $operation->setTransferOperation($transferOperation);
+                    }
+
+                    if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
+                        $paymentMethod = $this->_em->find(
+                            'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                        );
+                    } else {
+                        $paymentMethod = $this->_em->find(
+                            'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                        );
+                    }
+
+                    $transferOperation->setAccount($operation->getTransferAccount());
+                    $transferOperation->setTransferAccount($operation->getAccount());
+                    $transferOperation->setDebit($operation->getCredit());
+                    $transferOperation->setCredit($operation->getDebit());
+                    $transferOperation->setThirdParty($operation->getThirdParty());
+                    $transferOperation->setCategory($operation->getCategory());
+                    $transferOperation->setPaymentMethod($paymentMethod);
+                    $transferOperation->setValueDate($operation->getValueDate());
+                    $transferOperation->setNotes($operation->getNotes());
+
+                    try {
+                        $this->_em->persist($transferOperation);
+                    } catch (\Exception $e) {
+                        return false;
+                    }
+                } else {
+                    // update transfer => check
+                    if (null !== $transferOperationBeforeSave) {
+                        $operation->setTransferOperation(null);
+
+                        try {
+                            $this->_em->remove($transferOperationBeforeSave);
+                        } catch (\Exception $e) {
+                            return false;
+                        }
+                    }
+                }
+
+                try {
+                    $this->_em->persist($operation);
+                    $this->_em->flush();
+
+                    return true;
+                } catch (\Exception $e) {
+                }
+            }
         }
 
         return false;
@@ -176,24 +188,23 @@ class OperationService
     /**
      * Deletes operations
      *
+     * @param  User $user          User entity
      * @param  array $operationsId Operations id to delete
      * @return boolean
      */
-    public function delete(array $operationsId)
+    public function delete(User $user, array $operationsId)
     {
-        foreach ($operationsId as $operationId) {
-            $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', $operationId);
+        try {
+            foreach ($operationsId as $operationId) {
+                $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', $operationId);
 
-            if (null !== $operation) {
-                try {
-                    $this->_em->remove($operation);
-                } catch (\Exception $e) {
-                    return false;
+                if (null !== $operation) {
+                    if ($user === $operation->getAccount()->getBank()->getUser()) {
+                        $this->_em->remove($operation);
+                    }
                 }
             }
-        }
 
-        try {
             $this->_em->flush();
         } catch (\Exception $e) {
             return false;
@@ -205,25 +216,24 @@ class OperationService
     /**
      * Reconciles operations
      *
+     * @param  User $user          User entity
      * @param  array $operationsId Operations id to reconcile
      * @return boolean
      */
-    public function reconcile(array $operationsId)
+    public function reconcile(User $user, array $operationsId)
     {
-        foreach ($operationsId as $operationId) {
-            $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', $operationId);
+        try {
+            foreach ($operationsId as $operationId) {
+                $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', $operationId);
 
-            if (null !== $operation) {
-                try {
-                    $operation->setIsReconciled(true);
-                    $this->_em->persist($operation);
-                } catch (\Exception $e) {
-                    return false;
+                if (null !== $operation) {
+                    if ($user === $operation->getAccount()->getBank()->getUser()) {
+                        $operation->setIsReconciled(true);
+                        $this->_em->persist($operation);
+                    }
                 }
             }
-        }
 
-        try {
             $this->_em->flush();
         } catch (\Exception $e) {
             return false;
@@ -235,19 +245,22 @@ class OperationService
     /**
      * Gets operations list
      *
+     * @param  User $user       User entity
      * @param  Account $account Account entity
      * @param  integer $page    Page number
      * @return array
      */
-    public function getOperations(Account $account, $page = 1)
+    public function getOperations(User $user, Account $account, $page = 1)
     {
-        $dql = 'SELECT o ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'WHERE o.account = :account ';
-        $dql.= 'ORDER BY o.valueDate DESC ';
-        $query = $this->_em->createQuery($dql);
-        $query->setParameter('account', $account);
+        if ($user === $account->getBank()->getUser()) {
+            $dql = 'SELECT o ';
+            $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+            $dql.= 'WHERE o.account = :account ';
+            $dql.= 'ORDER BY o.valueDate DESC ';
+            $query = $this->_em->createQuery($dql);
+            $query->setParameter('account', $account);
 
-        return $query->getResult();
+            return $query->getResult();
+        }
     }
 }

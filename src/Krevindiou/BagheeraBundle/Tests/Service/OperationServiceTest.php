@@ -18,8 +18,7 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
-use Symfony\Component\HttpFoundation\Request,
-    Krevindiou\BagheeraBundle\Tests\TestCase,
+use Krevindiou\BagheeraBundle\Tests\TestCase,
     Krevindiou\BagheeraBundle\Entity\Operation;
 
 /**
@@ -30,225 +29,147 @@ use Symfony\Component\HttpFoundation\Request,
  */
 class OperationServiceTest extends TestCase
 {
-    public function testGetForm()
+    public function setUp()
     {
-        $operation = new Operation();
+        parent::setUp();
 
-        $form = $this->get('bagheera.operation')->getForm($operation);
+        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+    }
 
+    public function testGetFormForForeignUser()
+    {
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $form = $this->get('bagheera.operation')->getForm($this->jane, $operation);
+        $this->assertNull($form);
+    }
+
+    public function testGetFormForNewOperation()
+    {
+        $form = $this->get('bagheera.operation')->getForm($this->john);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveEmpty()
+    public function testGetFormForExistingOperation()
     {
-        $operation = new Operation();
-        $operation->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
-
-        $values = array(
-            'debitCredit' => '',
-            'thirdParty' => '',
-            'amount' => '',
-            'valueDate' => array(
-                'year' => '',
-                'month' => '',
-                'day' => ''
-            ),
-            'isReconciled' => '',
-            'notes' => '',
-            'transferAccount' => '',
-            'category' => '',
-            'paymentMethod' => '',
-        );
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $values);
-        $this->assertFalse($form->isValid());
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $form = $this->get('bagheera.operation')->getForm($this->john, $operation);
+        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveAddOk()
+    public function testSaveNewOperationWithNoData()
     {
         $operation = new Operation();
-        $operation->setAccount($this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1));
+        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+    }
 
-        $values = array(
-            'debitCredit' => 'debit',
-            'thirdParty' => 'Test',
-            'amount' => '5.00',
-            'valueDate' => array(
-                'year' => 2011,
-                'month' => 10,
-                'day' => 11
-            ),
-            'isReconciled' => '0',
-            'notes' => 'Note #1',
-            'transferAccount' => '',
-            'category' => '',
-            'paymentMethod' => '1',
-        );
+    public function testSaveNewOperationWithForeignAccount()
+    {
+        $operation = new Operation();
+        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $operation->setThirdParty('Test');
+        $operation->setValueDate(new \DateTime());
+        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+    }
 
-        $form = $this->get('bagheera.operation')->getForm($operation, $values);
+    public function testSaveNewOperation()
+    {
+        $operation = new Operation();
+        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
+        $operation->setThirdParty('Test');
+        $operation->setValueDate(new \DateTime());
+        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+    }
 
-        $isValid = $form->isValid();
-        $this->assertTrue($isValid);
+    public function testSaveExistingOperationWithBadData()
+    {
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation->setThirdParty('');
+        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+    }
 
-        if ($isValid) {
-            $ok = $this->get('bagheera.operation')->save(
-                $form->getData(),
-                $form->get('debitCredit')->getData(),
-                $form->get('amount')->getData(),
-                $form->get('transferAccount')->getData()
-            );
-            $this->assertTrue($ok);
-        }
+    public function testSaveExistingOperationWithForeignAccount()
+    {
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+    }
+
+    public function testSaveExistingOperationWithForeignUser()
+    {
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));
+    }
+
+    public function testSaveExistingOperation()
+    {
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
     public function testEditAndRemoveTransfer()
     {
-        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
-        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
-        $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation->setTransferAccount(null);
+        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 5));
 
-        $valueDate = $operation->getValueDate();
+        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
-        $values = array(
-            'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
-            'thirdParty' => $operation->getThirdParty(),
-            'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-            'valueDate' => array(
-                'year' => $valueDate->format('Y'),
-                'month' => $valueDate->format('m'),
-                'day' => $valueDate->format('d')
-            ),
-            'isReconciled' => $operation->getIsReconciled(),
-            'notes' => $operation->getNotes(),
-            'transferAccount' => null,
-            'category' => $operation->getCategory()->getCategoryId(),
-            'paymentMethod' => 5,
-        );
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $values);
-
-        $isValid = $form->isValid();
-        $this->assertTrue($isValid);
-
-        if ($isValid) {
-            $ok = $this->get('bagheera.operation')->save(
-                $form->getData(),
-                $form->get('debitCredit')->getData(),
-                $form->get('amount')->getData(),
-                $form->get('transferAccount')->getData()
-            );
-            $this->assertTrue($ok);
-
-            $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
-            $this->assertNull($operation->getTransferOperation());
-        }
+        $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $this->assertNull($operation->getTransferOperation());
+        $this->assertNull($operation->getTransferAccount());
     }
 
     public function testEditAndChangeTransfer()
     {
-        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation->setTransferAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 3));
+
+        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+
+        $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
         $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
-        $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 1);
-
-        $valueDate = $operation->getValueDate();
-
-        $values = array(
-            'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
-            'thirdParty' => $operation->getThirdParty(),
-            'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-            'valueDate' => array(
-                'year' => $valueDate->format('Y'),
-                'month' => $valueDate->format('m'),
-                'day' => $valueDate->format('d')
-            ),
-            'isReconciled' => $operation->getIsReconciled(),
-            'notes' => $operation->getNotes(),
-            'transferAccount' => 3,
-            'category' => $operation->getCategory()->getCategoryId(),
-            'paymentMethod' => $operation->getPaymentMethod()->getPaymentMethodId(),
-        );
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $values);
-
-        $isValid = $form->isValid();
-        $this->assertTrue($isValid);
-
-        if ($isValid) {
-            $ok = $this->get('bagheera.operation')->save(
-                $form->getData(),
-                $form->get('debitCredit')->getData(),
-                $form->get('amount')->getData(),
-                $form->get('transferAccount')->getData()
-            );
-            $this->assertTrue($ok);
-
-            $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(6);
-            $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
-            $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
-        }
+        $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
+        $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
     }
 
     public function testEditAndSetTransfer()
     {
-        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
-        $this->assertNull($operation->getTransferOperation());
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 2);
+        $operation->setTransferAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 3));
+        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 4));
 
-        $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
-        $valueDate = $operation->getValueDate();
+        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
-        $values = array(
-            'debitCredit' => ($operation->getDebit() > 0) ? 'debit' : 'credit',
-            'thirdParty' => $operation->getThirdParty(),
-            'amount' => ($operation->getDebit() > 0) ? $operation->getDebit() : $operation->getCredit(),
-            'valueDate' => array(
-                'year' => $valueDate->format('Y'),
-                'month' => $valueDate->format('m'),
-                'day' => $valueDate->format('d')
-            ),
-            'isReconciled' => $operation->getIsReconciled(),
-            'notes' => $operation->getNotes(),
-            'transferAccount' => 3,
-            'category' => $operation->getCategory()->getCategoryId(),
-            'paymentMethod' => 4,
-        );
-
-        $form = $this->get('bagheera.operation')->getForm($operation, $values);
-
-        $isValid = $form->isValid();
-        $this->assertTrue($isValid);
-
-        if ($isValid) {
-            $ok = $this->get('bagheera.operation')->save(
-                $form->getData(),
-                $form->get('debitCredit')->getData(),
-                $form->get('amount')->getData(),
-                $form->get('transferAccount')->getData()
-            );
-            $this->assertTrue($ok);
-
-            $operation = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->find(2);
-            $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
-        }
+        $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
+        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 2);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 11);
+        $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
+        $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
     }
 
-    public function testGetOperationsAccount1()
+    public function testGetOperations()
     {
-        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
-        $operations = $this->get('bagheera.operation')->getOperations($account);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $operations = $this->get('bagheera.operation')->getOperations($this->john, $account);
 
         $this->assertEquals(count($operations), 4);
     }
 
     public function testDelete()
     {
-        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
-        $operationsBeforeDelete = $this->get('bagheera.operation')->getOperations($account);
+        $operationsBeforeDelete = $this->get('bagheera.operation')->getOperations($this->john, $account);
 
         $operationsId = array(1, 3);
-        $this->get('bagheera.operation')->delete($operationsId);
+        $this->get('bagheera.operation')->delete($this->john, $operationsId);
 
-        $operationsAfterDelete = $this->get('bagheera.operation')->getOperations($account);
+        $operationsAfterDelete = $this->get('bagheera.operation')->getOperations($this->john, $account);
 
         $this->assertEquals(count($operationsAfterDelete), count($operationsBeforeDelete) - 2);
     }
@@ -263,7 +184,7 @@ class OperationServiceTest extends TestCase
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
         $operationsId = array(2);
-        $this->get('bagheera.operation')->reconcile($operationsId);
+        $this->get('bagheera.operation')->reconcile($this->john, $operationsId);
 
         $dql = 'SELECT COUNT(o) ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';

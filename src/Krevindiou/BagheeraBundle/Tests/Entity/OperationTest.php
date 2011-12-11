@@ -42,6 +42,7 @@ class OperationTest extends TestCase
 
         $this->assertEquals($operation->getThirdParty(), 'Third party 1');
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'Home savings account');
+        $this->assertEquals($operation->getTransferAccount()->getName(), 'Home savings account');
         $this->assertEquals($operation->getAccount()->getName(), 'Checking account #1');
         $this->assertEquals($operation->getCategory()->getName(), 'Cat 2');
         $this->assertEquals($operation->getPaymentMethod()->getName(), 'transfer');
