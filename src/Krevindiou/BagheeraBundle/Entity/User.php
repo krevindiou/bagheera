@@ -21,6 +21,7 @@ namespace Krevindiou\BagheeraBundle\Entity;
 use Doctrine\ORM\Mapping as ORM,
     Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Security\Core\User\UserInterface,
+    Symfony\Component\Security\Core\User\AdvancedUserInterface,
     Symfony\Component\Validator\Constraints as Assert,
     Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
@@ -34,7 +35,7 @@ use Doctrine\ORM\Mapping as ORM,
  * @ORM\HasLifecycleCallbacks()
  * @DoctrineAssert\UniqueEntity("email")
  */
-class User implements UserInterface
+class User implements AdvancedUserInterface
 {
     /**
      * @var integer $userId
@@ -401,5 +402,37 @@ class User implements UserInterface
         }
 
         return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isAccountNonExpired()
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isAccountNonLocked()
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isCredentialsNonExpired()
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEnabled()
+    {
+        return $this->getIsActive();
     }
 }
