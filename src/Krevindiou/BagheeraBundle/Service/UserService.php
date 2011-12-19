@@ -24,6 +24,7 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Component\HttpFoundation\Request,
+    Symfony\Component\Security\Core\Encoder\EncoderFactory,
     Symfony\Bundle\FrameworkBundle\Translation\Translator,
     Symfony\Bundle\FrameworkBundle\Routing\Router,
     Krevindiou\BagheeraBundle\Entity\User,
@@ -67,6 +68,11 @@ class UserService
     protected $_router;
 
     /**
+     * @var EncoderFactory
+     */
+    protected $_encoderFactory;
+
+    /**
      * @var FormFactory
      */
     protected $_formFactory;
@@ -88,6 +94,7 @@ class UserService
         array $config,
         Translator $translator,
         Router $router,
+        EncoderFactory $encoderFactory,
         FormFactory $formFactory,
         Validator $validator,
         BankService $bankService)
@@ -97,6 +104,7 @@ class UserService
         $this->_config = $config;
         $this->_translator = $translator;
         $this->_router = $router;
+        $this->_encoderFactory = $encoderFactory;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
         $this->_bankService = $bankService;
@@ -105,7 +113,6 @@ class UserService
     /**
      * Returns register form
      *
-     * @param  User $user User entity
      * @return Form
      */
     public function getRegisterForm()
@@ -145,6 +152,9 @@ class UserService
 
             $user->setActivation($key);
 
+            $encoder = $this->_encoderFactory->getEncoder($user);
+            $user->setPassword($encoder->encodePassword($user->getPassword(), $user->getSalt()));
+
             try {
                 $this->_em->persist($user);
                 $this->_em->flush();
@@ -167,20 +177,7 @@ class UserService
      */
     public function getProfileForm(User $user)
     {
-        $noPassword = false;
-        if (!isset($values['password']['userPassword']) || '' == $values['password']['userPassword']) {
-            $noPassword = true;
-        }
-
-        $form = $this->_formFactory->create(new UserProfileForm($noPassword), $user);
-
-        if ($noPassword && isset($values['password'])) {
-            unset($values['password']);
-        }
-
-        if (!empty($values)) {
-            $form->bind($values);
-        }
+        $form = $this->_formFactory->create(new UserProfileForm(), $user);
 
         return $form;
     }
@@ -238,7 +235,7 @@ class UserService
      */
     public function getForgotPasswordForm()
     {
-        $form = $this->_formFactory->create(new UserForgotPasswordForm(), new User());
+        $form = $this->_formFactory->create(new UserForgotPasswordForm());
 
         return $form;
     }
@@ -246,43 +243,41 @@ class UserService
     /**
      * Sends email with reset password link
      *
-     * @param  Form $forgotPasswordForm Form to get values from
+     * @param  string $email Email to send link
      * @return boolean
      */
-    public function sendResetPasswordEmail(Form $forgotPasswordForm)
+    public function sendResetPasswordEmail($email)
     {
-        $isValid = false;
+        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')
+                          ->findOneBy(array('email' => $email));
 
-        if ($forgotPasswordForm->isValid()) {
-            $user = $forgotPasswordForm->getData();
+        if (null !== $user) {
+            // Reset password link construction
+            $key = $this->_createResetPasswordKey($user);
+            $link = $this->_router->generate('user_reset_password', array('key' => $key), true);
 
-            $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')
-                              ->findOneBy(array('email' => $user->getEmail()));
+            // Mail sending
+            $body = str_replace(
+                '%link%',
+                $link,
+                $this->_translator->trans('userEmailResetPasswordBody')
+            );
 
-            if (null !== $user) {
-                // Reset password link construction
-                $key = $this->_createResetPasswordKey($user);
-                $link = $this->_router->generate('user_reset_password', array('key' => $key), true);
+            $message = \Swift_Message::newInstance()
+                ->setSubject($this->_translator->trans('userEmailResetPasswordSubject'))
+                ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
+                ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
+                ->setBody($body);
 
-                // Mail sending
-                $body = str_replace(
-                    '%link%',
-                    $link,
-                    $this->_translator->trans('userEmailResetPasswordBody')
-                );
-
-                $message = \Swift_Message::newInstance()
-                    ->setSubject($this->_translator->trans('userEmailResetPasswordSubject'))
-                    ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
-                    ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
-                    ->setBody($body);
+            try {
                 $this->_mailer->send($message);
 
-                $isValid = true;
+                return true;
+            } catch (\Exception $e) {
             }
         }
 
-        return $isValid;
+        return false;
     }
 
     /**
@@ -294,40 +289,35 @@ class UserService
     public function getResetPasswordForm($key)
     {
         if (null !== $this->_decodeResetPasswordKey($key)) {
-            $form = $this->_formFactory->create(new UserResetPasswordForm(), new User());
+            $form = $this->_formFactory->create(new UserResetPasswordForm());
 
             return $form;
         }
     }
 
     /**
-     * Resets password according to form values
+     * Updates password if key is valid
      *
-     * @param  Form $resetPasswordForm  Form to get values from
-     * @param  string $key              Reset key
+     * @param  string $password Password to set
+     * @param  string $key      Reset key
      * @return void
      */
-    public function resetPassword(Form $resetPasswordForm, $key)
+    public function resetPassword($password, $key)
     {
-        $isValid = false;
+        if (null !== ($user = $this->_decodeResetPasswordKey($key))) {
+            $encoder = $this->_encoderFactory->getEncoder($user);
+            $user->setPassword($encoder->encodePassword($password, $user->getSalt()));
 
-        if ($resetPasswordForm->isValid()) {
-            $data = $resetPasswordForm->getData();
+            try {
+                $this->_em->persist($user);
+                $this->_em->flush();
 
-            if (null !== ($user = $this->_decodeResetPasswordKey($key))) {
-                $user->setPassword($data->getPassword());
-
-                try {
-                    $this->_em->persist($user);
-                    $this->_em->flush();
-
-                    $isValid = true;
-                } catch (\Exception $e) {
-                }
+                return true;
+            } catch (\Exception $e) {
             }
         }
 
-        return $isValid;
+        return false;
     }
 
     /**
@@ -448,6 +438,7 @@ class UserService
     /**
      * Gets user balance
      *
+     * @param  User $user User entity
      * @return float
      */
     public function getBalance(User $user)

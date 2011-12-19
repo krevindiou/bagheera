@@ -15,6 +15,7 @@ services:
             - %krevindiou_bagheera.config%
             - @translator
             - @router
+            - @security.encoder_factory
             - @form.factory
             - @validator
             - @bagheera.bank
