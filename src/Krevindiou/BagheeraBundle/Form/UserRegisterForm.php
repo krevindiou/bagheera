@@ -39,6 +39,7 @@ class UserRegisterForm extends AbstractType
                 'type' => 'password',
                 'first_name' => 'userPassword',
                 'second_name' => 'userPasswordConfirmation',
+                'invalid_message' => 'The password fields must match.',
             ))
         ;
     }
@@ -46,7 +47,6 @@ class UserRegisterForm extends AbstractType
     public function getDefaultOptions(array $options)
     {
         $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
-        $options['validation_groups'] = array('register');
 
         return $options;
     }

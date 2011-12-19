@@ -20,6 +20,9 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\MinLength;
 
 /**
  * Reset password form
@@ -36,13 +39,21 @@ class UserResetPasswordForm extends AbstractType
                 'type' => 'password',
                 'first_name' => 'userPassword',
                 'second_name' => 'userPasswordConfirmation',
+                'invalid_message' => 'The password fields must match.',
             ))
         ;
     }
 
     public function getDefaultOptions(array $options)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
+        $collectionConstraint = new Collection(array(
+            'password' => array(
+                new NotBlank(),
+                new MinLength(8),
+            )
+        ));
+
+        $options['validation_constraint'] = $collectionConstraint;
 
         return $options;
     }

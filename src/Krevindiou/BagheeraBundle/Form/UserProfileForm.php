@@ -30,30 +30,11 @@ use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
  */
 class UserProfileForm extends UserRegisterForm
 {
-    protected $_noPassword;
-
-    public function __construct($noPassword)
-    {
-        $this->_noPassword = $noPassword;
-    }
-
     public function buildForm(FormBuilder $builder, array $options)
     {
         parent::buildForm($builder, $options);
 
-        $builder->get('password')->setRequired(false);
-
-        if ($this->_noPassword) {
-            $builder->remove('password');
-        }
-    }
-
-    public function getDefaultOptions(array $options)
-    {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
-        $options['validation_groups'] = array('profile');
-
-        return $options;
+        $builder->remove('password');
     }
 
     public function getName()

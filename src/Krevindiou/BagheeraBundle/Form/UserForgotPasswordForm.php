@@ -20,6 +20,9 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Email;
 
 /**
  * Forgot password form
@@ -38,7 +41,14 @@ class UserForgotPasswordForm extends AbstractType
 
     public function getDefaultOptions(array $options)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
+        $collectionConstraint = new Collection(array(
+            'email' => array(
+                new NotBlank(),
+                new Email()
+            ),
+        ));
+
+        $options['validation_constraint'] = $collectionConstraint;
 
         return $options;
     }
