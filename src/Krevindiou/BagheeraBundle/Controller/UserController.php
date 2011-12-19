@@ -22,7 +22,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Symfony\Component\Security\Core\SecurityContext,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
-    JMS\SecurityExtraBundle\Annotation\Secure;
+    JMS\SecurityExtraBundle\Annotation\Secure,
+    Krevindiou\BagheeraBundle\Entity\User;
 
 class UserController extends Controller
 {
@@ -206,6 +207,36 @@ class UserController extends Controller
 
         return array(
             'profileForm' => $form->createView()
+        );
+    }
+
+    /**
+     * @Route("/users", name="user_list")
+     * @Template
+     * @Secure(roles="ROLE_ADMIN")
+     */
+    public function listAction()
+    {
+        $request = $this->getRequest();
+
+        $page = $request->query->getInt('page', 1);
+        $users = (array)$request->request->get('users');
+        $toggleDeactivation = $request->request->get('toggleDeactivation');
+
+        if (!empty($users)) {
+            if ($toggleDeactivation) {
+                $this->get('bagheera.user')->toggleDeactivation($users);
+                $this->get('session')->setFlash(
+                    'notice',
+                    $this->get('translator')->trans('userToggleDeactivationOk')
+                );
+            }
+
+            return $this->redirect($this->generateUrl('user_list', array('page' => $page)));
+        }
+
+        return array(
+            'users' => $this->get('bagheera.user')->getUsers()
         );
     }
 }
