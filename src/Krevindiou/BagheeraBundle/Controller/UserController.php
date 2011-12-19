@@ -27,7 +27,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
 class UserController extends Controller
 {
     /**
-     * @Template()
+     * @Template
      */
     public function loginAction()
     {
@@ -49,67 +49,163 @@ class UserController extends Controller
 
     /**
      * @Route("/register", name="user_register")
-     * @Template()
+     * @Template
      */
     public function registerAction()
     {
-        return array();
+        $request = $this->getRequest();
+
+        $form = $this->get('bagheera.user')->getRegisterForm();
+
+        if ($request->getMethod() == 'POST') {
+            $form->bindRequest($request);
+
+            if ($form->isValid()) {
+                if ($this->get('bagheera.user')->add($form->getData())) {
+                    $this->get('session')->setFlash(
+                        'notice',
+                        $this->get('translator')->trans('userRegisterFormConfirmation')
+                    );
+
+                    return $this->redirect($this->generateUrl('login'));
+                }
+            }
+        }
+
+        return array(
+            'registerForm' => $form->createView()
+        );
     }
 
     /**
      * @Route("/forgot-password", name="user_forgot_password")
-     * @Template()
+     * @Template
      */
     public function forgotPasswordAction()
     {
-        return array();
+        $request = $this->getRequest();
+
+        $form = $this->get('bagheera.user')->getForgotPasswordForm();
+
+        if ($request->getMethod() == 'POST') {
+            $form->bindRequest($request);
+
+            if ($form->isValid()) {
+                $data = $form->getData();
+
+                if ($this->get('bagheera.user')->sendResetPasswordEmail($data['email'])) {
+                    $this->get('session')->setFlash(
+                        'notice',
+                        $this->get('translator')->trans('userForgotPasswordFormConfirmation')
+                    );
+
+                    return $this->redirect($this->generateUrl('login'));
+                }
+            }
+        }
+
+        return array(
+            'forgotPasswordForm' => $form->createView()
+        );
     }
 
     /**
-     * @Route("/reset-password/{key}", name="user_reset_password")
-     * @Template()
+     * @Route("/reset-password", name="user_reset_password")
+     * @Template
      */
-    public function resetPasswordAction($key)
+    public function resetPasswordAction()
     {
-        return array();
+        $request = $this->getRequest();
+
+        $key = $request->query->get('key');
+
+        $form = $this->get('bagheera.user')->getResetPasswordForm($key);
+
+        if (null !== $form) {
+            if ($request->getMethod() == 'POST') {
+                $form->bindRequest($request);
+
+                if ($form->isValid()) {
+                    $data = $form->getData();
+
+                    if ($this->get('bagheera.user')->resetPassword($data['password'], $key)) {
+                        $this->get('session')->setFlash(
+                            'notice',
+                            $this->get('translator')->trans('userResetPasswordFormConfirmation')
+                        );
+
+                        return $this->redirect($this->generateUrl('login'));
+                    }
+                }
+            }
+        } else {
+            $this->get('session')->setFlash(
+                'notice',
+                $this->get('translator')->trans('userResetPasswordFormError')
+            );
+
+            return $this->redirect($this->generateUrl('login'));
+        }
+
+        return array(
+            'key' => $key,
+            'resetPasswordForm' => $form->createView()
+        );
     }
 
     /**
-     * @Route("/activate/{key}", requirements={"key" = "[0-9a-f]{32}"}, name="user_activate")
-     * @Template()
+     * @Route("/activate", name="user_activate")
      */
-    public function activateAction($key)
+    public function activateAction()
     {
-        return array();
+        $request = $this->getRequest();
+
+        $key = $request->query->get('key');
+
+        if ('' != $key && $this->get('bagheera.user')->activate($key)) {
+            $this->get('session')->setFlash(
+                'notice',
+                $this->get('translator')->trans('userActivationConfirmation')
+            );
+        } else {
+            $this->get('session')->setFlash(
+                'notice',
+                $this->get('translator')->trans('userActivationError')
+            );
+        }
+
+        return $this->redirect($this->generateUrl('login'));
     }
 
     /**
      * @Route("/profile", name="user_profile")
-     * @Template()
+     * @Template
      */
     public function profileAction()
     {
-        return array();
-    }
+        $request = $this->getRequest();
 
-    /**
-     * @Route("/users", name="user_list")
-     * @Template()
-     * @Secure(roles="ROLE_ADMIN")
-     */
-    public function listAction()
-    {
-        return array();
-    }
+        $form = $this->get('bagheera.user')->getProfileForm(
+            $this->get('security.context')->getToken()->getUser()
+        );
 
-    /**
-     * @Route("/edit-user-{userId}", requirements={"userId" = "\d+"}, name="user_edit")
-     * @Route("/new-user", name="user_new")
-     * @Template()
-     * @Secure(roles="ROLE_ADMIN")
-     */
-    public function saveAction($userId = null)
-    {
-        return array();
+        if ($request->getMethod() == 'POST') {
+            $form->bindRequest($request);
+
+            if ($form->isValid()) {
+                if ($this->get('bagheera.user')->update($form->getData())) {
+                    $this->get('session')->setFlash(
+                        'notice',
+                        $this->get('translator')->trans('userProfileFormConfirmation')
+                    );
+
+                    return $this->redirect($this->generateUrl('user_profile'));
+                }
+            }
+        }
+
+        return array(
+            'profileForm' => $form->createView()
+        );
     }
 }
