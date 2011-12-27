@@ -34,7 +34,7 @@ class UserRegisterForm extends AbstractType
         $builder
             ->add('firstname')
             ->add('lastname')
-            ->add('email')
+            ->add('email', 'email')
             ->add('password', 'repeated', array(
                 'type' => 'password',
                 'first_name' => 'userPassword',
