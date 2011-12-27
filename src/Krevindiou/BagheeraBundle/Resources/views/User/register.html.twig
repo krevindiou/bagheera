@@ -1,0 +1,15 @@
+{% extends '::base.html.twig' %}
+
+{% block content %}
+<h1>Register</h1>
+
+<a href="{{ path('login') }}" class="back">{% trans %}back{% endtrans %}</a>
+
+<form action="{{ path('user_register') }}" novalidate="novalidate" method="post" {{ form_enctype(registerForm) }}>
+    {{ form_widget(registerForm) }}
+
+    <div class="formButton">
+        <input type="submit" value="Register"/>
+    </div>
+</form>
+{% endblock %}
