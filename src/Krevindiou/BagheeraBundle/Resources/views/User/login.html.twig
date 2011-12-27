@@ -1,13 +1,34 @@
-{% if error %}
-    <div>{{ error.message }}</div>
-{% endif %}
+{% extends '::base.html.twig' %}
 
-<form action="{{ path('login_check') }}" method="post">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="_username" value="{{ last_username }}" />
+{% block content %}
+<h1>Login</h1>
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="_password" />
-
-    <input type="submit" name="login" />
+{% spaceless %}
+<form action="{{ path('login_check') }}" novalidate="novalidate" method="post">
+    <div>
+        {% if error %}
+        <ul class="formErrors"><li>{{ error.message }}</li></ul>
+        {% endif %}
+        <div>
+            <div class="formLabel">
+                <label for="username">Email</label>
+            </div>
+            <div class="formField">
+                <input type="email" id="username" name="_username" value="{{ last_username }}"/>
+            </div>
+        </div>
+        <div>
+            <div class="formLabel">
+                <label for="password">Password</label>
+            </div>
+            <div class="formField">
+                <input type="password" id="password" name="_password"/>
+            </div>
+        </div>
+    </div>
+    <div class="formButton">
+        <input type="submit" name="login" value="Connect"/>
+    </div>
 </form>
+{% endspaceless %}
+{% endblock %}
