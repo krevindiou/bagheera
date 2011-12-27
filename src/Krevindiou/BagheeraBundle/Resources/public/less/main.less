@@ -1,6 +1,257 @@
+@import "./reset.less";
+
+.border-radius(@radius: 5px) {
+    -khtml-border-radius: @radius;
+    -webkit-border-radius: @radius;
+    -moz-border-radius: @radius;
+    border-radius: @radius;
+}
+
+.box-shadow(@arguments) {
+    -webkit-box-shadow: @arguments;
+    -moz-box-shadow: @arguments;
+    box-shadow: @arguments;
+}
+
+.background-gradient(@startColor: #000, @endColor: #fff) {
+    background-color: @startColor;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
+    background-image: -webkit-linear-gradient(top, @startColor, @endColor);
+    background-image: -moz-linear-gradient(top, @startColor, @endColor);
+    background-image: -ms-linear-gradient(top, @startColor, @endColor);
+    background-image: -o-linear-gradient(top, @startColor, @endColor);
+    background-image: linear-gradient(top, @startColor, @endColor);
+}
+
+.background-gradient-image(@startColor: #000, @endColor: #fff, @image) {
+    background: @image @startColor;
+    background: @image, -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
+    background: @image, -webkit-linear-gradient(top, @startColor, @endColor);
+    background: @image, -moz-linear-gradient(top, @startColor, @endColor);
+    background: @image, -moz-linear-gradient(top, @startColor, @endColor);
+    background: @image, -ms-linear-gradient(top, @startColor, @endColor);
+    background: @image, -o-linear-gradient(top, @startColor, @endColor);
+    background: @image, linear-gradient(top, @startColor, @endColor);
+}
+
 body {
     font-family: "DejaVu Sans", "Bitstream Vera Sans", monospace;
     font-size: 14px;
     background-color: #eee;
     color: #313131;
+}
+
+a {
+    text-decoration: underline;
+    color: #333;
+    &:hover {
+        text-decoration: none;
+    }
+    img {
+        border: none;
+    }
+}
+
+strong {
+    font-weight: bold;
+}
+
+form {
+    .formLabel {
+        display: inline-block;
+        width: 200px;
+        text-align: right;
+        height: 23px;
+        vertical-align: top;
+        margin: 10px 0 10px 15px;
+    }
+    label {
+        font-weight: bold;
+        input[type=radio], input[type=checkbox] {
+            margin-top: 10px;
+        }
+        &.required:after {
+            content: " *";
+            color: red;
+        }
+    }
+    .formField {
+        display: inline-block;
+        width: 700px;
+        margin: 0 0 10px 10px;
+    }
+    .formErrors {
+        color: #f00;
+    }
+    .formButton, > div > .formErrors {
+        margin-left: 225px;
+    }
+    .description {
+        display: inline-block;
+        width: 200px;
+        margin-left: 5px;
+        font-size: 11px;
+        font-weight: normal;
+        color: #666;
+    }
+    input, textarea, select, button {
+        font-size: 14px;
+        border: solid 1px #aacfe4;
+        padding: 7px;
+        .border-radius(6px);
+        .background-gradient(#fff, #eee);
+        &:focus {
+            border-color: #8aafc4;
+        }
+    }
+    input[type=radio], input[type=checkbox] {
+        border: 0;
+    }
+    input[type=submit], input[type=button], input[type=reset], input[type=image], button {
+        .box-shadow(0 0 2px rgba(0, 0, 0, 0.4));
+        .background-gradient(#fff, #b9b9b9);
+        border: 1px solid rgba(0, 0, 0, 0.5);
+        padding: 5px;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
+        cursor: pointer;
+    }
+    input[type=email] {
+        width: 250px;
+    }
+    .listActions {
+        margin: 20px 0 20px 30px;
+        input {
+            float: none;
+            margin: 0;
+            margin-right: 15px;
+        }
+    }
+}
+
+header {
+    position: relative;
+    margin: auto;
+    width: 970px;
+    padding: 10px;
+    height: 100px;
+    .background-gradient(#b5dcf1, #83b0c9);
+    .box-shadow(0 1px 0 #fff);
+    text-shadow: 0 1px 0 #cae9f9;
+    border-bottom: 1px solid #558199;
+    border-left: 1px solid #bbb;
+    border-right: 1px solid #bbb;
+    .logout {
+        float: right;
+        margin: 55px 10px 0 0;
+    }
+}
+
+#title {
+    font-size: 22px;
+    margin: 10px 0 0 10px;
+    a {
+        text-decoration: none;
+    }
+}
+
+nav ul {
+    margin-top: 50px;
+    li {
+        display: inline;
+    }
+    a {
+        display: inline-block;
+        font-weight: bold;
+        text-decoration: none;
+        padding: 3px 5px;
+        margin: 2px;
+        letter-spacing: -1px;
+        word-spacing: -1px;
+        &:hover {
+            .border-radius(5px);
+            background-color: #fff;
+        }
+    }
+}
+
+#content {
+    width: 950px;
+    padding: 20px;
+    margin: auto;
+    background-color: #ddd;
+    border: 1px solid #bbb;
+    border-top: 0;
+    .clear {
+        clear: both;
+    }
+}
+
+h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #83b0c9;
+    text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.7);
+}
+
+footer {
+    position: relative;
+    margin: auto;
+    width: 970px;
+    padding: 10px;
+    height: 10px;
+    border: 1px solid #bbb;
+    border-top: 0;
+    background-color: #fff;
+    font-size: 11px;
+}
+
+#copyright {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    color: #777;
+}
+
+table.data {
+    width: 100%;
+    th {
+        .background-gradient(#b5dcf1, #83b0c9);
+        font-weight: bold;
+        font-size: 13px;
+        padding: 5px;
+        border-top: 1px solid #fff;
+        border-bottom: 1px solid #558199;
+        text-align: left;
+    }
+    td {
+        font-size: 12px;
+        padding: 4px;
+        border-bottom: 1px solid #ccc;
+        vertical-align: middle;
+    }
+    tr:nth-child(odd) td {
+        background-color: #eaeaea;
+    }
+    tr:hover td {
+        background-color: #c2deed;
+        cursor: pointer;
+    }
+    tr.selected td {
+        background-color: #ffc;
+    }
+}
+
+a.back {
+    display: inline-block;
+    text-decoration: none;
+    margin: 3px 20px 10px 0;
+    .border-radius(5px);
+    .box-shadow(0 0 2px rgba(0, 0, 0, 0.4));
+    .background-gradient-image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/back.png") no-repeat 4px 4px);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    padding-left: 28px;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
+    cursor: pointer;
 }
