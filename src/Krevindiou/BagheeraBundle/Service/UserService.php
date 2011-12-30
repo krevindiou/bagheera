@@ -141,11 +141,11 @@ class UserService
             $body = str_replace(
                 '%link%',
                 $link,
-                $this->_translator->trans('userEmailRegistrationBody')
+                $this->_translator->trans('user_email_registration_body')
             );
 
             $message = \Swift_Message::newInstance()
-                ->setSubject($this->_translator->trans('userEmailRegistrationSubject'))
+                ->setSubject($this->_translator->trans('user_email_registration_subject'))
                 ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
                 ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
                 ->setBody($body);
@@ -260,11 +260,11 @@ class UserService
             $body = str_replace(
                 '%link%',
                 $link,
-                $this->_translator->trans('userEmailResetPasswordBody')
+                $this->_translator->trans('user_email_reset_password_body')
             );
 
             $message = \Swift_Message::newInstance()
-                ->setSubject($this->_translator->trans('userEmailResetPasswordSubject'))
+                ->setSubject($this->_translator->trans('user_email_reset_password_subject'))
                 ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
                 ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
                 ->setBody($body);

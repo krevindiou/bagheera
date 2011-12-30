@@ -37,9 +37,9 @@ class UserResetPasswordForm extends AbstractType
         $builder
             ->add('password', 'repeated', array(
                 'type' => 'password',
-                'first_name' => 'userPassword',
-                'second_name' => 'userPasswordConfirmation',
-                'invalid_message' => 'The password fields must match.',
+                'first_name' => 'user_password',
+                'second_name' => 'user_password_confirmation',
+                'invalid_message' => 'user_password_fields_must_match',
             ))
         ;
     }

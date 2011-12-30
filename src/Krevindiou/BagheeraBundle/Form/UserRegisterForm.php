@@ -32,14 +32,14 @@ class UserRegisterForm extends AbstractType
     public function buildForm(FormBuilder $builder, array $options)
     {
         $builder
-            ->add('firstname')
-            ->add('lastname')
-            ->add('email', 'email')
+            ->add('firstname', null, array('label' => 'user_firstname'))
+            ->add('lastname', null, array('label' => 'user_lastname'))
+            ->add('email', 'email', array('label' => 'user_email'))
             ->add('password', 'repeated', array(
                 'type' => 'password',
-                'first_name' => 'userPassword',
-                'second_name' => 'userPasswordConfirmation',
-                'invalid_message' => 'The password fields must match.',
+                'first_name' => 'user_password',
+                'second_name' => 'user_password_confirmation',
+                'invalid_message' => 'user_password_fields_must_match',
             ))
         ;
     }

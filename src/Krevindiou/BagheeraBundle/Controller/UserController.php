@@ -65,7 +65,7 @@ class UserController extends Controller
                 if ($this->get('bagheera.user')->add($form->getData())) {
                     $this->get('session')->setFlash(
                         'notice',
-                        $this->get('translator')->trans('userRegisterFormConfirmation')
+                        $this->get('translator')->trans('user_register_confirmation')
                     );
 
                     return $this->redirect($this->generateUrl('login'));
@@ -97,7 +97,7 @@ class UserController extends Controller
                 if ($this->get('bagheera.user')->sendResetPasswordEmail($data['email'])) {
                     $this->get('session')->setFlash(
                         'notice',
-                        $this->get('translator')->trans('userForgotPasswordFormConfirmation')
+                        $this->get('translator')->trans('user_forgot_password_confirmation')
                     );
 
                     return $this->redirect($this->generateUrl('login'));
@@ -132,7 +132,7 @@ class UserController extends Controller
                     if ($this->get('bagheera.user')->resetPassword($data['password'], $key)) {
                         $this->get('session')->setFlash(
                             'notice',
-                            $this->get('translator')->trans('userResetPasswordFormConfirmation')
+                            $this->get('translator')->trans('user_reset_password_confirmation')
                         );
 
                         return $this->redirect($this->generateUrl('login'));
@@ -142,7 +142,7 @@ class UserController extends Controller
         } else {
             $this->get('session')->setFlash(
                 'notice',
-                $this->get('translator')->trans('userResetPasswordFormError')
+                $this->get('translator')->trans('user_reset_password_error')
             );
 
             return $this->redirect($this->generateUrl('login'));
@@ -166,12 +166,12 @@ class UserController extends Controller
         if ('' != $key && $this->get('bagheera.user')->activate($key)) {
             $this->get('session')->setFlash(
                 'notice',
-                $this->get('translator')->trans('userActivationConfirmation')
+                $this->get('translator')->trans('user_activation_confirmation')
             );
         } else {
             $this->get('session')->setFlash(
                 'notice',
-                $this->get('translator')->trans('userActivationError')
+                $this->get('translator')->trans('user_activation_error')
             );
         }
 
@@ -197,7 +197,7 @@ class UserController extends Controller
                 if ($this->get('bagheera.user')->update($form->getData())) {
                     $this->get('session')->setFlash(
                         'notice',
-                        $this->get('translator')->trans('userProfileFormConfirmation')
+                        $this->get('translator')->trans('user_profile_confirmation')
                     );
 
                     return $this->redirect($this->generateUrl('user_profile'));
@@ -228,7 +228,7 @@ class UserController extends Controller
                 $this->get('bagheera.user')->toggleDeactivation($users);
                 $this->get('session')->setFlash(
                     'notice',
-                    $this->get('translator')->trans('userToggleDeactivationOk')
+                    $this->get('translator')->trans('user_toggle_deactivation_ok')
                 );
             }
 
