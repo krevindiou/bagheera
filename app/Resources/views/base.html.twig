@@ -13,8 +13,6 @@
             <div id="title"><a href="{{ path('account_summary') }}">Bagheera</a></div>
 
             {% if app.getUser() is not empty %}
-            <p class="logout"><a href="{{ path('logout') }}">{% trans %}user_logout_link{% endtrans %}</a></p>
-
             <nav>
                 <ul>
                     <li><a href="{{ path('account_summary') }}">{% trans %}home_link{% endtrans %}</a></li>
@@ -25,6 +23,7 @@
                     {# <li><a href="{{ path('user_list') }}">{% trans %}admin_users_link{% endtrans %}</a></li> #}
                     {# <li><a href="{{ path('category_list') }}">{% trans %}admin_categories_link{% endtrans %}</a></li> #}
                     {# {% endif %} #}
+                    <li class="logout"><a href="{{ path('logout') }}">{% trans %}user_logout_link{% endtrans %}</a></li>
                 </ul>
             </nav>
             {% else %}
