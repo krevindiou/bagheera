@@ -54,3 +54,10 @@ services:
         class: Krevindiou\BagheeraBundle\Service\CategoryService
         arguments:
             - @doctrine.orm.entity_manager
+
+    bagheera.validator.field_exists:
+        class: Krevindiou\BagheeraBundle\Constraint\FieldExistsValidator
+        arguments:
+            - @doctrine
+        tags:
+            -  { name: validator.constraint_validator, alias: bagheera.validator.field_exists }

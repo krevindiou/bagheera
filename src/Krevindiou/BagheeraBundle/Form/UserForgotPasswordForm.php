@@ -23,6 +23,7 @@ use Symfony\Component\Form\FormBuilder;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
+use Krevindiou\BagheeraBundle\Constraint\FieldExists;
 
 /**
  * Forgot password form
@@ -44,7 +45,8 @@ class UserForgotPasswordForm extends AbstractType
         $collectionConstraint = new Collection(array(
             'email' => array(
                 new NotBlank(),
-                new Email()
+                new Email(),
+                new FieldExists('Krevindiou\BagheeraBundle\Entity\User', 'email')
             ),
         ));
 
