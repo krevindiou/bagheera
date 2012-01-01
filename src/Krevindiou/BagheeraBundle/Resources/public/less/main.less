@@ -250,6 +250,20 @@ table.data {
     }
 }
 
+a.new {
+    display: inline-block;
+    text-decoration: none;
+    margin: 3px 20px 10px 0;
+    .border-radius(5px);
+    .box-shadow(0 0 2px rgba(0, 0, 0, 0.4));
+    .background-gradient-image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/plus.png") no-repeat 4px 4px);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    padding-left: 28px;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
 a.back {
     display: inline-block;
     text-decoration: none;
@@ -262,4 +276,64 @@ a.back {
     padding-left: 28px;
     text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
     cursor: pointer;
+}
+
+.positive {
+    color: #1ca553;
+}
+.positive:before {
+    content: "+";
+}
+
+.negative {
+    color: red;
+}
+.negative:before {
+    content: "-";
+}
+
+input[type=submit].delete {
+    .background-gradient-image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/trash.png") no-repeat 4px 4px);
+    padding-left: 26px !important;
+}
+
+#formAccountList li {
+    width: 400px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    background-color: #eee;
+    .border-radius(7px);
+    padding: 15px;
+    table {
+        width: 100%;
+        th {
+            text-align: left;
+        }
+        th.bankName {
+            font-size: 15px;
+            font-weight: bold;
+        }
+        td.checkbox, th.checkbox {
+            width: 25px;
+            text-align: center;
+        }
+        td.accountName {
+            padding-left: 20px;
+        }
+        td.balance, th.balance {
+            text-align: right;
+            font-weight: bold;
+        }
+        td.edit, th.edit {
+            width: 30px;
+            text-align: right;
+            vertical-align: middle;
+        }
+    }
+}
+
+#totalBalance {
+    margin: 30px 0 0 16px;
+    font-size: 16px;
+    font-weight: bold;
 }

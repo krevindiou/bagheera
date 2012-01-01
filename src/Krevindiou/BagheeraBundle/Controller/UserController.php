@@ -166,12 +166,12 @@ class UserController extends Controller
         if ('' != $key && $this->get('bagheera.user')->activate($key)) {
             $this->get('session')->setFlash(
                 'notice',
-                $this->get('translator')->trans('user_activation_confirmation')
+                $this->get('translator')->trans('user_register_activation_confirmation')
             );
         } else {
             $this->get('session')->setFlash(
                 'notice',
-                $this->get('translator')->trans('user_activation_error')
+                $this->get('translator')->trans('user_register_activation_error')
             );
         }
 

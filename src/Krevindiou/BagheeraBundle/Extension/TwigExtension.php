@@ -24,7 +24,14 @@ class TwigExtension extends \Twig_Extension
     {
         return array(
             'var_dump' => new \Twig_Filter_Function('var_dump'),
+            'abs' => new \Twig_Filter_Function('abs'),
+            'money' => new \Twig_Filter_Method($this, 'moneyFilter'),
         );
+    }
+
+    public function moneyFilter($string)
+    {
+        return sprintf('%.2f', $string);
     }
 
     public function getName()

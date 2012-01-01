@@ -1,0 +1,51 @@
+{% extends '::base.html.twig' %}
+
+{% block pageTitle 'account_list_page_title'|trans %}
+
+{% block content %}
+<a href="{{ path('bank_new') }}" class="new">{% trans %}bank_new_link{% endtrans %}</a>
+
+{% if banks is not empty %}
+    <a href="{{ path('account_new') }}" class="new">{% trans %}account_new_link{% endtrans %}</a>
+
+    <form method="post" action="">
+        <ul id="formAccountList">
+            {% for bank in banks %}
+            <li>
+                <table>
+                    <tr>
+                        <th class="checkbox"><input type="checkbox" name="banksId[]" value="{{ bank.bankId }}"/></th>
+                        <th class="bankName">{{ bank.name }}</th>
+                        <th class="balance {{ (bankService.getBalance(app.user, bank) < 0 ? 'negative' : 'positive') }}">{{ bankService.getBalance(app.user, bank) | abs | money }}</th>
+                        <th class="edit"><a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{% trans %}bank_edit_link{% endtrans %}"/></a></th>
+                    </tr>
+
+                    {% if bank.getAccounts() is empty %}
+                    <tr>
+                        <td></td>
+                        <td colspan="3"><em>{% trans %}account_none{% endtrans %}</em></td>
+                    </tr>
+                    {% else %}
+                    {% for account in bank.getAccounts() %}
+                    <tr>
+                        <td class="checkbox"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
+                        <td class="accountName"><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
+                        <td class="balance {{ (accountService.getBalance(app.user, account) < 0 ? 'negative' : 'positive') }}">{{ accountService.getBalance(app.user, account) | abs | money }}</td>
+                        <td class="edit"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{% trans %}account_edit_link{% endtrans %}"/></a></td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </table>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="listActions">
+            <input type="submit" name="delete" class="delete" value="{% trans %}account_delete_button{% endtrans %}"/>
+            <input type="submit" name="share" disabled="disabled" value="{% trans %}account_share_button{% endtrans %}"/>
+        </div>
+    </form>
+
+    <p id="totalBalance">{% trans %}total_balance{% endtrans %} : <strong class="{{ (userService.getBalance(app.user) < 0 ? 'negative' : 'positive') }}">{{ userService.getBalance(app.user) | abs | money }}</strong></p>
+{% endif %}
+{% endblock %}

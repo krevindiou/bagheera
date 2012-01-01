@@ -20,17 +20,59 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
 class AccountController extends Controller
 {
     /**
      * @Route("/home", name="account_summary")
+     * @Method("GET")
      * @Template()
      */
     public function summaryAction()
     {
-        return array();
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        return array(
+            'banks' => $user->getBanks(),
+            'userService' => $this->get('bagheera.user'),
+            'bankService' => $this->get('bagheera.bank'),
+            'accountService' => $this->get('bagheera.account'),
+        );
+    }
+
+    /**
+     * @Route("/home")
+     * @Method("POST")
+     */
+    public function summaryActionsAction()
+    {
+        $request = $this->getRequest();
+
+        $accountsId = (array)$request->request->get('accountsId');
+        $banksId = (array)$request->request->get('banksId');
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        if ($request->request->get('delete')) {
+            $this->get('bagheera.account')->delete($user, $accountsId);
+            $this->get('bagheera.bank')->delete($user, $banksId);
+
+            $this->get('session')->setFlash(
+                'notice',
+                $this->get('translator')->trans('account_delete_confirmation')
+            );
+        } elseif ($request->request->get('share')) {
+            // @todo
+
+            $this->get('session')->setFlash(
+                'notice',
+                $this->get('translator')->trans('account_share_confirmation')
+            );
+        }
+
+        return $this->redirect($this->generateUrl('account_summary'));
     }
 
     /**
