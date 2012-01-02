@@ -32,9 +32,29 @@ class BankForm extends AbstractType
     public function buildForm(FormBuilder $builder, array $options)
     {
         $builder
-            ->add('name')
-            ->add('info')
-            ->add('contact')
+            ->add(
+                'name',
+                null,
+                array(
+                    'label' => 'bank_name'
+                )
+            )
+            ->add(
+                'info',
+                null,
+                array(
+                    'label' => 'bank_info',
+                    'attr' => array('cols' => 40, 'rows' => 5)
+                )
+            )
+            ->add(
+                'contact',
+                null,
+                array(
+                    'label' => 'bank_contact',
+                    'attr' => array('cols' => 40, 'rows' => 5)
+                )
+            )
         ;
     }
 

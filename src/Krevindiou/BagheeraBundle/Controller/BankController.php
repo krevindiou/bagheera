@@ -20,17 +20,44 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
+    Krevindiou\BagheeraBundle\Entity\Bank;
 
 class BankController extends Controller
 {
     /**
      * @Route("/edit-bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_edit")
-     * @Route("/new-bank", name="bank_new")
+     * @Route("/new-bank", defaults={"bankId" = null}, name="bank_new")
      * @Template()
      */
-    public function saveAction($bankId = null)
+    public function formAction(Bank $bank = null)
     {
-        return array();
+        $request = $this->getRequest();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $bankForm = $this->get('bagheera.bank')->getForm($user, $bank);
+        if (null === $bankForm) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($request->getMethod() == 'POST') {
+            $bankForm->bindRequest($request);
+
+            if ($bankForm->isValid()) {
+                if ($this->get('bagheera.bank')->save($user, $bankForm->getData())) {
+                    $this->get('session')->setFlash(
+                        'notice',
+                        $this->get('translator')->trans('bank_form_confirmation')
+                    );
+
+                    return $this->redirect($this->generateUrl('account_summary'));
+                }
+            }
+        }
+
+        return array(
+            'bankForm' => $bankForm->createView()
+        );
     }
 }
