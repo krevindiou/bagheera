@@ -5,7 +5,7 @@
 {% block content %}
 <a href="{{ path('bank_new') }}" class="new">{% trans %}bank_new_link{% endtrans %}</a>
 
-{% if banks is not empty %}
+{% if banks|length > 0 %}
     <a href="{{ path('account_new') }}" class="new">{% trans %}account_new_link{% endtrans %}</a>
 
     <form method="post" action="">
