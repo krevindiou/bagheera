@@ -10,3 +10,4 @@ Thumbs.db
 /app/logs/*
 /vendor/
 /app/config/parameters.ini
+/src/Krevindiou/BagheeraBundle/Resources/upload/BankDetails/*

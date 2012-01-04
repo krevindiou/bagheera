@@ -70,6 +70,10 @@ class Account
      *
      * @ORM\Column(name="details", type="string", length=64, nullable=true)
      * @Assert\MaxLength(64)
+     */
+    protected $details;
+
+    /**
      * @Assert\File(
      *     maxSize = "10M",
      *     mimeTypes = {
@@ -83,7 +87,7 @@ class Account
      *     }
      * )
      */
-    protected $details;
+    protected $detailsFile;
 
     /**
      * @var DateTime $createdAt
@@ -184,6 +188,42 @@ class Account
     }
 
     /**
+     * @ORM\PrePersist()
+     * @ORM\PreUpdate()
+     */
+    public function preUpload()
+    {
+        if (null !== $this->detailsFile) {
+            $this->details = uniqid() . '.' . $this->detailsFile->guessExtension();
+        }
+    }
+
+    /**
+     * @ORM\PostPersist()
+     * @ORM\PostUpdate()
+     */
+    public function upload()
+    {
+        if (null === $this->detailsFile) {
+            return;
+        }
+
+        $this->detailsFile->move($this->getUploadRootDir(), $this->details);
+
+        unset($this->detailsFile);
+    }
+
+    /**
+     * @ORM\PostRemove()
+     */
+    public function removeUpload()
+    {
+        if ($file = $this->getAbsolutePath()) {
+            unlink($file);
+        }
+    }
+
+    /**
      * Get accountId
      *
      * @return integer
@@ -271,6 +311,26 @@ class Account
     public function getDetails()
     {
         return $this->details;
+    }
+
+    /**
+     * Set detailsFile
+     *
+     * @param string $detailsFile
+     */
+    public function setDetailsFile($detailsFile)
+    {
+        $this->detailsFile = $detailsFile;
+    }
+
+    /**
+     * Get detailsFile
+     *
+     * @return string
+     */
+    public function getDetailsFile()
+    {
+        return $this->detailsFile;
     }
 
     /**
@@ -376,5 +436,15 @@ class Account
     public function __toString()
     {
         return $this->getName();
+    }
+
+    public function getAbsolutePath()
+    {
+        return null === $this->details ? null : $this->getUploadRootDir() . '/' . $this->details;
+    }
+
+    protected function getUploadRootDir()
+    {
+        return __DIR__ . '/../Resources/upload/BankDetails';
     }
 }

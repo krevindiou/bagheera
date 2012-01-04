@@ -8,11 +8,17 @@
         </div>
         <div class="formField">
             {{ form_errors(form) }}
-            {{ form_widget(form) }}
+
+            {% set widgetParams = {} %}
+            {% if filePath is defined %}
+                {% set widgetParams = {'filePath': filePath} %}
+            {% endif %}
+
+            {{ form_widget(form, widgetParams) }}
         </div>
     </div>
 {% endspaceless %}
-{% endblock field_row %}
+{% endblock %}
 
 {% block field_errors %}
 {% spaceless %}
@@ -22,6 +28,16 @@
             <li>{{ error.messageTemplate|trans(error.messageParameters, 'validators') }}</li>
         {% endfor %}
     </ul>
+    {% endif %}
+{% endspaceless %}
+{% endblock %}
+
+{% block file_widget %}
+{% spaceless %}
+    {% set type = type|default('text') %}
+    <input type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
+    {% if filePath is defined %}
+    &nbsp;<a href="{{ filePath }}">{% trans %}download{% endtrans %}</a>
     {% endif %}
 {% endspaceless %}
 {% endblock %}

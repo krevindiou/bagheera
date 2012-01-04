@@ -19,9 +19,11 @@
 namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
+    Symfony\Component\HttpFoundation\Response,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
+    Krevindiou\BagheeraBundle\Entity\Account;
 
 class AccountController extends Controller
 {
@@ -77,20 +79,56 @@ class AccountController extends Controller
 
     /**
      * @Route("/edit-account-{accountId}", requirements={"accountId" = "\d+"}, name="account_edit")
-     * @Route("/new-account", name="account_new")
+     * @Route("/new-account", defaults={"accountId" = null}, name="account_new")
      * @Template()
      */
-    public function saveAction($accountId = null)
+    public function formAction(Account $account = null)
     {
-        return array();
+        $request = $this->getRequest();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $accountForm = $this->get('bagheera.account')->getForm($user, $account);
+        if (null === $accountForm) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($request->getMethod() == 'POST') {
+            $accountForm->bindRequest($request);
+
+            if ($accountForm->isValid()) {
+                if ($this->get('bagheera.account')->save($user, $accountForm->getData())) {
+                    $this->get('session')->setFlash(
+                        'notice',
+                        $this->get('translator')->trans('account_form_confirmation')
+                    );
+
+                    return $this->redirect($this->generateUrl('account_summary'));
+                }
+            }
+        }
+
+        return array(
+            'account' => $account,
+            'accountForm' => $accountForm->createView()
+        );
     }
 
     /**
      * @Route("/account-details-{accountId}", requirements={"accountId" = "\d+"}, name="account_details")
-     * @Template()
      */
-    public function detailsAction($accountId)
+    public function detailsAction(Account $account)
     {
-        return array();
+        $filename = $account->getAbsolutePath();
+        if (null !== $filename && file_exists($filename)) {
+            $response = new Response(file_get_contents($filename));
+            $response->headers->set('Content-Type', mime_content_type($filename));
+            $response->headers->set('Content-Disposition', 'attachment; filename=' . $account->getDetails());
+            $response->headers->set('Content-Length', filesize($filename));
+
+            return $response;
+        }
+
+        throw $this->createNotFoundException();
     }
 }

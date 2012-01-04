@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
+use Krevindiou\BagheeraBundle\Entity\User;
 
 /**
  * Account form
@@ -29,21 +30,52 @@ use Symfony\Component\Form\FormBuilder;
  */
 class AccountForm extends AbstractType
 {
+    /**
+     * @var User
+     */
+    protected $_user;
+
+
+    /**
+     * @param User $user
+     */
+    public function __construct(User $user)
+    {
+        $this->_user = $user;
+    }
+
     public function buildForm(FormBuilder $builder, array $options)
     {
+        $user = $this->_user;
+
         $builder
             ->add(
                 'bank',
                 null,
                 array(
-                    'empty_value' => ''
+                    'label' => 'account_bank',
+                    'empty_value' => '',
+                    'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
+                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                        return $repository->createQueryBuilder('b')
+                            ->where('b.user = :user')
+                            ->setParameter('user', $user)
+                            ->add('orderBy', 'b.name ASC');
+                    }
                 )
             )
-            ->add('name')
+            ->add(
+                'name',
+                null,
+                array(
+                    'label' => 'account_name',
+                )
+            )
             ->add(
                 'initialBalance',
                 'money',
                 array(
+                    'label' => 'account_initial_balance',
                     'currency' => false
                 )
             )
@@ -51,10 +83,17 @@ class AccountForm extends AbstractType
                 'overdraftFacility',
                 'money',
                 array(
+                    'label' => 'account_overdraft_facility',
                     'currency' => false
                 )
             )
-            ->add('details')
+            ->add(
+                'detailsFile',
+                null,
+                array(
+                    'label' => 'account_details',
+                )
+            )
         ;
     }
 

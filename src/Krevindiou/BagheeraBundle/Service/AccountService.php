@@ -71,7 +71,7 @@ class AccountService
             return;
         }
 
-        $form = $this->_formFactory->create(new AccountForm(), $account);
+        $form = $this->_formFactory->create(new AccountForm($user), $account);
 
         return $form;
     }
