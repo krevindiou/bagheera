@@ -39,11 +39,11 @@
         <section id="content">
             <h1>{% block pageTitle %}{% endblock %}</h1>
 
-            {% if app.session.hasFlash('notice') %}
-            <div class="notice">
-            {{ app.session.flash('notice') }}
+            {% for key, message in app.session.getFlashes() %}
+            <div class="notification_{{ key }}">
+            {{ message|trans }}
             </div>
-            {% endif %}
+            {% endfor %}
 
             {% block content %}{% endblock %}
             <div class="clear"></div>
