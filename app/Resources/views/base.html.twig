@@ -34,6 +34,8 @@
                 </ul>
             </nav>
             {% endif %}
+
+            {% render "KrevindiouBagheeraBundle:Account:box" with { 'accountId': app.request.attributes.get('accountId') } %}
         </header>
 
         <section id="content">

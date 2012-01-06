@@ -45,6 +45,17 @@ class AccountController extends Controller
     }
 
     /**
+     * @Template()
+     */
+    public function boxAction(Account $account = null)
+    {
+        return array(
+            'account' => $account,
+            'accountService' => $this->get('bagheera.account')
+        );
+    }
+
+    /**
      * @Route("/home")
      * @Method("POST")
      */
