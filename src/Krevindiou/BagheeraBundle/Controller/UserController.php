@@ -63,10 +63,7 @@ class UserController extends Controller
 
             if ($form->isValid()) {
                 if ($this->get('bagheera.user')->add($form->getData())) {
-                    $this->get('session')->setFlash(
-                        'notice',
-                        $this->get('translator')->trans('user_register_confirmation')
-                    );
+                    $this->get('session')->setFlash('notice', 'user_register_confirmation');
 
                     return $this->redirect($this->generateUrl('login'));
                 }
@@ -95,10 +92,7 @@ class UserController extends Controller
                 $data = $form->getData();
 
                 if ($this->get('bagheera.user')->sendResetPasswordEmail($data['email'])) {
-                    $this->get('session')->setFlash(
-                        'notice',
-                        $this->get('translator')->trans('user_forgot_password_confirmation')
-                    );
+                    $this->get('session')->setFlash('notice', 'user_forgot_password_confirmation');
 
                     return $this->redirect($this->generateUrl('login'));
                 }
@@ -130,20 +124,14 @@ class UserController extends Controller
                     $data = $form->getData();
 
                     if ($this->get('bagheera.user')->resetPassword($data['password'], $key)) {
-                        $this->get('session')->setFlash(
-                            'notice',
-                            $this->get('translator')->trans('user_reset_password_confirmation')
-                        );
+                        $this->get('session')->setFlash('notice', 'user_reset_password_confirmation');
 
                         return $this->redirect($this->generateUrl('login'));
                     }
                 }
             }
         } else {
-            $this->get('session')->setFlash(
-                'notice',
-                $this->get('translator')->trans('user_reset_password_error')
-            );
+            $this->get('session')->setFlash('error', 'user_reset_password_error');
 
             return $this->redirect($this->generateUrl('login'));
         }
@@ -164,15 +152,9 @@ class UserController extends Controller
         $key = $request->query->get('key');
 
         if ('' != $key && $this->get('bagheera.user')->activate($key)) {
-            $this->get('session')->setFlash(
-                'notice',
-                $this->get('translator')->trans('user_register_activation_confirmation')
-            );
+            $this->get('session')->setFlash('notice', 'user_register_activation_confirmation');
         } else {
-            $this->get('session')->setFlash(
-                'notice',
-                $this->get('translator')->trans('user_register_activation_error')
-            );
+            $this->get('session')->setFlash('error', 'user_register_activation_error');
         }
 
         return $this->redirect($this->generateUrl('login'));
@@ -195,10 +177,7 @@ class UserController extends Controller
 
             if ($form->isValid()) {
                 if ($this->get('bagheera.user')->update($form->getData())) {
-                    $this->get('session')->setFlash(
-                        'notice',
-                        $this->get('translator')->trans('user_profile_confirmation')
-                    );
+                    $this->get('session')->setFlash('notice', 'user_profile_confirmation');
 
                     return $this->redirect($this->generateUrl('user_profile'));
                 }
@@ -226,10 +205,7 @@ class UserController extends Controller
         if (!empty($users)) {
             if ($toggleDeactivation) {
                 $this->get('bagheera.user')->toggleDeactivation($users);
-                $this->get('session')->setFlash(
-                    'notice',
-                    $this->get('translator')->trans('user_toggle_deactivation_ok')
-                );
+                $this->get('session')->setFlash('notice', 'user_toggle_deactivation_ok');
             }
 
             return $this->redirect($this->generateUrl('user_list', array('page' => $page)));

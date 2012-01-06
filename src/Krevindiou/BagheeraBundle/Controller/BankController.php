@@ -46,10 +46,7 @@ class BankController extends Controller
 
             if ($bankForm->isValid()) {
                 if ($this->get('bagheera.bank')->save($user, $bankForm->getData())) {
-                    $this->get('session')->setFlash(
-                        'notice',
-                        $this->get('translator')->trans('bank_form_confirmation')
-                    );
+                    $this->get('session')->setFlash('notice', 'bank_form_confirmation');
 
                     return $this->redirect($this->generateUrl('account_summary'));
                 }

@@ -61,17 +61,11 @@ class AccountController extends Controller
             $this->get('bagheera.account')->delete($user, $accountsId);
             $this->get('bagheera.bank')->delete($user, $banksId);
 
-            $this->get('session')->setFlash(
-                'notice',
-                $this->get('translator')->trans('account_delete_confirmation')
-            );
+            $this->get('session')->setFlash('notice', 'account_delete_confirmation');
         } elseif ($request->request->get('share')) {
             // @todo
 
-            $this->get('session')->setFlash(
-                'notice',
-                $this->get('translator')->trans('account_share_confirmation')
-            );
+            $this->get('session')->setFlash('notice', 'account_share_confirmation');
         }
 
         return $this->redirect($this->generateUrl('account_summary'));
@@ -98,10 +92,7 @@ class AccountController extends Controller
 
             if ($accountForm->isValid()) {
                 if ($this->get('bagheera.account')->save($user, $accountForm->getData())) {
-                    $this->get('session')->setFlash(
-                        'notice',
-                        $this->get('translator')->trans('account_form_confirmation')
-                    );
+                    $this->get('session')->setFlash('notice', 'account_form_confirmation');
 
                     return $this->redirect($this->generateUrl('account_summary'));
                 }
