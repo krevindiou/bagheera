@@ -7,26 +7,26 @@
 <form action="{{ path('login_check') }}" novalidate="novalidate" method="post">
     <div>
         {% if error %}
-        <ul class="formErrors"><li>{{ error.message|trans([], 'validators') }}</li></ul>
+        <ul class="form_errors"><li>{{ error.message|trans([], 'validators') }}</li></ul>
         {% endif %}
         <div>
-            <div class="formLabel">
+            <div class="form_label">
                 <label for="username">{% trans %}user_email{% endtrans %}</label>
             </div>
-            <div class="formField">
+            <div class="form_field">
                 <input type="email" id="username" name="_username" value="{{ last_username }}"/>
             </div>
         </div>
         <div>
-            <div class="formLabel">
+            <div class="form_label">
                 <label for="password">{% trans %}user_password{% endtrans %}</label>
             </div>
-            <div class="formField">
+            <div class="form_field">
                 <input type="password" id="password" name="_password"/>
             </div>
         </div>
     </div>
-    <div class="formButton">
+    <div class="form_button">
         <input type="submit" name="login" value="{% trans %}user_login_submit_button{% endtrans %}"/>
     </div>
 </form>

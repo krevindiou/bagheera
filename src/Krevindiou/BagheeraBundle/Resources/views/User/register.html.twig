@@ -8,7 +8,7 @@
 <form action="{{ path('user_register') }}" novalidate="novalidate" method="post" {{ form_enctype(registerForm) }}>
     {{ form_widget(registerForm) }}
 
-    <div class="formButton">
+    <div class="form_button">
         <input type="submit" value="{% trans %}user_register_submit_button{% endtrans %}"/>
     </div>
 </form>

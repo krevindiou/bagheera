@@ -3,10 +3,10 @@
 {% block field_row %}
 {% spaceless %}
     <div>
-        <div class="formLabel">
+        <div class="form_label">
             {{ form_label(form, label|default(null)) }}
         </div>
-        <div class="formField">
+        <div class="form_field">
             {{ form_errors(form) }}
 
             {% set widgetParams = {} %}
@@ -23,7 +23,7 @@
 {% block field_errors %}
 {% spaceless %}
     {% if errors|length > 0 %}
-    <ul class="formErrors">
+    <ul class="form_errors">
         {% for error in errors %}
             <li>{{ error.messageTemplate|trans(error.messageParameters, 'validators') }}</li>
         {% endfor %}

@@ -1,19 +1,19 @@
 @import "./reset.less";
 
-.border-radius(@radius: 5px) {
+.border_radius(@radius: 5px) {
     -khtml-border-radius: @radius;
     -webkit-border-radius: @radius;
     -moz-border-radius: @radius;
     border-radius: @radius;
 }
 
-.box-shadow(@arguments) {
+.box_shadow(@arguments) {
     -webkit-box-shadow: @arguments;
     -moz-box-shadow: @arguments;
     box-shadow: @arguments;
 }
 
-.background-gradient(@startColor: #000, @endColor: #fff) {
+.background_gradient(@startColor: #000, @endColor: #fff) {
     background-color: @startColor;
     background-image: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
     background-image: -webkit-linear-gradient(top, @startColor, @endColor);
@@ -23,7 +23,7 @@
     background-image: linear-gradient(top, @startColor, @endColor);
 }
 
-.background-gradient-image(@startColor: #000, @endColor: #fff, @image) {
+.background_gradient_image(@startColor: #000, @endColor: #fff, @image) {
     background: @image @startColor;
     background: @image, -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
     background: @image, -webkit-linear-gradient(top, @startColor, @endColor);
@@ -57,7 +57,7 @@ strong {
 }
 
 form {
-    .formLabel {
+    .form_label {
         display: inline-block;
         width: 200px;
         text-align: right;
@@ -75,15 +75,15 @@ form {
             color: red;
         }
     }
-    .formField {
+    .form_field {
         display: inline-block;
         width: 700px;
         margin: 0 0 10px 10px;
     }
-    .formErrors {
+    .form_errors {
         color: #f00;
     }
-    .formButton, > div > .formErrors {
+    .form_button, > div > .form_errors {
         margin-left: 225px;
     }
     .description {
@@ -98,8 +98,8 @@ form {
         font-size: 14px;
         border: solid 1px #aacfe4;
         padding: 7px;
-        .border-radius(6px);
-        .background-gradient(#fff, #eee);
+        .border_radius(6px);
+        .background_gradient(#fff, #eee);
         &:focus {
             border-color: #8aafc4;
         }
@@ -108,8 +108,8 @@ form {
         border: 0;
     }
     input[type=submit], input[type=button], input[type=reset], input[type=image], button {
-        .box-shadow(0 0 2px rgba(0, 0, 0, 0.4));
-        .background-gradient(#fff, #b9b9b9);
+        .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
+        .background_gradient(#fff, #b9b9b9);
         border: 1px solid rgba(0, 0, 0, 0.5);
         padding: 5px;
         text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
@@ -118,7 +118,7 @@ form {
     input[type=email] {
         width: 250px;
     }
-    .listActions {
+    .list_actions {
         margin: 20px 0 20px 30px;
         input {
             float: none;
@@ -134,8 +134,8 @@ header {
     width: 970px;
     padding: 10px;
     height: 100px;
-    .background-gradient(#b5dcf1, #83b0c9);
-    .box-shadow(0 1px 0 #fff);
+    .background_gradient(#b5dcf1, #83b0c9);
+    .box_shadow(0 1px 0 #fff);
     text-shadow: 0 1px 0 #cae9f9;
     border-bottom: 1px solid #558199;
     border-left: 1px solid #bbb;
@@ -168,7 +168,7 @@ nav ul {
         letter-spacing: -1px;
         word-spacing: -1px;
         &:hover {
-            .border-radius(5px);
+            .border_radius(5px);
             background-color: #fff;
         }
     }
@@ -236,7 +236,7 @@ footer {
 table.data {
     width: 100%;
     th {
-        .background-gradient(#b5dcf1, #83b0c9);
+        .background_gradient(#b5dcf1, #83b0c9);
         font-weight: bold;
         font-size: 13px;
         padding: 5px;
@@ -266,9 +266,9 @@ a.new {
     display: inline-block;
     text-decoration: none;
     margin: 3px 20px 10px 0;
-    .border-radius(5px);
-    .box-shadow(0 0 2px rgba(0, 0, 0, 0.4));
-    .background-gradient-image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/plus.png") no-repeat 4px 4px);
+    .border_radius(5px);
+    .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
+    .background_gradient_image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/plus.png") no-repeat 4px 4px);
     border: 1px solid rgba(0, 0, 0, 0.5);
     padding: 8px;
     padding-left: 28px;
@@ -280,9 +280,9 @@ a.back {
     display: inline-block;
     text-decoration: none;
     margin: 3px 20px 10px 0;
-    .border-radius(5px);
-    .box-shadow(0 0 2px rgba(0, 0, 0, 0.4));
-    .background-gradient-image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/back.png") no-repeat 4px 4px);
+    .border_radius(5px);
+    .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
+    .background_gradient_image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/back.png") no-repeat 4px 4px);
     border: 1px solid rgba(0, 0, 0, 0.5);
     padding: 8px;
     padding-left: 28px;
@@ -305,23 +305,23 @@ a.back {
 }
 
 input[type=submit].delete {
-    .background-gradient-image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/trash.png") no-repeat 4px 4px);
+    .background_gradient_image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/trash.png") no-repeat 4px 4px);
     padding-left: 26px !important;
 }
 
-#formAccountList li {
+#form_account_list li {
     width: 400px;
     margin-top: 5px;
     margin-bottom: 10px;
     background-color: #eee;
-    .border-radius(7px);
+    .border_radius(7px);
     padding: 15px;
     table {
         width: 100%;
         th {
             text-align: left;
         }
-        th.bankName {
+        th.bank_name {
             font-size: 15px;
             font-weight: bold;
         }
@@ -329,7 +329,7 @@ input[type=submit].delete {
             width: 25px;
             text-align: center;
         }
-        td.accountName {
+        td.account_name {
             padding-left: 20px;
         }
         td.balance, th.balance {
@@ -344,7 +344,7 @@ input[type=submit].delete {
     }
 }
 
-#totalBalance {
+#total_balance {
     margin: 30px 0 0 16px;
     font-size: 16px;
     font-weight: bold;

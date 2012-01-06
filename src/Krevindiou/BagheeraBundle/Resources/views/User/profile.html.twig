@@ -6,7 +6,7 @@
 <form action="{{ path('user_profile') }}" novalidate="novalidate" method="post" {{ form_enctype(profileForm) }}>
     {{ form_widget(profileForm) }}
 
-    <div class="formButton">
+    <div class="form_button">
         <input type="submit" value="{% trans %}user_profile_submit_button{% endtrans %}"/>
     </div>
 </form>
