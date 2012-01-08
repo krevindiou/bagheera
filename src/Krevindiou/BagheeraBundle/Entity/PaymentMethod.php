@@ -49,7 +49,7 @@ class PaymentMethod
      *
      * @ORM\Column(name="name", type="string", length=16, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"creditCard", "check", "withdrawal", "transfer", "deposit"})
+     * @Assert\Choice(choices = {"credit_card", "check", "withdrawal", "transfer", "deposit"})
      */
     protected $name;
 

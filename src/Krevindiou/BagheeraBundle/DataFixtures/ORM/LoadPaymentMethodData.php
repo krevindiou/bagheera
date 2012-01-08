@@ -11,7 +11,7 @@ class LoadPaymentMethodData extends AbstractFixture implements OrderedFixtureInt
     public function load($em)
     {
         $paymentMethod = new PaymentMethod();
-        $paymentMethod->setName('creditCard');
+        $paymentMethod->setName('credit_card');
         $paymentMethod->setType('debit');
         $em->persist($paymentMethod);
         $this->addReference('paymentmethod-debit-creditcard', $paymentMethod);
