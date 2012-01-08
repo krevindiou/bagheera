@@ -59,21 +59,44 @@ class OperationService
     }
 
     /**
+     * Returns operations list
+     *
+     * @param  User $user       User entity
+     * @param  Account $account Account entity
+     * @param  integer $page    Page number
+     * @return array
+     */
+    public function getList(User $user, Account $account, $page = 1)
+    {
+        if ($account->getBank()->getUser() == $user) {
+            return $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->findBy(
+                array('account' => $account->getAccountId()),
+                array('valueDate' => 'DESC')
+            );
+        }
+    }
+
+    /**
      * Returns operation form
      *
      * @param  User $user           User entity
      * @param  Operation $operation Operation entity
+     * @param  Account $account     Account entity for new operation
      * @return Form
      */
-    public function getForm(User $user, Operation $operation = null)
+    public function getForm(User $user, Operation $operation = null, Account $account = null)
     {
-        if (null === $operation) {
+        if (null === $operation && null !== $account) {
             $operation = new Operation();
-        } elseif ($user !== $operation->getAccount()->getBank()->getUser()) {
+            $operation->setAccount($account);
+        } elseif (null !== $operation && $user !== $operation->getAccount()->getBank()->getUser()) {
             return;
         }
 
-        $form = $this->_formFactory->create(new OperationForm(), $operation);
+        $form = $this->_formFactory->create(
+            new OperationForm($account ? : $operation->getAccount()),
+            $operation
+        );
 
         return $form;
     }
@@ -177,7 +200,7 @@ class OperationService
                     $this->_em->flush();
 
                     return true;
-                } catch (\Exception $e) {
+                } catch (\Exception $e) {;
                 }
             }
         }
@@ -240,27 +263,5 @@ class OperationService
         }
 
         return true;
-    }
-
-    /**
-     * Gets operations list
-     *
-     * @param  User $user       User entity
-     * @param  Account $account Account entity
-     * @param  integer $page    Page number
-     * @return array
-     */
-    public function getOperations(User $user, Account $account, $page = 1)
-    {
-        if ($user === $account->getBank()->getUser()) {
-            $dql = 'SELECT o ';
-            $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-            $dql.= 'WHERE o.account = :account ';
-            $dql.= 'ORDER BY o.valueDate DESC ';
-            $query = $this->_em->createQuery($dql);
-            $query->setParameter('account', $account);
-
-            return $query->getResult();
-        }
     }
 }

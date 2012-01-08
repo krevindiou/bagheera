@@ -20,26 +20,92 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
+    Krevindiou\BagheeraBundle\Entity\Operation,
+    Krevindiou\BagheeraBundle\Entity\Account;
 
 class OperationController extends Controller
 {
     /**
-     * @Route("/operations", name="operation_list")
+     * @Route("/operations-account-{accountId}", requirements={"accountId" = "\d+"}, name="operation_list")
+     * @Method("GET")
      * @Template()
      */
-    public function listAction()
+    public function listAction(Account $account)
     {
-        return array();
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $operations = $this->get('bagheera.operation')->getList($user, $account);
+        if (null === $operations) {
+            throw $this->createNotFoundException();
+        }
+
+        return array(
+            'account' => $account,
+            'operations' => $operations,
+        );
     }
 
     /**
-     * @Route("/edit-operation-{operationId}", requirements={"operationId" = "\d+"}, name="operation_edit")
-     * @Route("/new-operation", name="operation_new")
+     * @Route("/operations-account-{accountId}", requirements={"accountId" = "\d+"})
+     * @Method("POST")
+     */
+    public function listActionsAction(Account $account)
+    {
+        $request = $this->getRequest();
+
+        $operationsId = (array)$request->request->get('operationsId');
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        if ($request->request->get('delete')) {
+            $this->get('bagheera.operation')->delete($user, $operationsId);
+            $this->get('session')->setFlash('notice', 'operation_delete_confirmation');
+        } elseif ($request->request->get('reconcile')) {
+            $this->get('bagheera.operation')->reconcile($user, $operationsId);
+            $this->get('session')->setFlash('notice', 'operation_reconcile_confirmation');
+        }
+
+        return $this->redirect(
+            $this->generateUrl('operation_list', array('accountId' => $account->getAccountId()))
+        );
+    }
+
+    /**
+     * @Route("/edit-operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_edit")
+     * @Route("/new-operation-account-{accountId}", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_new")
      * @Template()
      */
-    public function saveAction($operationId = null)
+    public function formAction(Account $account = null, Operation $operation = null)
     {
-        return array();
+        $request = $this->getRequest();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $operationForm = $this->get('bagheera.operation')->getForm($user, $operation, $account);
+        if (null === $operationForm) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($request->getMethod() == 'POST') {
+            $operationForm->bindRequest($request);
+
+            if ($operationForm->isValid()) {
+                if ($this->get('bagheera.operation')->save($user, $operationForm->getData())) {
+                    $this->get('session')->setFlash('notice', 'operation_form_confirmation');
+
+                    return $this->redirect(
+                        $this->generateUrl('operation_list', array('accountId' => $operationForm->getData()->getAccount()->getAccountId()))
+                    );
+                }
+            }
+        }
+
+        return array(
+            'account' => $account ? : $operation->getAccount(),
+            'operation' => $operationForm->getData(),
+            'operationForm' => $operationForm->createView()
+        );
     }
 }

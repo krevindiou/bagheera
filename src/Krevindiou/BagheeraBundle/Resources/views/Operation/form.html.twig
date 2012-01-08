@@ -1,0 +1,15 @@
+{% extends '::base.html.twig' %}
+
+{% block pageTitle 'operation_form_page_title'|trans %}
+
+{% block content %}
+<a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="back">{% trans %}back_link{% endtrans %}</a>
+
+<form action="" novalidate="novalidate" method="post" {{ form_enctype(operationForm) }}>
+    {{ form_widget(operationForm) }}
+
+    <div class="form_button">
+        <input type="submit" value="{% trans %}operation_form_submit_button{% endtrans %}"/>
+    </div>
+</form>
+{% endblock %}

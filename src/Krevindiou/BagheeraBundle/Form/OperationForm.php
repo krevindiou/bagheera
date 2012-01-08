@@ -24,6 +24,8 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\CallbackValidator;
 use Symfony\Component\Validator\Constraints as Assert;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
 
 /**
  * Operation form
@@ -33,30 +35,125 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class OperationForm extends AbstractType
 {
+    /**
+     * @var Account
+     */
+    protected $_account;
+
+
+    /**
+     * @param Account $account
+     */
+    public function __construct(Account $account)
+    {
+        $this->_account = $account;
+    }
+
     public function buildForm(FormBuilder $builder, array $options)
     {
+        $account = $this->_account;
+
+        $subscriber = new OperationAmountFieldSubscriber($builder->getFormFactory());
+        $builder->addEventSubscriber($subscriber);
+
         $builder
-            ->add('thirdParty')
             ->add(
-                'debit',
-                'money',
+                'type',
+                'choice',
                 array(
-                    'currency' => false
+                    'label' => 'operation_type',
+                    'property_path' => false,
+                    'expanded' => true,
+                    'required' => false,
+                    'choices' => array(
+                        'debit' => 'operation_debit',
+                        'credit' => 'operation_credit'
+                    )
                 )
             )
             ->add(
-                'credit',
-                'money',
+                'thirdParty',
+                null,
                 array(
-                    'currency' => false
+                    'label' => 'operation_third_party',
+                    'attr' => array(
+                        'size' => 40
+                    )
                 )
             )
-            ->add('valueDate')
-            ->add('isReconciled')
-            ->add('notes')
-            ->add('transferAccount')
-            ->add('category')
-            ->add('paymentMethod')
+            ->add(
+                'amount',
+                'money',
+                array(
+                    'label' => 'operation_amount',
+                    'currency' => false,
+                    'property_path' => false,
+                    'attr' => array(
+                        'size' => 10
+                    )
+                )
+            )
+            ->add(
+                'category',
+                null,
+                array(
+                    'label' => 'operation_category',
+                    'empty_value' => '',
+                    'required' => false
+                )
+            )
+            ->add(
+                'paymentMethod',
+                null,
+                array(
+                    'label' => 'operation_payment_method',
+                    'empty_value' => ''
+                )
+            )
+            ->add(
+                'transferAccount',
+                null,
+                array(
+                    'label' => 'operation_transfer_account',
+                    'empty_value' => 'operation_external_account',
+                    'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
+                        return $repository->createQueryBuilder('a')
+                            ->innerJoin('a.bank', 'b')
+                            ->where('b.user = :user')
+                            ->andWhere('a != :account')
+                            ->setParameter('user', $account->getBank()->getUser())
+                            ->setParameter('account', $account)
+                            ->add('orderBy', 'a.name ASC');
+                    }
+                )
+            )
+            ->add(
+                'valueDate',
+                null,
+                array(
+                    'label' => 'operation_value_date'
+                )
+            )
+            ->add(
+                'notes',
+                null,
+                array(
+                    'label' => 'operation_notes',
+                    'attr' => array(
+                        'cols' => 30,
+                        'rows' => 5
+                    )
+                )
+            )
+            ->add(
+                'isReconciled',
+                null,
+                array(
+                    'label' => 'operation_is_reconciled',
+                    'required' => false
+                )
+            )
         ;
 
         $builder->addValidator(
@@ -66,11 +163,8 @@ class OperationForm extends AbstractType
                     $validator = new Assert\NotBlankValidator();
                     $constraint = new Assert\NotBlank();
 
-                    if (
-                        !$validator->isValid($form['debit']->getData(), $constraint)
-                        && !$validator->isValid($form['credit']->getData(), $constraint)
-                    ) {
-                        $form->addError(new FormError($constraint->message));
+                    if (!$validator->isValid($form['amount']->getData(), $constraint)) {
+                        $form->get('amount')->addError(new FormError($constraint->message));
                     }
                 }
             )

@@ -1,0 +1,51 @@
+{% extends '::base.html.twig' %}
+
+{% block pageTitle 'operation_list_page_title'|trans %}
+
+{% block content %}
+<a href="{{ path('account_summary') }}" class="back">{% trans %}back_link{% endtrans %}</a><br/>
+<a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new">{% trans %}operation_new_link{% endtrans %}</a><br/>
+{# <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="new">{% trans %}scheduler_list{% endtrans %}</a> #}
+
+{% if operations|length > 0 %}
+<form method="post" action="">
+    <table class="data">
+        <tr>
+            <th></th>
+            <th></th>
+            <th>{% trans %}operation_third_party{% endtrans %}</th>
+            <th>{% trans %}operation_category{% endtrans %}</th>
+            <th>{% trans %}operation_payment_method{% endtrans %}</th>
+            <th>{% trans %}operation_debit{% endtrans %}</th>
+            <th>{% trans %}operation_credit{% endtrans %}</th>
+            <th>{% trans %}operation_value_date{% endtrans %}</th>
+            <th class="edit"></th>
+        </tr>
+        {% for operation in operations %}
+        <tr>
+            <td><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
+            <td>
+                {{ (operation.isReconciled ? '<img src="' ~ asset('/bundles/krevindioubagheera/images/reconciled.png') ~ '" alt="R"/>&nbsp;' : '')|raw }}
+                {{ ((operation.scheduler is not null) ? '<img src="' ~ asset('/bundles/krevindioubagheera/images/scheduler.png') ~ '" alt="S"/>' : '')|raw }}
+            </td>
+            <td>{{ operation.thirdParty }}</td>
+            <td>{{ (operation.category is not null) ? operation.category.name : '' }}</td>
+            <td>{{ ('payment_method_' ~ operation.paymentMethod.name)|trans }}</td>
+            <td class="debit{{ (0 != operation.debit) ? ' negative' : '' }}">{{ (0 != operation.debit) ? operation.debit : '' }}</td>
+            <td class="credit{{ (0 != operation.credit) ? ' positive' : '' }}">{{ (0 != operation.credit) ? operation.credit : '' }}</td>
+            <td>{{ operation.valueDate|date('Y-m-d') }}</td>
+            <td class="edit"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}">{% trans %}operation_edit_link{% endtrans %}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="list_actions">
+        <input type="submit" name="delete" value="{% trans %}operation_delete_button{% endtrans %}" />
+        <input type="submit" name="reconcile" value="{% trans %}operation_reconcile_button{% endtrans %}" />
+    </div>
+
+{# @todo pager #}
+
+</form>
+{% endif %}
+{% endblock %}

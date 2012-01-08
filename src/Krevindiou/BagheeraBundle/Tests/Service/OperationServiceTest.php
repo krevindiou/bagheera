@@ -46,7 +46,8 @@ class OperationServiceTest extends TestCase
 
     public function testGetFormForNewOperation()
     {
-        $form = $this->get('bagheera.operation')->getForm($this->john);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $form = $this->get('bagheera.operation')->getForm($this->john, null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
@@ -155,7 +156,7 @@ class OperationServiceTest extends TestCase
     public function testGetOperations()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-        $operations = $this->get('bagheera.operation')->getOperations($this->john, $account);
+        $operations = $this->get('bagheera.operation')->getList($this->john, $account);
 
         $this->assertEquals(count($operations), 4);
     }
@@ -164,12 +165,12 @@ class OperationServiceTest extends TestCase
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
-        $operationsBeforeDelete = $this->get('bagheera.operation')->getOperations($this->john, $account);
+        $operationsBeforeDelete = $this->get('bagheera.operation')->getList($this->john, $account);
 
         $operationsId = array(1, 3);
         $this->get('bagheera.operation')->delete($this->john, $operationsId);
 
-        $operationsAfterDelete = $this->get('bagheera.operation')->getOperations($this->john, $account);
+        $operationsAfterDelete = $this->get('bagheera.operation')->getList($this->john, $account);
 
         $this->assertEquals(count($operationsAfterDelete), count($operationsBeforeDelete) - 2);
     }

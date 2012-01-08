@@ -165,8 +165,9 @@ class Operation
 
     public function __construct()
     {
-        $this->notes = '';
-        $this->isReconciled = false;
+        $this->setNotes('');
+        $this->setIsReconciled(false);
+        $this->setValueDate(new \DateTime());
     }
 
     /**
