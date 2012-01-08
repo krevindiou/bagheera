@@ -3,7 +3,7 @@
     <head>
         <title>Bagheera - {{ block('pageTitle') }}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        {% stylesheets filter='lessphp' output='css/main.css' '@KrevindiouBagheeraBundle/Resources/public/less/main.less' %}
+        {% stylesheets filter='lessphp' output='css/main.css' '@KrevindiouBagheeraBundle/Resources/less/main.less' %}
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
