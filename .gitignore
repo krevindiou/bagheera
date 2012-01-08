@@ -11,3 +11,4 @@ Thumbs.db
 /vendor/
 /app/config/parameters.ini
 /src/Krevindiou/BagheeraBundle/Resources/upload/BankDetails/*
+!.gitkeep
