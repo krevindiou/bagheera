@@ -135,8 +135,8 @@ class User implements AdvancedUserInterface
 
     public function __construct()
     {
-        $this->isAdmin = false;
-        $this->isActive = false;
+        $this->setIsAdmin(false);
+        $this->setIsActive(false);
         $this->banks = new ArrayCollection();
     }
 
