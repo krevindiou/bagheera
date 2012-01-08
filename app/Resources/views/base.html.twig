@@ -7,6 +7,12 @@
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
+        <script src="{{ asset('/bundles/krevindioubagheera/js/head.load.min.js') }}"></script>
+        <script>
+        head.js(
+            "{{ asset('/bundles/krevindioubagheera/js/jquery-1.7.1.min.js') }}"
+        );
+        </script>
     </head>
     <body>
         <header>
