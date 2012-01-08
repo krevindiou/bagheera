@@ -188,6 +188,7 @@ class OperationService
                         $operation->setTransferOperation(null);
 
                         try {
+                            $this->_em->flush();
                             $this->_em->remove($transferOperationBeforeSave);
                         } catch (\Exception $e) {
                             return false;
