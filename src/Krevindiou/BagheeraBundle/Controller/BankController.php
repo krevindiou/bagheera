@@ -48,7 +48,7 @@ class BankController extends Controller
                 if ($this->get('bagheera.bank')->save($user, $bankForm->getData())) {
                     $this->get('session')->setFlash('notice', 'bank_form_confirmation');
 
-                    return $this->redirect($this->generateUrl('account_summary'));
+                    return $this->redirect($this->generateUrl('account_list'));
                 }
             }
         }

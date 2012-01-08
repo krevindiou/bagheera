@@ -28,11 +28,11 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
 class AccountController extends Controller
 {
     /**
-     * @Route("/home", name="account_summary")
+     * @Route("/home", name="account_list")
      * @Method("GET")
      * @Template()
      */
-    public function summaryAction()
+    public function listAction()
     {
         $user = $this->get('security.context')->getToken()->getUser();
 
@@ -45,21 +45,10 @@ class AccountController extends Controller
     }
 
     /**
-     * @Template()
-     */
-    public function boxAction(Account $account = null)
-    {
-        return array(
-            'account' => $account,
-            'accountService' => $this->get('bagheera.account')
-        );
-    }
-
-    /**
      * @Route("/home")
      * @Method("POST")
      */
-    public function summaryActionsAction()
+    public function listActionsAction()
     {
         $request = $this->getRequest();
 
@@ -71,15 +60,24 @@ class AccountController extends Controller
         if ($request->request->get('delete')) {
             $this->get('bagheera.account')->delete($user, $accountsId);
             $this->get('bagheera.bank')->delete($user, $banksId);
-
             $this->get('session')->setFlash('notice', 'account_delete_confirmation');
         } elseif ($request->request->get('share')) {
             // @todo
-
             $this->get('session')->setFlash('notice', 'account_share_confirmation');
         }
 
-        return $this->redirect($this->generateUrl('account_summary'));
+        return $this->redirect($this->generateUrl('account_list'));
+    }
+
+    /**
+     * @Template()
+     */
+    public function boxAction(Account $account = null)
+    {
+        return array(
+            'account' => $account,
+            'accountService' => $this->get('bagheera.account')
+        );
     }
 
     /**
@@ -105,7 +103,7 @@ class AccountController extends Controller
                 if ($this->get('bagheera.account')->save($user, $accountForm->getData())) {
                     $this->get('session')->setFlash('notice', 'account_form_confirmation');
 
-                    return $this->redirect($this->generateUrl('account_summary'));
+                    return $this->redirect($this->generateUrl('account_list'));
                 }
             }
         }

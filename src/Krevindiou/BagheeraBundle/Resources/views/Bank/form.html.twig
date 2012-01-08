@@ -3,7 +3,7 @@
 {% block pageTitle 'bank_form_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('account_summary') }}" class="back">{% trans %}back_link{% endtrans %}</a>
+<a href="{{ path('account_list') }}" class="back">{% trans %}back_link{% endtrans %}</a>
 
 <form action="" novalidate="novalidate" method="post" {{ form_enctype(bankForm) }}>
     {{ form_widget(bankForm) }}

@@ -10,12 +10,12 @@
     </head>
     <body>
         <header>
-            <div id="title"><a href="{{ path('account_summary') }}">Bagheera</a></div>
+            <div id="title"><a href="{{ path('account_list') }}">Bagheera</a></div>
 
             {% if app.getUser() is not empty %}
             <nav>
                 <ul>
-                    <li><a href="{{ path('account_summary') }}">{% trans %}home_link{% endtrans %}</a></li>
+                    <li><a href="{{ path('account_list') }}">{% trans %}home_link{% endtrans %}</a></li>
                     <li><a href="{{ path('user_profile') }}">{% trans %}profile_link{% endtrans %}</a></li>
                     {# <li><a href="{{ path('share_list') }}">{% trans %}shares_link{% endtrans %}</a></li> #}
                     {# <li><a href="{{ path('report_ist') }}">{% trans %}reports_link{% endtrans %}</a></li> #}
