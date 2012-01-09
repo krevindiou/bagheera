@@ -28,7 +28,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
 class AccountController extends Controller
 {
     /**
-     * @Route("/home", name="account_list")
+     * @Route("/", name="account_list")
      * @Method("GET")
      * @Template()
      */
