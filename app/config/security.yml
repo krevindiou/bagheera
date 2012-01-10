@@ -19,7 +19,7 @@ security:
             security: false
 
         anonymous:
-            pattern:  ^/(login|register|activate|forgot-password|reset-password)$
+            pattern:  ^/(login|register|activate|forgot-password|reset-password|translations\.js)$
             security: false
 
         secured_area:

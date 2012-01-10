@@ -10,7 +10,13 @@
         <script src="{{ asset('/bundles/krevindioubagheera/js/head.load.min.js') }}"></script>
         <script>
         head.js(
-            "{{ asset('/bundles/krevindioubagheera/js/jquery-1.7.1.min.js') }}"
+            "{{ asset('/bundles/krevindioubagheera/js/jquery-1.7.1.min.js') }}",
+            "{{ asset('/bundles/krevindioubagheera/js/Bagheera.js') }}",
+            "{{ asset('/translations.js') }}",
+            function () {
+                Bagheera.baseUrl = "/";
+                Bagheera.init();
+            }
         );
         </script>
     </head>
