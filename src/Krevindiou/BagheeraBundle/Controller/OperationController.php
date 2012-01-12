@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
+    Symfony\Component\HttpFoundation\Request,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
@@ -51,10 +52,8 @@ class OperationController extends Controller
      * @Route("/operations-account-{accountId}", requirements={"accountId" = "\d+"})
      * @Method("POST")
      */
-    public function listActionsAction(Account $account)
+    public function listActionsAction(Request $request, Account $account)
     {
-        $request = $this->getRequest();
-
         $operationsId = (array)$request->request->get('operationsId');
 
         $user = $this->get('security.context')->getToken()->getUser();
@@ -77,10 +76,8 @@ class OperationController extends Controller
      * @Route("/new-operation-account-{accountId}", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_new")
      * @Template()
      */
-    public function formAction(Account $account = null, Operation $operation = null)
+    public function formAction(Request $request, Account $account = null, Operation $operation = null)
     {
-        $request = $this->getRequest();
-
         $user = $this->get('security.context')->getToken()->getUser();
 
         $operationForm = $this->get('bagheera.operation')->getForm($user, $operation, $account);

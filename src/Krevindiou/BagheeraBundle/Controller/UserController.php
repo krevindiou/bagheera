@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Symfony\Component\Security\Core\SecurityContext,
+    Symfony\Component\HttpFoundation\Request,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     JMS\SecurityExtraBundle\Annotation\Secure,
@@ -30,9 +31,8 @@ class UserController extends Controller
     /**
      * @Template
      */
-    public function loginAction()
+    public function loginAction(Request $request)
     {
-        $request = $this->getRequest();
         $session = $request->getSession();
 
         // Get the login error if there is one
@@ -52,10 +52,8 @@ class UserController extends Controller
      * @Route("/register", name="user_register")
      * @Template
      */
-    public function registerAction()
+    public function registerAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $form = $this->get('bagheera.user')->getRegisterForm();
 
         if ($request->getMethod() == 'POST') {
@@ -79,10 +77,8 @@ class UserController extends Controller
      * @Route("/forgot-password", name="user_forgot_password")
      * @Template
      */
-    public function forgotPasswordAction()
+    public function forgotPasswordAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $form = $this->get('bagheera.user')->getForgotPasswordForm();
 
         if ($request->getMethod() == 'POST') {
@@ -108,10 +104,8 @@ class UserController extends Controller
      * @Route("/reset-password", name="user_reset_password")
      * @Template
      */
-    public function resetPasswordAction()
+    public function resetPasswordAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $key = $request->query->get('key');
 
         $form = $this->get('bagheera.user')->getResetPasswordForm($key);
@@ -145,10 +139,8 @@ class UserController extends Controller
     /**
      * @Route("/activate", name="user_activate")
      */
-    public function activateAction()
+    public function activateAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $key = $request->query->get('key');
 
         if ('' != $key && $this->get('bagheera.user')->activate($key)) {
@@ -164,10 +156,8 @@ class UserController extends Controller
      * @Route("/profile", name="user_profile")
      * @Template
      */
-    public function profileAction()
+    public function profileAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $form = $this->get('bagheera.user')->getProfileForm(
             $this->get('security.context')->getToken()->getUser()
         );
@@ -194,10 +184,8 @@ class UserController extends Controller
      * @Template
      * @Secure(roles="ROLE_ADMIN")
      */
-    public function listAction()
+    public function listAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $page = $request->query->getInt('page', 1);
         $users = (array)$request->request->get('users');
         $toggleDeactivation = $request->request->get('toggleDeactivation');

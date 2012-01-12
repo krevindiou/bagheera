@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
+    Symfony\Component\HttpFoundation\Request,
     Symfony\Component\HttpFoundation\Response,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
@@ -48,10 +49,8 @@ class AccountController extends Controller
      * @Route("/home")
      * @Method("POST")
      */
-    public function listActionsAction()
+    public function listActionsAction(Request $request)
     {
-        $request = $this->getRequest();
-
         $accountsId = (array)$request->request->get('accountsId');
         $banksId = (array)$request->request->get('banksId');
 
@@ -85,10 +84,8 @@ class AccountController extends Controller
      * @Route("/new-account", defaults={"accountId" = null}, name="account_new")
      * @Template()
      */
-    public function formAction(Account $account = null)
+    public function formAction(Request $request, Account $account = null)
     {
-        $request = $this->getRequest();
-
         $user = $this->get('security.context')->getToken()->getUser();
 
         $accountForm = $this->get('bagheera.account')->getForm($user, $account);

@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
+    Symfony\Component\HttpFoundation\Request,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Krevindiou\BagheeraBundle\Entity\Bank;
@@ -30,10 +31,8 @@ class BankController extends Controller
      * @Route("/new-bank", defaults={"bankId" = null}, name="bank_new")
      * @Template()
      */
-    public function formAction(Bank $bank = null)
+    public function formAction(Request $request, Bank $bank = null)
     {
-        $request = $this->getRequest();
-
         $user = $this->get('security.context')->getToken()->getUser();
 
         $bankForm = $this->get('bagheera.bank')->getForm($user, $bank);
