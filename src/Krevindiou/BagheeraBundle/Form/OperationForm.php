@@ -62,6 +62,7 @@ class OperationForm extends AbstractType
                 'choice',
                 array(
                     'label' => 'operation_type',
+                    'data' => 'debit',
                     'property_path' => false,
                     'expanded' => true,
                     'required' => false,
