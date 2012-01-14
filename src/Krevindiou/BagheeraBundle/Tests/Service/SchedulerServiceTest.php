@@ -46,7 +46,8 @@ class SchedulerServiceTest extends TestCase
 
     public function testGetFormForNewScheduler()
     {
-        $form = $this->get('bagheera.scheduler')->getForm($this->john);
+        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $form = $this->get('bagheera.scheduler')->getForm($this->john, null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
@@ -116,7 +117,7 @@ class SchedulerServiceTest extends TestCase
     public function testGetSchedulers()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-        $schedulers = $this->get('bagheera.scheduler')->getSchedulers($this->john, $account);
+        $schedulers = $this->get('bagheera.scheduler')->getList($this->john, $account);
 
         $this->assertEquals(count($schedulers), 2);
     }
@@ -125,12 +126,12 @@ class SchedulerServiceTest extends TestCase
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
-        $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getSchedulers($this->john, $account);
+        $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
 
         $schedulersId = array(2);
         $this->get('bagheera.scheduler')->delete($this->john, $schedulersId);
 
-        $schedulersAfterDelete = $this->get('bagheera.scheduler')->getSchedulers($this->john, $account);
+        $schedulersAfterDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
 
         $this->assertEquals(count($schedulersAfterDelete), count($schedulersBeforeDelete) - 1);
     }

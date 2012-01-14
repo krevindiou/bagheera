@@ -19,27 +19,87 @@
 namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
+    Symfony\Component\HttpFoundation\Request,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
+    Krevindiou\BagheeraBundle\Entity\Scheduler,
+    Krevindiou\BagheeraBundle\Entity\Account;
 
 class SchedulerController extends Controller
 {
     /**
-     * @Route("/schedulers", name="scheduler_list")
+     * @Route("/schedulers-account-{accountId}", requirements={"accountId" = "\d+"}, name="scheduler_list")
+     * @Method("GET")
      * @Template()
      */
-    public function listAction()
+    public function listAction(Account $account)
     {
-        return array();
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $schedulers = $this->get('bagheera.scheduler')->getList($user, $account);
+        if (null === $schedulers) {
+            throw $this->createNotFoundException();
+        }
+
+        return array(
+            'account' => $account,
+            'schedulers' => $schedulers,
+        );
     }
 
     /**
-     * @Route("/edit-scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, name="scheduler_edit")
-     * @Route("/new-scheduler", name="scheduler_new")
+     * @Route("/schedulers-account-{accountId}", requirements={"accountId" = "\d+"})
+     * @Method("POST")
+     */
+    public function listActionsAction(Request $request, Account $account)
+    {
+        $schedulersId = (array)$request->request->get('schedulersId');
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        if ($request->request->get('delete')) {
+            $this->get('bagheera.scheduler')->delete($user, $schedulersId);
+            $this->get('session')->setFlash('notice', 'scheduler_delete_confirmation');
+        }
+
+        return $this->redirect(
+            $this->generateUrl('scheduler_list', array('accountId' => $account->getAccountId()))
+        );
+    }
+
+    /**
+     * @Route("/edit-scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_edit")
+     * @Route("/new-scheduler-account-{accountId}", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_new")
      * @Template()
      */
-    public function saveAction($schedulerId = null)
+    public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
     {
-        return array();
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $schedulerForm = $this->get('bagheera.scheduler')->getForm($user, $scheduler, $account);
+        if (null === $schedulerForm) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($request->getMethod() == 'POST') {
+            $schedulerForm->bindRequest($request);
+
+            if ($schedulerForm->isValid()) {
+                if ($this->get('bagheera.scheduler')->save($user, $schedulerForm->getData())) {
+                    $this->get('session')->setFlash('notice', 'scheduler_form_confirmation');
+
+                    return $this->redirect(
+                        $this->generateUrl('scheduler_list', array('accountId' => $schedulerForm->getData()->getAccount()->getAccountId()))
+                    );
+                }
+            }
+        }
+
+        return array(
+            'account' => $account ? : $scheduler->getAccount(),
+            'scheduler' => $schedulerForm->getData(),
+            'schedulerForm' => $schedulerForm->createView()
+        );
     }
 }

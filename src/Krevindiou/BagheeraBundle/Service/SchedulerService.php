@@ -27,8 +27,7 @@ use Doctrine\ORM\EntityManager,
     Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\Scheduler,
     Krevindiou\BagheeraBundle\Entity\PaymentMethod,
-    Krevindiou\BagheeraBundle\Form\SchedulerForm,
-    Krevindiou\BagheeraBundle\Service\OperationService;
+    Krevindiou\BagheeraBundle\Form\SchedulerForm;
 
 /**
  * Scheduler service
@@ -72,21 +71,44 @@ class SchedulerService
     }
 
     /**
+     * Returns schedulers list
+     *
+     * @param  User $user       User entity
+     * @param  Account $account Account entity
+     * @param  integer $page    Page number
+     * @return array
+     */
+    public function getList(User $user, Account $account, $page = 1)
+    {
+        if ($account->getBank()->getUser() == $user) {
+            return $this->_em->getRepository('KrevindiouBagheeraBundle:Scheduler')->findBy(
+                array('account' => $account->getAccountId()),
+                array('valueDate' => 'DESC')
+            );
+        }
+    }
+
+    /**
      * Returns scheduler form
      *
      * @param  User $user           User entity
      * @param  Scheduler $scheduler Scheduler entity
+     * @param  Account $account     Account entity for new scheduler
      * @return Form
      */
-    public function getForm(User $user, Scheduler $scheduler = null)
+    public function getForm(User $user, Scheduler $scheduler = null, Account $account = null)
     {
-        if (null === $scheduler) {
+        if (null === $scheduler && null !== $account) {
             $scheduler = new Scheduler();
-        } elseif ($user !== $scheduler->getAccount()->getBank()->getUser()) {
+            $scheduler->setAccount($account);
+        } elseif (null !== $scheduler && $user !== $scheduler->getAccount()->getBank()->getUser()) {
             return;
         }
 
-        $form = $this->_formFactory->create(new SchedulerForm(), $scheduler);
+        $form = $this->_formFactory->create(
+            new SchedulerForm($account ? : $scheduler->getAccount()),
+            $scheduler
+        );
 
         return $form;
     }
@@ -160,28 +182,6 @@ class SchedulerService
         }
 
         return true;
-    }
-
-    /**
-     * Gets schedulers list
-     *
-     * @param  User $user       User entity
-     * @param  Account $account Account entity
-     * @param  integer $page    Page number
-     * @return array
-     */
-    public function getSchedulers(User $user, Account $account, $page = 1)
-    {
-        if ($user === $account->getBank()->getUser()) {
-            $dql = 'SELECT s ';
-            $dql.= 'FROM KrevindiouBagheeraBundle:Scheduler s ';
-            $dql.= 'WHERE s.account = :account ';
-            $dql.= 'ORDER BY s.valueDate DESC ';
-            $query = $this->_em->createQuery($dql);
-            $query->setParameter('account', $account);
-
-            return $query->getResult();
-        }
     }
 
     /**

@@ -35,7 +35,7 @@ class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterfa
         $scheduler->setThirdParty('Third party future scheduler');
         $scheduler->setDebit(1);
         $scheduler->setCredit(null);
-        $scheduler->setValueDate(new \DateTime('2012-01-01'));
+        $scheduler->setValueDate(new \DateTime('next year'));
         $scheduler->setLimitDate(null);
         $scheduler->setIsReconciled(false);
         $scheduler->setNotes('');

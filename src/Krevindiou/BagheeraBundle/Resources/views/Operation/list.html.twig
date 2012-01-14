@@ -5,7 +5,8 @@
 {% block content %}
 <a href="{{ path('account_list') }}" class="back">{% trans %}back_link{% endtrans %}</a><br/>
 <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new">{% trans %}operation_new_link{% endtrans %}</a><br/>
-{# <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="new">{% trans %}scheduler_list{% endtrans %}</a> #}
+<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}">{% trans %}scheduler_list{% endtrans %}</a><br/>
+<br/>
 
 {% if operations|length > 0 %}
 <form method="post" action="">

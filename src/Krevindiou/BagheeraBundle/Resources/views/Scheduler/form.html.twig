@@ -1,0 +1,15 @@
+{% extends '::base.html.twig' %}
+
+{% block pageTitle 'scheduler_form_page_title'|trans %}
+
+{% block content %}
+<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="back">{% trans %}back_link{% endtrans %}</a>
+
+<form action="" novalidate="novalidate" method="post" {{ form_enctype(schedulerForm) }}>
+    {{ form_widget(schedulerForm) }}
+
+    <div class="form_button">
+        <input type="submit" value="{% trans %}scheduler_form_submit_button{% endtrans %}"/>
+    </div>
+</form>
+{% endblock %}
