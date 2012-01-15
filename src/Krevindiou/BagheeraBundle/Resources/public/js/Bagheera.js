@@ -19,6 +19,8 @@ var Bagheera = {
             $("table.data input[type=checkbox]").change(function() {
                 $(this).parent().parent().toggleClass("selected");
             });
+
+            $('input.calendar').datepicker({'dateFormat': 'yy-mm-dd'});
         });
     },
 

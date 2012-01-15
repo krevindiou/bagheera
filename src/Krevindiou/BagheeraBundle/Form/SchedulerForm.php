@@ -133,14 +133,26 @@ class SchedulerForm extends AbstractType
                 'valueDate',
                 null,
                 array(
-                    'label' => 'scheduler_value_date'
+                    'label' => 'scheduler_value_date',
+                    'widget' => 'single_text',
+                    'format' => 'yyyy-MM-dd',
+                    'attr' => array(
+                        'size' => 12,
+                        'class' => 'calendar'
+                    )
                 )
             )
             ->add(
                 'limitDate',
                 null,
                 array(
-                    'label' => 'scheduler_limit_date'
+                    'label' => 'scheduler_limit_date',
+                    'widget' => 'single_text',
+                    'format' => 'yyyy-MM-dd',
+                    'attr' => array(
+                        'size' => 12,
+                        'class' => 'calendar'
+                    )
                 )
             )
             ->add(

@@ -133,7 +133,13 @@ class OperationForm extends AbstractType
                 'valueDate',
                 null,
                 array(
-                    'label' => 'operation_value_date'
+                    'label' => 'operation_value_date',
+                    'widget' => 'single_text',
+                    'format' => 'yyyy-MM-dd',
+                    'attr' => array(
+                        'size' => 12,
+                        'class' => 'calendar'
+                    )
                 )
             )
             ->add(
