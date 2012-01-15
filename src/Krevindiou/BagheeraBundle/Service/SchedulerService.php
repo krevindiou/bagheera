@@ -86,6 +86,7 @@ class SchedulerService
             $adapter = new DoctrineCollectionAdapter($account->getSchedulers());
 
             $pager = new Pagerfanta($adapter);
+            $pager->setMaxPerPage(20);
             $pager->setCurrentPage($currentPage);
 
             return $pager;
