@@ -22,6 +22,8 @@ use Doctrine\ORM\EntityManager,
     Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Pagerfanta\Pagerfanta,
+    Pagerfanta\Adapter\DoctrineCollectionAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Entity\Operation,
@@ -73,18 +75,20 @@ class SchedulerService
     /**
      * Returns schedulers list
      *
-     * @param  User $user       User entity
-     * @param  Account $account Account entity
-     * @param  integer $page    Page number
-     * @return array
+     * @param  User $user           User entity
+     * @param  Account $account     Account entity
+     * @param  integer $currentPage Page number
+     * @return Pagerfanta
      */
-    public function getList(User $user, Account $account, $page = 1)
+    public function getList(User $user, Account $account, $currentPage = 1)
     {
         if ($account->getBank()->getUser() == $user) {
-            return $this->_em->getRepository('KrevindiouBagheeraBundle:Scheduler')->findBy(
-                array('account' => $account->getAccountId()),
-                array('valueDate' => 'DESC')
-            );
+            $adapter = new DoctrineCollectionAdapter($account->getSchedulers());
+
+            $pager = new Pagerfanta($adapter);
+            $pager->setCurrentPage($currentPage);
+
+            return $pager;
         }
     }
 

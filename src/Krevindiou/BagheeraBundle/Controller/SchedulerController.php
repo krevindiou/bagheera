@@ -33,11 +33,13 @@ class SchedulerController extends Controller
      * @Method("GET")
      * @Template()
      */
-    public function listAction(Account $account)
+    public function listAction(Request $request, Account $account)
     {
         $user = $this->get('security.context')->getToken()->getUser();
 
-        $schedulers = $this->get('bagheera.scheduler')->getList($user, $account);
+        $page = $request->query->getInt('page', 1);
+
+        $schedulers = $this->get('bagheera.scheduler')->getList($user, $account, $page);
         if (null === $schedulers) {
             throw $this->createNotFoundException();
         }

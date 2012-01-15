@@ -37,10 +37,11 @@
 
     <div class="list_actions">
         <input type="submit" name="delete" class="delete" value="{% trans %}scheduler_delete_button{% endtrans %}" />
+
+        <div class="pager">
+        {{ pagerfanta(schedulers) }}
+        </div>
     </div>
-
-{# @todo pager #}
-
 </form>
 {% endif %}
 {% endblock %}
