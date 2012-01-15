@@ -43,10 +43,11 @@
     <div class="list_actions">
         <input type="submit" name="delete" class="delete" value="{% trans %}operation_delete_button{% endtrans %}" />
         <input type="submit" name="reconcile" value="{% trans %}operation_reconcile_button{% endtrans %}" />
+
+        <div class="pager">
+        {{ pagerfanta(operations) }}
+        </div>
     </div>
-
-{# @todo pager #}
-
 </form>
 {% endif %}
 {% endblock %}

@@ -33,11 +33,13 @@ class OperationController extends Controller
      * @Method("GET")
      * @Template()
      */
-    public function listAction(Account $account)
+    public function listAction(Request $request, Account $account)
     {
         $user = $this->get('security.context')->getToken()->getUser();
 
-        $operations = $this->get('bagheera.operation')->getList($user, $account);
+        $page = $request->query->getInt('page', 1);
+
+        $operations = $this->get('bagheera.operation')->getList($user, $account, $page);
         if (null === $operations) {
             throw $this->createNotFoundException();
         }

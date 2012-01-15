@@ -21,9 +21,11 @@ namespace Krevindiou\BagheeraBundle\Service;
 use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Pagerfanta\Pagerfanta,
+    Pagerfanta\Adapter\DoctrineCollectionAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\Account,
+    Krevindiou\BagheeraBundle\Entity\Operation,
     Krevindiou\BagheeraBundle\Entity\PaymentMethod,
     Krevindiou\BagheeraBundle\Form\OperationForm;
 
@@ -64,15 +66,17 @@ class OperationService
      * @param  User $user       User entity
      * @param  Account $account Account entity
      * @param  integer $page    Page number
-     * @return array
+     * @return Pagerfanta
      */
-    public function getList(User $user, Account $account, $page = 1)
+    public function getList(User $user, Account $account, $currentPage = 1)
     {
         if ($account->getBank()->getUser() == $user) {
-            return $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->findBy(
-                array('account' => $account->getAccountId()),
-                array('valueDate' => 'DESC')
-            );
+            $adapter = new DoctrineCollectionAdapter($account->getOperations());
+
+            $pager = new Pagerfanta($adapter);
+            $pager->setCurrentPage($currentPage);
+
+            return $pager;
         }
     }
 
