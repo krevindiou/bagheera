@@ -71,3 +71,10 @@
 
 [lessphp]
     git=http://github.com/leafo/lessphp.git
+
+[pagerfanta]
+    git=http://github.com/whiteoctober/Pagerfanta.git
+
+[PagerfantaBundle]
+    git=http://github.com/whiteoctober/WhiteOctoberPagerfantaBundle.git
+    target=/bundles/WhiteOctober/PagerfantaBundle
