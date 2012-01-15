@@ -7,10 +7,12 @@
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
+        <link href="{{ asset('/bundles/krevindioubagheera/css/ui-lightness/jquery-ui-1.8.17.custom.css') }}" rel="stylesheet" type="text/css" />
         <script src="{{ asset('/bundles/krevindioubagheera/js/head.load.min.js') }}"></script>
         <script>
         head.js(
             "{{ asset('/bundles/krevindioubagheera/js/jquery-1.7.1.min.js') }}",
+            "{{ asset('/bundles/krevindioubagheera/js/jquery-ui-1.8.17.custom.min.js') }}",
             "{{ asset('/bundles/krevindioubagheera/js/Bagheera.js') }}",
             "{{ asset('/translations.js') }}",
             function () {
