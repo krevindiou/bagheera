@@ -63,9 +63,9 @@ class OperationService
     /**
      * Returns operations list
      *
-     * @param  User $user       User entity
-     * @param  Account $account Account entity
-     * @param  integer $page    Page number
+     * @param  User $user           User entity
+     * @param  Account $account     Account entity
+     * @param  integer $currentPage Page number
      * @return Pagerfanta
      */
     public function getList(User $user, Account $account, $currentPage = 1)
