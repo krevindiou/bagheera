@@ -166,13 +166,15 @@ class OperationServiceTest extends TestCase
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
         $operationsBeforeDelete = $this->get('bagheera.operation')->getList($this->john, $account);
+        $countOperationsBeforeDelete = count($operationsBeforeDelete);
 
         $operationsId = array(1, 3);
         $this->get('bagheera.operation')->delete($this->john, $operationsId);
 
         $operationsAfterDelete = $this->get('bagheera.operation')->getList($this->john, $account);
+        $countOperationsAfterDelete = count($operationsAfterDelete);
 
-        $this->assertEquals(count($operationsAfterDelete), count($operationsBeforeDelete) - 2);
+        $this->assertEquals($countOperationsAfterDelete, $countOperationsBeforeDelete - 2);
     }
 
     public function testReconcile()

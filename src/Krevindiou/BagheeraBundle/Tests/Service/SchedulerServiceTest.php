@@ -127,13 +127,15 @@ class SchedulerServiceTest extends TestCase
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
 
         $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
+        $countSchedulersBeforeDelete = count($schedulersBeforeDelete);
 
         $schedulersId = array(2);
         $this->get('bagheera.scheduler')->delete($this->john, $schedulersId);
 
         $schedulersAfterDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
+        $countSchedulersAfterDelete = count($schedulersAfterDelete);
 
-        $this->assertEquals(count($schedulersAfterDelete), count($schedulersBeforeDelete) - 1);
+        $this->assertEquals($countSchedulersAfterDelete, $countSchedulersBeforeDelete - 1);
     }
 
     public function testRunSchedulers()
