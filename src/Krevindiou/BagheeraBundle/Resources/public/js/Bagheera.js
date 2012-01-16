@@ -8,6 +8,7 @@ var Bagheera = {
             Bagheera.accounts();
             Bagheera.dropDownPaymentMethod();
             Bagheera.dropDownCategory();
+            Bagheera.dropDownTransferAccount();
 
             $("table.data td.edit, table.data th.edit").hide();
 
@@ -120,6 +121,29 @@ var Bagheera = {
             $("input[name$='[type]']").change(function() {
                 filldropDownCategory($(this).val());
             });
+        }
+    },
+
+    dropDownTransferAccount: function() {
+        var paymentMethod = $("select[name$='[paymentMethod]']");
+
+        toggleTransferAccountList(paymentMethod.val());
+
+        paymentMethod.change(function() {
+            toggleTransferAccountList($(this).val());
+        });
+
+        $("input[name$='[type]']").change(function() {
+            toggleTransferAccountList(paymentMethod.val());
+        });
+
+        function toggleTransferAccountList(paymentMethodId)
+        {
+            if (4 == paymentMethodId || 6 == paymentMethodId) {
+                $("select[name$='[transferAccount]']").parent().parent().show();
+            } else {
+                $("select[name$='[transferAccount]']").parent().parent().hide();
+            }
         }
     }
 };
