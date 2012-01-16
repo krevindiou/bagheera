@@ -99,6 +99,7 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_category',
+                    'property' => 'dropDownListLabel',
                     'empty_value' => '',
                     'required' => false
                 )

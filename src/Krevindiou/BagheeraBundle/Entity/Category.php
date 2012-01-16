@@ -269,4 +269,9 @@ class Category
     {
         return $this->getName();
     }
+
+    public function getDropDownListLabel()
+    {
+        return $this->getType() . ' ' . $this->getName();
+    }
 }

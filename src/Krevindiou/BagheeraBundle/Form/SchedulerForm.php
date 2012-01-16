@@ -98,6 +98,7 @@ class SchedulerForm extends AbstractType
                 'category',
                 null,
                 array(
+                    'property' => 'dropDownListLabel',
                     'label' => 'scheduler_category',
                     'empty_value' => '',
                     'required' => false

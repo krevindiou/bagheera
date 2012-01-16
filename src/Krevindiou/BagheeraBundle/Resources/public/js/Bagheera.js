@@ -1,9 +1,11 @@
 var Bagheera = {
     baseUrl: "",
+    categoryOptions: [],
 
     init: function() {
         $(document).ready(function() {
             Bagheera.accounts();
+            Bagheera.dropDownCategory();
 
             $("table.data td.edit, table.data th.edit").hide();
 
@@ -37,5 +39,44 @@ var Bagheera = {
                 event.preventDefault();
             }
         });
+    },
+    dropDownCategory: function() {
+        var category = $("select[name$='[category]']");
+
+        if (category.length > 0) {
+            category.find("option").each(function() {
+                var type = $(this).text().replace(/([a-z]+) (.*)/, "$1");
+                var label = $(this).text().replace(/([a-z]+) (.*)/, "$2");
+
+                Bagheera.categoryOptions[type] = Bagheera.categoryOptions[type] || [];
+                Bagheera.categoryOptions[type].push({value: $(this).val(), text: label});
+            });
+
+            function filldropDownCategory(type) {
+                if ("" != type) {
+                    var oldValue = category.val();
+
+                    category.html("");
+
+                    for (var key in Bagheera.categoryOptions[type]) {
+                        var option = Bagheera.categoryOptions[type][key];
+
+                        category.append(
+                            $("<option></option>").val(option.value).html(option.text)
+                        );
+                    }
+
+                    if (null != category.val()) {
+                        category.val(oldValue);
+                    }
+                }
+            }
+
+            filldropDownCategory($("input[name$='[type]']:checked").val());
+
+            $("input[name$='[type]']").change(function() {
+                filldropDownCategory($(this).val());
+            });
+        }
     }
 };
