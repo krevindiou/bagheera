@@ -98,8 +98,8 @@ class SchedulerForm extends AbstractType
                 'category',
                 null,
                 array(
-                    'property' => 'dropDownListLabel',
                     'label' => 'scheduler_category',
+                    'property' => 'dropDownListLabel',
                     'empty_value' => '',
                     'required' => false
                 )
@@ -109,6 +109,7 @@ class SchedulerForm extends AbstractType
                 null,
                 array(
                     'label' => 'scheduler_payment_method',
+                    'property' => 'dropDownListLabel',
                     'empty_value' => ''
                 )
             )

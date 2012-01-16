@@ -109,6 +109,7 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_payment_method',
+                    'property' => 'dropDownListLabel',
                     'empty_value' => ''
                 )
             )

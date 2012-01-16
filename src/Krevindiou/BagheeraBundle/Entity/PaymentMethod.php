@@ -190,4 +190,9 @@ class PaymentMethod
     {
         return $this->getName();
     }
+
+    public function getDropDownListLabel()
+    {
+        return $this->getType() . ' ' . $this->getName();
+    }
 }
