@@ -184,6 +184,7 @@ class Scheduler
         $this->setNotes('');
         $this->setIsReconciled(false);
         $this->setIsActive(true);
+        $this->setFrequencyUnit('month');
     }
 
     /**

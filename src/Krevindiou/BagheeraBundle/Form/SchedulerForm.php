@@ -172,7 +172,10 @@ class SchedulerForm extends AbstractType
                 'frequencyValue',
                 null,
                 array(
-                    'label' => 'scheduler_frequency_value'
+                    'label' => 'scheduler_frequency_value',
+                    'attr' => array(
+                        'size' => 6,
+                    )
                 )
             )
             ->add(

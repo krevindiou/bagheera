@@ -6,7 +6,34 @@
 <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="back">{% trans %}back_link{% endtrans %}</a>
 
 <form action="" novalidate="novalidate" method="post" {{ form_enctype(schedulerForm) }}>
-    {{ form_widget(schedulerForm) }}
+    {{ form_row(schedulerForm.type) }}
+    {{ form_row(schedulerForm.thirdParty) }}
+    {{ form_row(schedulerForm.amount) }}
+    {{ form_row(schedulerForm.category) }}
+    {{ form_row(schedulerForm.paymentMethod) }}
+    {{ form_row(schedulerForm.transferAccount) }}
+    {{ form_row(schedulerForm.valueDate) }}
+    {{ form_row(schedulerForm.limitDate) }}
+
+    {% spaceless %}
+    <div>
+        <div class="form_label">
+            {{ form_label(schedulerForm.frequencyValue, null, {'label': 'scheduler_frequency'|trans}) }}
+        </div>
+        <div class="form_field">
+            {{ form_errors(schedulerForm.frequencyValue) }}
+            {{ form_widget(schedulerForm.frequencyValue) }}
+            &nbsp;
+            {{ form_errors(schedulerForm.frequencyUnit) }}
+            {{ form_widget(schedulerForm.frequencyUnit) }}
+        </div>
+    </div>
+    {% endspaceless %}
+
+    {{ form_row(schedulerForm.notes) }}
+    {{ form_row(schedulerForm.isReconciled) }}
+    {{ form_row(schedulerForm.isActive) }}
+    {{ form_rest(schedulerForm) }}
 
     <div class="form_button">
         <input type="submit" value="{% trans %}scheduler_form_submit_button{% endtrans %}"/>
