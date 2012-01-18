@@ -76,6 +76,9 @@ form {
         display: inline-block;
         width: 700px;
         margin: 0 0 10px 10px;
+        input[type=radio], input[type=checkbox] {
+            margin-top: 10px;
+        }
     }
     .form_errors {
         color: #f00;
@@ -103,7 +106,6 @@ form {
     }
     input[type=radio], input[type=checkbox] {
         border: 0;
-        margin-top: 10px;
     }
     input[type=submit], input[type=button], input[type=reset], input[type=image], button {
         .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
