@@ -440,7 +440,7 @@ class Account
 
     public function getAbsolutePath()
     {
-        return null === $this->details ? null : $this->getUploadRootDir() . '/' . $this->details;
+        return '' == $this->details ? null : $this->getUploadRootDir() . '/' . $this->details;
     }
 
     protected function getUploadRootDir()
