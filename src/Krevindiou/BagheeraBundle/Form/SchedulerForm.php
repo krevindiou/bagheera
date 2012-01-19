@@ -163,10 +163,10 @@ class SchedulerForm extends AbstractType
                  array(
                     'label' => 'scheduler_frequency_unit',
                     'choices' => array(
-                        'day' => 'day',
-                        'week' => 'week',
-                        'month' => 'month',
-                        'year' => 'year',
+                        'day' => 'scheduler_frequency_unit_day',
+                        'week' => 'scheduler_frequency_unit_week',
+                        'month' => 'scheduler_frequency_unit_month',
+                        'year' => 'scheduler_frequency_unit_year',
                     )
                 )
             )
