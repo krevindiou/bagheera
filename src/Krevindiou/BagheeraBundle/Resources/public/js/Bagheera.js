@@ -59,6 +59,7 @@ var Bagheera = {
             paymentMethod.find("option").each(function() {
                 var type = $(this).text().replace(/([a-z]+) (.*)/, "$1");
                 var label = $(this).text().replace(/([a-z]+) (.*)/, "$2");
+                label = eval("Bagheera.translations.payment_method_" + label);
 
                 Bagheera.paymentMethodOptions[type] = Bagheera.paymentMethodOptions[type] || [];
                 Bagheera.paymentMethodOptions[type].push({value: $(this).val(), text: label});
