@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Symfony\Component\HttpFoundation\Request,
+    Symfony\Component\HttpFoundation\Response,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
@@ -106,5 +107,20 @@ class OperationController extends Controller
             'operation' => $operationForm->getData(),
             'operationForm' => $operationForm->createView()
         );
+    }
+
+    /**
+     * @Route("/third-parties.json", name="operation_third_party_list")
+     */
+    public function thirdPartyAction(Request $request)
+    {
+        $thirdParties = $this->get('bagheera.operation')->findThirdParties(
+            $this->get('security.context')->getToken()->getUser(),
+            $request->query->get('q')
+        );
+
+        $response = new Response(json_encode($thirdParties));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
 }

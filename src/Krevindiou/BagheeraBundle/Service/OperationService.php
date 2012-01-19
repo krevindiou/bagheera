@@ -270,4 +270,28 @@ class OperationService
 
         return true;
     }
+
+    public function findThirdParties(User $user, $queryString)
+    {
+        $dql = 'SELECT o.thirdParty ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+        $dql.= 'JOIN o.account a ';
+        $dql.= 'JOIN a.bank b ';
+        $dql.= 'WHERE b.user = :user ';
+        $dql.= 'AND o.thirdParty LIKE :thirdParty ';
+        $dql.= 'ORDER BY o.thirdParty ASC ';
+        $query = $this->_em->createQuery($dql);
+        $query->setMaxResults(10);
+        $query->setParameter('user', $user);
+        $query->setParameter('thirdParty', '%' . $queryString . '%');
+
+        $result = $query->getScalarResult();
+
+        $thirdParties = array();
+        foreach ($result as $key => $value) {
+            $thirdParties[] = $value['thirdParty'];
+        }
+
+        return $thirdParties;
+    }
 }

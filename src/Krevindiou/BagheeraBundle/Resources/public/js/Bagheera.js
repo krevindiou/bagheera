@@ -25,7 +25,15 @@ var Bagheera = {
                 $(this).parent().parent().toggleClass("selected");
             });
 
-            $('input.calendar').datepicker({'dateFormat': 'yy-mm-dd'});
+            $("input.calendar").datepicker({"dateFormat": "yy-mm-dd"});
+
+            $("input[name$='[thirdParty]']").autocomplete({
+                autoFocus: true,
+                minLength: 2,
+                source: function(request, response) {
+                    $.getJSON("third-parties.json", { q: request.term }, response);
+                }
+            });
         });
     },
 
