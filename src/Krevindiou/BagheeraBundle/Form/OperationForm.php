@@ -90,7 +90,7 @@ class OperationForm extends AbstractType
                     'currency' => false,
                     'property_path' => false,
                     'attr' => array(
-                        'size' => 10
+                        'size' => 9
                     )
                 )
             )
@@ -149,10 +149,7 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_notes',
-                    'attr' => array(
-                        'cols' => 30,
-                        'rows' => 5
-                    )
+                    'attr' => array('cols' => 40, 'rows' => 5)
                 )
             )
             ->add(

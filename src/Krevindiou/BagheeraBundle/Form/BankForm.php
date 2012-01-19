@@ -36,7 +36,8 @@ class BankForm extends AbstractType
                 'name',
                 null,
                 array(
-                    'label' => 'bank_name'
+                    'label' => 'bank_name',
+                    'attr' => array('size' => 40)
                 )
             )
             ->add(

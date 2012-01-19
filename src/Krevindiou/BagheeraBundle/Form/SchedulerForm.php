@@ -185,10 +185,7 @@ class SchedulerForm extends AbstractType
                 null,
                 array(
                     'label' => 'scheduler_notes',
-                    'attr' => array(
-                        'cols' => 30,
-                        'rows' => 5
-                    )
+                    'attr' => array('cols' => 40, 'rows' => 5)
                 )
             )
             ->add(

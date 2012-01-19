@@ -69,6 +69,7 @@ class AccountForm extends AbstractType
                 null,
                 array(
                     'label' => 'account_name',
+                    'attr' => array('size' => 40)
                 )
             )
             ->add(
@@ -76,7 +77,8 @@ class AccountForm extends AbstractType
                 'money',
                 array(
                     'label' => 'account_initial_balance',
-                    'currency' => false
+                    'currency' => false,
+                    'attr' => array('size' => 9)
                 )
             )
             ->add(
@@ -84,7 +86,8 @@ class AccountForm extends AbstractType
                 'money',
                 array(
                     'label' => 'account_overdraft_facility',
-                    'currency' => false
+                    'currency' => false,
+                    'attr' => array('size' => 9)
                 )
             )
             ->add(
