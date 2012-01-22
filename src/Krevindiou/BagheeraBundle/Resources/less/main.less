@@ -23,15 +23,43 @@
     background-image: linear-gradient(top, @startColor, @endColor);
 }
 
-.background_gradient_image(@startColor: #000, @endColor: #fff, @image) {
-    background: @image @startColor;
-    background: @image, -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
-    background: @image, -webkit-linear-gradient(top, @startColor, @endColor);
-    background: @image, -moz-linear-gradient(top, @startColor, @endColor);
-    background: @image, -moz-linear-gradient(top, @startColor, @endColor);
-    background: @image, -ms-linear-gradient(top, @startColor, @endColor);
-    background: @image, -o-linear-gradient(top, @startColor, @endColor);
-    background: @image, linear-gradient(top, @startColor, @endColor);
+.background_gradient_image(@image, @startColor: #000, @endColor: #fff, @repeat: no-repeat, @position: 4px 4px) {
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position @startColor;
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -webkit-linear-gradient(top, @startColor, @endColor);
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -moz-linear-gradient(top, @startColor, @endColor);
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -ms-linear-gradient(top, @startColor, @endColor);
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -o-linear-gradient(top, @startColor, @endColor);
+    background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, linear-gradient(top, @startColor, @endColor);
+}
+
+.link_button() {
+    .border_radius(3px);
+    .background_gradient(#fff, #e0e0e0);
+    .box_shadow(0px 1px 2px 0px #000, inset 0px 0px 3px 0px #fff);
+    border: 1px solid #ccc;
+    border-bottom-color: #aaa;
+    text-shadow: transparent 0px 0px 0px, #fff 0px 1px 0px;
+    padding: 9px;
+    color: #333;
+    font-size: 13px;
+    text-decoration: none;
+    &:hover {
+        .background_gradient(#fff, #ebebeb);
+        .box_shadow(0 1px 3px #999);
+        border-color: #999;
+    }
+}
+
+.link_button_image(@image) {
+    .link_button;
+    .background_gradient_image(@image, #fff, #e0e0e0);
+    padding-left: 30px;
+    &:hover {
+        .background_gradient_image(@image, #fff, #ebebeb);
+        .box_shadow(0 1px 3px #999);
+        border-color: #999;
+    }
 }
 
 body {
@@ -96,8 +124,8 @@ form {
     }
     input, textarea, select, button {
         font-size: 14px;
-        border: solid 1px #aacfe4;
-        padding: 7px;
+        border: solid 1px #bbb;
+        padding: 6px;
         .border_radius(6px);
         .background_gradient(#fff, #eee);
         &:focus {
@@ -108,12 +136,11 @@ form {
         border: 0;
     }
     input[type=submit], input[type=button], input[type=reset], input[type=image], button {
-        .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
-        .background_gradient(#fff, #b9b9b9);
-        border: 1px solid rgba(0, 0, 0, 0.5);
-        padding: 5px;
-        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
+        .link_button;
+        padding-top: 6px !important;
+        padding-bottom: 8px !important;
         cursor: pointer;
+        font-weight: bold;
     }
     input[type=email] {
         width: 250px;
@@ -130,16 +157,11 @@ form {
 
 .pager {
     float: right;
+    margin-top: 10px;
 
     a, span {
-        border: 1px solid rgba(0, 0, 0, 0.5);
-        .border_radius(5px);
-        .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
-        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
-        padding: 5px;
-        margin: 0 4px;
-        text-decoration: none;
-        .background_gradient(#fff, #b9b9b9);
+        .link_button;
+        margin: 0 3px;
     }
 
     .dots {
@@ -147,8 +169,11 @@ form {
     }
 
     .current {
-        color: rgba(0, 0, 0, 0.3);
-        border: 1px solid #ddd;
+        .background_gradient(#e6e6e6, #dcdcdc);
+        .box_shadow(inset 0px 1px 2px 0px #aaa);
+        border: 1px solid #aaa;
+        border-top-color: #999;
+        border-bottom-color: #ccc;
     }
 
     .disabled {
@@ -204,8 +229,6 @@ nav ul {
         text-decoration: none;
         padding: 3px 5px;
         margin: 2px;
-        letter-spacing: -1px;
-        word-spacing: -1px;
         &:hover {
             .border_radius(5px);
             background-color: #fff;
@@ -237,7 +260,7 @@ nav ul {
     width: 950px;
     padding: 20px;
     margin: auto;
-    background-color: #ddd;
+    background-color: #eaeaea;
     border: 1px solid #bbb;
     border-top: 0;
     .clear {
@@ -290,7 +313,7 @@ table.data {
         vertical-align: middle;
     }
     tr:nth-child(odd) td {
-        background-color: #eaeaea;
+        background-color: #ddd;
     }
     tr:hover td {
         background-color: #c2deed;
@@ -303,30 +326,17 @@ table.data {
 
 a.new {
     display: inline-block;
-    text-decoration: none;
-    margin: 3px 20px 10px 0;
-    .border_radius(5px);
-    .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
-    .background_gradient_image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/plus.png") no-repeat 4px 4px);
-    border: 1px solid rgba(0, 0, 0, 0.5);
-    padding: 8px;
-    padding-left: 28px;
-    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
-    cursor: pointer;
+    .link_button_image("plus.png");
 }
 
 a.back {
     display: inline-block;
-    text-decoration: none;
-    margin: 3px 20px 10px 0;
-    .border_radius(5px);
-    .box_shadow(0 0 2px rgba(0, 0, 0, 0.4));
-    .background_gradient_image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/back.png") no-repeat 4px 4px);
-    border: 1px solid rgba(0, 0, 0, 0.5);
-    padding: 8px;
-    padding-left: 28px;
-    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
-    cursor: pointer;
+    .link_button_image("left.png");
+}
+
+a.schedulers {
+    display: inline-block;
+    .link_button_image("clock.png");
 }
 
 .positive {
@@ -344,15 +354,18 @@ a.back {
 }
 
 input[type=submit].delete {
-    .background_gradient_image(#fff, #b9b9b9, url("/bundles/krevindioubagheera/images/trash.png") no-repeat 4px 4px);
-    padding-left: 26px !important;
+    .link_button_image("trash.png");
+}
+
+input[type=submit].reconcile {
+    .link_button_image("reconcile.png");
 }
 
 #form_account_list li {
     width: 400px;
     margin-top: 5px;
     margin-bottom: 10px;
-    background-color: #eee;
+    background-color: #e2e2e2;
     .border_radius(7px);
     padding: 15px;
     table {

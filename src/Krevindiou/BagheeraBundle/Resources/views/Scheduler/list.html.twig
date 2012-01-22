@@ -5,7 +5,7 @@
 {% block content %}
 <a href="{{ path('account_list') }}" class="back">{% trans %}back_link{% endtrans %}</a>
 <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="new">{% trans %}scheduler_new_link{% endtrans %}</a>
-<br/>
+<br/><br/>
 
 {% if schedulers|length > 0 %}
 <form method="post" action="">
