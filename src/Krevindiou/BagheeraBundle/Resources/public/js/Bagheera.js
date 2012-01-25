@@ -66,11 +66,11 @@ var Bagheera = {
             });
 
             function filldropDownPaymentMethod(type) {
-                if ("" != type) {
-                    var oldValue = paymentMethod.val();
+                var oldValue = paymentMethod.val();
 
-                    paymentMethod.html("");
+                paymentMethod.html("");
 
+                if (typeof type != "undefined" && "" != type) {
                     for (var key in Bagheera.paymentMethodOptions[type]) {
                         var option = Bagheera.paymentMethodOptions[type][key];
 
@@ -78,10 +78,22 @@ var Bagheera = {
                             $("<option></option>").val(option.value).html(option.text)
                         );
                     }
+                } else {
+                    for (var type in Bagheera.paymentMethodOptions) {
+                        for (var key in Bagheera.paymentMethodOptions[type]) {
+                            var option = Bagheera.paymentMethodOptions[type][key];
 
-                    if (null != paymentMethod.val()) {
-                        paymentMethod.val(oldValue);
-                    }
+                            option.text = option.text || "";
+
+                            paymentMethod.append(
+                                $("<option></option>").val(option.value).html(type + " " + option.text)
+                            );
+                        }
+                     }
+                }
+
+                if (null != paymentMethod.val()) {
+                    paymentMethod.val(oldValue);
                 }
             }
 
@@ -106,11 +118,11 @@ var Bagheera = {
             });
 
             function filldropDownCategory(type) {
-                if ("" != type) {
-                    var oldValue = category.val();
+                var oldValue = category.val();
 
-                    category.html("");
+                category.html("");
 
+                if (typeof type != "undefined" && "" != type) {
                     for (var key in Bagheera.categoryOptions[type]) {
                         var option = Bagheera.categoryOptions[type][key];
 
@@ -118,10 +130,22 @@ var Bagheera = {
                             $("<option></option>").val(option.value).html(option.text)
                         );
                     }
+                } else {
+                    for (var type in Bagheera.categoryOptions) {
+                        for (var key in Bagheera.categoryOptions[type]) {
+                            var option = Bagheera.categoryOptions[type][key];
 
-                    if (null != category.val()) {
-                        category.val(oldValue);
-                    }
+                            option.text = option.text || "";
+
+                            category.append(
+                                $("<option></option>").val(option.value).html(type + " " + option.text)
+                            );
+                        }
+                     }
+                }
+
+                if (null != category.val()) {
+                    category.val(oldValue);
                 }
             }
 
