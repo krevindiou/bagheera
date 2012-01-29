@@ -56,13 +56,19 @@ var Bagheera = {
         var paymentMethod = $("select[name$='[paymentMethod]']");
 
         if (paymentMethod.length > 0) {
-            paymentMethod.find("option").each(function() {
+            paymentMethod.find("option[value!='']").each(function() {
                 var type = $(this).text().replace(/([a-z]+) (.*)/, "$1");
                 var label = $(this).text().replace(/([a-z]+) (.*)/, "$2");
                 label = eval("Bagheera.translations.payment_method_" + label);
 
                 Bagheera.paymentMethodOptions[type] = Bagheera.paymentMethodOptions[type] || [];
                 Bagheera.paymentMethodOptions[type].push({value: $(this).val(), text: label});
+            });
+
+            paymentMethod.find("option[value='']").each(function(){
+                for (var type in Bagheera.paymentMethodOptions) {
+                    Bagheera.paymentMethodOptions[type].unshift({value: $(this).val(), text: $(this).text()});
+                }
             });
 
             function filldropDownPaymentMethod(type) {
@@ -109,12 +115,18 @@ var Bagheera = {
         var category = $("select[name$='[category]']");
 
         if (category.length > 0) {
-            category.find("option").each(function() {
+            category.find("option[value!='']").each(function() {
                 var type = $(this).text().replace(/([a-z]+) (.*)/, "$1");
                 var label = $(this).text().replace(/([a-z]+) (.*)/, "$2");
 
                 Bagheera.categoryOptions[type] = Bagheera.categoryOptions[type] || [];
                 Bagheera.categoryOptions[type].push({value: $(this).val(), text: label});
+            });
+
+            category.find("option[value='']").each(function(){
+                for (var type in Bagheera.categoryOptions) {
+                    Bagheera.categoryOptions[type].unshift({value: $(this).val(), text: $(this).text()});
+                }
             });
 
             function filldropDownCategory(type) {
