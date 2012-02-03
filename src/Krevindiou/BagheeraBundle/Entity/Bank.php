@@ -43,6 +43,16 @@ class Bank
     protected $bankId;
 
     /**
+     * @var Krevindiou\BagheeraBundle\Entity\User $user
+     *
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="banks")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Valid()
+     */
+    protected $user;
+
+    /**
      * @var string $name
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
@@ -80,18 +90,6 @@ class Bank
      * @Assert\DateTime()
      */
     protected $updatedAt;
-
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\User $user
-     *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="banks")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
-     * })
-     * @Assert\NotBlank()
-     * @Assert\Valid()
-     */
-    protected $user;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection $accounts

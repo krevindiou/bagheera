@@ -43,6 +43,23 @@ class Account
     protected $accountId;
 
     /**
+     * @var integer $bankId
+     *
+     * @ORM\Column(name="bank_id", type="integer", nullable=false)
+     */
+    protected $bankId;
+
+    /**
+     * @var Krevindiou\BagheeraBundle\Entity\Bank $bank
+     *
+     * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
+     * @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
+     * @Assert\NotBlank()
+     * @Assert\Valid()
+     */
+    protected $bank;
+
+    /**
      * @var string $name
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
@@ -54,16 +71,16 @@ class Account
     /**
      * @var float $initialBalance
      *
-     * @ORM\Column(name="initial_balance", type="decimal", nullable=false)
+     * @ORM\Column(name="initial_balance", type="decimal", scale="2", nullable=false)
      */
-    protected $initialBalance;
+    protected $initialBalance = 0;
 
     /**
      * @var float $overdraftFacility
      *
-     * @ORM\Column(name="overdraft_facility", type="decimal", nullable=true)
+     * @ORM\Column(name="overdraft_facility", type="decimal", scale="2", nullable=false)
      */
-    protected $overdraftFacility;
+    protected $overdraftFacility = 0;
 
     /**
      * @var string $details
@@ -122,25 +139,6 @@ class Account
     protected $sharedWith;
 
     /**
-     * @var integer $bankId
-     *
-     * @ORM\Column(name="bank_id", type="integer", nullable=false)
-     */
-    protected $bankId;
-
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\Bank $bank
-     *
-     * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
-     * })
-     * @Assert\NotBlank()
-     * @Assert\Valid()
-     */
-    protected $bank;
-
-    /**
      * @var Doctrine\Common\Collections\ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Operation", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
@@ -159,8 +157,6 @@ class Account
 
     public function __construct()
     {
-        $this->setInitialBalance(0);
-        $this->setOverdraftFacility(0);
         $this->sharedWith = new ArrayCollection();
         $this->operations = new ArrayCollection();
         $this->schedulers = new ArrayCollection();

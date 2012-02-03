@@ -42,109 +42,10 @@ class Scheduler
     protected $schedulerId;
 
     /**
-     * @var string $thirdParty
-     *
-     * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
-     */
-    protected $thirdParty;
-
-    /**
-     * @var float $debit
-     *
-     * @ORM\Column(name="debit", type="decimal", nullable=true)
-     */
-    protected $debit;
-
-    /**
-     * @var float $credit
-     *
-     * @ORM\Column(name="credit", type="decimal", nullable=true)
-     */
-    protected $credit;
-
-    /**
-     * @var DateTime $valueDate
-     *
-     * @ORM\Column(name="value_date", type="date", nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\DateTime()
-     */
-    protected $valueDate;
-
-    /**
-     * @var DateTime $limitDate
-     *
-     * @ORM\Column(name="limit_date", type="date", nullable=true)
-     * @Assert\DateTime()
-     */
-    protected $limitDate;
-
-    /**
-     * @var boolean $isReconciled
-     *
-     * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
-     * @Assert\Type("bool")
-     */
-    protected $isReconciled;
-
-    /**
-     * @var string $notes
-     *
-     * @ORM\Column(name="notes", type="text", nullable=false)
-     */
-    protected $notes;
-
-    /**
-     * @var string $frequencyUnit
-     *
-     * @ORM\Column(name="frequency_unit", type="string", length=16, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"day", "week", "month", "year"})
-     */
-    protected $frequencyUnit;
-
-    /**
-     * @var integer $frequencyValue
-     *
-     * @ORM\Column(name="frequency_value", type="integer", nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\Type("integer")
-     */
-    protected $frequencyValue;
-
-    /**
-     * @var boolean $isActive
-     *
-     * @ORM\Column(name="is_active", type="boolean", nullable=false)
-     * @Assert\Type("bool")
-     */
-    protected $isActive;
-
-    /**
-     * @var DateTime $createdAt
-     *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
-     * @Assert\DateTime()
-     */
-    protected $createdAt;
-
-    /**
-     * @var DateTime $updatedAt
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
-     * @Assert\DateTime()
-     */
-    protected $updatedAt;
-
-    /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
-     * })
+     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Valid()
      */
@@ -172,20 +73,109 @@ class Scheduler
      * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
-     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
+     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Valid()
      */
     protected $paymentMethod;
 
+    /**
+     * @var string $thirdParty
+     *
+     * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(64)
+     */
+    protected $thirdParty;
 
-    public function __construct()
-    {
-        $this->setNotes('');
-        $this->setIsReconciled(false);
-        $this->setIsActive(true);
-        $this->setFrequencyUnit('month');
-    }
+    /**
+     * @var float $debit
+     *
+     * @ORM\Column(name="debit", type="decimal", scale="2", nullable=true)
+     */
+    protected $debit;
+
+    /**
+     * @var float $credit
+     *
+     * @ORM\Column(name="credit", type="decimal", scale="2", nullable=true)
+     */
+    protected $credit;
+
+    /**
+     * @var DateTime $valueDate
+     *
+     * @ORM\Column(name="value_date", type="date", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\DateTime()
+     */
+    protected $valueDate;
+
+    /**
+     * @var DateTime $limitDate
+     *
+     * @ORM\Column(name="limit_date", type="date", nullable=true)
+     * @Assert\DateTime()
+     */
+    protected $limitDate;
+
+    /**
+     * @var boolean $isReconciled
+     *
+     * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
+     * @Assert\Type("bool")
+     */
+    protected $isReconciled = false;
+
+    /**
+     * @var string $notes
+     *
+     * @ORM\Column(name="notes", type="text", nullable=true)
+     */
+    protected $notes;
+
+    /**
+     * @var string $frequencyUnit
+     *
+     * @ORM\Column(name="frequency_unit", type="string", length=16, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Choice(choices = {"day", "week", "month", "year"})
+     */
+    protected $frequencyUnit = 'month';
+
+    /**
+     * @var integer $frequencyValue
+     *
+     * @ORM\Column(name="frequency_value", type="smallint", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Type("integer")
+     */
+    protected $frequencyValue;
+
+    /**
+     * @var boolean $isActive
+     *
+     * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @Assert\Type("bool")
+     */
+    protected $isActive = true;
+
+    /**
+     * @var DateTime $createdAt
+     *
+     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
+     */
+    protected $createdAt;
+
+    /**
+     * @var DateTime $updatedAt
+     *
+     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
+     */
+    protected $updatedAt;
+
 
     /**
      * @ORM\prePersist

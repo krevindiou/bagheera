@@ -43,6 +43,15 @@ class Category
     protected $categoryId;
 
     /**
+     * @var Krevindiou\BagheeraBundle\Entity\Category $parentCategory
+     *
+     * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
+     * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
+     * @Assert\Valid()
+     */
+    protected $parentCategory;
+
+    /**
      * @var string $type
      *
      * @ORM\Column(name="type", type="string", length=8, nullable=true)
@@ -66,7 +75,7 @@ class Category
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isActive;
+    protected $isActive = true;
 
     /**
      * @var DateTime $createdAt
@@ -83,17 +92,6 @@ class Category
      * @Assert\DateTime()
      */
     protected $updatedAt;
-
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\Category $parentCategory
-     *
-     * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
-     * })
-     * @Assert\Valid()
-     */
-    protected $parentCategory;
 
     /**
      * @var Doctrine\Common\Collections\ArrayCollection $subCategories

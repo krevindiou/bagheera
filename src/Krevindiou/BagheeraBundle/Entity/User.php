@@ -98,7 +98,7 @@ class User implements AdvancedUserInterface
      * @ORM\Column(name="is_admin", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isAdmin;
+    protected $isAdmin = false;
 
     /**
      * @var boolean $isActive
@@ -106,7 +106,7 @@ class User implements AdvancedUserInterface
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isActive;
+    protected $isActive = false;
 
     /**
      * @var DateTime $createdAt
@@ -135,8 +135,6 @@ class User implements AdvancedUserInterface
 
     public function __construct()
     {
-        $this->setIsAdmin(false);
-        $this->setIsActive(false);
         $this->banks = new ArrayCollection();
     }
 

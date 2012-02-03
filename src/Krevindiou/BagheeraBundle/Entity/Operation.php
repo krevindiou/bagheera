@@ -42,6 +42,25 @@ class Operation
     protected $operationId;
 
     /**
+     * @var Krevindiou\BagheeraBundle\Entity\Scheduler $scheduler
+     *
+     * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
+     * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
+     * @Assert\Valid()
+     */
+    protected $scheduler;
+
+    /**
+     * @var Krevindiou\BagheeraBundle\Entity\Account $account
+     *
+     * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
+     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Valid()
+     */
+    protected $account;
+
+    /**
      * @var Krevindiou\BagheeraBundle\Entity\Account $transferAccount
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
@@ -60,6 +79,25 @@ class Operation
     protected $transferOperation;
 
     /**
+     * @var Krevindiou\BagheeraBundle\Entity\Category $category
+     *
+     * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
+     * @Assert\Valid()
+     */
+    protected $category;
+
+    /**
+     * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
+     *
+     * @ORM\ManyToOne(targetEntity="PaymentMethod")
+     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\Valid()
+     */
+    protected $paymentMethod;
+
+    /**
      * @var string $thirdParty
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
@@ -71,14 +109,14 @@ class Operation
     /**
      * @var float $debit
      *
-     * @ORM\Column(name="debit", type="decimal", nullable=true)
+     * @ORM\Column(name="debit", type="decimal", scale="2", nullable=true)
      */
     protected $debit;
 
     /**
      * @var float $credit
      *
-     * @ORM\Column(name="credit", type="decimal", nullable=true)
+     * @ORM\Column(name="credit", type="decimal", scale="2", nullable=true)
      */
     protected $credit;
 
@@ -97,7 +135,7 @@ class Operation
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isReconciled;
+    protected $isReconciled = false;
 
     /**
      * @var string $notes
@@ -122,51 +160,9 @@ class Operation
      */
     protected $updatedAt;
 
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\Account $account
-     *
-     * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
-     * })
-     * @Assert\NotBlank()
-     * @Assert\Valid()
-     */
-    protected $account;
-
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\Category $category
-     *
-     * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
-     * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     * @Assert\Valid()
-     */
-    protected $category;
-
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
-     *
-     * @ORM\ManyToOne(targetEntity="PaymentMethod")
-     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
-     * @Assert\NotBlank()
-     * @Assert\Valid()
-     */
-    protected $paymentMethod;
-
-    /**
-     * @var Krevindiou\BagheeraBundle\Entity\Scheduler $scheduler
-     *
-     * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
-     * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
-     * @Assert\Valid()
-     */
-    protected $scheduler;
-
 
     public function __construct()
     {
-        $this->setNotes('');
-        $this->setIsReconciled(false);
         $this->setValueDate(new \DateTime());
     }
 
