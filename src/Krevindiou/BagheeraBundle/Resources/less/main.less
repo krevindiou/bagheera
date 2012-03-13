@@ -151,6 +151,7 @@ form {
             float: none;
             margin: 0;
             margin-right: 15px;
+            display: none;
         }
     }
 }
@@ -266,6 +267,10 @@ nav ul {
     .clear {
         clear: both;
     }
+    form {
+        float: left;
+        width: 100%;
+    }
 }
 
 h1 {
@@ -339,6 +344,11 @@ a.schedulers {
     .link_button_image("clock.png");
 }
 
+a.search {
+    display: inline-block;
+    .link_button_image("search.png");
+}
+
 .positive {
     color: #1ca553;
 }
@@ -393,6 +403,28 @@ input[type=submit].reconcile {
             text-align: right;
             vertical-align: middle;
         }
+    }
+}
+
+#operation.with_sidebar {
+    width: 700px;
+}
+
+#operation_search {
+    width: 250px !important;
+    font-size: 12px;
+    .form_label {
+        text-align: left;
+        margin: 3px 0 3px 11px;
+        height: 15px;
+    }
+    .form_field {
+        display: inline-block;
+        margin: 0 0 10px 10px;
+        width: 300px;
+    }
+    .form_button {
+        margin-left: 10px;
     }
 }
 

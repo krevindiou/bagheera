@@ -20,12 +20,8 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\CallbackValidator;
-use Symfony\Component\Validator\Constraints as Assert;
 use Krevindiou\BagheeraBundle\Entity\Account;
-use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
+use Krevindiou\BagheeraBundle\Form\EventListener\OperationSearchAmountFieldSubscriber;
 
 /**
  * Operation form
@@ -33,7 +29,7 @@ use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class OperationForm extends AbstractType
+class OperationSearchForm extends AbstractType
 {
     /**
      * @var Account
@@ -53,7 +49,7 @@ class OperationForm extends AbstractType
     {
         $account = $this->_account;
 
-        $subscriber = new OperationAmountFieldSubscriber($builder->getFormFactory());
+        $subscriber = new OperationSearchAmountFieldSubscriber($builder->getFormFactory());
         $builder->addEventSubscriber($subscriber);
 
         $builder
@@ -62,8 +58,6 @@ class OperationForm extends AbstractType
                 'choice',
                 array(
                     'label' => 'operation_type',
-                    'data' => 'debit',
-                    'property_path' => false,
                     'expanded' => true,
                     'required' => false,
                     'choices' => array(
@@ -78,64 +72,103 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_third_party',
                     'attr' => array(
-                        'size' => 40
+                        'size' => 30
                     )
                 )
             )
             ->add(
-                'amount',
+                'amount_comparator_1',
+                'choice',
+                array(
+                    'property_path' => false,
+                    'required' => false,
+                    'empty_value' => '',
+                    'choices' => array(
+                        'inferiorTo' => '<',
+                        'inferiorOrEqualTo' => '<=',
+                        'equalTo' => '=',
+                        'superiorOrEqualTo' => '>',
+                        'superiorTo' => '>=',
+                    )
+                )
+            )
+            ->add(
+                'amount_1',
                 'money',
                 array(
                     'label' => 'operation_amount',
                     'currency' => false,
                     'property_path' => false,
+                    'required' => false,
                     'attr' => array(
                         'size' => 9
                     )
                 )
             )
             ->add(
-                'category',
+                'amount_comparator_2',
+                'choice',
+                array(
+                    'property_path' => false,
+                    'required' => false,
+                    'empty_value' => '',
+                    'choices' => array(
+                        'inferiorTo' => '<',
+                        'inferiorOrEqualTo' => '<=',
+                        'equalTo' => '=',
+                        'superiorOrEqualTo' => '>',
+                        'superiorTo' => '>=',
+                    )
+                )
+            )
+            ->add(
+                'amount_2',
+                'money',
+                array(
+                    'currency' => false,
+                    'property_path' => false,
+                    'required' => false,
+                    'attr' => array(
+                        'size' => 9
+                    )
+                )
+            )
+            ->add(
+                'categories',
                 null,
                 array(
                     'label' => 'operation_category',
+                    'required' => false,
                     'property' => 'dropDownListLabel',
-                    'empty_value' => '',
-                    'required' => false
                 )
             )
             ->add(
-                'paymentMethod',
+                'paymentMethods',
                 null,
                 array(
                     'label' => 'operation_payment_method',
+                    'required' => false,
                     'property' => 'dropDownListLabel',
-                    'empty_value' => ''
                 )
             )
             ->add(
-                'transferAccount',
+                'valueDateStart',
                 null,
                 array(
-                    'label' => 'operation_transfer_account',
-                    'empty_value' => 'operation_external_account',
-                    'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
-                        return $repository->createQueryBuilder('a')
-                            ->innerJoin('a.bank', 'b')
-                            ->where('b.user = :user')
-                            ->andWhere('a != :account')
-                            ->setParameter('user', $account->getBank()->getUser())
-                            ->setParameter('account', $account)
-                            ->add('orderBy', 'a.name ASC');
-                    }
+                    'label' => 'operation_search_value_date_start',
+                    'widget' => 'single_text',
+                    'format' => 'yyyy-MM-dd',
+                    'attr' => array(
+                        'size' => 12,
+                        'class' => 'calendar'
+                    )
                 )
             )
             ->add(
-                'valueDate',
+                'valueDateEnd',
                 null,
                 array(
-                    'label' => 'operation_value_date',
+                    'label' => 'operation_search_value_date_end',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => array(
@@ -149,47 +182,36 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_notes',
-                    'attr' => array('cols' => 40, 'rows' => 5)
+                    'attr' => array(
+                        'size' => 30
+                    )
                 )
             )
             ->add(
                 'isReconciled',
-                null,
+                'choice',
                 array(
                     'label' => 'operation_is_reconciled',
-                    'required' => false
+                    'required' => false,
+                    'empty_value' => 'operation_search_reconciled_both',
+                    'choices' => array(
+                        1 => 'operation_search_only_reconciled',
+                        0 => 'operation_search_only_not_reconciled',
+                    )
                 )
             )
         ;
-
-        $builder->addValidator(
-            new CallbackValidator(
-                function(FormInterface $form)
-                {
-                    $validator = new Assert\NotBlankValidator();
-                    $constraint = new Assert\NotBlank();
-
-                    if (!$validator->isValid($form['type']->getData(), $constraint)) {
-                        $form->get('type')->addError(new FormError($constraint->message));
-                    }
-
-                    if (!$validator->isValid($form['amount']->getData(), $constraint)) {
-                        $form->get('amount')->addError(new FormError($constraint->message));
-                    }
-                }
-            )
-        );
     }
 
     public function getDefaultOptions(array $options)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Operation';
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\OperationSearch';
 
         return $options;
     }
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_operationtype';
+        return 'krevindiou_bagheerabundle_operationsearchtype';
     }
 }

@@ -22,10 +22,11 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Pagerfanta\Pagerfanta,
-    Pagerfanta\Adapter\DoctrineCollectionAdapter,
+    Pagerfanta\Adapter\DoctrineORMAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Entity\Operation,
+    Krevindiou\BagheeraBundle\Entity\OperationSearch,
     Krevindiou\BagheeraBundle\Entity\PaymentMethod,
     Krevindiou\BagheeraBundle\Form\OperationForm;
 
@@ -63,15 +64,21 @@ class OperationService
     /**
      * Returns operations list
      *
-     * @param  User $user           User entity
-     * @param  Account $account     Account entity
-     * @param  integer $currentPage Page number
+     * @param  User $user                       User entity
+     * @param  Account $account                 Account entity
+     * @param  integer $currentPage             Page number
+     * @param  OperationSearch $operationSearch OperationSearch entity
      * @return Pagerfanta
      */
-    public function getList(User $user, Account $account, $currentPage = 1)
+    public function getList(User $user, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
     {
         if ($account->getBank()->getUser() == $user) {
-            $adapter = new DoctrineCollectionAdapter($account->getOperations());
+            $adapter = new DoctrineORMAdapter(
+                $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->getQueryByAccount(
+                    $account,
+                    $operationSearch
+                )
+            );
 
             $pager = new Pagerfanta($adapter);
             $pager->setMaxPerPage(20);

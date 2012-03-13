@@ -5,11 +5,12 @@
 {% block content %}
 <a href="{{ path('account_list') }}" class="back">{% trans %}back_link{% endtrans %}</a>
 <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new">{% trans %}operation_new_link{% endtrans %}</a>
+<a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="search">{% trans %}operation_search_link{% endtrans %}</a>
 <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="schedulers">{% trans %}scheduler_list{% endtrans %}</a>
 <br/><br/>
 
 {% if operations|length > 0 %}
-<form method="post" action="">
+<form id="operation" {% if displaySearch %}class="with_sidebar" {% endif %}method="post" action="">
     <table class="data">
         <tr>
             <th></th>
@@ -17,8 +18,8 @@
             <th>{% trans %}operation_third_party{% endtrans %}</th>
             <th>{% trans %}operation_category{% endtrans %}</th>
             <th>{% trans %}operation_payment_method{% endtrans %}</th>
-            <th>{% trans %}operation_debit{% endtrans %}</th>
-            <th>{% trans %}operation_credit{% endtrans %}</th>
+            <th>{% trans %}operation_type_debit{% endtrans %}</th>
+            <th>{% trans %}operation_type_credit{% endtrans %}</th>
             <th>{% trans %}operation_value_date{% endtrans %}</th>
             <th class="edit"></th>
         </tr>
@@ -49,5 +50,8 @@
         </div>
     </div>
 </form>
+
+{% render "KrevindiouBagheeraBundle:OperationSearch:form" with {"account": account, "display": displaySearch} %}
+
 {% endif %}
 {% endblock %}

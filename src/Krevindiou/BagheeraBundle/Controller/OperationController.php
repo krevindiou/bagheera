@@ -40,7 +40,8 @@ class OperationController extends Controller
 
         $page = $request->query->getInt('page', 1);
 
-        $operations = $this->get('bagheera.operation')->getList($user, $account, $page);
+        $operationSearch = $this->get('bagheera.operation_search')->getSessionSearch($account);
+        $operations = $this->get('bagheera.operation')->getList($user, $account, $page, $operationSearch);
         if (null === $operations) {
             throw $this->createNotFoundException();
         }
@@ -48,6 +49,7 @@ class OperationController extends Controller
         return array(
             'account' => $account,
             'operations' => $operations,
+            'displaySearch' => (null !== $operationSearch)
         );
     }
 

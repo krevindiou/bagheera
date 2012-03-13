@@ -42,6 +42,13 @@ services:
             - @form.factory
             - @validator
 
+    bagheera.operation_search:
+        class: Krevindiou\BagheeraBundle\Service\OperationSearchService
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @form.factory
+            - @service_container
+
     bagheera.scheduler:
         class: Krevindiou\BagheeraBundle\Service\SchedulerService
         arguments:

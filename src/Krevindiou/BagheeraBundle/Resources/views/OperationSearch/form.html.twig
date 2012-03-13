@@ -1,0 +1,39 @@
+<form id="operation_search" {% if not display %}style="display: none;"{% endif %}action="{{ path('operation_search_form', {'accountId': account.accountId}) }}" novalidate="novalidate" method="post" {{ form_enctype(operationSearchForm) }}>
+    {{ form_errors(operationSearchForm) }}
+
+    {{ form_row(operationSearchForm.type) }}
+    {{ form_row(operationSearchForm.thirdParty) }}
+    {{ form_row(operationSearchForm.categories) }}
+    {{ form_row(operationSearchForm.paymentMethods) }}
+
+    {% spaceless %}
+    <div>
+        <div class="form_label">
+            {{ form_label(operationSearchForm.amount_1) }}
+        </div>
+        <div class="form_field">
+            {{ form_errors(operationSearchForm.amount_comparator_1) }}
+            {{ form_widget(operationSearchForm.amount_comparator_1) }}&nbsp;
+            {{ form_widget(operationSearchForm.amount_1) }}
+        </div>
+    </div>
+    <div>
+        <div class="form_field">
+            {{ form_errors(operationSearchForm.amount_comparator_2) }}
+            {{ form_widget(operationSearchForm.amount_comparator_2) }}&nbsp;
+            {{ form_widget(operationSearchForm.amount_2) }}
+        </div>
+    </div>
+    {% endspaceless %}
+
+    {{ form_row(operationSearchForm.valueDateStart) }}
+    {{ form_row(operationSearchForm.valueDateEnd) }}
+    {{ form_row(operationSearchForm.notes) }}
+    {{ form_row(operationSearchForm.isReconciled) }}
+    {{ form_rest(operationSearchForm) }}
+
+    <div class="form_button">
+        <input type="submit" name="search" value="{% trans %}operation_search_form_submit_button{% endtrans %}"/>
+        <input type="submit" name="clear" value="{% trans %}operation_search_form_clear_button{% endtrans %}"/>
+    </div>
+</form>
