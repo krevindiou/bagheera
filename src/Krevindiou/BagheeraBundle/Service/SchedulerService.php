@@ -152,6 +152,8 @@ class SchedulerService
                     $this->_em->persist($scheduler);
                     $this->_em->flush();
 
+                    $this->runSchedulers($user);
+
                     return true;
                 } catch (\Exception $e) {
                 }

@@ -25,6 +25,7 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Validator\Validator,
     Symfony\Component\HttpFoundation\Request,
     Symfony\Component\Security\Core\Encoder\EncoderFactory,
+    Symfony\Component\Security\Http\Event\InteractiveLoginEvent,
     Symfony\Bundle\FrameworkBundle\Translation\Translator,
     Symfony\Bundle\FrameworkBundle\Routing\Router,
     Krevindiou\BagheeraBundle\Entity\User,
@@ -87,6 +88,11 @@ class UserService
      */
     protected $_bankService;
 
+    /**
+     * @var SchedulerService
+     */
+    protected $_schedulerService;
+
 
     public function __construct(
         EntityManager $em,
@@ -97,7 +103,8 @@ class UserService
         EncoderFactory $encoderFactory,
         FormFactory $formFactory,
         Validator $validator,
-        BankService $bankService)
+        BankService $bankService,
+        SchedulerService $schedulerService)
     {
         $this->_em = $em;
         $this->_mailer = $mailer;
@@ -108,6 +115,12 @@ class UserService
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
         $this->_bankService = $bankService;
+        $this->_schedulerService = $schedulerService;
+    }
+
+    public function onLogin(InteractiveLoginEvent $event)
+    {
+        $this->_schedulerService->runSchedulers($event->getAuthenticationToken()->getUser());
     }
 
     /**
