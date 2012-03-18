@@ -4,11 +4,12 @@ namespace Krevindiou\BagheeraBundle\DataFixtures\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture,
     Doctrine\Common\DataFixtures\OrderedFixtureInterface,
+    Doctrine\Common\Persistence\ObjectManager,
     Krevindiou\BagheeraBundle\Entity\Bank;
 
 class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
 {
-    public function load($em)
+    public function load(ObjectManager $em)
     {
         $bank = new Bank();
         $bank->setUser($this->getReference('user-john'));

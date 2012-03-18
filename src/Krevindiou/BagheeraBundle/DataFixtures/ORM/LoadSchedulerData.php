@@ -4,11 +4,12 @@ namespace Krevindiou\BagheeraBundle\DataFixtures\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture,
     Doctrine\Common\DataFixtures\OrderedFixtureInterface,
+    Doctrine\Common\Persistence\ObjectManager,
     Krevindiou\BagheeraBundle\Entity\Scheduler;
 
 class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterface
 {
-    public function load($em)
+    public function load(ObjectManager $em)
     {
         // John - HSBC - Checking account #1
         $scheduler = new Scheduler();

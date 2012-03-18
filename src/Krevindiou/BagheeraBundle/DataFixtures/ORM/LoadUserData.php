@@ -4,12 +4,13 @@ namespace Krevindiou\BagheeraBundle\DataFixtures\ORM;
 
 use Doctrine\Common\DataFixtures\AbstractFixture,
     Doctrine\Common\DataFixtures\OrderedFixtureInterface,
+    Doctrine\Common\Persistence\ObjectManager,
     Krevindiou\BagheeraBundle\Entity\User,
     Symfony\Component\Security\Core\Encoder\MessageDigestPasswordEncoder;
 
 class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
 {
-    public function load($em)
+    public function load(ObjectManager $em)
     {
         $encoder = new MessageDigestPasswordEncoder('sha512', false, 1);
 
