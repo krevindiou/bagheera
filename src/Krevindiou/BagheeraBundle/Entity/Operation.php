@@ -73,7 +73,7 @@ class Operation
      * @var Krevindiou\BagheeraBundle\Entity\Operation $transferOperation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
-     * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id")
+     * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
      * @Assert\Valid()
      */
     protected $transferOperation;
