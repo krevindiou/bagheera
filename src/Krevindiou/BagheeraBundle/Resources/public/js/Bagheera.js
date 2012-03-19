@@ -32,7 +32,7 @@ var Bagheera = {
                 $(".list_actions input").toggle($("#form_account_list :checked").length > 0);
             });
 
-            $("input.calendar").live("click", function() {
+            $("input.calendar").on("click", function() {
                 $(this).datepicker({"dateFormat": "yy-mm-dd", "showOn": "focus"}).focus();
             });
 
