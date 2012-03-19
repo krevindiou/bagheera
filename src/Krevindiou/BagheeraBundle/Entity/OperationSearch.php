@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Collections\Collection,
     Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Validator\Constraints as Assert;
 
@@ -234,9 +235,9 @@ class OperationSearch
     /**
      * Set categories
      *
-     * @param ArrayCollection $categories
+     * @param Doctrine\Common\Collections\Collection $categories
      */
-    public function setCategories(ArrayCollection $categories)
+    public function setCategories(Collection $categories)
     {
         $this->categories = $categories;
     }
@@ -244,7 +245,7 @@ class OperationSearch
     /**
      * Get categories
      *
-     * @return ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getCategories()
     {
@@ -254,9 +255,9 @@ class OperationSearch
     /**
      * Set paymentMethods
      *
-     * @param ArrayCollection $paymentMethods
+     * @param Doctrine\Common\Collections\Collection $paymentMethods
      */
-    public function setPaymentMethods(ArrayCollection $paymentMethods)
+    public function setPaymentMethods(Collection $paymentMethods)
     {
         $this->paymentMethods = $paymentMethods;
     }
@@ -264,7 +265,7 @@ class OperationSearch
     /**
      * Get paymentMethods
      *
-     * @return ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getPaymentMethods()
     {

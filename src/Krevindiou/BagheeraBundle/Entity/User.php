@@ -125,7 +125,7 @@ class User implements AdvancedUserInterface
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\ArrayCollection $banks
+     * @var Doctrine\Common\Collections\Collection $banks
      *
      * @ORM\OneToMany(targetEntity="Bank", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})
@@ -348,7 +348,7 @@ class User implements AdvancedUserInterface
     /**
      * Get user banks
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getBanks()
     {

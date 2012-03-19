@@ -20,7 +20,6 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Symfony\Component\HttpFoundation\Request,
-    Doctrine\Common\Collections\ArrayCollection,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Krevindiou\BagheeraBundle\Entity\OperationSearch,

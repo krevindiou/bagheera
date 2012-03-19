@@ -92,7 +92,7 @@ class Bank
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\ArrayCollection $accounts
+     * @var Doctrine\Common\Collections\Collection $accounts
      *
      * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})
@@ -255,7 +255,7 @@ class Bank
     /**
      * Get user accounts
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getAccounts()
     {

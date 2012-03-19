@@ -94,7 +94,7 @@ class Category
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\ArrayCollection $subCategories
+     * @var Doctrine\Common\Collections\Collection $subCategories
      *
      * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory", fetch="EXTRA_LAZY")
      */
@@ -256,7 +256,7 @@ class Category
     /**
      * Get subCategories
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getSubCategories()
     {

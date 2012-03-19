@@ -123,7 +123,7 @@ class Account
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\ArrayCollection $sharedWith
+     * @var Doctrine\Common\Collections\Collection $sharedWith
      *
      * @ORM\ManyToMany(targetEntity="User")
      * @ORM\JoinTable(name="shared_account",
@@ -139,7 +139,7 @@ class Account
     protected $sharedWith;
 
     /**
-     * @var Doctrine\Common\Collections\ArrayCollection
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="Operation", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
@@ -147,7 +147,7 @@ class Account
     protected $operations;
 
     /**
-     * @var Doctrine\Common\Collections\ArrayCollection
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
@@ -382,7 +382,7 @@ class Account
     /**
      * Get sharedWith
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getSharedWith()
     {
@@ -412,7 +412,7 @@ class Account
     /**
      * Get account operations
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getOperations()
     {
@@ -422,7 +422,7 @@ class Account
     /**
      * Get account schedulers
      *
-     * @return Doctrine\Common\Collections\ArrayCollection
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getSchedulers()
     {
