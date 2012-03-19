@@ -265,11 +265,18 @@ class Category
 
     public function __toString()
     {
-        return $this->getName();
+        $str = $this->getName();
+
+        $parentCategory = $this->getParentCategory();
+        if (null !== $parentCategory) {
+            $str = $parentCategory->getName() . ' > ' . $str;
+        }
+
+        return $str;
     }
 
     public function getDropDownListLabel()
     {
-        return $this->getType() . ' ' . $this->getName();
+        return $this->getType() . ' ' . $this;
     }
 }
