@@ -286,6 +286,7 @@ class OperationService
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.user = :user ';
         $dql.= 'AND o.thirdParty LIKE :thirdParty ';
+        $dql.= 'GROUP BY o.thirdParty ';
         $dql.= 'ORDER BY o.thirdParty ASC ';
         $query = $this->_em->createQuery($dql);
         $query->setMaxResults(10);
