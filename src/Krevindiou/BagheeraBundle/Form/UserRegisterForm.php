@@ -35,7 +35,7 @@ class UserRegisterForm extends AbstractType
             ->add('firstname', null, array('label' => 'user_firstname'))
             ->add('lastname', null, array('label' => 'user_lastname'))
             ->add('email', 'email', array('label' => 'user_email'))
-            ->add('password', 'repeated', array(
+            ->add('plainPassword', 'repeated', array(
                 'type' => 'password',
                 'first_name' => 'user_password',
                 'second_name' => 'user_password_confirmation',
@@ -47,6 +47,7 @@ class UserRegisterForm extends AbstractType
     public function getDefaultOptions(array $options)
     {
         $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
+        $options['validation_groups'] = array('Default', 'password');
 
         return $options;
     }

@@ -166,7 +166,7 @@ class UserService
             $user->setActivation($key);
 
             $encoder = $this->_encoderFactory->getEncoder($user);
-            $user->setPassword($encoder->encodePassword($user->getPassword(), $user->getSalt()));
+            $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
 
             try {
                 $this->_em->persist($user);

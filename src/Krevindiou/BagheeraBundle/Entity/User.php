@@ -78,10 +78,16 @@ class User implements AdvancedUserInterface
      * @var string $password
      *
      * @ORM\Column(name="password", type="string", length=128, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MinLength(8)
      */
     protected $password;
+
+    /**
+     * @var string $plainPassword
+     *
+     * @Assert\NotBlank(groups={"password"})
+     * @Assert\MinLength(8)
+     */
+    protected $plainPassword;
 
     /**
      * @var string $activation
@@ -246,6 +252,26 @@ class User implements AdvancedUserInterface
     }
 
     /**
+     * Set plainPassword
+     *
+     * @param string $plainPassword
+     */
+    public function setPlainPassword($plainPassword)
+    {
+        $this->plainPassword = $plainPassword;
+    }
+
+    /**
+     * Get plainPassword
+     *
+     * @return string
+     */
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
      * Set activation
      *
      * @param string $activation
@@ -384,6 +410,7 @@ class User implements AdvancedUserInterface
      */
     public function eraseCredentials()
     {
+        $this->setPlainPassword(null);
     }
 
     /**

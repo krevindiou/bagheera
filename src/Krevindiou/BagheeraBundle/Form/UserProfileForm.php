@@ -34,7 +34,14 @@ class UserProfileForm extends UserRegisterForm
     {
         parent::buildForm($builder, $options);
 
-        $builder->remove('password');
+        $builder->remove('plainPassword');
+    }
+
+    public function getDefaultOptions(array $options)
+    {
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
+
+        return $options;
     }
 
     public function getName()
