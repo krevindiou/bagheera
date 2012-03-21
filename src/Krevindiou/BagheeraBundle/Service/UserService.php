@@ -28,6 +28,8 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Security\Http\Event\InteractiveLoginEvent,
     Symfony\Bundle\FrameworkBundle\Translation\Translator,
     Symfony\Bundle\FrameworkBundle\Routing\Router,
+    Pagerfanta\Pagerfanta,
+    Pagerfanta\Adapter\DoctrineORMAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Form\UserRegisterForm,
     Krevindiou\BagheeraBundle\Form\UserProfileForm,
@@ -399,53 +401,21 @@ class UserService
     /**
      * Gets users list
      *
-     * @param  array $params Search criterias
-     * @param  integer $page Page number
-     * @return array
+     * @param  array $params        Search criterias
+     * @param  integer $currentPage Page number
+     * @return Pagerfanta
      */
-    public function getUsers(array $params = array(), $page = 1)
+    public function getUsers(array $params = array(), $currentPage = 1)
     {
-        $dql = 'SELECT u ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:User u ';
-        $dql.= 'WHERE 1 = 1 ';
-        if (!empty($params)) {
-            if (isset($params['firstname']) && '' != $params['firstname']) {
-                $dql.= 'AND u.firstname LIKE :firstname ';
-            }
-            if (isset($params['lastname']) && '' != $params['lastname']) {
-                $dql.= 'AND u.lastname LIKE :lastname ';
-            }
-            if (isset($params['email']) && '' != $params['email']) {
-                $dql.= 'AND u.email LIKE :email ';
-            }
-            if (isset($params['isActive']) && '' != $params['isActive']) {
-                $dql.= 'AND u.isActive = :isActive ';
-            }
-            if (isset($params['isAdmin']) && '' != $params['isAdmin']) {
-                $dql.= 'AND u.isAdmin = :isAdmin ';
-            }
-        }
-        $dql.= 'ORDER BY u.createdAt DESC ';
-        $query = $this->_em->createQuery($dql);
-        if (!empty($params)) {
-            if (isset($params['firstname']) && '' != $params['firstname']) {
-                $query->setParameter('firstname', $params['firstname'] . '%');
-            }
-            if (isset($params['lastname']) && '' != $params['lastname']) {
-                $query->setParameter('lastname', $params['lastname'] . '%');
-            }
-            if (isset($params['email']) && '' != $params['email']) {
-                $query->setParameter('email', $params['email'] . '%');
-            }
-            if (isset($params['isActive']) && '' != $params['isActive']) {
-                $query->setParameter('isActive', $params['isActive']);
-            }
-            if (isset($params['isAdmin']) && '' != $params['isAdmin']) {
-                $query->setParameter('isAdmin', $params['isAdmin']);
-            }
-        }
+        $adapter = new DoctrineORMAdapter(
+            $this->_em->getRepository('KrevindiouBagheeraBundle:User')->getListQuery($params)
+        );
 
-        return $query->getResult();
+        $pager = new Pagerfanta($adapter);
+        $pager->setMaxPerPage(20);
+        $pager->setCurrentPage($currentPage);
+
+        return $pager;
     }
 
     /**

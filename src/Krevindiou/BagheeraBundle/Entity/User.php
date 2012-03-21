@@ -30,7 +30,7 @@ use Doctrine\ORM\Mapping as ORM,
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\UserRepository")
  * @ORM\Table(name="user")
  * @ORM\HasLifecycleCallbacks()
  * @DoctrineAssert\UniqueEntity("email")

@@ -200,7 +200,7 @@ class UserController extends Controller
         }
 
         return array(
-            'users' => $this->get('bagheera.user')->getUsers()
+            'users' => $this->get('bagheera.user')->getUsers(array(), $page)
         );
     }
 }
