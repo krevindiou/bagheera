@@ -7,7 +7,7 @@
     {{ form_widget(profileForm) }}
 
     <div class="form_button">
-        <input type="submit" value="{% trans %}user_profile_submit_button{% endtrans %}"/>
+        <input type="submit" value="{{ 'user_profile_submit_button'|trans }}"/>
     </div>
 </form>
 {% endblock %}

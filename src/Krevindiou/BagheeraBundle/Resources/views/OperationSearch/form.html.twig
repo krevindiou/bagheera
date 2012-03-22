@@ -33,7 +33,7 @@
     {{ form_rest(operationSearchForm) }}
 
     <div class="form_button">
-        <input type="submit" name="search" value="{% trans %}operation_search_form_submit_button{% endtrans %}"/>
-        <input type="submit" name="clear" value="{% trans %}operation_search_form_clear_button{% endtrans %}"/>
+        <input type="submit" name="search" value="{{ 'operation_search_form_submit_button'|trans }}"/>
+        <input type="submit" name="clear" value="{{ 'operation_search_form_clear_button'|trans }}"/>
     </div>
 </form>

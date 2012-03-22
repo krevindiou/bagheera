@@ -3,13 +3,13 @@
 {% block pageTitle 'user_register_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('login') }}" class="back">{% trans %}back_link{% endtrans %}</a>
+<a href="{{ path('login') }}" class="back">{{ 'back_link'|trans }}</a>
 
 <form action="{{ path('user_register') }}" novalidate="novalidate" method="post" {{ form_enctype(registerForm) }}>
     {{ form_widget(registerForm) }}
 
     <div class="form_button">
-        <input type="submit" value="{% trans %}user_register_submit_button{% endtrans %}"/>
+        <input type="submit" value="{{ 'user_register_submit_button'|trans }}"/>
     </div>
 </form>
 {% endblock %}

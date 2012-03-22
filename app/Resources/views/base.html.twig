@@ -29,22 +29,22 @@
             {% if app.getUser() is not empty %}
             <nav>
                 <ul>
-                    <li><a href="{{ path('account_list') }}">{% trans %}home_link{% endtrans %}</a></li>
-                    <li><a href="{{ path('user_profile') }}">{% trans %}profile_link{% endtrans %}</a></li>
-                    {# <li><a href="{{ path('share_list') }}">{% trans %}shares_link{% endtrans %}</a></li> #}
-                    {# <li><a href="{{ path('report_ist') }}">{% trans %}reports_link{% endtrans %}</a></li> #}
+                    <li><a href="{{ path('account_list') }}">{{ 'home_link'|trans }}</a></li>
+                    <li><a href="{{ path('user_profile') }}">{{ 'profile_link'|trans }}</a></li>
+                    {# <li><a href="{{ path('share_list') }}">{{ 'shares_link'|trans }}</a></li> #}
+                    {# <li><a href="{{ path('report_ist') }}">{{ 'reports_link'|trans }}</a></li> #}
                     {# {% if app.getUser().getIsAdmin() %} #}
-                    {# <li><a href="{{ path('user_list') }}">{% trans %}admin_users_link{% endtrans %}</a></li> #}
-                    {# <li><a href="{{ path('category_list') }}">{% trans %}admin_categories_link{% endtrans %}</a></li> #}
+                    {# <li><a href="{{ path('user_list') }}">{{ 'admin_users_link'|trans }}</a></li> #}
+                    {# <li><a href="{{ path('category_list') }}">{{ 'admin_categories_link'|trans }}</a></li> #}
                     {# {% endif %} #}
-                    <li class="logout"><a href="{{ path('logout') }}">{% trans %}user_logout_link{% endtrans %}</a></li>
+                    <li class="logout"><a href="{{ path('logout') }}">{{ 'user_logout_link'|trans }}</a></li>
                 </ul>
             </nav>
             {% else %}
             <nav>
                 <ul>
-                    <li><a href="{{ path('user_register') }}">{% trans %}user_register_link{% endtrans %}</a></li>
-                    <li><a href="{{ path('user_forgot_password') }}">{% trans %}user_forgot_password_link{% endtrans %}</a></li>
+                    <li><a href="{{ path('user_register') }}">{{ 'user_register_link'|trans }}</a></li>
+                    <li><a href="{{ path('user_forgot_password') }}">{{ 'user_forgot_password_link'|trans }}</a></li>
                 </ul>
             </nav>
             {% endif %}

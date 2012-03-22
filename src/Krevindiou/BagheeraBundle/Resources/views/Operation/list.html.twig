@@ -3,10 +3,10 @@
 {% block pageTitle 'operation_list_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('account_list') }}" class="back">{% trans %}back_link{% endtrans %}</a>
-<a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new">{% trans %}operation_new_link{% endtrans %}</a>
-<a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="search">{% trans %}operation_search_link{% endtrans %}</a>
-<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="schedulers">{% trans %}scheduler_list{% endtrans %}</a>
+<a href="{{ path('account_list') }}" class="back">{{ 'back_link'|trans }}</a>
+<a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new">{{ 'operation_new_link'|trans }}</a>
+<a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="search">{{ 'operation_search_link'|trans }}</a>
+<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="schedulers">{{ 'scheduler_list'|trans }}</a>
 <br/><br/>
 
 {% if operations|length > 0 %}
@@ -15,12 +15,12 @@
         <tr>
             <th></th>
             <th></th>
-            <th>{% trans %}operation_third_party{% endtrans %}</th>
-            <th>{% trans %}operation_category{% endtrans %}</th>
-            <th>{% trans %}operation_payment_method{% endtrans %}</th>
-            <th>{% trans %}operation_type_debit{% endtrans %}</th>
-            <th>{% trans %}operation_type_credit{% endtrans %}</th>
-            <th>{% trans %}operation_value_date{% endtrans %}</th>
+            <th>{{ 'operation_third_party'|trans }}</th>
+            <th>{{ 'operation_category'|trans }}</th>
+            <th>{{ 'operation_payment_method'|trans }}</th>
+            <th>{{ 'operation_type_debit'|trans }}</th>
+            <th>{{ 'operation_type_credit'|trans }}</th>
+            <th>{{ 'operation_value_date'|trans }}</th>
             <th class="edit"></th>
         </tr>
         {% for operation in operations %}
@@ -36,14 +36,14 @@
             <td class="debit{{ (0 != operation.debit) ? ' negative' : '' }}">{{ (0 != operation.debit) ? operation.debit : '' }}</td>
             <td class="credit{{ (0 != operation.credit) ? ' positive' : '' }}">{{ (0 != operation.credit) ? operation.credit : '' }}</td>
             <td>{{ operation.valueDate|date('Y-m-d') }}</td>
-            <td class="edit"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}">{% trans %}operation_edit_link{% endtrans %}</a></td>
+            <td class="edit"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}">{{ 'operation_edit_link'|trans }}</a></td>
         </tr>
         {% endfor %}
     </table>
 
     <div class="list_actions">
-        <input type="submit" name="delete" class="delete" value="{% trans %}operation_delete_button{% endtrans %}" />
-        <input type="submit" name="reconcile" class="reconcile" value="{% trans %}operation_reconcile_button{% endtrans %}" />
+        <input type="submit" name="delete" class="delete" value="{{ 'operation_delete_button'|trans }}" />
+        <input type="submit" name="reconcile" class="reconcile" value="{{ 'operation_reconcile_button'|trans }}" />
 
         <div class="pager">
         {{ pagerfanta(operations) }}

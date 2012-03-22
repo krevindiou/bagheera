@@ -3,7 +3,7 @@
 {% block pageTitle 'scheduler_form_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="back">{% trans %}back_link{% endtrans %}</a>
+<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="back">{{ 'back_link'|trans }}</a>
 
 <form action="" novalidate="novalidate" method="post" {{ form_enctype(schedulerForm) }}>
     {{ form_row(schedulerForm.type) }}
@@ -36,7 +36,7 @@
     {{ form_rest(schedulerForm) }}
 
     <div class="form_button">
-        <input type="submit" value="{% trans %}scheduler_form_submit_button{% endtrans %}"/>
+        <input type="submit" value="{{ 'scheduler_form_submit_button'|trans }}"/>
     </div>
 </form>
 {% endblock %}

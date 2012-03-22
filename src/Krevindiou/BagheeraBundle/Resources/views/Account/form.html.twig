@@ -3,7 +3,7 @@
 {% block pageTitle 'account_form_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('account_list') }}" class="back">{% trans %}back_link{% endtrans %}</a>
+<a href="{{ path('account_list') }}" class="back">{{ 'back_link'|trans }}</a>
 
 <form action="" novalidate="novalidate" method="post" {{ form_enctype(accountForm) }}>
     {{ form_row(accountForm.bank) }}
@@ -20,7 +20,7 @@
     {{ form_rest(accountForm) }}
 
     <div class="form_button">
-        <input type="submit" value="{% trans %}account_form_submit_button{% endtrans %}"/>
+        <input type="submit" value="{{ 'account_form_submit_button'|trans }}"/>
     </div>
 </form>
 {% endblock %}

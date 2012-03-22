@@ -37,7 +37,7 @@
     {% set type = type|default('text') %}
     <input type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
     {% if filePath is defined %}
-    &nbsp;<a href="{{ filePath }}">{% trans %}download{% endtrans %}</a>
+    &nbsp;<a href="{{ filePath }}">{{ 'download'|trans }}</a>
     {% endif %}
 {% endspaceless %}
 {% endblock %}

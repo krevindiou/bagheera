@@ -3,10 +3,10 @@
 {% block pageTitle 'account_list_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('bank_new') }}" class="new">{% trans %}bank_new_link{% endtrans %}</a>
+<a href="{{ path('bank_new') }}" class="new">{{ 'bank_new_link'|trans }}</a>
 
 {% if banks|length > 0 %}
-    <a href="{{ path('account_new') }}" class="new">{% trans %}account_new_link{% endtrans %}</a>
+    <a href="{{ path('account_new') }}" class="new">{{ 'account_new_link'|trans }}</a>
     <br/><br/>
 
     <form method="post" action="">
@@ -18,13 +18,13 @@
                         <th class="checkbox"><input type="checkbox" name="banksId[]" value="{{ bank.bankId }}"/></th>
                         <th class="bank_name">{{ bank.name }}</th>
                         <th class="balance {{ (bankService.getBalance(app.user, bank) < 0 ? 'negative' : 'positive') }}">{{ bankService.getBalance(app.user, bank) | abs | money }}</th>
-                        <th class="edit"><a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{% trans %}bank_edit_link{% endtrans %}"/></a></th>
+                        <th class="edit"><a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}"/></a></th>
                     </tr>
 
                     {% if bank.getAccounts() is empty %}
                     <tr>
                         <td></td>
-                        <td colspan="3"><em>{% trans %}account_none{% endtrans %}</em></td>
+                        <td colspan="3"><em>{{ 'account_none'|trans }}</em></td>
                     </tr>
                     {% else %}
                     {% for account in bank.getAccounts() %}
@@ -32,7 +32,7 @@
                         <td class="checkbox"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
                         <td class="account_name"><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
                         <td class="balance {{ (accountService.getBalance(app.user, account) < 0 ? 'negative' : 'positive') }}">{{ accountService.getBalance(app.user, account) | abs | money }}</td>
-                        <td class="edit"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{% trans %}account_edit_link{% endtrans %}"/></a></td>
+                        <td class="edit"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'account_edit_link'|trans }}"/></a></td>
                     </tr>
                     {% endfor %}
                     {% endif %}
@@ -42,11 +42,11 @@
         </ul>
 
         <div class="list_actions">
-            <input type="submit" name="delete" class="delete" value="{% trans %}account_delete_button{% endtrans %}"/>
-            <input type="submit" name="share" disabled="disabled" value="{% trans %}account_share_button{% endtrans %}"/>
+            <input type="submit" name="delete" class="delete" value="{{ 'account_delete_button'|trans }}"/>
+            <input type="submit" name="share" disabled="disabled" value="{{ 'account_share_button'|trans }}"/>
         </div>
     </form>
 
-    <p id="total_balance">{% trans %}total_balance{% endtrans %} : <strong class="{{ (userService.getBalance(app.user) < 0 ? 'negative' : 'positive') }}">{{ userService.getBalance(app.user) | abs | money }}</strong></p>
+    <p id="total_balance">{{ 'total_balance'|trans }} : <strong class="{{ (userService.getBalance(app.user) < 0 ? 'negative' : 'positive') }}">{{ userService.getBalance(app.user) | abs | money }}</strong></p>
 {% endif %}
 {% endblock %}

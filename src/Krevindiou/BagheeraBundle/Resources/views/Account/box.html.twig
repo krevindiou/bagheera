@@ -1,7 +1,7 @@
 {% if account is not null %}
 <section id="account_box">
     <strong>{{ account.getBank().getName() }} - {{ account.getName() }}</strong><br/>
-    {% trans %}balance{% endtrans %} : <strong class="{{ (accountService.getBalance(app.user, account) < 0) ? 'negative' : 'positive' }}"> {{ accountService.getBalance(app.user, account) | abs | money }}</strong><br/>
-    {% trans %}reconciled_balance{% endtrans %} : <strong class="{{ (accountService.getBalance(app.user, account, true) < 0) ? 'negative' : 'positive' }}">{{ accountService.getBalance(app.user, account, true) | abs | money }}</strong>
+    {{ 'balance'|trans }} : <strong class="{{ (accountService.getBalance(app.user, account) < 0) ? 'negative' : 'positive' }}"> {{ accountService.getBalance(app.user, account) | abs | money }}</strong><br/>
+    {{ 'reconciled_balance'|trans }} : <strong class="{{ (accountService.getBalance(app.user, account, true) < 0) ? 'negative' : 'positive' }}">{{ accountService.getBalance(app.user, account, true) | abs | money }}</strong>
 </section>
 {% endif %}
