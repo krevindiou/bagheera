@@ -21,6 +21,7 @@ namespace Krevindiou\BagheeraBundle\Service;
 use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Symfony\Bridge\Monolog\Logger,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
     Krevindiou\BagheeraBundle\Form\BankForm,
@@ -34,6 +35,11 @@ use Doctrine\ORM\EntityManager,
  */
 class BankService
 {
+    /**
+     * @var Logger
+     */
+    protected $_logger;
+
     /**
      * @var EntityManager
      */
@@ -56,11 +62,13 @@ class BankService
 
 
     public function __construct(
+        Logger $logger,
         EntityManager $em,
         FormFactory $formFactory,
         Validator $validator,
         AccountService $accountService)
     {
+        $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
@@ -107,6 +115,7 @@ class BankService
 
                     return true;
                 } catch (\Exception $e) {
+                    $this->_logger->err($e->getMessage());
                 }
             }
         }
@@ -136,6 +145,8 @@ class BankService
 
             $this->_em->flush();
         } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+
             return false;
         }
 

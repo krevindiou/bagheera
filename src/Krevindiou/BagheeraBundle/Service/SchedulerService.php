@@ -22,6 +22,7 @@ use Doctrine\ORM\EntityManager,
     Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Symfony\Bridge\Monolog\Logger,
     Pagerfanta\Pagerfanta,
     Pagerfanta\Adapter\DoctrineCollectionAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
@@ -39,6 +40,11 @@ use Doctrine\ORM\EntityManager,
  */
 class SchedulerService
 {
+    /**
+     * @var Logger
+     */
+    protected $_logger;
+
     /**
      * @var EntityManager
      */
@@ -61,11 +67,13 @@ class SchedulerService
 
 
     public function __construct(
+        Logger $logger,
         EntityManager $em,
         FormFactory $formFactory,
         Validator $validator,
         OperationService $operationService)
     {
+        $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
@@ -156,6 +164,7 @@ class SchedulerService
 
                     return true;
                 } catch (\Exception $e) {
+                    $this->_logger->err($e->getMessage());
                 }
             }
         }
@@ -185,6 +194,8 @@ class SchedulerService
 
             $this->_em->flush();
         } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+
             return false;
         }
 

@@ -21,6 +21,7 @@ namespace Krevindiou\BagheeraBundle\Service;
 use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Symfony\Bridge\Monolog\Logger,
     Pagerfanta\Pagerfanta,
     Pagerfanta\Adapter\DoctrineORMAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
@@ -39,6 +40,11 @@ use Doctrine\ORM\EntityManager,
 class OperationService
 {
     /**
+     * @var Logger
+     */
+    protected $_logger;
+
+    /**
      * @var EntityManager
      */
     protected $_em;
@@ -54,8 +60,9 @@ class OperationService
     protected $_validator;
 
 
-    public function __construct(EntityManager $em, FormFactory $formFactory, Validator $validator)
+    public function __construct(Logger $logger, EntityManager $em, FormFactory $formFactory, Validator $validator)
     {
+        $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
@@ -192,6 +199,8 @@ class OperationService
                     try {
                         $this->_em->persist($transferOperation);
                     } catch (\Exception $e) {
+                        $this->_logger->err($e->getMessage());
+
                         return false;
                     }
                 } else {
@@ -203,6 +212,8 @@ class OperationService
                             $this->_em->flush();
                             $this->_em->remove($transferOperationBeforeSave);
                         } catch (\Exception $e) {
+                            $this->_logger->err($e->getMessage());
+
                             return false;
                         }
                     }
@@ -214,6 +225,7 @@ class OperationService
 
                     return true;
                 } catch (\Exception $e) {;
+                    $this->_logger->err($e->getMessage());
                 }
             }
         }
@@ -243,6 +255,8 @@ class OperationService
 
             $this->_em->flush();
         } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+
             return false;
         }
 
@@ -272,6 +286,8 @@ class OperationService
 
             $this->_em->flush();
         } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+
             return false;
         }
 

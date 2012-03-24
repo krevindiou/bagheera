@@ -28,6 +28,7 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Security\Http\Event\InteractiveLoginEvent,
     Symfony\Bundle\FrameworkBundle\Translation\Translator,
     Symfony\Bundle\FrameworkBundle\Routing\Router,
+    Symfony\Bridge\Monolog\Logger,
     Pagerfanta\Pagerfanta,
     Pagerfanta\Adapter\DoctrineORMAdapter,
     Krevindiou\BagheeraBundle\Entity\User,
@@ -45,6 +46,11 @@ use Doctrine\ORM\EntityManager,
  */
 class UserService
 {
+    /**
+     * @var Logger
+     */
+    protected $_logger;
+
     /**
      * @var EntityManager
      */
@@ -97,6 +103,7 @@ class UserService
 
 
     public function __construct(
+        Logger $logger,
         EntityManager $em,
         Swift_Mailer $mailer,
         array $config,
@@ -108,6 +115,7 @@ class UserService
         BankService $bankService,
         SchedulerService $schedulerService)
     {
+        $this->_logger = $logger;
         $this->_em = $em;
         $this->_mailer = $mailer;
         $this->_config = $config;
@@ -178,6 +186,7 @@ class UserService
 
                 return true;
             } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
         }
 
@@ -214,6 +223,7 @@ class UserService
 
                 return true;
             } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
         }
 
@@ -238,6 +248,7 @@ class UserService
                     $this->_em->persist($user);
                     $this->_em->flush();
                 } catch (\Exception $e) {
+                    $this->_logger->err($e->getMessage());
                 }
             }
         }
@@ -289,6 +300,7 @@ class UserService
 
                 return true;
             } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
         }
 
@@ -329,6 +341,7 @@ class UserService
 
                 return true;
             } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
         }
 
@@ -392,6 +405,7 @@ class UserService
 
                 return true;
             } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
         }
 
