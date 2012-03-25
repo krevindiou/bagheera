@@ -76,6 +76,14 @@ class Bank
     protected $contact;
 
     /**
+     * @var boolean $isDeleted
+     *
+     * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
+     * @Assert\Type("bool")
+     */
+    protected $isDeleted = false;
+
+    /**
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
@@ -190,6 +198,26 @@ class Bank
     public function getContact()
     {
         return $this->contact;
+    }
+
+    /**
+     * Set isDeleted
+     *
+     * @param boolean $isDeleted
+     */
+    public function setIsDeleted($isDeleted)
+    {
+        $this->isDeleted = (bool)$isDeleted;
+    }
+
+    /**
+     * Get isDeleted
+     *
+     * @return boolean
+     */
+    public function isDeleted()
+    {
+        return $this->isDeleted;
     }
 
     /**

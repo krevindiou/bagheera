@@ -132,7 +132,7 @@ class AccountService
 
                 if (null !== $account) {
                     if ($user === $account->getBank()->getUser()) {
-                        $this->_em->remove($account);
+                        $account->setIsDeleted(true);
                     }
                 }
             }

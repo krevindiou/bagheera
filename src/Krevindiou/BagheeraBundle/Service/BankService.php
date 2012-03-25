@@ -138,7 +138,7 @@ class BankService
 
                 if (null !== $bank) {
                     if ($user === $bank->getUser()) {
-                        $this->_em->remove($bank);
+                        $bank->setIsDeleted(true);
                     }
                 }
             }
@@ -167,9 +167,10 @@ class BankService
         if ($user === $bank->getUser()) {
             $accounts = $bank->getAccounts();
             foreach ($accounts as $account) {
-                $balance+= $this->_accountService->getBalance($user, $account);
+                if (!$account->isDeleted()) {
+                    $balance+= $this->_accountService->getBalance($user, $account);
+                }
             }
-
         }
 
         return sprintf('%.2f', $balance);

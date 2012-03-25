@@ -100,13 +100,13 @@ class BankServiceTest extends TestCase
 
     public function testDelete()
     {
-        $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
+        $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findByIsDeleted(true);
         $banksNb = count($banks);
 
         $this->assertTrue($this->get('bagheera.bank')->delete($this->john, array(1)));
 
-        $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findAll();
-        $this->assertEquals(count($banks), $banksNb - 1);
+        $banks = $this->_em->getRepository('KrevindiouBagheeraBundle:Bank')->findByIsDeleted(true);
+        $this->assertEquals(count($banks), $banksNb + 1);
     }
 
     public function testGetBalanceNotOk()

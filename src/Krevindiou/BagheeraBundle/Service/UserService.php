@@ -443,7 +443,9 @@ class UserService
         $balance = 0;
         $banks = $user->getBanks();
         foreach ($banks as $bank) {
-            $balance+= $this->_bankService->getBalance($user, $bank);
+            if (!$bank->isDeleted()) {
+                $balance+= $this->_bankService->getBalance($user, $bank);
+            }
         }
 
         return sprintf('%.2f', $balance);
