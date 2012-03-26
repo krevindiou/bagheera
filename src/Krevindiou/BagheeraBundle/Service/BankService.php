@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
+    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Bridge\Monolog\Logger,
@@ -103,21 +104,51 @@ class BankService
      * @param  Bank $bank Bank entity
      * @return boolean
      */
-    public function save(User $user, Bank $bank)
+    protected function _save(User $user, Bank $bank)
     {
         if ($user === $bank->getUser()) {
-            $errors = $this->_validator->validate($bank);
+            try {
+                $this->_em->persist($bank);
+                $this->_em->flush();
 
-            if (0 == count($errors)) {
-                try {
-                    $this->_em->persist($bank);
-                    $this->_em->flush();
-
-                    return true;
-                } catch (\Exception $e) {
-                    $this->_logger->err($e->getMessage());
-                }
+                return true;
+            } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves bank
+     *
+     * @param  User $user User entity
+     * @param  Bank $bank Bank entity
+     * @return boolean
+     */
+    public function save(User $user, Bank $bank)
+    {
+        $errors = $this->_validator->validate($bank);
+
+        if (0 == count($errors)) {
+            return $this->_save($user, $bank);
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves bank form
+     *
+     * @param  User $user User entity
+     * @param  Form $form Bank form
+     * @return boolean
+     */
+    public function saveForm(User $user, Form $form)
+    {
+        if ($form->isValid()) {
+            return $this->_save($user, $form->getData());
         }
 
         return false;

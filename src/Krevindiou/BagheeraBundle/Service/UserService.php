@@ -146,54 +146,6 @@ class UserService
     }
 
     /**
-     * Adds user
-     *
-     * @param  User $user User entity
-     * @return boolean
-     */
-    public function add(User $user)
-    {
-        $errors = $this->_validator->validate($user);
-
-        if (0 == count($errors)) {
-            // Activation link construction
-
-            $key = md5(uniqid(rand(), true));
-            $link = $this->_router->generate('user_activate', array('key' => $key), true);
-
-            $body = str_replace(
-                '%link%',
-                $link,
-                $this->_translator->trans('user_register_email_body')
-            );
-
-            $message = \Swift_Message::newInstance()
-                ->setSubject($this->_translator->trans('user_register_email_subject'))
-                ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
-                ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
-                ->setBody($body);
-
-            $user->setActivation($key);
-
-            $encoder = $this->_encoderFactory->getEncoder($user);
-            $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
-
-            try {
-                $this->_em->persist($user);
-                $this->_em->flush();
-
-                $this->_mailer->send($message);
-
-                return true;
-            } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Returns profile form
      *
      * @param  User $user User entity
@@ -207,23 +159,103 @@ class UserService
     }
 
     /**
+     * Adds user
+     *
+     * @param  User $user User entity
+     * @return boolean
+     */
+    protected function _add(User $user)
+    {
+        // Activation link construction
+
+        $key = md5(uniqid(rand(), true));
+        $link = $this->_router->generate('user_activate', array('key' => $key), true);
+
+        $body = str_replace(
+            '%link%',
+            $link,
+            $this->_translator->trans('user_register_email_body')
+        );
+
+        $message = \Swift_Message::newInstance()
+            ->setSubject($this->_translator->trans('user_register_email_subject'))
+            ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
+            ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
+            ->setBody($body);
+
+        $user->setActivation($key);
+
+        $encoder = $this->_encoderFactory->getEncoder($user);
+        $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
+
+        try {
+            $this->_em->persist($user);
+            $this->_em->flush();
+
+            $this->_mailer->send($message);
+
+            return true;
+        } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
      * Updates user
      *
      * @param  User $user User entity
      * @return boolean
      */
-    public function update(User $user)
+    protected function _update(User $user)
+    {
+        try {
+            $this->_em->persist($user);
+            $this->_em->flush();
+
+            return true;
+        } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves user
+     *
+     * @param  User $user User entity
+     * @return boolean
+     */
+    public function save(User $user)
     {
         $errors = $this->_validator->validate($user);
 
         if (0 == count($errors)) {
-            try {
-                $this->_em->persist($user);
-                $this->_em->flush();
+            if (null !== $user->getUserId()) {
+                return $this->_update($user);
+            } else {
+                return $this->_add($user);
+            }
+        }
 
-                return true;
-            } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+        return false;
+    }
+
+    /**
+     * Saves user form
+     *
+     * @param  Form $form User form
+     * @return boolean
+     */
+    public function saveForm(Form $form)
+    {
+        if ($form->isValid()) {
+            if (null !== $form->getData()->getUserId()) {
+                return $this->_update($form->getData());
+            } else {
+                return $this->_add($form->getData());
             }
         }
 

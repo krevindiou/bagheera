@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
     Doctrine\Common\Collections\ArrayCollection,
+    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Bridge\Monolog\Logger,
@@ -133,7 +134,7 @@ class SchedulerService
      * @param  Scheduler $scheduler Scheduler entity
      * @return boolean
      */
-    public function save(User $user, Scheduler $scheduler)
+    protected function _save(User $user, Scheduler $scheduler)
     {
         if (null !== $scheduler->getSchedulerId()) {
             $oldScheduler = $this->_em->getUnitOfWork()->getOriginalEntityData($scheduler);
@@ -143,30 +144,61 @@ class SchedulerService
             }
         }
 
-        $errors = $this->_validator->validate($scheduler);
-        if (0 == count($errors)) {
-            if ($user === $scheduler->getAccount()->getBank()->getUser()) {
-                if (!in_array(
-                    $scheduler->getPaymentMethod()->getPaymentMethodId(),
-                    array(
-                        PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                        PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                    )
-                )) {
-                    $scheduler->setTransferAccount(null);
-                }
-
-                try {
-                    $this->_em->persist($scheduler);
-                    $this->_em->flush();
-
-                    $this->runSchedulers($user);
-
-                    return true;
-                } catch (\Exception $e) {
-                    $this->_logger->err($e->getMessage());
-                }
+        if ($user === $scheduler->getAccount()->getBank()->getUser()) {
+            if (!in_array(
+                $scheduler->getPaymentMethod()->getPaymentMethodId(),
+                array(
+                    PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                    PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                )
+            )) {
+                $scheduler->setTransferAccount(null);
             }
+
+            try {
+                $this->_em->persist($scheduler);
+                $this->_em->flush();
+
+                $this->runSchedulers($user);
+
+                return true;
+            } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves scheduler
+     *
+     * @param  User $user           User entity
+     * @param  Scheduler $scheduler Scheduler entity
+     * @return boolean
+     */
+    public function save(User $user, Scheduler $scheduler)
+    {
+        $errors = $this->_validator->validate($scheduler);
+
+        if (0 == count($errors)) {
+            return $this->_save($user, $scheduler);
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves scheduler form
+     *
+     * @param  User $user User entity
+     * @param  Form $form Scheduler form
+     * @return boolean
+     */
+    public function saveForm(User $user, Form $form)
+    {
+        if ($form->isValid()) {
+            return $this->_save($user, $form->getData());
         }
 
         return false;

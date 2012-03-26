@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
+    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Bridge\Monolog\Logger,
@@ -90,7 +91,7 @@ class AccountService
      * @param  Account $account Account entity
      * @return boolean
      */
-    public function save(User $user, Account $account)
+    protected function _save(User $user, Account $account)
     {
         if (null !== $account->getAccountId()) {
             $oldAccount = $this->_em->getUnitOfWork()->getOriginalEntityData($account);
@@ -100,18 +101,49 @@ class AccountService
             }
         }
 
-        $errors = $this->_validator->validate($account);
-        if (0 == count($errors)) {
-            if ($user === $account->getBank()->getUser()) {
-                try {
-                    $this->_em->persist($account);
-                    $this->_em->flush();
+        if ($user === $account->getBank()->getUser()) {
+            try {
+                $this->_em->persist($account);
+                $this->_em->flush();
 
-                    return true;
-                } catch (\Exception $e) {
-                    $this->_logger->err($e->getMessage());
-                }
+                return true;
+            } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
             }
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves account
+     *
+     * @param  User $user       User entity
+     * @param  Account $account Account entity
+     * @return boolean
+     */
+    public function save(User $user, Account $account)
+    {
+        $errors = $this->_validator->validate($account);
+
+        if (0 == count($errors)) {
+            return $this->_save($user, $account);
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves account form
+     *
+     * @param  User $user User entity
+     * @param  Form $form Account form
+     * @return boolean
+     */
+    public function saveForm(User $user, Form $form)
+    {
+        if ($form->isValid()) {
+            return $this->_save($user, $form->getData());
         }
 
         return false;

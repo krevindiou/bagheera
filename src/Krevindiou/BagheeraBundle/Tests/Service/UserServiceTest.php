@@ -47,7 +47,7 @@ class UserServiceTest extends TestCase
     public function testAddUserWithNoData()
     {
         $user = new User();
-        $this->assertFalse($this->get('bagheera.user')->add($user));
+        $this->assertFalse($this->get('bagheera.user')->save($user));
     }
 
     public function testAddUser()
@@ -60,7 +60,7 @@ class UserServiceTest extends TestCase
         $encoder = $this->get('security.encoder_factory')->getEncoder($user);
         $user->setPassword($encoder->encodePassword('james123', $user->getSalt()));
 
-        $this->assertTrue($this->get('bagheera.user')->add($user));
+        $this->assertTrue($this->get('bagheera.user')->save($user));
     }
 
     public function testGetProfileForm()
@@ -77,14 +77,14 @@ class UserServiceTest extends TestCase
         $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
         $user->setFirstname('');
 
-        $this->assertFalse($this->get('bagheera.user')->update($user));
+        $this->assertFalse($this->get('bagheera.user')->save($user));
     }
 
     public function testUpdateUser()
     {
         $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
 
-        $this->assertTrue($this->get('bagheera.user')->update($user));
+        $this->assertTrue($this->get('bagheera.user')->save($user));
     }
 
     public function testToggleDeactivation()

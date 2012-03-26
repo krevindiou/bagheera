@@ -59,12 +59,10 @@ class UserController extends Controller
         if ($request->getMethod() == 'POST') {
             $form->bindRequest($request);
 
-            if ($form->isValid()) {
-                if ($this->get('bagheera.user')->add($form->getData())) {
-                    $this->get('session')->setFlash('notice', 'user_register_confirmation');
+            if ($this->get('bagheera.user')->saveForm($form)) {
+                $this->get('session')->setFlash('notice', 'user_register_confirmation');
 
-                    return $this->redirect($this->generateUrl('login'));
-                }
+                return $this->redirect($this->generateUrl('login'));
             }
         }
 
@@ -165,12 +163,10 @@ class UserController extends Controller
         if ($request->getMethod() == 'POST') {
             $form->bindRequest($request);
 
-            if ($form->isValid()) {
-                if ($this->get('bagheera.user')->update($form->getData())) {
-                    $this->get('session')->setFlash('notice', 'user_profile_confirmation');
+            if ($this->get('bagheera.user')->saveForm($form)) {
+                $this->get('session')->setFlash('notice', 'user_profile_confirmation');
 
-                    return $this->redirect($this->generateUrl('user_profile'));
-                }
+                return $this->redirect($this->generateUrl('user_profile'));
             }
         }
 

@@ -96,12 +96,10 @@ class AccountController extends Controller
         if ($request->getMethod() == 'POST') {
             $accountForm->bindRequest($request);
 
-            if ($accountForm->isValid()) {
-                if ($this->get('bagheera.account')->save($user, $accountForm->getData())) {
-                    $this->get('session')->setFlash('notice', 'account_form_confirmation');
+            if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
+                $this->get('session')->setFlash('notice', 'account_form_confirmation');
 
-                    return $this->redirect($this->generateUrl('account_list'));
-                }
+                return $this->redirect($this->generateUrl('account_list'));
             }
         }
 

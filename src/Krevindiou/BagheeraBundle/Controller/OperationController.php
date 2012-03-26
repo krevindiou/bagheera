@@ -93,14 +93,12 @@ class OperationController extends Controller
         if ($request->getMethod() == 'POST') {
             $operationForm->bindRequest($request);
 
-            if ($operationForm->isValid()) {
-                if ($this->get('bagheera.operation')->save($user, $operationForm->getData())) {
-                    $this->get('session')->setFlash('notice', 'operation_form_confirmation');
+            if ($this->get('bagheera.operation')->saveForm($user, $operationForm)) {
+                $this->get('session')->setFlash('notice', 'operation_form_confirmation');
 
-                    return $this->redirect(
-                        $this->generateUrl('operation_list', array('accountId' => $operationForm->getData()->getAccount()->getAccountId()))
-                    );
-                }
+                return $this->redirect(
+                    $this->generateUrl('operation_list', array('accountId' => $operationForm->getData()->getAccount()->getAccountId()))
+                );
             }
         }
 

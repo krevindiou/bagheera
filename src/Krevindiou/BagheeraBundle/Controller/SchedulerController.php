@@ -87,14 +87,12 @@ class SchedulerController extends Controller
         if ($request->getMethod() == 'POST') {
             $schedulerForm->bindRequest($request);
 
-            if ($schedulerForm->isValid()) {
-                if ($this->get('bagheera.scheduler')->save($user, $schedulerForm->getData())) {
-                    $this->get('session')->setFlash('notice', 'scheduler_form_confirmation');
+            if ($this->get('bagheera.scheduler')->saveForm($user, $schedulerForm)) {
+                $this->get('session')->setFlash('notice', 'scheduler_form_confirmation');
 
-                    return $this->redirect(
-                        $this->generateUrl('scheduler_list', array('accountId' => $schedulerForm->getData()->getAccount()->getAccountId()))
-                    );
-                }
+                return $this->redirect(
+                    $this->generateUrl('scheduler_list', array('accountId' => $schedulerForm->getData()->getAccount()->getAccountId()))
+                );
             }
         }
 

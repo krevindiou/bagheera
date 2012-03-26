@@ -43,12 +43,10 @@ class BankController extends Controller
         if ($request->getMethod() == 'POST') {
             $bankForm->bindRequest($request);
 
-            if ($bankForm->isValid()) {
-                if ($this->get('bagheera.bank')->save($user, $bankForm->getData())) {
-                    $this->get('session')->setFlash('notice', 'bank_form_confirmation');
+            if ($this->get('bagheera.bank')->saveForm($user, $bankForm)) {
+                $this->get('session')->setFlash('notice', 'bank_form_confirmation');
 
-                    return $this->redirect($this->generateUrl('account_list'));
-                }
+                return $this->redirect($this->generateUrl('account_list'));
             }
         }
 

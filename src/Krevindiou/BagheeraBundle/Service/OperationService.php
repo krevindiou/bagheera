@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\ORM\EntityManager,
+    Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Bridge\Monolog\Logger,
@@ -127,7 +128,7 @@ class OperationService
      * @param  Operation $operation Operation entity
      * @return boolean
      */
-    public function save(User $user, Operation $operation)
+    protected function _save(User $user, Operation $operation)
     {
         if (null !== $operation->getOperationId()) {
             $oldOperation = $this->_em->getUnitOfWork()->getOriginalEntityData($operation);
@@ -137,97 +138,128 @@ class OperationService
             }
         }
 
-        $errors = $this->_validator->validate($operation);
-        if (0 == count($errors)) {
-            if ($user === $operation->getAccount()->getBank()->getUser()) {
-                if (!in_array(
-                    $operation->getPaymentMethod()->getPaymentMethodId(),
-                    array(
-                        PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                        PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                    )
-                )) {
-                    $operation->setTransferAccount(null);
+        if ($user === $operation->getAccount()->getBank()->getUser()) {
+            if (!in_array(
+                $operation->getPaymentMethod()->getPaymentMethodId(),
+                array(
+                    PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                    PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                )
+            )) {
+                $operation->setTransferAccount(null);
+            }
+
+            $transferOperationBeforeSave = null;
+            if (null !== $operation->getOperationId()) {
+                $operationBeforeSave = $this->_em->find(
+                    'KrevindiouBagheeraBundle:Operation',
+                    $operation->getOperationId()
+                );
+
+                if (null !== $operationBeforeSave->getTransferOperation()) {
+                    $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
+                }
+            }
+
+            if (null !== $operation->getTransferAccount()) {
+                // update transfer => transfer
+                if (null !== $transferOperationBeforeSave) {
+                    $transferOperation = $operation->getTransferOperation();
+
+                // update check => transfer
+                } else {
+                    $transferOperation = new Operation();
+                    $transferOperation->setScheduler($operation->getScheduler());
+                    $transferOperation->setTransferOperation($operation);
+
+                    $operation->setTransferOperation($transferOperation);
                 }
 
-                $transferOperationBeforeSave = null;
-                if (null !== $operation->getOperationId()) {
-                    $operationBeforeSave = $this->_em->find(
-                        'KrevindiouBagheeraBundle:Operation',
-                        $operation->getOperationId()
+                if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
+                    $paymentMethod = $this->_em->find(
+                        'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
-
-                    if (null !== $operationBeforeSave->getTransferOperation()) {
-                        $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
-                    }
+                } else {
+                    $paymentMethod = $this->_em->find(
+                        'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                    );
                 }
 
-                if (null !== $operation->getTransferAccount()) {
-                    // update transfer => transfer
-                    if (null !== $transferOperationBeforeSave) {
-                        $transferOperation = $operation->getTransferOperation();
+                $transferOperation->setAccount($operation->getTransferAccount());
+                $transferOperation->setTransferAccount($operation->getAccount());
+                $transferOperation->setDebit($operation->getCredit());
+                $transferOperation->setCredit($operation->getDebit());
+                $transferOperation->setThirdParty($operation->getThirdParty());
+                $transferOperation->setCategory($operation->getCategory());
+                $transferOperation->setPaymentMethod($paymentMethod);
+                $transferOperation->setValueDate($operation->getValueDate());
+                $transferOperation->setNotes($operation->getNotes());
 
-                    // update check => transfer
-                    } else {
-                        $transferOperation = new Operation();
-                        $transferOperation->setScheduler($operation->getScheduler());
-                        $transferOperation->setTransferOperation($operation);
+                try {
+                    $this->_em->persist($transferOperation);
+                } catch (\Exception $e) {
+                    $this->_logger->err($e->getMessage());
 
-                        $operation->setTransferOperation($transferOperation);
-                    }
-
-                    if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
-                        $paymentMethod = $this->_em->find(
-                            'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                        );
-                    } else {
-                        $paymentMethod = $this->_em->find(
-                            'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
-                        );
-                    }
-
-                    $transferOperation->setAccount($operation->getTransferAccount());
-                    $transferOperation->setTransferAccount($operation->getAccount());
-                    $transferOperation->setDebit($operation->getCredit());
-                    $transferOperation->setCredit($operation->getDebit());
-                    $transferOperation->setThirdParty($operation->getThirdParty());
-                    $transferOperation->setCategory($operation->getCategory());
-                    $transferOperation->setPaymentMethod($paymentMethod);
-                    $transferOperation->setValueDate($operation->getValueDate());
-                    $transferOperation->setNotes($operation->getNotes());
+                    return false;
+                }
+            } else {
+                // update transfer => check
+                if (null !== $transferOperationBeforeSave) {
+                    $operation->setTransferOperation(null);
 
                     try {
-                        $this->_em->persist($transferOperation);
+                        $this->_em->flush();
+                        $this->_em->remove($transferOperationBeforeSave);
                     } catch (\Exception $e) {
                         $this->_logger->err($e->getMessage());
 
                         return false;
                     }
-                } else {
-                    // update transfer => check
-                    if (null !== $transferOperationBeforeSave) {
-                        $operation->setTransferOperation(null);
-
-                        try {
-                            $this->_em->flush();
-                            $this->_em->remove($transferOperationBeforeSave);
-                        } catch (\Exception $e) {
-                            $this->_logger->err($e->getMessage());
-
-                            return false;
-                        }
-                    }
-                }
-
-                try {
-                    $this->_em->persist($operation);
-                    $this->_em->flush();
-
-                    return true;
-                } catch (\Exception $e) {;
-                    $this->_logger->err($e->getMessage());
                 }
             }
+
+            try {
+                $this->_em->persist($operation);
+                $this->_em->flush();
+
+                return true;
+            } catch (\Exception $e) {
+                $this->_logger->err($e->getMessage());
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves operation
+     *
+     * @param  User $user           User entity
+     * @param  Operation $operation Operation entity
+     * @return boolean
+     */
+    public function save(User $user, Operation $operation)
+    {
+        $errors = $this->_validator->validate($operation);
+
+        if (0 == count($errors)) {
+            return $this->_save($user, $operation);
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves operation form
+     *
+     * @param  User $user User entity
+     * @param  Form $form Operation form
+     * @return boolean
+     */
+    public function saveForm(User $user, Form $form)
+    {
+        if ($form->isValid()) {
+            return $this->_save($user, $form->getData());
         }
 
         return false;
