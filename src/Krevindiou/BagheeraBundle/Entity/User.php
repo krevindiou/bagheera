@@ -23,7 +23,8 @@ use Doctrine\ORM\Mapping as ORM,
     Symfony\Component\Security\Core\User\UserInterface,
     Symfony\Component\Security\Core\User\AdvancedUserInterface,
     Symfony\Component\Validator\Constraints as Assert,
-    Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+    Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert,
+    EWZ\Bundle\RecaptchaBundle\Validator\Constraints as Recaptcha;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\User
@@ -129,6 +130,11 @@ class User implements AdvancedUserInterface
      * @Assert\DateTime()
      */
     protected $updatedAt;
+
+    /**
+     * @Recaptcha\True
+     */
+    public $recaptcha;
 
     /**
      * @var Doctrine\Common\Collections\Collection $banks

@@ -17,3 +17,6 @@ swiftmailer:
 doctrine:
     dbal:
         driver: pdo_sqlite
+
+ewz_recaptcha:
+    enabled: false

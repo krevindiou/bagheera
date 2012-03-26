@@ -78,3 +78,7 @@
 [PagerfantaBundle]
     git=http://github.com/whiteoctober/WhiteOctoberPagerfantaBundle.git
     target=/bundles/WhiteOctober/PagerfantaBundle
+
+[EWZRecaptchaBundle]
+    git=http://github.com/excelwebzone/EWZRecaptchaBundle.git
+    target=/bundles/EWZ/Bundle/RecaptchaBundle

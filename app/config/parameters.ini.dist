@@ -14,3 +14,6 @@
     locale="en"
 
     secret="secret"
+
+    ewz_recaptcha_public_key=""
+    ewz_recaptcha_private_key=""

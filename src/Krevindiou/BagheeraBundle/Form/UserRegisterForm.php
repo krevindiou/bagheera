@@ -41,6 +41,18 @@ class UserRegisterForm extends AbstractType
                 'second_name' => 'user_password_confirmation',
                 'invalid_message' => 'user_password_fields_must_match',
             ))
+            ->add(
+                'recaptcha',
+                'ewz_recaptcha',
+                array(
+                    'label' => 'user_captcha',
+                    'attr' => array(
+                        'options' => array(
+                            'theme' => 'white'
+                        )
+                    )
+                )
+            )
         ;
     }
 
