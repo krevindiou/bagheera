@@ -132,7 +132,7 @@ class User implements AdvancedUserInterface
     protected $updatedAt;
 
     /**
-     * @Recaptcha\True
+     * @Recaptcha\True(groups={"captcha"})
      */
     public $recaptcha;
 

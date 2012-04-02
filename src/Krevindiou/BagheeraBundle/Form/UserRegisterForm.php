@@ -59,7 +59,7 @@ class UserRegisterForm extends AbstractType
     public function getDefaultOptions(array $options)
     {
         $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
-        $options['validation_groups'] = array('Default', 'password');
+        $options['validation_groups'] = array('Default', 'password', 'captcha');
 
         return $options;
     }
