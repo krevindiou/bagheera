@@ -73,6 +73,22 @@ class AccountForm extends AbstractType
                 )
             )
             ->add(
+                'iban',
+                null,
+                array(
+                    'label' => 'account_iban',
+                    'attr' => array('size' => 40)
+                )
+            )
+            ->add(
+                'bic',
+                null,
+                array(
+                    'label' => 'account_bic',
+                    'attr' => array('size' => 14)
+                )
+            )
+            ->add(
                 'initialBalance',
                 'money',
                 array(

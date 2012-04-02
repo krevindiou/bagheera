@@ -10,6 +10,8 @@
     {{ form_row(accountForm.name) }}
     {{ form_row(accountForm.initialBalance) }}
     {{ form_row(accountForm.overdraftFacility) }}
+    {{ form_row(accountForm.iban) }}
+    {{ form_row(accountForm.bic) }}
 
     {% set detailsFileParams = {} %}
     {% if account is not null and account.getAbsolutePath() is not null %}
