@@ -35,6 +35,7 @@ class UserProfileForm extends UserRegisterForm
         parent::buildForm($builder, $options);
 
         $builder->remove('plainPassword');
+        $builder->remove('recaptcha');
     }
 
     public function getDefaultOptions(array $options)
