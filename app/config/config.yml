@@ -70,6 +70,7 @@ ewz_recaptcha:
     secure:       true
     locale_key:   session.default_locale
 
-krevindiou_bagheera:
-    sender_name: Bagheera
-    sender_email: bagheera@example.net
+parameters:
+    email:
+        sender_name: Bagheera
+        sender_email: bagheera@example.net

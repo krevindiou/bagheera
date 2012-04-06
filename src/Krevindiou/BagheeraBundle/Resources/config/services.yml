@@ -1,6 +1,3 @@
-parameters:
-    krevindiou_bagheera.config:
-
 services:
     twig.extension.bagheera:
         class: Krevindiou\BagheeraBundle\Extension\TwigExtension
@@ -13,7 +10,7 @@ services:
             - @logger
             - @doctrine.orm.entity_manager
             - @mailer
-            - %krevindiou_bagheera.config%
+            - %email%
             - @translator
             - @router
             - @security.encoder_factory
