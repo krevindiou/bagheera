@@ -27,7 +27,10 @@ use Doctrine\ORM\Mapping as ORM,
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\OperationRepository")
- * @ORM\Table(name="operation")
+ * @ORM\Table(
+ *  name="operation",
+ *  indexes={@ORM\Index(name="external_operation_id_idx", columns={"external_operation_id"})}
+ * )
  * @ORM\HasLifecycleCallbacks()
  */
 class Operation
@@ -40,6 +43,13 @@ class Operation
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $operationId;
+
+    /**
+     * @var string $externalOperationId
+     *
+     * @ORM\Column(name="external_operation_id", type="string", length=32, nullable=true)
+     */
+    protected $externalOperationId;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Scheduler $scheduler
@@ -191,6 +201,26 @@ class Operation
     public function getOperationId()
     {
         return $this->operationId;
+    }
+
+    /**
+     * Set externalOperationId
+     *
+     * @param string $externalOperationId
+     */
+    public function setExternalOperationId($externalOperationId)
+    {
+        $this->externalOperationId = $externalOperationId;
+    }
+
+    /**
+     * Get externalOperationId
+     *
+     * @return string
+     */
+    public function getExternalOperationId()
+    {
+        return $this->externalOperationId;
     }
 
     /**
