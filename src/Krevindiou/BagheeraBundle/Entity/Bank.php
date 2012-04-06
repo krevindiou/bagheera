@@ -20,7 +20,8 @@ namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
     Doctrine\Common\Collections\ArrayCollection,
-    Symfony\Component\Validator\Constraints as Assert;
+    Symfony\Component\Validator\Constraints as Assert,
+    Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\Bank
@@ -28,8 +29,12 @@ use Doctrine\ORM\Mapping as ORM,
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @ORM\Entity
- * @ORM\Table(name="bank")
+ * @ORM\Table(
+ *  name="bank",
+ *  uniqueConstraints={@ORM\UniqueConstraint(name="external_user_id_idx", columns={"provider_id", "external_user_id"})}
+ * )
  * @ORM\HasLifecycleCallbacks()
+ * @DoctrineAssert\UniqueEntity({"providerId", "externalUserId"})
  */
 class Bank
 {
@@ -51,6 +56,20 @@ class Bank
      * @Assert\Valid()
      */
     protected $user;
+
+    /**
+     * @var string $externalUserId
+     *
+     * @ORM\Column(name="external_user_id", type="string", length=32, nullable=true)
+     */
+    protected $externalUserId;
+
+    /**
+     * @var integer $providerId
+     *
+     * @ORM\Column(name="provider_id", type="integer", nullable=true)
+     */
+    protected $providerId;
 
     /**
      * @var string $name
@@ -138,6 +157,66 @@ class Bank
     public function getBankId()
     {
         return $this->bankId;
+    }
+
+    /**
+     * Set user
+     *
+     * @param Krevindiou\BagheeraBundle\Entity\User $user
+     */
+    public function setUser(User $user)
+    {
+        $this->user = $user;
+    }
+
+    /**
+     * Get user
+     *
+     * @return Krevindiou\BagheeraBundle\Entity\User
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set externalUserId
+     *
+     * @param string $externalUserId
+     */
+    public function setExternalUserId($externalUserId)
+    {
+        $this->externalUserId = $externalUserId;
+    }
+
+    /**
+     * Get externalUserId
+     *
+     * @return string
+     */
+    public function getExternalUserId()
+    {
+        return $this->externalUserId;
+    }
+
+    /**
+     * Set providerId
+     *
+     * @param integer $providerId
+     */
+    public function setProviderId($providerId)
+    {
+        $this->providerId = $providerId;
+    }
+
+    /**
+     * Get providerId
+     *
+     * @return integer
+     */
+    public function getProviderId()
+    {
+        return $this->providerId;
     }
 
     /**
@@ -258,26 +337,6 @@ class Bank
     public function getUpdatedAt()
     {
         return $this->updatedAt;
-    }
-
-    /**
-     * Set user
-     *
-     * @param Krevindiou\BagheeraBundle\Entity\User $user
-     */
-    public function setUser(User $user)
-    {
-        $this->user = $user;
-    }
-
-    /**
-     * Get user
-     *
-     * @return Krevindiou\BagheeraBundle\Entity\User
-     */
-    public function getUser()
-    {
-        return $this->user;
     }
 
     /**
