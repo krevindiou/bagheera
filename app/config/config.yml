@@ -74,3 +74,8 @@ parameters:
     email:
         sender_name: Bagheera
         sender_email: bagheera@example.net
+    providers:
+        axa_banque:
+            base_uri: %provider_axa_banque_base_uri%
+            client_id: %provider_axa_banque_client_id%
+            access_token: %provider_axa_banque_access_token%

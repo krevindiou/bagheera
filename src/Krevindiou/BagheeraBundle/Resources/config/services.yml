@@ -76,6 +76,21 @@ services:
         arguments:
             - @doctrine.orm.entity_manager
 
+    bagheera.provider_factory:
+        class: Krevindiou\BagheeraBundle\Service\Provider\ProviderServiceFactory
+        arguments:
+            - @service_container
+
+    bagheera.provider_axa_banque:
+        class: Krevindiou\BagheeraBundle\Service\Provider\AxaBanqueProviderService
+        arguments:
+            - %provider_axa_banque_base_uri%
+            - %provider_axa_banque_client_id%
+            - %provider_axa_banque_access_token%
+            - @logger
+        tags:
+            - { name: monolog.logger, channel: provider_axa_banque }
+
     bagheera.validator.field_exists:
         class: Krevindiou\BagheeraBundle\Constraint\FieldExistsValidator
         arguments:
