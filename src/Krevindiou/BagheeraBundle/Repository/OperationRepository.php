@@ -32,7 +32,7 @@ class OperationRepository extends EntityRepository
 {
     public function getQueryByAccount(Account $account, OperationSearch $operationSearch = null)
     {
-        $qb= $this->getEntityManager()->createQueryBuilder();
+        $qb = $this->getEntityManager()->createQueryBuilder();
         $qb->select('o')
             ->from('KrevindiouBagheeraBundle:Operation', 'o')
             ->where('o.account = :account')->setParameter('account', $account)
@@ -90,5 +90,25 @@ class OperationRepository extends EntityRepository
         }
 
         return $qb->getQuery();
+    }
+
+    public function getLastExternalOperationId(Account $account)
+    {
+        $em = $this->getEntityManager();
+
+        $dql = 'SELECT o.externalOperationId ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+        $dql.= 'WHERE o.account = :account ';
+        $dql.= 'ORDER BY o.externalOperationId DESC ';
+
+        $query = $em->createQuery($dql);
+        $query->setParameter('account', $account);
+        $query->setMaxResults(1);
+
+        try {
+            return $query->getSingleScalarResult();
+        } catch (\Doctrine\ORM\NoResultException $e) {
+            return null;
+        }
     }
 }

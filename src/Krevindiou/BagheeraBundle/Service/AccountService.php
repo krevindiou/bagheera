@@ -22,8 +22,11 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Symfony\Component\Process\PhpExecutableFinder,
+    Symfony\Component\Process\Process,
     Symfony\Bridge\Monolog\Logger,
     Krevindiou\BagheeraBundle\Entity\User,
+    Krevindiou\BagheeraBundle\Entity\Bank,
     Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Form\AccountForm;
 
@@ -205,5 +208,93 @@ class AccountService
         }
 
         return sprintf('%.2f', $balance);
+    }
+
+    /**
+     * Retrieve external accounts
+     *
+     * @param  Bank $bank Bank entity
+     * @return void
+     */
+    public function importExternalAccounts(Bank $bank)
+    {
+        if (null !== $bank->getExternalUserId()) {
+            $this->executableFinder = new PhpExecutableFinder();
+
+            $phpBin = $this->executableFinder->find();
+
+            if (null === $phpBin) {
+                $this->_logger->err('Unable to find php binary');
+                return;
+            }
+
+            $process = new Process(
+                sprintf(
+                    '%s app/console bagheera:import_external_accounts %d &',
+                    $phpBin,
+                    $bank->getBankId()
+                ),
+                realpath(__DIR__ . '/../../../..')
+            );
+
+            $process->run();
+        }
+    }
+
+    /**
+     * Saves external accounts from array
+     *
+     * @param  User $user               User entity
+     * @param  Bank $bank               Bank entity
+     * @param  array $externalAccounts  Accounts data
+     * @return boolean
+     */
+    public function saveExternalAccounts(User $user, Bank $bank, array $externalAccounts)
+    {
+        // Retrieve current accounts id
+        $currentAccounts = $bank->getAccounts();
+        $currentAccountsExternalId = array();
+
+        foreach ($currentAccounts as $currentAccount) {
+            if (null !== $currentAccount->getExternalAccountId()) {
+                $currentAccountsExternalId[] = $currentAccount->getExternalAccountId();
+            }
+        }
+
+        foreach ($externalAccounts as $externalAccount) {
+            if (!in_array($externalAccount['account_id'], $currentAccountsExternalId)) {
+                $account = new Account();
+                $account->setBank($bank);
+                $account->setName($externalAccount['label']);
+                $account->setExternalAccountId($externalAccount['account_id']);
+                $account->setIban($externalAccount['iban']);
+                $account->setBic($externalAccount['bic']);
+
+                $errors = $this->_validator->validate($account);
+
+                if (0 == count($errors)) {
+                    try {
+                        $this->_em->persist($account);
+                    } catch (\Exception $e) {
+                        $this->_logger->err($e->getMessage());
+                        continue;
+                    }
+                } else {
+                    $this->_logger->err(implode(', ', $errors));
+                    continue;
+                }
+            }
+        }
+
+        if (!empty($externalAccounts)) {
+            try {
+                $this->_em->flush();
+
+                return true;
+            } catch (\Exception $e) {
+            }
+        }
+
+        return false;
     }
 }

@@ -350,4 +350,69 @@ class OperationService
 
         return $thirdParties;
     }
+
+    /**
+     * Saves external transactions from array
+     *
+     * @param  User $user                   User entity
+     * @param  Account $account             Account entity
+     * @param  array $externalTransactions  Transactions data
+     * @return boolean
+     */
+    public function saveExternalTransactions(User $user, Account $account, array $externalTransactions)
+    {
+        $i = 0;
+        foreach ($externalTransactions as $externalTransaction) {
+            $operation = new Operation();
+            $operation->setAccount($account);
+            $operation->setThirdParty($externalTransaction['label']);
+            if ('debit' == $externalTransaction['type']) {
+                $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+            } else {
+                $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 6));
+            }
+            $operation->setExternalOperationId($externalTransaction['transaction_id']);
+            if ('debit' == $externalTransaction['type']) {
+                $operation->setDebit(abs($externalTransaction['amount']));
+            } else {
+                $operation->setCredit(abs($externalTransaction['amount']));
+            }
+            $operation->setValueDate(new \DateTime($externalTransaction['value_date']));
+
+            $errors = $this->_validator->validate($account);
+
+            if (0 == count($errors)) {
+                try {
+                    $this->_em->persist($operation);
+                    $i++;
+
+                    if ($i % 100 == 0) {
+                        try {
+                            $this->_em->flush();
+                        } catch (\Exception $e) {
+                            $this->_logger->err($e->getMessage());
+
+                            return false;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    $this->_logger->err($e->getMessage());
+                    continue;
+                }
+            } else {
+                $this->_logger->err(implode(', ', $errors));
+                continue;
+            }
+        }
+
+        if (!empty($externalTransactions)) {
+            try {
+                $this->_em->flush();
+            } catch (\Exception $e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
