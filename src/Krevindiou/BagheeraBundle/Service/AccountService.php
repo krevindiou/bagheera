@@ -195,7 +195,7 @@ class AccountService
         $balance = 0;
 
         if ($user === $account->getBank()->getUser()) {
-            $dql = 'SELECT (SUM(o.credit) - SUM(o.debit)) ';
+            $dql = 'SELECT COALESCE(SUM(o.credit), 0) AS total_credit, COALESCE(SUM(o.debit), 0) AS total_debit ';
             $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
             $dql.= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
@@ -204,7 +204,9 @@ class AccountService
 
             $query = $this->_em->createQuery($dql);
             $query->setParameter('account', $account);
-            $balance = $account->getInitialBalance() + $query->getSingleScalarResult();
+            $result = $query->getSingleResult();
+
+            $balance = $account->getInitialBalance() + $result['total_credit'] - $result['total_debit'];
         }
 
         return sprintf('%.2f', $balance);
