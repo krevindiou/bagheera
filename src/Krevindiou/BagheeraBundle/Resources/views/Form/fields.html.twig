@@ -41,3 +41,10 @@
     {% endif %}
 {% endspaceless %}
 {% endblock %}
+
+{% block money_widget %}
+{% spaceless %}
+    {% set attr = attr|merge({'class': attr.class|default('') ~ ' money'}) %}
+    {{ parent() }}
+{% endspaceless %}
+{% endblock %}
