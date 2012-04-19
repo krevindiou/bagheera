@@ -88,10 +88,7 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_amount',
                     'currency' => false,
-                    'property_path' => false,
-                    'attr' => array(
-                        'size' => 10
-                    )
+                    'property_path' => false
                 )
             )
             ->add(

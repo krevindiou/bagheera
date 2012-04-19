@@ -99,10 +99,7 @@ class OperationSearchForm extends AbstractType
                     'label' => 'operation_amount',
                     'currency' => false,
                     'property_path' => false,
-                    'required' => false,
-                    'attr' => array(
-                        'size' => 9
-                    )
+                    'required' => false
                 )
             )
             ->add(
@@ -127,10 +124,7 @@ class OperationSearchForm extends AbstractType
                 array(
                     'currency' => false,
                     'property_path' => false,
-                    'required' => false,
-                    'attr' => array(
-                        'size' => 9
-                    )
+                    'required' => false
                 )
             )
             ->add(

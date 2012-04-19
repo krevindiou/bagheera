@@ -88,10 +88,7 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_amount',
                     'currency' => false,
-                    'property_path' => false,
-                    'attr' => array(
-                        'size' => 9
-                    )
+                    'property_path' => false
                 )
             )
             ->add(
