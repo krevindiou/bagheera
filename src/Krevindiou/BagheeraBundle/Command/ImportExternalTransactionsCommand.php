@@ -21,6 +21,8 @@ class ImportExternalTransactionsCommand extends ContainerAwareCommand
     {
         $em = $this->getContainer()->get('doctrine.orm.entity_manager');
 
+        $max = 10000;
+
         $accountId = $input->getArgument('account_id');
 
         $account = $em->find('KrevindiouBagheeraBundle:Account', $accountId);
@@ -30,25 +32,28 @@ class ImportExternalTransactionsCommand extends ContainerAwareCommand
             $providerFactory = $this->getContainer()->get('bagheera.provider_factory');
             $provider = $providerFactory->get($account->getBank());
             if (null !== $provider) {
-                while (true) {
+                for ($i = 0; ; $i++) {
                     $lastExternalOperationId = $em->getRepository('KrevindiouBagheeraBundle:Operation')->getLastExternalOperationId($account);
 
                     $externalTransactions = $provider->retrieveTransactions(
                         $account->getBank()->getExternalUserId(),
                         $account->getExternalAccountId(),
                         $lastExternalOperationId,
-                        1000
+                        $max
                     );
 
-                    if (empty($externalTransactions)) {
-                        break;
+                    // Always call "saveExternalTransactions" for the first query (even if there's no results)
+                    if ($i == 0 || !empty($externalTransactions)) {
+                        $operationService->saveExternalTransactions(
+                            $account->getBank()->getUser(),
+                            $account,
+                            $externalTransactions
+                        );
                     }
 
-                    $operationService->saveExternalTransactions(
-                        $account->getBank()->getUser(),
-                        $account,
-                        $externalTransactions
-                    );
+                    if (empty($externalTransactions) || count($externalTransactions) < $max) {
+                        break;
+                    }
                 }
             }
         }

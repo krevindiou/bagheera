@@ -40,8 +40,16 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
             - @validator
+            - @bagheera.provider_factory
+            - @bagheera.account_import
         tags:
             - { name: monolog.logger, channel: account }
+
+    bagheera.account_import:
+        class: Krevindiou\BagheeraBundle\Service\AccountImportService
+        arguments:
+            - @logger
+            - @doctrine.orm.entity_manager
 
     bagheera.operation:
         class: Krevindiou\BagheeraBundle\Service\OperationService
@@ -50,6 +58,7 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
             - @validator
+            - @bagheera.account_import
         tags:
             - { name: monolog.logger, channel: operation }
 

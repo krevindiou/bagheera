@@ -22,8 +22,8 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
-    Symfony\Component\Process\PhpExecutableFinder,
     Symfony\Component\Process\Process,
+    Symfony\Component\Process\PhpExecutableFinder,
     Symfony\Bridge\Monolog\Logger,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
@@ -58,13 +58,31 @@ class AccountService
      */
     protected $_validator;
 
+    /**
+     * @var ProviderServiceFactory
+     */
+    protected $_providerFactory;
 
-    public function __construct(Logger $logger, EntityManager $em, FormFactory $formFactory, Validator $validator)
+    /**
+     * @var AccountImportService
+     */
+    protected $_accountImportService;
+
+
+    public function __construct(
+        Logger $logger,
+        EntityManager $em,
+        FormFactory $formFactory,
+        Validator $validator,
+        Provider\ProviderServiceFactory $providerFactory,
+        AccountImportService $accountImportService)
     {
         $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
+        $this->_providerFactory = $providerFactory;
+        $this->_accountImportService = $accountImportService;
     }
 
     /**
@@ -221,6 +239,53 @@ class AccountService
     public function importExternalAccounts(Bank $bank)
     {
         if (null !== $bank->getExternalUserId()) {
+            $provider = $this->_providerFactory->get($bank);
+            if (null !== $provider) {
+                $externalAccounts = $provider->retrieveAccounts($bank->getExternalUserId());
+
+                $externalAccountsLabel = array();
+                foreach ($externalAccounts as $externalAccount) {
+                    $externalAccountsLabel[] = $externalAccount['label'];
+                }
+
+                $this->_logger->info(sprintf('Importing accounts: %s', implode(', ', $externalAccountsLabel)));
+
+                $this->saveExternalAccounts($bank->getUser(), $bank, $externalAccounts);
+
+                // Import external transactions
+                foreach ($externalAccounts as $k => $externalAccount) {
+                    $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->findOneBy(
+                        array(
+                            'bankId' => $bank->getBankId(),
+                            'externalAccountId' => $externalAccount['account_id']
+                        )
+                    );
+
+                    if (null !== $account) {
+                        $externalAccounts[$k]['account'] = $account;
+
+                        $this->_accountImportService->initImport($account, 0);
+                    }
+                }
+
+                foreach ($externalAccounts as $externalAccount) {
+                    if (isset($externalAccount['account'])) {
+                        $this->importExternalTransactions($externalAccount['account']);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieve external transactions
+     *
+     * @param  Account $account Account entity
+     * @return void
+     */
+    public function importExternalTransactions(Account $account)
+    {
+        if (null !== $account->getBank()->getExternalUserId()) {
             $this->executableFinder = new PhpExecutableFinder();
 
             $phpBin = $this->executableFinder->find();
@@ -232,14 +297,14 @@ class AccountService
 
             $process = new Process(
                 sprintf(
-                    '%s app/console bagheera:import_external_accounts %d &',
+                    '%s app/console bagheera:import_external_transactions %d',
                     $phpBin,
-                    $bank->getBankId()
+                    $account->getAccountId()
                 ),
                 realpath(__DIR__ . '/../../../..')
             );
 
-            $process->run();
+            $process->start();
         }
     }
 
@@ -253,6 +318,8 @@ class AccountService
      */
     public function saveExternalAccounts(User $user, Bank $bank, array $externalAccounts)
     {
+        $error = false;
+
         // Retrieve current accounts id
         $currentAccounts = $bank->getAccounts();
         $currentAccountsExternalId = array();
@@ -279,24 +346,24 @@ class AccountService
                         $this->_em->persist($account);
                     } catch (\Exception $e) {
                         $this->_logger->err($e->getMessage());
+                        $error = true;
                         continue;
                     }
                 } else {
-                    $this->_logger->err(implode(', ', $errors));
+                    $this->_logger->err(sprintf('Errors importing account "%s" [user %d]', $externalAccount['label'], $bank->getUser()->getUserId()));
+                    $error = true;
                     continue;
                 }
             }
         }
 
-        if (!empty($externalAccounts)) {
-            try {
-                $this->_em->flush();
-
-                return true;
-            } catch (\Exception $e) {
-            }
+        try {
+            $this->_em->flush();
+        } catch (\Exception $e) {
+            $this->_logger->err($e->getMessage());
+            $error = true;
         }
 
-        return false;
+        return !$error;
     }
 }

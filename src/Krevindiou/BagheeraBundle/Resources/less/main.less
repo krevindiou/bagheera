@@ -376,7 +376,7 @@ input[type=submit].reconcile {
 }
 
 #form_account_list li {
-    width: 400px;
+    width: 430px;
     margin-top: 5px;
     margin-bottom: 10px;
     background-color: #e2e2e2;
@@ -402,11 +402,24 @@ input[type=submit].reconcile {
             text-align: right;
             font-weight: bold;
         }
-        td.edit, th.edit {
-            width: 30px;
-            text-align: right;
+        td.actions, th.actions {
+            width: 85px;
             vertical-align: middle;
+            padding-left: 10px;
         }
+    }
+
+    .ui-progressbar {
+        display: inline-block;
+        height: 10px;
+        width: 60px;
+    }
+
+    .ui-progressbar-value {
+        background: url("/bundles/krevindioubagheera/css/smoothness/images/pbar-ani.gif") 50% 50% repeat-x #f6a828;
+        font-size: 10px;
+        text-align: center;
+        color: #fff;
     }
 }
 

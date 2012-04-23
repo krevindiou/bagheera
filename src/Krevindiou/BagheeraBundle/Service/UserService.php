@@ -482,4 +482,41 @@ class UserService
 
         return sprintf('%.2f', $balance);
     }
+
+    /**
+     * Gets import progress data
+     *
+     * @param  User $user User entity
+     * @return array
+     */
+    public function getImportProgress(User $user)
+    {
+        // Fetch current importId
+        $dql = 'SELECT MAX(i.importId) ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i ';
+        $dql.= 'JOIN i.account a ';
+        $dql.= 'JOIN a.bank b ';
+        $dql.= 'WHERE b.user = :user ';
+        $dql.= 'AND i.finished = 0 ';
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('user', $user);
+
+        try {
+            $maxImportId = $query->getSingleScalarResult();
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        $dql = 'SELECT i ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i INDEX BY i.accountId ';
+        $dql.= 'WHERE i.importId = :maxImportId ';
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('maxImportId', $maxImportId);
+
+        try {
+            return $query->getResult();
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
 }

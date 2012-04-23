@@ -18,7 +18,12 @@
                         <th class="checkbox"><input type="checkbox" name="banksId[]" value="{{ bank.bankId }}"/></th>
                         <th class="bank_name">{{ bank.name }}</th>
                         <th class="balance {{ (bankService.getBalance(app.user, bank) < 0 ? 'negative' : 'positive') }}">{{ bankService.getBalance(app.user, bank) | abs | money }}</th>
-                        <th class="edit"><a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}"/></a></th>
+                        <th class="actions">
+                            <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}" title="{{ 'bank_edit_link'|trans }}"/></a>
+                            {% if progress|length == 0 %}
+                                <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import"><img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}" title="{{ 'bank_import_link'|trans }}"/></a>
+                            {% endif %}
+                        </th>
                     </tr>
 
                     {% if bank.getAccounts() is empty %}
@@ -32,7 +37,10 @@
                         <td class="checkbox"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
                         <td class="account_name"><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
                         <td class="balance {{ (accountService.getBalance(app.user, account) < 0 ? 'negative' : 'positive') }}">{{ accountService.getBalance(app.user, account) | abs | money }}</td>
-                        <td class="edit"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'account_edit_link'|trans }}"/></a></td>
+                        <td class="actions">
+                            <a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'account_edit_link'|trans }}" title="{{ 'account_edit_link'|trans }}"/></a>
+                            <div class="progress-import-account" id="progress-import-account-{{ account.accountId }}"></div>
+                        </td>
                     </tr>
                     {% endfor %}
                     {% endif %}
@@ -48,5 +56,67 @@
     </form>
 
     <p id="total_balance">{{ 'total_balance'|trans }} : <strong class="{{ (userService.getBalance(app.user) < 0 ? 'negative' : 'positive') }}">{{ userService.getBalance(app.user) | abs | money }}</strong></p>
+
+
+    {% if progress|length > 0 %}
+    <script type="text/javascript">
+    (function importDataAccount() {
+        var nextUpload = true;
+
+        $.ajax({
+            url: "import-progress",
+            dataType: "json",
+            success: function(data) {
+                nextUpload = false;
+
+                for (var accountId in data) {
+                    nextUpload = true;
+
+                    var total = data[accountId];
+
+                    $("#progress-import-account-" + accountId).progressbar();
+
+                    $("#progress-import-account-" + accountId + " .ui-progressbar-value")
+                        .show()
+                        .animate(
+                            {
+                                width: parseInt(total / 100 * 60)
+                            },
+                            {
+                                duration: "slow",
+                                step: function(now, fx) {
+                                    if (60 == now) {
+                                        $(this).html("100%").css("background-image", "none");
+                                    }
+                                }
+                            }
+                        );
+                }
+            },
+            complete: function() {
+                if (nextUpload) {
+                    setTimeout(importDataAccount, 2000);
+                } else {
+                    $(".progress-import-account").each(function() {
+                        $(this).find(".ui-progressbar-value")
+                            .show()
+                            .animate(
+                                {
+                                    width: 60
+                                },
+                                {
+                                    duration: "slow",
+                                    complete: function(now, fx) {
+                                        $(this).html("100%").css("background-image", "none");
+                                    }
+                                }
+                            );
+                    });
+                }
+            }
+        });
+    })();
+    </script>
+    {% endif %}
 {% endif %}
 {% endblock %}

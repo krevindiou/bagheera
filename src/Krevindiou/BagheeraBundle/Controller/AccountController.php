@@ -37,11 +37,14 @@ class AccountController extends Controller
     {
         $user = $this->get('security.context')->getToken()->getUser();
 
+        $progress = $this->get('bagheera.user')->getImportProgress($user);
+
         return array(
             'banks' => $user->getBanks(),
             'userService' => $this->get('bagheera.user'),
             'bankService' => $this->get('bagheera.bank'),
             'accountService' => $this->get('bagheera.account'),
+            'progress' => $progress
         );
     }
 
@@ -125,5 +128,25 @@ class AccountController extends Controller
         }
 
         throw $this->createNotFoundException();
+    }
+
+    /**
+     * @Route("/import-progress", name="account_import_progress")
+     */
+    public function importProgressAction()
+    {
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $progress = $this->get('bagheera.user')->getImportProgress($user);
+
+        $data = array();
+        foreach ($progress as $v) {
+            $data[$v->getAccount()->getAccountId()] = $v->getProgressPct();
+        }
+
+        $response = new Response(json_encode(($data)));
+        $response->headers->set('Content-Type', 'application/json');
+
+        return $response;
     }
 }

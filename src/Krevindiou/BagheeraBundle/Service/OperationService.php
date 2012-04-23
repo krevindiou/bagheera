@@ -60,13 +60,24 @@ class OperationService
      */
     protected $_validator;
 
+    /**
+     * @var AccountImportService
+     */
+    protected $_accountImportService;
 
-    public function __construct(Logger $logger, EntityManager $em, FormFactory $formFactory, Validator $validator)
+
+    public function __construct(
+        Logger $logger,
+        EntityManager $em,
+        FormFactory $formFactory,
+        Validator $validator,
+        AccountImportService $accountImportService)
     {
         $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
+        $this->_accountImportService = $accountImportService;
     }
 
     /**
@@ -361,6 +372,10 @@ class OperationService
      */
     public function saveExternalTransactions(User $user, Account $account, array $externalTransactions)
     {
+        $error = false;
+
+        $this->_accountImportService->initImport($account, count($externalTransactions));
+
         $i = 0;
         foreach ($externalTransactions as $externalTransaction) {
             $operation = new Operation();
@@ -384,35 +399,49 @@ class OperationService
             if (0 == count($errors)) {
                 try {
                     $this->_em->persist($operation);
+
                     $i++;
 
                     if ($i % 100 == 0) {
                         try {
                             $this->_em->flush();
+                            $this->_accountImportService->updateImport($account, $i);
                         } catch (\Exception $e) {
                             $this->_logger->err($e->getMessage());
-
-                            return false;
+                            $error = true;
+                            continue;
                         }
                     }
                 } catch (\Exception $e) {
                     $this->_logger->err($e->getMessage());
+                    $error = true;
                     continue;
                 }
             } else {
-                $this->_logger->err(implode(', ', $errors));
+                $this->_logger->err(
+                    sprintf(
+                        'Errors importing transaction "%s" [user %d]',
+                        $externalTransaction['label'],
+                        $account->getBank()->getUser()->getUserId()
+                    )
+                );
+                $error = true;
                 continue;
             }
         }
 
-        if (!empty($externalTransactions)) {
+        if ($i > 0) {
             try {
                 $this->_em->flush();
             } catch (\Exception $e) {
-                return false;
+                $error = true;
             }
+
+            $this->_accountImportService->updateImport($account, $i);
         }
 
-        return true;
+        $this->_accountImportService->closeImport($account);
+
+        return !$error;
     }
 }

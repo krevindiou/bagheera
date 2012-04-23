@@ -54,4 +54,14 @@ class BankController extends Controller
             'bankForm' => $bankForm->createView()
         );
     }
+
+    /**
+     * @Route("/import-bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_import")
+     */
+    public function importAction(Bank $bank)
+    {
+        $this->get('bagheera.account')->importExternalAccounts($bank);
+
+        return $this->redirect($this->generateUrl('account_list'));
+    }
 }
