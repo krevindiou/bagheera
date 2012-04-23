@@ -45,10 +45,10 @@ var Bagheera = {
             });
 
             $("a.search").click(function(e) {
-                $('#operation_search').show();
-                $('#operation').addClass('with_sidebar');
+                $("#operation_search").show();
+                $("#operation").addClass("with_sidebar");
                 e.preventDefault();
-            })
+            });
         });
     },
 
