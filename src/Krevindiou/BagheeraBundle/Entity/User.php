@@ -144,10 +144,18 @@ class User implements AdvancedUserInterface
      */
     protected $banks;
 
+    /**
+     * @var Doctrine\Common\Collections\Collection $reports
+     *
+     * @ORM\OneToMany(targetEntity="Report", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
+     */
+    protected $reports;
+
 
     public function __construct()
     {
         $this->banks = new ArrayCollection();
+        $this->reports = new ArrayCollection();
     }
 
     /**
