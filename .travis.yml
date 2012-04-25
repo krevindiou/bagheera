@@ -5,6 +5,8 @@ php:
   - 5.4
 
 before_script:
+  - sudo apt-get update
+  - sudo apt-get install php-apc
   - cp app/config/parameters.ini.dist app/config/parameters.ini
   - php bin/vendors install
   - php app/console assets:install --symlink web/
