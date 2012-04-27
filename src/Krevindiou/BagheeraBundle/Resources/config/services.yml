@@ -85,6 +85,13 @@ services:
         arguments:
             - @doctrine.orm.entity_manager
 
+    bagheera.report:
+        class: Krevindiou\BagheeraBundle\Service\ReportService
+        arguments:
+            - @logger
+            - @doctrine.orm.entity_manager
+            - @form.factory
+
     bagheera.provider_factory:
         class: Krevindiou\BagheeraBundle\Service\Provider\ProviderServiceFactory
         arguments:

@@ -74,7 +74,6 @@ class Report
      * @var boolean $homepage
      *
      * @ORM\Column(name="homepage", type="boolean", nullable=false)
-     * @Assert\NotBlank()
      * @Assert\Type("bool")
      */
     protected $homepage = false;
@@ -105,7 +104,7 @@ class Report
     /**
      * @var Doctrine\Common\Collections\Collection $categories
      *
-     * @ORM\ManyToMany(targetEntity="Category", cascade={"all"}, fetch="EAGER")
+     * @ORM\ManyToMany(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinTable(name="report_category",
      *   joinColumns={
      *     @ORM\JoinColumn(name="report_id", referencedColumnName="report_id")
@@ -120,7 +119,7 @@ class Report
     /**
      * @var Doctrine\Common\Collections\Collection $paymentMethods
      *
-     * @ORM\ManyToMany(targetEntity="PaymentMethod", cascade={"all"}, fetch="EAGER")
+     * @ORM\ManyToMany(targetEntity="PaymentMethod", fetch="EAGER")
      * @ORM\JoinTable(name="report_payment_method",
      *   joinColumns={
      *     @ORM\JoinColumn(name="report_id", referencedColumnName="report_id")
@@ -135,7 +134,7 @@ class Report
     /**
      * @var Doctrine\Common\Collections\Collection $accounts
      *
-     * @ORM\ManyToMany(targetEntity="Account", cascade={"all"}, fetch="EAGER")
+     * @ORM\ManyToMany(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinTable(name="report_account",
      *   joinColumns={
      *     @ORM\JoinColumn(name="report_id", referencedColumnName="report_id")
@@ -159,6 +158,7 @@ class Report
      * @var string $periodGrouping
      *
      * @ORM\Column(name="period_grouping", type="string", length=8, nullable=true)
+     * @Assert\NotBlank(groups={"sum", "average"})
      * @Assert\Choice(choices = {"week", "month", "quarter", "year", "all"})
      */
     protected $periodGrouping;
@@ -167,6 +167,7 @@ class Report
      * @var string $dataGrouping
      *
      * @ORM\Column(name="data_grouping", type="string", length=16, nullable=true)
+     * @Assert\NotBlank(groups={"distribution"})
      * @Assert\Choice(choices = {"category", "third_party", "payment_method"})
      */
     protected $dataGrouping;
@@ -175,6 +176,7 @@ class Report
      * @var integer $significantResultsNumber
      *
      * @ORM\Column(name="significant_results_number", type="smallint", nullable=true)
+     * @Assert\NotBlank(groups={"distribution"})
      */
     protected $significantResultsNumber;
 
@@ -182,6 +184,7 @@ class Report
      * @var integer $monthExpenses
      *
      * @ORM\Column(name="month_expenses", type="integer", nullable=true)
+     * @Assert\NotBlank(groups={"estimate"})
      */
     protected $monthExpenses;
 
@@ -189,6 +192,7 @@ class Report
      * @var integer $monthIncomes
      *
      * @ORM\Column(name="month_incomes", type="integer", nullable=true)
+     * @Assert\NotBlank(groups={"estimate"})
      */
     protected $monthIncomes;
 
@@ -196,6 +200,7 @@ class Report
      * @var integer $estimateDurationValue
      *
      * @ORM\Column(name="estimate_duration_value", type="smallint", nullable=true)
+     * @Assert\NotBlank(groups={"estimate"})
      */
     protected $estimateDurationValue;
 
@@ -203,6 +208,7 @@ class Report
      * @var string $estimateDurationUnit
      *
      * @ORM\Column(name="estimate_duration_unit", type="string", length=8, nullable=true)
+     * @Assert\NotBlank(groups={"estimate"})
      * @Assert\Choice(choices = {"month", "year"})
      */
     protected $estimateDurationUnit;

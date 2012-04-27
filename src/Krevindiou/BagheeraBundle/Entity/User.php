@@ -148,6 +148,7 @@ class User implements AdvancedUserInterface
      * @var Doctrine\Common\Collections\Collection $reports
      *
      * @ORM\OneToMany(targetEntity="Report", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
+     * @ORM\OrderBy({"type" = "ASC", "title" = "ASC"})
      */
     protected $reports;
 
@@ -393,6 +394,16 @@ class User implements AdvancedUserInterface
     public function getBanks()
     {
         return $this->banks;
+    }
+
+    /**
+     * Get user reports
+     *
+     * @return Doctrine\Common\Collections\Collection
+     */
+    public function getReports()
+    {
+        return $this->reports;
     }
 
     /**

@@ -1,0 +1,36 @@
+{% extends '::base.html.twig' %}
+
+{% block pageTitle 'report_list_page_title'|trans %}
+
+{% block content %}
+<a href="{{ path('report_new', {type: 'sum'}) }}" class="new">{{ 'report_sum_new_link'|trans }}</a>
+<a href="{{ path('report_new', {type: 'average'}) }}" class="new">{{ 'report_average_new_link'|trans }}</a>
+<a href="{{ path('report_new', {type: 'distribution'}) }}" class="new">{{ 'report_distribution_new_link'|trans }}</a>
+<a href="{{ path('report_new', {type: 'estimate'}) }}" class="new">{{ 'report_estimate_new_link'|trans }}</a>
+<br/><br/>
+
+{% if reports|length > 0 %}
+<form method="post" action="">
+    <table class="data">
+        <tr>
+            <th></th>
+            <th>{{ 'report_type'|trans }}</th>
+            <th>{{ 'report_title'|trans }}</th>
+            <th class="edit"></th>
+        </tr>
+        {% for report in reports %}
+        <tr>
+            <td><input type="checkbox" name="reportsId[]" value="{{ report.reportId }}" /></td>
+            <td>{{ ('report_type_' ~ report.type)|trans }}</td>
+            <td>{{ report.title }}</td>
+            <td class="edit"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}">{{ 'report_edit_link'|trans }}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="list_actions">
+        <input type="submit" name="delete" class="delete" value="{{ 'report_delete_button'|trans }}" />
+    </div>
+</form>
+{% endif %}
+{% endblock %}
