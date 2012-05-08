@@ -8,6 +8,7 @@
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
         <link href="{{ asset('/bundles/krevindioubagheera/css/smoothness/jquery-ui-1.8.17.custom.css') }}" rel="stylesheet" type="text/css" />
+        <link href="{{ asset('/bundles/krevindioubagheera/css/jquery.jqplot.min.css') }}" rel="stylesheet" type="text/css" />
         <script src="{{ asset('/bundles/krevindioubagheera/js/head.load.min.js') }}"></script>
         <script>
         head.js(
@@ -30,6 +31,7 @@
             <nav>
                 <ul>
                     <li><a href="{{ path('account_list') }}">{{ 'home_link'|trans }}</a></li>
+                    <li><a href="{{ path('report_list') }}">{{ 'report_link'|trans }}</a></li>
                     <li><a href="{{ path('user_profile') }}">{{ 'profile_link'|trans }}</a></li>
                     {# <li><a href="{{ path('share_list') }}">{{ 'shares_link'|trans }}</a></li> #}
                     {# <li><a href="{{ path('report_ist') }}">{{ 'reports_link'|trans }}</a></li> #}

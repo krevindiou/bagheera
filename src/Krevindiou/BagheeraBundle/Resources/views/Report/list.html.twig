@@ -5,8 +5,8 @@
 {% block content %}
 <a href="{{ path('report_new', {type: 'sum'}) }}" class="new">{{ 'report_sum_new_link'|trans }}</a>
 <a href="{{ path('report_new', {type: 'average'}) }}" class="new">{{ 'report_average_new_link'|trans }}</a>
-<a href="{{ path('report_new', {type: 'distribution'}) }}" class="new">{{ 'report_distribution_new_link'|trans }}</a>
-<a href="{{ path('report_new', {type: 'estimate'}) }}" class="new">{{ 'report_estimate_new_link'|trans }}</a>
+{#<a href="{{ path('report_new', {type: 'distribution'}) }}" class="new">{{ 'report_distribution_new_link'|trans }}</a>#}
+{#<a href="{{ path('report_new', {type: 'estimate'}) }}" class="new">{{ 'report_estimate_new_link'|trans }}</a>#}
 <br/><br/>
 
 {% if reports|length > 0 %}

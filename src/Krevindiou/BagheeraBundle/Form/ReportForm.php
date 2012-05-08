@@ -150,7 +150,6 @@ class ReportForm extends AbstractType
                     array(
                         'label' => 'report_period_grouping',
                         'choices' => array(
-                            'week' => 'report_period_grouping_week',
                             'month' => 'report_period_grouping_month',
                             'quarter' => 'report_period_grouping_quarter',
                             'year' => 'report_period_grouping_year',

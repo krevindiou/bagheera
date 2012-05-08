@@ -159,7 +159,7 @@ class Report
      *
      * @ORM\Column(name="period_grouping", type="string", length=8, nullable=true)
      * @Assert\NotBlank(groups={"sum", "average"})
-     * @Assert\Choice(choices = {"week", "month", "quarter", "year", "all"})
+     * @Assert\Choice(choices = {"month", "quarter", "year", "all"})
      */
     protected $periodGrouping;
 

@@ -38,13 +38,15 @@ class AccountController extends Controller
         $user = $this->get('security.context')->getToken()->getUser();
 
         $progress = $this->get('bagheera.user')->getImportProgress($user);
+        $reports = $this->get('bagheera.report')->getHomepageList($user);
 
         return array(
             'banks' => $user->getBanks(),
             'userService' => $this->get('bagheera.user'),
             'bankService' => $this->get('bagheera.bank'),
             'accountService' => $this->get('bagheera.account'),
-            'progress' => $progress
+            'progress' => $progress,
+            'reports' => $reports
         );
     }
 

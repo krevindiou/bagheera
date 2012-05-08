@@ -57,6 +57,14 @@
 
     <p id="total_balance">{{ 'total_balance'|trans }} : <strong class="{{ (userService.getBalance(app.user) < 0 ? 'negative' : 'positive') }}">{{ userService.getBalance(app.user) | abs | money }}</strong></p>
 
+    <div id="graphs">
+    {% for report in reports %}
+        <figure>
+            <figcaption>{{ report.title }}</figcaption>
+            <div id="graph{{ report.reportId }}" class="graph"></div>
+        </figure>
+    {% endfor %}
+    </div>
 
     {% if progress|length > 0 %}
     <script type="text/javascript">
@@ -117,6 +125,16 @@
         });
     })();
     </script>
+    {% endif %}
+
+    {% if reports|length > 0 %}
+    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/jquery.jqplot.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.highlighter.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasTextRenderer.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/excanvas.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('/reports.js') }}"></script>
     {% endif %}
 {% endif %}
 {% endblock %}
