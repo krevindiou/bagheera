@@ -56,11 +56,10 @@ class SchedulerController extends Controller
      */
     public function listActionsAction(Request $request, Account $account)
     {
-        $schedulersId = (array)$request->request->get('schedulersId');
-
-        $user = $this->get('security.context')->getToken()->getUser();
-
         if ($request->request->get('delete')) {
+            $schedulersId = (array)$request->request->get('schedulersId');
+            $user = $this->get('security.context')->getToken()->getUser();
+
             $this->get('bagheera.scheduler')->delete($user, $schedulersId);
             $this->get('session')->setFlash('notice', 'scheduler_delete_confirmation');
         }

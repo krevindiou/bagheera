@@ -27,7 +27,9 @@
         <header>
             <div id="title"><a href="{{ path('account_list') }}">Bagheera</a></div>
 
-            {% if app.getUser() is not empty %}
+            {% set user = app.getUser() %}
+
+            {% if user is not empty %}
             <nav>
                 <ul>
                     <li><a href="{{ path('account_list') }}">{{ 'home_link'|trans }}</a></li>
@@ -35,13 +37,14 @@
                     <li><a href="{{ path('user_profile') }}">{{ 'profile_link'|trans }}</a></li>
                     {# <li><a href="{{ path('share_list') }}">{{ 'shares_link'|trans }}</a></li> #}
                     {# <li><a href="{{ path('report_ist') }}">{{ 'reports_link'|trans }}</a></li> #}
-                    {# {% if app.getUser().getIsAdmin() %} #}
+                    {# {% if user.getIsAdmin() %} #}
                     {# <li><a href="{{ path('user_list') }}">{{ 'admin_users_link'|trans }}</a></li> #}
                     {# <li><a href="{{ path('category_list') }}">{{ 'admin_categories_link'|trans }}</a></li> #}
                     {# {% endif %} #}
                     <li class="logout"><a href="{{ path('logout') }}">{{ 'user_logout_link'|trans }}</a></li>
                 </ul>
             </nav>
+            {% render "KrevindiouBagheeraBundle:Account:box" with { 'accountId': app.request.attributes.get('accountId') } %}
             {% else %}
             <nav>
                 <ul>
@@ -50,8 +53,6 @@
                 </ul>
             </nav>
             {% endif %}
-
-            {% render "KrevindiouBagheeraBundle:Account:box" with { 'accountId': app.request.attributes.get('accountId') } %}
         </header>
 
         <section id="content">

@@ -36,15 +36,17 @@ class OperationSearchController extends Controller
     {
         $user = $this->get('security.context')->getToken()->getUser();
 
-        $operationSearch = $this->get('bagheera.operation_search')->getSessionSearch($account);
+        $operationSearchService = $this->get('bagheera.operation_search');
 
-        $operationSearchForm = $this->get('bagheera.operation_search')->getForm($user, $operationSearch, $account);
+        $operationSearch = $operationSearchService->getSessionSearch($account);
+
+        $operationSearchForm = $operationSearchService->getForm($user, $operationSearch, $account);
         if (null === $operationSearchForm) {
             throw $this->createNotFoundException();
         }
 
         if ('' != $request->request->get('clear')) {
-            $this->get('bagheera.operation_search')->clearSessionSearch($account);
+            $operationSearchService->clearSessionSearch($account);
 
             return $this->redirect(
                 $this->generateUrl('operation_list', array('accountId' => $account->getAccountId()))
@@ -54,7 +56,7 @@ class OperationSearchController extends Controller
                 $operationSearchForm->bindRequest($request);
 
                 if ($operationSearchForm->isValid()) {
-                    $this->get('bagheera.operation_search')->setSessionSearch(
+                    $operationSearchService->setSessionSearch(
                         $account,
                         $request->request->get('krevindiou_bagheerabundle_operationsearchtype')
                     );

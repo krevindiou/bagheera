@@ -78,9 +78,21 @@ class AccountController extends Controller
      */
     public function boxAction(Account $account = null)
     {
+        if (null !== $account) {
+            $user = $this->get('security.context')->getToken()->getUser();
+            $accountService = $this->get('bagheera.account');
+
+            $balance = $accountService->getBalance($user, $account);
+            $reconciledBalance = $accountService->getBalance($user, $account, true);
+        } else {
+            $balance = null;
+            $reconciledBalance = null;
+        }
+
         return array(
             'account' => $account,
-            'accountService' => $this->get('bagheera.account')
+            'balance' => $balance,
+            'reconciledBalance' => $reconciledBalance
         );
     }
 

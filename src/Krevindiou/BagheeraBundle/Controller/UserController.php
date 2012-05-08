@@ -184,10 +184,9 @@ class UserController extends Controller
     {
         $page = $request->query->getInt('page', 1);
         $users = (array)$request->request->get('users');
-        $toggleDeactivation = $request->request->get('toggleDeactivation');
 
         if (!empty($users)) {
-            if ($toggleDeactivation) {
+            if ($request->request->get('toggleDeactivation')) {
                 $this->get('bagheera.user')->toggleDeactivation($users);
                 $this->get('session')->setFlash('notice', 'user_toggle_deactivation_ok');
             }
