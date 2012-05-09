@@ -25,8 +25,10 @@
                         <th class="balance {{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|abs|money }}</th>
                         <th class="actions">
                             <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}" title="{{ 'bank_edit_link'|trans }}"/></a>
-                            {% if progress|length == 0 %}
-                                <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import"><img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ bank.providerId is not null and bank.getAccounts()|length == 0 ? ' class="tip"' : '' }}title="{{ bank.providerId is not null and bank.getAccounts()|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/></a>
+                            {% if bank.providerId is not null and progress|length == 0 %}
+                                <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import">
+                                    <img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ bank.getAccounts()|length == 0 ? ' class="tip"' : '' }}title="{{ bank.getAccounts()|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/>
+                                </a>
                             {% endif %}
                         </th>
                     </tr>
