@@ -4,7 +4,7 @@
 
 {% block content %}
 <a href="{{ path('account_list') }}" class="back">{{ 'back_link'|trans }}</a>
-<a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new">{{ 'operation_new_link'|trans }}</a>
+<a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}>{{ 'operation_new_link'|trans }}</a>
 <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="search">{{ 'operation_search_link'|trans }}</a>
 <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="schedulers">{{ 'scheduler_list'|trans }}</a>
 <br/><br/>

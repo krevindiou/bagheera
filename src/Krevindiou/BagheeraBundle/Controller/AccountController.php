@@ -36,17 +36,30 @@ class AccountController extends Controller
     public function listAction()
     {
         $user = $this->get('security.context')->getToken()->getUser();
+        $banks = $user->getBanks();
 
         $progress = $this->get('bagheera.user')->getImportProgress($user);
         $reports = $this->get('bagheera.report')->getHomepageList($user);
 
+        $tipNewAccount = false;
+        $hasBankWithoutProvider = $this->get('bagheera.user')->hasBankWithoutProvider($user);
+        if ($hasBankWithoutProvider) {
+            $accounts = $this->get('bagheera.account')->getList($user);
+
+            if (count($accounts) == 0) {
+                $tipNewAccount = true;
+            }
+        }
+
         return array(
-            'banks' => $user->getBanks(),
+            'banks' => $banks,
             'userService' => $this->get('bagheera.user'),
             'bankService' => $this->get('bagheera.bank'),
             'accountService' => $this->get('bagheera.account'),
             'progress' => $progress,
-            'reports' => $reports
+            'reports' => $reports,
+            'tipNewBank' => (count($banks) == 0),
+            'tipNewAccount' => $tipNewAccount
         );
     }
 

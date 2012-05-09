@@ -3,10 +3,10 @@
 {% block pageTitle 'account_list_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('bank_new') }}" class="new">{{ 'bank_new_link'|trans }}</a>
+<a href="{{ path('bank_new') }}" class="new{{ tipNewBank ? ' tip' : '' }}"{% if tipNewBank %} title="{{ "tip_new_bank"|trans }}"{% endif %}>{{ 'bank_new_link'|trans }}</a>
 
 {% if banks|length > 0 %}
-    <a href="{{ path('account_new') }}" class="new">{{ 'account_new_link'|trans }}</a>
+    <a href="{{ path('account_new') }}" class="new{{ tipNewAccount ? ' tip' : '' }}"{% if tipNewAccount %} title="{{ "tip_new_account"|trans }}"{% endif %}>{{ 'account_new_link'|trans }}</a>
     <br/><br/>
 
     {% set totalBalance = 0 %}
@@ -26,7 +26,7 @@
                         <th class="actions">
                             <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}" title="{{ 'bank_edit_link'|trans }}"/></a>
                             {% if progress|length == 0 %}
-                                <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import"><img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}" title="{{ 'bank_import_link'|trans }}"/></a>
+                                <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import"><img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ bank.providerId is not null and bank.getAccounts()|length == 0 ? ' class="tip"' : '' }}title="{{ bank.providerId is not null and bank.getAccounts()|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/></a>
                             {% endif %}
                         </th>
                     </tr>

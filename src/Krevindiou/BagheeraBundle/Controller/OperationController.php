@@ -49,7 +49,8 @@ class OperationController extends Controller
         return array(
             'account' => $account,
             'operations' => $operations,
-            'displaySearch' => (null !== $operationSearch)
+            'displaySearch' => (null !== $operationSearch),
+            'tipNewOperation' => (count($operations) == 0)
         );
     }
 

@@ -519,4 +519,25 @@ class UserService
             return null;
         }
     }
+
+    /**
+     * Checks if user has one or more banks without provider
+     *
+     * @param  User $user User entity
+     * @return bool
+     */
+    public function hasBankWithoutProvider(User $user)
+    {
+        $banks = $user->getBanks();
+
+        if (count($banks) > 0) {
+            foreach ($banks as $bank) {
+                if (null === $bank->getProviderId()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }

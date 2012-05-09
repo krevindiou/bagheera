@@ -86,6 +86,30 @@ class AccountService
     }
 
     /**
+     * Returns accounts list
+     *
+     * @param  User $user    User entity
+     * @param  bool $deleted Return deleted items
+     * @return array
+     */
+    public function getList(User $user, $deleted = true)
+    {
+        $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
+        $dql.= 'JOIN a.bank b ';
+        $dql.= 'WHERE b.user = :user ';
+        if (!$deleted) {
+            $dql.= 'AND b.is_deleted = 0 ';
+            $dql.= 'AND a.is_deleted = 0 ';
+        }
+        $dql.= 'ORDER BY a.name ASC';
+
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('user', $user);
+
+        return $query->getResult();
+    }
+
+    /**
      * Returns account form
      *
      * @param  User $user       User entity

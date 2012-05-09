@@ -11,6 +11,7 @@ var Bagheera = {
             Bagheera.initCategory();
             Bagheera.dropDownCategory();
             Bagheera.dropDownTransferAccount();
+            Bagheera.tooltip();
 
             $("table.data td.edit, table.data th.edit").hide();
 
@@ -231,5 +232,39 @@ var Bagheera = {
                 $("select[name$='[transferAccount]']").parent().parent().hide();
             }
         }
+    },
+
+    tooltip: function() {
+        $(".tip").qtip({
+            content: {
+                attr: "title"
+            },
+            position: {
+                my: "left center",
+                at: "right center"
+            },
+            show: {
+                ready: true
+            },
+            hide: {
+                event: "click"
+            },
+            style: {
+                classes: "ui-tooltip-rounded"
+            },
+            events: {
+                render: function(event, api) {
+                    $(function() {
+                        var element = api.elements.tooltip;
+
+                        (function tooltipSlide() {
+                            element
+                                .animate({ marginLeft: "5px" }, 800, "swing")
+                                .animate({ marginLeft: "0" }, 400, "swing", tooltipSlide);
+                        }());
+                    });
+                }
+            }
+        });
     }
 };
