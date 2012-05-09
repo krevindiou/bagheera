@@ -129,7 +129,14 @@ class AccountController extends Controller
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
                 $this->get('session')->setFlash('notice', 'account_form_confirmation');
 
-                return $this->redirect($this->generateUrl('account_list'));
+                $route = $request->attributes->get('_route');
+                if ('account_new' == $route) {
+                    return $this->redirect(
+                        $this->generateUrl('operation_list', array('accountId' => $accountForm->getData()->getAccountId()))
+                    );
+                } else {
+                    return $this->redirect($this->generateUrl('account_list'));
+                }
             }
         }
 
