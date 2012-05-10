@@ -50,6 +50,14 @@ var Bagheera = {
                 $("#operation").addClass("with_sidebar");
                 e.preventDefault();
             });
+
+            $("#krevindiou_bagheerabundle_banktype_provider_id").change(function() {
+                if ($(this).val() != '') {
+                    $("#krevindiou_bagheerabundle_banktype_name").val($(this).find(":checked").text()).focus();
+                } else {
+                    $("#krevindiou_bagheerabundle_banktype_name").val("").focus();
+                }
+            });
         });
     },
 
