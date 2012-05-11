@@ -36,7 +36,7 @@ class AxaBanqueProviderService extends ProviderService
         );
 
         foreach ($data as $k => $v) {
-            $data[$k]['account_id'] = $data[$k]['account'];
+            $data[$k]['account_id'] = $data[$k]['id'];
             $data[$k]['iban'] = implode('', $data[$k]['iban']);
 
             unset($data[$k]['account']);
@@ -64,16 +64,29 @@ class AxaBanqueProviderService extends ProviderService
             $params
         );
 
+        $data = $data['transactions'];
+
         foreach ($data as $k => $v) {
             $data[$k]['transaction_id'] = $data[$k]['id'];
             $data[$k]['account_id'] = $data[$k]['account'];
-            $data[$k]['value_date'] = $data[$k]['accounting_date'];
+            $data[$k]['value_date'] = $data[$k]['date'];
+
+            $paymentMethods = array(
+                'credit' => 'credit_card',
+                'debit' => 'credit_card',
+                'deposit' => 'deposit',
+                'transfer' => 'transfer',
+                'check' => 'check',
+            );
+
+            $data[$k]['payment_method'] = isset($paymentMethods[$data[$k]['type']]) ? $paymentMethods[$data[$k]['type']] : null;
 
             unset(
                 $data[$k]['id'],
                 $data[$k]['account'],
                 $data[$k]['date'],
-                $data[$k]['accounting_date']
+                $data[$k]['accounting_date'],
+                $data[$k]['type']
             );
         }
 

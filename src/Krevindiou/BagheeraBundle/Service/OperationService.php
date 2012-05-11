@@ -381,13 +381,27 @@ class OperationService
             $operation = new Operation();
             $operation->setAccount($account);
             $operation->setThirdParty($externalTransaction['label']);
-            if ('debit' == $externalTransaction['type']) {
-                $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+
+            if ($externalTransaction['amount'] < 0) {
+                $constant = '\Krevindiou\BagheeraBundle\Entity\PaymentMethod::PAYMENT_METHOD_ID_DEBIT_' . strtoupper($externalTransaction['payment_method']);
+                if (defined($constant)) {
+                    $paymentMethodId = constant($constant);
+                } else {
+                    $paymentMethodId = PaymentMethod::PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD;
+                }
             } else {
-                $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 6));
+                $constant = '\Krevindiou\BagheeraBundle\Entity\PaymentMethod::PAYMENT_METHOD_ID_CREDIT_' . strtoupper($externalTransaction['payment_method']);
+                if (defined($constant)) {
+                    $paymentMethodId = constant($constant);
+                } else {
+                    $paymentMethodId = PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER;
+                }
             }
+
+            $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', $paymentMethodId));
+
             $operation->setExternalOperationId($externalTransaction['transaction_id']);
-            if ('debit' == $externalTransaction['type']) {
+            if ($externalTransaction['amount'] < 0) {
                 $operation->setDebit(abs($externalTransaction['amount']));
             } else {
                 $operation->setCredit(abs($externalTransaction['amount']));
