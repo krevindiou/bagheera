@@ -53,8 +53,6 @@ class UserServiceTest extends TestCase
     public function testAddUser()
     {
         $user = new User();
-        $user->setFirstname('James');
-        $user->setLastname('Doe');
         $user->setEmail('james@example.net');
 
         $encoder = $this->get('security.encoder_factory')->getEncoder($user);
@@ -75,7 +73,7 @@ class UserServiceTest extends TestCase
     public function testUpdateUserWithNoData()
     {
         $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
-        $user->setFirstname('');
+        $user->setEmail('');
 
         $this->assertFalse($this->get('bagheera.user')->save($user));
     }
@@ -159,7 +157,7 @@ class UserServiceTest extends TestCase
     public function testGetUsersJohn()
     {
         $params = array(
-            'firstname' => 'John'
+            'email' => 'john@example.net'
         );
 
         $users = $this->get('bagheera.user')->getUsers($params);

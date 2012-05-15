@@ -40,7 +40,7 @@ class UserTest extends TestCase
     {
         $john = $this->_em->find('Krevindiou\BagheeraBundle\Entity\User', 1);
 
-        $this->assertEquals($john->getFirstname(), 'John');
+        $this->assertEquals($john->getEmail(), 'john@example.net');
         $this->assertEquals(count($john->getBanks()), 2);
     }
 
@@ -48,7 +48,7 @@ class UserTest extends TestCase
     {
         $jane = $this->_em->find('Krevindiou\BagheeraBundle\Entity\User', 2);
 
-        $this->assertEquals($jane->getFirstname(), 'Jane');
+        $this->assertEquals($jane->getEmail(), 'jane@example.net');
         $this->assertEquals(count($jane->getBanks()), 1);
     }
 }

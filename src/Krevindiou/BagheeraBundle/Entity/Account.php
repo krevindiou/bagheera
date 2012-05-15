@@ -168,7 +168,7 @@ class Account
      *     @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
      *   }
      * )
-     * @ORM\OrderBy({"lastname" = "ASC"})
+     * @ORM\OrderBy({"email" = "ASC"})
      */
     protected $sharedWith;
 

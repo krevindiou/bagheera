@@ -48,24 +48,6 @@ class User implements AdvancedUserInterface
     protected $userId;
 
     /**
-     * @var string $firstname
-     *
-     * @ORM\Column(name="firstname", type="string", length=64, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
-     */
-    protected $firstname;
-
-    /**
-     * @var string $lastname
-     *
-     * @ORM\Column(name="lastname", type="string", length=64, nullable=false)
-     * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
-     */
-    protected $lastname;
-
-    /**
      * @var string $email
      *
      * @ORM\Column(name="email", type="string", length=128, unique=true, nullable=false)
@@ -184,46 +166,6 @@ class User implements AdvancedUserInterface
     public function getUserId()
     {
         return $this->userId;
-    }
-
-    /**
-     * Set firstname
-     *
-     * @param string $firstname
-     */
-    public function setFirstname($firstname)
-    {
-        $this->firstname = $firstname;
-    }
-
-    /**
-     * Get firstname
-     *
-     * @return string
-     */
-    public function getFirstname()
-    {
-        return $this->firstname;
-    }
-
-    /**
-     * Set lastname
-     *
-     * @param string $lastname
-     */
-    public function setLastname($lastname)
-    {
-        $this->lastname = $lastname;
-    }
-
-    /**
-     * Get lastname
-     *
-     * @return string
-     */
-    public function getLastname()
-    {
-        return $this->lastname;
     }
 
     /**

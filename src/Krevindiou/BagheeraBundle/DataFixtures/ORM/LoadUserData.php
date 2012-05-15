@@ -15,8 +15,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $encoder = new MessageDigestPasswordEncoder('sha512', false, 1);
 
         $user = new User();
-        $user->setFirstname('John');
-        $user->setLastname('DOE');
         $user->setEmail('john@example.net');
         $user->setPassword($encoder->encodePassword('john', $user->getSalt()));
         $user->setActivation('b4fa77f5180803d0f6f4f504594da09e');
@@ -26,8 +24,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $this->addReference('user-john', $user);
 
         $user = new User();
-        $user->setFirstname('Jane');
-        $user->setLastname('DOE');
         $user->setEmail('jane@example.net');
         $user->setPassword($encoder->encodePassword('jane', $user->getSalt()));
         $user->setActivation('a24fe4584a99123d8f38a9a4e0abae54');

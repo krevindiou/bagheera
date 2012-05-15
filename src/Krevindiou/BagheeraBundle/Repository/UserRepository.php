@@ -40,12 +40,6 @@ class UserRepository extends EntityRepository
         $dql.= 'FROM KrevindiouBagheeraBundle:User u ';
         $dql.= 'WHERE 1 = 1 ';
         if (!empty($params)) {
-            if (isset($params['firstname']) && '' != $params['firstname']) {
-                $dql.= 'AND u.firstname LIKE :firstname ';
-            }
-            if (isset($params['lastname']) && '' != $params['lastname']) {
-                $dql.= 'AND u.lastname LIKE :lastname ';
-            }
             if (isset($params['email']) && '' != $params['email']) {
                 $dql.= 'AND u.email LIKE :email ';
             }
@@ -59,12 +53,6 @@ class UserRepository extends EntityRepository
         $dql.= 'ORDER BY u.createdAt DESC ';
         $query = $this->_em->createQuery($dql);
         if (!empty($params)) {
-            if (isset($params['firstname']) && '' != $params['firstname']) {
-                $query->setParameter('firstname', $params['firstname'] . '%');
-            }
-            if (isset($params['lastname']) && '' != $params['lastname']) {
-                $query->setParameter('lastname', $params['lastname'] . '%');
-            }
             if (isset($params['email']) && '' != $params['email']) {
                 $query->setParameter('email', $params['email'] . '%');
             }

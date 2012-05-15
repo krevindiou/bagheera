@@ -180,7 +180,7 @@ class UserService
         $message = \Swift_Message::newInstance()
             ->setSubject($this->_translator->trans('user_register_email_subject'))
             ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
-            ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
+            ->setTo(array($user->getEmail()))
             ->setBody($body);
 
         $user->setActivation($key);
@@ -324,7 +324,7 @@ class UserService
             $message = \Swift_Message::newInstance()
                 ->setSubject($this->_translator->trans('user_forgot_password_email_subject'))
                 ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
-                ->setTo(array($user->getEmail() => $user->getFirstname() . ' ' . $user->getLastname()))
+                ->setTo(array($user->getEmail()))
                 ->setBody($body);
 
             try {
