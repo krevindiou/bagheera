@@ -137,13 +137,17 @@
     {% endif %}
 
     {% if reports|length > 0 %}
-    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/jquery.jqplot.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.highlighter.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasTextRenderer.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/bundles/krevindioubagheera/js/jqplot/excanvas.min.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('/reports.js') }}"></script>
+    <script type="text/javascript">
+    head.js(
+        "{{ asset('/bundles/krevindioubagheera/js/jqplot/jquery.jqplot.min.js') }}",
+        "{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.highlighter.min.js') }}",
+        "{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.dateAxisRenderer.min.js') }}",
+        "{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasTextRenderer.min.js') }}",
+        "{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js') }}",
+        "{{ asset('/bundles/krevindioubagheera/js/jqplot/excanvas.min.js') }}",
+        "{{ asset('/reports.js') }}"
+    );
+    </script>
     {% endif %}
 {% endif %}
 {% endblock %}
