@@ -131,4 +131,41 @@ class ReportController extends Controller
             'graphs' => $graphs
         );
     }
+
+    /**
+     * @Route("report_synthesis.js", defaults={"_format"="js"}, name="report_synthesis")
+     * @Template()
+     */
+    public function synthesisAction()
+    {
+        $graph = array();
+
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $data = $graphData = $this->get('bagheera.report')->getSynthesis($user);
+
+        if (!empty($data)) {
+            sort($data); // to remove keys
+
+            $yaxisMin = (int)(min(array_merge($data, array(0))) * 1.1);
+            $yaxisMax = (int)(max(array_merge($data, array(0))) * 1.1);
+
+            $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
+            $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
+
+            $tmp = pow(10, (strlen($yaxisMax) - 2));
+            $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
+            $numberTicks = 6;
+
+            $graph = array(
+                'graph' => $graphData,
+                'yaxisMin' => $yaxisMin,
+                'yaxisMax' => $yaxisMax,
+                'numberTicks' => $numberTicks,
+                'ticks' => $this->get('bagheera.report')->getSynthesisYAxisTicks($graphData, $yaxisMin, $yaxisMax, $numberTicks)
+            );
+        }
+
+        return $graph;
+    }
 }

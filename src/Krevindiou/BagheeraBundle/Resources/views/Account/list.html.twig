@@ -11,8 +11,8 @@
 
     {% set totalBalance = 0 %}
 
-    <form method="post" action="">
-        <ul id="form_account_list">
+    <form method="post" action="" id="form_account">
+        <ul>
             {% for bank in banks %}
             <li>
                 <table>
@@ -62,9 +62,14 @@
             <input type="submit" name="delete" class="delete" value="{{ 'account_delete_button'|trans }}"/>
             {#<input type="submit" name="share" value="{{ 'account_share_button'|trans }}"/>#}
         </div>
+
+        <p id="total_balance">{{ 'total_balance'|trans }} : <strong class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|abs|money }}</strong></p>
     </form>
 
-    <p id="total_balance">{{ 'total_balance'|trans }} : <strong class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|abs|money }}</strong></p>
+    <figure id="synthesis">
+        <figcaption>{{ 'report_synthesis'|trans }}</figcaption>
+        <div class="graph"></div>
+    </figure>
 
     <div id="graphs">
     {% for report in reports %}
@@ -136,7 +141,6 @@
     </script>
     {% endif %}
 
-    {% if reports|length > 0 %}
     <script type="text/javascript">
     head.js(
         "{{ asset('/bundles/krevindioubagheera/js/jqplot/jquery.jqplot.min.js') }}",
@@ -145,9 +149,9 @@
         "{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasTextRenderer.min.js') }}",
         "{{ asset('/bundles/krevindioubagheera/js/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js') }}",
         "{{ asset('/bundles/krevindioubagheera/js/jqplot/excanvas.min.js') }}",
-        "{{ asset('/reports.js') }}"
+        "{{ asset('/reports.js') }}",
+        "{{ asset('/report_synthesis.js') }}"
     );
     </script>
-    {% endif %}
 {% endif %}
 {% endblock %}

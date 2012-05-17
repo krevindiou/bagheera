@@ -361,4 +361,91 @@ class ReportService
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Returns synthesis graph data
+     *
+     * @param  User $user   User entity
+     * @return array
+     */
+    public function getSynthesis(User $user)
+    {
+        $data = array();
+
+        $operationRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation');
+        $accountRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Account');
+
+        $operations = $operationRepository->getLast12MonthsSumByMonth($user);
+        $balances = $accountRepository->getLast12MonthsInitialBalanceByMonth($user);
+        $start = $operationRepository->getSumBeforeLast12Months($user) + $accountRepository->getInitialBalanceBeforeLast12Months($user);
+
+        if (!empty($operations) || !empty($balances) || !empty($start)) {
+            $date = new \DateTime();
+            $date->modify('-12 month');
+
+            for ($i = 0; $i < 12; $i++) {
+                $date->modify('+1 month');
+                $month = $date->format('Y-m');
+
+                if (isset($operations[$month])) {
+                    $start+= $operations[$month];
+                }
+
+                if (isset($balances[$month])) {
+                    $start+= $balances[$month];
+                }
+
+                $data[$month . '-01'] = round($start, 2);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Returns synthesis graph y ticks
+     *
+     * @param   array   $data           Graphic data
+     * @param   int     $yaxisMin       Y axis min
+     * @param   int     $yaxisMax       Y axis max
+     * @param   int     $numberTicks    Number of ticks
+     * @return  array
+     */
+    public function getSynthesisYAxisTicks(array $data = array(), $yaxisMin = 0, $yaxisMax = 0, $numberTicks = 6)
+    {
+        $ticks = '';
+
+        if ($yaxisMin < 0 && $yaxisMax > 0) {
+            $diff = ($yaxisMin - $yaxisMax) / $numberTicks;
+            $ymin = $yaxisMin;
+            $min = $max = 0;
+
+            for ($i = 0; $i <= $numberTicks; $i++) {
+                $ymin <= 0 ? $min++ : $max++;
+                $ymin-= $diff;
+            }
+
+            $ticks[0] = 0;
+
+            for ($i = 1; $i <= $min; $i++) {
+                $value = ceil($diff * $i);
+
+                if (min($data) <= end($ticks)) {
+                    $ticks[$value] = $value;
+                }
+            }
+
+            for ($i = 1; $i <= $max; $i++) {
+                $value = abs(ceil($diff * $i));
+
+                if (max($data) >= end($ticks)) {
+                    $ticks[$value] = $value;
+                }
+            }
+
+            sort($ticks);
+        }
+
+        return $ticks;
+    }
 }

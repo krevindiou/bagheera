@@ -27,7 +27,7 @@ use Doctrine\ORM\Mapping as ORM,
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\AccountRepository")
  * @ORM\Table(
  *  name="account",
  *  indexes={@ORM\Index(name="external_account_id_idx", columns={"external_account_id"})}

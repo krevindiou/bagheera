@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Repository;
 
 use Doctrine\ORM\EntityRepository,
     Krevindiou\BagheeraBundle\Entity\Account,
+    Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
 /**
@@ -110,5 +111,65 @@ class OperationRepository extends EntityRepository
         } catch (\Doctrine\ORM\NoResultException $e) {
             return null;
         }
+    }
+
+    /**
+     * Gets last 12 months operations sum by month
+     *
+     * @param  User $user User entity
+     * @return array
+     */
+    public function getLast12MonthsSumByMonth(User $user)
+    {
+        $sql = 'SELECT DATE_FORMAT(o.value_date, "%Y-%m") AS month, (SUM(o.credit) - SUM(o.debit)) AS total ';
+        $sql.= 'FROM account a ';
+        $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
+        $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
+        $sql.= 'WHERE b.user_id = :user ';
+        $sql.= 'AND a.is_deleted = 0 ';
+        $sql.= 'AND b.is_deleted = 0 ';
+        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") > LAST_DAY(DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)) ';
+        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= LAST_DAY(CURRENT_DATE()) ';
+        $sql.= 'GROUP BY month ORDER BY month ';
+
+        $stmt = $this->_em->getConnection()->prepare($sql);
+        $stmt->bindValue('user', $user->getUserId());
+        $stmt->execute();
+
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $data = array();
+
+        if (!empty($results)) {
+            foreach ($results as $result) {
+                $data[$result['month']] = $result['total'];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Gets transactions sum before the last 12 months
+     *
+     * @param  User $user User entity
+     * @return int
+     */
+    public function getSumBeforeLast12Months(User $user)
+    {
+        $sql = 'SELECT (SUM(o.credit) - SUM(o.debit)) AS total ';
+        $sql.= 'FROM account a ';
+        $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
+        $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
+        $sql.= 'WHERE b.user_id = :user ';
+        $sql.= 'AND a.is_deleted = 0 ';
+        $sql.= 'AND b.is_deleted = 0 ';
+        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= LAST_DAY(DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)) ';
+
+        $stmt = $this->_em->getConnection()->prepare($sql);
+        $stmt->bindValue('user', $user->getUserId());
+        $stmt->execute();
+
+        return $stmt->fetchColumn();
     }
 }

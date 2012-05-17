@@ -1,0 +1,59 @@
+{% if graph %}
+$(document).ready(function(){
+    $.jqplot(
+        'synthesis',
+        [
+            [
+                {%- for month, total in graph -%}
+                    ['{{ month }}', '{{ total }}']{%- if loop.last != 1 -%},{%- endif -%}
+                {%- endfor -%}
+            ]
+        ],
+        {
+            seriesDefaults: {
+                fillToZero: true,
+                color: '#84b1ca'
+            },
+            highlighter: {
+                show: true,
+                showMarker: false,
+                tooltipAxes: 'y',
+                tooltipLocation: 'n',
+                tooltipOffset: 0
+            },
+            axes: {
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                    tickOptions: {
+                        angle: -30
+                    },
+                    ticks: [
+                    {% for month, total in graph %}
+                        ['{{ month }}', '{{ month|date("Y-m") }}']
+                        {% if loop.last != 1 %},{% endif %}
+                    {% endfor %}
+                    ],
+                    tickInterval: '1 month'
+                },
+                yaxis:  {
+                    tickOptions: {
+                        formatString: '%.2f'
+                    },
+                    min: {{ yaxisMin }},
+                    max: {{ yaxisMax }},
+                    {% if ticks|length > 0 %}
+                    ticks: [
+                    {% for tick in ticks %}
+                        {{ tick }}{% if loop.last != 1 %},{% endif %}
+
+                    {% endfor %}
+                    ],
+                    {% endif %}
+                    numberTicks: {{ numberTicks }}
+                }
+            }
+        }
+    );
+});
+{% endif %}
