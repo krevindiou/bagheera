@@ -53,7 +53,7 @@ var Bagheera = {
 
             $("#krevindiou_bagheerabundle_banktype_provider_id").change(function() {
                 if ($(this).val() != '') {
-                    $("#krevindiou_bagheerabundle_banktype_name").val($(this).find(":checked").text()).focus();
+                    $("#krevindiou_bagheerabundle_banktype_name").val($(this).find(":selected").text()).focus();
                 } else {
                     $("#krevindiou_bagheerabundle_banktype_name").val("").focus();
                 }
