@@ -21,6 +21,8 @@
     background-image: -ms-linear-gradient(top, @startColor, @endColor);
     background-image: -o-linear-gradient(top, @startColor, @endColor);
     background-image: linear-gradient(top, @startColor, @endColor);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=@startColor, endColorstr=@endColor);
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=@{startColor}, endColorstr=@{endColor})";
 }
 
 .background_gradient_image(@image, @startColor: #000, @endColor: #fff, @repeat: no-repeat, @position: 4px 4px) {
@@ -31,6 +33,8 @@
     background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -ms-linear-gradient(top, @startColor, @endColor);
     background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, -o-linear-gradient(top, @startColor, @endColor);
     background: url("/bundles/krevindioubagheera/images/@{image}") @repeat @position, linear-gradient(top, @startColor, @endColor);
+    filter: none;
+    -ms-filter: none;
 }
 
 .link_button() {
