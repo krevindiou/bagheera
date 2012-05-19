@@ -59,6 +59,11 @@ class AccountService
     protected $_validator;
 
     /**
+     * @var string
+     */
+    protected $_environment;
+
+    /**
      * @var ProviderServiceFactory
      */
     protected $_providerFactory;
@@ -74,6 +79,7 @@ class AccountService
         EntityManager $em,
         FormFactory $formFactory,
         Validator $validator,
+        $environment,
         Provider\ProviderServiceFactory $providerFactory,
         AccountImportService $accountImportService)
     {
@@ -81,6 +87,7 @@ class AccountService
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
+        $this->_environment = $environment;
         $this->_providerFactory = $providerFactory;
         $this->_accountImportService = $accountImportService;
     }
@@ -321,8 +328,9 @@ class AccountService
 
             $process = new Process(
                 sprintf(
-                    '%s app/console bagheera:import_external_transactions %d',
+                    '%s app/console --env=%s bagheera:import_external_transactions %d',
                     $phpBin,
+                    $this->_environment,
                     $account->getAccountId()
                 ),
                 realpath(__DIR__ . '/../../../..')

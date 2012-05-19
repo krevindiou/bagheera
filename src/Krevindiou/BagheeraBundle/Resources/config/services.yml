@@ -40,6 +40,7 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
             - @validator
+            - %kernel.environment%
             - @bagheera.provider_factory
             - @bagheera.account_import
         tags:
