@@ -65,12 +65,19 @@ $(document).ready(function(){
             },
             series: [
                 {
+                    label: "{{ 'operation_type_credit'|trans }}",
                     color: "#4bb2c5"
                 },
                 {
+                    label: "{{ 'operation_type_debit'|trans }}",
                     color: "#eaa228"
                 }
-            ]
+            ],
+            legend: {
+                show: true,
+                location: "nw",
+                placement: "insideGrid"
+            }
         }
     );
     {% endfor %}
