@@ -50,7 +50,7 @@ class OperationController extends Controller
             'account' => $account,
             'operations' => $operations,
             'displaySearch' => (null !== $operationSearch),
-            'tipNewOperation' => (count($operations) == 0)
+            'tipNewOperation' => (null === $operationSearch && count($operations) == 0)
         );
     }
 
