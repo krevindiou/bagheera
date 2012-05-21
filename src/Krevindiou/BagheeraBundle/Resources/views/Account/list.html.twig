@@ -82,63 +82,65 @@
 
     {% if progress|length > 0 %}
     <script type="text/javascript">
-    (function importDataAccount() {
-        var nextUpload = true;
+    head.ready(function() {
+        (function importDataAccount() {
+            var nextUpload = true;
 
-        $.ajax({
-            url: "import-progress",
-            dataType: "json",
-            success: function(data) {
-                nextUpload = false;
+            $.ajax({
+                url: "import-progress",
+                dataType: "json",
+                success: function(data) {
+                    nextUpload = false;
 
-                for (var accountId in data) {
-                    nextUpload = true;
+                    for (var accountId in data) {
+                        nextUpload = true;
 
-                    var total = data[accountId];
+                        var total = data[accountId];
 
-                    $("#progress-import-account-" + accountId).progressbar();
+                        $("#progress-import-account-" + accountId).progressbar();
 
-                    $("#progress-import-account-" + accountId + " .ui-progressbar-value")
-                        .show()
-                        .animate(
-                            {
-                                width: parseInt(total / 100 * 60)
-                            },
-                            {
-                                duration: "slow",
-                                step: function(now, fx) {
-                                    if (60 == now) {
-                                        $(this).html("100%").css("background-image", "none");
-                                    }
-                                }
-                            }
-                        );
-                }
-            },
-            complete: function() {
-                if (nextUpload) {
-                    setTimeout(importDataAccount, 2000);
-                } else {
-                    $(".progress-import-account").each(function() {
-                        $(this).find(".ui-progressbar-value")
+                        $("#progress-import-account-" + accountId + " .ui-progressbar-value")
                             .show()
                             .animate(
                                 {
-                                    width: 60
+                                    width: parseInt(total / 100 * 60)
                                 },
                                 {
                                     duration: "slow",
-                                    complete: function(now, fx) {
-                                        $(this).html("100%").css("background-image", "none");
-                                        window.location.reload();
+                                    step: function(now, fx) {
+                                        if (60 == now) {
+                                            $(this).html("100%").css("background-image", "none");
+                                        }
                                     }
                                 }
                             );
-                    });
+                    }
+                },
+                complete: function() {
+                    if (nextUpload) {
+                        setTimeout(importDataAccount, 2000);
+                    } else {
+                        $(".progress-import-account").each(function() {
+                            $(this).find(".ui-progressbar-value")
+                                .show()
+                                .animate(
+                                    {
+                                        width: 60
+                                    },
+                                    {
+                                        duration: "slow",
+                                        complete: function(now, fx) {
+                                            $(this).html("100%").css("background-image", "none");
+                                            window.location.reload();
+                                        }
+                                    }
+                                );
+                        });
+                    }
                 }
-            }
-        });
-    })();
+            });
+        })();
+    });
     </script>
     {% endif %}
 
