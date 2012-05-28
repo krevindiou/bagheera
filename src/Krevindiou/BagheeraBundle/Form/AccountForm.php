@@ -49,6 +49,8 @@ class AccountForm extends AbstractType
     {
         $user = $this->_user;
 
+        $edit = (null !== $options['data']->getAccountId());
+
         $builder
             ->add(
                 'bank',
@@ -62,7 +64,8 @@ class AccountForm extends AbstractType
                             ->where('b.user = :user')
                             ->setParameter('user', $user)
                             ->add('orderBy', 'b.name ASC');
-                    }
+                    },
+                    'read_only' => $edit
                 )
             )
             ->add(
@@ -77,7 +80,8 @@ class AccountForm extends AbstractType
                 'currency',
                 new CurrencyType(),
                 array(
-                    'label' => 'account_currency'
+                    'label' => 'account_currency',
+                    'read_only' => $edit
                 )
             )
             ->add(
@@ -101,7 +105,8 @@ class AccountForm extends AbstractType
                 'money',
                 array(
                     'label' => 'account_initial_balance',
-                    'currency' => false
+                    'currency' => false,
+                    'read_only' => $edit
                 )
             )
             ->add(

@@ -31,6 +31,8 @@ class BankForm extends AbstractType
 {
     public function buildForm(FormBuilder $builder, array $options)
     {
+        $edit = (null !== $options['data']->getBankId());
+
         $builder
             ->add(
                 'provider_id',
@@ -38,10 +40,11 @@ class BankForm extends AbstractType
                 array(
                     'label' => 'bank_provider',
                     'choices' => array(
-                        1 => 'AXA Banque'
+                        1 => 'AXA Banque'
                     ),
                     'empty_value' => 'bank_provider_other',
-                    'empty_data' => null
+                    'empty_data' => null,
+                    'read_only' => $edit
                 )
             )
             ->add(
