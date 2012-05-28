@@ -29,12 +29,8 @@ use Doctrine\ORM\Mapping as ORM,
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  * @ORM\Entity
- * @ORM\Table(
- *  name="bank",
- *  uniqueConstraints={@ORM\UniqueConstraint(name="external_user_id_idx", columns={"provider_id", "external_user_id"})}
- * )
+ * @ORM\Table(name="bank")
  * @ORM\HasLifecycleCallbacks()
- * @DoctrineAssert\UniqueEntity({"providerId", "externalUserId"})
  */
 class Bank
 {
