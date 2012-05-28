@@ -73,7 +73,7 @@ ewz_recaptcha:
 parameters:
     email:
         sender_name: Bagheera
-        sender_email: bagheera@example.net
+        sender_email: %sender_email%
     providers:
         axa_banque:
             base_uri: %provider_axa_banque_base_uri%

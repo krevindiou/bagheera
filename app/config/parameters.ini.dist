@@ -18,6 +18,8 @@
     ewz_recaptcha_public_key=""
     ewz_recaptcha_private_key=""
 
+    sender_email=""
+
     provider_axa_banque_base_uri=""
     provider_axa_banque_client_id=""
     provider_axa_banque_access_token=""
