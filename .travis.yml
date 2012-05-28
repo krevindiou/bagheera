@@ -10,6 +10,7 @@ before_script:
   - sh -c "cd APC-3.1.10 && phpize && ./configure && make && sudo make install" > /dev/null 2>&1
   - echo -e "extension=apc.so\napc.enabled=1\napc.enable_cli=1\napc.max_file_size=1" >> `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
   - cp app/config/parameters.ini.dist app/config/parameters.ini
+  - sed -i 's/sender_email=""/sender_email="contact@example.net"/g' app/config/parameters.ini
   - php bin/vendors install
   - php app/console assets:install --symlink web/
 
