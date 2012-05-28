@@ -68,6 +68,7 @@ class AccountServiceTest extends TestCase
         $account = new Account();
         $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
         $account->setName('Checking account #1');
+        $account->setCurrency('USD');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
@@ -76,6 +77,7 @@ class AccountServiceTest extends TestCase
         $account = new Account();
         $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 1));
         $account->setName('Checking account #1');
+        $account->setCurrency('USD');
         $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
     }
 
@@ -83,6 +85,7 @@ class AccountServiceTest extends TestCase
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
         $account->setName('');
+        $account->setCurrency('USD');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 

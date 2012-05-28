@@ -465,22 +465,31 @@ class UserService
     }
 
     /**
-     * Gets user balance
+     * Gets user balances
      *
      * @param  User $user User entity
-     * @return float
+     * @return array
      */
-    public function getBalance(User $user)
+    public function getBalances(User $user)
     {
-        $balance = 0;
+        $balances = array();
+
         $banks = $user->getBanks();
         foreach ($banks as $bank) {
             if (!$bank->isDeleted()) {
-                $balance+= $this->_bankService->getBalance($user, $bank);
+                $bankBalances = $this->_bankService->getBalances($user, $bank);
+
+                foreach ($bankBalances as $currency => $bankBalance) {
+                    if (isset($balances[$currency])) {
+                        $balances[$currency]+= $bankBalance;
+                    } else {
+                        $balances[$currency] = $bankBalance;
+                    }
+                }
             }
         }
 
-        return sprintf('%.2f', $balance);
+        return $balances;
     }
 
     /**

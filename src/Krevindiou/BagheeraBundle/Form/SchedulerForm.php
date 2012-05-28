@@ -87,7 +87,7 @@ class SchedulerForm extends AbstractType
                 'money',
                 array(
                     'label' => 'scheduler_amount',
-                    'currency' => false,
+                    'currency' => $options['data']->getAccount()->getCurrency(),
                     'property_path' => false
                 )
             )

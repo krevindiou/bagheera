@@ -29,9 +29,9 @@ class TwigExtension extends \Twig_Extension
         );
     }
 
-    public function moneyFilter($string)
+    public function moneyFilter($string, $currency = '')
     {
-        return sprintf('%.2f', $string);
+        return sprintf('%.2f %s', $string, $currency);
     }
 
     public function getName()

@@ -9,20 +9,14 @@
     <a href="{{ path('account_new') }}" class="new{{ tipNewAccount ? ' tip' : '' }}"{% if tipNewAccount %} title="{{ "tip_new_account"|trans }}"{% endif %}>{{ 'account_new_link'|trans }}</a>
     <br/><br/>
 
-    {% set totalBalance = 0 %}
-
     <form method="post" action="" id="form_account">
-        <ul>
+        <ul class="banks">
             {% for bank in banks %}
             <li>
                 <table>
                     <tr>
                         <th class="checkbox"><input type="checkbox" name="banksId[]" value="{{ bank.bankId }}"/></th>
-                        <th class="bank_name">{{ bank.name }}</th>
-
-                        {% set balance = bankService.getBalance(app.user, bank) %}
-                        {% set totalBalance = totalBalance + balance %}
-                        <th class="balance {{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|abs|money }}</th>
+                        <th class="bank_name" colspan="2">{{ bank.name }}</th>
                         <th class="actions">
                             <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}" title="{{ 'bank_edit_link'|trans }}"/></a>
                             {% if bank.providerId is not null and progress|length == 0 %}
@@ -45,7 +39,7 @@
                         <td class="account_name"><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
 
                         {% set balance = accountService.getBalance(app.user, account) %}
-                        <td class="balance {{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|abs|money }}</td>
+                        <td class="balance {{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|abs|money(account.currency) }}</td>
                         <td class="actions">
                             <a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'account_edit_link'|trans }}" title="{{ 'account_edit_link'|trans }}"/></a>
                             <div class="progress-import-account" id="progress-import-account-{{ account.accountId }}"></div>
@@ -63,7 +57,13 @@
             {#<input type="submit" name="share" value="{{ 'account_share_button'|trans }}"/>#}
         </div>
 
-        <p id="total_balance">{{ 'total_balance'|trans }} : <strong class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|abs|money }}</strong></p>
+        <div id="total_balances">{{ 'total_balance'|trans }} :
+            <ul>
+                {% for currency, totalBalance in totalBalances %}
+                <li><strong class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|abs|money(currency) }}</strong></li>
+                {% endfor %}
+            </ul>
+        </div>
     </form>
 
     <figure id="synthesis">

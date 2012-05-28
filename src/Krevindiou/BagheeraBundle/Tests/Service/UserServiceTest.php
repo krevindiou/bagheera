@@ -174,12 +174,12 @@ class UserServiceTest extends TestCase
         $this->assertEquals(count($users), 2);
     }
 
-    public function testGetBalance()
+    public function testGetBalances()
     {
         $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
 
-        $balance = $this->get('bagheera.user')->getBalance($user);
+        $balances = $this->get('bagheera.user')->getBalances($user);
 
-        $this->assertEquals($balance, 210.92);
+        $this->assertEquals($balances['USD'], 210.92);
     }
 }

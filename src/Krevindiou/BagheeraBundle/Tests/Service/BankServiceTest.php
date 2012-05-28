@@ -109,21 +109,21 @@ class BankServiceTest extends TestCase
         $this->assertEquals(count($banks), $banksNb + 1);
     }
 
-    public function testGetBalanceNotOk()
+    public function testGetBalancesNotOk()
     {
         $hsbc = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
 
-        $balance = $this->get('bagheera.bank')->getBalance($this->jane, $hsbc);
+        $balances = $this->get('bagheera.bank')->getBalances($this->jane, $hsbc);
 
-        $this->assertEquals($balance, 0);
+        $this->assertEquals(count($balances), 0);
     }
 
-    public function testGetBalanceOk()
+    public function testGetBalancesOk()
     {
         $hsbc = $this->_em->find('KrevindiouBagheeraBundle:Bank', 1);
 
-        $balance = $this->get('bagheera.bank')->getBalance($this->john, $hsbc);
+        $balances = $this->get('bagheera.bank')->getBalances($this->john, $hsbc);
 
-        $this->assertEquals($balance, 205.46);
+        $this->assertEquals(sprintf('%.2f', $balances['USD']), 205.46);
     }
 }

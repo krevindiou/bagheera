@@ -53,9 +53,8 @@ class AccountController extends Controller
 
         return array(
             'banks' => $banks,
-            'userService' => $this->get('bagheera.user'),
-            'bankService' => $this->get('bagheera.bank'),
             'accountService' => $this->get('bagheera.account'),
+            'totalBalances' => $this->get('bagheera.user')->getBalances($user),
             'progress' => $progress,
             'reports' => $reports,
             'tipNewBank' => (count($banks) == 0),

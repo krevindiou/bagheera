@@ -87,7 +87,7 @@ class OperationForm extends AbstractType
                 'money',
                 array(
                     'label' => 'operation_amount',
-                    'currency' => false,
+                    'currency' => $options['data']->getAccount()->getCurrency(),
                     'property_path' => false
                 )
             )

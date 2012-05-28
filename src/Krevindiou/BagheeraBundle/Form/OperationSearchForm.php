@@ -97,7 +97,7 @@ class OperationSearchForm extends AbstractType
                 'money',
                 array(
                     'label' => 'operation_amount',
-                    'currency' => false,
+                    'currency' => $options['data']->getAccount()->getCurrency(),
                     'property_path' => false,
                     'required' => false
                 )
@@ -122,7 +122,7 @@ class OperationSearchForm extends AbstractType
                 'amount_2',
                 'money',
                 array(
-                    'currency' => false,
+                    'currency' => $options['data']->getAccount()->getCurrency(),
                     'property_path' => false,
                     'required' => false
                 )

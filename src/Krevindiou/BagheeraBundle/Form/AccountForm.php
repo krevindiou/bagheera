@@ -21,6 +21,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
 use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Form\Type\CurrencyType;
 
 /**
  * Account form
@@ -70,6 +71,13 @@ class AccountForm extends AbstractType
                 array(
                     'label' => 'account_name',
                     'attr' => array('size' => 40)
+                )
+            )
+            ->add(
+                'currency',
+                new CurrencyType(),
+                array(
+                    'label' => 'account_currency'
                 )
             )
             ->add(

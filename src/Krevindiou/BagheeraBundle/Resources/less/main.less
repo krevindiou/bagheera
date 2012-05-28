@@ -387,50 +387,52 @@ input[type=submit].reconcile {
 
 #form_account {
     width: 430px !important;
-    li {
-        margin-top: 5px;
-        margin-bottom: 10px;
-        background-color: #e2e2e2;
-        .border_radius(7px);
-        padding: 15px;
-        table {
-            width: 100%;
-            th {
-                text-align: left;
+    ul.banks {
+        li {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            background-color: #e2e2e2;
+            .border_radius(7px);
+            padding: 15px;
+            table {
+                width: 100%;
+                th {
+                    text-align: left;
+                }
+                th.bank_name {
+                    font-size: 15px;
+                    font-weight: bold;
+                }
+                td.checkbox, th.checkbox {
+                    width: 25px;
+                    text-align: center;
+                }
+                td.account_name {
+                    padding-left: 20px;
+                }
+                td.balance, th.balance {
+                    text-align: right;
+                    font-weight: bold;
+                }
+                td.actions, th.actions {
+                    width: 85px;
+                    vertical-align: middle;
+                    padding-left: 10px;
+                }
             }
-            th.bank_name {
-                font-size: 15px;
-                font-weight: bold;
+
+            .ui-progressbar {
+                display: inline-block;
+                height: 10px;
+                width: 60px;
             }
-            td.checkbox, th.checkbox {
-                width: 25px;
+
+            .ui-progressbar-value {
+                background: url("/bundles/krevindioubagheera/css/smoothness/images/pbar-ani.gif") 50% 50% repeat-x #f6a828;
+                font-size: 10px;
                 text-align: center;
+                color: #fff;
             }
-            td.account_name {
-                padding-left: 20px;
-            }
-            td.balance, th.balance {
-                text-align: right;
-                font-weight: bold;
-            }
-            td.actions, th.actions {
-                width: 85px;
-                vertical-align: middle;
-                padding-left: 10px;
-            }
-        }
-
-        .ui-progressbar {
-            display: inline-block;
-            height: 10px;
-            width: 60px;
-        }
-
-        .ui-progressbar-value {
-            background: url("/bundles/krevindioubagheera/css/smoothness/images/pbar-ani.gif") 50% 50% repeat-x #f6a828;
-            font-size: 10px;
-            text-align: center;
-            color: #fff;
         }
     }
 }
@@ -457,10 +459,15 @@ input[type=submit].reconcile {
     }
 }
 
-#total_balance {
+#total_balances {
     margin: 30px 0 0 16px;
     font-size: 16px;
     font-weight: bold;
+    ul {
+        float: right;
+        margin-right: 100px;
+        text-align: right;
+    }
 }
 
 #graphs, #synthesis {

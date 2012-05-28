@@ -79,6 +79,15 @@ class Account
     protected $name;
 
     /**
+     * @var string $currency
+     *
+     * @ORM\Column(name="currency", type="string", length=3, nullable=false)
+     * @Assert\NotBlank()
+     * @Assert\MaxLength(3)
+     */
+    protected $currency;
+
+    /**
      * @var float $initialBalance
      *
      * @ORM\Column(name="initial_balance", type="decimal", scale="2", nullable=false)
@@ -301,6 +310,26 @@ class Account
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Set currency
+     *
+     * @param string $currency
+     */
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
+    }
+
+    /**
+     * Get currency
+     *
+     * @return string
+     */
+    public function getCurrency()
+    {
+        return $this->currency;
     }
 
     /**
