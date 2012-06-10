@@ -117,17 +117,36 @@ class AccountService
     }
 
     /**
-     * Returns account form
+     * Returns account form for a new account
+     *
+     * @param  User $user       User entity
+     * @param  Bank $bank       Bank entity
+     * @return Form
+     */
+    public function getNewForm(User $user, Bank $bank)
+    {
+        if ($user !== $bank->getUser()) {
+            return;
+        }
+
+        $account = new Account();
+        $account->setBank($bank);
+
+        $form = $this->_formFactory->create(new AccountForm($user), $account);
+
+        return $form;
+    }
+
+    /**
+     * Returns account form for an existing account
      *
      * @param  User $user       User entity
      * @param  Account $account Account entity
      * @return Form
      */
-    public function getForm(User $user, Account $account = null)
+    public function getEditForm(User $user, Account $account)
     {
-        if (null === $account) {
-            $account = new Account();
-        } elseif ($user !== $account->getBank()->getUser()) {
+        if ($user !== $account->getBank()->getUser()) {
             return;
         }
 

@@ -24,6 +24,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
+    Krevindiou\BagheeraBundle\Entity\Bank,
     Krevindiou\BagheeraBundle\Entity\Account;
 
 class AccountController extends Controller
@@ -109,15 +110,15 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/edit-account-{accountId}", requirements={"accountId" = "\d+"}, name="account_edit")
-     * @Route("/new-account", defaults={"accountId" = null}, name="account_new")
+     * @Route("/new-account-bank-{bankId}", requirements={"bankId" = "\d+"}, name="account_new")
      * @Template()
      */
-    public function formAction(Request $request, Account $account = null)
+    public function newFormAction(Request $request, Bank $bank)
     {
         $user = $this->get('security.context')->getToken()->getUser();
 
-        $accountForm = $this->get('bagheera.account')->getForm($user, $account);
+        $accountForm = $this->get('bagheera.account')->getNewForm($user, $bank);
+
         if (null === $accountForm) {
             throw $this->createNotFoundException();
         }
@@ -128,20 +129,50 @@ class AccountController extends Controller
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
                 $this->get('session')->setFlash('notice', 'account_form_confirmation');
 
-                $route = $request->attributes->get('_route');
-                if ('account_new' == $route) {
-                    return $this->redirect(
-                        $this->generateUrl('operation_list', array('accountId' => $accountForm->getData()->getAccountId()))
-                    );
-                } else {
-                    return $this->redirect($this->generateUrl('account_list'));
-                }
+                return $this->redirect(
+                    $this->generateUrl('operation_list', array('accountId' => $accountForm->getData()->getAccountId()))
+                );
             }
         }
 
-        return array(
-            'account' => $account,
-            'accountForm' => $accountForm->createView()
+        return $this->render(
+            'KrevindiouBagheeraBundle:Account:form.html.twig',
+            array(
+                'accountForm' => $accountForm->createView()
+            )
+        );
+    }
+
+    /**
+     * @Route("/edit-account-{accountId}", requirements={"accountId" = "\d+"}, name="account_edit")
+     * @Template()
+     */
+    public function editFormAction(Request $request, Account $account)
+    {
+        $user = $this->get('security.context')->getToken()->getUser();
+
+        $accountForm = $this->get('bagheera.account')->getEditForm($user, $account);
+
+        if (null === $accountForm) {
+            throw $this->createNotFoundException();
+        }
+
+        if ($request->getMethod() == 'POST') {
+            $accountForm->bindRequest($request);
+
+            if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
+                $this->get('session')->setFlash('notice', 'account_form_confirmation');
+
+                return $this->redirect($this->generateUrl('account_list'));
+            }
+        }
+
+        return $this->render(
+            'KrevindiouBagheeraBundle:Account:form.html.twig',
+            array(
+                'account' => $account,
+                'accountForm' => $accountForm->createView()
+            )
         );
     }
 

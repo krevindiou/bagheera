@@ -15,7 +15,7 @@
     {{ form_row(accountForm.bic) }}
 
     {% set detailsFileParams = {} %}
-    {% if account is not null and account.getAbsolutePath() is not null %}
+    {% if account is defined and account.getAbsolutePath() is not null %}
         {% set detailsFileParams = {'filePath': path('account_details', {'accountId': account.accountId})} %}
     {% endif %}
 
