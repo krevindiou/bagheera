@@ -20,8 +20,7 @@ namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
     Doctrine\Common\Collections\ArrayCollection,
-    Symfony\Component\Validator\Constraints as Assert,
-    Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+    Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\Bank
@@ -343,6 +342,11 @@ class Bank
     public function getAccounts()
     {
         return $this->accounts;
+    }
+
+    public function isManual()
+    {
+        return null === $this->getProviderId();
     }
 
     public function __toString()

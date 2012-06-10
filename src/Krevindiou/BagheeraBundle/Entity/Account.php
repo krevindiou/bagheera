@@ -572,6 +572,11 @@ class Account
         return $this->schedulers;
     }
 
+    public function isManual()
+    {
+        return $this->getBank()->isManual();
+    }
+
     public function __toString()
     {
         return $this->getName();
