@@ -6,9 +6,6 @@
 <a href="{{ path('bank_new') }}" class="new{{ tipNewBank ? ' tip' : '' }}"{% if tipNewBank %} title="{{ "tip_new_bank"|trans }}"{% endif %}>{{ 'bank_new_link'|trans }}</a>
 
 {% if banks|length > 0 %}
-    <a href="{{ path('account_new') }}" class="new{{ tipNewAccount ? ' tip' : '' }}"{% if tipNewAccount %} title="{{ "tip_new_account"|trans }}"{% endif %}>{{ 'account_new_link'|trans }}</a>
-    <br/><br/>
-
     <form method="post" action="" id="form_account">
         <ul class="banks">
             {% for bank in banks %}
@@ -19,6 +16,7 @@
                         <th class="bank_name" colspan="2">{{ bank.name }}</th>
                         <th class="actions">
                             <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}" title="{{ 'bank_edit_link'|trans }}"/></a>
+                            <a href="{{ path('account_new', {'bankId': bank.bankId}) }}" class="{{ tipNewAccount ? 'tip' : '' }}"{% if tipNewAccount %} title="{{ 'tip_new_account'|trans }}"{% endif %}><img src="{{ asset('/bundles/krevindioubagheera/images/plus_mini.png') }}" alt="{{ 'account_new_link'|trans }}" title="{{ 'account_new_link'|trans }}"/></a>
                             {% if bank.isManual() == false and progress|length == 0 %}
                                 <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import">
                                     <img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ bank.getAccounts()|length == 0 ? ' class="tip"' : '' }}title="{{ bank.getAccounts()|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/>
