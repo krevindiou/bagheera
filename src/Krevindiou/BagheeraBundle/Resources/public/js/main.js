@@ -29,8 +29,8 @@ var Bagheera = {
                 $(".list_actions input").toggle($("table.data .selected").length > 0);
             });
 
-            $("#form_account_list input[type=checkbox]").change(function() {
-                $(".list_actions input").toggle($("#form_account_list :checked").length > 0);
+            $("#form_account input[type=checkbox]").change(function() {
+                $(".list_actions input").toggle($("#form_account :checked").length > 0);
             });
 
             $("input.calendar").on("click", function() {
