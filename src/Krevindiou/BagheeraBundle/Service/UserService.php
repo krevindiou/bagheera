@@ -541,7 +541,7 @@ class UserService
 
         if (count($banks) > 0) {
             foreach ($banks as $bank) {
-                if (null === $bank->getProviderId()) {
+                if (null === $bank->getProvider()) {
                     return true;
                 }
             }

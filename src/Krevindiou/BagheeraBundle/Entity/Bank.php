@@ -60,11 +60,13 @@ class Bank
     protected $externalUserId;
 
     /**
-     * @var integer $providerId
+     * @var Krevindiou\BagheeraBundle\Entity\Provider $provider
      *
-     * @ORM\Column(name="provider_id", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="Provider")
+     * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id", nullable=true)
+     * @Assert\Valid()
      */
-    protected $providerId;
+    protected $provider;
 
     /**
      * @var string $name
@@ -195,23 +197,23 @@ class Bank
     }
 
     /**
-     * Set providerId
+     * Set provider
      *
-     * @param integer $providerId
+     * @param Krevindiou\BagheeraBundle\Entity\Provider $provider
      */
-    public function setProviderId($providerId)
+    public function setProvider(Provider $provider)
     {
-        $this->providerId = $providerId;
+        $this->provider = $provider;
     }
 
     /**
-     * Get providerId
+     * Get provider
      *
-     * @return integer
+     * @return Provider
      */
-    public function getProviderId()
+    public function getProvider()
     {
-        return $this->providerId;
+        return $this->provider;
     }
 
     /**
@@ -346,7 +348,7 @@ class Bank
 
     public function isManual()
     {
-        return null === $this->getProviderId();
+        return null === $this->getProvider();
     }
 
     public function __toString()
