@@ -14,24 +14,18 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $bank = new Bank();
         $bank->setUser($this->getReference('user-john'));
         $bank->setName('HSBC');
-        $bank->setInfo('');
-        $bank->setContact('');
         $em->persist($bank);
         $this->addReference('bank-hsbc', $bank);
 
         $bank = new Bank();
         $bank->setUser($this->getReference('user-john'));
         $bank->setName('Bank of America');
-        $bank->setInfo('');
-        $bank->setContact('');
         $em->persist($bank);
         $this->addReference('bank-bank_of_america', $bank);
 
         $bank = new Bank();
         $bank->setUser($this->getReference('user-jane'));
         $bank->setName('BNP Paribas');
-        $bank->setInfo('');
-        $bank->setContact('');
         $em->persist($bank);
         $this->addReference('bank-bnp_paribas', $bank);
 

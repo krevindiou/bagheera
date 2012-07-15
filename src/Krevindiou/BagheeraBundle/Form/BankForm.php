@@ -52,22 +52,6 @@ class BankForm extends AbstractType
                     'attr' => array('size' => 40)
                 )
             )
-            ->add(
-                'info',
-                null,
-                array(
-                    'label' => 'bank_info',
-                    'attr' => array('cols' => 40, 'rows' => 5)
-                )
-            )
-            ->add(
-                'contact',
-                null,
-                array(
-                    'label' => 'bank_contact',
-                    'attr' => array('cols' => 40, 'rows' => 5)
-                )
-            )
         ;
     }
 

@@ -78,20 +78,6 @@ class Bank
     protected $name;
 
     /**
-     * @var string $info
-     *
-     * @ORM\Column(name="info", type="text", nullable=true)
-     */
-    protected $info;
-
-    /**
-     * @var string $contact
-     *
-     * @ORM\Column(name="contact", type="text", nullable=true)
-     */
-    protected $contact;
-
-    /**
      * @var boolean $isDeleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
@@ -234,46 +220,6 @@ class Bank
     public function getName()
     {
         return $this->name;
-    }
-
-    /**
-     * Set info
-     *
-     * @param string $info
-     */
-    public function setInfo($info)
-    {
-        $this->info = $info;
-    }
-
-    /**
-     * Get info
-     *
-     * @return string
-     */
-    public function getInfo()
-    {
-        return $this->info;
-    }
-
-    /**
-     * Set contact
-     *
-     * @param string $contact
-     */
-    public function setContact($contact)
-    {
-        $this->contact = $contact;
-    }
-
-    /**
-     * Get contact
-     *
-     * @return string
-     */
-    public function getContact()
-    {
-        return $this->contact;
     }
 
     /**
