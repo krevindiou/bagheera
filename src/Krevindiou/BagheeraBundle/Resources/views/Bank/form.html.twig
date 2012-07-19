@@ -13,3 +13,14 @@
     </div>
 </form>
 {% endblock %}
+
+{% form_theme bankForm _self %}
+
+{% block _krevindiou_bagheerabundle_banktype_provider_widget %}
+{% spaceless %}
+    {{ block('choice_widget') }}
+    {% if attr.bankId is not null %}
+        &nbsp;<a href="{{ path('bank_access_edit', {bankId: attr.bankId}) }}">{{ 'bank_access_update_login_password'|trans }}</a>
+    {% endif %}
+{% endspaceless %}
+{% endblock %}

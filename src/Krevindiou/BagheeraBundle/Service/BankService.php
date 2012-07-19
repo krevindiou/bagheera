@@ -108,14 +108,8 @@ class BankService
     {
         if ($user === $bank->getUser()) {
             try {
-                $new = (null === $bank->getBankId());
-
                 $this->_em->persist($bank);
                 $this->_em->flush();
-
-                if ($new) {
-                    $this->_accountService->importExternalAccounts($bank);
-                }
 
                 return true;
             } catch (\Exception $e) {

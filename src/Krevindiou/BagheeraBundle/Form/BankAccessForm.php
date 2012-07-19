@@ -22,37 +22,30 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilder;
 
 /**
- * Bank form
+ * Bank access form
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-class BankForm extends AbstractType
+class BankAccessForm extends AbstractType
 {
     public function buildForm(FormBuilder $builder, array $options)
     {
-        $edit = (null !== $options['data']->getBankId());
-
         $builder
             ->add(
-                'provider',
+                'plainLogin',
                 null,
                 array(
-                    'label' => 'bank_provider',
-                    'empty_value' => 'bank_provider_other',
-                    'empty_data' => null,
-                    'read_only' => $edit,
-                    'attr' => array(
-                        'bankId' => $options['data']->getBankId()
-                    )
+                    'label' => 'bank_access_login',
+                    'attr' => array('size' => 20)
                 )
             )
             ->add(
-                'name',
+                'plainPassword',
                 null,
                 array(
-                    'label' => 'bank_name',
-                    'attr' => array('size' => 40)
+                    'label' => 'bank_access_password',
+                    'attr' => array('size' => 20)
                 )
             )
         ;
@@ -60,13 +53,13 @@ class BankForm extends AbstractType
 
     public function getDefaultOptions(array $options)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Bank';
+        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\BankAccess';
 
         return $options;
     }
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_banktype';
+        return 'krevindiou_bagheerabundle_bankaccesstype';
     }
 }

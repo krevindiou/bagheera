@@ -1,0 +1,13 @@
+{% extends '::base.html.twig' %}
+
+{% block pageTitle 'bank_access_form_page_title'|trans %}
+
+{% block content %}
+<form action="" novalidate="novalidate" method="post" {{ form_enctype(bankAccessForm) }}>
+    {{ form_widget(bankAccessForm) }}
+
+    <div class="form_button">
+        <input type="submit" value="{{ 'bank_access_form_submit_button'|trans }}"/>
+    </div>
+</form>
+{% endblock %}

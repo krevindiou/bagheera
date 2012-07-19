@@ -33,6 +33,19 @@ services:
         tags:
             - { name: monolog.logger, channel: bank }
 
+    bagheera.bank_access:
+        class: Krevindiou\BagheeraBundle\Service\BankAccessService
+        arguments:
+            - %secret%
+            - @logger
+            - @doctrine.orm.entity_manager
+            - @doctrine.orm.secure_entity_manager
+            - @form.factory
+            - @validator
+            - @bagheera.account
+        tags:
+            - { name: monolog.logger, channel: bank_access }
+
     bagheera.account:
         class: Krevindiou\BagheeraBundle\Service\AccountService
         arguments:
