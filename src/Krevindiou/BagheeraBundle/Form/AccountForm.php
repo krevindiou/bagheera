@@ -117,13 +117,6 @@ class AccountForm extends AbstractType
                     'currency' => false
                 )
             )
-            ->add(
-                'detailsFile',
-                null,
-                array(
-                    'label' => 'account_details',
-                )
-            )
         ;
     }
 

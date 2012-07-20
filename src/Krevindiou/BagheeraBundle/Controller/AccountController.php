@@ -177,24 +177,6 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/account-details-{accountId}", requirements={"accountId" = "\d+"}, name="account_details")
-     */
-    public function detailsAction(Account $account)
-    {
-        $filename = $account->getAbsolutePath();
-        if (null !== $filename && file_exists($filename)) {
-            $response = new Response(file_get_contents($filename));
-            $response->headers->set('Content-Type', mime_content_type($filename));
-            $response->headers->set('Content-Disposition', 'attachment; filename=' . $account->getDetails());
-            $response->headers->set('Content-Length', filesize($filename));
-
-            return $response;
-        }
-
-        throw $this->createNotFoundException();
-    }
-
-    /**
      * @Route("/import-progress", name="account_import_progress")
      */
     public function importProgressAction()

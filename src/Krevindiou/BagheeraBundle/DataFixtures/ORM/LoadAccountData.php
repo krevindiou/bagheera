@@ -17,7 +17,6 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setCurrency('USD');
         $account->setInitialBalance(123.56);
         $account->setOverdraftFacility(0);
-        $account->setDetails('');
         $em->persist($account);
         $this->addReference('account-checking_account_1', $account);
 
@@ -27,7 +26,6 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setCurrency('USD');
         $account->setInitialBalance(99);
         $account->setOverdraftFacility(0);
-        $account->setDetails('');
         $em->persist($account);
         $this->addReference('account-home_savings_account', $account);
 
@@ -37,7 +35,6 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setCurrency('USD');
         $account->setInitialBalance(0);
         $account->setOverdraftFacility(0);
-        $account->setDetails('');
         $em->persist($account);
         $this->addReference('account-checking_account_2', $account);
 
@@ -47,7 +44,6 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setCurrency('USD');
         $account->setInitialBalance(0);
         $account->setOverdraftFacility(0);
-        $account->setDetails('');
         $em->persist($account);
         $this->addReference('account-securities_account', $account);
 

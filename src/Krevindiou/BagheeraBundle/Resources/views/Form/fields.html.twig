@@ -8,13 +8,7 @@
         </div>
         <div class="form_field">
             {{ form_errors(form) }}
-
-            {% set widgetParams = {} %}
-            {% if filePath is defined %}
-                {% set widgetParams = {'filePath': filePath} %}
-            {% endif %}
-
-            {{ form_widget(form, widgetParams) }}
+            {{ form_widget(form) }}
         </div>
     </div>
 {% endspaceless %}

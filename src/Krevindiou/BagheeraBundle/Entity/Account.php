@@ -102,30 +102,6 @@ class Account
     protected $overdraftFacility = 0;
 
     /**
-     * @var string $details
-     *
-     * @ORM\Column(name="details", type="string", length=64, nullable=true)
-     * @Assert\MaxLength(64)
-     */
-    protected $details;
-
-    /**
-     * @Assert\File(
-     *     maxSize = "10M",
-     *     mimeTypes = {
-     *         "application/pdf",
-     *         "application/x-pdf",
-     *         "image/pjpeg",
-     *         "image/jpeg",
-     *         "image/gif",
-     *         "image/png",
-     *         "image/x-png"
-     *     }
-     * )
-     */
-    protected $detailsFile;
-
-    /**
      * @var string $iban
      *
      * @ORM\Column(name="iban", type="string", length=34, nullable=true)
@@ -224,42 +200,6 @@ class Account
         $this->setInitialBalance((float)$this->getInitialBalance());
         $this->setOverdraftFacility((float)$this->getOverdraftFacility());
         $this->setUpdatedAt(new \DateTime());
-    }
-
-    /**
-     * @ORM\PrePersist()
-     * @ORM\PreUpdate()
-     */
-    public function preUpload()
-    {
-        if (null !== $this->detailsFile) {
-            $this->details = uniqid() . '.' . $this->detailsFile->guessExtension();
-        }
-    }
-
-    /**
-     * @ORM\PostPersist()
-     * @ORM\PostUpdate()
-     */
-    public function upload()
-    {
-        if (null === $this->detailsFile) {
-            return;
-        }
-
-        $this->detailsFile->move($this->getUploadRootDir(), $this->details);
-
-        unset($this->detailsFile);
-    }
-
-    /**
-     * @ORM\PostRemove()
-     */
-    public function removeUpload()
-    {
-        if (($file = $this->getAbsolutePath()) && is_file($file)) {
-            unlink($file);
-        }
     }
 
     /**
@@ -370,46 +310,6 @@ class Account
     public function getOverdraftFacility()
     {
         return $this->overdraftFacility;
-    }
-
-    /**
-     * Set details
-     *
-     * @param string $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-    }
-
-    /**
-     * Get details
-     *
-     * @return string
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
-
-    /**
-     * Set detailsFile
-     *
-     * @param string $detailsFile
-     */
-    public function setDetailsFile($detailsFile)
-    {
-        $this->detailsFile = $detailsFile;
-    }
-
-    /**
-     * Get detailsFile
-     *
-     * @return string
-     */
-    public function getDetailsFile()
-    {
-        return $this->detailsFile;
     }
 
     /**
@@ -580,15 +480,5 @@ class Account
     public function __toString()
     {
         return $this->getName();
-    }
-
-    public function getAbsolutePath()
-    {
-        return '' == $this->details ? null : $this->getUploadRootDir() . '/' . $this->details;
-    }
-
-    protected function getUploadRootDir()
-    {
-        return __DIR__ . '/../Resources/upload/BankDetails';
     }
 }
