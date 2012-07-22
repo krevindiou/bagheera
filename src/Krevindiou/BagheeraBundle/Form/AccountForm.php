@@ -31,23 +31,9 @@ use Krevindiou\BagheeraBundle\Form\Type\CurrencyType;
  */
 class AccountForm extends AbstractType
 {
-    /**
-     * @var User
-     */
-    protected $_user;
-
-
-    /**
-     * @param User $user
-     */
-    public function __construct(User $user)
-    {
-        $this->_user = $user;
-    }
-
     public function buildForm(FormBuilder $builder, array $options)
     {
-        $user = $this->_user;
+        $user = $options['data']->getBank()->getUser();
 
         $edit = (null !== $options['data']->getAccountId());
 

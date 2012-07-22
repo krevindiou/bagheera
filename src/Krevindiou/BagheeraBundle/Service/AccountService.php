@@ -132,7 +132,7 @@ class AccountService
         $account = new Account();
         $account->setBank($bank);
 
-        $form = $this->_formFactory->create(new AccountForm($user), $account);
+        $form = $this->_formFactory->create(new AccountForm(), $account);
 
         return $form;
     }
@@ -150,7 +150,7 @@ class AccountService
             return;
         }
 
-        $form = $this->_formFactory->create(new AccountForm($user), $account);
+        $form = $this->_formFactory->create(new AccountForm(), $account);
 
         return $form;
     }
