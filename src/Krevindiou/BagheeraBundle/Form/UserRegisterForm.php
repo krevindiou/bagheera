@@ -33,6 +33,10 @@ class UserRegisterForm extends AbstractType
     {
         $builder
             ->add('email', 'email', array('label' => 'user_email'))
+            ->add('country', 'country', array(
+                'label' => 'user_country',
+                'preferred_choices' => array('FR')
+            ))
             ->add('plainPassword', 'repeated', array(
                 'type' => 'password',
                 'first_name' => 'user_password',

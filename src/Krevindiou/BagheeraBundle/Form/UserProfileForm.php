@@ -36,6 +36,7 @@ class UserProfileForm extends UserRegisterForm
 
         $builder->remove('plainPassword');
         $builder->remove('recaptcha');
+        $builder->remove('country');
     }
 
     public function getDefaultOptions(array $options)

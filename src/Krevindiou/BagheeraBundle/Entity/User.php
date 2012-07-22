@@ -82,6 +82,14 @@ class User implements AdvancedUserInterface
     protected $activation;
 
     /**
+     * @var string $country
+     *
+     * @ORM\Column(name="country", type="string", length=2, nullable=false)
+     * @Assert\NotBlank()
+     */
+    protected $country;
+
+    /**
      * @var boolean $isAdmin
      *
      * @ORM\Column(name="is_admin", type="boolean", nullable=false)
@@ -246,6 +254,26 @@ class User implements AdvancedUserInterface
     public function getActivation()
     {
         return $this->activation;
+    }
+
+    /**
+     * Set country
+     *
+     * @param string $country
+     */
+    public function setCountry($country)
+    {
+        $this->country = $country;
+    }
+
+    /**
+     * Get country
+     *
+     * @return string
+     */
+    public function getCountry()
+    {
+        return $this->country;
     }
 
     /**

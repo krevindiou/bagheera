@@ -50,6 +50,14 @@ class Provider
     protected $name;
 
     /**
+     * @var string $country
+     *
+     * @ORM\Column(name="country", type="string", length=2, nullable=false)
+     * @Assert\NotBlank()
+     */
+    protected $country;
+
+    /**
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
@@ -111,6 +119,26 @@ class Provider
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Set country
+     *
+     * @param string $country
+     */
+    public function setCountry($country)
+    {
+        $this->country = $country;
+    }
+
+    /**
+     * Get country
+     *
+     * @return string
+     */
+    public function getCountry()
+    {
+        return $this->country;
     }
 
     /**

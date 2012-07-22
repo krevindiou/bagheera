@@ -33,6 +33,8 @@ class BankForm extends AbstractType
     {
         $edit = (null !== $options['data']->getBankId());
 
+        $user = $options['data']->getUser();
+
         $builder
             ->add(
                 'provider',
@@ -41,6 +43,13 @@ class BankForm extends AbstractType
                     'label' => 'bank_provider',
                     'empty_value' => 'bank_provider_other',
                     'empty_data' => null,
+                    'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',
+                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                        return $repository->createQueryBuilder('p')
+                            ->where('p.country = :country')
+                            ->setParameter('country', $user->getCountry())
+                            ->add('orderBy', 'p.name ASC');
+                    },
                     'read_only' => $edit,
                     'attr' => array(
                         'bankId' => $options['data']->getBankId()
