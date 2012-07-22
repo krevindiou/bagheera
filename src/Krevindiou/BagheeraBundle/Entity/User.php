@@ -73,6 +73,14 @@ class User implements AdvancedUserInterface
     protected $plainPassword;
 
     /**
+     * @var string $salt
+     *
+     * @ORM\Column(name="salt", type="string", length=32, nullable=false)
+     * @Assert\NotBlank()
+     */
+    protected $salt;
+
+    /**
      * @var string $activation
      *
      * @ORM\Column(name="activation", type="string", length=32, nullable=true)
@@ -145,6 +153,7 @@ class User implements AdvancedUserInterface
 
     public function __construct()
     {
+        $this->salt = bin2hex(openssl_random_pseudo_bytes(16));
         $this->banks = new ArrayCollection();
         $this->reports = new ArrayCollection();
     }
@@ -389,7 +398,7 @@ class User implements AdvancedUserInterface
      */
     public function getSalt()
     {
-        return null;
+        return $this->salt;
     }
 
     /**
