@@ -26,8 +26,7 @@ use Doctrine\ORM\EntityManager,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
     Krevindiou\BagheeraBundle\Entity\BankAccess,
-    Krevindiou\BagheeraBundle\Form\BankAccessForm,
-    Krevindiou\BagheeraBundle\Service\AccountService;
+    Krevindiou\BagheeraBundle\Form\BankAccessForm;
 
 /**
  * Bank access service
@@ -68,9 +67,9 @@ class BankAccessService
     protected $_validator;
 
     /**
-     * @var AccountService
+     * @var BankService
      */
-    protected $_accountService;
+    protected $_bankService;
 
 
     public function __construct(
@@ -80,7 +79,7 @@ class BankAccessService
         EntityManager $emSecure,
         FormFactory $formFactory,
         Validator $validator,
-        AccountService $accountService)
+        BankService $bankService)
     {
         $this->_secret = $secret;
         $this->_logger = $logger;
@@ -88,7 +87,7 @@ class BankAccessService
         $this->_emSecure = $emSecure;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
-        $this->_accountService = $accountService;
+        $this->_bankService = $bankService;
     }
 
     /**
@@ -125,6 +124,7 @@ class BankAccessService
 
         if (null !== $bank && $user === $bank->getUser()) {
             try {
+                // Delete previous access data
                 $dql = 'DELETE FROM KrevindiouBagheeraBundle:BankAccess b ';
                 $dql.= 'WHERE b.bankId = :bankId ';
 
@@ -175,7 +175,7 @@ class BankAccessService
                     $this->_emSecure->persist($bankAccess);
                     $this->_emSecure->flush();
 
-                    $this->_accountService->importExternalAccounts($bank);
+                    $this->_bankService->importExternalBank($bank);
 
                     return true;
                 }

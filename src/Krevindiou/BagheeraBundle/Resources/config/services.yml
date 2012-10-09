@@ -30,6 +30,8 @@ services:
             - @form.factory
             - @validator
             - @bagheera.account
+            - %kernel.root_dir%
+            - %kernel.environment%
         tags:
             - { name: monolog.logger, channel: bank }
 
@@ -42,7 +44,7 @@ services:
             - @doctrine.orm.secure_entity_manager
             - @form.factory
             - @validator
-            - @bagheera.account
+            - @bagheera.bank
         tags:
             - { name: monolog.logger, channel: bank_access }
 
@@ -53,8 +55,7 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
             - @validator
-            - %kernel.environment%
-            - @bagheera.provider_factory
+            - @bagheera.provider_adapter
             - @bagheera.account_import
         tags:
             - { name: monolog.logger, channel: account }
@@ -106,20 +107,13 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
 
-    bagheera.provider_factory:
-        class: Krevindiou\BagheeraBundle\Service\Provider\ProviderServiceFactory
+    bagheera.provider_adapter:
+        class: Krevindiou\BagheeraBundle\Service\Provider\ProviderAdapter
         arguments:
+            - @doctrine.orm.entity_manager
+            - %secret%
+            - @bagheera.account_import
             - @service_container
-
-    bagheera.provider_axa_banque:
-        class: Krevindiou\BagheeraBundle\Service\Provider\AxaBanqueProviderService
-        arguments:
-            - %provider_axa_banque_base_uri%
-            - %provider_axa_banque_client_id%
-            - %provider_axa_banque_access_token%
-            - @logger
-        tags:
-            - { name: monolog.logger, channel: provider_axa_banque }
 
     bagheera.validator.field_exists:
         class: Krevindiou\BagheeraBundle\Constraint\FieldExistsValidator

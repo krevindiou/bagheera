@@ -81,6 +81,27 @@ class AccountImport
     protected $finished = false;
 
     /**
+     * @var string $originalData
+     *
+     * @ORM\Column(name="original_data", type="text", nullable=true)
+     */
+    protected $originalData;
+
+    /**
+     * @var string $jsonData
+     *
+     * @ORM\Column(name="json_data", type="text", nullable=true)
+     */
+    protected $jsonData;
+
+    /**
+     * @var string $jsonNormalizedData
+     *
+     * @ORM\Column(name="json_normalized_data", type="text", nullable=true)
+     */
+    protected $jsonNormalizedData;
+
+    /**
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
@@ -214,7 +235,67 @@ class AccountImport
         return $this->finished;
     }
 
-   /**
+    /**
+     * Set originalData
+     *
+     * @param string originalData
+     */
+    public function setOriginalData($originalData)
+    {
+        $this->originalData = $originalData;
+    }
+
+    /**
+     * Get originalData
+     *
+     * @return string
+     */
+    public function getOriginalData()
+    {
+        return $this->originalData;
+    }
+
+    /**
+     * Set jsonData
+     *
+     * @param string jsonData
+     */
+    public function setJsonData($jsonData)
+    {
+        $this->jsonData = $jsonData;
+    }
+
+    /**
+     * Get jsonData
+     *
+     * @return string
+     */
+    public function getJsonData()
+    {
+        return $this->jsonData;
+    }
+
+    /**
+     * Set jsonNormalizedData
+     *
+     * @param string jsonNormalizedData
+     */
+    public function setJsonNormalizedData($jsonNormalizedData)
+    {
+        $this->jsonNormalizedData = $jsonNormalizedData;
+    }
+
+    /**
+     * Get jsonNormalizedData
+     *
+     * @return string
+     */
+    public function getJsonNormalizedData()
+    {
+        return $this->jsonNormalizedData;
+    }
+
+    /**
      * Set createdAt
      *
      * @param DateTime $createdAt

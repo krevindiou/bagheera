@@ -66,7 +66,7 @@ class BankController extends Controller
      */
     public function importAction(Bank $bank)
     {
-        $this->get('bagheera.account')->importExternalAccounts($bank);
+        $this->get('bagheera.bank')->importExternalBank($bank);
 
         return $this->redirect($this->generateUrl('account_list'));
     }

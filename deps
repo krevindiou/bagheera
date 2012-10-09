@@ -83,3 +83,10 @@
     git=http://github.com/excelwebzone/EWZRecaptchaBundle.git
     target=/bundles/EWZ/Bundle/RecaptchaBundle
     version=origin/2.0
+
+[goutte]
+    git=https://github.com/fabpot/Goutte.git
+
+[guzzle]
+    git=https://github.com/guzzle/guzzle.git
+    version=v2.8.6

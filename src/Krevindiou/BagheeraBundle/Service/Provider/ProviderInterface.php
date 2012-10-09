@@ -18,19 +18,44 @@
 
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
-use Symfony\Bridge\Monolog\Logger;
+use Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
- * Provider service interface
+ * Provider interface
  *
  * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
  * @version    $Id$
  */
-interface ProviderServiceInterface
+interface ProviderInterface
 {
-    public function __construct($baseUri, $clientId, $accessToken, Logger $logger);
+    /**
+     * Connects to bank's provider
+     *
+     * @return void
+     */
+    function connect();
 
-    public function retrieveAccounts($userId);
+    /**
+     * Fetches accounts into an array
+     *
+     * @return array
+     */
+    function fetchAccounts();
 
-    public function retrieveTransactions($userId, $accountId, $sinceTransactionid = null, $count = null);
+    /**
+     * Fetches transactions into an array
+     *
+     * @param  Account $account   Account entity
+     * @return array
+     */
+    function fetchTransactions(Account $account);
+
+    /**
+     * Converts transactions data to normalized format
+     *
+     * @param  Account $accounts Account entity
+     * @param  array $data       Data to normalize
+     * @return array
+     */
+    function normalizeData(Account $account, array $data);
 }

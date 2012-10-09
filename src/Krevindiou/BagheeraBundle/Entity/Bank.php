@@ -53,13 +53,6 @@ class Bank
     protected $user;
 
     /**
-     * @var string $externalUserId
-     *
-     * @ORM\Column(name="external_user_id", type="string", length=32, nullable=true)
-     */
-    protected $externalUserId;
-
-    /**
      * @var Krevindiou\BagheeraBundle\Entity\Provider $provider
      *
      * @ORM\ManyToOne(targetEntity="Provider")
@@ -160,26 +153,6 @@ class Bank
     public function getUser()
     {
         return $this->user;
-    }
-
-    /**
-     * Set externalUserId
-     *
-     * @param string $externalUserId
-     */
-    public function setExternalUserId($externalUserId)
-    {
-        $this->externalUserId = $externalUserId;
-    }
-
-    /**
-     * Get externalUserId
-     *
-     * @return string
-     */
-    public function getExternalUserId()
-    {
-        return $this->externalUserId;
     }
 
     /**

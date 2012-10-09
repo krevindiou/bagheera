@@ -363,50 +363,37 @@ class OperationService
     }
 
     /**
-     * Saves external transactions from array
+     * Saves multiple operations
      *
-     * @param  User $user                   User entity
-     * @param  Account $account             Account entity
-     * @param  array $externalTransactions  Transactions data
+     * @param  User $user         User entity
+     * @param  Account $account   Account entity
+     * @param  array $operations  Operations data
+     * @param  Closure $func      Regularly called function
      * @return boolean
      */
-    public function saveExternalTransactions(User $user, Account $account, array $externalTransactions)
+    public function saveMulti(User $user, Account $account, array $operations, \Closure $func)
     {
         $error = false;
 
-        $this->_accountImportService->initImport($account, count($externalTransactions));
-
         $i = 0;
-        foreach ($externalTransactions as $externalTransaction) {
+        foreach ($operations as $operationArray) {
             $operation = new Operation();
             $operation->setAccount($account);
-            $operation->setThirdParty($externalTransaction['label']);
+            $operation->setThirdParty($operationArray['label']);
+            $operation->setPaymentMethod(
+                $this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', $operationArray['payment_method_id'])
+            );
 
-            if ($externalTransaction['amount'] < 0) {
-                $constant = '\Krevindiou\BagheeraBundle\Entity\PaymentMethod::PAYMENT_METHOD_ID_DEBIT_' . strtoupper($externalTransaction['payment_method']);
-                if (defined($constant)) {
-                    $paymentMethodId = constant($constant);
-                } else {
-                    $paymentMethodId = PaymentMethod::PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD;
-                }
-            } else {
-                $constant = '\Krevindiou\BagheeraBundle\Entity\PaymentMethod::PAYMENT_METHOD_ID_CREDIT_' . strtoupper($externalTransaction['payment_method']);
-                if (defined($constant)) {
-                    $paymentMethodId = constant($constant);
-                } else {
-                    $paymentMethodId = PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER;
-                }
+            if (isset($operationArray['transaction_id'])) {
+                $operation->setExternalOperationId($operationArray['transaction_id']);
             }
 
-            $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', $paymentMethodId));
-
-            $operation->setExternalOperationId($externalTransaction['transaction_id']);
-            if ($externalTransaction['amount'] < 0) {
-                $operation->setDebit(abs($externalTransaction['amount']));
+            if ('debit' == $operationArray['type']) {
+                $operation->setDebit($operationArray['amount']);
             } else {
-                $operation->setCredit(abs($externalTransaction['amount']));
+                $operation->setCredit($operationArray['amount']);
             }
-            $operation->setValueDate(new \DateTime($externalTransaction['value_date']));
+            $operation->setValueDate(new \DateTime($operationArray['value_date']));
 
             $errors = $this->_validator->validate($account);
 
@@ -419,7 +406,8 @@ class OperationService
                     if ($i % 100 == 0) {
                         try {
                             $this->_em->flush();
-                            $this->_accountImportService->updateImport($account, $i);
+
+                            $func($account, $i);
                         } catch (\Exception $e) {
                             $this->_logger->err($e->getMessage());
                             $error = true;
@@ -435,7 +423,7 @@ class OperationService
                 $this->_logger->err(
                     sprintf(
                         'Errors importing transaction "%s" [user %d]',
-                        $externalTransaction['label'],
+                        $operationArray['label'],
                         $account->getBank()->getUser()->getUserId()
                     )
                 );
@@ -451,10 +439,8 @@ class OperationService
                 $error = true;
             }
 
-            $this->_accountImportService->updateImport($account, $i);
+            $func($account, $i);
         }
-
-        $this->_accountImportService->closeImport($account);
 
         return !$error;
     }

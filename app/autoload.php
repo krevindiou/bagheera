@@ -20,6 +20,8 @@ $loader->registerNamespaces(array(
     'WhiteOctober\PagerfantaBundle'  => __DIR__.'/../vendor/bundles',
     'Pagerfanta'                     => __DIR__.'/../vendor/pagerfanta/src',
     'EWZ'                            => __DIR__.'/../vendor/bundles',
+    'Goutte'                         => __DIR__.'/../vendor/goutte',
+    'Guzzle'                         => __DIR__.'/../vendor/guzzle/src',
 ));
 $loader->registerPrefixes(array(
     'Twig_Extensions_' => __DIR__.'/../vendor/twig-extensions/lib',

@@ -23,10 +23,11 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Bridge\Monolog\Logger,
+    Symfony\Component\Process\Process,
+    Symfony\Component\Process\PhpExecutableFinder,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Form\BankForm,
-    Krevindiou\BagheeraBundle\Service\AccountService;
+    Krevindiou\BagheeraBundle\Form\BankForm;
 
 /**
  * Bank service
@@ -61,19 +62,33 @@ class BankService
      */
     protected $_accountService;
 
+    /**
+     * @var string
+     */
+    protected $_rootDir;
+
+    /**
+     * @var string
+     */
+    protected $_environment;
+
 
     public function __construct(
         Logger $logger,
         EntityManager $em,
         FormFactory $formFactory,
         Validator $validator,
-        AccountService $accountService)
+        AccountService $accountService,
+        $rootDir,
+        $environment)
     {
         $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
         $this->_accountService = $accountService;
+        $this->_rootDir = $rootDir;
+        $this->_environment = $environment;
     }
 
     /**
@@ -211,5 +226,37 @@ class BankService
         }
 
         return $balances;
+    }
+
+    /**
+     * Retrieves external bank data
+     *
+     * @param  Bank $bank Bank entity
+     * @return void
+     */
+    public function importExternalBank(Bank $bank)
+    {
+        if (null !== $bank->getProvider()) {
+            $executableFinder = new PhpExecutableFinder();
+
+            $phpBin = $executableFinder->find();
+
+            if (null === $phpBin) {
+                $this->_logger->err('Unable to find php binary');
+                return;
+            }
+
+            $process = new Process(
+                sprintf(
+                    '%s console --env=%s bagheera:import_external_bank %d',
+                    $phpBin,
+                    $this->_environment,
+                    $bank->getBankId()
+                ),
+                $this->_rootDir
+            );
+
+            $process->run();
+        }
     }
 }
