@@ -57,6 +57,7 @@ class UserServiceTest extends TestCase
 
         $encoder = $this->get('security.encoder_factory')->getEncoder($user);
         $user->setPassword($encoder->encodePassword('james123', $user->getSalt()));
+        $user->setCountry('US');
 
         $this->assertTrue($this->get('bagheera.user')->save($user));
     }

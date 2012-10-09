@@ -40,20 +40,22 @@ class AccountServiceTest extends TestCase
     public function testGetFormForForeignUser()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-        $form = $this->get('bagheera.account')->getForm($this->jane, $account);
+        $form = $this->get('bagheera.account')->getEditForm($this->jane, $account);
         $this->assertNull($form);
     }
 
     public function testGetFormForNewAccount()
     {
-        $form = $this->get('bagheera.account')->getForm($this->john);
+        $hsbc = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
+
+        $form = $this->get('bagheera.account')->getNewForm($this->john, $hsbc);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingAccount()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-        $form = $this->get('bagheera.account')->getForm($this->john, $account);
+        $form = $this->get('bagheera.account')->getEditForm($this->john, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
