@@ -201,7 +201,7 @@ class CurrencyType extends AbstractType
     /**
      * {@inheritDoc}
      */
-    public function getParent(array $options)
+    public function getParent()
     {
         return 'choice';
     }
