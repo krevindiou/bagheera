@@ -48,7 +48,11 @@ class UserRegisterForm extends AbstractType
                 'ewz_recaptcha',
                 array(
                     'label' => 'user_captcha',
-                    'attr' => array()
+                    'attr' => array(
+                        'options' => array(
+                            'theme' => 'clean'
+                        )
+                    )
                 )
             )
         ;

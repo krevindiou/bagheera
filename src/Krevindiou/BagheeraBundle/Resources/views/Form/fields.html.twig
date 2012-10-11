@@ -14,6 +14,12 @@
 {% endspaceless %}
 {% endblock %}
 
+{% block ewz_recaptcha_row %}
+{% spaceless %}
+    {{ block('field_row') }}
+{% endspaceless %}
+{% endblock %}
+
 {% block field_errors %}
 {% spaceless %}
     {% if errors|length > 0 %}
