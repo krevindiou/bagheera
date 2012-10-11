@@ -19,7 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Form\EventListener\OperationSearchAmountFieldSubscriber;
 
@@ -45,7 +45,7 @@ class OperationSearchForm extends AbstractType
         $this->_account = $account;
     }
 
-    public function buildForm(FormBuilder $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $account = $this->_account;
 

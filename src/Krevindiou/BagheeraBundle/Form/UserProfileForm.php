@@ -19,7 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilder;
+use Symfony\Component\Form\FormBuilderInterface;
 use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
 
 /**
@@ -30,7 +30,7 @@ use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
  */
 class UserProfileForm extends UserRegisterForm
 {
-    public function buildForm(FormBuilder $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options)
     {
         parent::buildForm($builder, $options);
 
