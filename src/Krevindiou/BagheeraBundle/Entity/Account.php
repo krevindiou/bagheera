@@ -90,14 +90,14 @@ class Account
     /**
      * @var float $initialBalance
      *
-     * @ORM\Column(name="initial_balance", type="decimal", scale="2", nullable=false)
+     * @ORM\Column(name="initial_balance", type="decimal", scale=2, nullable=false)
      */
     protected $initialBalance = 0;
 
     /**
      * @var float $overdraftFacility
      *
-     * @ORM\Column(name="overdraft_facility", type="decimal", scale="2", nullable=false)
+     * @ORM\Column(name="overdraft_facility", type="decimal", scale=2, nullable=false)
      */
     protected $overdraftFacility = 0;
 

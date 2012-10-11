@@ -119,14 +119,14 @@ class Operation
     /**
      * @var float $debit
      *
-     * @ORM\Column(name="debit", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="debit", type="decimal", scale=2, nullable=true)
      */
     protected $debit;
 
     /**
      * @var float $credit
      *
-     * @ORM\Column(name="credit", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="credit", type="decimal", scale=2, nullable=true)
      */
     protected $credit;
 
