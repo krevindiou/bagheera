@@ -177,7 +177,7 @@ class Operation
     }
 
     /**
-     * @ORM\prePersist
+     * @ORM\PrePersist
      */
     public function prePersist()
     {
@@ -186,7 +186,7 @@ class Operation
     }
 
     /**
-     * @ORM\preUpdate
+     * @ORM\PreUpdate
      */
     public function preUpdate()
     {

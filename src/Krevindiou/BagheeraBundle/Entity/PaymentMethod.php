@@ -86,7 +86,7 @@ class PaymentMethod
 
 
     /**
-     * @ORM\prePersist
+     * @ORM\PrePersist
      */
     public function prePersist()
     {
@@ -95,7 +95,7 @@ class PaymentMethod
     }
 
     /**
-     * @ORM\preUpdate
+     * @ORM\PreUpdate
      */
     public function preUpdate()
     {

@@ -159,7 +159,7 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * @ORM\prePersist
+     * @ORM\PrePersist
      */
     public function prePersist()
     {
@@ -168,7 +168,7 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * @ORM\preUpdate
+     * @ORM\PreUpdate
      */
     public function preUpdate()
     {
