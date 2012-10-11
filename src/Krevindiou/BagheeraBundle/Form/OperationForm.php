@@ -130,7 +130,7 @@ class OperationForm extends AbstractType
             )
             ->add(
                 'valueDate',
-                null,
+                'date',
                 array(
                     'label' => 'operation_value_date',
                     'widget' => 'single_text',

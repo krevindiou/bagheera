@@ -130,7 +130,7 @@ class SchedulerForm extends AbstractType
             )
             ->add(
                 'valueDate',
-                null,
+                'date',
                 array(
                     'label' => 'scheduler_value_date',
                     'widget' => 'single_text',
@@ -143,7 +143,7 @@ class SchedulerForm extends AbstractType
             )
             ->add(
                 'limitDate',
-                null,
+                'date',
                 array(
                     'label' => 'scheduler_limit_date',
                     'widget' => 'single_text',
