@@ -53,7 +53,7 @@ class UserResetPasswordForm extends AbstractType
             )
         ));
 
-        $options['validation_constraint'] = $collectionConstraint;
+        $options['constraints'] = $collectionConstraint;
 
         return $options;
     }
