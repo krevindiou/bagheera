@@ -1,0 +1,32 @@
+parameters:
+    database_driver: pdo_mysql
+    database_host: localhost
+    database_port:
+    database_name:
+    database_user:
+    database_password:
+
+    database_secure_driver: pdo_mysql
+    database_secure_host: localhost
+    database_secure_port:
+    database_secure_name:
+    database_secure_user:
+    database_secure_password:
+
+    mailer_transport: smtp
+    mailer_host: localhost
+    mailer_user:
+    mailer_password:
+
+    locale: en
+
+    secret: secret
+
+    ewz_recaptcha_public_key:
+    ewz_recaptcha_private_key:
+
+    sender_email:
+
+    provider_axa_banque_base_uri:
+    provider_axa_banque_client_id:
+    provider_axa_banque_access_token:

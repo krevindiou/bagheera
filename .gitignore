@@ -5,9 +5,12 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 /web/bundles/
-/app/bootstrap*
+/app/bootstrap.php.cache
+/app/config/parameters.yml
 /app/cache/*
 /app/logs/*
+/build/
 /vendor/
-/app/config/parameters.ini
+/composer.lock
+/composer.phar
 !.gitkeep
