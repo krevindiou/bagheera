@@ -81,7 +81,7 @@ class OperationSearchForm extends AbstractType
                 'amount_comparator_1',
                 'choice',
                 array(
-                    'property_path' => false,
+                    'mapped' => false,
                     'required' => false,
                     'empty_value' => '',
                     'choices' => array(
@@ -99,7 +99,7 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_amount',
                     'currency' => $options['data']->getAccount()->getCurrency(),
-                    'property_path' => false,
+                    'mapped' => false,
                     'required' => false
                 )
             )
@@ -107,7 +107,7 @@ class OperationSearchForm extends AbstractType
                 'amount_comparator_2',
                 'choice',
                 array(
-                    'property_path' => false,
+                    'mapped' => false,
                     'required' => false,
                     'empty_value' => '',
                     'choices' => array(
@@ -124,7 +124,7 @@ class OperationSearchForm extends AbstractType
                 'money',
                 array(
                     'currency' => $options['data']->getAccount()->getCurrency(),
-                    'property_path' => false,
+                    'mapped' => false,
                     'required' => false
                 )
             )

@@ -64,7 +64,7 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_type',
                     'data' => 'debit',
-                    'property_path' => false,
+                    'mapped' => false,
                     'expanded' => true,
                     'required' => false,
                     'choices' => array(
@@ -89,7 +89,7 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_amount',
                     'currency' => $options['data']->getAccount()->getCurrency(),
-                    'property_path' => false
+                    'mapped' => false
                 )
             )
             ->add(

@@ -64,7 +64,7 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_type',
                     'data' => 'debit',
-                    'property_path' => false,
+                    'mapped' => false,
                     'expanded' => true,
                     'required' => false,
                     'choices' => array(
@@ -89,7 +89,7 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_amount',
                     'currency' => $options['data']->getAccount()->getCurrency(),
-                    'property_path' => false
+                    'mapped' => false
                 )
             )
             ->add(
