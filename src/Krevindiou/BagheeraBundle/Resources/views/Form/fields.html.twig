@@ -1,6 +1,6 @@
 {% extends 'form_div_layout.html.twig' %}
 
-{% block field_row %}
+{% block form_row %}
 {% spaceless %}
     <div>
         <div class="form_label">
@@ -16,11 +16,11 @@
 
 {% block ewz_recaptcha_row %}
 {% spaceless %}
-    {{ block('field_row') }}
+    {{ block('form_row') }}
 {% endspaceless %}
 {% endblock %}
 
-{% block field_errors %}
+{% block form_errors %}
 {% spaceless %}
     {% if errors|length > 0 %}
     <ul class="form_errors">
