@@ -49,7 +49,7 @@ class BankController extends Controller
                         $this->generateUrl('bank_access_edit', array('bankId' => $bankForm->getData()->getBankId()))
                     );
                 } else {
-                    $this->get('session')->setFlash('notice', 'bank_form_confirmation');
+                    $this->get('session')->getFlashBag()->add('notice', 'bank_form_confirmation');
 
                     return $this->redirect($this->generateUrl('account_list'));
                 }

@@ -60,10 +60,12 @@
         <section id="content">
             <h1>{% block pageTitle %}{% endblock %}</h1>
 
-            {% for key, message in app.session.getFlashes() %}
-            <div class="notification_{{ key }}">
-            {{ message|trans }}
-            </div>
+            {% for key, messages in app.session.flashbag.all() %}
+                <div class="notification_{{ key }}">
+                {% for message in messages %}
+                    {{ message|trans }}
+                {% endfor %}
+                </div>
             {% endfor %}
 
             {% block content %}{% endblock %}

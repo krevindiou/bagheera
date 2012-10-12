@@ -66,10 +66,10 @@ class OperationController extends Controller
 
         if ($request->request->get('delete')) {
             $this->get('bagheera.operation')->delete($user, $operationsId);
-            $this->get('session')->setFlash('notice', 'operation_delete_confirmation');
+            $this->get('session')->getFlashBag()->add('notice', 'operation_delete_confirmation');
         } elseif ($request->request->get('reconcile')) {
             $this->get('bagheera.operation')->reconcile($user, $operationsId);
-            $this->get('session')->setFlash('notice', 'operation_reconcile_confirmation');
+            $this->get('session')->getFlashBag()->add('notice', 'operation_reconcile_confirmation');
         }
 
         return $this->redirect(
@@ -95,7 +95,7 @@ class OperationController extends Controller
             $operationForm->bind($request);
 
             if ($this->get('bagheera.operation')->saveForm($user, $operationForm)) {
-                $this->get('session')->setFlash('notice', 'operation_form_confirmation');
+                $this->get('session')->getFlashBag()->add('notice', 'operation_form_confirmation');
 
                 return $this->redirect(
                     $this->generateUrl('operation_list', array('accountId' => $operationForm->getData()->getAccount()->getAccountId()))

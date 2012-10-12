@@ -77,10 +77,10 @@ class AccountController extends Controller
         if ($request->request->get('delete')) {
             $this->get('bagheera.account')->delete($user, $accountsId);
             $this->get('bagheera.bank')->delete($user, $banksId);
-            $this->get('session')->setFlash('notice', 'account_delete_confirmation');
+            $this->get('session')->getFlashBag()->add('notice', 'account_delete_confirmation');
         } elseif ($request->request->get('share')) {
             // @todo
-            $this->get('session')->setFlash('notice', 'account_share_confirmation');
+            $this->get('session')->getFlashBag()->add('notice', 'account_share_confirmation');
         }
 
         return $this->redirect($this->generateUrl('account_list'));
@@ -127,7 +127,7 @@ class AccountController extends Controller
             $accountForm->bind($request);
 
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
-                $this->get('session')->setFlash('notice', 'account_form_confirmation');
+                $this->get('session')->getFlashBag()->add('notice', 'account_form_confirmation');
 
                 return $this->redirect(
                     $this->generateUrl('operation_list', array('accountId' => $accountForm->getData()->getAccountId()))
@@ -161,7 +161,7 @@ class AccountController extends Controller
             $accountForm->bind($request);
 
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
-                $this->get('session')->setFlash('notice', 'account_form_confirmation');
+                $this->get('session')->getFlashBag()->add('notice', 'account_form_confirmation');
 
                 return $this->redirect($this->generateUrl('account_list'));
             }
