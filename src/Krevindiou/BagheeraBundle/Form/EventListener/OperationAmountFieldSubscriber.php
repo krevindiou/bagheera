@@ -29,7 +29,7 @@ class OperationAmountFieldSubscriber implements EventSubscriberInterface
     {
         return array(
             FormEvents::POST_BIND => 'postBind',
-            FormEvents::SET_DATA => 'setData'
+            FormEvents::PRE_SET_DATA => 'preSetData'
         );
     }
 
@@ -56,7 +56,7 @@ class OperationAmountFieldSubscriber implements EventSubscriberInterface
     /**
      * Convert debit/credit to type/amount
      */
-    public function setData(DataEvent $event)
+    public function preSetData(DataEvent $event)
     {
         $data = $event->getData();
         $form = $event->getForm();

@@ -28,14 +28,14 @@ class OperationSearchAmountFieldSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            FormEvents::SET_DATA => 'setData'
+            FormEvents::PRE_SET_DATA => 'preSetData'
         );
     }
 
     /**
      * Convert debit/credit to type/amount
      */
-    public function setData(DataEvent $event)
+    public function preSetData(DataEvent $event)
     {
         $data = $event->getData();
         $form = $event->getForm();
