@@ -20,6 +20,8 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * Report form
@@ -233,12 +235,16 @@ class ReportForm extends AbstractType
         }
     }
 
-    public function getDefaultOptions(array $options)
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Report';
-        $options['validation_groups'] = array('Default', $options['data']->getType());
-
-        return $options;
+        $resolver->setDefaults(
+            array(
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Report',
+                'validation_groups' => function(FormInterface $form) {
+                    return array('Default', $form->getData()->getType());
+                }
+            )
+        );
     }
 
     public function getName()

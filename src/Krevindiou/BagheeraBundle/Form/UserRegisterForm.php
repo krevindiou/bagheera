@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * User form
@@ -58,12 +59,14 @@ class UserRegisterForm extends AbstractType
         ;
     }
 
-    public function getDefaultOptions(array $options)
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
-        $options['validation_groups'] = array('Default', 'password', 'captcha');
-
-        return $options;
+        $resolver->setDefaults(
+            array(
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\User',
+                'validation_groups' => array('Default', 'password', 'captcha')
+            )
+        );
     }
 
     public function getName()

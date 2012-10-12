@@ -20,9 +20,9 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Krevindiou\BagheeraBundle\Constraint\FieldExists;
 
 /**
@@ -36,23 +36,19 @@ class UserForgotPasswordForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('email', 'email', array('label' => 'user_email'))
+            ->add(
+                'email',
+                'email',
+                array(
+                    'label' => 'user_email',
+                    'constraints' => array(
+                        new NotBlank(),
+                        new Email(),
+                        new FieldExists('Krevindiou\BagheeraBundle\Entity\User', 'email')
+                    )
+                )
+            )
         ;
-    }
-
-    public function getDefaultOptions(array $options)
-    {
-        $collectionConstraint = new Collection(array(
-            'email' => array(
-                new NotBlank(),
-                new Email(),
-                new FieldExists('Krevindiou\BagheeraBundle\Entity\User', 'email')
-            ),
-        ));
-
-        $options['constraints'] = $collectionConstraint;
-
-        return $options;
     }
 
     public function getName()

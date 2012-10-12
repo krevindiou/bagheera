@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * Bank access form
@@ -51,11 +52,13 @@ class BankAccessForm extends AbstractType
         ;
     }
 
-    public function getDefaultOptions(array $options)
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\BankAccess';
-
-        return $options;
+        $resolver->setDefaults(
+            array(
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\BankAccess'
+            )
+        );
     }
 
     public function getName()

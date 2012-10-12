@@ -20,9 +20,9 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\MinLength;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
  * Reset password form
@@ -35,27 +35,21 @@ class UserResetPasswordForm extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('password', 'repeated', array(
-                'type' => 'password',
-                'first_name' => 'user_password',
-                'second_name' => 'user_password_confirmation',
-                'invalid_message' => 'user_password_fields_must_match',
-            ))
-        ;
-    }
-
-    public function getDefaultOptions(array $options)
-    {
-        $collectionConstraint = new Collection(array(
-            'password' => array(
-                new NotBlank(),
-                new MinLength(8),
+            ->add(
+                'password',
+                'repeated',
+                array(
+                    'type' => 'password',
+                    'first_name' => 'user_password',
+                    'second_name' => 'user_password_confirmation',
+                    'invalid_message' => 'user_password_fields_must_match',
+                    'constraints' => array(
+                        new NotBlank(),
+                        new MinLength(8)
+                    )
+                )
             )
-        ));
-
-        $options['constraints'] = $collectionConstraint;
-
-        return $options;
+        ;
     }
 
     public function getName()

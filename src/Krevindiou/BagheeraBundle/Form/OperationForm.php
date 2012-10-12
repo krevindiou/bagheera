@@ -24,6 +24,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\CallbackValidator;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
 
@@ -178,11 +179,13 @@ class OperationForm extends AbstractType
         );
     }
 
-    public function getDefaultOptions(array $options)
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\Operation';
-
-        return $options;
+        $resolver->setDefaults(
+            array(
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Operation'
+            )
+        );
     }
 
     public function getName()

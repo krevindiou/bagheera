@@ -20,6 +20,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
 
 /**
@@ -39,11 +40,13 @@ class UserProfileForm extends UserRegisterForm
         $builder->remove('country');
     }
 
-    public function getDefaultOptions(array $options)
+    public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $options['data_class'] = 'Krevindiou\BagheeraBundle\Entity\User';
-
-        return $options;
+        $resolver->setDefaults(
+            array(
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\User'
+            )
+        );
     }
 
     public function getName()
