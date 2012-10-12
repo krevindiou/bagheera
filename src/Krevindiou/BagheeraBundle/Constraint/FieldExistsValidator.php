@@ -22,18 +22,14 @@ class FieldExistsValidator extends ConstraintValidator
         $this->_registry = $registry;
     }
 
-    public function isValid($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint)
     {
         $em = $this->_registry->getEntityManager($constraint->em);
 
         $repository = $em->getRepository($constraint->className);
         $result = $repository->findBy(array($constraint->field => $value));
         if (empty($result)) {
-            $this->setMessage($constraint->message);
-
-            return false;
+            $this->context->addViolation($constraint->message);
         }
-
-        return true;
     }
 }
