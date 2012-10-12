@@ -50,7 +50,7 @@ class BankForm extends AbstractType
                             ->setParameter('country', $user->getCountry())
                             ->add('orderBy', 'p.name ASC');
                     },
-                    'read_only' => $edit,
+                    'disabled' => $edit,
                     'attr' => array(
                         'bankId' => $options['data']->getBankId()
                     )

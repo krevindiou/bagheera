@@ -51,7 +51,7 @@ class AccountForm extends AbstractType
                             ->setParameter('user', $user)
                             ->add('orderBy', 'b.name ASC');
                     },
-                    'read_only' => $edit
+                    'disabled' => $edit
                 )
             )
             ->add(
@@ -67,7 +67,7 @@ class AccountForm extends AbstractType
                 new CurrencyType(),
                 array(
                     'label' => 'account_currency',
-                    'read_only' => $edit
+                    'disabled' => $edit
                 )
             )
             ->add(
@@ -92,7 +92,7 @@ class AccountForm extends AbstractType
                 array(
                     'label' => 'account_initial_balance',
                     'currency' => false,
-                    'read_only' => $edit
+                    'disabled' => $edit
                 )
             )
             ->add(
