@@ -147,7 +147,7 @@ class OperationSearchForm extends AbstractType
             )
             ->add(
                 'valueDateStart',
-                null,
+                'date',
                 array(
                     'label' => 'operation_search_value_date_start',
                     'widget' => 'single_text',
@@ -160,7 +160,7 @@ class OperationSearchForm extends AbstractType
             )
             ->add(
                 'valueDateEnd',
-                null,
+                'date',
                 array(
                     'label' => 'operation_search_value_date_end',
                     'widget' => 'single_text',
