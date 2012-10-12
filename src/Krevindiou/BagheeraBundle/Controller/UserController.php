@@ -57,7 +57,7 @@ class UserController extends Controller
         $form = $this->get('bagheera.user')->getRegisterForm();
 
         if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
+            $form->bind($request);
 
             if ($this->get('bagheera.user')->saveForm($form)) {
                 $this->get('session')->setFlash('notice', 'user_register_confirmation');
@@ -80,7 +80,7 @@ class UserController extends Controller
         $form = $this->get('bagheera.user')->getForgotPasswordForm();
 
         if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
+            $form->bind($request);
 
             if ($form->isValid()) {
                 $data = $form->getData();
@@ -110,7 +110,7 @@ class UserController extends Controller
 
         if (null !== $form) {
             if ($request->getMethod() == 'POST') {
-                $form->bindRequest($request);
+                $form->bind($request);
 
                 if ($form->isValid()) {
                     $data = $form->getData();
@@ -161,7 +161,7 @@ class UserController extends Controller
         );
 
         if ($request->getMethod() == 'POST') {
-            $form->bindRequest($request);
+            $form->bind($request);
 
             if ($this->get('bagheera.user')->saveForm($form)) {
                 $this->get('session')->setFlash('notice', 'user_profile_confirmation');

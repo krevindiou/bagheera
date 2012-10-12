@@ -84,7 +84,7 @@ class SchedulerController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $schedulerForm->bindRequest($request);
+            $schedulerForm->bind($request);
 
             if ($this->get('bagheera.scheduler')->saveForm($user, $schedulerForm)) {
                 $this->get('session')->setFlash('notice', 'scheduler_form_confirmation');

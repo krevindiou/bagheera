@@ -53,7 +53,7 @@ class OperationSearchController extends Controller
             );
         } else {
             if ($request->getMethod() == 'POST') {
-                $operationSearchForm->bindRequest($request);
+                $operationSearchForm->bind($request);
 
                 if ($operationSearchForm->isValid()) {
                     $operationSearchService->setSessionSearch(

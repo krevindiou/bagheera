@@ -92,7 +92,7 @@ class OperationController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $operationForm->bindRequest($request);
+            $operationForm->bind($request);
 
             if ($this->get('bagheera.operation')->saveForm($user, $operationForm)) {
                 $this->get('session')->setFlash('notice', 'operation_form_confirmation');

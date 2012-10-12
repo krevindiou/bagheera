@@ -124,7 +124,7 @@ class AccountController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $accountForm->bindRequest($request);
+            $accountForm->bind($request);
 
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
                 $this->get('session')->setFlash('notice', 'account_form_confirmation');
@@ -158,7 +158,7 @@ class AccountController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $accountForm->bindRequest($request);
+            $accountForm->bind($request);
 
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
                 $this->get('session')->setFlash('notice', 'account_form_confirmation');

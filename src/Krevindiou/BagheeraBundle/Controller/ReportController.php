@@ -76,7 +76,7 @@ class ReportController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $reportForm->bindRequest($request);
+            $reportForm->bind($request);
 
             if ($this->get('bagheera.report')->saveForm($user, $reportForm)) {
                 $this->get('session')->setFlash('notice', 'report_form_confirmation');

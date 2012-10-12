@@ -40,7 +40,7 @@ class BankAccessController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $bankAccessForm->bindRequest($request);
+            $bankAccessForm->bind($request);
 
             if ($this->get('bagheera.bank_access')->saveForm($user, $bankAccessForm)) {
                 $this->get('session')->setFlash('notice', 'bank_access_form_confirmation');

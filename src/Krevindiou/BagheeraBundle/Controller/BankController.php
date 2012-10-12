@@ -41,7 +41,7 @@ class BankController extends Controller
         }
 
         if ($request->getMethod() == 'POST') {
-            $bankForm->bindRequest($request);
+            $bankForm->bind($request);
 
             if ($this->get('bagheera.bank')->saveForm($user, $bankForm)) {
                 if ('bank_new' == $request->get('_route') && null !== $bankForm->getData()->getProvider()) {
