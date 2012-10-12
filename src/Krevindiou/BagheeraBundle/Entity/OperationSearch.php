@@ -130,35 +130,35 @@ class OperationSearch
     /**
      * @var decimal $amountInferiorTo
      *
-     * @ORM\Column(name="amount_inferior_to", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="amount_inferior_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountInferiorTo;
 
     /**
      * @var decimal $amountInferiorOrEqualTo
      *
-     * @ORM\Column(name="amount_inferior_or_equal_to", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="amount_inferior_or_equal_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountInferiorOrEqualTo;
 
     /**
      * @var decimal $amountEqualTo
      *
-     * @ORM\Column(name="amount_equal_to", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="amount_equal_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountEqualTo;
 
     /**
      * @var decimal $amountSuperiorOrEqualTo
      *
-     * @ORM\Column(name="amount_superior_or_equal_to", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="amount_superior_or_equal_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountSuperiorOrEqualTo;
 
     /**
      * @var decimal $amountSuperiorTo
      *
-     * @ORM\Column(name="amount_superior_to", type="decimal", scale="2", nullable=true)
+     * @ORM\Column(name="amount_superior_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountSuperiorTo;
 
