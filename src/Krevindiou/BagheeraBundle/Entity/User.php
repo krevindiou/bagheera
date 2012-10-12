@@ -420,22 +420,6 @@ class User implements AdvancedUserInterface
     /**
      * {@inheritdoc}
      */
-    public function equals(UserInterface $user)
-    {
-        if (!$user instanceof User) {
-            return false;
-        }
-
-        if ($this->getUsername() !== $user->getUsername()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function isAccountNonExpired()
     {
         return true;
