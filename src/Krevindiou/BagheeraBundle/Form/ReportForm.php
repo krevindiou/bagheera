@@ -61,7 +61,7 @@ class ReportForm extends AbstractType
             $builder
                 ->add(
                     'valueDateStart',
-                    null,
+                    'date',
                     array(
                         'label' => 'report_value_date_start',
                         'widget' => 'single_text',
@@ -74,7 +74,7 @@ class ReportForm extends AbstractType
                 )
                 ->add(
                     'valueDateEnd',
-                    null,
+                    'date',
                     array(
                         'label' => 'report_value_date_end',
                         'widget' => 'single_text',
