@@ -21,7 +21,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\MinLength;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
@@ -45,7 +45,7 @@ class UserResetPasswordForm extends AbstractType
                     'invalid_message' => 'user_password_fields_must_match',
                     'constraints' => array(
                         new NotBlank(),
-                        new MinLength(8)
+                        new Length(array('min' => 8))
                     )
                 )
             )

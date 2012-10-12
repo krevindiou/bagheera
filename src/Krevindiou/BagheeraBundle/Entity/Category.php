@@ -65,7 +65,7 @@ class Category
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\MaxLength(32)
+     * @Assert\Length(max = 32)
      */
     protected $name;
 

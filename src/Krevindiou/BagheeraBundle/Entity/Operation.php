@@ -112,7 +112,7 @@ class Operation
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
+     * @Assert\Length(max = 64)
      */
     protected $thirdParty;
 

@@ -83,7 +83,7 @@ class OperationSearch
      * @var string $thirdParty
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=true)
-     * @Assert\MaxLength(64)
+     * @Assert\Length(max = 64)
      */
     protected $thirdParty;
 
@@ -91,7 +91,7 @@ class OperationSearch
      * @var string $notes
      *
      * @ORM\Column(name="notes", type="string", length=128, nullable=true)
-     * @Assert\MaxLength(128)
+     * @Assert\Length(max = 128)
      */
     protected $notes;
 

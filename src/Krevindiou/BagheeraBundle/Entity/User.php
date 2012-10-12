@@ -53,7 +53,7 @@ class User implements AdvancedUserInterface
      * @ORM\Column(name="email", type="string", length=128, unique=true, nullable=false)
      * @Assert\NotBlank()
      * @Assert\Email()
-     * @Assert\MaxLength(128)
+     * @Assert\Length(max = 128)
      */
     protected $email;
 
@@ -68,7 +68,7 @@ class User implements AdvancedUserInterface
      * @var string $plainPassword
      *
      * @Assert\NotBlank(groups={"password"})
-     * @Assert\MinLength(8)
+     * @Assert\Length(min = 8)
      */
     protected $plainPassword;
 
@@ -84,8 +84,8 @@ class User implements AdvancedUserInterface
      * @var string $activation
      *
      * @ORM\Column(name="activation", type="string", length=32, nullable=true)
-     * @Assert\MinLength(32)
-     * @Assert\MaxLength(32)
+     * @Assert\Length(min = 32)
+     * @Assert\Length(max = 32)
      */
     protected $activation;
 

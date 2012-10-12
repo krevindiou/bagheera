@@ -74,7 +74,7 @@ class Account
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\MaxLength(32)
+     * @Assert\Length(max = 32)
      */
     protected $name;
 
@@ -83,7 +83,7 @@ class Account
      *
      * @ORM\Column(name="currency", type="string", length=3, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\MaxLength(3)
+     * @Assert\Length(max = 3)
      */
     protected $currency;
 
@@ -105,7 +105,7 @@ class Account
      * @var string $iban
      *
      * @ORM\Column(name="iban", type="string", length=34, nullable=true)
-     * @Assert\MaxLength(34)
+     * @Assert\Length(max = 34)
      */
     protected $iban;
 
@@ -113,7 +113,7 @@ class Account
      * @var string $bic
      *
      * @ORM\Column(name="bic", type="string", length=11, nullable=true)
-     * @Assert\MaxLength(11)
+     * @Assert\Length(max = 11)
      */
     protected $bic;
 

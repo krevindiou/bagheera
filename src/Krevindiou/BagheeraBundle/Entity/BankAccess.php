@@ -44,7 +44,7 @@ class BankAccess
      * @var string $plainLogin
      *
      * @Assert\NotBlank()
-     * @Assert\MaxLength(255)
+     * @Assert\Length(max = 255)
      */
     protected $plainLogin;
 
@@ -52,7 +52,7 @@ class BankAccess
      * @var string $plainPassword
      *
      * @Assert\NotBlank()
-     * @Assert\MaxLength(255)
+     * @Assert\Length(max = 255)
      */
     protected $plainPassword;
 

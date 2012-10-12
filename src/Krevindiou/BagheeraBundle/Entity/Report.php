@@ -66,7 +66,7 @@ class Report
      *
      * @ORM\Column(name="title", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\MaxLength(64)
+     * @Assert\Length(max = 64)
      */
     protected $title;
 
