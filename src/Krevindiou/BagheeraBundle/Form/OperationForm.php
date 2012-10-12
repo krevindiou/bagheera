@@ -167,11 +167,11 @@ class OperationForm extends AbstractType
                     $validator = new Assert\NotBlankValidator();
                     $constraint = new Assert\NotBlank();
 
-                    if (!$validator->isValid($form['type']->getData(), $constraint)) {
+                    if (!$validator->validate($form['type']->getData(), $constraint)) {
                         $form->get('type')->addError(new FormError($constraint->message));
                     }
 
-                    if (!$validator->isValid($form['amount']->getData(), $constraint)) {
+                    if (!$validator->validate($form['amount']->getData(), $constraint)) {
                         $form->get('amount')->addError(new FormError($constraint->message));
                     }
                 }
