@@ -277,7 +277,7 @@ class SchedulerService
 
             $lastOperationDate = null;
             if (isset($result[0]['valueDate'])) {
-                $startDate = $lastOperationDate = new \DateTime($result[0]['valueDate']);
+                $startDate = $lastOperationDate = $result[0]['valueDate'];
             }
 
             $endDate = $now;
