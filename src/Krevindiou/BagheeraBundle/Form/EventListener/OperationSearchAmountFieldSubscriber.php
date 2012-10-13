@@ -18,10 +18,10 @@
 
 namespace Krevindiou\BagheeraBundle\Form\EventListener;
 
-use Symfony\Component\Form\Event\DataEvent;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Form\FormEvents;
 
 class OperationSearchAmountFieldSubscriber implements EventSubscriberInterface
 {
@@ -35,7 +35,7 @@ class OperationSearchAmountFieldSubscriber implements EventSubscriberInterface
     /**
      * Convert debit/credit to type/amount
      */
-    public function preSetData(DataEvent $event)
+    public function preSetData(FormEvent $event)
     {
         $data = $event->getData();
         $form = $event->getForm();

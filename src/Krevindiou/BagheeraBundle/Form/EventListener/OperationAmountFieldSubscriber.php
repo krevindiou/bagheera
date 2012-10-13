@@ -18,10 +18,10 @@
 
 namespace Krevindiou\BagheeraBundle\Form\EventListener;
 
-use Symfony\Component\Form\Event\DataEvent;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Form\FormEvents;
 
 class OperationAmountFieldSubscriber implements EventSubscriberInterface
 {
@@ -36,7 +36,7 @@ class OperationAmountFieldSubscriber implements EventSubscriberInterface
     /**
      * Convert type/amount to debit/credit
      */
-    public function postBind(DataEvent $event)
+    public function postBind(FormEvent $event)
     {
         $data = $event->getData();
         $form = $event->getForm();
@@ -56,7 +56,7 @@ class OperationAmountFieldSubscriber implements EventSubscriberInterface
     /**
      * Convert debit/credit to type/amount
      */
-    public function preSetData(DataEvent $event)
+    public function preSetData(FormEvent $event)
     {
         $data = $event->getData();
         $form = $event->getForm();
@@ -69,11 +69,11 @@ class OperationAmountFieldSubscriber implements EventSubscriberInterface
         $credit = $data->getCredit();
 
         if (0 != $debit) {
-            $form->get('type')->setData('debit');
-            $form->get('amount')->setData($debit);
+            $form->getConfig()->get('type')->setData('debit');
+            $form->getConfig()->get('amount')->setData($debit);
         } elseif (0 != $credit) {
-            $form->get('type')->setData('credit');
-            $form->get('amount')->setData($credit);
+            $form->getConfig()->get('type')->setData('credit');
+            $form->getConfig()->get('amount')->setData($credit);
         }
     }
 }
