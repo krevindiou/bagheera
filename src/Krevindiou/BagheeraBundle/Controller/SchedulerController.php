@@ -23,6 +23,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
+    Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter,
     Krevindiou\BagheeraBundle\Entity\Scheduler,
     Krevindiou\BagheeraBundle\Entity\Account;
 
@@ -72,6 +73,8 @@ class SchedulerController extends Controller
     /**
      * @Route("/edit-scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_edit")
      * @Route("/new-scheduler-account-{accountId}", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_new")
+     * @ParamConverter("scheduler", class="KrevindiouBagheeraBundle:Scheduler", options={"id" = "schedulerId"})
+     * @ParamConverter("account", class="KrevindiouBagheeraBundle:Account", options={"id" = "accountId"})
      * @Template()
      */
     public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
