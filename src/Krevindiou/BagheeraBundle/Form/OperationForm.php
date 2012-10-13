@@ -20,9 +20,6 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\CallbackValidator;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Krevindiou\BagheeraBundle\Entity\Account;
@@ -70,6 +67,9 @@ class OperationForm extends AbstractType
                     'choices' => array(
                         'debit' => 'operation_type_debit',
                         'credit' => 'operation_type_credit'
+                    ),
+                    'constraints' => array(
+                        new Assert\NotBlank()
                     )
                 )
             )
@@ -89,7 +89,10 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_amount',
                     'currency' => $options['data']->getAccount()->getCurrency(),
-                    'mapped' => false
+                    'mapped' => false,
+                    'constraints' => array(
+                        new Assert\NotBlank()
+                    )
                 )
             )
             ->add(
@@ -159,24 +162,6 @@ class OperationForm extends AbstractType
                 )
             )
         ;
-
-        $builder->addValidator(
-            new CallbackValidator(
-                function(FormInterface $form)
-                {
-                    $validator = new Assert\NotBlankValidator();
-                    $constraint = new Assert\NotBlank();
-
-                    if (!$validator->validate($form['type']->getData(), $constraint)) {
-                        $form->get('type')->addError(new FormError($constraint->message));
-                    }
-
-                    if (!$validator->validate($form['amount']->getData(), $constraint)) {
-                        $form->get('amount')->addError(new FormError($constraint->message));
-                    }
-                }
-            )
-        );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
