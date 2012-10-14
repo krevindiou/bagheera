@@ -1,3 +1,6 @@
+imports:
+    - { resource: services_provider.yml }
+
 services:
     twig.extension.bagheera:
         class: Krevindiou\BagheeraBundle\Extension\TwigExtension
