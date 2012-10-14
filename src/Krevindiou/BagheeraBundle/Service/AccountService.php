@@ -96,8 +96,8 @@ class AccountService
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.user = :user ';
         if (!$deleted) {
-            $dql.= 'AND b.is_deleted = 0 ';
-            $dql.= 'AND a.is_deleted = 0 ';
+            $dql.= 'AND b.isDeleted = 0 ';
+            $dql.= 'AND a.isDeleted = 0 ';
         }
         $dql.= 'ORDER BY a.name ASC';
 
