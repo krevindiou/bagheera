@@ -37,8 +37,8 @@ class AccountController extends Controller
     public function listAction()
     {
         $user = $this->get('security.context')->getToken()->getUser();
-        $banks = $user->getBanks();
 
+        $banks = $this->get('bagheera.bank')->getList($user, false);
         $progress = $this->get('bagheera.user')->getImportProgress($user);
         $reports = $this->get('bagheera.report')->getHomepageList($user);
 
@@ -64,7 +64,7 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/home")
+     * @Route("/")
      * @Method("POST")
      */
     public function listActionsAction(Request $request)

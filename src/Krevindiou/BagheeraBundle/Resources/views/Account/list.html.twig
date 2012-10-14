@@ -9,6 +9,7 @@
     <form method="post" action="" id="form_account">
         <ul class="banks">
             {% for bank in banks %}
+            {% set accounts = accountService.getList(app.user, false) %}
             <li>
                 <table>
                     <tr>
@@ -23,19 +24,19 @@
 
                             {% if bank.isManual() == false and progress|length == 0 %}
                                 <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import">
-                                    <img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ bank.getAccounts()|length == 0 ? ' class="tip"' : '' }}title="{{ bank.getAccounts()|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/>
+                                    <img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ accounts|length == 0 ? ' class="tip"' : '' }}title="{{ accounts|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/>
                                 </a>
                             {% endif %}
                         </th>
                     </tr>
 
-                    {% if bank.getAccounts() is empty %}
+                    {% if accounts is empty %}
                     <tr>
                         <td></td>
                         <td colspan="3"><em>{{ 'account_none'|trans }}</em></td>
                     </tr>
                     {% else %}
-                    {% for account in bank.getAccounts() %}
+                    {% for account in accounts %}
                     <tr>
                         <td class="checkbox"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
                         <td class="account_name"><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>

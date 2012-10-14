@@ -92,6 +92,28 @@ class BankService
     }
 
     /**
+     * Returns banks list
+     *
+     * @param  User $user    User entity
+     * @param  bool $deleted Return deleted items
+     * @return array
+     */
+    public function getList(User $user, $deleted = true)
+    {
+        $dql = 'SELECT b FROM KrevindiouBagheeraBundle:Bank b ';
+        $dql.= 'WHERE b.user = :user ';
+        if (!$deleted) {
+            $dql.= 'AND b.isDeleted = 0 ';
+        }
+        $dql.= 'ORDER BY b.name ASC';
+
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('user', $user);
+
+        return $query->getResult();
+    }
+
+    /**
      * Returns bank form
      *
      * @param  User $user User entity
