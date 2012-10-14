@@ -23,7 +23,6 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
     Symfony\Bridge\Monolog\Logger,
-    Symfony\Component\Process\Process,
     Symfony\Component\Process\PhpExecutableFinder,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
@@ -268,17 +267,18 @@ class BankService
                 return;
             }
 
-            $process = new Process(
+            $cmd = sprintf(
+                '%s > /dev/null 2>&1 & echo $!',
                 sprintf(
-                    '%s console --env=%s bagheera:import_external_bank %d',
+                    '%s %s/console --env=%s bagheera:import_external_bank %d',
                     $phpBin,
+                    $this->_rootDir,
                     $this->_environment,
                     $bank->getBankId()
-                ),
-                $this->_rootDir
+                )
             );
 
-            $process->run();
+            exec($cmd);
         }
     }
 }
