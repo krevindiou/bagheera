@@ -152,6 +152,7 @@ class SchedulerForm extends AbstractType
                     'label' => 'scheduler_limit_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
+                    'required' => false,
                     'attr' => array(
                         'size' => 12,
                         'class' => 'calendar'

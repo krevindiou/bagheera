@@ -13,24 +13,22 @@ var Bagheera = {
             Bagheera.dropDownTransferAccount();
             Bagheera.tooltip();
 
-            $("table.data td.edit, table.data th.edit").hide();
-
-            $("table.data tr td").click(function() {
+            $("table.table td").click(function() {
                 if ($(this).find("input").length == 0) {
-                    var link = $(this).parent().find("td.edit a");
+                    var link = $(this).parent().find("td a");
                     if (link) {
                         document.location.href = link.attr("href");
                     }
                 }
             });
 
-            $("table.data input[type=checkbox]").change(function() {
+            $("table.table input[type=checkbox]").change(function() {
                 $(this).parent().parent().toggleClass("selected");
-                $(".list_actions input").toggle($("table.data .selected").length > 0);
             });
 
-            $("#form_account input[type=checkbox]").change(function() {
-                $(".list_actions input").toggle($("#form_account :checked").length > 0);
+            $("table.table").next(".btn-group").hide();
+            $("table.table input[type=checkbox]").change(function() {
+                $(this).parents("table").next(".btn-group").toggle();
             });
 
             $("input.calendar").on("click", function() {
@@ -46,8 +44,8 @@ var Bagheera = {
             });
 
             $("a.search").click(function(e) {
-                $("#operation_search").show();
-                $("#operation").addClass("with_sidebar");
+                $("#operation-search").show();
+                $("#operation").addClass("with-sidebar");
                 e.preventDefault();
             });
 
@@ -64,12 +62,12 @@ var Bagheera = {
     accounts: function() {
         if ($("input[type=checkbox][name='banksId[]']").length > 0) {
             $("input[type=checkbox][name='banksId[]']").change(function() {
-                $(this).parents('table').find("td input[type=checkbox][name='accountsId[]']").attr("checked", "checked" == $(this).attr("checked"));
-                $(this).parents('table').find("td input[type=checkbox][name='accountsId[]']").attr("disabled", "checked" == $(this).attr("checked"));
+                $(this).parents("tr").nextUntil("tr:has(th)").find("td input[type=checkbox][name='accountsId[]']").attr("checked", "checked" == $(this).attr("checked"));
+                $(this).parents("tr").nextUntil("tr:has(th)").find("td input[type=checkbox][name='accountsId[]']").attr("disabled", "checked" == $(this).attr("checked"));
             });
         }
 
-        $("input[type=submit][name=delete], input[type=submit][name=share], input[type=submit][name=reconcile]").click(function(e) {
+        $("button[type=submit][name=delete], button[type=submit][name=share], button[type=submit][name=reconcile]").click(function(e) {
             if (!confirm(Bagheera.translations.confirm)) {
                 e.preventDefault();
             }

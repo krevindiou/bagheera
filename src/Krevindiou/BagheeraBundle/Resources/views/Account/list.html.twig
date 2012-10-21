@@ -3,69 +3,70 @@
 {% block pageTitle 'account_list_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('bank_new') }}" class="new{{ tipNewBank ? ' tip' : '' }}"{% if tipNewBank %} title="{{ "tip_new_bank"|trans }}"{% endif %}>{{ 'bank_new_link'|trans }}</a>
+<div class="btn-group">
+    <a href="{{ path('bank_new') }}" class="btn{{ tipNewBank ? ' tip' : '' }}"{% if tipNewBank %} title="{{ "tip_new_bank"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'bank_new_link'|trans }}</a>
+</div>
+<br/>
 
 {% if banks|length > 0 %}
-    <form method="post" action="" id="form_account">
-        <ul class="banks">
-            {% for bank in banks %}
-            {% set accounts = accountService.getList(app.user, false) %}
-            <li>
-                <table>
-                    <tr>
-                        <th class="checkbox"><input type="checkbox" name="banksId[]" value="{{ bank.bankId }}"/></th>
-                        <th class="bank_name" colspan="2">{{ bank.name }}</th>
-                        <th class="actions">
-                            <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'bank_edit_link'|trans }}" title="{{ 'bank_edit_link'|trans }}"/></a>
-
-                            {% if bank.isManual() == true %}
-                            <a href="{{ path('account_new', {'bankId': bank.bankId}) }}" class="{{ tipNewAccount ? 'tip' : '' }}"{% if tipNewAccount %} title="{{ 'tip_new_account'|trans }}"{% endif %}><img src="{{ asset('/bundles/krevindioubagheera/images/plus_mini.png') }}" alt="{{ 'account_new_link'|trans }}" title="{{ 'account_new_link'|trans }}"/></a>
-                            {% endif %}
-
-                            {% if bank.isManual() == false and progress|length == 0 %}
-                                <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}" class="import">
-                                    <img src="{{ asset('/bundles/krevindioubagheera/images/load.png') }}" alt="{{ 'bank_import_link'|trans }}"{{ accounts|length == 0 ? ' class="tip"' : '' }}title="{{ accounts|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"/>
-                                </a>
-                            {% endif %}
-                        </th>
-                    </tr>
-
-                    {% if accounts is empty %}
-                    <tr>
-                        <td></td>
-                        <td colspan="3"><em>{{ 'account_none'|trans }}</em></td>
-                    </tr>
-                    {% else %}
-                    {% for account in accounts %}
-                    <tr>
-                        <td class="checkbox"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
-                        <td class="account_name"><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
-
-                        {% set balance = accountService.getBalance(app.user, account) %}
-                        <td class="balance {{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|abs|money(account.currency) }}</td>
-                        <td class="actions">
-                            <a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><img src="{{ asset('/bundles/krevindioubagheera/images/edit.png') }}" alt="{{ 'account_edit_link'|trans }}" title="{{ 'account_edit_link'|trans }}"/></a>
-                            <div class="progress-import-account" id="progress-import-account-{{ account.accountId }}"></div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    {% endif %}
-                </table>
-            </li>
-            {% endfor %}
-        </ul>
-
-        <div class="list_actions">
-            <input type="submit" name="delete" class="delete" value="{{ 'account_delete_button'|trans }}"/>
-            {#<input type="submit" name="share" value="{{ 'account_share_button'|trans }}"/>#}
-        </div>
-
-        <div id="total_balances">{{ 'total_balance'|trans }} :
+    <div id="total-balances">
+        <p>
+            <strong>{{ 'total_balance'|trans }}</strong>
             <ul>
                 {% for currency, totalBalance in totalBalances %}
                 <li><strong class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|abs|money(currency) }}</strong></li>
                 {% endfor %}
             </ul>
+        </p>
+    </div>
+
+    <form method="post" action="">
+        <table class="table table-striped table-condensed">
+            {% for bank in banks %}
+            {% set accounts = accountService.getList(app.user, bank, false) %}
+                <tr>
+                    <th class="check"><input type="checkbox" name="banksId[]" value="{{ bank.bankId }}"/></th>
+                    <th colspan="2">{{ bank.name }}</th>
+                    <th>
+                        <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}"><i class="icon-pencil"></i> {{ 'bank_edit_link'|trans }}</a>
+
+                        {% if bank.isManual() == true %}
+                        <a href="{{ path('account_new', {'bankId': bank.bankId}) }}" class="{{ tipNewAccount ? 'tip' : '' }}"{% if tipNewAccount %} title="{{ 'tip_new_account'|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a>
+                        {% endif %}
+
+                        {% if bank.isManual() == false and progress|length == 0 %}
+                            <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}">
+                                <span{{ accounts|length == 0 ? ' class="tip"' : '' }} title="{{ accounts|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"><i class="icon-refresh"></i> {{ 'bank_import_link'|trans }}</span>
+                            </a>
+                        {% endif %}
+                    </th>
+                </tr>
+                {% if accounts is empty %}
+                <tr>
+                    <td></td>
+                    <td colspan="3"><em>{{ 'account_none'|trans }}</em></td>
+                </tr>
+                {% else %}
+                {% for account in accounts %}
+                <tr>
+                    <td class="check"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
+                    <td><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
+
+                    {% set balance = accountService.getBalance(app.user, account) %}
+                    <td class="{{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|abs|money(account.currency) }}</td>
+                    <td>
+                        <a href="{{ path('account_edit', {'accountId': account.accountId}) }}"><i class="icon-pencil"></i> {{ 'account_edit_link'|trans }}</a>
+                        <div class="progress-import-account" id="progress-import-account-{{ account.accountId }}"></div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </table>
+
+        <div class="btn-group">
+            <button type="submit" name="delete" class="btn"><i class="icon-trash"></i> {{ 'account_delete_button'|trans }}</button>
+            {#<button type="submit" name="share" class="btn"><i class="icon-share-alt"></i> {{ 'account_share_button'|trans }}</button>#}
         </div>
     </form>
 

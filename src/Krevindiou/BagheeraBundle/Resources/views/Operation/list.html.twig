@@ -3,15 +3,17 @@
 {% block pageTitle 'operation_list_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('account_list') }}" class="back">{{ 'back_link'|trans }}</a>
-<a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="new{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}>{{ 'operation_new_link'|trans }}</a>
-<a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="search">{{ 'operation_search_link'|trans }}</a>
-<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="schedulers">{{ 'scheduler_list'|trans }}</a>
-<br/><br/>
+<div class="btn-group">
+    <a href="{{ path('account_list') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
+    <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="btn{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation_new_link'|trans }}</a>
+    <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="btn search"><i class="icon-search"></i> {{ 'operation_search_link'|trans }}</a>
+    <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn"><i class="icon-time"></i> {{ 'scheduler_list'|trans }}</a>
+</div>
+<br/>
 
 {% if operations|length > 0 %}
-<form id="operation" {% if displaySearch %}class="with_sidebar" {% endif %}method="post" action="">
-    <table class="data">
+<form id="operation" {% if displaySearch %}class="with-sidebar" {% endif %}method="post" action="">
+    <table class="table table-striped table-bordered table-hover table-condensed">
         <tr>
             <th></th>
             <th></th>
@@ -21,14 +23,19 @@
             <th>{{ 'operation_type_debit'|trans }}</th>
             <th>{{ 'operation_type_credit'|trans }}</th>
             <th>{{ 'operation_value_date'|trans }}</th>
-            <th class="edit"></th>
+            <th></th>
         </tr>
         {% for operation in operations %}
         <tr>
-            <td><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
+            <td class="check"><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
             <td>
-                {{ (operation.isReconciled ? '<img src="' ~ asset('/bundles/krevindioubagheera/images/reconcile_mini.png') ~ '" alt="R"/>&nbsp;' : '')|raw }}
-                {{ ((operation.scheduler is not null) ? '<img src="' ~ asset('/bundles/krevindioubagheera/images/clock_mini.png') ~ '" alt="S"/>' : '')|raw }}
+                {% if operation.isReconciled %}
+                <i class="icon-ok"></i>&nbsp;
+                {% endif %}
+
+                {% if operation.scheduler is not null %}
+                <i class="icon-time"></i>
+                {% endif %}
             </td>
             <td>{{ operation.thirdParty }}</td>
             <td>{{ (operation.category is not null) ? operation.category.name : '' }}</td>
@@ -36,18 +43,18 @@
             <td class="debit{{ (0 != operation.debit) ? ' negative' : '' }}">{{ (0 != operation.debit) ? operation.debit : '' }}</td>
             <td class="credit{{ (0 != operation.credit) ? ' positive' : '' }}">{{ (0 != operation.credit) ? operation.credit : '' }}</td>
             <td>{{ operation.valueDate|date('Y-m-d') }}</td>
-            <td class="edit"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}">{{ 'operation_edit_link'|trans }}</a></td>
+            <td><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}"><i class="icon-pencil"></i> {{ 'operation_edit_link'|trans }}</a></td>
         </tr>
         {% endfor %}
     </table>
 
-    <div class="list_actions">
-        <input type="submit" name="delete" class="delete" value="{{ 'operation_delete_button'|trans }}" />
-        <input type="submit" name="reconcile" class="reconcile" value="{{ 'operation_reconcile_button'|trans }}" />
+    <div class="btn-group">
+        <button type="submit" name="delete" class="btn delete"><i class="icon-trash"></i> {{ 'operation_delete_button'|trans }}</button>
+        <button type="submit" name="reconcile" class="btn reconcile"><i class="icon-check"></i> {{ 'operation_reconcile_button'|trans }}</button>
+    </div>
 
-        <div class="pager">
-        {{ pagerfanta(operations) }}
-        </div>
+    <div class="pagination pagination-right">
+    {{ pagerfanta(operations, 'twitter_bootstrap') }}
     </div>
 </form>
 

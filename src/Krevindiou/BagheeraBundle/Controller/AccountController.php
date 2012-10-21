@@ -74,13 +74,13 @@ class AccountController extends Controller
 
         $user = $this->get('security.context')->getToken()->getUser();
 
-        if ($request->request->get('delete')) {
+        if ($request->request->has('delete')) {
             $this->get('bagheera.account')->delete($user, $accountsId);
             $this->get('bagheera.bank')->delete($user, $banksId);
-            $this->get('session')->getFlashBag()->add('notice', 'account_delete_confirmation');
-        } elseif ($request->request->get('share')) {
+            $this->get('session')->getFlashBag()->add('success', 'account_delete_confirmation');
+        } elseif ($request->request->has('share')) {
             // @todo
-            $this->get('session')->getFlashBag()->add('notice', 'account_share_confirmation');
+            $this->get('session')->getFlashBag()->add('success', 'account_share_confirmation');
         }
 
         return $this->redirect($this->generateUrl('account_list'));
@@ -127,7 +127,7 @@ class AccountController extends Controller
             $accountForm->bind($request);
 
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
-                $this->get('session')->getFlashBag()->add('notice', 'account_form_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'account_form_confirmation');
 
                 return $this->redirect(
                     $this->generateUrl('operation_list', array('accountId' => $accountForm->getData()->getAccountId()))
@@ -161,7 +161,7 @@ class AccountController extends Controller
             $accountForm->bind($request);
 
             if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
-                $this->get('session')->getFlashBag()->add('notice', 'account_form_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'account_form_confirmation');
 
                 return $this->redirect($this->generateUrl('account_list'));
             }

@@ -2,11 +2,12 @@
 
 {% block form_row %}
 {% spaceless %}
-    <div>
-        <div class="form_label">
-            {{ form_label(form, label|default(null)) }}
-        </div>
-        <div class="form_field">
+    <div class="control-group">
+        {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' control-label')|trim}) %}
+
+        {{ form_label(form, label|default(null), {label_attr: label_attr}) }}
+
+        <div class="controls">
             {{ form_errors(form) }}
             {{ form_widget(form) }}
         </div>
@@ -14,37 +15,40 @@
 {% endspaceless %}
 {% endblock %}
 
-{% block ewz_recaptcha_row %}
-{% spaceless %}
-    {{ block('form_row') }}
-{% endspaceless %}
-{% endblock %}
-
 {% block form_errors %}
 {% spaceless %}
     {% if errors|length > 0 %}
-    <ul class="form_errors">
+    <div>
         {% for error in errors %}
-            <li>{{ error.messageTemplate|trans(error.messageParameters, 'validators') }}</li>
+            <p class="text-error">{{ error.messageTemplate|trans(error.messageParameters, 'validators') }}</p>
         {% endfor %}
-    </ul>
+    </div>
     {% endif %}
 {% endspaceless %}
 {% endblock %}
 
-{% block file_widget %}
+{% block choice_widget_expanded %}
 {% spaceless %}
-    {% set type = type|default('text') %}
-    <input type="{{ type }}" {{ block('widget_attributes') }} {% if value is not empty %}value="{{ value }}" {% endif %}/>
-    {% if filePath is defined %}
-    &nbsp;<a href="{{ filePath }}">{{ 'download'|trans }}</a>
-    {% endif %}
+    {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' inline radio')|trim}) %}
+
+    <div {{ block('widget_container_attributes') }}>
+    {% for child in form %}
+        <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>{{ form_widget(child) }} {{ child.vars.label|trans({}, translation_domain) }}</label>
+    {% endfor %}
+    </div>
 {% endspaceless %}
+{% endblock %}
+
+{% block ewz_recaptcha_row %}
+    {{ block('form_row') }}
+{% endblock %}
+
+{% block date_widget %}
+    {% set type = 'text' %}
+    {{ parent() }}
 {% endblock %}
 
 {% block money_widget %}
-{% spaceless %}
-    {% set attr = attr|merge({'class': attr.class|default('') ~ ' money'}) %}
+    {% set attr = attr|merge({class: attr.class|default('') ~ ' money'}) %}
     {{ parent() }}
-{% endspaceless %}
 {% endblock %}

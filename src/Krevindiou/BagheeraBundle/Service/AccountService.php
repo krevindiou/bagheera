@@ -87,14 +87,18 @@ class AccountService
      * Returns accounts list
      *
      * @param  User $user    User entity
+     * @param  Bank $bank    Bank entity
      * @param  bool $deleted Return deleted items
      * @return array
      */
-    public function getList(User $user, $deleted = true)
+    public function getList(User $user, Bank $bank = null, $deleted = true)
     {
         $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.user = :user ';
+        if (null !== $bank) {
+            $dql.= 'AND a.bank = :bank ';
+        }
         if (!$deleted) {
             $dql.= 'AND b.isDeleted = 0 ';
             $dql.= 'AND a.isDeleted = 0 ';
@@ -103,6 +107,9 @@ class AccountService
 
         $query = $this->_em->createQuery($dql);
         $query->setParameter('user', $user);
+        if (null !== $bank) {
+            $query->setParameter('bank', $bank);
+        }
 
         return $query->getResult();
     }

@@ -66,6 +66,7 @@ class ReportForm extends AbstractType
                         'label' => 'report_value_date_start',
                         'widget' => 'single_text',
                         'format' => 'yyyy-MM-dd',
+                        'required' => false,
                         'attr' => array(
                             'size' => 12,
                             'class' => 'calendar'
@@ -79,6 +80,7 @@ class ReportForm extends AbstractType
                         'label' => 'report_value_date_end',
                         'widget' => 'single_text',
                         'format' => 'yyyy-MM-dd',
+                        'required' => false,
                         'attr' => array(
                             'size' => 12,
                             'class' => 'calendar'

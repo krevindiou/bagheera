@@ -4,30 +4,31 @@
 
 {% block content %}
 {% spaceless %}
-<form action="{{ path('login_check') }}" novalidate="novalidate" method="post">
+<form action="{{ path('login_check') }}" novalidate="novalidate" method="post" class="form-horizontal">
     <div>
         {% if error %}
-        <ul class="form_errors"><li>{{ error.message|trans([], 'validators') }}</li></ul>
+        <div class="alert alert-error">{{ error.message|trans([], 'validators') }}</div>
         {% endif %}
-        <div>
-            <div class="form_label">
-                <label for="username">{{ 'user_email'|trans }}</label>
-            </div>
-            <div class="form_field">
+
+        <div class="control-group">
+            <label for="username" class="control-label">{{ 'user_email'|trans }}</label>
+
+            <div class="controls">
                 <input type="email" id="username" name="_username" value="{{ last_username }}"/>
             </div>
         </div>
-        <div>
-            <div class="form_label">
-                <label for="password">{{ 'user_password'|trans }}</label>
-            </div>
-            <div class="form_field">
+        <div class="control-group">
+            <label for="password" class="control-label">{{ 'user_password'|trans }}</label>
+
+            <div class="controls">
                 <input type="password" id="password" name="_password"/>
             </div>
         </div>
     </div>
-    <div class="form_button">
-        <input type="submit" name="login" value="{{ 'user_login_submit_button'|trans }}"/>
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" name="login" class="btn btn-large btn-primary" value="{{ 'user_login_submit_button'|trans }}"/>
+        </div>
     </div>
 </form>
 {% endspaceless %}

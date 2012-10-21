@@ -153,6 +153,7 @@ class OperationSearchForm extends AbstractType
                     'label' => 'operation_search_value_date_start',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
+                    'required' => false,
                     'attr' => array(
                         'size' => 12,
                         'class' => 'calendar'
@@ -166,6 +167,7 @@ class OperationSearchForm extends AbstractType
                     'label' => 'operation_search_value_date_end',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
+                    'required' => false,
                     'attr' => array(
                         'size' => 12,
                         'class' => 'calendar'

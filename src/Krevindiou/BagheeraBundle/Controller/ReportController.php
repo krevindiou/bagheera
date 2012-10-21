@@ -53,9 +53,9 @@ class ReportController extends Controller
 
         $user = $this->get('security.context')->getToken()->getUser();
 
-        if ($request->request->get('delete')) {
+        if ($request->request->has('delete')) {
             $this->get('bagheera.report')->delete($user, $reportsId);
-            $this->get('session')->getFlashBag()->add('notice', 'report_delete_confirmation');
+            $this->get('session')->getFlashBag()->add('success', 'report_delete_confirmation');
         }
 
         return $this->redirect($this->generateUrl('report_list'));
@@ -79,7 +79,7 @@ class ReportController extends Controller
             $reportForm->bind($request);
 
             if ($this->get('bagheera.report')->saveForm($user, $reportForm)) {
-                $this->get('session')->getFlashBag()->add('notice', 'report_form_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'report_form_confirmation');
 
                 return $this->redirect($this->generateUrl('report_list'));
             }

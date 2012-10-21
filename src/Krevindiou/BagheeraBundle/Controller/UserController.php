@@ -60,7 +60,7 @@ class UserController extends Controller
             $form->bind($request);
 
             if ($this->get('bagheera.user')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('notice', 'user_register_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'user_register_confirmation');
 
                 return $this->redirect($this->generateUrl('login'));
             }
@@ -86,7 +86,7 @@ class UserController extends Controller
                 $data = $form->getData();
 
                 if ($this->get('bagheera.user')->sendResetPasswordEmail($data['email'])) {
-                    $this->get('session')->getFlashBag()->add('notice', 'user_forgot_password_confirmation');
+                    $this->get('session')->getFlashBag()->add('info', 'user_forgot_password_confirmation');
 
                     return $this->redirect($this->generateUrl('login'));
                 }
@@ -116,7 +116,7 @@ class UserController extends Controller
                     $data = $form->getData();
 
                     if ($this->get('bagheera.user')->resetPassword($data['password'], $key)) {
-                        $this->get('session')->getFlashBag()->add('notice', 'user_reset_password_confirmation');
+                        $this->get('session')->getFlashBag()->add('success', 'user_reset_password_confirmation');
 
                         return $this->redirect($this->generateUrl('login'));
                     }
@@ -142,7 +142,7 @@ class UserController extends Controller
         $key = $request->query->get('key');
 
         if ('' != $key && $this->get('bagheera.user')->activate($key)) {
-            $this->get('session')->getFlashBag()->add('notice', 'user_register_activation_confirmation');
+            $this->get('session')->getFlashBag()->add('success', 'user_register_activation_confirmation');
         } else {
             $this->get('session')->getFlashBag()->add('error', 'user_register_activation_error');
         }
@@ -164,7 +164,7 @@ class UserController extends Controller
             $form->bind($request);
 
             if ($this->get('bagheera.user')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('notice', 'user_profile_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'user_profile_confirmation');
 
                 return $this->redirect($this->generateUrl('user_profile'));
             }
@@ -188,7 +188,7 @@ class UserController extends Controller
         if (!empty($users)) {
             if ($request->request->get('toggleDeactivation')) {
                 $this->get('bagheera.user')->toggleDeactivation($users);
-                $this->get('session')->getFlashBag()->add('notice', 'user_toggle_deactivation_ok');
+                $this->get('session')->getFlashBag()->add('success', 'user_toggle_deactivation_ok');
             }
 
             return $this->redirect($this->generateUrl('user_list', array('page' => $page)));

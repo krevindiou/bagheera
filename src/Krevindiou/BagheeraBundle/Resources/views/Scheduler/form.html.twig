@@ -3,9 +3,11 @@
 {% block pageTitle 'scheduler_form_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="back">{{ 'back_link'|trans }}</a>
+<div class="btn-group">
+    <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
+</div>
 
-<form action="" novalidate="novalidate" method="post" {{ form_enctype(schedulerForm) }}>
+<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(schedulerForm) }}>
     {{ form_row(schedulerForm.type) }}
     {{ form_row(schedulerForm.thirdParty) }}
     {{ form_row(schedulerForm.amount) }}
@@ -16,11 +18,10 @@
     {{ form_row(schedulerForm.limitDate) }}
 
     {% spaceless %}
-    <div>
-        <div class="form_label">
-            {{ form_label(schedulerForm.frequencyValue, null, {'label': 'scheduler_frequency'|trans}) }}
-        </div>
-        <div class="form_field">
+    <div class="control-group">
+        {{ form_label(schedulerForm.frequencyValue, 'scheduler_frequency'|trans, {label_attr: {class: 'control-label'}}) }}
+
+        <div class="controls">
             {{ form_errors(schedulerForm.frequencyValue) }}
             {{ form_widget(schedulerForm.frequencyValue) }}
             &nbsp;
@@ -35,8 +36,10 @@
     {{ form_row(schedulerForm.isActive) }}
     {{ form_rest(schedulerForm) }}
 
-    <div class="form_button">
-        <input type="submit" value="{{ 'scheduler_form_submit_button'|trans }}"/>
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" class="btn btn-large btn-primary" value="{{ 'scheduler_form_submit_button'|trans }}"/>
+        </div>
     </div>
 </form>
 {% endblock %}

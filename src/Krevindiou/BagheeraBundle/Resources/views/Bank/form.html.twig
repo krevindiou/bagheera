@@ -3,13 +3,17 @@
 {% block pageTitle 'bank_form_page_title'|trans %}
 
 {% block content %}
-<a href="{{ path('account_list') }}" class="back">{{ 'back_link'|trans }}</a>
+<div class="btn-group">
+    <a href="{{ path('account_list') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
+</div>
 
-<form action="" novalidate="novalidate" method="post" {{ form_enctype(bankForm) }}>
+<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(bankForm) }}>
     {{ form_widget(bankForm) }}
 
-    <div class="form_button">
-        <input type="submit" value="{{ 'bank_form_submit_button'|trans }}"/>
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" class="btn btn-large btn-primary" value="{{ 'bank_form_submit_button'|trans }}"/>
+        </div>
     </div>
 </form>
 {% endblock %}
