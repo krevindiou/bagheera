@@ -124,12 +124,7 @@ class OperationService
             return;
         }
 
-        $form = $this->_formFactory->create(
-            new OperationForm($account ? : $operation->getAccount()),
-            $operation
-        );
-
-        return $form;
+        return $this->_formFactory->create(new OperationForm(), $operation);
     }
 
     /**

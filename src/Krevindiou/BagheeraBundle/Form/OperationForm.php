@@ -20,10 +20,10 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Entity\Account;
-use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
 
 /**
  * Operation form
@@ -33,46 +33,9 @@ use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
  */
 class OperationForm extends AbstractType
 {
-    /**
-     * @var Account
-     */
-    protected $_account;
-
-
-    /**
-     * @param Account $account
-     */
-    public function __construct(Account $account)
-    {
-        $this->_account = $account;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $account = $this->_account;
-
-        $subscriber = new OperationAmountFieldSubscriber($builder->getFormFactory());
-        $builder->addEventSubscriber($subscriber);
-
         $builder
-            ->add(
-                'type',
-                'choice',
-                array(
-                    'label' => 'operation_type',
-                    'data' => 'debit',
-                    'mapped' => false,
-                    'expanded' => true,
-                    'required' => false,
-                    'choices' => array(
-                        'debit' => 'operation_type_debit',
-                        'credit' => 'operation_type_credit'
-                    ),
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    )
-                )
-            )
             ->add(
                 'thirdParty',
                 null,
@@ -80,18 +43,6 @@ class OperationForm extends AbstractType
                     'label' => 'operation_third_party',
                     'attr' => array(
                         'size' => 40
-                    )
-                )
-            )
-            ->add(
-                'amount',
-                'money',
-                array(
-                    'label' => 'operation_amount',
-                    'currency' => $options['data']->getAccount()->getCurrency(),
-                    'mapped' => false,
-                    'constraints' => array(
-                        new Assert\NotBlank()
                     )
                 )
             )
@@ -112,24 +63,6 @@ class OperationForm extends AbstractType
                     'label' => 'operation_payment_method',
                     'property' => 'dropDownListLabel',
                     'empty_value' => ''
-                )
-            )
-            ->add(
-                'transferAccount',
-                null,
-                array(
-                    'label' => 'operation_transfer_account',
-                    'empty_value' => 'operation_external_account',
-                    'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
-                        return $repository->createQueryBuilder('a')
-                            ->innerJoin('a.bank', 'b')
-                            ->where('b.user = :user')
-                            ->andWhere('a != :account')
-                            ->setParameter('user', $account->getBank()->getUser())
-                            ->setParameter('account', $account)
-                            ->add('orderBy', 'a.name ASC');
-                    }
                 )
             )
             ->add(
@@ -162,6 +95,107 @@ class OperationForm extends AbstractType
                 )
             )
         ;
+
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $operation = $event->getData();
+
+                $account = $operation->getAccount();
+
+                $form
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'type',
+                            'choice',
+                            null,
+                            array(
+                                'label' => 'operation_type',
+                                'mapped' => false,
+                                'expanded' => true,
+                                'required' => false,
+                                'choices' => array(
+                                    'debit' => 'operation_type_debit',
+                                    'credit' => 'operation_type_credit'
+                                ),
+                                'constraints' => array(
+                                    new Assert\NotBlank()
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'amount',
+                            'money',
+                            null,
+                            array(
+                                'label' => 'operation_amount',
+                                'currency' => $account->getCurrency(),
+                                'mapped' => false,
+                                'constraints' => array(
+                                    new Assert\NotBlank()
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'transferAccount',
+                            'entity',
+                            null,
+                            array(
+                                'label' => 'operation_transfer_account',
+                                'empty_value' => 'operation_external_account',
+                                'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
+                                    return $repository->createQueryBuilder('a')
+                                        ->innerJoin('a.bank', 'b')
+                                        ->where('b.user = :user')
+                                        ->andWhere('a != :account')
+                                        ->setParameter('user', $account->getBank()->getUser())
+                                        ->setParameter('account', $account)
+                                        ->add('orderBy', 'a.name ASC');
+                                }
+                            )
+                        )
+                    )
+                ;
+
+                $debit = $operation->getDebit();
+                $credit = $operation->getCredit();
+
+                if (0 != $debit) {
+                    $form->get('type')->setData('debit');
+                    $form->get('amount')->setData($debit);
+                } elseif (0 != $credit) {
+                    $form->get('type')->setData('credit');
+                    $form->get('amount')->setData($credit);
+                } else {
+                    $form->get('type')->setData('debit');
+                }
+            }
+        );
+
+        $builder->addEventListener(
+            FormEvents::POST_BIND,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $operation = $event->getData();
+
+                $type = $form->get('type')->getData();
+                $amount = $form->get('amount')->getData();
+
+                if ('debit' == $type) {
+                    $operation->setDebit($amount);
+                    $operation->setCredit(0);
+                } elseif ('credit' == $type) {
+                    $operation->setDebit(0);
+                    $operation->setCredit($amount);
+                }
+            }
+        );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

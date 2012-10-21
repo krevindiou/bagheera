@@ -476,7 +476,7 @@ class Operation
      *
      * @param Krevindiou\BagheeraBundle\Entity\PaymentMethod $paymentMethod
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod)
+    public function setPaymentMethod(PaymentMethod $paymentMethod = null)
     {
         $this->paymentMethod = $paymentMethod;
     }
