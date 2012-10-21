@@ -20,9 +20,9 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Entity\Account;
-use Krevindiou\BagheeraBundle\Form\EventListener\OperationSearchAmountFieldSubscriber;
 
 /**
  * Operation form
@@ -32,27 +32,8 @@ use Krevindiou\BagheeraBundle\Form\EventListener\OperationSearchAmountFieldSubsc
  */
 class OperationSearchForm extends AbstractType
 {
-    /**
-     * @var Account
-     */
-    protected $_account;
-
-
-    /**
-     * @param Account $account
-     */
-    public function __construct(Account $account)
-    {
-        $this->_account = $account;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $account = $this->_account;
-
-        $subscriber = new OperationSearchAmountFieldSubscriber($builder->getFormFactory());
-        $builder->addEventSubscriber($subscriber);
-
         $builder
             ->add(
                 'type',
@@ -75,57 +56,6 @@ class OperationSearchForm extends AbstractType
                     'attr' => array(
                         'size' => 30
                     )
-                )
-            )
-            ->add(
-                'amount_comparator_1',
-                'choice',
-                array(
-                    'mapped' => false,
-                    'required' => false,
-                    'empty_value' => '',
-                    'choices' => array(
-                        'inferiorTo' => '<',
-                        'inferiorOrEqualTo' => '<=',
-                        'equalTo' => '=',
-                        'superiorOrEqualTo' => '>',
-                        'superiorTo' => '>=',
-                    )
-                )
-            )
-            ->add(
-                'amount_1',
-                'money',
-                array(
-                    'label' => 'operation_amount',
-                    'currency' => $options['data']->getAccount()->getCurrency(),
-                    'mapped' => false,
-                    'required' => false
-                )
-            )
-            ->add(
-                'amount_comparator_2',
-                'choice',
-                array(
-                    'mapped' => false,
-                    'required' => false,
-                    'empty_value' => '',
-                    'choices' => array(
-                        'inferiorTo' => '<',
-                        'inferiorOrEqualTo' => '<=',
-                        'equalTo' => '=',
-                        'superiorOrEqualTo' => '>',
-                        'superiorTo' => '>=',
-                    )
-                )
-            )
-            ->add(
-                'amount_2',
-                'money',
-                array(
-                    'currency' => $options['data']->getAccount()->getCurrency(),
-                    'mapped' => false,
-                    'required' => false
                 )
             )
             ->add(
@@ -198,6 +128,123 @@ class OperationSearchForm extends AbstractType
                 )
             )
         ;
+
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $operationSearch = $event->getData();
+
+                $account = $operationSearch->getAccount();
+
+                $form
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'amount_comparator_1',
+                            'choice',
+                            null,
+                            array(
+                                'mapped' => false,
+                                'required' => false,
+                                'empty_value' => '',
+                                'choices' => array(
+                                    'inferiorTo' => '<',
+                                    'inferiorOrEqualTo' => '<=',
+                                    'equalTo' => '=',
+                                    'superiorOrEqualTo' => '>=',
+                                    'superiorTo' => '>',
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'amount_1',
+                            'money',
+                            null,
+                            array(
+                                'label' => 'operation_amount',
+                                'currency' => $account->getCurrency(),
+                                'mapped' => false
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'amount_comparator_2',
+                            'choice',
+                            null,
+                            array(
+                                'mapped' => false,
+                                'required' => false,
+                                'empty_value' => '',
+                                'choices' => array(
+                                    'inferiorTo' => '<',
+                                    'inferiorOrEqualTo' => '<=',
+                                    'equalTo' => '=',
+                                    'superiorOrEqualTo' => '>=',
+                                    'superiorTo' => '>',
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'amount_2',
+                            'money',
+                            null,
+                            array(
+                                'label' => 'operation_amount',
+                                'currency' => $account->getCurrency(),
+                                'mapped' => false
+                            )
+                        )
+                    )
+                ;
+
+                $formValues = array();
+                if ('' != $operationSearch->getAmountInferiorTo()) {
+                    $formValues[] = array(
+                        'amount_comparator' => 'inferiorTo',
+                        'amount' => $operationSearch->getAmountInferiorTo()
+                    );
+                }
+                if ('' != $operationSearch->getAmountInferiorOrEqualTo()) {
+                    $formValues[] = array(
+                        'amount_comparator' => 'inferiorOrEqualTo',
+                        'amount' => $operationSearch->getAmountInferiorOrEqualTo()
+                    );
+                }
+                if ('' != $operationSearch->getAmountEqualTo()) {
+                    $formValues[] = array(
+                        'amount_comparator' => 'equalTo',
+                        'amount' => $operationSearch->getAmountEqualTo()
+                    );
+                }
+                if ('' != $operationSearch->getAmountSuperiorOrEqualTo()) {
+                    $formValues[] = array(
+                        'amount_comparator' => 'superiorOrEqualTo',
+                        'amount' => $operationSearch->getAmountSuperiorOrEqualTo()
+                    );
+                }
+                if ('' != $operationSearch->getAmountSuperiorTo()) {
+                    $formValues[] = array(
+                        'amount_comparator' => 'superiorTo',
+                        'amount' => $operationSearch->getAmountSuperiorTo()
+                    );
+                }
+
+                if (isset($formValues[0])) {
+                    $form->get('amount_comparator_1')->setData($formValues[0]['amount_comparator']);
+                    $form->get('amount_1')->setData($formValues[0]['amount']);
+                }
+
+                if (isset($formValues[1])) {
+                    $form->get('amount_comparator_2')->setData($formValues[1]['amount_comparator']);
+                    $form->get('amount_2')->setData($formValues[1]['amount']);
+                }
+            }
+        );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

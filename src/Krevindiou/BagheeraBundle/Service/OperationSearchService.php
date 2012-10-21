@@ -77,12 +77,7 @@ class OperationSearchService
             return;
         }
 
-        $form = $this->_formFactory->create(
-            new OperationSearchForm($account ? : $operationSearch->getAccount()),
-            $operationSearch
-        );
-
-        return $form;
+        return $this->_formFactory->create(new OperationSearchForm(), $operationSearch);
     }
 
     /**
