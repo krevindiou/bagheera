@@ -8,7 +8,16 @@
 </div>
 
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(operationForm) }}>
-    {{ form_widget(operationForm) }}
+    {{ form_row(operationForm.type) }}
+    {{ form_row(operationForm.thirdParty) }}
+    {{ form_row(operationForm.amount) }}
+    {{ form_row(operationForm.category) }}
+    {{ form_row(operationForm.paymentMethod) }}
+    {{ form_row(operationForm.transferAccount) }}
+    {{ form_row(operationForm.valueDate) }}
+    {{ form_row(operationForm.notes) }}
+    {{ form_row(operationForm.isReconciled) }}
+    {{ form_rest(operationForm) }}
 
     <div class="control-group">
         <div class="controls">
