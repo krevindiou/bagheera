@@ -20,8 +20,9 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Form\Type\CurrencyType;
 
 /**
@@ -34,41 +35,13 @@ class AccountForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $user = $options['data']->getBank()->getUser();
-
-        $edit = (null !== $options['data']->getAccountId());
-
         $builder
-            ->add(
-                'bank',
-                null,
-                array(
-                    'label' => 'account_bank',
-                    'empty_value' => '',
-                    'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
-                        return $repository->createQueryBuilder('b')
-                            ->where('b.user = :user')
-                            ->setParameter('user', $user)
-                            ->add('orderBy', 'b.name ASC');
-                    },
-                    'disabled' => $edit
-                )
-            )
             ->add(
                 'name',
                 null,
                 array(
                     'label' => 'account_name',
                     'attr' => array('size' => 40)
-                )
-            )
-            ->add(
-                'currency',
-                new CurrencyType(),
-                array(
-                    'label' => 'account_currency',
-                    'disabled' => $edit
                 )
             )
             ->add(
@@ -88,15 +61,6 @@ class AccountForm extends AbstractType
                 )
             )
             ->add(
-                'initialBalance',
-                'money',
-                array(
-                    'label' => 'account_initial_balance',
-                    'currency' => false,
-                    'disabled' => $edit
-                )
-            )
-            ->add(
                 'overdraftFacility',
                 'money',
                 array(
@@ -105,6 +69,63 @@ class AccountForm extends AbstractType
                 )
             )
         ;
+
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $account = $event->getData();
+
+                $user = $account->getBank()->getUser();
+
+                $edit = (null !== $account->getAccountId());
+
+                $form
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'bank',
+                            'entity',
+                            null,
+                            array(
+                                'label' => 'account_bank',
+                                'empty_value' => '',
+                                'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
+                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                                    return $repository->createQueryBuilder('b')
+                                        ->where('b.user = :user')
+                                        ->setParameter('user', $user)
+                                        ->add('orderBy', 'b.name ASC');
+                                },
+                                'disabled' => $edit
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'currency',
+                            new CurrencyType(),
+                            null,
+                            array(
+                                'label' => 'account_currency',
+                                'disabled' => $edit
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'initialBalance',
+                            'money',
+                            null,
+                            array(
+                                'label' => 'account_initial_balance',
+                                'currency' => false,
+                                'disabled' => $edit
+                            )
+                        )
+                    )
+                ;
+            }
+        );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

@@ -20,6 +20,8 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
 /**
@@ -32,31 +34,7 @@ class BankForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $edit = (null !== $options['data']->getBankId());
-
-        $user = $options['data']->getUser();
-
         $builder
-            ->add(
-                'provider',
-                null,
-                array(
-                    'label' => 'bank_provider',
-                    'empty_value' => 'bank_provider_other',
-                    'empty_data' => null,
-                    'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
-                        return $repository->createQueryBuilder('p')
-                            ->where('p.country = :country')
-                            ->setParameter('country', $user->getCountry())
-                            ->add('orderBy', 'p.name ASC');
-                    },
-                    'disabled' => $edit,
-                    'attr' => array(
-                        'bankId' => $options['data']->getBankId()
-                    )
-                )
-            )
             ->add(
                 'name',
                 null,
@@ -66,6 +44,44 @@ class BankForm extends AbstractType
                 )
             )
         ;
+
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $bank = $event->getData();
+
+                $user = $bank->getUser();
+
+                $edit = (null !== $bank->getBankId());
+
+                $form
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'provider',
+                            'entity',
+                            null,
+                            array(
+                                'label' => 'bank_provider',
+                                'empty_value' => 'bank_provider_other',
+                                'empty_data' => null,
+                                'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',
+                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                                    return $repository->createQueryBuilder('p')
+                                        ->where('p.country = :country')
+                                        ->setParameter('country', $user->getCountry())
+                                        ->add('orderBy', 'p.name ASC');
+                                },
+                                'disabled' => $edit,
+                                'attr' => array(
+                                    'bankId' => $bank->getBankId()
+                                )
+                            )
+                        )
+                    )
+                ;
+            }
+        );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)
