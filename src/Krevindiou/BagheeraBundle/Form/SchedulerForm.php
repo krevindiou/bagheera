@@ -20,10 +20,10 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Entity\Account;
-use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
 
 /**
  * Scheduler form
@@ -33,46 +33,9 @@ use Krevindiou\BagheeraBundle\Form\EventListener\OperationAmountFieldSubscriber;
  */
 class SchedulerForm extends AbstractType
 {
-    /**
-     * @var Account
-     */
-    protected $_account;
-
-
-    /**
-     * @param Account $account
-     */
-    public function __construct(Account $account)
-    {
-        $this->_account = $account;
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $account = $this->_account;
-
-        $subscriber = new OperationAmountFieldSubscriber($builder->getFormFactory());
-        $builder->addEventSubscriber($subscriber);
-
         $builder
-            ->add(
-                'type',
-                'choice',
-                array(
-                    'label' => 'scheduler_type',
-                    'data' => 'debit',
-                    'mapped' => false,
-                    'expanded' => true,
-                    'required' => false,
-                    'choices' => array(
-                        'debit' => 'scheduler_debit',
-                        'credit' => 'scheduler_credit'
-                    ),
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    )
-                )
-            )
             ->add(
                 'thirdParty',
                 null,
@@ -83,18 +46,7 @@ class SchedulerForm extends AbstractType
                     )
                 )
             )
-            ->add(
-                'amount',
-                'money',
-                array(
-                    'label' => 'scheduler_amount',
-                    'currency' => $options['data']->getAccount()->getCurrency(),
-                    'mapped' => false,
-                    'constraints' => array(
-                        new Assert\NotBlank()
-                    )
-                )
-            )
+
             ->add(
                 'category',
                 null,
@@ -112,24 +64,6 @@ class SchedulerForm extends AbstractType
                     'label' => 'scheduler_payment_method',
                     'property' => 'dropDownListLabel',
                     'empty_value' => ''
-                )
-            )
-            ->add(
-                'transferAccount',
-                null,
-                array(
-                    'label' => 'scheduler_transfer_account',
-                    'empty_value' => 'scheduler_external_account',
-                    'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
-                        return $repository->createQueryBuilder('a')
-                            ->innerJoin('a.bank', 'b')
-                            ->where('b.user = :user')
-                            ->andWhere('a != :account')
-                            ->setParameter('user', $account->getBank()->getUser())
-                            ->setParameter('account', $account)
-                            ->add('orderBy', 'a.name ASC');
-                    }
                 )
             )
             ->add(
@@ -207,6 +141,107 @@ class SchedulerForm extends AbstractType
                 )
             )
         ;
+
+        $builder->addEventListener(
+            FormEvents::PRE_SET_DATA,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $scheduler = $event->getData();
+
+                $account = $scheduler->getAccount();
+
+                $form
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'type',
+                            'choice',
+                            null,
+                            array(
+                                'label' => 'scheduler_type',
+                                'mapped' => false,
+                                'expanded' => true,
+                                'required' => false,
+                                'choices' => array(
+                                    'debit' => 'scheduler_debit',
+                                    'credit' => 'scheduler_credit'
+                                ),
+                                'constraints' => array(
+                                    new Assert\NotBlank()
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'amount',
+                            'money',
+                            null,
+                            array(
+                                'label' => 'scheduler_amount',
+                                'currency' => $account->getCurrency(),
+                                'mapped' => false,
+                                'constraints' => array(
+                                    new Assert\NotBlank()
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'transferAccount',
+                            'entity',
+                            null,
+                            array(
+                                'label' => 'scheduler_transfer_account',
+                                'empty_value' => 'scheduler_external_account',
+                                'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
+                                    return $repository->createQueryBuilder('a')
+                                        ->innerJoin('a.bank', 'b')
+                                        ->where('b.user = :user')
+                                        ->andWhere('a != :account')
+                                        ->setParameter('user', $account->getBank()->getUser())
+                                        ->setParameter('account', $account)
+                                        ->add('orderBy', 'a.name ASC');
+                                }
+                            )
+                        )
+                    )
+                ;
+
+                $debit = $scheduler->getDebit();
+                $credit = $scheduler->getCredit();
+
+                if (0 != $debit) {
+                    $form->get('type')->setData('debit');
+                    $form->get('amount')->setData($debit);
+                } elseif (0 != $credit) {
+                    $form->get('type')->setData('credit');
+                    $form->get('amount')->setData($credit);
+                } else {
+                    $form->get('type')->setData('debit');
+                }
+            }
+        );
+
+        $builder->addEventListener(
+            FormEvents::POST_BIND,
+            function(FormEvent $event) use ($builder) {
+                $form = $event->getForm();
+                $scheduler = $event->getData();
+
+                $type = $form->get('type')->getData();
+                $amount = $form->get('amount')->getData();
+
+                if ('debit' == $type) {
+                    $scheduler->setDebit($amount);
+                    $scheduler->setCredit(0);
+                } elseif ('credit' == $type) {
+                    $scheduler->setDebit(0);
+                    $scheduler->setCredit($amount);
+                }
+            }
+        );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

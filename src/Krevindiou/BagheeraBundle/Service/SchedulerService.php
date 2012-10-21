@@ -119,12 +119,7 @@ class SchedulerService
             return;
         }
 
-        $form = $this->_formFactory->create(
-            new SchedulerForm($account ? : $scheduler->getAccount()),
-            $scheduler
-        );
-
-        return $form;
+        return $this->_formFactory->create(new SchedulerForm(), $scheduler);
     }
 
     /**
