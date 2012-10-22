@@ -162,8 +162,8 @@ class SchedulerForm extends AbstractType
                                 'expanded' => true,
                                 'required' => false,
                                 'choices' => array(
-                                    'debit' => 'scheduler_debit',
-                                    'credit' => 'scheduler_credit'
+                                    'debit' => 'scheduler_type_debit',
+                                    'credit' => 'scheduler_type_credit'
                                 ),
                                 'constraints' => array(
                                     new Assert\NotBlank()
