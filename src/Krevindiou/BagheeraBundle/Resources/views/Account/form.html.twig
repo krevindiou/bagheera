@@ -8,7 +8,14 @@
 </div>
 
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(accountForm) }}>
-    {{ form_widget(accountForm) }}
+    {{ form_row(accountForm.bank) }}
+    {{ form_row(accountForm.name) }}
+    {{ form_row(accountForm.currency) }}
+    {{ form_row(accountForm.initialBalance) }}
+    {{ form_row(accountForm.overdraftFacility) }}
+    {{ form_row(accountForm.iban) }}
+    {{ form_row(accountForm.bic) }}
+    {{ form_rest(accountForm) }}
 
     <div class="control-group">
         <div class="controls">
