@@ -6,7 +6,6 @@
         {% stylesheets filter='lessphp,cssrewrite'
             'bundles/krevindioubagheera/less/main.less'
             'bundles/krevindioubagheera/css/jquery.jqplot.min.css'
-            'bundles/krevindioubagheera/css/jquery.qtip.min.css'
             'bundles/krevindioubagheera/css/smoothness/jquery-ui-1.8.17.custom.css'
         %}
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
@@ -17,7 +16,7 @@
         head.js(
             "{{ asset('/bundles/krevindioubagheera/js/jquery-1.7.1.min.js') }}",
             "{{ asset('/bundles/krevindioubagheera/js/jquery-ui-1.8.17.custom.min.js') }}",
-            "{{ asset('/bundles/krevindioubagheera/js/jquery.qtip.min.js') }}",
+            "{{ asset('/bundles/krevindioubagheera/js/bootstrap/bootstrap-tooltip.js') }}",
             "{{ asset('/bundles/krevindioubagheera/js/main.js') }}",
             "{{ asset('/translations.js') }}",
             function () {

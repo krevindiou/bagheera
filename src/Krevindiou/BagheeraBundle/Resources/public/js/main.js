@@ -241,36 +241,8 @@ var Bagheera = {
     },
 
     tooltip: function() {
-        $(".tip").qtip({
-            content: {
-                attr: "title"
-            },
-            position: {
-                my: "left center",
-                at: "right center"
-            },
-            show: {
-                ready: true
-            },
-            hide: {
-                event: "click"
-            },
-            style: {
-                classes: "ui-tooltip-rounded"
-            },
-            events: {
-                render: function(event, api) {
-                    $(function() {
-                        var element = api.elements.tooltip;
-
-                        (function tooltipSlide() {
-                            element
-                                .animate({ marginLeft: "5px" }, 800, "swing")
-                                .animate({ marginLeft: "0" }, 400, "swing", tooltipSlide);
-                        }());
-                    });
-                }
-            }
-        });
+        $(".tip")
+            .tooltip({trigger: "manual"})
+            .tooltip("show");
     }
 };
