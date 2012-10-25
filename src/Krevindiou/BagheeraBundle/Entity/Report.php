@@ -449,7 +449,7 @@ class Report
      *
      * @param array $accounts
      */
-    public function setAccounts(array $accounts)
+    public function setAccounts(array $accounts = null)
     {
         $this->accounts = $accounts;
     }
