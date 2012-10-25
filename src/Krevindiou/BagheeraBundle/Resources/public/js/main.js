@@ -28,7 +28,11 @@ var Bagheera = {
 
             $("table.table").next(".btn-group").hide();
             $("table.table input[type=checkbox]").change(function() {
-                $(this).parents("table").next(".btn-group").toggle();
+                if ($(this).parents("table").find("input[type=checkbox]:checked").length > 0) {
+                    $(this).parents("table").next(".btn-group").show();
+                } else {
+                    $(this).parents("table").next(".btn-group").hide();
+                }
             });
 
             $("input.calendar").on("click", function() {
@@ -62,8 +66,19 @@ var Bagheera = {
     accounts: function() {
         if ($("input[type=checkbox][name='banksId[]']").length > 0) {
             $("input[type=checkbox][name='banksId[]']").change(function() {
-                $(this).parents("tr").nextUntil("tr:has(th)").find("td input[type=checkbox][name='accountsId[]']").attr("checked", "checked" == $(this).attr("checked"));
-                $(this).parents("tr").nextUntil("tr:has(th)").find("td input[type=checkbox][name='accountsId[]']").attr("disabled", "checked" == $(this).attr("checked"));
+                var inputs = $(this).parents("tr").nextUntil("tr:has(th)").find("td input[type=checkbox][name='accountsId[]']");
+
+                inputs
+                    .attr("checked", "checked" == $(this).attr("checked"))
+                    .attr("disabled", "checked" == $(this).attr("checked"))
+                    .parent().parent()
+                    .each(function() {
+                        if ($(this).find("input[type=checkbox]:checked").length > 0) {
+                            $(this).addClass("selected");
+                        } else {
+                            $(this).removeClass("selected");
+                        }
+                    });
             });
         }
 
