@@ -11,6 +11,5 @@ Thumbs.db
 /app/logs/*
 /build/
 /vendor/
-/composer.lock
 /composer.phar
 !.gitkeep
