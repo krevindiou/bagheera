@@ -42,6 +42,9 @@ class TranslateController extends Controller
 
         $js = 'Bagheera.translations = ' . json_encode($translations);
 
-        return new Response($js);
+        $response = new Response($js);
+        $response->headers->set('Content-Type', 'application/javascript');
+
+        return $response;
     }
 }
