@@ -14,12 +14,16 @@
         <script src="{{ asset('/bundles/krevindioubagheera/js/head.min.js') }}"></script>
         <script>
         head.js(
-            "{{ asset('/bundles/krevindioubagheera/js/jquery-1.7.1.min.js') }}",
-            "{{ asset('/bundles/krevindioubagheera/js/jquery-ui-1.8.17.custom.min.js') }}",
-            "{{ asset('/bundles/krevindioubagheera/js/bootstrap/bootstrap-tooltip.js') }}",
-            "{{ asset('/bundles/krevindioubagheera/js/main.js') }}",
-            "{{ asset('/translations.js') }}",
-            function () {
+            {% javascripts
+                'bundles/krevindioubagheera/js/jquery-1.7.1.min.js'
+                'bundles/krevindioubagheera/js/jquery-ui-1.8.17.custom.min.js'
+                'bundles/krevindioubagheera/js/bootstrap/bootstrap-tooltip.js'
+                'bundles/krevindioubagheera/js/main.js'
+            %}
+            "{{ asset_url }}",
+            {% endjavascripts %}
+            "/translations.js",
+           function () {
                 Bagheera.baseUrl = "/";
                 Bagheera.init();
             }
