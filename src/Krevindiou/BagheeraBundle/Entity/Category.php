@@ -274,9 +274,4 @@ class Category
 
         return $str;
     }
-
-    public function getDropDownListLabel()
-    {
-        return $this->getType() . ' ' . $this;
-    }
 }

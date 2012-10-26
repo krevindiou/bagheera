@@ -46,15 +46,14 @@ class SchedulerForm extends AbstractType
                     )
                 )
             )
-
             ->add(
                 'category',
                 null,
                 array(
                     'label' => 'scheduler_category',
-                    'property' => 'dropDownListLabel',
                     'empty_value' => '',
-                    'required' => false
+                    'required' => false,
+                    'group_by' => 'type'
                 )
             )
             ->add(
@@ -62,8 +61,8 @@ class SchedulerForm extends AbstractType
                 null,
                 array(
                     'label' => 'scheduler_payment_method',
-                    'property' => 'dropDownListLabel',
-                    'empty_value' => ''
+                    'empty_value' => '',
+                    'group_by' => 'type'
                 )
             )
             ->add(

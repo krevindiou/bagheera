@@ -123,9 +123,9 @@ class ReportForm extends AbstractType
                                 null,
                                 array(
                                     'label' => 'report_categories',
-                                    'property' => 'dropDownListLabel',
                                     'empty_value' => '',
-                                    'required' => false
+                                    'required' => false,
+                                    'group_by' => 'type'
                                 )
                             )
                         )
@@ -136,9 +136,9 @@ class ReportForm extends AbstractType
                                 null,
                                 array(
                                     'label' => 'report_payment_methods',
-                                    'property' => 'dropDownListLabel',
                                     'empty_value' => '',
-                                    'required' => false
+                                    'required' => false,
+                                    'group_by' => 'type'
                                 )
                             )
                         )

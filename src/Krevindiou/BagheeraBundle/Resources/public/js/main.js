@@ -97,9 +97,8 @@ var Bagheera = {
                 var paymentMethod = $(this);
 
                 paymentMethod.find("option[value!='']").each(function() {
-                    var type = $(this).text().replace(/([a-z]+) (.*)/, "$1");
-                    var label = $(this).text().replace(/([a-z]+) (.*)/, "$2");
-                    label = eval("Bagheera.translations.payment_method_" + label);
+                    var type = $(this).parent().attr("label");
+                    var label = eval("Bagheera.translations.payment_method_" + $(this).text());
 
                     Bagheera.paymentMethodOptions[type] = Bagheera.paymentMethodOptions[type] || [];
                     Bagheera.paymentMethodOptions[type].push({value: $(this).val(), text: label});
@@ -170,8 +169,8 @@ var Bagheera = {
                 var category = $(this);
 
                 category.find("option[value!='']").each(function() {
-                    var type = $(this).text().replace(/([a-z]+) (.*)/, "$1");
-                    var label = $(this).text().replace(/([a-z]+) (.*)/, "$2");
+                    var type = $(this).parent().attr("label");
+                    var label = $(this).text();
 
                     Bagheera.categoryOptions[type] = Bagheera.categoryOptions[type] || [];
                     Bagheera.categoryOptions[type].push({value: $(this).val(), text: label});

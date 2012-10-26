@@ -51,9 +51,9 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_category',
-                    'property' => 'dropDownListLabel',
                     'empty_value' => '',
-                    'required' => false
+                    'required' => false,
+                    'group_by' => 'type'
                 )
             )
             ->add(
@@ -61,8 +61,8 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_payment_method',
-                    'property' => 'dropDownListLabel',
-                    'empty_value' => ''
+                    'empty_value' => '',
+                    'group_by' => 'type'
                 )
             )
             ->add(

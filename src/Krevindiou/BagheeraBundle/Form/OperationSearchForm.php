@@ -64,7 +64,7 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_category',
                     'required' => false,
-                    'property' => 'dropDownListLabel',
+                    'group_by' => 'type'
                 )
             )
             ->add(
@@ -73,7 +73,7 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_payment_method',
                     'required' => false,
-                    'property' => 'dropDownListLabel',
+                    'group_by' => 'type'
                 )
             )
             ->add(
