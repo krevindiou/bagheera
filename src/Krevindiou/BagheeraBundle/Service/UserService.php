@@ -138,9 +138,13 @@ class UserService
      *
      * @return Form
      */
-    public function getRegisterForm()
+    public function getRegisterForm($language)
     {
-        $form = $this->_formFactory->create(new UserRegisterForm(), new User());
+        $form = $this->_formFactory->create(
+            new UserRegisterForm(),
+            new User(),
+            array('attr' => array('language' => $language))
+        );
 
         return $form;
     }

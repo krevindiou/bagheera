@@ -39,7 +39,7 @@ class UserServiceTest extends TestCase
 
     public function testGetRegisterForm()
     {
-        $registerForm = $this->get('bagheera.user')->getRegisterForm();
+        $registerForm = $this->get('bagheera.user')->getRegisterForm('en_US');
 
         $this->assertEquals(get_class($registerForm), 'Symfony\Component\Form\Form');
     }

@@ -21,6 +21,7 @@ namespace Krevindiou\BagheeraBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\Locale\Locale;
 
 /**
  * User form
@@ -32,11 +33,27 @@ class UserRegisterForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        // Fill the country field according to browser's locale
+        $preferredChoice = 'US';
+
+        if (isset($options['attr']['language'])) {
+            $languageParts = explode('_', $options['attr']['language']);
+
+            if (count($languageParts) > 1) {
+                $country = $languageParts[1];
+
+                $countries = Locale::getDisplayCountries('en');
+                if (isset($countries[$country])) {
+                    $preferredChoice = $country;
+                }
+            }
+        }
+
         $builder
             ->add('email', 'email', array('label' => 'user_email'))
             ->add('country', 'country', array(
                 'label' => 'user_country',
-                'preferred_choices' => array('FR')
+                'preferred_choices' => array($preferredChoice)
             ))
             ->add('plainPassword', 'repeated', array(
                 'type' => 'password',

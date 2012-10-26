@@ -54,7 +54,7 @@ class UserController extends Controller
      */
     public function registerAction(Request $request)
     {
-        $form = $this->get('bagheera.user')->getRegisterForm();
+        $form = $this->get('bagheera.user')->getRegisterForm($request->getPreferredLanguage());
 
         if ($request->getMethod() == 'POST') {
             $form->bind($request);
