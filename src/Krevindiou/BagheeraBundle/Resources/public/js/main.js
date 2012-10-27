@@ -60,6 +60,13 @@ var Bagheera = {
                     $("#krevindiou_bagheerabundle_banktype_name").val("").focus();
                 }
             });
+
+            $("input.money").each(function() {
+                $(this).parents(".controls")
+                       .contents().filter(function(){return this.nodeType === 3})
+                       .wrap('<div class="input-prepend" />')
+                       .wrap('<span class="add-on" />');
+            })
         });
     },
 
