@@ -23,7 +23,7 @@ var Bagheera = {
             });
 
             $("table.table input[type=checkbox]").change(function() {
-                $(this).parent().parent().toggleClass("selected");
+                $(this).parent().parent().toggleClass("info");
             });
 
             $("table.table").next(".btn-group").hide();
@@ -55,7 +55,7 @@ var Bagheera = {
 
             $("#krevindiou_bagheerabundle_banktype_provider").change(function() {
                 if ($(this).val() != '') {
-                    $("#krevindiou_bagheerabundle_banktype_name").val($(this).find(":selected").text()).focus();
+                    $("#krevindiou_bagheerabundle_banktype_name").val($(this).find(":info").text()).focus();
                 } else {
                     $("#krevindiou_bagheerabundle_banktype_name").val("").focus();
                 }
@@ -81,9 +81,9 @@ var Bagheera = {
                     .parent().parent()
                     .each(function() {
                         if ($(this).find("input[type=checkbox]:checked").length > 0) {
-                            $(this).addClass("selected");
+                            $(this).addClass("info");
                         } else {
-                            $(this).removeClass("selected");
+                            $(this).removeClass("info");
                         }
                     });
             });
