@@ -66,17 +66,6 @@ class AccountForm extends AbstractType
                     )
                 )
             )
-            ->add(
-                'overdraftFacility',
-                'money',
-                array(
-                    'label' => 'account_overdraft_facility',
-                    'currency' => false,
-                    'attr' => array(
-                        'class' => 'input-small'
-                    )
-                )
-            )
         ;
 
         $builder->addEventListener(
@@ -133,8 +122,22 @@ class AccountForm extends AbstractType
                             null,
                             array(
                                 'label' => 'account_initial_balance',
-                                'currency' => false,
+                                'currency' => $account->getCurrency() ? : false,
                                 'disabled' => $edit,
+                                'attr' => array(
+                                    'class' => 'input-small'
+                                )
+                            )
+                        )
+                    )
+                    ->add(
+                        $builder->getFormFactory()->createNamed(
+                            'overdraftFacility',
+                            'money',
+                            null,
+                            array(
+                                'label' => 'account_overdraft_facility',
+                                'currency' => $account->getCurrency() ? : false,
                                 'attr' => array(
                                     'class' => 'input-small'
                                 )
