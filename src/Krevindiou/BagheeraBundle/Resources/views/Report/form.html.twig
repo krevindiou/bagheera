@@ -10,30 +10,42 @@
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(reportForm) }}>
     {{ form_row(reportForm.title) }}
     {{ form_row(reportForm.homepage) }}
-    {{ form_row(reportForm.valueDateStart) }}
-    {{ form_row(reportForm.valueDateEnd) }}
-    {{ form_row(reportForm.thirdParties) }}
-    {{ form_row(reportForm.accounts) }}
-    {{ form_row(reportForm.reconciledOnly) }}
-    {{ form_row(reportForm.periodGrouping) }}
 
+    {% if reportForm.valueDateStart is defined %}
+        {{ form_row(reportForm.valueDateStart) }}
+    {% endif %}
+    {% if reportForm.valueDateEnd is defined %}
+        {{ form_row(reportForm.valueDateEnd) }}
+    {% endif %}
+    {% if reportForm.thirdParties is defined %}
+        {{ form_row(reportForm.thirdParties) }}
+    {% endif %}
+    {% if reportForm.accounts is defined %}
+        {{ form_row(reportForm.accounts) }}
+    {% endif %}
+    {% if reportForm.reconciledOnly is defined %}
+        {{ form_row(reportForm.reconciledOnly) }}
+    {% endif %}
+    {% if reportForm.periodGrouping is defined %}
+        {{ form_row(reportForm.periodGrouping) }}
+    {% endif %}
     {% if reportForm.dataGrouping is defined %}
-    	{{ form_row(reportForm.dataGrouping) }}
+        {{ form_row(reportForm.dataGrouping) }}
     {% endif %}
     {% if reportForm.significantResultsNumber is defined %}
-    	{{ form_row(reportForm.significantResultsNumber) }}
+        {{ form_row(reportForm.significantResultsNumber) }}
     {% endif %}
     {% if reportForm.monthExpenses is defined %}
-    	{{ form_row(reportForm.monthExpenses) }}
+        {{ form_row(reportForm.monthExpenses) }}
     {% endif %}
     {% if reportForm.monthIncomes is defined %}
-    	{{ form_row(reportForm.monthIncomes) }}
+        {{ form_row(reportForm.monthIncomes) }}
     {% endif %}
     {% if reportForm.estimateDurationValue is defined %}
-    	{{ form_row(reportForm.estimateDurationValue) }}
+        {{ form_row(reportForm.estimateDurationValue) }}
     {% endif %}
     {% if reportForm.estimateDurationUnit is defined %}
-    	{{ form_row(reportForm.estimateDurationUnit) }}
+        {{ form_row(reportForm.estimateDurationUnit) }}
     {% endif %}
 
     {{ form_rest(reportForm) }}
