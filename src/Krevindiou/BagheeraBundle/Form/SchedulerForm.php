@@ -42,7 +42,7 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_third_party',
                     'attr' => array(
-                        'size' => 40
+                        'class' => 'input-xlarge'
                     )
                 )
             )
@@ -53,7 +53,10 @@ class SchedulerForm extends AbstractType
                     'label' => 'scheduler_category',
                     'empty_value' => '',
                     'required' => false,
-                    'group_by' => 'type'
+                    'group_by' => 'type',
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -62,7 +65,10 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_payment_method',
                     'empty_value' => '',
-                    'group_by' => 'type'
+                    'group_by' => 'type',
+                    'attr' => array(
+                        'class' => 'input-medium'
+                    )
                 )
             )
             ->add(
@@ -73,8 +79,7 @@ class SchedulerForm extends AbstractType
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => array(
-                        'size' => 12,
-                        'class' => 'calendar'
+                        'class' => 'input-small calendar'
                     )
                 )
             )
@@ -87,8 +92,7 @@ class SchedulerForm extends AbstractType
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
                     'attr' => array(
-                        'size' => 12,
-                        'class' => 'calendar'
+                        'class' => 'input-small calendar'
                     )
                 )
             )
@@ -102,6 +106,9 @@ class SchedulerForm extends AbstractType
                         'week' => 'scheduler_frequency_unit_week',
                         'month' => 'scheduler_frequency_unit_month',
                         'year' => 'scheduler_frequency_unit_year',
+                    ),
+                    'attr' => array(
+                        'class' => 'input-small'
                     )
                 )
             )
@@ -111,7 +118,7 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_frequency_value',
                     'attr' => array(
-                        'size' => 6,
+                        'class' => 'input-mini'
                     )
                 )
             )
@@ -120,7 +127,10 @@ class SchedulerForm extends AbstractType
                 null,
                 array(
                     'label' => 'scheduler_notes',
-                    'attr' => array('cols' => 40, 'rows' => 5)
+                    'attr' => array(
+                        'rows' => 5,
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -181,6 +191,9 @@ class SchedulerForm extends AbstractType
                                 'mapped' => false,
                                 'constraints' => array(
                                     new Assert\NotBlank()
+                                ),
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
@@ -202,7 +215,10 @@ class SchedulerForm extends AbstractType
                                         ->setParameter('user', $account->getBank()->getUser())
                                         ->setParameter('account', $account)
                                         ->add('orderBy', 'a.name ASC');
-                                }
+                                },
+                                'attr' => array(
+                                    'class' => 'input-xlarge'
+                                )
                             )
                         )
                     )

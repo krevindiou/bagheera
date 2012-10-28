@@ -42,7 +42,7 @@ class ReportForm extends AbstractType
                 array(
                     'label' => 'report_title',
                     'attr' => array(
-                        'size' => 40
+                        'class' => 'input-xlarge'
                     )
                 )
             )
@@ -79,8 +79,7 @@ class ReportForm extends AbstractType
                                     'format' => 'yyyy-MM-dd',
                                     'required' => false,
                                     'attr' => array(
-                                        'size' => 12,
-                                        'class' => 'calendar'
+                                        'class' => 'input-small calendar'
                                     )
                                 )
                             )
@@ -96,8 +95,7 @@ class ReportForm extends AbstractType
                                     'format' => 'yyyy-MM-dd',
                                     'required' => false,
                                     'attr' => array(
-                                        'size' => 12,
-                                        'class' => 'calendar'
+                                        'class' => 'input-small calendar'
                                     )
                                 )
                             )
@@ -110,7 +108,7 @@ class ReportForm extends AbstractType
                                 array(
                                     'label' => 'report_third_parties',
                                     'attr' => array(
-                                        'size' => 40
+                                        'class' => 'input-large'
                                     )
                                 )
                             )
@@ -125,7 +123,10 @@ class ReportForm extends AbstractType
                                     'label' => 'report_categories',
                                     'empty_value' => '',
                                     'required' => false,
-                                    'group_by' => 'type'
+                                    'group_by' => 'type',
+                                    'attr' => array(
+                                        'class' => 'input-xlarge'
+                                    )
                                 )
                             )
                         )
@@ -138,7 +139,10 @@ class ReportForm extends AbstractType
                                     'label' => 'report_payment_methods',
                                     'empty_value' => '',
                                     'required' => false,
-                                    'group_by' => 'type'
+                                    'group_by' => 'type',
+                                    'attr' => array(
+                                        'class' => 'input-medium'
+                                    )
                                 )
                             )
                         )
@@ -159,7 +163,10 @@ class ReportForm extends AbstractType
                                             ->add('orderBy', 'a.name ASC');
                                     },
                                     'empty_value' => '',
-                                    'required' => false
+                                    'required' => false,
+                                    'attr' => array(
+                                        'class' => 'input-xlarge'
+                                    )
                                 )
                             )
                         )
@@ -191,7 +198,10 @@ class ReportForm extends AbstractType
                                         'year' => 'report_period_grouping_year',
                                         'all' => 'report_period_grouping_all'
                                     ),
-                                    'empty_value' => ''
+                                    'empty_value' => '',
+                                    'attr' => array(
+                                        'class' => 'input-small'
+                                    )
                                 )
                             )
                         )
@@ -212,7 +222,10 @@ class ReportForm extends AbstractType
                                         'third_party' => 'report_data_grouping_third_party',
                                         'payment_method' => 'report_data_grouping_payment_method',
                                     ),
-                                    'empty_value' => ''
+                                    'empty_value' => '',
+                                    'attr' => array(
+                                        'class' => 'input-small'
+                                    )
                                 )
                             )
                         )
@@ -224,7 +237,7 @@ class ReportForm extends AbstractType
                                 array(
                                     'label' => 'report_significant_results_number',
                                     'attr' => array(
-                                        'size' => 5
+                                        'class' => 'input-mini'
                                     )
                                 )
                             )
@@ -241,7 +254,10 @@ class ReportForm extends AbstractType
                                 null,
                                 array(
                                     'label' => 'report_month_expenses',
-                                    'currency' => false
+                                    'currency' => false,
+                                    'attr' => array(
+                                        'class' => 'input-small'
+                                    )
                                 )
                             )
                         )
@@ -252,19 +268,22 @@ class ReportForm extends AbstractType
                                 null,
                                 array(
                                     'label' => 'report_month_incomes',
-                                    'currency' => false
+                                    'currency' => false,
+                                    'attr' => array(
+                                        'class' => 'input-small'
+                                    )
                                 )
                             )
                         )
                         ->add(
                             $builder->getFormFactory()->createNamed(
                                 'estimateDurationValue',
-                                null,
+                                'text',
                                 null,
                                 array(
                                     'label' => 'report_estimate_duration_value',
                                     'attr' => array(
-                                        'size' => 5
+                                        'class' => 'input-mini'
                                     )
                                 )
                             )
@@ -280,7 +299,10 @@ class ReportForm extends AbstractType
                                         'month' => 'report_estimate_duration_unit_month',
                                         'year' => 'report_estimate_duration_unit_year',
                                     ),
-                                    'empty_value' => ''
+                                    'empty_value' => '',
+                                    'attr' => array(
+                                        'class' => 'input-small'
+                                    )
                                 )
                             )
                         )

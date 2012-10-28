@@ -45,6 +45,9 @@ class UserForgotPasswordForm extends AbstractType
                         new NotBlank(),
                         new Email(),
                         new FieldExists('Krevindiou\BagheeraBundle\Entity\User', 'email')
+                    ),
+                    'attr' => array(
+                        'class' => 'input-xlarge'
                     )
                 )
             )

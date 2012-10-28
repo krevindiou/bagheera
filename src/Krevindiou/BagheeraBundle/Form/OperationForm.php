@@ -42,7 +42,7 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_third_party',
                     'attr' => array(
-                        'size' => 40
+                        'class' => 'input-xlarge'
                     )
                 )
             )
@@ -53,7 +53,10 @@ class OperationForm extends AbstractType
                     'label' => 'operation_category',
                     'empty_value' => '',
                     'required' => false,
-                    'group_by' => 'type'
+                    'group_by' => 'type',
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -62,7 +65,10 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_payment_method',
                     'empty_value' => '',
-                    'group_by' => 'type'
+                    'group_by' => 'type',
+                    'attr' => array(
+                        'class' => 'input-medium'
+                    )
                 )
             )
             ->add(
@@ -73,8 +79,7 @@ class OperationForm extends AbstractType
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => array(
-                        'size' => 12,
-                        'class' => 'calendar'
+                        'class' => 'input-small calendar'
                     )
                 )
             )
@@ -83,7 +88,10 @@ class OperationForm extends AbstractType
                 null,
                 array(
                     'label' => 'operation_notes',
-                    'attr' => array('cols' => 40, 'rows' => 5)
+                    'attr' => array(
+                        'class' => 'input-xlarge',
+                        'rows' => 5
+                    )
                 )
             )
             ->add(
@@ -136,6 +144,9 @@ class OperationForm extends AbstractType
                                 'mapped' => false,
                                 'constraints' => array(
                                     new Assert\NotBlank()
+                                ),
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
@@ -157,7 +168,10 @@ class OperationForm extends AbstractType
                                         ->setParameter('user', $account->getBank()->getUser())
                                         ->setParameter('account', $account)
                                         ->add('orderBy', 'a.name ASC');
-                                }
+                                },
+                                'attr' => array(
+                                    'class' => 'input-xlarge'
+                                )
                             )
                         )
                     )

@@ -50,17 +50,42 @@ class UserRegisterForm extends AbstractType
         }
 
         $builder
-            ->add('email', 'email', array('label' => 'user_email'))
-            ->add('country', 'country', array(
-                'label' => 'user_country',
-                'preferred_choices' => array($preferredChoice)
-            ))
-            ->add('plainPassword', 'repeated', array(
-                'type' => 'password',
-                'first_name' => 'user_password',
-                'second_name' => 'user_password_confirmation',
-                'invalid_message' => 'user_password_fields_must_match',
-            ))
+            ->add(
+                'email',
+                'email',
+                array(
+                    'label' => 'user_email',
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
+                )
+            )
+            ->add(
+                'country',
+                'country',
+                array(
+                    'label' => 'user_country',
+                    'preferred_choices' => array($preferredChoice),
+                    'attr' => array(
+                        'class' => 'input-large'
+                    )
+                )
+            )
+            ->add(
+                'plainPassword',
+                'repeated',
+                array(
+                    'type' => 'password',
+                    'first_name' => 'user_password',
+                    'second_name' => 'user_password_confirmation',
+                    'invalid_message' => 'user_password_fields_must_match',
+                    'options' => array(
+                        'attr' => array(
+                            'class' => 'input-medium'
+                        )
+                    )
+                )
+            )
             ->add(
                 'recaptcha',
                 'ewz_recaptcha',

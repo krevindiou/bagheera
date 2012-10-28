@@ -38,7 +38,9 @@ class BankAccessForm extends AbstractType
                 null,
                 array(
                     'label' => 'bank_access_login',
-                    'attr' => array('size' => 20)
+                    'attr' => array(
+                        'class' => 'input-large'
+                    )
                 )
             )
             ->add(
@@ -46,7 +48,9 @@ class BankAccessForm extends AbstractType
                 null,
                 array(
                     'label' => 'bank_access_password',
-                    'attr' => array('size' => 20)
+                    'attr' => array(
+                        'class' => 'input-large'
+                    )
                 )
             )
         ;

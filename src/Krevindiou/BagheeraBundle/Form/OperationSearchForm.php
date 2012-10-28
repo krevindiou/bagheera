@@ -54,7 +54,7 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_third_party',
                     'attr' => array(
-                        'size' => 30
+                        'class' => 'input-large'
                     )
                 )
             )
@@ -64,7 +64,10 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_category',
                     'required' => false,
-                    'group_by' => 'type'
+                    'group_by' => 'type',
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -73,7 +76,10 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_payment_method',
                     'required' => false,
-                    'group_by' => 'type'
+                    'group_by' => 'type',
+                    'attr' => array(
+                        'class' => 'input-medium'
+                    )
                 )
             )
             ->add(
@@ -85,8 +91,7 @@ class OperationSearchForm extends AbstractType
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
                     'attr' => array(
-                        'size' => 12,
-                        'class' => 'calendar'
+                        'class' => 'input-small calendar'
                     )
                 )
             )
@@ -99,8 +104,7 @@ class OperationSearchForm extends AbstractType
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
                     'attr' => array(
-                        'size' => 12,
-                        'class' => 'calendar'
+                        'class' => 'input-small calendar'
                     )
                 )
             )
@@ -110,7 +114,8 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation_notes',
                     'attr' => array(
-                        'size' => 30
+                        'class' => 'input-large',
+                        'rows' => 5
                     )
                 )
             )
@@ -153,6 +158,9 @@ class OperationSearchForm extends AbstractType
                                     'equalTo' => '=',
                                     'superiorOrEqualTo' => '>=',
                                     'superiorTo' => '>',
+                                ),
+                                'attr' => array(
+                                    'class' => 'input-mini'
                                 )
                             )
                         )
@@ -165,7 +173,10 @@ class OperationSearchForm extends AbstractType
                             array(
                                 'label' => 'operation_amount',
                                 'currency' => $account->getCurrency(),
-                                'mapped' => false
+                                'mapped' => false,
+                                'attr' => array(
+                                    'class' => 'input-small'
+                                )
                             )
                         )
                     )
@@ -184,6 +195,9 @@ class OperationSearchForm extends AbstractType
                                     'equalTo' => '=',
                                     'superiorOrEqualTo' => '>=',
                                     'superiorTo' => '>',
+                                ),
+                                'attr' => array(
+                                    'class' => 'input-mini'
                                 )
                             )
                         )
@@ -196,7 +210,10 @@ class OperationSearchForm extends AbstractType
                             array(
                                 'label' => 'operation_amount',
                                 'currency' => $account->getCurrency(),
-                                'mapped' => false
+                                'mapped' => false,
+                                'attr' => array(
+                                    'class' => 'input-small'
+                                )
                             )
                         )
                     )

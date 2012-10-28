@@ -40,7 +40,9 @@ class BankForm extends AbstractType
                 null,
                 array(
                     'label' => 'bank_name',
-                    'attr' => array('size' => 40)
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
         ;
@@ -74,7 +76,8 @@ class BankForm extends AbstractType
                                 },
                                 'disabled' => $edit,
                                 'attr' => array(
-                                    'bankId' => $bank->getBankId()
+                                    'bankId' => $bank->getBankId(),
+                                    'class' => 'input-xlarge'
                                 )
                             )
                         )

@@ -41,7 +41,9 @@ class AccountForm extends AbstractType
                 null,
                 array(
                     'label' => 'account_name',
-                    'attr' => array('size' => 40)
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -49,7 +51,9 @@ class AccountForm extends AbstractType
                 null,
                 array(
                     'label' => 'account_iban',
-                    'attr' => array('size' => 40)
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -57,7 +61,9 @@ class AccountForm extends AbstractType
                 null,
                 array(
                     'label' => 'account_bic',
-                    'attr' => array('size' => 14)
+                    'attr' => array(
+                        'class' => 'input-xlarge'
+                    )
                 )
             )
             ->add(
@@ -65,7 +71,10 @@ class AccountForm extends AbstractType
                 'money',
                 array(
                     'label' => 'account_overdraft_facility',
-                    'currency' => false
+                    'currency' => false,
+                    'attr' => array(
+                        'class' => 'input-small'
+                    )
                 )
             )
         ;
@@ -96,7 +105,10 @@ class AccountForm extends AbstractType
                                         ->setParameter('user', $user)
                                         ->add('orderBy', 'b.name ASC');
                                 },
-                                'disabled' => $edit
+                                'disabled' => $edit,
+                                'attr' => array(
+                                    'class' => 'input-xlarge'
+                                )
                             )
                         )
                     )
@@ -107,7 +119,10 @@ class AccountForm extends AbstractType
                             null,
                             array(
                                 'label' => 'account_currency',
-                                'disabled' => $edit
+                                'disabled' => $edit,
+                                'attr' => array(
+                                    'class' => 'input-xlarge'
+                                )
                             )
                         )
                     )
@@ -119,7 +134,10 @@ class AccountForm extends AbstractType
                             array(
                                 'label' => 'account_initial_balance',
                                 'currency' => false,
-                                'disabled' => $edit
+                                'disabled' => $edit,
+                                'attr' => array(
+                                    'class' => 'input-small'
+                                )
                             )
                         )
                     )

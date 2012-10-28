@@ -46,6 +46,9 @@ class UserResetPasswordForm extends AbstractType
                     'constraints' => array(
                         new NotBlank(),
                         new Length(array('min' => 8))
+                    ),
+                    'attr' => array(
+                        'class' => 'input-medium'
                     )
                 )
             )
