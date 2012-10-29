@@ -65,8 +65,8 @@
         </table>
 
         <div class="btn-group">
-            <button type="submit" name="delete" class="btn"><i class="icon-trash"></i> {{ 'account_delete_button'|trans }}</button>
-            {#<button type="submit" name="share" class="btn"><i class="icon-share-alt"></i> {{ 'account_share_button'|trans }}</button>#}
+            <button type="submit" name="delete" class="btn" data-toggle="modal"><i class="icon-trash"></i> {{ 'account_delete_button'|trans }}</button>
+            {#<button type="submit" name="share" class="btn" data-toggle="modal"><i class="icon-share-alt"></i> {{ 'account_share_button'|trans }}</button>#}
         </div>
     </form>
 
@@ -86,7 +86,7 @@
 
     {% if progress|length > 0 %}
     <script type="text/javascript">
-    head.ready(function() {
+    $(document).ready(function() {
         (function importDataAccount() {
             var nextUpload = true;
 

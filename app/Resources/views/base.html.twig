@@ -18,6 +18,7 @@
                 'bundles/krevindioubagheera/js/jquery-1.7.1.min.js'
                 'bundles/krevindioubagheera/js/jquery-ui-1.8.17.custom.min.js'
                 'bundles/krevindioubagheera/js/bootstrap/bootstrap-tooltip.js'
+                'bundles/krevindioubagheera/js/bootstrap/bootstrap-modal.js'
                 'bundles/krevindioubagheera/js/main.js'
             %}
             "{{ asset_url }}",
@@ -83,6 +84,20 @@
         <footer>
             <div class="container">Bagheera © 2011-{{ 'now'|date('Y') }}</div>
         </footer>
+
+        <div id="modal-confirmation" class="modal hide fade">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{{ 'modalConfirmationTitle'|trans }}</h3>
+            </div>
+            <div class="modal-body">
+                <p>{{ 'modalConfirmationBody'|trans }}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">{{ 'modalConfirmationActionCancel'|trans }}</button>
+                <button class="btn btn-primary">{{ 'modalConfirmationActionOk'|trans }}</button>
+            </div>
+        </div>
 
         {% block javascripts %}{% endblock %}
     </body>

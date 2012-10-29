@@ -66,7 +66,32 @@ var Bagheera = {
                        .contents().filter(function(){return this.nodeType === 3})
                        .wrap('<div class="input-prepend" />')
                        .wrap('<span class="add-on" />');
-            })
+            });
+
+            $("button[type=submit][name=delete], button[type=submit][name=share], button[type=submit][name=reconcile]").on("click", function(e) {
+                var form = $(this).closest("form");
+                var values = form.serialize();
+                var action = form.attr("action");
+
+                values+= "&" + $(this).attr("name") + "=";
+
+                $("#modal-confirmation")
+                    .on("show", function() {
+                        $("#modal-confirmation .btn-primary").off("click").on("click", function() {
+                            $.ajax({
+                                async: false,
+                                type: "POST",
+                                data: values,
+                                url: action,
+                                success: function(data) {
+                                    $("#modal-confirmation").modal("hide");
+                                    document.location.reload(true);
+                                }
+                            });
+                        });
+                    })
+                    .modal();
+            });
         });
     },
 
@@ -88,12 +113,6 @@ var Bagheera = {
                     });
             });
         }
-
-        $("button[type=submit][name=delete], button[type=submit][name=share], button[type=submit][name=reconcile]").click(function(e) {
-            if (!confirm(Bagheera.translations.confirm)) {
-                e.preventDefault();
-            }
-        });
     },
 
     initPaymentMethod: function() {

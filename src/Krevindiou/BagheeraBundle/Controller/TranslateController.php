@@ -31,7 +31,6 @@ class TranslateController extends Controller
     {
         $translator = $this->get('translator');
         $translations = array(
-            'confirm' => $translator->trans('confirm'),
             'payment_method_credit_card' => $translator->trans('payment_method_credit_card'),
             'payment_method_check' => $translator->trans('payment_method_check'),
             'payment_method_withdrawal' => $translator->trans('payment_method_withdrawal'),
