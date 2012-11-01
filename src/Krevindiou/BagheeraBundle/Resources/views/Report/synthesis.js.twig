@@ -1,59 +1,62 @@
-{% if graph is defined %}
 $(document).ready(function(){
-    $.jqplot(
-        'synthesis',
+    $.plot(
+        $("#synthesis .graph"),
         [
-            [
-                {%- for month, total in graph -%}
-                    ['{{ month }}', '{{ total }}']{%- if loop.last != 1 -%},{%- endif -%}
-                {%- endfor -%}
-            ]
-        ],
-        {
-            seriesDefaults: {
-                fillToZero: true,
-                color: '#84b1ca'
-            },
-            highlighter: {
-                show: true,
-                showMarker: false,
-                tooltipAxes: 'y',
-                tooltipLocation: 'n',
-                tooltipOffset: 0
-            },
-            axes: {
-                xaxis: {
-                    renderer: $.jqplot.DateAxisRenderer,
-                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {
-                        angle: -30
-                    },
-                    ticks: [
-                    {% for month, total in graph %}
-                        ['{{ month }}', '{{ month|date("Y-m") }}']
-                        {% if loop.last != 1 %},{% endif %}
-                    {% endfor %}
-                    ],
-                    tickInterval: '1 month'
-                },
-                yaxis:  {
-                    tickOptions: {
-                        formatString: '%.2f'
-                    },
-                    min: {{ yaxisMin }},
-                    max: {{ yaxisMax }},
-                    {% if ticks|length > 0 %}
-                    ticks: [
-                    {% for tick in ticks %}
-                        {{ tick }}{% if loop.last != 1 %},{% endif %}
+            {
+                color: "#84b1ca",
+                data: [
+                    {% for timestamp, value in points %}
+                        [{{ timestamp }}, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
 
                     {% endfor %}
-                    ],
-                    {% endif %}
-                    numberTicks: {{ numberTicks }}
-                }
+                ]
+            }
+        ],
+        {
+            series: {
+                lines: { show: true },
+                points: { show: true }
+            },
+            grid: { hoverable: true },
+            xaxis: {
+                mode: "time",
+                timeformat: "%Y-%m"
+            },
+            yaxis:  {
+                min: {{ yaxisMin }},
+                max: {{ yaxisMax }}
             }
         }
     );
+
+    var previousPoint = null;
+    $("#synthesis .graph").on("plothover", function (event, pos, item) {
+        if (item) {
+            if (previousPoint != item.dataIndex) {
+                previousPoint = item.dataIndex;
+
+                $("#plot-tooltip").remove();
+
+                var x = item.datapoint[0],
+                    y = item.datapoint[1].toFixed(2);
+
+                var d = new Date(x);
+
+                $('<div id="plot-tooltip">' + y + " (" + d.getFullYear() + "-" + (d.getMonth() + 1) + ')</div>').css({
+                    position: "absolute",
+                    display: "none",
+                    top: item.pageY - 30,
+                    left: item.pageX + 5,
+                    padding: "2px",
+                    backgroundColor: "#999",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    opacity: 0.80
+                }).appendTo("body").fadeIn(200);
+            }
+        } else {
+            $("#plot-tooltip").remove();
+            previousPoint = null;
+        }
+    });
 });
-{% endif %}

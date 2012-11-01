@@ -103,27 +103,10 @@ class ReportController extends Controller
         $reports = $this->get('bagheera.report')->getHomepageList($user);
 
         foreach ($reports as $report) {
-            $data = $graphData = $this->get('bagheera.report')->getGraphData($user, $report);
+            $graph = $this->get('bagheera.report')->getGraphData($user, $report);
 
-            if (!empty($data)) {
-                sort($data[0]); // to remove keys
-                sort($data[1]);
-
-                $yaxisMin = (int)min(array_merge($data[0], $data[1], array(0)));
-                $yaxisMax = (int)(max(array_merge($data[0], $data[1], array(0))) * 1.1);
-
-                $tmp = pow(10, (strlen($yaxisMin) - 2));
-                $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
-
-                $tmp = pow(10, (strlen($yaxisMax) - 2));
-                $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
-
-                $graphs[] = array(
-                    'report' => $report,
-                    'data' => $graphData,
-                    'yaxisMin' => $yaxisMin,
-                    'yaxisMax' => $yaxisMax
-                );
+            if (!empty($graph)) {
+                $graphs[] = $graph;
             }
         }
 
@@ -138,34 +121,20 @@ class ReportController extends Controller
      */
     public function synthesisAction()
     {
-        $graph = array();
-
         $user = $this->get('security.context')->getToken()->getUser();
 
-        $data = $graphData = $this->get('bagheera.report')->getSynthesis($user);
+        $graph = $this->get('bagheera.report')->getSynthesis($user);
 
-        if (!empty($data)) {
-            sort($data); // to remove keys
+        if (!empty($graph['points'])) {
+            // Add null points on each side
+            end($graph['points']);
+            $graph['points'][key($graph['points']) + (30 * 24 * 3600 * 1000)] = null;
+            reset($graph['points']);
+            $graph['points'][key($graph['points']) - (30 * 24 * 3600 * 1000)] = null;
 
-            $yaxisMin = (int)(min(array_merge($data, array(0))) * 1.1);
-            $yaxisMax = (int)(max(array_merge($data, array(0))) * 1.1);
-
-            $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
-            $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
-
-            $tmp = pow(10, (strlen($yaxisMax) - 2));
-            $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
-            $numberTicks = 6;
-
-            $graph = array(
-                'graph' => $graphData,
-                'yaxisMin' => $yaxisMin,
-                'yaxisMax' => $yaxisMax,
-                'numberTicks' => $numberTicks,
-                'ticks' => $this->get('bagheera.report')->getSynthesisYAxisTicks($graphData, $yaxisMin, $yaxisMax, $numberTicks)
-            );
+            return $graph;
         }
 
-        return $graph;
+        throw $this->createNotFoundException();
     }
 }

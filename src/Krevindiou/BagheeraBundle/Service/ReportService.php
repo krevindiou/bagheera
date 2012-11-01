@@ -206,7 +206,16 @@ class ReportService
      */
     public function getGraphData(User $user, Report $report)
     {
-        $data = array();
+        $series = array(
+            array(
+                'label' => 'operation_type_credit',
+                'color' => '#4bb2c5'
+            ),
+            array(
+                'label' => 'operation_type_debit',
+                'color' => '#eaa228'
+            )
+        );
 
         if ($user === $report->getUser()) {
             $accounts = $report->getAccounts()->toArray();
@@ -235,16 +244,16 @@ class ReportService
 
             foreach ($results as $result) {
                 if (isset($result['grouping_data'])) {
-                    $data[0][$result['grouping_data']] = sprintf('%.2f', $result['data_1']);
-                    $data[1][$result['grouping_data']] = sprintf('%.2f', $result['data_2']);
+                    $series[0]['points'][strtotime($result['grouping_data']) * 1000] = round($result['data_1'], 2);
+                    $series[1]['points'][strtotime($result['grouping_data']) * 1000] = round($result['data_2'], 2);
                 } else {
-                    $data[0][date('Y-01-01')] = sprintf('%.2f', $result['data_1']);
-                    $data[1][date('Y-01-01')] = sprintf('%.2f', $result['data_2']);
+                    $series[0]['points'][strtotime(date('Y-01-01')) * 1000] = round($result['data_1'], 2);
+                    $series[1]['points'][strtotime(date('Y-01-01')) * 1000] = round($result['data_2'], 2);
                 }
             }
 
-            foreach ($data as $k => $item) {
-                if (!empty($item)) {
+            foreach ($series as $k => $serie) {
+                if (!empty($serie['points'])) {
                     switch ($report->getPeriodGrouping()) {
                         case 'month' :
                             $interval = 'P1M';
@@ -263,33 +272,51 @@ class ReportService
                     }
 
                     if (null !== $interval) {
-                        $firstDate = new \DateTime(key($item));
-                        end($item);
-                        $lastDate = new \DateTime(key($item));
+                        $firstDate = new \DateTime();
+                        $firstDate->setTimestamp(key($serie['points']) / 1000);
+
+                        end($serie['points']);
+
+                        $lastDate = new \DateTime();
+                        $lastDate->setTimestamp(key($serie['points']) / 1000);
 
                         // Sets 0 for non existent values
                         $date = clone $firstDate;
                         while ($date < $lastDate) {
                             $date->add(new \DateInterval($interval));
 
-                            if (!isset($item[$date->format('Y-m-d')])) {
-                                $data[$k][$date->format('Y-m-d')] = 0;
+                            if (!isset($serie['points'][strtotime($date->format('Y-m-d')) * 1000])) {
+                                $series[$k]['points'][strtotime($date->format('Y-m-d')) * 1000] = 0;
                             }
                         }
 
                         $firstDate->sub(new \DateInterval($interval));
-                        $data[$k][$firstDate->format('Y-m-d')] = null;
+                        $series[$k]['points'][strtotime($firstDate->format('Y-m-d')) * 1000] = null;
 
                         $date->add(new \DateInterval($interval));
-                        $data[$k][$date->format('Y-m-d')] = null;
+                        $series[$k]['points'][strtotime($date->format('Y-m-d')) * 1000] = null;
                     }
 
-                    ksort($data[$k]);
+                    ksort($series[$k]['points']);
                 }
             }
         }
 
-        return $data;
+        $yaxisMin = (int)(min(array_merge($series[0]['points'], $series[1]['points'])) * 0.95);
+        $yaxisMax = (int)(max(array_merge($series[0]['points'], $series[1]['points'])) * 1.05);
+
+        $tmp = pow(10, (strlen($yaxisMin) - 2));
+        $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
+
+        $tmp = pow(10, (strlen($yaxisMax) - 2));
+        $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
+
+        return array(
+            'report' => $report,
+            'series' => $series,
+            'yaxisMin' => $yaxisMin,
+            'yaxisMax' => $yaxisMax
+        );
     }
 
     /**
@@ -370,7 +397,7 @@ class ReportService
      */
     public function getSynthesis(User $user)
     {
-        $data = array();
+        $graph = array();
 
         $operationRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation');
         $accountRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Account');
@@ -395,57 +422,24 @@ class ReportService
                     $start+= $balances[$month];
                 }
 
-                $data[$month . '-01'] = round($start, 2);
+                $graph['points'][strtotime($month . '-01') * 1000] = round($start, 2);
             }
         }
 
-        return $data;
-    }
+        if (!empty($graph['points'])) {
+            $yaxisMin = (int)(min($graph['points']) * 0.95);
+            $yaxisMax = (int)(max($graph['points']) * 1.05);
 
-    /**
-     * Returns synthesis graph y ticks
-     *
-     * @param   array   $data           Graphic data
-     * @param   int     $yaxisMin       Y axis min
-     * @param   int     $yaxisMax       Y axis max
-     * @param   int     $numberTicks    Number of ticks
-     * @return  array
-     */
-    public function getSynthesisYAxisTicks(array $data = array(), $yaxisMin = 0, $yaxisMax = 0, $numberTicks = 6)
-    {
-        $ticks = '';
+            $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
+            $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
 
-        if ($yaxisMin < 0 && $yaxisMax > 0) {
-            $diff = ($yaxisMin - $yaxisMax) / $numberTicks;
-            $ymin = $yaxisMin;
-            $min = $max = 0;
+            $tmp = pow(10, (strlen($yaxisMax) - 2));
+            $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
 
-            for ($i = 0; $i <= $numberTicks; $i++) {
-                $ymin <= 0 ? $min++ : $max++;
-                $ymin-= $diff;
-            }
-
-            $ticks[0] = 0;
-
-            for ($i = 1; $i <= $min; $i++) {
-                $value = ceil($diff * $i);
-
-                if (min($data) <= end($ticks)) {
-                    $ticks[$value] = $value;
-                }
-            }
-
-            for ($i = 1; $i <= $max; $i++) {
-                $value = abs(ceil($diff * $i));
-
-                if (max($data) >= end($ticks)) {
-                    $ticks[$value] = $value;
-                }
-            }
-
-            sort($ticks);
+            $graph['yaxisMin'] = $yaxisMin;
+            $graph['yaxisMax'] = $yaxisMax;
         }
 
-        return $ticks;
+        return $graph;
     }
 }

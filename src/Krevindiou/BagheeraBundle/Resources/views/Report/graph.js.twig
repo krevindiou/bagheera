@@ -1,84 +1,68 @@
 $(document).ready(function(){
     {% for graph in graphs %}
-    $.jqplot(
-        'graph{{ graph.report.reportId }}',
+    $.plot(
+        $("#graph{{ graph.report.reportId }}"),
         [
-            {% for data in graph.data %}
-            [
-                {% for x, y in data %}
-                    {% if y is not null %}
-                        ['{{ x }}', '{{ y }}']{% if loop.last != 1 %},{% endif %}
+            {% for serie in graph.series %}
+            {
+                label: "{{ serie.label|trans }}",
+                color: "{{ serie.color }}",
+                data: [
+                    {% for timestamp, value in serie.points %}
+                    [{{ timestamp }}, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
 
-                    {% endif %}
-                {% endfor %}
-            ]{% if loop.last != 1 %},{% endif %}
-
+                    {% endfor %}
+                ]
+            }
+            {% if loop.last != 1 %},{% endif %}
             {% endfor %}
         ],
         {
-            axes: {
-                xaxis: {
-                    renderer: $.jqplot.DateAxisRenderer,
-                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                    tickOptions: {
-                        angle: -30
-                    },
-                    ticks: [
-                    {% for x, y in graph.data[0] %}
-                        {% if loop.first == 1 or loop.last == 1 %}
-                            ['{{ x }}', '-']
-                        {% else %}
-                            {% if graph.report.periodGrouping == 'month' %}
-                                ['{{ x }}', '{{ x|date("Y-m") }}']
-                            {% elseif graph.report.periodGrouping == 'quarter' %}
-                                ['{{ x }}', '{{ x|date("Y") }} Q{{ ((x|date("n") - 1) / 3) + 1 }}']
-                            {% elseif graph.report.periodGrouping == 'year' %}
-                                ['{{ x }}', '{{ x|date("Y") }}']
-                            {% else %}
-                                ['{{ x }}', Bagheera.translations.report_period_grouping_all]
-                            {% endif %}
-                        {% endif %}
-                        {% if loop.last != 1 %},{% endif %}
-                    {% endfor %}
-                    ],
-                    {% if graph.report.periodGrouping == 'month' %}
-                        tickInterval: '1 month'
-                    {% elseif graph.report.periodGrouping == 'quarter' %}
-                        tickInterval: '3 months'
-                    {% elseif graph.report.periodGrouping == 'year' %}
-                        tickInterval: '1 year'
-                    {% else %}
-                        tickInterval: '1 year'
-                    {% endif %}
-                },
-                yaxis:  {
-                    tickOptions: {
-                        formatString: '%.2f'
-                    },
-                    min: {{ graph.yaxisMin }},
-                    max: {{ graph.yaxisMax }},
-                    numberTicks: 6
-                }
+            series: {
+                lines: { show: true },
+                points: { show: true }
             },
-            highlighter: {
-                show: true
+            grid: { hoverable: true },
+            xaxis: {
+                mode: "time",
+                timeformat: "%Y-%m"
             },
-            series: [
-                {
-                    label: "{{ 'operation_type_credit'|trans }}",
-                    color: "#4bb2c5"
-                },
-                {
-                    label: "{{ 'operation_type_debit'|trans }}",
-                    color: "#eaa228"
-                }
-            ],
-            legend: {
-                show: true,
-                location: "nw",
-                placement: "insideGrid"
+            yaxis:  {
+                min: {{ graph.yaxisMin }},
+                max: {{ graph.yaxisMax }}
             }
         }
     );
+
+    var previousPoint = null;
+    $("#graph{{ graph.report.reportId }}").on("plothover", function (event, pos, item) {
+        if (item) {
+            if (previousPoint != item.dataIndex) {
+                previousPoint = item.dataIndex;
+
+                $("#plot-tooltip").remove();
+
+                var x = item.datapoint[0],
+                    y = item.datapoint[1].toFixed(2);
+
+                var d = new Date(x);
+
+                $('<div id="plot-tooltip">' + y + " (" + d.getFullYear() + "-" + (d.getMonth() + 1) + ')</div>').css({
+                    position: "absolute",
+                    display: "none",
+                    top: item.pageY - 30,
+                    left: item.pageX + 5,
+                    padding: "2px",
+                    backgroundColor: "#999",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    opacity: 0.80
+                }).appendTo("body").fadeIn(200);
+            }
+        } else {
+            $("#plot-tooltip").remove();
+            previousPoint = null;
+        }
+    });
     {% endfor %}
 });

@@ -5,13 +5,13 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         {% stylesheets filter='lessphp,cssrewrite'
             'bundles/krevindioubagheera/less/main.less'
-            'bundles/krevindioubagheera/css/jquery.jqplot.min.css'
             'bundles/krevindioubagheera/css/smoothness/jquery-ui-1.8.17.custom.css'
         %}
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
         <script src="{{ asset('/bundles/krevindioubagheera/js/head.min.js') }}"></script>
+        <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/js/flot/excanvas.min.js') }}"></script><![endif]-->
         <script>
         head.js(
             {% javascripts
@@ -24,7 +24,7 @@
             "{{ asset_url }}",
             {% endjavascripts %}
             "/translations.js",
-           function () {
+            function () {
                 Bagheera.baseUrl = "/";
                 Bagheera.init();
             }
