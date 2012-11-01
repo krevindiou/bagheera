@@ -19,6 +19,7 @@
 namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM,
+    Doctrine\Common\Collections\Collection,
     Doctrine\Common\Collections\ArrayCollection,
     Symfony\Component\Validator\Constraints as Assert;
 
@@ -448,8 +449,9 @@ class Report
      * Set accounts
      *
      * @param array $accounts
+     * @param Doctrine\Common\Collections\Collection $accounts
      */
-    public function setAccounts(array $accounts = null)
+    public function setAccounts(Collection $accounts = null)
     {
         $this->accounts = $accounts;
     }

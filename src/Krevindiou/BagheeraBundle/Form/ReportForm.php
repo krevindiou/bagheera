@@ -164,6 +164,7 @@ class ReportForm extends AbstractType
                                     },
                                     'empty_value' => '',
                                     'required' => false,
+                                    'multiple' => true,
                                     'attr' => array(
                                         'class' => 'input-xlarge'
                                     )
