@@ -39,11 +39,11 @@ var Bagheera = {
                 $(this).datepicker({"dateFormat": "yy-mm-dd", "showOn": "focus"}).focus();
             });
 
-            $("input[name$='[thirdParty]']").autocomplete({
+            $("input[name$='[thirdParty]']").typeahead({
                 autoFocus: true,
                 minLength: 2,
-                source: function(request, response) {
-                    $.getJSON("third-parties.json", { q: request.term }, response);
+                source: function(query, process) {
+                    $.getJSON("third-parties.json", { q: query }, process);
                 }
             });
 
