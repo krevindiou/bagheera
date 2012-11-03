@@ -230,7 +230,6 @@ class Report
      */
     protected $updatedAt;
 
-
     public function __construct()
     {
         $this->accounts = new ArrayCollection();
@@ -332,7 +331,7 @@ class Report
      */
     public function setHomepage($homepage)
     {
-        $this->homepage = (bool)$homepage;
+        $this->homepage = (bool) $homepage;
     }
 
     /**
@@ -448,7 +447,7 @@ class Report
     /**
      * Set accounts
      *
-     * @param array $accounts
+     * @param array                                  $accounts
      * @param Doctrine\Common\Collections\Collection $accounts
      */
     public function setAccounts(Collection $accounts = null)

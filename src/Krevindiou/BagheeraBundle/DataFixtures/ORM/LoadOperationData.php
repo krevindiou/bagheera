@@ -57,7 +57,6 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setIsReconciled(true);
         $em->persist($operation);
 
-
         // John - HSBC - Home savings account
         $operation = new Operation();
         $operation->setAccount($this->getReference('account-home_savings_account'));
@@ -83,7 +82,6 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation1->setTransferOperation($operation);
         $em->persist($operation);
 
-
         // John - Bank of America - Checking account #2
         $operation = new Operation();
         $operation->setAccount($this->getReference('account-checking_account_2'));
@@ -106,7 +104,6 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setValueDate(new \DateTime('2011-09-02'));
         $operation->setIsReconciled(true);
         $em->persist($operation);
-
 
         // Jane - BNP Paribas - Securities account
         $operation = new Operation();
@@ -131,7 +128,6 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setValueDate(new \DateTime('2011-09-02'));
         $operation->setIsReconciled(true);
         $em->persist($operation);
-
 
         $em->flush();
     }

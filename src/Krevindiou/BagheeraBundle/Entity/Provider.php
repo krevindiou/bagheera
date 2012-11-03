@@ -73,7 +73,6 @@ class Provider
      */
     protected $updatedAt;
 
-
     /**
      * @ORM\PrePersist
      */

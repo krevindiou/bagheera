@@ -117,7 +117,6 @@ class AccountImport
      */
     protected $updatedAt;
 
-
     /**
      * @ORM\PrePersist
      */
@@ -222,7 +221,7 @@ class AccountImport
      */
     public function setFinished($finished)
     {
-        $this->finished = (bool)$finished;
+        $this->finished = (bool) $finished;
     }
 
     /**
@@ -346,7 +345,7 @@ class AccountImport
 
         if ($this->isFinished()) {
             $pct = 100;
-        } elseif ((int)$this->getTotal() > 0) {
+        } elseif ((int) $this->getTotal() > 0) {
             $pct = floor($this->getProgress() / $this->getTotal() * 100);
         }
 

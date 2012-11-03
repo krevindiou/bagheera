@@ -71,7 +71,6 @@ class BankService
      */
     protected $_environment;
 
-
     public function __construct(
         Logger $logger,
         EntityManager $em,
@@ -93,8 +92,8 @@ class BankService
     /**
      * Returns banks list
      *
-     * @param  User $user    User entity
-     * @param  bool $deleted Return deleted items
+     * @param  User  $user    User entity
+     * @param  bool  $deleted Return deleted items
      * @return array
      */
     public function getList(User $user, $deleted = true)
@@ -136,8 +135,8 @@ class BankService
     /**
      * Saves bank
      *
-     * @param  User $user User entity
-     * @param  Bank $bank Bank entity
+     * @param  User    $user User entity
+     * @param  Bank    $bank Bank entity
      * @return boolean
      */
     protected function _save(User $user, Bank $bank)
@@ -159,8 +158,8 @@ class BankService
     /**
      * Saves bank
      *
-     * @param  User $user User entity
-     * @param  Bank $bank Bank entity
+     * @param  User    $user User entity
+     * @param  Bank    $bank Bank entity
      * @return boolean
      */
     public function save(User $user, Bank $bank)
@@ -177,8 +176,8 @@ class BankService
     /**
      * Saves bank form
      *
-     * @param  User $user User entity
-     * @param  Form $form Bank form
+     * @param  User    $user User entity
+     * @param  Form    $form Bank form
      * @return boolean
      */
     public function saveForm(User $user, Form $form)
@@ -193,8 +192,8 @@ class BankService
     /**
      * Deletes banks
      *
-     * @param  User $user     User entity
-     * @param  array $banksId Banks id to delete
+     * @param  User    $user    User entity
+     * @param  array   $banksId Banks id to delete
      * @return boolean
      */
     public function delete(User $user, array $banksId)
@@ -223,8 +222,8 @@ class BankService
     /**
      * Gets bank balances
      *
-     * @param  User $user User entity
-     * @param  Bank $bank Bank entity
+     * @param  User  $user User entity
+     * @param  Bank  $bank Bank entity
      * @return array
      */
     public function getBalances(User $user, Bank $bank)
@@ -264,6 +263,7 @@ class BankService
 
             if (null === $phpBin) {
                 $this->_logger->err('Unable to find php binary');
+
                 return;
             }
 

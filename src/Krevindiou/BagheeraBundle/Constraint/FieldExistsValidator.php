@@ -13,7 +13,6 @@ class FieldExistsValidator extends ConstraintValidator
      */
     private $_registry;
 
-
     /**
      * @param RegistryInterface $registry
      */

@@ -31,7 +31,7 @@ class UserRepository extends EntityRepository
     /**
      * Gets users query
      *
-     * @param  array $params Search criterias
+     * @param  array              $params Search criterias
      * @return Doctrine\ORM\Query
      */
     public function getListQuery(array $params = array())

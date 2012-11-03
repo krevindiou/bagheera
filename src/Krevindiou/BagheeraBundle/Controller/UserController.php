@@ -183,7 +183,7 @@ class UserController extends Controller
     public function listAction(Request $request)
     {
         $page = $request->query->getInt('page', 1);
-        $users = (array)$request->request->get('users');
+        $users = (array) $request->request->get('users');
 
         if (!empty($users)) {
             if ($request->request->get('toggleDeactivation')) {

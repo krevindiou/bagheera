@@ -173,7 +173,6 @@ class Account
      */
     protected $schedulers;
 
-
     public function __construct()
     {
         $this->sharedWith = new ArrayCollection();
@@ -186,8 +185,8 @@ class Account
      */
     public function prePersist()
     {
-        $this->setInitialBalance((float)$this->getInitialBalance());
-        $this->setOverdraftFacility((float)$this->getOverdraftFacility());
+        $this->setInitialBalance((float) $this->getInitialBalance());
+        $this->setOverdraftFacility((float) $this->getOverdraftFacility());
         $this->setCreatedAt(new \DateTime());
         $this->setUpdatedAt(new \DateTime());
     }
@@ -197,8 +196,8 @@ class Account
      */
     public function preUpdate()
     {
-        $this->setInitialBalance((float)$this->getInitialBalance());
-        $this->setOverdraftFacility((float)$this->getOverdraftFacility());
+        $this->setInitialBalance((float) $this->getInitialBalance());
+        $this->setOverdraftFacility((float) $this->getOverdraftFacility());
         $this->setUpdatedAt(new \DateTime());
     }
 
@@ -359,7 +358,7 @@ class Account
      */
     public function setIsDeleted($isDeleted)
     {
-        $this->isDeleted = (bool)$isDeleted;
+        $this->isDeleted = (bool) $isDeleted;
     }
 
     /**

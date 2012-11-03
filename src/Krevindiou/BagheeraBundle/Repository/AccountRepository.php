@@ -32,7 +32,7 @@ class AccountRepository extends EntityRepository
     /**
      * Gets last 12 months initial balance sum by month
      *
-     * @param  User $user User entity
+     * @param  User  $user User entity
      * @return array
      */
     public function getLast12MonthsInitialBalanceByMonth(User $user)

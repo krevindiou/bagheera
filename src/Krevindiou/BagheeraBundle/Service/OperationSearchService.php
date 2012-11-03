@@ -52,7 +52,6 @@ class OperationSearchService
      */
     protected $_container;
 
-
     public function __construct(EntityManager $em, FormFactory $formFactory, Container $container)
     {
         $this->_em = $em;
@@ -63,9 +62,9 @@ class OperationSearchService
     /**
      * Returns operationSearch form
      *
-     * @param  User $user                       User entity
+     * @param  User            $user            User entity
      * @param  OperationSearch $operationSearch OperationSearch entity
-     * @param  Account $account                 Account entity for new operationSearch
+     * @param  Account         $account         Account entity for new operationSearch
      * @return Form
      */
     public function getForm(User $user, OperationSearch $operationSearch = null, Account $account = null)
@@ -83,7 +82,7 @@ class OperationSearchService
     /**
      * Gets operationSearch from session
      *
-     * @param  Account $account Account entity
+     * @param  Account         $account Account entity
      * @return OperationSearch
      */
     public function getSessionSearch(Account $account)
@@ -171,7 +170,7 @@ class OperationSearchService
      * Sets operationSearch from session
      *
      * @param  Account $account Account entity
-     * @param  array $search    Search param
+     * @param  array   $search  Search param
      * @return void
      */
     public function setSessionSearch(Account $account, array $search)

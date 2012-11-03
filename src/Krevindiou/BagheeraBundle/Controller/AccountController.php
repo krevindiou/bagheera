@@ -69,8 +69,8 @@ class AccountController extends Controller
      */
     public function listActionsAction(Request $request)
     {
-        $accountsId = (array)$request->request->get('accountsId');
-        $banksId = (array)$request->request->get('banksId');
+        $accountsId = (array) $request->request->get('accountsId');
+        $banksId = (array) $request->request->get('banksId');
 
         $user = $this->get('security.context')->getToken()->getUser();
 

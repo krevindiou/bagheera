@@ -102,7 +102,6 @@ class Bank
      */
     protected $accounts;
 
-
     public function __construct()
     {
         $this->accounts = new ArrayCollection();
@@ -202,7 +201,7 @@ class Bank
      */
     public function setIsDeleted($isDeleted)
     {
-        $this->isDeleted = (bool)$isDeleted;
+        $this->isDeleted = (bool) $isDeleted;
     }
 
     /**

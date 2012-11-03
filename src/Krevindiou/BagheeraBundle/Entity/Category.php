@@ -100,7 +100,6 @@ class Category
      */
     protected $subCategories;
 
-
     public function __construct()
     {
         $this->subCategories = new ArrayCollection();
@@ -180,7 +179,7 @@ class Category
      */
     public function setIsActive($isActive)
     {
-        $this->isActive = (bool)$isActive;
+        $this->isActive = (bool) $isActive;
     }
 
     /**

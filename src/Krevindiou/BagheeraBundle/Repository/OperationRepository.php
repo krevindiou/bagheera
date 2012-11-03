@@ -116,7 +116,7 @@ class OperationRepository extends EntityRepository
     /**
      * Gets last 12 months operations sum by month
      *
-     * @param  User $user User entity
+     * @param  User  $user User entity
      * @return array
      */
     public function getLast12MonthsSumByMonth(User $user)

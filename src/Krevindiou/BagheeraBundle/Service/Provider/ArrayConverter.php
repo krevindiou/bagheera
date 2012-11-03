@@ -29,11 +29,11 @@ class ArrayConverter
     /**
      * Converts string data to an array
      *
-     * @param  string $content  Data to convert
-     * @param  string $format   Either QIF, OFX or QFX
+     * @param  string $content Data to convert
+     * @param  string $format  Either QIF, OFX or QFX
      * @return array
      */
-    static public function convertFromFormat($content, $format)
+    public static function convertFromFormat($content, $format)
     {
         $method = 'self::_convertFrom' . ucfirst(strtolower($format));
 
@@ -47,7 +47,7 @@ class ArrayConverter
         throw new InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
     }
 
-    static private function _convertFromQif($content)
+    private static function _convertFromQif($content)
     {
         $data = array();
 
@@ -68,21 +68,19 @@ class ArrayConverter
         return $data;
     }
 
-    static private function _convertFromOfx($content)
+    private static function _convertFromOfx($content)
     {
         $data = array();
 
         // @todo
-
         return $data;
     }
 
-    static private function _convertFromQfx($content)
+    private static function _convertFromQfx($content)
     {
         $data = array();
 
         // @todo
-
         return $data;
     }
 }

@@ -101,7 +101,6 @@ class UserService
      */
     protected $_schedulerService;
 
-
     public function __construct(
         Logger $logger,
         EntityManager $em,
@@ -165,7 +164,7 @@ class UserService
     /**
      * Adds user
      *
-     * @param  User $user User entity
+     * @param  User    $user User entity
      * @return boolean
      */
     protected function _add(User $user)
@@ -209,7 +208,7 @@ class UserService
     /**
      * Updates user
      *
-     * @param  User $user User entity
+     * @param  User    $user User entity
      * @return boolean
      */
     protected function _update(User $user)
@@ -229,7 +228,7 @@ class UserService
     /**
      * Saves user
      *
-     * @param  User $user User entity
+     * @param  User    $user User entity
      * @return boolean
      */
     public function save(User $user)
@@ -250,7 +249,7 @@ class UserService
     /**
      * Saves user form
      *
-     * @param  Form $form User form
+     * @param  Form    $form User form
      * @return boolean
      */
     public function saveForm(Form $form)
@@ -305,7 +304,7 @@ class UserService
     /**
      * Sends email with reset password link
      *
-     * @param  string $email Email to send link
+     * @param  string  $email Email to send link
      * @return boolean
      */
     public function sendResetPasswordEmail($email)
@@ -387,7 +386,7 @@ class UserService
     /**
      * Creates reset password key
      *
-     * @param  User $user User entity
+     * @param  User   $user User entity
      * @return string
      */
     protected function _createResetPasswordKey(User $user)
@@ -451,8 +450,8 @@ class UserService
     /**
      * Gets users list
      *
-     * @param  array $params        Search criterias
-     * @param  integer $currentPage Page number
+     * @param  array      $params      Search criterias
+     * @param  integer    $currentPage Page number
      * @return Pagerfanta
      */
     public function getUsers(array $params = array(), $currentPage = 1)
@@ -471,7 +470,7 @@ class UserService
     /**
      * Gets user balances
      *
-     * @param  User $user User entity
+     * @param  User  $user User entity
      * @return array
      */
     public function getBalances(User $user)
@@ -499,7 +498,7 @@ class UserService
     /**
      * Gets import progress data
      *
-     * @param  User $user User entity
+     * @param  User  $user User entity
      * @return array
      */
     public function getImportProgress(User $user)

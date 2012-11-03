@@ -58,7 +58,6 @@ abstract class ProviderBase
      */
     protected $_accountImportService;
 
-
     public function __construct(Logger $logger)
     {
         $this->_logger = $logger;
@@ -111,8 +110,8 @@ abstract class ProviderBase
      * Converts transactions data to an array
      *
      * @param  Account $account Account entity
-     * @param  string $data     Data to convert
-     * @param  string $format   Either QIF, OFX or QFX
+     * @param  string  $data    Data to convert
+     * @param  string  $format  Either QIF, OFX or QFX
      * @return array
      */
     protected function _convertToArray(Account $account, $data, $format)
@@ -132,8 +131,8 @@ abstract class ProviderBase
      * Saves transactions data depending on type
      *
      * @param  Account $account Account entity
-     * @param  string $data     Data to save
-     * @param  string $type     Either original, json or json_normalized
+     * @param  string  $data    Data to save
+     * @param  string  $type    Either original, json or json_normalized
      * @return void
      */
     protected function _save(Account $account, $data, $type)

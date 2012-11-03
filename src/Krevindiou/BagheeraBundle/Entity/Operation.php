@@ -170,7 +170,6 @@ class Operation
      */
     protected $updatedAt;
 
-
     public function __construct()
     {
         $this->setValueDate(new \DateTime());
@@ -358,7 +357,7 @@ class Operation
      */
     public function setIsReconciled($isReconciled)
     {
-        $this->isReconciled = (bool)$isReconciled;
+        $this->isReconciled = (bool) $isReconciled;
     }
 
     /**

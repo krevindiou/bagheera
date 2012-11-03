@@ -49,7 +49,6 @@ class ReportService
      */
     protected $_formFactory;
 
-
     public function __construct(Logger $logger, EntityManager $em, FormFactory $formFactory)
     {
         $this->_logger = $logger;
@@ -60,7 +59,7 @@ class ReportService
     /**
      * Returns reports list
      *
-     * @param  User $user User entity
+     * @param  User                                   $user User entity
      * @return Doctrine\Common\Collections\Collection
      */
     public function getList(User $user)
@@ -71,7 +70,7 @@ class ReportService
     /**
      * Returns reports list displayed on homepage
      *
-     * @param  User $user User entity
+     * @param  User  $user User entity
      * @return array
      */
     public function getHomepageList(User $user)
@@ -90,9 +89,9 @@ class ReportService
     /**
      * Returns report form
      *
-     * @param  User $user       User entity
-     * @param  Report $report   Report entity
-     * @param  string $type     Report type (sum, average, distribution, estimate)
+     * @param  User   $user   User entity
+     * @param  Report $report Report entity
+     * @param  string $type   Report type (sum, average, distribution, estimate)
      * @return Form
      */
     public function getForm(User $user, Report $report = null, $type = null)
@@ -113,8 +112,8 @@ class ReportService
     /**
      * Saves report
      *
-     * @param  User $user     User entity
-     * @param  Report $report Report entity
+     * @param  User    $user   User entity
+     * @param  Report  $report Report entity
      * @return boolean
      */
     protected function _save(User $user, Report $report)
@@ -136,8 +135,8 @@ class ReportService
     /**
      * Saves report
      *
-     * @param  User $user     User entity
-     * @param  Report $report Report entity
+     * @param  User    $user   User entity
+     * @param  Report  $report Report entity
      * @return boolean
      */
     public function save(User $user, Report $report)
@@ -154,8 +153,8 @@ class ReportService
     /**
      * Saves report form
      *
-     * @param  User $user User entity
-     * @param  Form $form Report form
+     * @param  User    $user User entity
+     * @param  Form    $form Report form
      * @return boolean
      */
     public function saveForm(User $user, Form $form)
@@ -170,8 +169,8 @@ class ReportService
     /**
      * Deletes reports
      *
-     * @param  User $user       User entity
-     * @param  array $reportsId Reports id to delete
+     * @param  User    $user      User entity
+     * @param  array   $reportsId Reports id to delete
      * @return boolean
      */
     public function delete(User $user, array $reportsId)
@@ -200,8 +199,8 @@ class ReportService
     /**
      * Returns graph data
      *
-     * @param  User $user       User entity
-     * @param  Report $report   Report entity
+     * @param  User   $user   User entity
+     * @param  Report $report Report entity
      * @return array
      */
     public function getGraphData(User $user, Report $report)
@@ -302,8 +301,8 @@ class ReportService
             }
         }
 
-        $yaxisMin = (int)(min(array_merge($series[0]['points'], $series[1]['points'])) * 0.95);
-        $yaxisMax = (int)(max(array_merge($series[0]['points'], $series[1]['points'])) * 1.05);
+        $yaxisMin = (int) (min(array_merge($series[0]['points'], $series[1]['points'])) * 0.95);
+        $yaxisMax = (int) (max(array_merge($series[0]['points'], $series[1]['points'])) * 1.05);
 
         $tmp = pow(10, (strlen($yaxisMin) - 2));
         $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
@@ -322,9 +321,9 @@ class ReportService
     /**
      * Returns graph data
      *
-     * @param  Report $report    Report entity
-     * @param  array  $accounts  Accounts list
-     * @param  string $type      sum or average
+     * @param  Report $report   Report entity
+     * @param  array  $accounts Accounts list
+     * @param  string $type     sum or average
      * @return array
      */
     public function _getGraphData(Report $report, array $accounts, $type)
@@ -392,7 +391,7 @@ class ReportService
     /**
      * Returns synthesis graph data
      *
-     * @param  User $user   User entity
+     * @param  User  $user User entity
      * @return array
      */
     public function getSynthesis(User $user)
@@ -427,8 +426,8 @@ class ReportService
         }
 
         if (!empty($graph['points'])) {
-            $yaxisMin = (int)(min($graph['points']) * 0.95);
-            $yaxisMax = (int)(max($graph['points']) * 1.05);
+            $yaxisMin = (int) (min($graph['points']) * 0.95);
+            $yaxisMax = (int) (max($graph['points']) * 1.05);
 
             $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
             $yaxisMin = floor($yaxisMin / $tmp) * $tmp;

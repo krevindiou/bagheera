@@ -86,7 +86,6 @@ class BankAccess
      */
     protected $updatedAt;
 
-
     /**
      * @ORM\PrePersist
      */

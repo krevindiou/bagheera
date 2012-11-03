@@ -61,7 +61,7 @@ class OperationController extends Controller
      */
     public function listActionsAction(Request $request, Account $account)
     {
-        $operationsId = (array)$request->request->get('operationsId');
+        $operationsId = (array) $request->request->get('operationsId');
 
         $user = $this->get('security.context')->getToken()->getUser();
 
@@ -125,6 +125,7 @@ class OperationController extends Controller
 
         $response = new Response(json_encode($thirdParties));
         $response->headers->set('Content-Type', 'application/json');
+
         return $response;
     }
 }

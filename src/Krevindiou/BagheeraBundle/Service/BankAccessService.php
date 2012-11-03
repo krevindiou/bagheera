@@ -71,7 +71,6 @@ class BankAccessService
      */
     protected $_bankService;
 
-
     public function __construct(
         $secret,
         Logger $logger,
@@ -114,7 +113,7 @@ class BankAccessService
     /**
      * Saves bank access
      *
-     * @param  User $user             User entity
+     * @param  User       $user       User entity
      * @param  BankAccess $bankAccess BankAccess entity
      * @return boolean
      */
@@ -132,10 +131,8 @@ class BankAccessService
                     ->setParameter('bankId', $bankAccess->getBankId())
                     ->execute();
 
-
                 $plainLogin = $bankAccess->getPlainLogin();
                 $plainPassword = $bankAccess->getPlainPassword();
-
 
                 // AES-256 => 32 bytes long key
                 $key = $this->_secret;
@@ -152,7 +149,6 @@ class BankAccessService
 
                 $encryptedLogin = base64_encode($iv . $encryptedLogin);
 
-
                 $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
 
                 $encryptedPassword = mcrypt_encrypt(
@@ -164,7 +160,6 @@ class BankAccessService
                 );
 
                 $encryptedPassword = base64_encode($iv . $encryptedPassword);
-
 
                 if ('' != $encryptedLogin && '' != $encryptedPassword) {
                     $bankAccess->setLogin($encryptedLogin);
@@ -190,7 +185,7 @@ class BankAccessService
     /**
      * Saves bank access
      *
-     * @param  User $user             User entity
+     * @param  User       $user       User entity
      * @param  BankAccess $bankAccess BankAccess entity
      * @return boolean
      */
@@ -208,8 +203,8 @@ class BankAccessService
     /**
      * Saves bank access form
      *
-     * @param  User $user User entity
-     * @param  Form $form BankAccess form
+     * @param  User    $user User entity
+     * @param  Form    $form BankAccess form
      * @return boolean
      */
     public function saveForm(User $user, Form $form)

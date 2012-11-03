@@ -33,7 +33,6 @@ class CategoryService
      */
     protected $_em;
 
-
     public function __construct(EntityManager $em)
     {
         $this->_em = $em;

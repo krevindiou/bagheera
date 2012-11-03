@@ -49,7 +49,7 @@ class ReportController extends Controller
      */
     public function listActionsAction(Request $request)
     {
-        $reportsId = (array)$request->request->get('reportsId');
+        $reportsId = (array) $request->request->get('reportsId');
 
         $user = $this->get('security.context')->getToken()->getUser();
 

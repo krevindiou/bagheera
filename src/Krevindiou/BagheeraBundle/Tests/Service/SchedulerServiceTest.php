@@ -157,7 +157,6 @@ class SchedulerServiceTest extends TestCase
         $query = $this->_em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
-
         $operationsBeforeDate = array();
         foreach ($operationsBefore as $operationBefore) {
             $operationsBeforeDate[] = $operationBefore->getValueDate()->format('Y-m-d');

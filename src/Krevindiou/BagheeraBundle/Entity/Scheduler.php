@@ -176,7 +176,6 @@ class Scheduler
      */
     protected $updatedAt;
 
-
     /**
      * @ORM\PrePersist
      */
@@ -311,7 +310,7 @@ class Scheduler
      */
     public function setIsReconciled($isReconciled)
     {
-        $this->isReconciled = (bool)$isReconciled;
+        $this->isReconciled = (bool) $isReconciled;
     }
 
     /**
@@ -371,7 +370,7 @@ class Scheduler
      */
     public function setFrequencyValue($frequencyValue)
     {
-        $this->frequencyValue = (int)$frequencyValue;
+        $this->frequencyValue = (int) $frequencyValue;
     }
 
     /**
@@ -391,7 +390,7 @@ class Scheduler
      */
     public function setIsActive($isActive)
     {
-        $this->isActive = (bool)$isActive;
+        $this->isActive = (bool) $isActive;
     }
 
     /**

@@ -40,7 +40,6 @@ class PaymentMethod
     const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
     const PAYMENT_METHOD_ID_CREDIT_DEPOSIT = 7;
 
-
     /**
      * @var integer $paymentMethodId
      *
@@ -83,7 +82,6 @@ class PaymentMethod
      * @Assert\DateTime()
      */
     protected $updatedAt;
-
 
     /**
      * @ORM\PrePersist

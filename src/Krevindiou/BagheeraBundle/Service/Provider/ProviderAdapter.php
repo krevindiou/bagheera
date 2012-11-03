@@ -58,7 +58,6 @@ class ProviderAdapter
      */
     protected $_providerService;
 
-
     public function __construct(
         EntityManager $em,
         $key,

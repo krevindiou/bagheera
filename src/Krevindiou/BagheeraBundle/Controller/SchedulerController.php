@@ -58,7 +58,7 @@ class SchedulerController extends Controller
     public function listActionsAction(Request $request, Account $account)
     {
         if ($request->request->has('delete')) {
-            $schedulersId = (array)$request->request->get('schedulersId');
+            $schedulersId = (array) $request->request->get('schedulersId');
             $user = $this->get('security.context')->getToken()->getUser();
 
             $this->get('bagheera.scheduler')->delete($user, $schedulersId);

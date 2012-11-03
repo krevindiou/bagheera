@@ -33,29 +33,29 @@ interface ProviderInterface
      *
      * @return void
      */
-    function connect();
+    public function connect();
 
     /**
      * Fetches accounts into an array
      *
      * @return array
      */
-    function fetchAccounts();
+    public function fetchAccounts();
 
     /**
      * Fetches transactions into an array
      *
-     * @param  Account $account   Account entity
+     * @param  Account $account Account entity
      * @return array
      */
-    function fetchTransactions(Account $account);
+    public function fetchTransactions(Account $account);
 
     /**
      * Converts transactions data to normalized format
      *
      * @param  Account $accounts Account entity
-     * @param  array $data       Data to normalize
+     * @param  array   $data     Data to normalize
      * @return array
      */
-    function normalizeData(Account $account, array $data);
+    public function normalizeData(Account $account, array $data);
 }

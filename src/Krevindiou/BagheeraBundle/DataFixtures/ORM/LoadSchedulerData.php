@@ -47,7 +47,6 @@ class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterfa
         $scheduler->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
         $em->persist($scheduler);
 
-
         // Jane - BNP Paribas - Securities account
         $scheduler = new Scheduler();
         $scheduler->setAccount($this->getReference('account-securities_account'));
@@ -66,7 +65,6 @@ class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterfa
         $scheduler->setPaymentMethod($this->getReference('paymentmethod-debit-creditcard'));
         $em->persist($scheduler);
         $this->addReference('scheduler-jane-1', $scheduler);
-
 
         $em->flush();
     }

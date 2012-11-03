@@ -66,7 +66,6 @@ class SchedulerService
      */
     protected $_operationService;
 
-
     public function __construct(
         Logger $logger,
         EntityManager $em,
@@ -84,9 +83,9 @@ class SchedulerService
     /**
      * Returns schedulers list
      *
-     * @param  User $user           User entity
-     * @param  Account $account     Account entity
-     * @param  integer $currentPage Page number
+     * @param  User       $user        User entity
+     * @param  Account    $account     Account entity
+     * @param  integer    $currentPage Page number
      * @return Pagerfanta
      */
     public function getList(User $user, Account $account, $currentPage = 1)
@@ -105,9 +104,9 @@ class SchedulerService
     /**
      * Returns scheduler form
      *
-     * @param  User $user           User entity
+     * @param  User      $user      User entity
      * @param  Scheduler $scheduler Scheduler entity
-     * @param  Account $account     Account entity for new scheduler
+     * @param  Account   $account   Account entity for new scheduler
      * @return Form
      */
     public function getForm(User $user, Scheduler $scheduler = null, Account $account = null)
@@ -125,7 +124,7 @@ class SchedulerService
     /**
      * Saves scheduler
      *
-     * @param  User $user           User entity
+     * @param  User      $user      User entity
      * @param  Scheduler $scheduler Scheduler entity
      * @return boolean
      */
@@ -168,7 +167,7 @@ class SchedulerService
     /**
      * Saves scheduler
      *
-     * @param  User $user           User entity
+     * @param  User      $user      User entity
      * @param  Scheduler $scheduler Scheduler entity
      * @return boolean
      */
@@ -186,8 +185,8 @@ class SchedulerService
     /**
      * Saves scheduler form
      *
-     * @param  User $user User entity
-     * @param  Form $form Scheduler form
+     * @param  User    $user User entity
+     * @param  Form    $form Scheduler form
      * @return boolean
      */
     public function saveForm(User $user, Form $form)
@@ -202,8 +201,8 @@ class SchedulerService
     /**
      * Deletes schedulers
      *
-     * @param  User $user          User entity
-     * @param  array $schedulersId Schedulers id to delete
+     * @param  User    $user         User entity
+     * @param  array   $schedulersId Schedulers id to delete
      * @return boolean
      */
     public function delete(User $user, array $schedulersId)
@@ -232,8 +231,8 @@ class SchedulerService
     /**
      * Executes schedulers for specified user
      *
-     * @param  User $user       User entity
-     * @param  DateTime $now    DateTime object
+     * @param  User     $user User entity
+     * @param  DateTime $now  DateTime object
      * @return boolean
      */
     public function runSchedulers(User $user, \DateTime $now = null)

@@ -66,7 +66,6 @@ class AccountService
      */
     protected $_accountImportService;
 
-
     public function __construct(
         Logger $logger,
         EntityManager $em,
@@ -86,9 +85,9 @@ class AccountService
     /**
      * Returns accounts list
      *
-     * @param  User $user    User entity
-     * @param  Bank $bank    Bank entity
-     * @param  bool $deleted Return deleted items
+     * @param  User  $user    User entity
+     * @param  Bank  $bank    Bank entity
+     * @param  bool  $deleted Return deleted items
      * @return array
      */
     public function getList(User $user, Bank $bank = null, $deleted = true)
@@ -117,8 +116,8 @@ class AccountService
     /**
      * Returns account form for a new account
      *
-     * @param  User $user       User entity
-     * @param  Bank $bank       Bank entity
+     * @param  User $user User entity
+     * @param  Bank $bank Bank entity
      * @return Form
      */
     public function getNewForm(User $user, Bank $bank)
@@ -138,7 +137,7 @@ class AccountService
     /**
      * Returns account form for an existing account
      *
-     * @param  User $user       User entity
+     * @param  User    $user    User entity
      * @param  Account $account Account entity
      * @return Form
      */
@@ -156,7 +155,7 @@ class AccountService
     /**
      * Saves account
      *
-     * @param  User $user       User entity
+     * @param  User    $user    User entity
      * @param  Account $account Account entity
      * @return boolean
      */
@@ -187,7 +186,7 @@ class AccountService
     /**
      * Saves account
      *
-     * @param  User $user       User entity
+     * @param  User    $user    User entity
      * @param  Account $account Account entity
      * @return boolean
      */
@@ -205,8 +204,8 @@ class AccountService
     /**
      * Saves account form
      *
-     * @param  User $user User entity
-     * @param  Form $form Account form
+     * @param  User    $user User entity
+     * @param  Form    $form Account form
      * @return boolean
      */
     public function saveForm(User $user, Form $form)
@@ -221,8 +220,8 @@ class AccountService
     /**
      * Deletes accounts
      *
-     * @param  User $user        User entity
-     * @param  array $accountsId Accounts id to delete
+     * @param  User    $user       User entity
+     * @param  array   $accountsId Accounts id to delete
      * @return boolean
      */
     public function delete(User $user, array $accountsId)
@@ -251,7 +250,7 @@ class AccountService
     /**
      * Gets account balance
      *
-     * @param  User $user              User entity
+     * @param  User    $user           User entity
      * @param  Account $account        Account entity
      * @param  boolean $reconciledOnly Only consider reconciled operations
      * @return float
@@ -281,9 +280,9 @@ class AccountService
     /**
      * Saves multiple accounts
      *
-     * @param  User $user       User entity
-     * @param  Bank $bank       Bank entity
-     * @param  array $accounts  Accounts data
+     * @param  User    $user     User entity
+     * @param  Bank    $bank     Bank entity
+     * @param  array   $accounts Accounts data
      * @return boolean
      */
     public function saveMulti(User $user, Bank $bank, array $accounts)

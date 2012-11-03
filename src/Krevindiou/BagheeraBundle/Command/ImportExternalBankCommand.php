@@ -55,6 +55,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
                     $provider->setBankAccess($bankAccess);
                 } catch (\RuntimeException $e) {
                     $this->getContainer()->get('logger')->err($e->getMessage());
+
                     return;
                 }
 

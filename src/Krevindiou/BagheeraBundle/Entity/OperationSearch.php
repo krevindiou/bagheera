@@ -178,7 +178,6 @@ class OperationSearch
      */
     protected $updatedAt;
 
-
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -362,7 +361,7 @@ class OperationSearch
         if ('' === $isReconciled) {
             $isReconciled = null;
         } else {
-            $isReconciled = (bool)$isReconciled;
+            $isReconciled = (bool) $isReconciled;
         }
 
         $this->isReconciled = $isReconciled;

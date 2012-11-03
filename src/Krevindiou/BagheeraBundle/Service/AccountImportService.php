@@ -41,7 +41,6 @@ class AccountImportService
      */
     protected $_em;
 
-
     public function __construct(Logger $logger, EntityManager $em)
     {
         $this->_logger = $logger;
@@ -65,13 +64,13 @@ class AccountImportService
         $query = $this->_em->createQuery($dql);
         $query->setParameter('user', $account->getBank()->getUser());
 
-        return (int)$query->getSingleScalarResult() + 1;
+        return (int) $query->getSingleScalarResult() + 1;
     }
 
     /**
      * Returns current import
      *
-     * @param  Account $account Account entity
+     * @param  Account       $account Account entity
      * @return AccountImport
      */
     public function getCurrentImport(Account $account)
@@ -109,8 +108,8 @@ class AccountImportService
     /**
      * Updates import progress data
      *
-     * @param  Account $account     Account entity
-     * @param  integer $progress    Current progress
+     * @param  Account $account  Account entity
+     * @param  integer $progress Current progress
      * @return void
      */
     public function updateImport(Account $account, $progress)
@@ -145,8 +144,8 @@ class AccountImportService
      * Saves transactions data depending on type
      *
      * @param  Account $account Account entity
-     * @param  string $data     Data to save
-     * @param  string $type     Either original, json or json_normalized
+     * @param  string  $data    Data to save
+     * @param  string  $type    Either original, json or json_normalized
      * @return void
      */
     public function setData(Account $account, $data, $type)

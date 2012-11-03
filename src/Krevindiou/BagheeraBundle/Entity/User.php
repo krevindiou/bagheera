@@ -150,7 +150,6 @@ class User implements AdvancedUserInterface
      */
     protected $reports;
 
-
     public function __construct()
     {
         $this->salt = bin2hex(openssl_random_pseudo_bytes(16));
@@ -292,7 +291,7 @@ class User implements AdvancedUserInterface
      */
     public function setIsAdmin($isAdmin)
     {
-        $this->isAdmin = (bool)$isAdmin;
+        $this->isAdmin = (bool) $isAdmin;
     }
 
     /**
@@ -312,7 +311,7 @@ class User implements AdvancedUserInterface
      */
     public function setIsActive($isActive)
     {
-        $this->isActive = (bool)$isActive;
+        $this->isActive = (bool) $isActive;
     }
 
     /**

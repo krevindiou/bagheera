@@ -29,7 +29,6 @@ class FieldExists extends Constraint
      */
     public $em;
 
-
     /**
      * @param string $className
      * @param string $field

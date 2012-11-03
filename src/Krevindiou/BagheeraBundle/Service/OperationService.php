@@ -65,7 +65,6 @@ class OperationService
      */
     protected $_accountImportService;
 
-
     public function __construct(
         Logger $logger,
         EntityManager $em,
@@ -83,9 +82,9 @@ class OperationService
     /**
      * Returns operations list
      *
-     * @param  User $user                       User entity
-     * @param  Account $account                 Account entity
-     * @param  integer $currentPage             Page number
+     * @param  User            $user            User entity
+     * @param  Account         $account         Account entity
+     * @param  integer         $currentPage     Page number
      * @param  OperationSearch $operationSearch OperationSearch entity
      * @return Pagerfanta
      */
@@ -110,9 +109,9 @@ class OperationService
     /**
      * Returns operation form
      *
-     * @param  User $user           User entity
+     * @param  User      $user      User entity
      * @param  Operation $operation Operation entity
-     * @param  Account $account     Account entity for new operation
+     * @param  Account   $account   Account entity for new operation
      * @return Form
      */
     public function getForm(User $user, Operation $operation = null, Account $account = null)
@@ -130,7 +129,7 @@ class OperationService
     /**
      * Saves operation
      *
-     * @param  User $user           User entity
+     * @param  User      $user      User entity
      * @param  Operation $operation Operation entity
      * @return boolean
      */
@@ -240,7 +239,7 @@ class OperationService
     /**
      * Saves operation
      *
-     * @param  User $user           User entity
+     * @param  User      $user      User entity
      * @param  Operation $operation Operation entity
      * @return boolean
      */
@@ -258,8 +257,8 @@ class OperationService
     /**
      * Saves operation form
      *
-     * @param  User $user User entity
-     * @param  Form $form Operation form
+     * @param  User    $user User entity
+     * @param  Form    $form Operation form
      * @return boolean
      */
     public function saveForm(User $user, Form $form)
@@ -274,8 +273,8 @@ class OperationService
     /**
      * Deletes operations
      *
-     * @param  User $user          User entity
-     * @param  array $operationsId Operations id to delete
+     * @param  User    $user         User entity
+     * @param  array   $operationsId Operations id to delete
      * @return boolean
      */
     public function delete(User $user, array $operationsId)
@@ -304,8 +303,8 @@ class OperationService
     /**
      * Reconciles operations
      *
-     * @param  User $user          User entity
-     * @param  array $operationsId Operations id to reconcile
+     * @param  User    $user         User entity
+     * @param  array   $operationsId Operations id to reconcile
      * @return boolean
      */
     public function reconcile(User $user, array $operationsId)
@@ -360,10 +359,10 @@ class OperationService
     /**
      * Saves multiple operations
      *
-     * @param  User $user         User entity
-     * @param  Account $account   Account entity
-     * @param  array $operations  Operations data
-     * @param  Closure $func      Regularly called function
+     * @param  User    $user       User entity
+     * @param  Account $account    Account entity
+     * @param  array   $operations Operations data
+     * @param  Closure $func       Regularly called function
      * @return boolean
      */
     public function saveMulti(User $user, Account $account, array $operations, \Closure $func)
