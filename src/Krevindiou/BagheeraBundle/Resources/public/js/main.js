@@ -12,6 +12,7 @@ var Bagheera = {
             Bagheera.dropDownCategory();
             Bagheera.dropDownTransferAccount();
             Bagheera.tooltip();
+            Bagheera.importDataAccount();
 
             $("table.table td").click(function() {
                 if ($(this).find("input").length == 0) {
@@ -284,5 +285,65 @@ var Bagheera = {
         $(".tip")
             .tooltip({trigger: "manual"})
             .tooltip("show");
+    },
+
+    importDataAccount: function() {
+        if ($(".progress:visible").length > 0) {
+            var nextUpload = true;
+
+            $.ajax({
+                url: "import-progress",
+                dataType: "json",
+                success: function(data) {
+                    nextUpload = false;
+
+                    for (var accountId in data) {
+                        nextUpload = true;
+
+                        var total = data[accountId];
+
+                        $("#progress-account-" + accountId)
+                            .show()
+                            .find(".bar")
+                            .animate(
+                                {
+                                    width: total
+                                },
+                                {
+                                    duration: "slow",
+                                    step: function(now, fx) {
+                                        if (100 == now) {
+                                            $(this).parent().removeClass("progress-striped");
+                                        }
+                                    }
+                                }
+                            );
+                    }
+                },
+                complete: function() {
+                    if (nextUpload) {
+                        setTimeout(Bagheera.importDataAccount, 2000);
+                    } else {
+                        $(".progress").each(function() {
+                            $(this)
+                                .show()
+                                .find(".bar")
+                                .animate(
+                                    {
+                                        width: 100
+                                    },
+                                    {
+                                        duration: "slow",
+                                        complete: function(now, fx) {
+                                            $(this).parent().removeClass("progress-striped");
+                                                window.location.reload(true);
+                                        }
+                                    }
+                                );
+                        });
+                    }
+                }
+            });
+        }
     }
 };
