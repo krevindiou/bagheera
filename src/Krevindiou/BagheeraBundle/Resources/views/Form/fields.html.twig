@@ -2,7 +2,7 @@
 
 {% block form_row %}
 {% spaceless %}
-    <div class="control-group">
+    <div class="control-group{{ errors|length ? ' error' : '' }}">
         {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' control-label')|trim}) %}
 
         {{ form_label(form, label|default(null), {label_attr: label_attr}) }}
