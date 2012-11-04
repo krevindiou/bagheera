@@ -71,6 +71,13 @@ class Bank
     protected $name;
 
     /**
+     * @var integer $displayOrder
+     *
+     * @ORM\Column(name="display_order", type="smallint", nullable=false)
+     */
+    protected $displayOrder;
+
+    /**
      * @var boolean $isDeleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
@@ -192,6 +199,26 @@ class Bank
     public function getName()
     {
         return $this->name;
+    }
+
+    /**
+     * Set displayOrder
+     *
+     * @param integer $displayOrder
+     */
+    public function setDisplayOrder($displayOrder)
+    {
+        $this->displayOrder = $displayOrder;
+    }
+
+    /**
+     * Get displayOrder
+     *
+     * @return integer
+     */
+    public function getDisplayOrder()
+    {
+        return $this->displayOrder;
     }
 
     /**

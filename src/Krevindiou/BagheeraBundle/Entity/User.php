@@ -138,7 +138,7 @@ class User implements AdvancedUserInterface
      * @var Doctrine\Common\Collections\Collection $banks
      *
      * @ORM\OneToMany(targetEntity="Bank", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"name" = "ASC"})
+     * @ORM\OrderBy({"displayOrder" = "ASC"})
      */
     protected $banks;
 

@@ -103,7 +103,7 @@ class BankService
         if (!$deleted) {
             $dql.= 'AND b.isDeleted = 0 ';
         }
-        $dql.= 'ORDER BY b.name ASC';
+        $dql.= 'ORDER BY b.displayOrder ASC';
 
         $query = $this->_em->createQuery($dql);
         $query->setParameter('user', $user);
@@ -143,6 +143,13 @@ class BankService
     {
         if ($user === $bank->getUser()) {
             try {
+                if (null === $bank->getBankId()) {
+                    $banks = $bank->getUser()->getBanks();
+                    $order = count($banks) + 1;
+
+                    $bank->setDisplayOrder($order);
+                }
+
                 $this->_em->persist($bank);
                 $this->_em->flush();
 
