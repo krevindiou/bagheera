@@ -65,6 +65,14 @@ class Bank
     protected $sortOrder;
 
     /**
+     * @var boolean $isFavorite
+     *
+     * @ORM\Column(name="is_favorite", type="boolean", nullable=false)
+     * @Assert\Type("bool")
+     */
+    protected $isFavorite = true;
+
+    /**
      * @var boolean $isDeleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
@@ -206,6 +214,26 @@ class Bank
     public function getSortOrder()
     {
         return $this->sortOrder;
+    }
+
+    /**
+     * Set isFavorite
+     *
+     * @param boolean $isFavorite
+     */
+    public function setIsFavorite($isFavorite)
+    {
+        $this->isFavorite = (bool) $isFavorite;
+    }
+
+    /**
+     * Get isFavorite
+     *
+     * @return boolean
+     */
+    public function isFavorite()
+    {
+        return $this->isFavorite;
     }
 
     /**
