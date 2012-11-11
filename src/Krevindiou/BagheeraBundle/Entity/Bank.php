@@ -58,11 +58,11 @@ class Bank
     protected $name;
 
     /**
-     * @var integer $displayOrder
+     * @var integer $sortOrder
      *
-     * @ORM\Column(name="display_order", type="smallint", nullable=false)
+     * @ORM\Column(name="sort_order", type="smallint", nullable=false)
      */
-    protected $displayOrder;
+    protected $sortOrder;
 
     /**
      * @var boolean $isDeleted
@@ -189,23 +189,23 @@ class Bank
     }
 
     /**
-     * Set displayOrder
+     * Set sortOrder
      *
-     * @param integer $displayOrder
+     * @param integer $sortOrder
      */
-    public function setDisplayOrder($displayOrder)
+    public function setSortOrder($sortOrder)
     {
-        $this->displayOrder = $displayOrder;
+        $this->sortOrder = $sortOrder;
     }
 
     /**
-     * Get displayOrder
+     * Get sortOrder
      *
      * @return integer
      */
-    public function getDisplayOrder()
+    public function getSortOrder()
     {
-        return $this->displayOrder;
+        return $this->sortOrder;
     }
 
     /**
