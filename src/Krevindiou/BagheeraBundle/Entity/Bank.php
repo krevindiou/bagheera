@@ -73,6 +73,14 @@ class Bank
     protected $isFavorite = true;
 
     /**
+     * @var boolean $isClosed
+     *
+     * @ORM\Column(name="is_closed", type="boolean", nullable=false)
+     * @Assert\Type("bool")
+     */
+    protected $isClosed = false;
+
+    /**
      * @var boolean $isDeleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
@@ -234,6 +242,26 @@ class Bank
     public function isFavorite()
     {
         return $this->isFavorite;
+    }
+
+    /**
+     * Set isClosed
+     *
+     * @param boolean $isClosed
+     */
+    public function setIsClosed($isClosed)
+    {
+        $this->isClosed = (bool) $isClosed;
+    }
+
+    /**
+     * Get isClosed
+     *
+     * @return boolean
+     */
+    public function isClosed()
+    {
+        return $this->isClosed;
     }
 
     /**
