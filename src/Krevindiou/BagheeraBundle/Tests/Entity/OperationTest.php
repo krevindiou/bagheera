@@ -20,7 +20,7 @@ class OperationTest extends TestCase
     {
         $operations = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Operation')->findAll();
 
-        $this->assertEquals(count($operations), 10);
+        $this->assertEquals(count($operations), 14);
     }
 
     public function testOperation()
@@ -28,9 +28,9 @@ class OperationTest extends TestCase
         $operation = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Operation', 1);
 
         $this->assertEquals($operation->getThirdParty(), 'Third party 1');
-        $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'Home savings account');
-        $this->assertEquals($operation->getTransferAccount()->getName(), 'Home savings account');
-        $this->assertEquals($operation->getAccount()->getName(), 'Checking account #1');
+        $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
+        $this->assertEquals($operation->getTransferAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
+        $this->assertEquals($operation->getAccount()->getName(), 'John - HSBC - Checking account');
         $this->assertEquals($operation->getCategory()->getName(), 'Cat 2');
         $this->assertEquals($operation->getPaymentMethod()->getName(), 'transfer');
         $this->assertEquals($operation->getScheduler()->getThirdParty(), 'Third party 1');

@@ -55,7 +55,7 @@ class AccountServiceTest extends TestCase
     public function testSaveNewAccountWithForeignBank()
     {
         $account = new Account();
-        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
+        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 5));
         $account->setName('Checking account #1');
         $account->setCurrency('USD');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
@@ -81,7 +81,7 @@ class AccountServiceTest extends TestCase
     public function testSaveExistingAccountWithForeignBank()
     {
         $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
-        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 3));
+        $account->setBank($this->_em->find('KrevindiouBagheeraBundle:Bank', 5));
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
@@ -110,9 +110,9 @@ class AccountServiceTest extends TestCase
 
     public function testGetBalanceNotOk()
     {
-        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(4);
+        $account = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
 
-        $balance = $this->get('bagheera.account')->getBalance($this->john, $account);
+        $balance = $this->get('bagheera.account')->getBalance($this->jane, $account);
 
         $this->assertEquals($balance, 0);
     }
@@ -123,6 +123,6 @@ class AccountServiceTest extends TestCase
 
         $balance = $this->get('bagheera.account')->getBalance($this->john, $account);
 
-        $this->assertEquals($balance, 102.07);
+        $this->assertEquals($balance, 1102.07);
     }
 }

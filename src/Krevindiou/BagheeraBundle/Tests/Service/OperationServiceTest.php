@@ -54,11 +54,11 @@ class OperationServiceTest extends TestCase
     public function testSaveNewOperationWithForeignAccount()
     {
         $operation = new Operation();
-        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
         $operation->setThirdParty('Test');
         $operation->setValueDate(new \DateTime());
         $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
-        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));
     }
 
     public function testSaveNewOperation()
@@ -81,7 +81,7 @@ class OperationServiceTest extends TestCase
     public function testSaveExistingOperationWithForeignAccount()
     {
         $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
-        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 8));
         $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
@@ -135,7 +135,7 @@ class OperationServiceTest extends TestCase
 
         $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
         $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 2);
-        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 11);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 15);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
     }

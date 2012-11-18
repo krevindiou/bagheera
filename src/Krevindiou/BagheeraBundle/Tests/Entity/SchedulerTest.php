@@ -28,8 +28,8 @@ class SchedulerTest extends TestCase
         $scheduler = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Scheduler', 1);
 
         $this->assertEquals($scheduler->getThirdParty(), 'Third party 1');
-        $this->assertEquals($scheduler->getTransferAccount()->getName(), 'Home savings account');
-        $this->assertEquals($scheduler->getAccount()->getName(), 'Checking account #1');
+        $this->assertEquals($scheduler->getTransferAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
+        $this->assertEquals($scheduler->getAccount()->getName(), 'John - HSBC - Checking account');
         $this->assertEquals($scheduler->getCategory()->getName(), 'Cat 2');
         $this->assertEquals($scheduler->getPaymentMethod()->getName(), 'transfer');
     }

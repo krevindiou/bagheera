@@ -20,7 +20,7 @@ class UserTest extends TestCase
     {
         $users = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\User')->findAll();
 
-        $this->assertEquals(count($users), 2);
+        $this->assertEquals(count($users), 3);
     }
 
     public function testJohn()
@@ -28,14 +28,6 @@ class UserTest extends TestCase
         $john = $this->_em->find('Krevindiou\BagheeraBundle\Entity\User', 1);
 
         $this->assertEquals($john->getEmail(), 'john@example.net');
-        $this->assertEquals(count($john->getBanks()), 2);
-    }
-
-    public function testJane()
-    {
-        $jane = $this->_em->find('Krevindiou\BagheeraBundle\Entity\User', 2);
-
-        $this->assertEquals($jane->getEmail(), 'jane@example.net');
-        $this->assertEquals(count($jane->getBanks()), 1);
+        $this->assertEquals(count($john->getBanks()), 4);
     }
 }

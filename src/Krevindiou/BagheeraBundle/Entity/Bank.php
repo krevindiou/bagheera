@@ -169,7 +169,7 @@ class Bank
      *
      * @param Krevindiou\BagheeraBundle\Entity\Provider $provider
      */
-    public function setProvider(Provider $provider)
+    public function setProvider(Provider $provider = null)
     {
         $this->provider = $provider;
     }

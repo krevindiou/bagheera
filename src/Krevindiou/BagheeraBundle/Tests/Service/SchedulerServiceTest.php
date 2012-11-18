@@ -54,13 +54,13 @@ class SchedulerServiceTest extends TestCase
     public function testSaveNewSchedulerWithForeignAccount()
     {
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
         $scheduler->setThirdParty('Test');
         $scheduler->setValueDate(new \DateTime());
         $scheduler->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
         $scheduler->setFrequencyUnit('month');
         $scheduler->setFrequencyValue(1);
-        $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
+        $this->assertFalse($this->get('bagheera.scheduler')->save($this->jane, $scheduler));
     }
 
     public function testSaveNewScheduler()
@@ -85,7 +85,7 @@ class SchedulerServiceTest extends TestCase
     public function testSaveExistingSchedulerWithForeignAccount()
     {
         $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
-        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 4));
+        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 8));
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
     }
 

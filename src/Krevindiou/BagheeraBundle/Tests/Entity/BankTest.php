@@ -20,7 +20,7 @@ class BankTest extends TestCase
     {
         $banks = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Bank')->findAll();
 
-        $this->assertEquals(count($banks), 3);
+        $this->assertEquals(count($banks), 5);
     }
 
     public function testHsbc()
@@ -29,24 +29,6 @@ class BankTest extends TestCase
 
         $this->assertEquals($hsbc->getName(), 'HSBC');
         $this->assertEquals($hsbc->getUser()->getEmail(), 'john@example.net');
-        $this->assertEquals(count($hsbc->getAccounts()), 2);
-    }
-
-    public function testBankOfAmerica()
-    {
-        $bankOfAmerica = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 2);
-
-        $this->assertEquals($bankOfAmerica->getName(), 'Bank of America');
-        $this->assertEquals($bankOfAmerica->getUser()->getEmail(), 'john@example.net');
-        $this->assertEquals(count($bankOfAmerica->getAccounts()), 1);
-    }
-
-    public function testBnpParibas()
-    {
-        $bnpParibas = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 3);
-
-        $this->assertEquals($bnpParibas->getName(), 'BNP Paribas');
-        $this->assertEquals($bnpParibas->getUser()->getEmail(), 'jane@example.net');
-        $this->assertEquals(count($bnpParibas->getAccounts()), 1);
+        $this->assertEquals(count($hsbc->getAccounts()), 4);
     }
 }

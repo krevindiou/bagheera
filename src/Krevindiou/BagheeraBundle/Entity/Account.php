@@ -59,9 +59,9 @@ class Account
     /**
      * @var string $name
      *
-     * @ORM\Column(name="name", type="string", length=32, nullable=false)
+     * @ORM\Column(name="name", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\Length(max = 32)
+     * @Assert\Length(max = 64)
      */
     protected $name;
 

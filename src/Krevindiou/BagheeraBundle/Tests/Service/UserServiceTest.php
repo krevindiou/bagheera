@@ -159,7 +159,7 @@ class UserServiceTest extends TestCase
 
         $users = $this->get('bagheera.user')->getUsers($params);
 
-        $this->assertEquals(count($users), 2);
+        $this->assertEquals(count($users), 3);
     }
 
     public function testGetBalances()
@@ -168,6 +168,7 @@ class UserServiceTest extends TestCase
 
         $balances = $this->get('bagheera.user')->getBalances($user);
 
-        $this->assertEquals($balances['USD'], 210.92);
+        $this->assertEquals($balances['USD'], 4546.74);
+        $this->assertEquals($balances['EUR'], 1295.85);
     }
 }
