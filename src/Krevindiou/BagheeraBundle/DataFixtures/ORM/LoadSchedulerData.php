@@ -11,9 +11,11 @@ class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterfa
 {
     public function load(ObjectManager $em)
     {
-        // John - HSBC - Checking account #1
+        /**
+         * John - HSBC - Checking account
+         */
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->getReference('account-checking_account_1'));
+        $scheduler->setAccount($this->getReference('account-hsbc-checking_account'));
         $scheduler->setCategory($this->getReference('category-cat2'));
         $scheduler->setThirdParty('Third party 1');
         $scheduler->setDebit(29.16);
@@ -25,13 +27,13 @@ class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterfa
         $scheduler->setFrequencyUnit('week');
         $scheduler->setFrequencyValue(2);
         $scheduler->setIsActive(true);
-        $scheduler->setTransferAccount($this->getReference('account-home_savings_account'));
+        $scheduler->setTransferAccount($this->getReference('account-hsbc-certificate_of_deposit_1'));
         $scheduler->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
         $em->persist($scheduler);
         $this->addReference('scheduler-john-1', $scheduler);
 
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->getReference('account-checking_account_1'));
+        $scheduler->setAccount($this->getReference('account-hsbc-checking_account'));
         $scheduler->setCategory($this->getReference('category-cat2'));
         $scheduler->setThirdParty('Third party future scheduler');
         $scheduler->setDebit(1);
@@ -43,13 +45,15 @@ class LoadSchedulerData extends AbstractFixture implements OrderedFixtureInterfa
         $scheduler->setFrequencyUnit('week');
         $scheduler->setFrequencyValue(2);
         $scheduler->setIsActive(true);
-        $scheduler->setTransferAccount($this->getReference('account-home_savings_account'));
+        $scheduler->setTransferAccount($this->getReference('account-hsbc-certificate_of_deposit_1'));
         $scheduler->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
         $em->persist($scheduler);
 
-        // Jane - BNP Paribas - Securities account
+        /**
+         * Jane - BNP Paribas - Checking account
+         */
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->getReference('account-securities_account'));
+        $scheduler->setAccount($this->getReference('account-bnp_paribas-checking_account'));
         $scheduler->setCategory($this->getReference('category-cat21'));
         $scheduler->setThirdParty('Third party 1');
         $scheduler->setDebit(28.19);

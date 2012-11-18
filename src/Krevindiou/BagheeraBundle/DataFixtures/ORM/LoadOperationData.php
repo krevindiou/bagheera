@@ -11,9 +11,11 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
 {
     public function load(ObjectManager $em)
     {
-        // John - HSBC - Checking account #1
+        /**
+         * John - HSBC - Checking account
+         */
         $operation1 = new Operation();
-        $operation1->setAccount($this->getReference('account-checking_account_1'));
+        $operation1->setAccount($this->getReference('account-hsbc-checking_account'));
         $operation1->setCategory($this->getReference('category-cat2'));
         $operation1->setThirdParty('Third party 1');
         $operation1->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
@@ -25,7 +27,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $em->persist($operation1);
 
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-checking_account_1'));
+        $operation->setAccount($this->getReference('account-hsbc-checking_account'));
         $operation->setCategory($this->getReference('category-cat21'));
         $operation->setThirdParty('Third party 2');
         $operation->setPaymentMethod($this->getReference('paymentmethod-debit-creditcard'));
@@ -36,30 +38,32 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $em->persist($operation);
 
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-checking_account_1'));
+        $operation->setAccount($this->getReference('account-hsbc-checking_account'));
         $operation->setCategory($this->getReference('category-cat1'));
         $operation->setThirdParty('Third party 3');
         $operation->setPaymentMethod($this->getReference('paymentmethod-credit-check'));
         $operation->setDebit(null);
         $operation->setCredit(18.05);
-        $operation->setValueDate(new \DateTime('2011-09-03'));
+        $operation->setValueDate(new \DateTime('2011-09-02'));
         $operation->setIsReconciled(true);
         $em->persist($operation);
 
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-checking_account_1'));
+        $operation->setAccount($this->getReference('account-hsbc-checking_account'));
         $operation->setCategory($this->getReference('category-cat11'));
         $operation->setThirdParty('Third party 4');
         $operation->setPaymentMethod($this->getReference('paymentmethod-credit-deposit'));
         $operation->setDebit(null);
         $operation->setCredit(38.31);
-        $operation->setValueDate(new \DateTime('2011-09-04'));
+        $operation->setValueDate(new \DateTime('2011-10-14'));
         $operation->setIsReconciled(true);
         $em->persist($operation);
 
-        // John - HSBC - Home savings account
+        /**
+         * John - HSBC - Certificate of deposit #1
+         */
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-home_savings_account'));
+        $operation->setAccount($this->getReference('account-hsbc-certificate_of_deposit_1'));
         $operation->setCategory($this->getReference('category-cat21'));
         $operation->setThirdParty('Third party 1');
         $operation->setPaymentMethod($this->getReference('paymentmethod-debit-creditcard'));
@@ -70,7 +74,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $em->persist($operation);
 
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-home_savings_account'));
+        $operation->setAccount($this->getReference('account-hsbc-certificate_of_deposit_1'));
         $operation->setCategory($this->getReference('category-cat1'));
         $operation->setThirdParty('Third party 2');
         $operation->setPaymentMethod($this->getReference('paymentmethod-credit-transfer'));
@@ -82,9 +86,39 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation1->setTransferOperation($operation);
         $em->persist($operation);
 
-        // John - Bank of America - Checking account #2
+        /**
+         * John - HSBC - Certificate of deposit #2
+         */
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-checking_account_2'));
+        $operation->setAccount($this->getReference('account-hsbc-certificate_of_deposit_2'));
+        $operation->setCategory($this->getReference('category-cat1'));
+        $operation->setThirdParty('Third party 1');
+        $operation->setPaymentMethod($this->getReference('paymentmethod-credit-transfer'));
+        $operation->setDebit(null);
+        $operation->setCredit(208.55);
+        $operation->setValueDate(new \DateTime('2011-09-01'));
+        $operation->setIsReconciled(true);
+        $em->persist($operation);
+
+        /**
+         * John - HSBC - Certificate of deposit #3
+         */
+        $operation = new Operation();
+        $operation->setAccount($this->getReference('account-hsbc-certificate_of_deposit_3'));
+        $operation->setCategory($this->getReference('category-cat2'));
+        $operation->setThirdParty('Third party 1');
+        $operation->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
+        $operation->setDebit(129.43);
+        $operation->setCredit(null);
+        $operation->setValueDate(new \DateTime('2011-09-01'));
+        $operation->setIsReconciled(true);
+        $em->persist($operation);
+
+        /**
+         * John - Bank of America - Checking account
+         */
+        $operation = new Operation();
+        $operation->setAccount($this->getReference('account-bank_of_america-checking_account'));
         $operation->setCategory($this->getReference('category-cat21'));
         $operation->setThirdParty('Third party 1');
         $operation->setPaymentMethod($this->getReference('paymentmethod-debit-creditcard'));
@@ -95,7 +129,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $em->persist($operation);
 
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-checking_account_2'));
+        $operation->setAccount($this->getReference('account-bank_of_america-checking_account'));
         $operation->setCategory($this->getReference('category-cat1'));
         $operation->setThirdParty('Third party 2');
         $operation->setPaymentMethod($this->getReference('paymentmethod-credit-check'));
@@ -105,9 +139,39 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setIsReconciled(true);
         $em->persist($operation);
 
-        // Jane - BNP Paribas - Securities account
+        /**
+         * John - Wells Fargo - Checking account
+         */
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-securities_account'));
+        $operation->setAccount($this->getReference('account-wells_fargo-checking_account'));
+        $operation->setCategory($this->getReference('category-cat2'));
+        $operation->setThirdParty('Third party 1');
+        $operation->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
+        $operation->setDebit(87.18);
+        $operation->setCredit(null);
+        $operation->setValueDate(new \DateTime('2011-09-01'));
+        $operation->setIsReconciled(true);
+        $em->persist($operation);
+
+        /**
+         * John - Santander - Checking account
+         */
+        $operation = new Operation();
+        $operation->setAccount($this->getReference('account-santander-checking_account'));
+        $operation->setCategory($this->getReference('category-cat2'));
+        $operation->setThirdParty('Third party 1');
+        $operation->setPaymentMethod($this->getReference('paymentmethod-debit-transfer'));
+        $operation->setDebit(61.04);
+        $operation->setCredit(null);
+        $operation->setValueDate(new \DateTime('2011-09-01'));
+        $operation->setIsReconciled(true);
+        $em->persist($operation);
+
+        /**
+         * Jane - BNP Paribas - Checking account
+         */
+        $operation = new Operation();
+        $operation->setAccount($this->getReference('account-bnp_paribas-checking_account'));
         $operation->setCategory($this->getReference('category-cat21'));
         $operation->setThirdParty('Third party 1');
         $operation->setPaymentMethod($this->getReference('paymentmethod-debit-creditcard'));
@@ -119,7 +183,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $em->persist($operation);
 
         $operation = new Operation();
-        $operation->setAccount($this->getReference('account-securities_account'));
+        $operation->setAccount($this->getReference('account-bnp_paribas-checking_account'));
         $operation->setCategory($this->getReference('category-cat1'));
         $operation->setThirdParty('Third party 2');
         $operation->setPaymentMethod($this->getReference('paymentmethod-credit-check'));

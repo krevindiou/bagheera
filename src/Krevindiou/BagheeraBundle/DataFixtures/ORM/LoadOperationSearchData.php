@@ -12,21 +12,27 @@ class LoadOperationSearchData extends AbstractFixture implements OrderedFixtureI
 {
     public function load(ObjectManager $em)
     {
-        // John - HSBC - Checking account #1
+        /**
+         * John - HSBC - Checking account
+         */
         $operationSearch = new OperationSearch();
-        $operationSearch->setAccount($this->getReference('account-checking_account_1'));
+        $operationSearch->setAccount($this->getReference('account-hsbc-checking_account'));
         $operationSearch->setThirdParty('Third party 1');
         $em->persist($operationSearch);
 
-        // John - HSBC - Home savings account
+        /**
+         * John - HSBC - Certificate of deposit #1
+         */
         $operationSearch = new OperationSearch();
-        $operationSearch->setAccount($this->getReference('account-home_savings_account'));
+        $operationSearch->setAccount($this->getReference('account-hsbc-certificate_of_deposit_1'));
         $operationSearch->setCategories(new ArrayCollection(array($this->getReference('category-cat21'))));
         $em->persist($operationSearch);
 
-        // Jane - BNP Paribas - Securities account
+        /**
+         * Jane - BNP Paribas - Checking account
+         */
         $operationSearch = new OperationSearch();
-        $operationSearch->setAccount($this->getReference('account-securities_account'));
+        $operationSearch->setAccount($this->getReference('account-bnp_paribas-checking_account'));
         $operationSearch->setPaymentMethods(new ArrayCollection(array($this->getReference('paymentmethod-debit-creditcard'))));
         $em->persist($operationSearch);
 
