@@ -6,15 +6,14 @@
 namespace Krevindiou\BagheeraBundle\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase,
-    Doctrine\ORM\Tools\SchemaTool,
-    Doctrine\Common\DataFixtures\Loader,
-    Doctrine\Common\DataFixtures\Purger\ORMPurger,
-    Doctrine\Common\DataFixtures\Executor\ORMExecutor;
+    Symfony\Bundle\FrameworkBundle\Console\Application,
+    Symfony\Component\Console\Input\ArrayInput;
 
 class TestCase extends WebTestCase
 {
     protected $_em;
     protected $_kernel;
+    protected $_application;
 
     public function get($service)
     {
@@ -28,10 +27,15 @@ class TestCase extends WebTestCase
         $kernel->boot();
 
         $this->_kernel = $kernel;
+
         $this->_em = $this->get('doctrine.orm.entity_manager');
 
-        $this->_createDatabase();
-        $this->_importFixtures();
+        $this->_application = new Application($kernel);
+        $this->_application->setAutoExit(false);
+
+        $this->_runConsole('doctrine:schema:drop', array('--force' => null));
+        $this->_runConsole('doctrine:schema:create');
+        $this->_runConsole('doctrine:fixtures:load', array('--append' => null));
     }
 
     public function tearDown()
@@ -39,20 +43,12 @@ class TestCase extends WebTestCase
         $this->_em->getUnitOfWork()->clear();
     }
 
-    protected function _createDatabase()
+    protected function _runConsole($command, array $options = array())
     {
-        $classes = $this->_em->getMetadataFactory()->getAllMetadata();
-        $tool = new SchemaTool($this->_em);
-        $tool->createSchema($classes);
-    }
+        $options['-e'] = 'test';
+        $options['-q'] = null;
+        $options['command'] = $command;
 
-    protected function _importFixtures()
-    {
-        $loader = new Loader();
-        $loader->loadFromDirectory(__DIR__ . '/../DataFixtures');
-
-        $purger = new ORMPurger();
-        $executor = new ORMExecutor($this->_em, $purger);
-        $executor->execute($loader->getFixtures(), true);
+        return $this->_application->run(new ArrayInput($options));
     }
 }
