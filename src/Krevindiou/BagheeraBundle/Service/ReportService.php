@@ -275,12 +275,6 @@ class ReportService
                                 $series[$k]['points'][strtotime($date->format('Y-m-d')) * 1000] = 0;
                             }
                         }
-
-                        $firstDate->sub(new \DateInterval($interval));
-                        $series[$k]['points'][strtotime($firstDate->format('Y-m-d')) * 1000] = null;
-
-                        $date->add(new \DateInterval($interval));
-                        $series[$k]['points'][strtotime($date->format('Y-m-d')) * 1000] = null;
                     }
 
                     ksort($series[$k]['points']);
