@@ -93,6 +93,20 @@ var Bagheera = {
                     })
                     .modal();
             });
+
+            $("input[type=email]").on("blur", function() {
+                $(this).mailcheck({
+                    suggested: function(element, suggestion) {
+                        var suggest = Bagheera.translations.email_domain_suggest.replace('%email%', '<a href="#" class="email-suggest" data-value="' + suggestion.full + '">' + suggestion.address + '@<strong>' + suggestion.domain + '</strong></a>');
+
+                        $(element).after('<span class="help-block">' + suggest + '</span>');
+                    }
+                });
+            });
+
+            $(".email-suggest").live("click", function(){
+                $(this).parent().hide().prev("input").val($(this).data("value"));
+            });
         });
     },
 
