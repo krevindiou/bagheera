@@ -13,8 +13,6 @@ use Doctrine\ORM\Mapping as ORM,
 /**
  * Krevindiou\BagheeraBundle\Entity\OperationSearch
  *
- * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
- * @version    $Id$
  * @ORM\Entity
  * @ORM\Table(name="operation_search")
  * @ORM\HasLifecycleCallbacks()

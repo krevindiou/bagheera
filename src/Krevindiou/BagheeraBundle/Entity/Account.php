@@ -12,8 +12,6 @@ use Doctrine\ORM\Mapping as ORM,
 /**
  * Krevindiou\BagheeraBundle\Entity\Account
  *
- * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
- * @version    $Id$
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\AccountRepository")
  * @ORM\Table(
  *  name="account",

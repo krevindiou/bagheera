@@ -8,8 +8,6 @@ namespace Krevindiou\BagheeraBundle\Service\Provider;
 /**
  * Array converter
  *
- * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
- * @version    $Id$
  */
 class ArrayConverter
 {

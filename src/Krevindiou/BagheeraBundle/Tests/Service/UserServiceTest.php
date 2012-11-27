@@ -11,8 +11,6 @@ use Krevindiou\BagheeraBundle\Tests\TestCase,
 /**
  * Krevindiou\BagheeraBundle\Tests\Service\UserServiceTest
  *
- * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
- * @version    $Id$
  */
 class UserServiceTest extends TestCase
 {

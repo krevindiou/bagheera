@@ -14,8 +14,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 /**
  * Bank form
  *
- * @license    http://www.gnu.org/licenses/gpl-3.0.txt    GNU GPL version 3
- * @version    $Id$
  */
 class BankForm extends AbstractType
 {
