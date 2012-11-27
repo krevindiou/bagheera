@@ -370,9 +370,9 @@ class ReportService
     /**
      * Returns synthesis graph data
      *
-     * @param  User  $user          User entity
-     * @param  DateTime $startDate  Data after this date
-     * @param  DateTime $stopDate   Data before this date
+     * @param  User     $user      User entity
+     * @param  DateTime $startDate Data after this date
+     * @param  DateTime $stopDate  Data before this date
      * @return array
      */
     public function getSynthesis(User $user, \DateTime $startDate = null, \DateTime $stopDate = null)

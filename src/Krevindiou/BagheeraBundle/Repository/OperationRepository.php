@@ -101,9 +101,9 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum for each month
      *
-     * @param  User $user           User entity
-     * @param  DateTime $startDate  Sum calculated after this date
-     * @param  DateTime $stopDate   Sum calculated before this date
+     * @param  User     $user      User entity
+     * @param  DateTime $startDate Sum calculated after this date
+     * @param  DateTime $stopDate  Sum calculated before this date
      * @return array
      */
     protected function _getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
@@ -159,7 +159,7 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum before a specified date
      *
-     * @param  User $user User entity
+     * @param  User     $user     User entity
      * @param  DateTime $stopDate Sum calculated before this date
      * @return array
      */
@@ -196,9 +196,9 @@ class OperationRepository extends EntityRepository
     /**
      * Gets total amount by month
      *
-     * @param  User  $user          User entity
-     * @param  DateTime $startDate  Sum calculated after this date
-     * @param  DateTime $stopDate   Sum calculated before this date
+     * @param  User     $user      User entity
+     * @param  DateTime $startDate Sum calculated after this date
+     * @param  DateTime $stopDate  Sum calculated before this date
      * @return array
      */
     public function getTotalByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)

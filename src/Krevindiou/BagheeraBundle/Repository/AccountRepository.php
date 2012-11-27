@@ -17,9 +17,9 @@ class AccountRepository extends EntityRepository
     /**
      * Gets initial balances sum for each month
      *
-     * @param  User $user           User entity
-     * @param  DateTime $startDate  Sum calculated after this date
-     * @param  DateTime $stopDate   Sum calculated before this date
+     * @param  User     $user      User entity
+     * @param  DateTime $startDate Sum calculated after this date
+     * @param  DateTime $stopDate  Sum calculated before this date
      * @return array
      */
     protected function _getInitialBalancesByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
@@ -76,7 +76,7 @@ class AccountRepository extends EntityRepository
     /**
      * Gets initial balances before a specified date
      *
-     * @param  User $user User entity
+     * @param  User     $user     User entity
      * @param  DateTime $stopDate Initial balances fetched before this date
      * @return array
      */
@@ -112,9 +112,9 @@ class AccountRepository extends EntityRepository
     /**
      * Gets initial balances sum by month
      *
-     * @param  User  $user          User entity
-     * @param  DateTime $startDate  Initial balances fetched after this date
-     * @param  DateTime $stopDate   Initial balances fetched before this date
+     * @param  User     $user      User entity
+     * @param  DateTime $startDate Initial balances fetched after this date
+     * @param  DateTime $stopDate  Initial balances fetched before this date
      * @return array
      */
     public function getTotalInitialBalancesByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
