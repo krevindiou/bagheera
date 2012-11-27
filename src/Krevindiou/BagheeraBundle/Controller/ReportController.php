@@ -112,13 +112,7 @@ class ReportController extends Controller
 
         $graph = $this->get('bagheera.report')->getSynthesis($user);
 
-        if (!empty($graph['points'])) {
-            // Add null points on each side
-            end($graph['points']);
-            $graph['points'][key($graph['points']) + (30 * 24 * 3600 * 1000)] = null;
-            reset($graph['points']);
-            $graph['points'][key($graph['points']) - (30 * 24 * 3600 * 1000)] = null;
-
+        if (!empty($graph)) {
             return $graph;
         }
 

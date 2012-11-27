@@ -101,35 +101,94 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * Gets last 12 months operations sum by month
+     * Gets operations sum for each month
      *
-     * @param  User  $user User entity
+     * @param  User $user           User entity
+     * @param  DateTime $startDate  Sum calculated after this date
+     * @param  DateTime $stopDate   Sum calculated before this date
      * @return array
      */
-    public function getLast12MonthsSumByMonth(User $user)
+    protected function _getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
     {
-        $sql = 'SELECT DATE_FORMAT(o.value_date, "%Y-%m") AS month, (SUM(o.credit) - SUM(o.debit)) AS total ';
+        $data = array();
+
+        $sql = 'SELECT a.currency, DATE_FORMAT(o.value_date, "%Y-%m") AS month, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total ';
         $sql.= 'FROM account a ';
         $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
         $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
-        $sql.= 'WHERE b.user_id = :user ';
+        $sql.= 'WHERE b.user_id = :user_id ';
         $sql.= 'AND a.is_deleted = 0 ';
         $sql.= 'AND b.is_deleted = 0 ';
-        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") > LAST_DAY(DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)) ';
-        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= LAST_DAY(CURRENT_DATE()) ';
-        $sql.= 'GROUP BY month ORDER BY month ';
+        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") >= :start_date ';
+        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= :stop_date ';
+        $sql.= 'GROUP BY a.currency, month ';
+        $sql.= 'ORDER BY month ASC ';
 
         $stmt = $this->_em->getConnection()->prepare($sql);
-        $stmt->bindValue('user', $user->getUserId());
+        $stmt->bindValue('user_id', $user->getUserId());
+        $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
+        $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
         $stmt->execute();
 
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
+        if (!empty($results)) {
+            foreach ($results as $result) {
+                $data[$result['currency']][$result['month']] = $result['total'];
+            }
+        }
+
+        $dateTmp = clone $startDate;
+        while ($dateTmp <= $stopDate) {
+            $month = $dateTmp->format('Y-m');
+
+            foreach ($data as $currency => $value) {
+                if (!isset($data[$currency][$month])) {
+                    $data[$currency][$month] = 0;
+                }
+            }
+
+            $dateTmp->modify('+1 month');
+        }
+
+        foreach ($data as $currency => $value) {
+            ksort($data[$currency]);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Gets operations sum before a specified date
+     *
+     * @param  User $user User entity
+     * @param  DateTime $stopDate Sum calculated before this date
+     * @return array
+     */
+    protected function _getSumBefore(User $user, \DateTime $stopDate)
+    {
         $data = array();
+
+        $sql = 'SELECT a.currency, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total ';
+        $sql.= 'FROM account a ';
+        $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
+        $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
+        $sql.= 'WHERE b.user_id = :user_id ';
+        $sql.= 'AND a.is_deleted = 0 ';
+        $sql.= 'AND b.is_deleted = 0 ';
+        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") < :stop_date ';
+        $sql.= 'GROUP BY a.currency ';
+
+        $stmt = $this->_em->getConnection()->prepare($sql);
+        $stmt->bindValue('user_id', $user->getUserId());
+        $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
+        $stmt->execute();
+
+        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
         if (!empty($results)) {
             foreach ($results as $result) {
-                $data[$result['month']] = $result['total'];
+                $data[$result['currency']] = $result['total'];
             }
         }
 
@@ -137,26 +196,41 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * Gets transactions sum before the last 12 months
+     * Gets total amount by month
      *
-     * @param  User $user User entity
-     * @return int
+     * @param  User  $user          User entity
+     * @param  DateTime $startDate  Sum calculated after this date
+     * @param  DateTime $stopDate   Sum calculated before this date
+     * @return array
      */
-    public function getSumBeforeLast12Months(User $user)
+    public function getTotalByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
     {
-        $sql = 'SELECT (SUM(o.credit) - SUM(o.debit)) AS total ';
-        $sql.= 'FROM account a ';
-        $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
-        $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
-        $sql.= 'WHERE b.user_id = :user ';
-        $sql.= 'AND a.is_deleted = 0 ';
-        $sql.= 'AND b.is_deleted = 0 ';
-        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= LAST_DAY(DATE_SUB(CURRENT_DATE(), INTERVAL 12 MONTH)) ';
+        $data = $this->_getSumsByMonth($user, $startDate, $stopDate);
 
-        $stmt = $this->_em->getConnection()->prepare($sql);
-        $stmt->bindValue('user', $user->getUserId());
-        $stmt->execute();
+        $initialBalances = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->getTotalInitialBalancesByMonth($user, $startDate, $stopDate);
 
-        return $stmt->fetchColumn();
+        if (!empty($data)) {
+            $previousMonthTotal = $this->_getSumBefore($user, $startDate);
+
+            foreach ($data as $currency => $value) {
+                foreach ($value as $month => $total) {
+                    if (isset($previousMonthTotal[$currency])) {
+                        $data[$currency][$month]+= $previousMonthTotal[$currency];
+                    }
+
+                    $previousMonthTotal[$currency] = $data[$currency][$month];
+                }
+            }
+
+            foreach ($data as $currency => $value) {
+                foreach ($value as $month => $total) {
+                    if (isset($initialBalances[$currency][$month])) {
+                        $data[$currency][$month]+= $initialBalances[$currency][$month];
+                    }
+                }
+            }
+        }
+
+        return $data;
     }
 }

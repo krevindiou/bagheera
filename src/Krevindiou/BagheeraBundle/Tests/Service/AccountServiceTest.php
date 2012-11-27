@@ -125,4 +125,47 @@ class AccountServiceTest extends TestCase
 
         $this->assertEquals($balance, 1102.07);
     }
+
+    public function testSynthesis()
+    {
+        $expectedData = array(
+            'USD' => array(
+                strtotime('2011-01-01') * 1000 => 0,
+                strtotime('2011-02-01') * 1000 => 0,
+                strtotime('2011-03-01') * 1000 => 0,
+                strtotime('2011-04-01') * 1000 => 0,
+                strtotime('2011-05-01') * 1000 => 0,
+                strtotime('2011-06-01') * 1000 => 0,
+                strtotime('2011-07-01') * 1000 => 0,
+                strtotime('2011-08-01') * 1000 => 4645.56,
+                strtotime('2011-09-01') * 1000 => 4508.43,
+                strtotime('2011-10-01') * 1000 => 4546.74,
+                strtotime('2011-11-01') * 1000 => 4546.74,
+                strtotime('2011-12-01') * 1000 => 4546.74
+            ),
+            'EUR' => array(
+                strtotime('2011-01-01') * 1000 => 0,
+                strtotime('2011-02-01') * 1000 => 0,
+                strtotime('2011-03-01') * 1000 => 0,
+                strtotime('2011-04-01') * 1000 => 0,
+                strtotime('2011-05-01') * 1000 => 0,
+                strtotime('2011-06-01') * 1000 => 0,
+                strtotime('2011-07-01') * 1000 => 0,
+                strtotime('2011-08-01') * 1000 => 1087.30,
+                strtotime('2011-09-01') * 1000 => 1295.85,
+                strtotime('2011-10-01') * 1000 => 1295.85,
+                strtotime('2011-11-01') * 1000 => 1295.85,
+                strtotime('2011-12-01') * 1000 => 1295.85
+            )
+        );
+
+        $data = $this->get('bagheera.report')->getSynthesis(
+            $this->john,
+            new \DateTime('2011-01-01'),
+            new \DateTime('2011-12-31')
+        );
+
+        $this->assertEquals($data['points']['USD'], $expectedData['USD']);
+        $this->assertEquals($data['points']['EUR'], $expectedData['EUR']);
+    }
 }

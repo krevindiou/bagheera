@@ -2,20 +2,32 @@ $(document).ready(function(){
     $.plot(
         $("#synthesis .graph"),
         [
+            {% for currency, values in points %}
             {
-                color: "#84b1ca",
+                label: "{{ currency }}",
                 data: [
-                    {% for timestamp, value in points %}
+                    {% for timestamp, value in values %}
                         [{{ timestamp }}, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
 
                     {% endfor %}
                 ]
             }
+            {% if loop.last != 1 %},{% endif %}
+            {% endfor %}
         ],
         {
             series: {
-                lines: { show: true },
-                points: { show: true }
+                lines: {
+                    show: true,
+                    fill: true,
+                    lineWidth: 4,
+                    fillColor: { colors: [{opacity: 0.4}, {opacity: 0}] }
+                },
+                points: {
+                    show: true,
+                    radius: 4,
+                    fill: true
+                }
             },
             grid: { hoverable: true },
             xaxis: {
@@ -48,9 +60,9 @@ $(document).ready(function(){
                     top: item.pageY - 30,
                     left: item.pageX + 5,
                     padding: "2px",
-                    backgroundColor: "#999",
+                    backgroundColor: "#666",
                     color: "#fff",
-                    fontWeight: "bold",
+                    fontSize: "12px",
                     opacity: 0.80
                 }).appendTo("body").fadeIn(200);
             }

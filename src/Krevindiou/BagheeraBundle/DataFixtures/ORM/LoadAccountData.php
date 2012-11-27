@@ -21,6 +21,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1123.56);
         $account->setOverdraftFacility(100);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-checking_account', $account);
 
@@ -31,6 +32,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1099.10);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-certificate_of_deposit_1', $account);
 
@@ -41,6 +43,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1087.30);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-certificate_of_deposit_2', $account);
 
@@ -51,6 +54,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1019.75);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(true);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-certificate_of_deposit_3', $account);
 
@@ -64,6 +68,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1152.50);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-bank_of_america-checking_account', $account);
 
@@ -77,6 +82,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1270.40);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-wells_fargo-checking_account', $account);
 
@@ -90,6 +96,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1419.80);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-santander-checking_account', $account);
 
@@ -103,6 +110,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setInitialBalance(1327.30);
         $account->setOverdraftFacility(0);
         $account->setIsDeleted(false);
+        $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-bnp_paribas-checking_account', $account);
 

@@ -174,8 +174,14 @@ class Account
     {
         $this->setInitialBalance((float) $this->getInitialBalance());
         $this->setOverdraftFacility((float) $this->getOverdraftFacility());
-        $this->setCreatedAt(new \DateTime());
-        $this->setUpdatedAt(new \DateTime());
+
+        if (null === $this->getCreatedAt()) {
+            $this->setCreatedAt(new \DateTime());
+        }
+
+        if (null === $this->getUpdatedAt()) {
+            $this->setUpdatedAt(new \DateTime());
+        }
     }
 
     /**

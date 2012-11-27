@@ -378,43 +378,40 @@ class ReportService
     /**
      * Returns synthesis graph data
      *
-     * @param  User  $user User entity
+     * @param  User  $user          User entity
+     * @param  DateTime $startDate  Data after this date
+     * @param  DateTime $stopDate   Data before this date
      * @return array
      */
-    public function getSynthesis(User $user)
+    public function getSynthesis(User $user, \DateTime $startDate = null, \DateTime $stopDate = null)
     {
         $graph = array();
 
-        $operationRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation');
-        $accountRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Account');
-
-        $operations = $operationRepository->getLast12MonthsSumByMonth($user);
-        $balances = $accountRepository->getLast12MonthsInitialBalanceByMonth($user);
-        $start = $operationRepository->getSumBeforeLast12Months($user) + $accountRepository->getInitialBalanceBeforeLast12Months($user);
-
-        if (!empty($operations) || !empty($balances) || !empty($start)) {
-            $date = new \DateTime();
-            $date->modify('-12 month');
-
-            for ($i = 0; $i < 12; $i++) {
-                $date->modify('+1 month');
-                $month = $date->format('Y-m');
-
-                if (isset($operations[$month])) {
-                    $start+= $operations[$month];
-                }
-
-                if (isset($balances[$month])) {
-                    $start+= $balances[$month];
-                }
-
-                $graph['points'][strtotime($month . '-01') * 1000] = round($start, 2);
-            }
+        if (null === $stopDate) {
+            $stopDate = new \DateTime();
         }
 
-        if (!empty($graph['points'])) {
-            $yaxisMin = (int) (min($graph['points']) * 0.95);
-            $yaxisMax = (int) (max($graph['points']) * 1.05);
+        if (null === $startDate) {
+            $startDate = clone $stopDate;
+            $startDate->modify('First day of -11 months');
+        }
+
+        $operationRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation');
+
+        $data = $operationRepository->getTotalByMonth($user, $startDate, $stopDate);
+
+        if (!empty($data)) {
+            $tmpValues = array();
+            foreach ($data as $currency => $values) {
+                foreach ($values as $month => $value) {
+                    $graph['points'][$currency][strtotime($month . '-01') * 1000] = $value;
+                }
+
+                $tmpValues = array_merge(array_values($tmpValues), array_values($values));
+            }
+
+            $yaxisMin = (int) (min($tmpValues) * 0.95);
+            $yaxisMax = (int) (max($tmpValues) * 1.05);
 
             $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
             $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
