@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app.request.locale }}">
     <head>
-        <title>Bagheera - {{ block('pageTitle') }}</title>
+        <title>Bagheera - {{ block('page_title') }}</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         {% stylesheets filter='lessphp,cssrewrite'
             'bundles/krevindioubagheera/less/main.less'
@@ -63,7 +63,7 @@
             </nav>
 
             <h1>
-                <div class="container">{% block pageTitle %}{% endblock %}</div>
+                <div class="container">{% block page_title %}{% endblock %}</div>
             </h1>
         </header>
 

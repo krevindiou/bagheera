@@ -1,6 +1,6 @@
 {% extends '::base.html.twig' %}
 
-{% block pageTitle 'user_profile_page_title'|trans %}
+{% block page_title 'user_profile_page_title'|trans %}
 
 {% block content %}
 <form action="{{ path('user_profile') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(profileForm) }}>
