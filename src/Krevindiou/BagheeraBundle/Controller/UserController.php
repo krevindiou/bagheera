@@ -143,9 +143,7 @@ class UserController extends Controller
      */
     public function profileAction(Request $request)
     {
-        $form = $this->get('bagheera.user')->getProfileForm(
-            $this->get('security.context')->getToken()->getUser()
-        );
+        $form = $this->get('bagheera.user')->getProfileForm($this->getUser());
 
         if ($request->getMethod() == 'POST') {
             $form->bind($request);

@@ -23,7 +23,7 @@ class SchedulerController extends Controller
      */
     public function listAction(Request $request, Account $account)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $page = $request->query->getInt('page', 1);
 
@@ -46,7 +46,7 @@ class SchedulerController extends Controller
     {
         if ($request->request->has('delete')) {
             $schedulersId = (array) $request->request->get('schedulersId');
-            $user = $this->get('security.context')->getToken()->getUser();
+            $user = $this->getUser();
 
             $this->get('bagheera.scheduler')->delete($user, $schedulersId);
             $this->get('session')->getFlashBag()->add('success', 'scheduler_delete_confirmation');
@@ -66,7 +66,7 @@ class SchedulerController extends Controller
      */
     public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $schedulerForm = $this->get('bagheera.scheduler')->getForm($user, $scheduler, $account);
         if (null === $schedulerForm) {

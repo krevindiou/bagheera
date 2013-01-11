@@ -19,7 +19,7 @@ class BankAccessController extends Controller
      */
     public function formAction(Request $request, Bank $bank)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $bankAccessForm = $this->get('bagheera.bank_access')->getForm($user, $bank);
         if (null === $bankAccessForm) {

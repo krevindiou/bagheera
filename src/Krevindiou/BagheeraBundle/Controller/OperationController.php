@@ -24,7 +24,7 @@ class OperationController extends Controller
      */
     public function listAction(Request $request, Account $account)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $page = $request->query->getInt('page', 1);
 
@@ -50,7 +50,7 @@ class OperationController extends Controller
     {
         $operationsId = (array) $request->request->get('operationsId');
 
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         if ($request->request->has('delete')) {
             $this->get('bagheera.operation')->delete($user, $operationsId);
@@ -74,7 +74,7 @@ class OperationController extends Controller
      */
     public function formAction(Request $request, Account $account = null, Operation $operation = null)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $operationForm = $this->get('bagheera.operation')->getForm($user, $operation, $account);
         if (null === $operationForm) {
@@ -106,7 +106,7 @@ class OperationController extends Controller
     public function thirdPartyAction(Request $request)
     {
         $thirdParties = $this->get('bagheera.operation')->findThirdParties(
-            $this->get('security.context')->getToken()->getUser(),
+            $this->getUser(),
             $request->query->get('q')
         );
 

@@ -21,7 +21,7 @@ class ReportController extends Controller
      */
     public function listAction(Request $request)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $reports = $this->get('bagheera.report')->getList($user);
 
@@ -38,7 +38,7 @@ class ReportController extends Controller
     {
         $reportsId = (array) $request->request->get('reportsId');
 
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         if ($request->request->has('delete')) {
             $this->get('bagheera.report')->delete($user, $reportsId);
@@ -55,7 +55,7 @@ class ReportController extends Controller
      */
     public function formAction(Request $request, Report $report = null, $type = null)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $reportForm = $this->get('bagheera.report')->getForm($user, $report, $type);
         if (null === $reportForm) {
@@ -85,7 +85,7 @@ class ReportController extends Controller
     {
         $graphs = array();
 
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $reports = $this->get('bagheera.report')->getHomepageList($user);
 
@@ -108,7 +108,7 @@ class ReportController extends Controller
      */
     public function synthesisAction()
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $graph = $this->get('bagheera.report')->getSynthesis($user);
 

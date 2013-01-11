@@ -23,7 +23,7 @@ class AccountController extends Controller
      */
     public function listAction()
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $banks = $this->get('bagheera.bank')->getList($user, false);
         $progress = $this->get('bagheera.user')->getImportProgress($user);
@@ -59,7 +59,7 @@ class AccountController extends Controller
         $accountsId = (array) $request->request->get('accountsId');
         $banksId = (array) $request->request->get('banksId');
 
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         if ($request->request->has('delete')) {
             $this->get('bagheera.account')->delete($user, $accountsId);
@@ -79,7 +79,7 @@ class AccountController extends Controller
     public function boxAction(Account $account = null)
     {
         if (null !== $account) {
-            $user = $this->get('security.context')->getToken()->getUser();
+            $user = $this->getUser();
             $accountService = $this->get('bagheera.account');
 
             $balance = $accountService->getBalance($user, $account);
@@ -102,7 +102,7 @@ class AccountController extends Controller
      */
     public function newFormAction(Request $request, Bank $bank)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $accountForm = $this->get('bagheera.account')->getNewForm($user, $bank);
 
@@ -136,7 +136,7 @@ class AccountController extends Controller
      */
     public function editFormAction(Request $request, Account $account)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $accountForm = $this->get('bagheera.account')->getEditForm($user, $account);
 
@@ -168,7 +168,7 @@ class AccountController extends Controller
      */
     public function importProgressAction()
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $progress = $this->get('bagheera.user')->getImportProgress($user);
 

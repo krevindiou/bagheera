@@ -20,7 +20,7 @@ class BankController extends Controller
      */
     public function formAction(Request $request, Bank $bank = null)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $bankForm = $this->get('bagheera.bank')->getForm($user, $bank);
         if (null === $bankForm) {

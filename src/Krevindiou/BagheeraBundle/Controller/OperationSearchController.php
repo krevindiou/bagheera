@@ -21,7 +21,7 @@ class OperationSearchController extends Controller
      */
     public function formAction(Request $request, Account $account, $display = true)
     {
-        $user = $this->get('security.context')->getToken()->getUser();
+        $user = $this->getUser();
 
         $operationSearchService = $this->get('bagheera.operation_search');
 
