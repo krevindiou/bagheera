@@ -4,32 +4,40 @@
 
 {% block content %}
 {% spaceless %}
-<form action="{{ path('login_check') }}" novalidate="novalidate" method="post" class="form-horizontal">
-    <div>
-        {% if error %}
-        <div class="alert alert-error">{{ error.message|trans([], 'validators') }}</div>
-        {% endif %}
+<div class="row">
+    <div class="span6">
+        <form action="{{ path('login_check') }}" novalidate="novalidate" method="post" class="form-horizontal">
+            <div>
+                {% if error %}
+                <div class="alert alert-error">{{ error.message|trans([], 'validators') }}</div>
+                {% endif %}
 
-        <div class="control-group">
-            <label for="username" class="control-label">{{ 'user_email'|trans }}</label>
+                <div class="control-group">
+                    <label for="username" class="control-label">{{ 'user_email'|trans }}</label>
 
-            <div class="controls">
-                <input type="email" id="username" name="_username" value="{{ last_username }}"/>
+                    <div class="controls">
+                        <input type="email" id="username" name="_username" value="{{ last_username }}"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="password" class="control-label">{{ 'user_password'|trans }}</label>
+
+                    <div class="controls">
+                        <input type="password" id="password" name="_password"/>
+                        <span class="help-block"><a href="{{ path('user_forgot_password') }}">{{ 'user_forgot_password_link'|trans }}</a></span>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="control-group">
-            <label for="password" class="control-label">{{ 'user_password'|trans }}</label>
-
-            <div class="controls">
-                <input type="password" id="password" name="_password"/>
+            <div class="control-group">
+                <div class="controls">
+                    <input type="submit" name="login" class="btn btn-primary" value="{{ 'user_login_submit_button'|trans }}"/>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" name="login" class="btn btn-large btn-primary" value="{{ 'user_login_submit_button'|trans }}"/>
-        </div>
+    <div class="span6">
+        <a href="{{ path('user_register') }}" class="btn btn-primary">{{ 'user_register_link'|trans }}</a>
     </div>
-</form>
+</div>
 {% endspaceless %}
 {% endblock %}

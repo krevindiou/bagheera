@@ -10,7 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
     Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
-    Krevindiou\BagheeraBundle\Entity\Report;
+    Krevindiou\BagheeraBundle\Entity\Report,
+    Krevindiou\BagheeraBundle\Entity\Account;
 
 class ReportController extends Controller
 {
@@ -103,14 +104,15 @@ class ReportController extends Controller
     }
 
     /**
-     * @Route("report_synthesis.js", defaults={"_format"="js"}, name="report_synthesis")
+     * @Route("report_synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
+     * @Route("report_synthesis_account_{accountId}.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      * @Template()
      */
-    public function synthesisAction()
+    public function synthesisAction(Account $account = null)
     {
         $user = $this->getUser();
 
-        $graph = $this->get('bagheera.report')->getSynthesis($user);
+        $graph = $this->get('bagheera.report')->getSynthesis($user, null, null, $account);
 
         if (!empty($graph)) {
             return $graph;

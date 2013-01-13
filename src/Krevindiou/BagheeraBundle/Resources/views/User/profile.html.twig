@@ -2,14 +2,16 @@
 
 {% block page_title 'user_profile_page_title'|trans %}
 
+{% block breadcrumb %}
+    <li><span class="active">{{ 'user_profile_page_title'|trans }}</span></li>
+{% endblock %}
+
 {% block content %}
 <form action="{{ path('user_profile') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(profileForm) }}>
     {{ form_widget(profileForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'user_profile_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'user_profile_submit_button'|trans }}"/>
     </div>
 </form>
 {% endblock %}

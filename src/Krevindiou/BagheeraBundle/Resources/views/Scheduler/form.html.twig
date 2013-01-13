@@ -2,11 +2,13 @@
 
 {% block page_title 'scheduler_form_page_title'|trans %}
 
-{% block content %}
-<div class="btn-group">
-    <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
-</div>
+{% block breadcrumb %}
+    <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
+    <li><a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}">{{ 'scheduler_list'|trans }}</a> <i class="icon-chevron-right"></i></li>
+    <li><span class="active">{{ scheduler.schedulerId is null ? 'scheduler_new_link'|trans : 'scheduler_edit_link'|trans }}</span></li>
+{% endblock %}
 
+{% block content %}
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(schedulerForm) }}>
     {{ form_row(schedulerForm.type) }}
     {{ form_row(schedulerForm.thirdParty) }}
@@ -36,10 +38,9 @@
     {{ form_row(schedulerForm.isActive) }}
     {{ form_rest(schedulerForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'scheduler_form_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'scheduler_form_submit_button'|trans }}"/>
+        <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'back_link'|trans }}</a>
     </div>
 </form>
 {% endblock %}

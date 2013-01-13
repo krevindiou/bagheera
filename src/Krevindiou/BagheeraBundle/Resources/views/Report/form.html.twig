@@ -2,11 +2,17 @@
 
 {% block page_title 'report_form_page_title'|trans %}
 
-{% block content %}
-<div class="btn-group">
-    <a href="{{ path('report_list') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
-</div>
+{% block buttons %}
+    <div class="btn-group">
+    </div>
+{% endblock %}
 
+{% block breadcrumb %}
+    <li><a href="{{ path('report_list') }}">{{ 'report_list_page_title'|trans }}</a> <i class="icon-chevron-right"></i></li>
+    <li><span class="active">{{ reportForm.vars.value.reportId is null ? 'report_new_link'|trans : 'report_update_link'|trans }}</span></li>
+{% endblock %}
+
+{% block content %}
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(reportForm) }}>
     {{ form_row(reportForm.title) }}
     {{ form_row(reportForm.homepage) }}
@@ -50,10 +56,9 @@
 
     {{ form_rest(reportForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'report_form_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'report_form_submit_button'|trans }}"/>
+        <a href="{{ path('report_list') }}" class="btn">{{ 'back_link'|trans }}</a>
     </div>
 </form>
 {% endblock %}

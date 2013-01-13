@@ -27,7 +27,6 @@ var Bagheera = {
                 $(this).parent().parent().toggleClass("info");
             });
 
-            $("table.table").next(".btn-group").hide();
             $("table.table input[type=checkbox]").change(function() {
                 if ($(this).parents("table").find("input[type=checkbox]:checked").length > 0) {
                     $(this).parents("table").next(".btn-group").show();
@@ -113,7 +112,7 @@ var Bagheera = {
     accounts: function() {
         if ($("input[type=checkbox][name='banksId[]']").length > 0) {
             $("input[type=checkbox][name='banksId[]']").change(function() {
-                var inputs = $(this).parents("tr").nextUntil("tr:has(th)").find("td input[type=checkbox][name='accountsId[]']");
+                var inputs = $(this).parents("div.bank").next("ul").find("li input[type=checkbox][name='accountsId[]']");
 
                 inputs
                     .attr("checked", "checked" == $(this).attr("checked"))
@@ -128,6 +127,23 @@ var Bagheera = {
                     });
             });
         }
+
+        // Show "delete" button when an account or a bank is checked
+        $("form.accounts input[type=checkbox]").change(function() {
+            var form = $(this).parents('form');
+
+            if (form.find("input[type=checkbox]:checked").length > 0) {
+                form.find(".btn-group.form-actions").show();
+            } else {
+                form.find(".btn-group.form-actions").hide();
+            }
+        });
+
+        $("form.accounts li.row").hover(function() {
+            $(this).find("a.edit-account").show();
+        }, function() {
+            $(this).find("a.edit-account").hide();
+        });
     },
 
     initPaymentMethod: function() {

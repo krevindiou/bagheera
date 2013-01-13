@@ -2,14 +2,39 @@
 
 {% block page_title 'operation_list_page_title'|trans %}
 
-{% block content %}
+{% block breadcrumb %}
+    <li><span class="active">{{ account.bank.name }} - {{ account.name }}</span></li>
+{% endblock %}
+
+{% block buttons %}
 <div class="btn-group">
-    <a href="{{ path('account_list') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
     <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="btn{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation_new_link'|trans }}</a>
     <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="btn search"><i class="icon-search"></i> {{ 'operation_search_link'|trans }}</a>
     <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn"><i class="icon-time"></i> {{ 'scheduler_list'|trans }}</a>
 </div>
-<br/>
+{% endblock %}
+
+{% block content %}
+<div id="synthesis" class="row">
+    <div class="span5">
+        <div class="well">
+            <figure>
+                <figcaption>{{ 'report_synthesis'|trans }}</figcaption>
+                <div class="graph"></div>
+            </figure>
+        </div>
+    </div>
+    <div class="span7">
+        <div id="account-box" class="alert alert-info">
+            <h2><i class="icon-paper-clip"></i> {{ account.getBank().getName() }} - {{ account.getName() }}</h2>
+
+            <ul>
+                <li>{{ 'balance'|trans }}: <strong class="{{ balance < 0 ? 'negative' : 'positive' }}"> {{ balance|abs|money(account.currency) }}</strong></li>
+                <li>{{ 'reconciled_balance'|trans }}: <strong class="{{ reconciledBalance < 0 ? 'negative' : 'positive' }}">{{ reconciledBalance|abs|money(account.currency) }}</strong></li>
+            </ul>
+        </div>
+    </div>
+</div>
 
 {% if operations|length > 0 %}
 <form id="operation" {% if displaySearch %}class="with-sidebar" {% endif %}method="post" action="">
@@ -48,7 +73,7 @@
         {% endfor %}
     </table>
 
-    <div class="btn-group">
+    <div class="btn-group form-actions hide">
         <button type="submit" name="delete" class="btn delete" data-toggle="modal"><i class="icon-trash"></i> {{ 'operation_delete_button'|trans }}</button>
         <button type="submit" name="reconcile" class="btn reconcile" data-toggle="modal"><i class="icon-check"></i> {{ 'operation_reconcile_button'|trans }}</button>
     </div>
@@ -60,5 +85,18 @@
 
 {% render "KrevindiouBagheeraBundle:OperationSearch:form" with {"account": account, "display": displaySearch} %}
 
+<script type="text/javascript">
+    head.js(
+        {% javascripts
+            'bundles/krevindioubagheera/js/flot/jquery.flot.js'
+            'bundles/krevindioubagheera/js/flot/jquery.flot.time.js'
+        %}
+        "{{ asset_url }}",
+        {% endjavascripts %}
+        "/report_synthesis_account_{{ account.accountId }}.js",
+        function () {
+        }
+    );
+</script>
 {% endif %}
 {% endblock %}

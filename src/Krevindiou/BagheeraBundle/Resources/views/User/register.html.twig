@@ -2,18 +2,17 @@
 
 {% block page_title 'user_register_page_title'|trans %}
 
-{% block content %}
-<div class="btn-group">
-    <a href="{{ path('login') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
-</div>
+{% block breadcrumb %}
+    <li><span class="active">{{ 'user_register_page_title'|trans }}</span></li>
+{% endblock %}
 
+{% block content %}
 <form action="{{ path('user_register') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(registerForm) }}>
     {{ form_widget(registerForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'user_register_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'user_register_submit_button'|trans }}"/>
+        <a href="{{ path('login') }}" class="btn"> {{ 'back_link'|trans }}</a>
     </div>
 </form>
 {% endblock %}

@@ -2,11 +2,12 @@
 
 {% block page_title 'operation_form_page_title'|trans %}
 
-{% block content %}
-<div class="btn-group">
-    <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
-</div>
+{% block breadcrumb %}
+    <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
+    <li><span class="active">{{ operation.operationId is null ? 'operation_new_link'|trans : 'operation_edit_link'|trans }}</span></li>
+{% endblock %}
 
+{% block content %}
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(operationForm) }}>
     {{ form_row(operationForm.type) }}
     {{ form_row(operationForm.thirdParty) }}
@@ -19,10 +20,9 @@
     {{ form_row(operationForm.isReconciled) }}
     {{ form_rest(operationForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'operation_form_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'operation_form_submit_button'|trans }}"/>
+        <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'back_link'|trans }}</a>
     </div>
 </form>
 {% endblock %}

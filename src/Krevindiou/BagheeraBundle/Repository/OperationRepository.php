@@ -104,9 +104,10 @@ class OperationRepository extends EntityRepository
      * @param  User     $user      User entity
      * @param  DateTime $startDate Sum calculated after this date
      * @param  DateTime $stopDate  Sum calculated before this date
+     * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    protected function _getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
+    protected function _getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -119,6 +120,11 @@ class OperationRepository extends EntityRepository
         $sql.= 'AND b.is_deleted = 0 ';
         $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") >= :start_date ';
         $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= :stop_date ';
+
+        if (null !== $account) {
+            $sql.= 'AND a.account_id = :account_id ';
+        }
+
         $sql.= 'GROUP BY a.currency, month ';
         $sql.= 'ORDER BY month ASC ';
 
@@ -126,6 +132,11 @@ class OperationRepository extends EntityRepository
         $stmt->bindValue('user_id', $user->getUserId());
         $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
+
+        if (null !== $account) {
+            $stmt->bindValue('account_id', $account->getAccountId());
+        }
+
         $stmt->execute();
 
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -163,7 +174,7 @@ class OperationRepository extends EntityRepository
      * @param  DateTime $stopDate Sum calculated before this date
      * @return array
      */
-    protected function _getSumBefore(User $user, \DateTime $stopDate)
+    protected function _getSumBefore(User $user, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -175,11 +186,21 @@ class OperationRepository extends EntityRepository
         $sql.= 'AND a.is_deleted = 0 ';
         $sql.= 'AND b.is_deleted = 0 ';
         $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") < :stop_date ';
+
+        if (null !== $account) {
+            $sql.= 'AND a.account_id = :account_id ';
+        }
+
         $sql.= 'GROUP BY a.currency ';
 
         $stmt = $this->_em->getConnection()->prepare($sql);
         $stmt->bindValue('user_id', $user->getUserId());
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
+
+        if (null !== $account) {
+            $stmt->bindValue('account_id', $account->getAccountId());
+        }
+
         $stmt->execute();
 
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -199,16 +220,17 @@ class OperationRepository extends EntityRepository
      * @param  User     $user      User entity
      * @param  DateTime $startDate Sum calculated after this date
      * @param  DateTime $stopDate  Sum calculated before this date
+     * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    public function getTotalByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
+    public function getTotalByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
-        $data = $this->_getSumsByMonth($user, $startDate, $stopDate);
+        $data = $this->_getSumsByMonth($user, $startDate, $stopDate, $account);
 
-        $initialBalances = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->getTotalInitialBalancesByMonth($user, $startDate, $stopDate);
+        $initialBalances = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->getTotalInitialBalancesByMonth($user, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
-            $previousMonthTotal = $this->_getSumBefore($user, $startDate);
+            $previousMonthTotal = $this->_getSumBefore($user, $startDate, $account);
 
             foreach ($data as $currency => $value) {
                 foreach ($value as $month => $total) {

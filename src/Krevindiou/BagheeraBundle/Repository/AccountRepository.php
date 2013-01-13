@@ -6,7 +6,8 @@
 namespace Krevindiou\BagheeraBundle\Repository;
 
 use Doctrine\ORM\EntityRepository,
-    Krevindiou\BagheeraBundle\Entity\User;
+    Krevindiou\BagheeraBundle\Entity\User,
+    Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
  * Account repository
@@ -22,7 +23,7 @@ class AccountRepository extends EntityRepository
      * @param  DateTime $stopDate  Sum calculated before this date
      * @return array
      */
-    protected function _getInitialBalancesByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
+    protected function _getInitialBalancesByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -34,6 +35,11 @@ class AccountRepository extends EntityRepository
         $sql.= 'AND b.is_deleted = 0 ';
         $sql.= 'AND DATE_FORMAT(a.created_at, "%Y-%m-%d") >= :start_date ';
         $sql.= 'AND DATE_FORMAT(a.created_at, "%Y-%m-%d") <= :stop_date ';
+
+        if (null !== $account) {
+            $sql.= 'AND a.account_id = :account_id ';
+        }
+
         $sql.= 'GROUP BY a.currency, month ';
         $sql.= 'ORDER BY month ';
 
@@ -41,6 +47,11 @@ class AccountRepository extends EntityRepository
         $stmt->bindValue('user_id', $user->getUserId());
         $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
+
+        if (null !== $account) {
+            $stmt->bindValue('account_id', $account->getAccountId());
+        }
+
         $stmt->execute();
 
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -80,7 +91,7 @@ class AccountRepository extends EntityRepository
      * @param  DateTime $stopDate Initial balances fetched before this date
      * @return array
      */
-    protected function _getInitialBalancesBefore(User $user, \DateTime $stopDate)
+    protected function _getInitialBalancesBefore(User $user, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -91,11 +102,21 @@ class AccountRepository extends EntityRepository
         $sql.= 'AND a.is_deleted = 0 ';
         $sql.= 'AND b.is_deleted = 0 ';
         $sql.= 'AND DATE_FORMAT(a.created_at, "%Y-%m-%d") < :start_date ';
+
+        if (null !== $account) {
+            $sql.= 'AND a.account_id = :account_id ';
+        }
+
         $sql.= 'GROUP BY a.currency ';
 
         $stmt = $this->_em->getConnection()->prepare($sql);
         $stmt->bindValue('user_id', $user->getUserId());
         $stmt->bindValue('start_date', $stopDate->format('Y-m-d'));
+
+        if (null !== $account) {
+            $stmt->bindValue('account_id', $account->getAccountId());
+        }
+
         $stmt->execute();
 
         $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -115,14 +136,15 @@ class AccountRepository extends EntityRepository
      * @param  User     $user      User entity
      * @param  DateTime $startDate Initial balances fetched after this date
      * @param  DateTime $stopDate  Initial balances fetched before this date
+     * @param  Account  $account
      * @return array
      */
-    public function getTotalInitialBalancesByMonth(User $user, \DateTime $startDate, \DateTime $stopDate)
+    public function getTotalInitialBalancesByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
-        $data = $this->_getInitialBalancesByMonth($user, $startDate, $stopDate);
+        $data = $this->_getInitialBalancesByMonth($user, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
-            $previousMonthTotal = $this->_getInitialBalancesBefore($user, $startDate);
+            $previousMonthTotal = $this->_getInitialBalancesBefore($user, $startDate, $account);
 
             foreach ($data as $currency => $value) {
                 foreach ($value as $month => $total) {

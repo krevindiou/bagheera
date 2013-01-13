@@ -2,18 +2,17 @@
 
 {% block page_title 'bank_form_page_title'|trans %}
 
-{% block content %}
-<div class="btn-group">
-    <a href="{{ path('account_list') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
-</div>
+{% block breadcrumb %}
+    <li><span class="active">{{ bankForm.vars.value.bankId is null ? 'bank_new_link'|trans : 'bank_edit_link'|trans }}</span></li>
+{% endblock %}
 
+{% block content %}
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(bankForm) }}>
     {{ form_widget(bankForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'bank_form_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'bank_form_submit_button'|trans }}"/>
+        <a href="{{ path('account_list') }}" class="btn">{{ 'back_link'|trans }}</a>
     </div>
 </form>
 {% endblock %}

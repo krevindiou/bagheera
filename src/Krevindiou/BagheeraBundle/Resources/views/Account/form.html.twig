@@ -2,11 +2,12 @@
 
 {% block page_title 'account_form_page_title'|trans %}
 
-{% block content %}
-<div class="btn-group">
-    <a href="{{ path('account_list') }}" class="btn"><i class="icon-chevron-left"></i> {{ 'back_link'|trans }}</a>
-</div>
+{% block breadcrumb %}
+    {% set account = accountForm.vars.value %}
+    <li><span class="active">{{ account.bank.name }} {{ account.name != '' ? '- ' ~ account.name : '' }}</span></li>
+{% endblock %}
 
+{% block content %}
 <form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(accountForm) }}>
     {{ form_row(accountForm.bank) }}
     {{ form_row(accountForm.name) }}
@@ -17,10 +18,9 @@
     {{ form_row(accountForm.bic) }}
     {{ form_rest(accountForm) }}
 
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="{{ 'account_form_submit_button'|trans }}"/>
-        </div>
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'account_form_submit_button'|trans }}"/>
+        <a href="{{ path('account_list') }}" class="btn">{{ 'back_link'|trans }}</a>
     </div>
 </form>
 {% endblock %}

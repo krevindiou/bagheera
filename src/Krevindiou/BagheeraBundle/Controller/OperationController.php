@@ -34,11 +34,18 @@ class OperationController extends Controller
             throw $this->createNotFoundException();
         }
 
+        $accountService = $this->get('bagheera.account');
+
+        $balance = $accountService->getBalance($user, $account);
+        $reconciledBalance = $accountService->getBalance($user, $account, true);
+
         return array(
             'account' => $account,
             'operations' => $operations,
             'displaySearch' => (null !== $operationSearch),
-            'tipNewOperation' => (null === $operationSearch && count($operations) == 0)
+            'tipNewOperation' => (null === $operationSearch && count($operations) == 0),
+            'balance' => $balance,
+            'reconciledBalance' => $reconciledBalance
         );
     }
 

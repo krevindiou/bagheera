@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\FormFactory,
     Symfony\Bridge\Monolog\Logger,
     Krevindiou\BagheeraBundle\Entity\User,
+    Krevindiou\BagheeraBundle\Entity\Account,
     Krevindiou\BagheeraBundle\Entity\Report,
     Krevindiou\BagheeraBundle\Form\ReportForm;
 
@@ -373,9 +374,10 @@ class ReportService
      * @param  User     $user      User entity
      * @param  DateTime $startDate Data after this date
      * @param  DateTime $stopDate  Data before this date
+     * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    public function getSynthesis(User $user, \DateTime $startDate = null, \DateTime $stopDate = null)
+    public function getSynthesis(User $user, \DateTime $startDate = null, \DateTime $stopDate = null, Account $account = null)
     {
         $graph = array();
 
@@ -390,7 +392,7 @@ class ReportService
 
         $operationRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation');
 
-        $data = $operationRepository->getTotalByMonth($user, $startDate, $stopDate);
+        $data = $operationRepository->getTotalByMonth($user, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
             $tmpValues = array();

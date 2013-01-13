@@ -74,29 +74,6 @@ class AccountController extends Controller
     }
 
     /**
-     * @Template()
-     */
-    public function boxAction(Account $account = null)
-    {
-        if (null !== $account) {
-            $user = $this->getUser();
-            $accountService = $this->get('bagheera.account');
-
-            $balance = $accountService->getBalance($user, $account);
-            $reconciledBalance = $accountService->getBalance($user, $account, true);
-        } else {
-            $balance = null;
-            $reconciledBalance = null;
-        }
-
-        return array(
-            'account' => $account,
-            'balance' => $balance,
-            'reconciledBalance' => $reconciledBalance
-        );
-    }
-
-    /**
      * @Route("/new-account-bank-{bankId}", requirements={"bankId" = "\d+"}, name="account_new")
      * @Template()
      */
