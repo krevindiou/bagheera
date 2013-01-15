@@ -10,7 +10,7 @@
 
 {% block breadcrumb %}
     <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
-    <li><span class="active">{{ 'scheduler_list'|trans }}</span></li>
+    <li class="active">{{ 'scheduler_list_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}

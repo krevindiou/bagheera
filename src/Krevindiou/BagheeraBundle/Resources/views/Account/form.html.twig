@@ -1,10 +1,11 @@
 {% extends '::base.html.twig' %}
 
-{% block page_title 'account_form_page_title'|trans %}
+{% set account = accountForm.vars.value %}
+
+{% block page_title account.accountId is null ? 'account_new_form_page_title'|trans : 'account_edit_form_page_title'|trans %}
 
 {% block breadcrumb %}
-    {% set account = accountForm.vars.value %}
-    <li><span class="active">{{ account.bank.name }} {{ account.name != '' ? '- ' ~ account.name : '' }}</span></li>
+    <li class="active">{{ account.accountId is null ? 'account_new_form_page_title'|trans : 'account_edit_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}

@@ -2,16 +2,16 @@
 
 {% block page_title 'operation_list_page_title'|trans %}
 
-{% block breadcrumb %}
-    <li><span class="active">{{ account.bank.name }} - {{ account.name }}</span></li>
-{% endblock %}
-
 {% block buttons %}
 <div class="btn-group">
     <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="btn{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation_new_link'|trans }}</a>
     <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="btn search"><i class="icon-search"></i> {{ 'operation_search_link'|trans }}</a>
     <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn"><i class="icon-time"></i> {{ 'scheduler_list'|trans }}</a>
 </div>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="active">{{ account.bank.name }} - {{ account.name }}</li>
 {% endblock %}
 
 {% block content %}

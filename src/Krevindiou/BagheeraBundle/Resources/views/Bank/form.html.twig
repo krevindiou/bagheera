@@ -1,9 +1,9 @@
 {% extends '::base.html.twig' %}
 
-{% block page_title 'bank_form_page_title'|trans %}
+{% block page_title bankForm.vars.value.bankId is null ? 'bank_new_form_page_title'|trans : 'bank_edit_form_page_title'|trans %}
 
 {% block breadcrumb %}
-    <li><span class="active">{{ bankForm.vars.value.bankId is null ? 'bank_new_link'|trans : 'bank_edit_link'|trans }}</span></li>
+    <li class="active">{{ bankForm.vars.value.bankId is null ? 'bank_new_form_page_title'|trans : 'bank_edit_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
