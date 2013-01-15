@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping as ORM,
 /**
  * Krevindiou\BagheeraBundle\Entity\Account
  *
- * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\AccountRepository")
+ * @ORM\Entity
  * @ORM\Table(
  *  name="account",
  *  indexes={@ORM\Index(name="external_account_id_idx", columns={"external_account_id"})}
@@ -71,13 +71,6 @@ class Account
      * @Assert\Length(max = 3)
      */
     protected $currency;
-
-    /**
-     * @var float $initialBalance
-     *
-     * @ORM\Column(name="initial_balance", type="decimal", scale=2, nullable=false)
-     */
-    protected $initialBalance = 0;
 
     /**
      * @var float $overdraftFacility
@@ -170,7 +163,6 @@ class Account
      */
     public function prePersist()
     {
-        $this->setInitialBalance((float) $this->getInitialBalance());
         $this->setOverdraftFacility((float) $this->getOverdraftFacility());
 
         if (null === $this->getCreatedAt()) {
@@ -187,7 +179,6 @@ class Account
      */
     public function preUpdate()
     {
-        $this->setInitialBalance((float) $this->getInitialBalance());
         $this->setOverdraftFacility((float) $this->getOverdraftFacility());
         $this->setUpdatedAt(new \DateTime());
     }
@@ -260,26 +251,6 @@ class Account
     public function getCurrency()
     {
         return $this->currency;
-    }
-
-    /**
-     * Set initialBalance
-     *
-     * @param float $initialBalance
-     */
-    public function setInitialBalance($initialBalance)
-    {
-        $this->initialBalance = $initialBalance;
-    }
-
-    /**
-     * Get initialBalance
-     *
-     * @return float
-     */
-    public function getInitialBalance()
-    {
-        return $this->initialBalance;
     }
 
     /**

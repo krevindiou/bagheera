@@ -121,7 +121,7 @@ class AccountServiceTest extends TestCase
 
         $balance = $this->get('bagheera.account')->getBalance($this->john, $account);
 
-        $this->assertEquals($balance, 1102.07);
+        $this->assertEquals($balance, -21.49);
     }
 
     public function testSynthesis()
@@ -135,11 +135,11 @@ class AccountServiceTest extends TestCase
                 strtotime('2011-05-01') * 1000 => 0,
                 strtotime('2011-06-01') * 1000 => 0,
                 strtotime('2011-07-01') * 1000 => 0,
-                strtotime('2011-08-01') * 1000 => 4645.56,
-                strtotime('2011-09-01') * 1000 => 4508.43,
-                strtotime('2011-10-01') * 1000 => 4546.74,
-                strtotime('2011-11-01') * 1000 => 4546.74,
-                strtotime('2011-12-01') * 1000 => 4546.74
+                strtotime('2011-08-01') * 1000 => 0,
+                strtotime('2011-09-01') * 1000 => -137.13,
+                strtotime('2011-10-01') * 1000 => -98.82,
+                strtotime('2011-11-01') * 1000 => -98.82,
+                strtotime('2011-12-01') * 1000 => -98.82
             ),
             'EUR' => array(
                 strtotime('2011-01-01') * 1000 => 0,
@@ -149,11 +149,11 @@ class AccountServiceTest extends TestCase
                 strtotime('2011-05-01') * 1000 => 0,
                 strtotime('2011-06-01') * 1000 => 0,
                 strtotime('2011-07-01') * 1000 => 0,
-                strtotime('2011-08-01') * 1000 => 1087.30,
-                strtotime('2011-09-01') * 1000 => 1295.85,
-                strtotime('2011-10-01') * 1000 => 1295.85,
-                strtotime('2011-11-01') * 1000 => 1295.85,
-                strtotime('2011-12-01') * 1000 => 1295.85
+                strtotime('2011-08-01') * 1000 => 0,
+                strtotime('2011-09-01') * 1000 => 208.55,
+                strtotime('2011-10-01') * 1000 => 208.55,
+                strtotime('2011-11-01') * 1000 => 208.55,
+                strtotime('2011-12-01') * 1000 => 208.55
             )
         );
 

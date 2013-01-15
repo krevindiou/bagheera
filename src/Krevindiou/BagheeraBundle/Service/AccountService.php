@@ -9,10 +9,13 @@ use Doctrine\ORM\EntityManager,
     Symfony\Component\Form\Form,
     Symfony\Component\Form\FormFactory,
     Symfony\Component\Validator\Validator,
+    Symfony\Component\Translation\Translator,
     Symfony\Bridge\Monolog\Logger,
     Krevindiou\BagheeraBundle\Entity\User,
     Krevindiou\BagheeraBundle\Entity\Bank,
     Krevindiou\BagheeraBundle\Entity\Account,
+    Krevindiou\BagheeraBundle\Entity\Operation,
+    Krevindiou\BagheeraBundle\Entity\PaymentMethod,
     Krevindiou\BagheeraBundle\Form\AccountForm;
 
 /**
@@ -42,6 +45,11 @@ class AccountService
     protected $_validator;
 
     /**
+     * @var Translator
+     */
+    protected $_translator;
+
+    /**
      * @var ProviderAdapter
      */
     protected $_providerAdapter;
@@ -51,20 +59,29 @@ class AccountService
      */
     protected $_accountImportService;
 
+    /**
+     * @var OperationService
+     */
+    protected $_operationService;
+
     public function __construct(
         Logger $logger,
         EntityManager $em,
         FormFactory $formFactory,
         Validator $validator,
+        Translator $translator,
         Provider\ProviderAdapter $providerAdapter,
-        AccountImportService $accountImportService)
+        AccountImportService $accountImportService,
+        OperationService $operationService)
     {
         $this->_logger = $logger;
         $this->_em = $em;
         $this->_formFactory = $formFactory;
         $this->_validator = $validator;
+        $this->_translator = $translator;
         $this->_providerAdapter = $providerAdapter;
         $this->_accountImportService = $accountImportService;
+        $this->_operationService = $operationService;
     }
 
     /**
@@ -196,7 +213,26 @@ class AccountService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            return $this->_save($user, $form->getData());
+            $ok = $this->_save($user, $form->getData());
+
+            if ($form->get('initialBalance')->getData() != 0) {
+                $operation = new Operation();
+                $operation->setAccount($form->getData());
+                $operation->setThirdParty($this->_translator->trans('account_initial_balance'));
+                if ($form->get('initialBalance')->getData() > 0) {
+                    $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
+                    $operation->setCredit(abs($form->get('initialBalance')->getData()));
+                } else {
+                    $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER));
+                    $operation->setDebit(abs($form->get('initialBalance')->getData()));
+                }
+                $operation->setValueDate(new \DateTime());
+                $operation->setIsReconciled(true);
+
+                $this->_operationService->save($user, $operation);
+            }
+
+            return $ok;
         }
 
         return false;
@@ -245,7 +281,7 @@ class AccountService
         $balance = 0;
 
         if ($user === $account->getBank()->getUser()) {
-            $dql = 'SELECT COALESCE(SUM(o.credit), 0) AS total_credit, COALESCE(SUM(o.debit), 0) AS total_debit ';
+            $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
             $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
             $dql.= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
@@ -256,7 +292,7 @@ class AccountService
             $query->setParameter('account', $account);
             $result = $query->getSingleResult();
 
-            $balance = $account->getInitialBalance() + $result['total_credit'] - $result['total_debit'];
+            $balance = $result['balance'];
         }
 
         return sprintf('%.2f', $balance);

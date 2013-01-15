@@ -166,7 +166,7 @@ class UserServiceTest extends TestCase
 
         $balances = $this->get('bagheera.user')->getBalances($user);
 
-        $this->assertEquals($balances['USD'], 4546.74);
-        $this->assertEquals($balances['EUR'], 1295.85);
+        $this->assertEquals($balances['USD'], -98.82);
+        $this->assertEquals($balances['EUR'], 208.55);
     }
 }

@@ -102,21 +102,6 @@ class AccountForm extends AbstractType
                     )
                     ->add(
                         $builder->getFormFactory()->createNamed(
-                            'initialBalance',
-                            'money',
-                            null,
-                            array(
-                                'label' => 'account_initial_balance',
-                                'currency' => $account->getCurrency() ? : false,
-                                'disabled' => $edit,
-                                'attr' => array(
-                                    'class' => 'input-small'
-                                )
-                            )
-                        )
-                    )
-                    ->add(
-                        $builder->getFormFactory()->createNamed(
                             'overdraftFacility',
                             'money',
                             null,
@@ -130,6 +115,27 @@ class AccountForm extends AbstractType
                         )
                     )
                 ;
+
+                if (!$edit) {
+                    $form
+                        ->add(
+                            $builder->getFormFactory()->createNamed(
+                                'initialBalance',
+                                'money',
+                                null,
+                                array(
+                                    'label' => 'account_initial_balance',
+                                    'mapped' => false,
+                                    'required' => false,
+                                    'currency' => $account->getCurrency() ? : false,
+                                    'attr' => array(
+                                        'class' => 'input-small'
+                                    )
+                                )
+                            )
+                        )
+                    ;
+                }
             }
         );
     }

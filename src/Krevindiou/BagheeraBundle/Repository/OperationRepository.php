@@ -227,8 +227,6 @@ class OperationRepository extends EntityRepository
     {
         $data = $this->_getSumsByMonth($user, $startDate, $stopDate, $account);
 
-        $initialBalances = $this->_em->getRepository('KrevindiouBagheeraBundle:Account')->getTotalInitialBalancesByMonth($user, $startDate, $stopDate, $account);
-
         if (!empty($data)) {
             $previousMonthTotal = $this->_getSumBefore($user, $startDate, $account);
 
@@ -239,14 +237,6 @@ class OperationRepository extends EntityRepository
                     }
 
                     $previousMonthTotal[$currency] = $data[$currency][$month];
-                }
-            }
-
-            foreach ($data as $currency => $value) {
-                foreach ($value as $month => $total) {
-                    if (isset($initialBalances[$currency][$month])) {
-                        $data[$currency][$month]+= $initialBalances[$currency][$month];
-                    }
                 }
             }
         }

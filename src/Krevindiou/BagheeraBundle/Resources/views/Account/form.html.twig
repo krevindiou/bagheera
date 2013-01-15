@@ -12,7 +12,11 @@
     {{ form_row(accountForm.bank) }}
     {{ form_row(accountForm.name) }}
     {{ form_row(accountForm.currency) }}
+
+    {% if accountForm.initialBalance is defined %}
     {{ form_row(accountForm.initialBalance) }}
+    {% endif %}
+
     {{ form_row(accountForm.overdraftFacility) }}
     {{ form_row(accountForm.iban) }}
     {{ form_row(accountForm.bic) }}

@@ -109,7 +109,7 @@ class BankServiceTest extends TestCase
 
         $balances = $this->get('bagheera.bank')->getBalances($this->john, $hsbc);
 
-        $this->assertEquals(sprintf('%.2f', $balances['USD']), 2205.56);
-        $this->assertEquals(sprintf('%.2f', $balances['EUR']), 1295.85);
+        $this->assertEquals(sprintf('%.2f', $balances['USD']), -17.10);
+        $this->assertEquals(sprintf('%.2f', $balances['EUR']), 208.55);
     }
 }

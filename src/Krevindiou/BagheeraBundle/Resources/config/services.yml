@@ -58,8 +58,10 @@ services:
             - @doctrine.orm.entity_manager
             - @form.factory
             - @validator
+            - @translator
             - @bagheera.provider_adapter
             - @bagheera.account_import
+            - @bagheera.operation
         tags:
             - { name: monolog.logger, channel: account }
 
