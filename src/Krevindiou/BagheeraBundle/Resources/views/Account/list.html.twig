@@ -2,7 +2,7 @@
 
 {% block page_title 'account_list_page_title'|trans %}
 
-{% block buttons %}
+{% block main_actions %}
     <div class="btn-group">
         <a href="{{ path('bank_new') }}" class="btn {{ tipNewBank ? ' tip' : '' }}"{% if tipNewBank %} title="{{ 'tip_new_bank'|trans }}"{% endif %}><i class="icon-plus-sign icon-white"></i> {{ 'bank_new_link'|trans }}</a>
     </div>

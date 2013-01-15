@@ -63,7 +63,7 @@
 
             <div id="header">
                 <h1>{% block page_title %}{% endblock %}</h1>
-                {% block buttons %}{% endblock %}
+                {% block main_actions %}{% endblock %}
                 <div class="clearfix"></div>
 
                 {% if app.request.get('_route') not in ['login', 'account_list'] %}

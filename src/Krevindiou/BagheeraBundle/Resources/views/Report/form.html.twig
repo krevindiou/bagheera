@@ -2,10 +2,6 @@
 
 {% block page_title reportForm.vars.value.reportId is null ? 'report_new_form_page_title'|trans : 'report_edit_form_page_title'|trans %}
 
-{% block buttons %}
-    <div class="btn-group"></div>
-{% endblock %}
-
 {% block breadcrumb %}
     <li><a href="{{ path('report_list') }}">{{ 'report_list_page_title'|trans }}</a> <i class="icon-chevron-right"></i></li>
     <li class="active">{{ reportForm.vars.value.reportId is null ? 'report_new_form_page_title'|trans : 'report_edit_form_page_title'|trans }}</li>
