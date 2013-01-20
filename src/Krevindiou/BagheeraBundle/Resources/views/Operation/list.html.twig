@@ -44,7 +44,7 @@
             <th></th>
             <th>{{ 'operation_third_party'|trans }}</th>
             <th>{{ 'operation_category'|trans }}</th>
-            <th>{{ 'operation_payment_method'|trans }}</th>
+            <th></th>
             <th>{{ 'operation_type_debit'|trans }}</th>
             <th>{{ 'operation_type_credit'|trans }}</th>
             <th>{{ 'operation_value_date'|trans }}</th>
@@ -55,16 +55,30 @@
             <td class="check"><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
             <td>
                 {% if operation.isReconciled %}
-                <i class="icon-ok"></i>&nbsp;
+                <i class="icon-ok" title="{{ 'operation_is_reconciled'|trans }}"></i>&nbsp;
                 {% endif %}
 
                 {% if operation.scheduler is not null %}
-                <i class="icon-time"></i>
+                <i class="icon-time" title="{{ 'operation_scheduler'|trans }}"></i>
                 {% endif %}
             </td>
             <td>{{ operation.thirdParty }}</td>
             <td>{{ (operation.category is not null) ? operation.category.name : '' }}</td>
-            <td>{{ ('payment_method_' ~ operation.paymentMethod.name)|trans }}</td>
+            <td class="payment-method">
+                <i class="{% spaceless %}
+                {% if operation.paymentMethod.name == 'credit_card' %}
+                    icon-credit-card
+                {% elseif operation.paymentMethod.name == 'check' %}
+                    icon-list-alt
+                {% elseif operation.paymentMethod.name == 'withdrawal' %}
+                    icon-money
+                {% elseif operation.paymentMethod.name == 'transfer' %}
+                    icon-exchange
+                {% elseif operation.paymentMethod.name == 'deposit' %}
+                    icon-money
+                {% endif %}
+                {% endspaceless %}" title="{{ ('payment_method_' ~ operation.paymentMethod.name)|trans }}"></i>
+            </td>
             <td class="debit{{ (0 != operation.debit) ? ' negative' : '' }}">{{ (0 != operation.debit) ? operation.debit : '' }}</td>
             <td class="credit{{ (0 != operation.credit) ? ' positive' : '' }}">{{ (0 != operation.credit) ? operation.credit : '' }}</td>
             <td>{{ operation.valueDate|date('Y-m-d') }}</td>
