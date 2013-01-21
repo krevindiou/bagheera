@@ -27,7 +27,8 @@ class SchedulerForm extends AbstractType
                 array(
                     'label' => 'scheduler_third_party',
                     'attr' => array(
-                        'class' => 'input-xlarge'
+                        'class' => 'input-xlarge',
+                        'autocomplete' => 'off'
                     )
                 )
             )

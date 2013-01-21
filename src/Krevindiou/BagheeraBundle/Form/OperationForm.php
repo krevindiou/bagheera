@@ -27,7 +27,8 @@ class OperationForm extends AbstractType
                 array(
                     'label' => 'operation_third_party',
                     'attr' => array(
-                        'class' => 'input-xlarge'
+                        'class' => 'input-xlarge',
+                        'autocomplete' => 'off'
                     )
                 )
             )
