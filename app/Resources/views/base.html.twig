@@ -7,22 +7,23 @@
         <link href="http://fonts.googleapis.com/css?family=Average+Sans" rel="stylesheet" type="text/css">
         {% stylesheets filter='lessphp,cssrewrite'
             'bundles/krevindioubagheera/less/main.less'
-            'bundles/krevindioubagheera/css/smoothness/jquery-ui-1.8.17.custom.css'
+            'bundles/krevindioubagheera/vendor/jquery-ui/themes/smoothness/jquery-ui.css'
+            'bundles/krevindioubagheera/vendor/jquery-ui/themes/smoothness/jquery.ui.theme.css'
         %}
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
-        <script src="{{ asset('/bundles/krevindioubagheera/js/head.min.js') }}"></script>
-        <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/js/flot/excanvas.min.js') }}"></script><![endif]-->
+        <script src="{{ asset('/bundles/krevindioubagheera/vendor/head.min.js') }}"></script>
+        <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/vendor/flot/excanvas.min.js') }}"></script><![endif]-->
         <script>
         head.js(
             {% javascripts
-                'bundles/krevindioubagheera/js/jquery-1.8.2.min.js'
-                'bundles/krevindioubagheera/js/jquery-ui-1.8.17.custom.min.js'
-                'bundles/krevindioubagheera/js/jquery.mailcheck.min.js'
-                'bundles/krevindioubagheera/js/bootstrap/bootstrap-tooltip.js'
-                'bundles/krevindioubagheera/js/bootstrap/bootstrap-modal.js'
-                'bundles/krevindioubagheera/js/bootstrap/bootstrap-typeahead.js'
+                'bundles/krevindioubagheera/vendor/jquery/jquery.min.js'
+                'bundles/krevindioubagheera/vendor/jquery-ui/ui/minified/jquery-ui.custom.min.js'
+                'bundles/krevindioubagheera/vendor/jquery.mailcheck.min.js'
+                'bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-tooltip.js'
+                'bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-modal.js'
+                'bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-typeahead.js'
                 'bundles/krevindioubagheera/js/main.js'
             %}
             "{{ asset_url }}",

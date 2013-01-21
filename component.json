@@ -1,0 +1,10 @@
+{
+  "name": "Bagheera",
+  "dependencies": {
+    "jquery": "~1.9.0",
+    "jquery-ui": "~1.10.0",
+    "flot": "latest",
+    "bootstrap": "~2.2.2",
+    "font-awesome": "~3.0.2"
+  }
+}

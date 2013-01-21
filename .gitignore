@@ -13,3 +13,4 @@ Thumbs.db
 /vendor/
 /composer.phar
 !.gitkeep
+/src/Krevindiou/BagheeraBundle/Resources/public/vendor/
