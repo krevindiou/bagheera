@@ -103,8 +103,9 @@ var Bagheera = {
                 });
             });
 
-            $(".email-suggest").live("click", function(){
+            $(document.body).on("click", "a.email-suggest", function(e) {
                 $(this).parent().hide().prev("input").val($(this).data("value"));
+                e.preventDefault();
             });
         });
     },
