@@ -9,7 +9,7 @@ $(document).ready(function(){
                 color: "{{ serie.color }}",
                 data: [
                     {% for timestamp, value in serie.points %}
-                    [{{ timestamp }}, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
+                    [{{ timestamp }} * 1000, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
 
                     {% endfor %}
                 ]

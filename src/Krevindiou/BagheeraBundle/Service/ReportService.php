@@ -229,11 +229,11 @@ class ReportService
 
             foreach ($results as $result) {
                 if (isset($result['grouping_data'])) {
-                    $series[0]['points'][strtotime($result['grouping_data']) * 1000] = round($result['data_1'], 2);
-                    $series[1]['points'][strtotime($result['grouping_data']) * 1000] = round($result['data_2'], 2);
+                    $series[0]['points'][strtotime($result['grouping_data'])] = round($result['data_1'], 2);
+                    $series[1]['points'][strtotime($result['grouping_data'])] = round($result['data_2'], 2);
                 } else {
-                    $series[0]['points'][strtotime(date('Y-01-01')) * 1000] = round($result['data_1'], 2);
-                    $series[1]['points'][strtotime(date('Y-01-01')) * 1000] = round($result['data_2'], 2);
+                    $series[0]['points'][strtotime(date('Y-01-01'))] = round($result['data_1'], 2);
+                    $series[1]['points'][strtotime(date('Y-01-01'))] = round($result['data_2'], 2);
                 }
             }
 
@@ -258,20 +258,20 @@ class ReportService
 
                     if (null !== $interval) {
                         $firstDate = new \DateTime();
-                        $firstDate->setTimestamp(key($serie['points']) / 1000);
+                        $firstDate->setTimestamp(key($serie['points']));
 
                         end($serie['points']);
 
                         $lastDate = new \DateTime();
-                        $lastDate->setTimestamp(key($serie['points']) / 1000);
+                        $lastDate->setTimestamp(key($serie['points']));
 
                         // Sets 0 for non existent values
                         $date = clone $firstDate;
                         while ($date < $lastDate) {
                             $date->add(new \DateInterval($interval));
 
-                            if (!isset($serie['points'][strtotime($date->format('Y-m-d')) * 1000])) {
-                                $series[$k]['points'][strtotime($date->format('Y-m-d')) * 1000] = 0;
+                            if (!isset($serie['points'][strtotime($date->format('Y-m-d'))])) {
+                                $series[$k]['points'][strtotime($date->format('Y-m-d'))] = 0;
                             }
                         }
                     }
@@ -398,7 +398,7 @@ class ReportService
             $tmpValues = array();
             foreach ($data as $currency => $values) {
                 foreach ($values as $month => $value) {
-                    $graph['points'][$currency][strtotime($month . '-01') * 1000] = $value;
+                    $graph['points'][$currency][strtotime($month . '-01')] = $value;
                 }
 
                 $tmpValues = array_merge(array_values($tmpValues), array_values($values));

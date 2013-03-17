@@ -7,7 +7,7 @@ $(document).ready(function(){
                 label: "{{ currency }}",
                 data: [
                     {% for timestamp, value in values %}
-                        [{{ timestamp }}, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
+                        [{{ timestamp }} * 1000, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
 
                     {% endfor %}
                 ]
