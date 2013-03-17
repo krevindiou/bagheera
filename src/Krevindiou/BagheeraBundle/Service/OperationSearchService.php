@@ -8,7 +8,6 @@ namespace Krevindiou\BagheeraBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Validator\Validator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\Container;
 use Krevindiou\BagheeraBundle\Entity\User;
