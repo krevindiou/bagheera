@@ -5,10 +5,10 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Symfony\Bridge\Monolog\Logger,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\AccountImport;
+use Doctrine\ORM\EntityManager;
+use Symfony\Bridge\Monolog\Logger;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\AccountImport;
 
 /**
  * AccountImport service

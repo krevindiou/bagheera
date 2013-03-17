@@ -5,8 +5,8 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Entity;
 
-use Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Tests\TestCase;
+use Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
  * Krevindiou\BagheeraBundle\Tests\Entity\Account

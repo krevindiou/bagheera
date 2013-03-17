@@ -5,14 +5,14 @@
 
 namespace Krevindiou\BagheeraBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller,
-    Symfony\Component\HttpFoundation\Request,
-    Symfony\Component\HttpFoundation\Response,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Method,
-    Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Entity\Account;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Krevindiou\BagheeraBundle\Entity\Bank;
+use Krevindiou\BagheeraBundle\Entity\Account;
 
 class AccountController extends Controller
 {

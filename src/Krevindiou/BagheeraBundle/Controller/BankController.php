@@ -5,11 +5,11 @@
 
 namespace Krevindiou\BagheeraBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller,
-    Symfony\Component\HttpFoundation\Request,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
-    Krevindiou\BagheeraBundle\Entity\Bank;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Krevindiou\BagheeraBundle\Entity\Bank;
 
 class BankController extends Controller
 {

@@ -5,14 +5,14 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
-    Symfony\Component\Form\FormFactory,
-    Symfony\Bridge\Monolog\Logger,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\Report,
-    Krevindiou\BagheeraBundle\Form\ReportForm;
+use Doctrine\ORM\EntityManager;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Bridge\Monolog\Logger;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\Report;
+use Krevindiou\BagheeraBundle\Form\ReportForm;
 
 /**
  * Report service

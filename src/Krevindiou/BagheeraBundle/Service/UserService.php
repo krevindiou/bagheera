@@ -5,25 +5,25 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Swift_Mailer,
-    Symfony\Component\Form\Form,
-    Symfony\Component\Form\FormFactory,
-    Symfony\Component\Validator\Validator,
-    Symfony\Component\HttpFoundation\Request,
-    Symfony\Component\Security\Core\Encoder\EncoderFactory,
-    Symfony\Component\Security\Http\Event\InteractiveLoginEvent,
-    Symfony\Component\Translation\Translator,
-    Symfony\Bundle\FrameworkBundle\Routing\Router,
-    Symfony\Bridge\Monolog\Logger,
-    Pagerfanta\Pagerfanta,
-    Pagerfanta\Adapter\DoctrineORMAdapter,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Form\UserRegisterForm,
-    Krevindiou\BagheeraBundle\Form\UserProfileForm,
-    Krevindiou\BagheeraBundle\Form\UserForgotPasswordForm,
-    Krevindiou\BagheeraBundle\Form\UserResetPasswordForm,
-    Krevindiou\BagheeraBundle\Service\BankService;
+use Doctrine\ORM\EntityManager;
+use Swift_Mailer;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Validator\Validator;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Encoder\EncoderFactory;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Translation\Translator;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
+use Symfony\Bridge\Monolog\Logger;
+use Pagerfanta\Pagerfanta;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
+use Krevindiou\BagheeraBundle\Form\UserProfileForm;
+use Krevindiou\BagheeraBundle\Form\UserForgotPasswordForm;
+use Krevindiou\BagheeraBundle\Form\UserResetPasswordForm;
+use Krevindiou\BagheeraBundle\Service\BankService;
 
 /**
  * User service

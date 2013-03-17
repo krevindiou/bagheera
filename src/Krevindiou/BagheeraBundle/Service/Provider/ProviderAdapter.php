@@ -5,12 +5,12 @@
 
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
-use Doctrine\ORM\EntityManager,
-    Symfony\Component\DependencyInjection\Container,
-    Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException,
-    Krevindiou\BagheeraBundle\Service\AccountImportService,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\BankAccess;
+use Doctrine\ORM\EntityManager;
+use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use Krevindiou\BagheeraBundle\Service\AccountImportService;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\BankAccess;
 
 /**
  * Provider adapter service

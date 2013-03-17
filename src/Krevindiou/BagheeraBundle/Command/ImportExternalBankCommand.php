@@ -5,11 +5,11 @@
 
 namespace Krevindiou\BagheeraBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand,
-    Symfony\Component\Console\Input\InputArgument,
-    Symfony\Component\Console\Input\InputInterface,
-    Symfony\Component\Console\Output\OutputInterface,
-    Krevindiou\BagheeraBundle\Entity\Account;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Krevindiou\BagheeraBundle\Entity\Account;
 
 class ImportExternalBankCommand extends ContainerAwareCommand
 {

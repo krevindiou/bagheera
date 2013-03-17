@@ -5,8 +5,8 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Entity;
 
-use Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Entity\Scheduler;
+use Krevindiou\BagheeraBundle\Tests\TestCase;
+use Krevindiou\BagheeraBundle\Entity\Scheduler;
 
 /**
  * Krevindiou\BagheeraBundle\Tests\Entity\Scheduler

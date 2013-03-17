@@ -5,12 +5,12 @@
 
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
-use Symfony\Bridge\Monolog\Logger,
-    Krevindiou\BagheeraBundle\Service\Provider\ArrayConverter,
-    Krevindiou\BagheeraBundle\Service\AccountImportService,
-    Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Entity\BankAccess,
-    Krevindiou\BagheeraBundle\Entity\Account;
+use Symfony\Bridge\Monolog\Logger;
+use Krevindiou\BagheeraBundle\Service\Provider\ArrayConverter;
+use Krevindiou\BagheeraBundle\Service\AccountImportService;
+use Krevindiou\BagheeraBundle\Entity\Bank;
+use Krevindiou\BagheeraBundle\Entity\BankAccess;
+use Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
  * Provider base service

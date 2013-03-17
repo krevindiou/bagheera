@@ -5,19 +5,19 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
-    Symfony\Component\Form\FormFactory,
-    Symfony\Component\Validator\Validator,
-    Symfony\Bridge\Monolog\Logger,
-    Pagerfanta\Pagerfanta,
-    Pagerfanta\Adapter\DoctrineORMAdapter,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\Operation,
-    Krevindiou\BagheeraBundle\Entity\OperationSearch,
-    Krevindiou\BagheeraBundle\Entity\PaymentMethod,
-    Krevindiou\BagheeraBundle\Form\OperationForm;
+use Doctrine\ORM\EntityManager;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Validator\Validator;
+use Symfony\Bridge\Monolog\Logger;
+use Pagerfanta\Pagerfanta;
+use Pagerfanta\Adapter\DoctrineORMAdapter;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\Operation;
+use Krevindiou\BagheeraBundle\Entity\OperationSearch;
+use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
+use Krevindiou\BagheeraBundle\Form\OperationForm;
 
 /**
  * Operation service

@@ -5,8 +5,8 @@
 
 namespace Krevindiou\BagheeraBundle\Tests\Service;
 
-use Krevindiou\BagheeraBundle\Tests\TestCase,
-    Krevindiou\BagheeraBundle\Entity\OperationSearch;
+use Krevindiou\BagheeraBundle\Tests\TestCase;
+use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
 /**
  * Krevindiou\BagheeraBundle\Tests\Service\OperationSearchServiceTest

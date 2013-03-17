@@ -5,13 +5,13 @@
 
 namespace Krevindiou\BagheeraBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller,
-    Symfony\Component\Security\Core\SecurityContext,
-    Symfony\Component\HttpFoundation\Request,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Route,
-    Sensio\Bundle\FrameworkExtraBundle\Configuration\Template,
-    JMS\SecurityExtraBundle\Annotation\Secure,
-    Krevindiou\BagheeraBundle\Entity\User;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Security\Core\SecurityContext;
+use Symfony\Component\HttpFoundation\Request;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use JMS\SecurityExtraBundle\Annotation\Secure;
+use Krevindiou\BagheeraBundle\Entity\User;
 
 class UserController extends Controller
 {

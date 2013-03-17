@@ -2,10 +2,10 @@
 
 namespace Krevindiou\BagheeraBundle\DataFixtures\ORM;
 
-use Doctrine\Common\DataFixtures\AbstractFixture,
-    Doctrine\Common\DataFixtures\OrderedFixtureInterface,
-    Doctrine\Common\Persistence\ObjectManager,
-    Krevindiou\BagheeraBundle\Entity\Operation;
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Doctrine\Common\Persistence\ObjectManager;
+use Krevindiou\BagheeraBundle\Entity\Operation;
 
 class LoadOperationData extends AbstractFixture implements OrderedFixtureInterface
 {

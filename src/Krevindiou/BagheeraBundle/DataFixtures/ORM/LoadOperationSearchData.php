@@ -2,11 +2,11 @@
 
 namespace Krevindiou\BagheeraBundle\DataFixtures\ORM;
 
-use Doctrine\Common\DataFixtures\AbstractFixture,
-    Doctrine\Common\DataFixtures\OrderedFixtureInterface,
-    Doctrine\Common\Persistence\ObjectManager,
-    Doctrine\Common\Collections\ArrayCollection,
-    Krevindiou\BagheeraBundle\Entity\OperationSearch;
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Common\Collections\ArrayCollection;
+use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
 class LoadOperationSearchData extends AbstractFixture implements OrderedFixtureInterface
 {

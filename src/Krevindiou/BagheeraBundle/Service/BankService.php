@@ -5,15 +5,15 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
-    Symfony\Component\Form\FormFactory,
-    Symfony\Component\Validator\Validator,
-    Symfony\Bridge\Monolog\Logger,
-    Symfony\Component\Process\PhpExecutableFinder,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Form\BankForm;
+use Doctrine\ORM\EntityManager;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Validator\Validator;
+use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Bank;
+use Krevindiou\BagheeraBundle\Form\BankForm;
 
 /**
  * Bank service

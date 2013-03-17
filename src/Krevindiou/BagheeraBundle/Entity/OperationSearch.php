@@ -5,10 +5,10 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM,
-    Doctrine\Common\Collections\Collection,
-    Doctrine\Common\Collections\ArrayCollection,
-    Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\OperationSearch

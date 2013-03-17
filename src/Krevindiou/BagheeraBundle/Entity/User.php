@@ -5,13 +5,13 @@
 
 namespace Krevindiou\BagheeraBundle\Entity;
 
-use Doctrine\ORM\Mapping as ORM,
-    Doctrine\Common\Collections\ArrayCollection,
-    Symfony\Component\Security\Core\User\UserInterface,
-    Symfony\Component\Security\Core\User\AdvancedUserInterface,
-    Symfony\Component\Validator\Constraints as Assert,
-    Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert,
-    EWZ\Bundle\RecaptchaBundle\Validator\Constraints as Recaptcha;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+use EWZ\Bundle\RecaptchaBundle\Validator\Constraints as Recaptcha;
 
 /**
  * Krevindiou\BagheeraBundle\Entity\User

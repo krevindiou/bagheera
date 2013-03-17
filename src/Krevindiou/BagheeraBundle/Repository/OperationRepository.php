@@ -5,10 +5,10 @@
 
 namespace Krevindiou\BagheeraBundle\Repository;
 
-use Doctrine\ORM\EntityRepository,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\OperationSearch;
+use Doctrine\ORM\EntityRepository;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
 /**
  * Operation repository

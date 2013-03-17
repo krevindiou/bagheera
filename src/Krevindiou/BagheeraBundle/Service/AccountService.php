@@ -5,18 +5,18 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Symfony\Component\Form\Form,
-    Symfony\Component\Form\FormFactory,
-    Symfony\Component\Validator\Validator,
-    Symfony\Component\Translation\Translator,
-    Symfony\Bridge\Monolog\Logger,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Bank,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\Operation,
-    Krevindiou\BagheeraBundle\Entity\PaymentMethod,
-    Krevindiou\BagheeraBundle\Form\AccountForm;
+use Doctrine\ORM\EntityManager;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Validator\Validator;
+use Symfony\Component\Translation\Translator;
+use Symfony\Bridge\Monolog\Logger;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Bank;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\Operation;
+use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
+use Krevindiou\BagheeraBundle\Form\AccountForm;
 
 /**
  * Account service

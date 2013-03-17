@@ -2,10 +2,10 @@
 
 namespace Krevindiou\BagheeraBundle\DataFixtures\ORM;
 
-use Doctrine\Common\DataFixtures\AbstractFixture,
-    Doctrine\Common\DataFixtures\OrderedFixtureInterface,
-    Doctrine\Common\Persistence\ObjectManager,
-    Krevindiou\BagheeraBundle\Entity\PaymentMethod;
+use Doctrine\Common\DataFixtures\AbstractFixture;
+use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
+use Doctrine\Common\Persistence\ObjectManager;
+use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
 
 class LoadPaymentMethodData extends AbstractFixture implements OrderedFixtureInterface
 {

@@ -5,16 +5,16 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager,
-    Doctrine\Common\Collections\ArrayCollection,
-    Symfony\Component\Form\FormFactory,
-    Symfony\Component\Validator\Validator,
-    Symfony\Component\HttpFoundation\Request,
-    Symfony\Component\DependencyInjection\Container,
-    Krevindiou\BagheeraBundle\Entity\User,
-    Krevindiou\BagheeraBundle\Entity\Account,
-    Krevindiou\BagheeraBundle\Entity\OperationSearch,
-    Krevindiou\BagheeraBundle\Form\OperationSearchForm;
+use Doctrine\ORM\EntityManager;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Validator\Validator;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\DependencyInjection\Container;
+use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Account;
+use Krevindiou\BagheeraBundle\Entity\OperationSearch;
+use Krevindiou\BagheeraBundle\Form\OperationSearchForm;
 
 /**
  * OperationSearch service

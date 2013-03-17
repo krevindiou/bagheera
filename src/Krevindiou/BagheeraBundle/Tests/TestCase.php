@@ -5,9 +5,9 @@
 
 namespace Krevindiou\BagheeraBundle\Tests;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase,
-    Symfony\Bundle\FrameworkBundle\Console\Application,
-    Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Component\Console\Input\ArrayInput;
 
 class TestCase extends WebTestCase
 {
