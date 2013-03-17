@@ -3,11 +3,6 @@ KrevindiouBagheeraBundle:
     type:     annotation
     prefix:   /
 
-# Internal routing configuration to handle ESI
-#_internal:
-#   resource: "@FrameworkBundle/Resources/config/routing/internal.xml"
-#   prefix:   /_internal
-
 login:
     pattern:   /login
     defaults:  { _controller: KrevindiouBagheeraBundle:User:login }
