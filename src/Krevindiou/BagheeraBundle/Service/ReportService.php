@@ -328,7 +328,13 @@ class ReportService
         $sql = 'SELECT ' . (('' != $groupingData) ? $groupingData . ' AS grouping_data, ' : '');
         $sql.= (('average' == $type) ? 'AVG' : 'SUM') . '(o.credit) AS data_1, ' . (('average' == $type) ? 'AVG' : 'SUM') . '(o.debit) AS data_2 ';
         $sql.= 'FROM operation AS o ';
-        $sql.= 'WHERE o.account_id IN (:accounts_id) ';
+
+        $accountsId = array();
+        foreach ($accounts as $account) {
+            $accountsId[] = $account->getAccountId();
+        }
+
+        $sql.= 'WHERE o.account_id IN (' . implode(', ', $accountsId) . ') ';
         if (null !== $report->getValueDateStart()) {
             $sql.= 'AND o.value_date >= :value_date_start ';
         }
@@ -356,12 +362,6 @@ class ReportService
         if (null !== $report->getThirdParties()) {
             $stmt->bindValue('third_parties', '%' . $report->getThirdParties() . '%');
         }
-
-        $accountsId = array();
-        foreach ($accounts as $account) {
-            $accountsId[] = $account->getAccountId();
-        }
-        $stmt->bindValue('accounts_id', implode(', ', $accountsId));
 
         $stmt->execute();
 
