@@ -13,28 +13,8 @@
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
         {% block stylesheets %}{% endblock %}
-        <script src="{{ asset('/bundles/krevindioubagheera/vendor/head.min.js') }}"></script>
         <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/vendor/flot/excanvas.min.js') }}"></script><![endif]-->
-        <script>
-        head.js(
-            {% javascripts
-                'bundles/krevindioubagheera/vendor/jquery/jquery.min.js'
-                'bundles/krevindioubagheera/vendor/jquery-ui/ui/minified/jquery-ui.custom.min.js'
-                'bundles/krevindioubagheera/vendor/jquery.mailcheck.min.js'
-                'bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-tooltip.js'
-                'bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-modal.js'
-                'bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-typeahead.js'
-                'bundles/krevindioubagheera/js/main.js'
-            %}
-            "{{ asset_url }}",
-            {% endjavascripts %}
-            "/translations.js",
-            function () {
-                Bagheera.baseUrl = "/";
-                Bagheera.init();
-            }
-        );
-        </script>
+        <script data-main="{{ asset('/bundles/krevindioubagheera/js/main') }}" src="{{ asset('/bundles/krevindioubagheera/vendor/requirejs/require.js') }}"></script>
     </head>
     <body>
         <header>

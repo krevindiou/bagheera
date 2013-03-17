@@ -100,15 +100,18 @@
 {% render "KrevindiouBagheeraBundle:OperationSearch:form" with {"account": account, "display": displaySearch} %}
 
 <script type="text/javascript">
-    head.js(
-        {% javascripts
-            'bundles/krevindioubagheera/vendor/flot/jquery.flot.js'
-            'bundles/krevindioubagheera/vendor/flot/jquery.flot.time.js'
-        %}
-        "{{ asset_url }}",
-        {% endjavascripts %}
-        "/report_synthesis_account_{{ account.accountId }}.js",
-        function () {
+    require(
+        ["main"],
+        function() {
+            require(
+                [
+                    "jquery_flot",
+                    "jquery_flot_time",
+                    "/report_synthesis_account_{{ account.accountId }}.js"
+                ],
+                function() {
+                }
+            );
         }
     );
 </script>
