@@ -215,7 +215,7 @@ class AccountService
         if ($form->isValid()) {
             $ok = $this->_save($user, $form->getData());
 
-            if ($form->get('initialBalance')->getData() != 0) {
+            if ($form->has('initialBalance') && $form->get('initialBalance')->getData() != 0) {
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->_translator->trans('account_initial_balance'));
