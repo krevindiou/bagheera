@@ -28,6 +28,10 @@
         "fabpot/goutte": "1.0.*@dev",
         "guzzle/guzzle": "~3.1"
     },
+    "require-dev": {
+        "ext-mcrypt": "*",
+        "ext-openssl": "*"
+    },
     "scripts": {
         "post-install-cmd": [
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
