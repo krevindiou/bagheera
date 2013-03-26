@@ -128,32 +128,32 @@ class AccountServiceTest extends TestCase
     {
         $expectedData = array(
             'USD' => array(
-                strtotime('2011-01-01') * 1000 => 0,
-                strtotime('2011-02-01') * 1000 => 0,
-                strtotime('2011-03-01') * 1000 => 0,
-                strtotime('2011-04-01') * 1000 => 0,
-                strtotime('2011-05-01') * 1000 => 0,
-                strtotime('2011-06-01') * 1000 => 0,
-                strtotime('2011-07-01') * 1000 => 0,
-                strtotime('2011-08-01') * 1000 => 0,
-                strtotime('2011-09-01') * 1000 => -137.13,
-                strtotime('2011-10-01') * 1000 => -98.82,
-                strtotime('2011-11-01') * 1000 => -98.82,
-                strtotime('2011-12-01') * 1000 => -98.82
+                strtotime('2011-01-01') => 0,
+                strtotime('2011-02-01') => 0,
+                strtotime('2011-03-01') => 0,
+                strtotime('2011-04-01') => 0,
+                strtotime('2011-05-01') => 0,
+                strtotime('2011-06-01') => 0,
+                strtotime('2011-07-01') => 0,
+                strtotime('2011-08-01') => 0,
+                strtotime('2011-09-01') => -137.13,
+                strtotime('2011-10-01') => -98.82,
+                strtotime('2011-11-01') => -98.82,
+                strtotime('2011-12-01') => -98.82
             ),
             'EUR' => array(
-                strtotime('2011-01-01') * 1000 => 0,
-                strtotime('2011-02-01') * 1000 => 0,
-                strtotime('2011-03-01') * 1000 => 0,
-                strtotime('2011-04-01') * 1000 => 0,
-                strtotime('2011-05-01') * 1000 => 0,
-                strtotime('2011-06-01') * 1000 => 0,
-                strtotime('2011-07-01') * 1000 => 0,
-                strtotime('2011-08-01') * 1000 => 0,
-                strtotime('2011-09-01') * 1000 => 208.55,
-                strtotime('2011-10-01') * 1000 => 208.55,
-                strtotime('2011-11-01') * 1000 => 208.55,
-                strtotime('2011-12-01') * 1000 => 208.55
+                strtotime('2011-01-01') => 0,
+                strtotime('2011-02-01') => 0,
+                strtotime('2011-03-01') => 0,
+                strtotime('2011-04-01') => 0,
+                strtotime('2011-05-01') => 0,
+                strtotime('2011-06-01') => 0,
+                strtotime('2011-07-01') => 0,
+                strtotime('2011-08-01') => 0,
+                strtotime('2011-09-01') => 208.55,
+                strtotime('2011-10-01') => 208.55,
+                strtotime('2011-11-01') => 208.55,
+                strtotime('2011-12-01') => 208.55
             )
         );
 
