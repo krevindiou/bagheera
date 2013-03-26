@@ -85,6 +85,10 @@ swiftmailer:
     password:  %mailer_password%
     spool:     { type: memory }
 
+jms_di_extra:
+    locations:
+        all_bundles: true
+
 ewz_recaptcha:
     public_key:   %ewz_recaptcha_public_key%
     private_key:  %ewz_recaptcha_private_key%

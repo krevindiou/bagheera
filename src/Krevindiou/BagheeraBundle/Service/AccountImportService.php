@@ -5,32 +5,25 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Bridge\Monolog\Logger;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\AccountImport;
 
 /**
  * AccountImport service
  *
+ *
+ * @DI\Service("bagheera.account_import")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "account_import"})
  */
 class AccountImportService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
-
-    public function __construct(Logger $logger, EntityManager $em)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-    }
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
     /**
      * Returns next import id to be used
@@ -46,7 +39,7 @@ class AccountImportService
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.user = :user ';
         $dql.= 'AND i.finished = 1 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setParameter('user', $account->getBank()->getUser());
 
         return (int) $query->getSingleScalarResult() + 1;
@@ -60,7 +53,7 @@ class AccountImportService
      */
     public function getCurrentImport(Account $account)
     {
-        return $this->_em->getRepository('KrevindiouBagheeraBundle:AccountImport')->findOneBy(
+        return $this->em->getRepository('KrevindiouBagheeraBundle:AccountImport')->findOneBy(
             array(
                 'account' => $account->getAccountId(),
                 'finished' => 0
@@ -85,8 +78,8 @@ class AccountImportService
             $accountImport = new AccountImport();
             $accountImport->setImportId($importId);
             $accountImport->setAccount($account);
-            $this->_em->persist($accountImport);
-            $this->_em->flush();
+            $this->em->persist($accountImport);
+            $this->em->flush();
         }
     }
 
@@ -104,7 +97,7 @@ class AccountImportService
         if (null !== $accountImport) {
             $accountImport->setProgress($progress);
 
-            $this->_em->flush();
+            $this->em->flush();
         }
     }
 
@@ -121,7 +114,7 @@ class AccountImportService
         if (null !== $accountImport) {
             $accountImport->setFinished(true);
 
-            $this->_em->flush();
+            $this->em->flush();
         }
     }
 
@@ -152,7 +145,7 @@ class AccountImportService
                     break;
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         }
     }
 }

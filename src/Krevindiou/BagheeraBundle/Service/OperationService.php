@@ -5,13 +5,13 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Validator\Validator;
 use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
@@ -22,47 +22,26 @@ use Krevindiou\BagheeraBundle\Form\OperationForm;
 /**
  * Operation service
  *
+ *
+ * @DI\Service("bagheera.operation")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "operation"})
  */
 class OperationService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Validator
-     */
-    protected $_validator;
+    /** @DI\Inject */
+    public $validator;
 
-    /**
-     * @var AccountImportService
-     */
-    protected $_accountImportService;
-
-    public function __construct(
-        Logger $logger,
-        EntityManager $em,
-        FormFactory $formFactory,
-        Validator $validator,
-        AccountImportService $accountImportService)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_formFactory = $formFactory;
-        $this->_validator = $validator;
-        $this->_accountImportService = $accountImportService;
-    }
+    /** @DI\Inject("bagheera.account_import") */
+    public $accountImportService;
 
     /**
      * Returns operations list
@@ -77,7 +56,7 @@ class OperationService
     {
         if ($account->getBank()->getUser() == $user) {
             $adapter = new DoctrineORMAdapter(
-                $this->_em->getRepository('KrevindiouBagheeraBundle:Operation')->getQueryByAccount(
+                $this->em->getRepository('KrevindiouBagheeraBundle:Operation')->getQueryByAccount(
                     $account,
                     $operationSearch
                 )
@@ -108,7 +87,7 @@ class OperationService
             return;
         }
 
-        return $this->_formFactory->create(new OperationForm(), $operation);
+        return $this->formFactory->create(new OperationForm(), $operation);
     }
 
     /**
@@ -121,7 +100,7 @@ class OperationService
     protected function _save(User $user, Operation $operation)
     {
         if (null !== $operation->getOperationId()) {
-            $oldOperation = $this->_em->getUnitOfWork()->getOriginalEntityData($operation);
+            $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
 
             if ($user !== $oldOperation['account']->getBank()->getUser()) {
                 return false;
@@ -141,7 +120,7 @@ class OperationService
 
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
-                $operationBeforeSave = $this->_em->find(
+                $operationBeforeSave = $this->em->find(
                     'KrevindiouBagheeraBundle:Operation',
                     $operation->getOperationId()
                 );
@@ -166,11 +145,11 @@ class OperationService
                 }
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
-                    $paymentMethod = $this->_em->find(
+                    $paymentMethod = $this->em->find(
                         'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
-                    $paymentMethod = $this->_em->find(
+                    $paymentMethod = $this->em->find(
                         'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
                 }
@@ -186,9 +165,9 @@ class OperationService
                 $transferOperation->setNotes($operation->getNotes());
 
                 try {
-                    $this->_em->persist($transferOperation);
+                    $this->em->persist($transferOperation);
                 } catch (\Exception $e) {
-                    $this->_logger->err($e->getMessage());
+                    $this->logger->err($e->getMessage());
 
                     return false;
                 }
@@ -198,10 +177,10 @@ class OperationService
                     $operation->setTransferOperation(null);
 
                     try {
-                        $this->_em->flush();
-                        $this->_em->remove($transferOperationBeforeSave);
+                        $this->em->flush();
+                        $this->em->remove($transferOperationBeforeSave);
                     } catch (\Exception $e) {
-                        $this->_logger->err($e->getMessage());
+                        $this->logger->err($e->getMessage());
 
                         return false;
                     }
@@ -209,12 +188,12 @@ class OperationService
             }
 
             try {
-                $this->_em->persist($operation);
-                $this->_em->flush();
+                $this->em->persist($operation);
+                $this->em->flush();
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -230,7 +209,7 @@ class OperationService
      */
     public function save(User $user, Operation $operation)
     {
-        $errors = $this->_validator->validate($operation);
+        $errors = $this->validator->validate($operation);
 
         if (0 == count($errors)) {
             return $this->_save($user, $operation);
@@ -266,18 +245,18 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', $operationId);
+                $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($user === $operation->getAccount()->getBank()->getUser()) {
-                        $this->_em->remove($operation);
+                        $this->em->remove($operation);
                     }
                 }
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
 
             return false;
         }
@@ -296,19 +275,19 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', $operationId);
+                $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($user === $operation->getAccount()->getBank()->getUser()) {
                         $operation->setIsReconciled(true);
-                        $this->_em->persist($operation);
+                        $this->em->persist($operation);
                     }
                 }
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
 
             return false;
         }
@@ -326,7 +305,7 @@ class OperationService
         $dql.= 'AND o.thirdParty LIKE :thirdParty ';
         $dql.= 'GROUP BY o.thirdParty ';
         $dql.= 'ORDER BY o.thirdParty ASC ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setMaxResults(10);
         $query->setParameter('user', $user);
         $query->setParameter('thirdParty', '%' . $queryString . '%');
@@ -360,7 +339,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', $operationArray['payment_method_id'])
+                $this->em->find('KrevindiouBagheeraBundle:PaymentMethod', $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {
@@ -374,32 +353,32 @@ class OperationService
             }
             $operation->setValueDate(new \DateTime($operationArray['value_date']));
 
-            $errors = $this->_validator->validate($account);
+            $errors = $this->validator->validate($account);
 
             if (0 == count($errors)) {
                 try {
-                    $this->_em->persist($operation);
+                    $this->em->persist($operation);
 
                     $i++;
 
                     if ($i % 100 == 0) {
                         try {
-                            $this->_em->flush();
+                            $this->em->flush();
 
                             $func($account, $i);
                         } catch (\Exception $e) {
-                            $this->_logger->err($e->getMessage());
+                            $this->logger->err($e->getMessage());
                             $error = true;
                             continue;
                         }
                     }
                 } catch (\Exception $e) {
-                    $this->_logger->err($e->getMessage());
+                    $this->logger->err($e->getMessage());
                     $error = true;
                     continue;
                 }
             } else {
-                $this->_logger->err(
+                $this->logger->err(
                     sprintf(
                         'Errors importing transaction "%s" [user %d]',
                         $operationArray['label'],
@@ -413,7 +392,7 @@ class OperationService
 
         if ($i > 0) {
             try {
-                $this->_em->flush();
+                $this->em->flush();
             } catch (\Exception $e) {
                 $error = true;
             }

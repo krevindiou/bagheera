@@ -5,12 +5,12 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Validator\Validator;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Process\PhpExecutableFinder;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Form\BankForm;
@@ -18,61 +18,32 @@ use Krevindiou\BagheeraBundle\Form\BankForm;
 /**
  * Bank service
  *
+ *
+ * @DI\Service("bagheera.bank")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "bank"})
  */
 class BankService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Validator
-     */
-    protected $_validator;
+    /** @DI\Inject */
+    public $validator;
 
-    /**
-     * @var AccountService
-     */
-    protected $_accountService;
+    /** @DI\Inject("bagheera.account") */
+    public $accountService;
 
-    /**
-     * @var string
-     */
-    protected $_rootDir;
+    /** @DI\Inject("%kernel.root_dir%") */
+    public $rootDir;
 
-    /**
-     * @var string
-     */
-    protected $_environment;
-
-    public function __construct(
-        Logger $logger,
-        EntityManager $em,
-        FormFactory $formFactory,
-        Validator $validator,
-        AccountService $accountService,
-        $rootDir,
-        $environment)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_formFactory = $formFactory;
-        $this->_validator = $validator;
-        $this->_accountService = $accountService;
-        $this->_rootDir = $rootDir;
-        $this->_environment = $environment;
-    }
+    /** @DI\Inject("%kernel.environment%") */
+    public $environment;
 
     /**
      * Returns banks list
@@ -90,7 +61,7 @@ class BankService
         }
         $dql.= 'ORDER BY b.sortOrder ASC';
 
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setParameter('user', $user);
 
         return $query->getResult();
@@ -112,7 +83,7 @@ class BankService
             return;
         }
 
-        $form = $this->_formFactory->create(new BankForm(), $bank);
+        $form = $this->formFactory->create(new BankForm(), $bank);
 
         return $form;
     }
@@ -135,12 +106,12 @@ class BankService
                     $bank->setSortOrder($order);
                 }
 
-                $this->_em->persist($bank);
-                $this->_em->flush();
+                $this->em->persist($bank);
+                $this->em->flush();
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -156,7 +127,7 @@ class BankService
      */
     public function save(User $user, Bank $bank)
     {
-        $errors = $this->_validator->validate($bank);
+        $errors = $this->validator->validate($bank);
 
         if (0 == count($errors)) {
             return $this->_save($user, $bank);
@@ -192,7 +163,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', $bankId);
+                $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankId);
 
                 if (null !== $bank) {
                     if ($user === $bank->getUser()) {
@@ -201,9 +172,9 @@ class BankService
                 }
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
 
             return false;
         }
@@ -226,7 +197,7 @@ class BankService
             $accounts = $bank->getAccounts();
             foreach ($accounts as $account) {
                 if (!$account->isDeleted()) {
-                    $accountBalance = $this->_accountService->getBalance($user, $account);
+                    $accountBalance = $this->accountService->getBalance($user, $account);
 
                     if (isset($balances[$account->getCurrency()])) {
                         $balances[$account->getCurrency()]+= sprintf('%.2f', $accountBalance);
@@ -254,7 +225,7 @@ class BankService
             $phpBin = $executableFinder->find();
 
             if (null === $phpBin) {
-                $this->_logger->err('Unable to find php binary');
+                $this->logger->err('Unable to find php binary');
 
                 return;
             }
@@ -264,8 +235,8 @@ class BankService
                 sprintf(
                     '%s %s/console --env=%s bagheera:import_external_bank %d',
                     $phpBin,
-                    $this->_rootDir,
-                    $this->_environment,
+                    $this->rootDir,
+                    $this->environment,
                     $bank->getBankId()
                 )
             );

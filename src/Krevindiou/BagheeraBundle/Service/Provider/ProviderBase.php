@@ -21,51 +21,51 @@ abstract class ProviderBase
     /**
      * @var Logger
      */
-    protected $_logger;
+    public $logger;
 
     /**
      * @var string
      */
-    protected $_key;
+    public $key;
 
     /**
      * @var Bank
      */
-    protected $_bank;
+    public $bank;
 
     /**
      * @var BankAccess
      */
-    protected $_bankAccess;
+    public $bankAccess;
 
     /**
      * @var AccountImportService
      */
-    protected $_accountImportService;
+    public $accountImportService;
 
     public function __construct(Logger $logger)
     {
-        $this->_logger = $logger;
+        $this->logger = $logger;
     }
 
     public function setKey($key)
     {
-        $this->_key = $key;
+        $this->key = $key;
     }
 
     public function setBank(Bank $bank)
     {
-        $this->_bank = $bank;
+        $this->bank = $bank;
     }
 
     public function setBankAccess(BankAccess $bankAccess)
     {
-        $this->_bankAccess = $bankAccess;
+        $this->bankAccess = $bankAccess;
     }
 
     public function setAccountImportService(AccountImportService $accountImportService)
     {
-        $this->_accountImportService = $accountImportService;
+        $this->accountImportService = $accountImportService;
     }
 
     /**
@@ -80,7 +80,7 @@ abstract class ProviderBase
             $plainString = trim(
                 mcrypt_decrypt(
                     MCRYPT_RIJNDAEL_128,
-                    $this->_key,
+                    $this->key,
                     substr($encryptedString, 16),
                     MCRYPT_MODE_CBC,
                     substr($encryptedString, 0, 16)
@@ -122,6 +122,6 @@ abstract class ProviderBase
      */
     protected function _save(Account $account, $data, $type)
     {
-        $this->_accountImportService->setData($account, $data, $type);
+        $this->accountImportService->setData($account, $data, $type);
     }
 }

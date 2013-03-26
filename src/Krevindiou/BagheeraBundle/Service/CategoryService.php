@@ -5,23 +5,19 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Category service
  *
+ *
+ * @DI\Service("bagheera.category")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "category"})
  */
 class CategoryService
 {
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
-
-    public function __construct(EntityManager $em)
-    {
-        $this->_em = $em;
-    }
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
     public function getList()
     {
@@ -35,7 +31,7 @@ class CategoryService
         $dql.= 'LEFT JOIN c2.subCategories c3 ';
         $dql.= 'WHERE c1.parentCategory IS NULL ';
         $dql.= 'ORDER BY c1.name ASC, c2.name ASC, c3.name ASC ';
-        $q = $this->_em->createQuery($dql);
+        $q = $this->em->createQuery($dql);
         $categories = $q->getResult();
         foreach ($categories as $category) {
             foreach ($category as $k => $v) {

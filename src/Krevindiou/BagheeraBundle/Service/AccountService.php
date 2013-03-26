@@ -5,12 +5,12 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Validator\Validator;
 use Symfony\Component\Translation\Translator;
 use Symfony\Bridge\Monolog\Logger;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\Account;
@@ -21,68 +21,35 @@ use Krevindiou\BagheeraBundle\Form\AccountForm;
 /**
  * Account service
  *
+ *
+ * @DI\Service("bagheera.account")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "account"})
  */
 class AccountService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Validator
-     */
-    protected $_validator;
+    /** @DI\Inject */
+    public $validator;
 
-    /**
-     * @var Translator
-     */
-    protected $_translator;
+    /** @DI\Inject */
+    public $translator;
 
-    /**
-     * @var ProviderAdapter
-     */
-    protected $_providerAdapter;
+    /** @DI\Inject("bagheera.provider_adapter") */
+    public $providerAdapter;
 
-    /**
-     * @var AccountImportService
-     */
-    protected $_accountImportService;
+    /** @DI\Inject("bagheera.account_import") */
+    public $accountImportService;
 
-    /**
-     * @var OperationService
-     */
-    protected $_operationService;
-
-    public function __construct(
-        Logger $logger,
-        EntityManager $em,
-        FormFactory $formFactory,
-        Validator $validator,
-        Translator $translator,
-        Provider\ProviderAdapter $providerAdapter,
-        AccountImportService $accountImportService,
-        OperationService $operationService)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_formFactory = $formFactory;
-        $this->_validator = $validator;
-        $this->_translator = $translator;
-        $this->_providerAdapter = $providerAdapter;
-        $this->_accountImportService = $accountImportService;
-        $this->_operationService = $operationService;
-    }
+    /** @DI\Inject("bagheera.operation") */
+    public $operationService;
 
     /**
      * Returns accounts list
@@ -106,7 +73,7 @@ class AccountService
         }
         $dql.= 'ORDER BY a.name ASC';
 
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setParameter('user', $user);
         if (null !== $bank) {
             $query->setParameter('bank', $bank);
@@ -131,7 +98,7 @@ class AccountService
         $account = new Account();
         $account->setBank($bank);
 
-        $form = $this->_formFactory->create(new AccountForm(), $account);
+        $form = $this->formFactory->create(new AccountForm(), $account);
 
         return $form;
     }
@@ -149,7 +116,7 @@ class AccountService
             return;
         }
 
-        $form = $this->_formFactory->create(new AccountForm(), $account);
+        $form = $this->formFactory->create(new AccountForm(), $account);
 
         return $form;
     }
@@ -164,7 +131,7 @@ class AccountService
     protected function _save(User $user, Account $account)
     {
         if (null !== $account->getAccountId()) {
-            $oldAccount = $this->_em->getUnitOfWork()->getOriginalEntityData($account);
+            $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);
 
             if ($user !== $oldAccount['bank']->getUser()) {
                 return false;
@@ -173,12 +140,12 @@ class AccountService
 
         if ($user === $account->getBank()->getUser()) {
             try {
-                $this->_em->persist($account);
-                $this->_em->flush();
+                $this->em->persist($account);
+                $this->em->flush();
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -194,7 +161,7 @@ class AccountService
      */
     public function save(User $user, Account $account)
     {
-        $errors = $this->_validator->validate($account);
+        $errors = $this->validator->validate($account);
 
         if (0 == count($errors)) {
             return $this->_save($user, $account);
@@ -218,18 +185,18 @@ class AccountService
             if ($form->has('initialBalance') && $form->get('initialBalance')->getData() != 0) {
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
-                $operation->setThirdParty($this->_translator->trans('account_initial_balance'));
+                $operation->setThirdParty($this->translator->trans('account_initial_balance'));
                 if ($form->get('initialBalance')->getData() > 0) {
-                    $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
+                    $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
                     $operation->setCredit(abs($form->get('initialBalance')->getData()));
                 } else {
-                    $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER));
+                    $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER));
                     $operation->setDebit(abs($form->get('initialBalance')->getData()));
                 }
                 $operation->setValueDate(new \DateTime());
                 $operation->setIsReconciled(true);
 
-                $this->_operationService->save($user, $operation);
+                $this->operationService->save($user, $operation);
             }
 
             return $ok;
@@ -249,7 +216,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->_em->find('KrevindiouBagheeraBundle:Account', $accountId);
+                $account = $this->em->find('KrevindiouBagheeraBundle:Account', $accountId);
 
                 if (null !== $account) {
                     if ($user === $account->getBank()->getUser()) {
@@ -258,9 +225,9 @@ class AccountService
                 }
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
 
             return false;
         }
@@ -288,7 +255,7 @@ class AccountService
                 $dql.= 'AND o.isReconciled = 1 ';
             }
 
-            $query = $this->_em->createQuery($dql);
+            $query = $this->em->createQuery($dql);
             $query->setParameter('account', $account);
             $result = $query->getSingleResult();
 
@@ -333,18 +300,18 @@ class AccountService
                     $account->setIban(isset($accountArray['iban']) ? $accountArray['iban'] : null);
                     $account->setBic(isset($accountArray['bic']) ? $accountArray['bic'] : null);
 
-                    $errors = $this->_validator->validate($account);
+                    $errors = $this->validator->validate($account);
 
                     if (0 == count($errors)) {
                         try {
-                            $this->_em->persist($account);
+                            $this->em->persist($account);
                         } catch (\Exception $e) {
-                            $this->_logger->err($e->getMessage());
+                            $this->logger->err($e->getMessage());
                             $error = true;
                             continue;
                         }
                     } else {
-                        $this->_logger->err(
+                        $this->logger->err(
                             sprintf(
                                 'Errors saving account "%s" [user %d]',
                                 $accountArray['name'],
@@ -359,9 +326,9 @@ class AccountService
             }
 
             try {
-                $this->_em->flush();
+                $this->em->flush();
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
                 $error = true;
             }
         }

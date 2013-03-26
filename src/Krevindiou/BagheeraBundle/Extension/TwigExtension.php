@@ -5,6 +5,12 @@
 
 namespace Krevindiou\BagheeraBundle\Extension;
 
+use JMS\DiExtraBundle\Annotation as DI;
+
+/**
+ * @DI\Service("twig.extension.bagheera")
+ * @DI\Tag("twig.extension")
+ */
 class TwigExtension extends \Twig_Extension
 {
     public function getFilters()

@@ -5,8 +5,6 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Swift_Mailer;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Validator\Validator;
@@ -17,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
 use Krevindiou\BagheeraBundle\Form\UserProfileForm;
@@ -27,93 +26,49 @@ use Krevindiou\BagheeraBundle\Service\BankService;
 /**
  * User service
  *
+ *
+ * @DI\Service("bagheera.user")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "user"})
+ * @DI\Tag("kernel.event_listener", attributes = {"event" = "security.interactive_login", "method" = "onLogin"})
  */
 class UserService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var Swift_Mailer
-     */
-    protected $_mailer;
+    /** @DI\Inject */
+    public $mailer;
 
-    /**
-     * @var array
-     */
-    protected $_config;
+    /** @DI\Inject("%email%") */
+    public $config;
 
-    /**
-     * @var Translator
-     */
-    protected $_translator;
+    /** @DI\Inject */
+    public $translator;
 
-    /**
-     * @var Router
-     */
-    protected $_router;
+    /** @DI\Inject */
+    public $router;
 
-    /**
-     * @var EncoderFactory
-     */
-    protected $_encoderFactory;
+    /** @DI\Inject("security.encoder_factory") */
+    public $encoderFactory;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Validator
-     */
-    protected $_validator;
+    /** @DI\Inject */
+    public $validator;
 
-    /**
-     * @var BankService
-     */
-    protected $_bankService;
+    /** @DI\Inject("bagheera.bank") */
+    public $bankService;
 
-    /**
-     * @var SchedulerService
-     */
-    protected $_schedulerService;
-
-    public function __construct(
-        Logger $logger,
-        EntityManager $em,
-        Swift_Mailer $mailer,
-        array $config,
-        Translator $translator,
-        Router $router,
-        EncoderFactory $encoderFactory,
-        FormFactory $formFactory,
-        Validator $validator,
-        BankService $bankService,
-        SchedulerService $schedulerService)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_mailer = $mailer;
-        $this->_config = $config;
-        $this->_translator = $translator;
-        $this->_router = $router;
-        $this->_encoderFactory = $encoderFactory;
-        $this->_formFactory = $formFactory;
-        $this->_validator = $validator;
-        $this->_bankService = $bankService;
-        $this->_schedulerService = $schedulerService;
-    }
+    /** @DI\Inject("bagheera.scheduler") */
+    public $schedulerService;
 
     public function onLogin(InteractiveLoginEvent $event)
     {
-        $this->_schedulerService->runSchedulers($event->getAuthenticationToken()->getUser());
+        $this->schedulerService->runSchedulers($event->getAuthenticationToken()->getUser());
     }
 
     /**
@@ -123,7 +78,7 @@ class UserService
      */
     public function getRegisterForm($language)
     {
-        $form = $this->_formFactory->create(
+        $form = $this->formFactory->create(
             new UserRegisterForm(),
             new User(),
             array('attr' => array('language' => $language))
@@ -140,7 +95,7 @@ class UserService
      */
     public function getProfileForm(User $user)
     {
-        $form = $this->_formFactory->create(new UserProfileForm(), $user);
+        $form = $this->formFactory->create(new UserProfileForm(), $user);
 
         return $form;
     }
@@ -156,34 +111,34 @@ class UserService
         // Activation link construction
 
         $key = md5(uniqid(rand(), true));
-        $link = $this->_router->generate('user_activate', array('key' => $key), true);
+        $link = $this->router->generate('user_activate', array('key' => $key), true);
 
         $body = str_replace(
             '%link%',
             $link,
-            $this->_translator->trans('user_register_email_body')
+            $this->translator->trans('user_register_email_body')
         );
 
         $message = \Swift_Message::newInstance()
-            ->setSubject($this->_translator->trans('user_register_email_subject'))
-            ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
+            ->setSubject($this->translator->trans('user_register_email_subject'))
+            ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
             ->setTo(array($user->getEmail()))
             ->setBody($body);
 
         $user->setActivation($key);
 
-        $encoder = $this->_encoderFactory->getEncoder($user);
+        $encoder = $this->encoderFactory->getEncoder($user);
         $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
 
         try {
-            $this->_em->persist($user);
-            $this->_em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
-            $this->_mailer->send($message);
+            $this->mailer->send($message);
 
             return true;
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
         }
 
         return false;
@@ -198,12 +153,12 @@ class UserService
     protected function _update(User $user)
     {
         try {
-            $this->_em->persist($user);
-            $this->_em->flush();
+            $this->em->persist($user);
+            $this->em->flush();
 
             return true;
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
         }
 
         return false;
@@ -217,7 +172,7 @@ class UserService
      */
     public function save(User $user)
     {
-        $errors = $this->_validator->validate($user);
+        $errors = $this->validator->validate($user);
 
         if (0 == count($errors)) {
             if (null !== $user->getUserId()) {
@@ -258,16 +213,16 @@ class UserService
     public function toggleDeactivation(array $usersId)
     {
         foreach ($usersId as $userId) {
-            $user = $this->_em->find('KrevindiouBagheeraBundle:User', $userId);
+            $user = $this->em->find('KrevindiouBagheeraBundle:User', $userId);
 
             if (null !== $user) {
                 $user->setIsActive(!$user->getIsActive());
 
                 try {
-                    $this->_em->persist($user);
-                    $this->_em->flush();
+                    $this->em->persist($user);
+                    $this->em->flush();
                 } catch (\Exception $e) {
-                    $this->_logger->err($e->getMessage());
+                    $this->logger->err($e->getMessage());
                 }
             }
         }
@@ -280,7 +235,7 @@ class UserService
      */
     public function getForgotPasswordForm()
     {
-        $form = $this->_formFactory->create(new UserForgotPasswordForm());
+        $form = $this->formFactory->create(new UserForgotPasswordForm());
 
         return $form;
     }
@@ -293,33 +248,33 @@ class UserService
      */
     public function sendResetPasswordEmail($email)
     {
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')
+        $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
                           ->findOneBy(array('email' => $email));
 
         if (null !== $user) {
             // Reset password link construction
             $key = $this->_createResetPasswordKey($user);
-            $link = $this->_router->generate('user_reset_password', array('key' => $key), true);
+            $link = $this->router->generate('user_reset_password', array('key' => $key), true);
 
             // Mail sending
             $body = str_replace(
                 '%link%',
                 $link,
-                $this->_translator->trans('user_forgot_password_email_body')
+                $this->translator->trans('user_forgot_password_email_body')
             );
 
             $message = \Swift_Message::newInstance()
-                ->setSubject($this->_translator->trans('user_forgot_password_email_subject'))
-                ->setFrom(array($this->_config['sender_email'] => $this->_config['sender_name']))
+                ->setSubject($this->translator->trans('user_forgot_password_email_subject'))
+                ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
                 ->setTo(array($user->getEmail()))
                 ->setBody($body);
 
             try {
-                $this->_mailer->send($message);
+                $this->mailer->send($message);
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -334,8 +289,8 @@ class UserService
      */
     public function getResetPasswordForm($key)
     {
-        if (null !== $this->_decodeResetPasswordKey($key)) {
-            $form = $this->_formFactory->create(new UserResetPasswordForm());
+        if (null !== $this->decodeResetPasswordKey($key)) {
+            $form = $this->formFactory->create(new UserResetPasswordForm());
 
             return $form;
         }
@@ -350,17 +305,17 @@ class UserService
      */
     public function resetPassword($password, $key)
     {
-        if (null !== ($user = $this->_decodeResetPasswordKey($key))) {
-            $encoder = $this->_encoderFactory->getEncoder($user);
+        if (null !== ($user = $this->decodeResetPasswordKey($key))) {
+            $encoder = $this->encoderFactory->getEncoder($user);
             $user->setPassword($encoder->encodePassword($password, $user->getSalt()));
 
             try {
-                $this->_em->persist($user);
-                $this->_em->flush();
+                $this->em->persist($user);
+                $this->em->flush();
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -394,7 +349,7 @@ class UserService
             $email = substr($key, 0, -33);
             $md5 = substr($key, -32);
 
-            $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')
+            $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
                               ->findOneBy(array('email' => $email));
 
             if (null !== $user) {
@@ -412,19 +367,19 @@ class UserService
      */
     public function activate($key)
     {
-        $user = $this->_em->getRepository('KrevindiouBagheeraBundle:User')
+        $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
                           ->findOneBy(array('activation' => $key));
         if (null !== $user) {
             $user->setIsActive(true);
             $user->setActivation(null);
 
             try {
-                $this->_em->persist($user);
-                $this->_em->flush();
+                $this->em->persist($user);
+                $this->em->flush();
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -441,7 +396,7 @@ class UserService
     public function getUsers(array $params = array(), $currentPage = 1)
     {
         $adapter = new DoctrineORMAdapter(
-            $this->_em->getRepository('KrevindiouBagheeraBundle:User')->getListQuery($params)
+            $this->em->getRepository('KrevindiouBagheeraBundle:User')->getListQuery($params)
         );
 
         $pager = new Pagerfanta($adapter);
@@ -464,7 +419,7 @@ class UserService
         $banks = $user->getBanks();
         foreach ($banks as $bank) {
             if (!$bank->isDeleted()) {
-                $bankBalances = $this->_bankService->getBalances($user, $bank);
+                $bankBalances = $this->bankService->getBalances($user, $bank);
 
                 foreach ($bankBalances as $currency => $bankBalance) {
                     if (isset($balances[$currency])) {
@@ -494,7 +449,7 @@ class UserService
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.user = :user ';
         $dql.= 'AND i.finished = 0 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setParameter('user', $user);
 
         try {
@@ -506,7 +461,7 @@ class UserService
         $dql = 'SELECT i ';
         $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i INDEX BY i.accountId ';
         $dql.= 'WHERE i.importId = :maxImportId ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);
 
         try {

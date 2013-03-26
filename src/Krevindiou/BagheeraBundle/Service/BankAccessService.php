@@ -5,11 +5,11 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Validator\Validator;
 use Symfony\Bridge\Monolog\Logger;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
@@ -18,61 +18,32 @@ use Krevindiou\BagheeraBundle\Form\BankAccessForm;
 /**
  * Bank access service
  *
+ *
+ * @DI\Service("bagheera.bank_access")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "bank_access"})
  */
 class BankAccessService
 {
-    /**
-     * @var string
-     */
-    protected $_secret;
+    /** @DI\Inject("%secret%") */
+    public $secret;
 
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_emSecure;
+    /** @DI\Inject("doctrine.orm.secure_entity_manager") */
+    public $emSecure;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Validator
-     */
-    protected $_validator;
+    /** @DI\Inject */
+    public $validator;
 
-    /**
-     * @var BankService
-     */
-    protected $_bankService;
-
-    public function __construct(
-        $secret,
-        Logger $logger,
-        EntityManager $em,
-        EntityManager $emSecure,
-        FormFactory $formFactory,
-        Validator $validator,
-        BankService $bankService)
-    {
-        $this->_secret = $secret;
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_emSecure = $emSecure;
-        $this->_formFactory = $formFactory;
-        $this->_validator = $validator;
-        $this->_bankService = $bankService;
-    }
+    /** @DI\Inject("bagheera.bank") */
+    public $bankService;
 
     /**
      * Returns bank access form
@@ -90,7 +61,7 @@ class BankAccessService
         $bankAccess = new BankAccess();
         $bankAccess->setBankId($bank->getBankId());
 
-        $form = $this->_formFactory->create(new BankAccessForm(), $bankAccess);
+        $form = $this->formFactory->create(new BankAccessForm(), $bankAccess);
 
         return $form;
     }
@@ -104,7 +75,7 @@ class BankAccessService
      */
     protected function _save(User $user, BankAccess $bankAccess)
     {
-        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankAccess->getBankId());
 
         if (null !== $bank && $user === $bank->getUser()) {
             try {
@@ -112,7 +83,7 @@ class BankAccessService
                 $dql = 'DELETE FROM KrevindiouBagheeraBundle:BankAccess b ';
                 $dql.= 'WHERE b.bankId = :bankId ';
 
-                $this->_emSecure->createQuery($dql)
+                $this->emSecure->createQuery($dql)
                     ->setParameter('bankId', $bankAccess->getBankId())
                     ->execute();
 
@@ -120,7 +91,7 @@ class BankAccessService
                 $plainPassword = $bankAccess->getPlainPassword();
 
                 // AES-256 => 32 bytes long key
-                $key = $this->_secret;
+                $key = $this->secret;
 
                 $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
 
@@ -152,15 +123,15 @@ class BankAccessService
                     $bankAccess->setPlainLogin('');
                     $bankAccess->setPlainPassword('');
 
-                    $this->_emSecure->persist($bankAccess);
-                    $this->_emSecure->flush();
+                    $this->emSecure->persist($bankAccess);
+                    $this->emSecure->flush();
 
-                    $this->_bankService->importExternalBank($bank);
+                    $this->bankService->importExternalBank($bank);
 
                     return true;
                 }
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -176,10 +147,10 @@ class BankAccessService
      */
     public function save(User $user, BankAccess $bankAccess)
     {
-        $errors = $this->_validator->validate($bankAccess);
+        $errors = $this->validator->validate($bankAccess);
 
         if (0 == count($errors)) {
-            return $this->_save($user, $bankAccess);
+            return $this->save($user, $bankAccess);
         }
 
         return false;

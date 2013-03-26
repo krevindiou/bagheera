@@ -5,11 +5,11 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\Container;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
@@ -18,30 +18,20 @@ use Krevindiou\BagheeraBundle\Form\OperationSearchForm;
 /**
  * OperationSearch service
  *
+ *
+ * @DI\Service("bagheera.operation_search")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "operation_search"})
  */
 class OperationSearchService
 {
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Container
-     */
-    protected $_container;
-
-    public function __construct(EntityManager $em, FormFactory $formFactory, Container $container)
-    {
-        $this->_em = $em;
-        $this->_formFactory = $formFactory;
-        $this->_container = $container;
-    }
+    /** @DI\Inject("service_container") */
+    public $container;
 
     /**
      * Returns operationSearch form
@@ -60,7 +50,7 @@ class OperationSearchService
             return;
         }
 
-        return $this->_formFactory->create(new OperationSearchForm(), $operationSearch);
+        return $this->formFactory->create(new OperationSearchForm(), $operationSearch);
     }
 
     /**
@@ -71,7 +61,7 @@ class OperationSearchService
      */
     public function getSessionSearch(Account $account)
     {
-        $sessionSearch = $this->_container->get('request')->getSession()->get('search');
+        $sessionSearch = $this->container->get('request')->getSession()->get('search');
 
         if (is_array($sessionSearch) && isset($sessionSearch[$account->getAccountId()])) {
             $operationSearch = new OperationSearch();
@@ -83,7 +73,7 @@ class OperationSearchService
                 $dql = 'SELECT c ';
                 $dql.= 'FROM KrevindiouBagheeraBundle:Category c ';
                 $dql.= 'WHERE c.categoryId IN (' . implode(', ', $sessionSearch[$account->getAccountId()]['categories']) . ') ';
-                $query = $this->_em->createQuery($dql);
+                $query = $this->em->createQuery($dql);
                 $categories = $query->getResult();
                 $operationSearch->setCategories(new ArrayCollection($categories));
             }
@@ -92,7 +82,7 @@ class OperationSearchService
                 $dql = 'SELECT p ';
                 $dql.= 'FROM KrevindiouBagheeraBundle:PaymentMethod p ';
                 $dql.= 'WHERE p.paymentMethodId IN (' . implode(', ', $sessionSearch[$account->getAccountId()]['paymentMethods']) . ') ';
-                $query = $this->_em->createQuery($dql);
+                $query = $this->em->createQuery($dql);
                 $paymentMethods = $query->getResult();
                 $operationSearch->setPaymentMethods(new ArrayCollection($paymentMethods));
             }
@@ -159,11 +149,11 @@ class OperationSearchService
      */
     public function setSessionSearch(Account $account, array $search)
     {
-        $sessionSearch = $this->_container->get('request')->getSession()->get('search');
+        $sessionSearch = $this->container->get('request')->getSession()->get('search');
 
         $sessionSearch[$account->getAccountId()] = $search;
 
-        $this->_container->get('request')->getSession()->set('search', $sessionSearch);
+        $this->container->get('request')->getSession()->set('search', $sessionSearch);
     }
 
     /**
@@ -174,11 +164,11 @@ class OperationSearchService
      */
     public function clearSessionSearch(Account $account)
     {
-        $sessionSearch = $this->_container->get('request')->getSession()->get('search');
+        $sessionSearch = $this->container->get('request')->getSession()->get('search');
 
         if (is_array($sessionSearch) && isset($sessionSearch[$account->getAccountId()])) {
             unset($sessionSearch[$account->getAccountId()]);
-            $this->_container->get('request')->getSession()->set('search', $sessionSearch);
+            $this->container->get('request')->getSession()->set('search', $sessionSearch);
         }
     }
 }

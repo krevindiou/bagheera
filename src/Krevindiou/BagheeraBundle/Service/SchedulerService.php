@@ -5,7 +5,6 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
@@ -13,6 +12,7 @@ use Symfony\Component\Validator\Validator;
 use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineCollectionAdapter;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
@@ -23,47 +23,26 @@ use Krevindiou\BagheeraBundle\Form\SchedulerForm;
 /**
  * Scheduler service
  *
+ *
+ * @DI\Service("bagheera.scheduler")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "scheduler"})
  */
 class SchedulerService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
-    /**
-     * @var Validator
-     */
-    protected $_validator;
+    /** @DI\Inject */
+    public $validator;
 
-    /**
-     * @var OperationService
-     */
-    protected $_operationService;
-
-    public function __construct(
-        Logger $logger,
-        EntityManager $em,
-        FormFactory $formFactory,
-        Validator $validator,
-        OperationService $operationService)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_formFactory = $formFactory;
-        $this->_validator = $validator;
-        $this->_operationService = $operationService;
-    }
+    /** @DI\Inject("bagheera.operation") */
+    public $operationService;
 
     /**
      * Returns schedulers list
@@ -103,7 +82,7 @@ class SchedulerService
             return;
         }
 
-        return $this->_formFactory->create(new SchedulerForm(), $scheduler);
+        return $this->formFactory->create(new SchedulerForm(), $scheduler);
     }
 
     /**
@@ -116,7 +95,7 @@ class SchedulerService
     protected function _save(User $user, Scheduler $scheduler)
     {
         if (null !== $scheduler->getSchedulerId()) {
-            $oldScheduler = $this->_em->getUnitOfWork()->getOriginalEntityData($scheduler);
+            $oldScheduler = $this->em->getUnitOfWork()->getOriginalEntityData($scheduler);
 
             if ($user !== $oldScheduler['account']->getBank()->getUser()) {
                 return false;
@@ -135,14 +114,14 @@ class SchedulerService
             }
 
             try {
-                $this->_em->persist($scheduler);
-                $this->_em->flush();
+                $this->em->persist($scheduler);
+                $this->em->flush();
 
                 $this->runSchedulers($user);
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -158,7 +137,7 @@ class SchedulerService
      */
     public function save(User $user, Scheduler $scheduler)
     {
-        $errors = $this->_validator->validate($scheduler);
+        $errors = $this->validator->validate($scheduler);
 
         if (0 == count($errors)) {
             return $this->_save($user, $scheduler);
@@ -194,18 +173,18 @@ class SchedulerService
     {
         try {
             foreach ($schedulersId as $schedulerId) {
-                $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', $schedulerId);
+                $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', $schedulerId);
 
                 if (null !== $scheduler) {
                     if ($user === $scheduler->getAccount()->getBank()->getUser()) {
-                        $this->_em->remove($scheduler);
+                        $this->em->remove($scheduler);
                     }
                 }
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
 
             return false;
         }
@@ -248,7 +227,7 @@ class SchedulerService
             $dql.= 'WHERE o.scheduler = :scheduler ';
             $dql.= 'AND o.valueDate >= :valueDate ';
             $dql.= 'ORDER BY o.valueDate DESC ';
-            $q = $this->_em->createQuery($dql);
+            $q = $this->em->createQuery($dql);
             $q->setMaxResults(1);
             $q->setParameter('scheduler', $scheduler);
             $q->setParameter('valueDate', $scheduler->getValueDate()->format(\DateTime::ISO8601));
@@ -297,7 +276,7 @@ class SchedulerService
                 $operation->setNotes($scheduler->getNotes());
                 $operation->setTransferAccount($scheduler->getTransferAccount());
 
-                $this->_operationService->save($user, $operation);
+                $this->operationService->save($user, $operation);
             }
         }
     }

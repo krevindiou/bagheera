@@ -5,10 +5,10 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Bridge\Monolog\Logger;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Report;
@@ -17,30 +17,20 @@ use Krevindiou\BagheeraBundle\Form\ReportForm;
 /**
  * Report service
  *
+ *
+ * @DI\Service("bagheera.report")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "report"})
  */
 class ReportService
 {
-    /**
-     * @var Logger
-     */
-    protected $_logger;
+    /** @DI\Inject */
+    public $logger;
 
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var FormFactory
-     */
-    protected $_formFactory;
-
-    public function __construct(Logger $logger, EntityManager $em, FormFactory $formFactory)
-    {
-        $this->_logger = $logger;
-        $this->_em = $em;
-        $this->_formFactory = $formFactory;
-    }
+    /** @DI\Inject("form.factory") */
+    public $formFactory;
 
     /**
      * Returns reports list
@@ -65,7 +55,7 @@ class ReportService
         $dql.= 'WHERE r.user = :user ';
         $dql.= 'AND r.homepage = :homepage ';
 
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $query->setParameter('user', $user);
         $query->setParameter('homepage', true);
 
@@ -90,7 +80,7 @@ class ReportService
             return;
         }
 
-        $form = $this->_formFactory->create(new ReportForm(), $report);
+        $form = $this->formFactory->create(new ReportForm(), $report);
 
         return $form;
     }
@@ -106,12 +96,12 @@ class ReportService
     {
         if ($user === $report->getUser()) {
             try {
-                $this->_em->persist($report);
-                $this->_em->flush();
+                $this->em->persist($report);
+                $this->em->flush();
 
                 return true;
             } catch (\Exception $e) {
-                $this->_logger->err($e->getMessage());
+                $this->logger->err($e->getMessage());
             }
         }
 
@@ -127,7 +117,7 @@ class ReportService
      */
     public function save(User $user, Report $report)
     {
-        $errors = $this->_validator->validate($report);
+        $errors = $this->validator->validate($report);
 
         if (0 == count($errors)) {
             return $this->_save($user, $report);
@@ -163,18 +153,18 @@ class ReportService
     {
         try {
             foreach ($reportsId as $reportId) {
-                $report = $this->_em->find('KrevindiouBagheeraBundle:Report', $reportId);
+                $report = $this->em->find('KrevindiouBagheeraBundle:Report', $reportId);
 
                 if (null !== $report) {
                     if ($user === $report->getUser()) {
-                        $this->_em->remove($report);
+                        $this->em->remove($report);
                     }
                 }
             }
 
-            $this->_em->flush();
+            $this->em->flush();
         } catch (\Exception $e) {
-            $this->_logger->err($e->getMessage());
+            $this->logger->err($e->getMessage());
 
             return false;
         }
@@ -211,7 +201,7 @@ class ReportService
                 $dql.= 'AND b.isDeleted = 0 ';
                 $dql.= 'AND a.isDeleted = 0 ';
 
-                $query = $this->_em->createQuery($dql);
+                $query = $this->em->createQuery($dql);
                 $query->setParameter('user', $user);
 
                 $accounts = $query->getResult();
@@ -352,7 +342,7 @@ class ReportService
             $sql.= 'ORDER BY grouping_data ASC ';
         }
 
-        $stmt = $this->_em->getConnection()->prepare($sql);
+        $stmt = $this->em->getConnection()->prepare($sql);
         if (null !== $report->getValueDateStart()) {
             $stmt->bindValue('value_date_start', $report->getValueDateStart()->format(\DateTime::ISO8601));
         }
@@ -390,7 +380,7 @@ class ReportService
             $startDate->modify('First day of -11 months');
         }
 
-        $operationRepository = $this->_em->getRepository('KrevindiouBagheeraBundle:Operation');
+        $operationRepository = $this->em->getRepository('KrevindiouBagheeraBundle:Operation');
 
         $data = $operationRepository->getTotalByMonth($user, $startDate, $stopDate, $account);
 

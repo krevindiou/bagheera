@@ -2,24 +2,18 @@
 
 namespace Krevindiou\BagheeraBundle\Constraint;
 
-use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Constraint;
+use JMS\DiExtraBundle\Annotation as DI;
 
+/**
+ * @DI\Service("bagheera.validator.field_exists")
+ * @DI\Tag("validator.constraint_validator", attributes = {"alias" = "bagheera.validator.field_exists"})
+ */
 class FieldExistsValidator extends ConstraintValidator
 {
-    /**
-     * @var RegistryInterface
-     */
-    private $_registry;
-
-    /**
-     * @param RegistryInterface $registry
-     */
-    public function __construct(RegistryInterface $registry)
-    {
-        $this->_registry = $registry;
-    }
+    /** @DI\Inject("doctrine") */
+    public $_registry;
 
     public function validate($value, Constraint $constraint)
     {

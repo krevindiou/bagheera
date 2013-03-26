@@ -5,9 +5,9 @@
 
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Service\AccountImportService;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
@@ -15,45 +15,28 @@ use Krevindiou\BagheeraBundle\Entity\BankAccess;
 /**
  * Provider adapter service
  *
+ *
+ * @DI\Service("bagheera.provider_adapter")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "provider_adapter"})
  */
 class ProviderAdapter
 {
-    /**
-     * @var EntityManager
-     */
-    protected $_em;
+    /** @DI\Inject("doctrine.orm.entity_manager") */
+    public $em;
 
-    /**
-     * @var string
-     */
-    protected $_key;
+    /** @DI\Inject("%secret%") */
+    public $key;
 
-    /**
-     * @var AccountImportService
-     */
-    protected $_accountImportService;
+    /** @DI\Inject("bagheera.account_import") */
+    public $accountImportService;
 
-    /**
-     * @var Container
-     */
-    protected $_container;
+    /** @DI\Inject("service_container") */
+    public $container;
 
     /**
      * @var ProviderService
      */
-    protected $_providerService;
-
-    public function __construct(
-        EntityManager $em,
-        $key,
-        AccountImportService $accountImportService,
-        Container $container)
-    {
-        $this->_em = $em;
-        $this->_key = $key;
-        $this->_accountImportService = $accountImportService;
-        $this->_container = $container;
-    }
+    protected $providerService;
 
     /**
      * Defines BankAccess entity (used to retrieve bank's specific service)
@@ -62,26 +45,26 @@ class ProviderAdapter
      */
     public function setBankAccess(BankAccess $bankAccess)
     {
-        $bank = $this->_em->find('KrevindiouBagheeraBundle:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankAccess->getBankId());
 
         if (null !== $bank) {
             $provider = $bank->getProvider();
 
             if (null !== $provider) {
                 try {
-                    $providerService = $this->_container->get('bagheera.provider_adapter.' . $provider->getProviderId());
+                    $providerService = $this->container->get('bagheera.provider_adapter.' . $provider->getProviderId());
                     $providerService->setBank($bank);
                     $providerService->setBankAccess($bankAccess);
-                    $providerService->setKey($this->_key);
-                    $providerService->setAccountImportService($this->_accountImportService);
+                    $providerService->setKey($this->key);
+                    $providerService->setAccountImportService($this->accountImportService);
 
-                    $this->_providerService = $providerService;
+                    $this->providerService = $providerService;
                 } catch (ServiceNotFoundException $e) {
                 }
             }
         }
 
-        if (null === $this->_providerService) {
+        if (null === $this->providerService) {
             throw new \RuntimeException(sprintf('Unable to find provider for bank id %d', $bankAccess->getBankId()));
         }
     }
@@ -93,7 +76,7 @@ class ProviderAdapter
      */
     public function connect()
     {
-        return $this->_providerService->connect();
+        return $this->providerService->connect();
     }
 
     /**
@@ -109,7 +92,7 @@ class ProviderAdapter
             return;
         }
 
-        return $this->_providerService->fetchAccounts();
+        return $this->providerService->fetchAccounts();
     }
 
     /**
@@ -125,14 +108,14 @@ class ProviderAdapter
             return;
         }
 
-        $data = $this->_providerService->fetchTransactions($account);
+        $data = $this->providerService->fetchTransactions($account);
 
         if (null !== $data) {
             $data = $this->_normalizeData($account, $data);
 
-            $accountImport = $this->_accountImportService->getCurrentImport($account);
+            $accountImport = $this->accountImportService->getCurrentImport($account);
             $accountImport->setTotal(count($data));
-            $this->_em->flush();
+            $this->em->flush();
 
             return $data;
         }
@@ -145,6 +128,6 @@ class ProviderAdapter
      */
     protected function _normalizeData(Account $account, array $data)
     {
-        return $this->_providerService->normalizeData($account, $data);
+        return $this->providerService->normalizeData($account, $data);
     }
 }
