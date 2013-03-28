@@ -9,10 +9,13 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Locale\Locale;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * User form
  *
+ *
+ * @DI\FormType
  */
 class UserRegisterForm extends AbstractType
 {
@@ -98,6 +101,6 @@ class UserRegisterForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_userregistertype';
+        return 'user_register_type';
     }
 }

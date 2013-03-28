@@ -8,10 +8,13 @@ namespace Krevindiou\BagheeraBundle\Form;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * User form
  *
+ *
+ * @DI\FormType
  */
 class UserProfileForm extends UserRegisterForm
 {
@@ -35,6 +38,6 @@ class UserProfileForm extends UserRegisterForm
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_userprofiletype';
+        return 'user_profile_type';
     }
 }

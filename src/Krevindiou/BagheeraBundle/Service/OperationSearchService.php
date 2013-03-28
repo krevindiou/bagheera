@@ -13,7 +13,6 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
-use Krevindiou\BagheeraBundle\Form\OperationSearchForm;
 
 /**
  * OperationSearch service
@@ -50,7 +49,7 @@ class OperationSearchService
             return;
         }
 
-        return $this->formFactory->create(new OperationSearchForm(), $operationSearch);
+        return $this->formFactory->create('operation_search_type', $operationSearch);
     }
 
     /**

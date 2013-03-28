@@ -11,10 +11,13 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Operation form
  *
+ *
+ * @DI\FormType
  */
 class OperationForm extends AbstractType
 {
@@ -209,6 +212,6 @@ class OperationForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_operationtype';
+        return 'operation_type';
     }
 }

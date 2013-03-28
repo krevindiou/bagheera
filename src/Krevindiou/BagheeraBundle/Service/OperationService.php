@@ -17,7 +17,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
-use Krevindiou\BagheeraBundle\Form\OperationForm;
 
 /**
  * Operation service
@@ -87,7 +86,7 @@ class OperationService
             return;
         }
 
-        return $this->formFactory->create(new OperationForm(), $operation);
+        return $this->formFactory->create('operation_type', $operation);
     }
 
     /**

@@ -9,10 +9,13 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Reset password form
  *
+ *
+ * @DI\FormType
  */
 class UserResetPasswordForm extends AbstractType
 {
@@ -41,6 +44,6 @@ class UserResetPasswordForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_userresetpasswordtype';
+        return 'user_reset_password_type';
     }
 }

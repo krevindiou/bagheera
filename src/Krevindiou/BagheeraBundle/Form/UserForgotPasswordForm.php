@@ -10,10 +10,13 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
 use Krevindiou\BagheeraBundle\Constraint\FieldExists;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Forgot password form
  *
+ *
+ * @DI\FormType
  */
 class UserForgotPasswordForm extends AbstractType
 {
@@ -40,6 +43,6 @@ class UserForgotPasswordForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_userforgotpasswordtype';
+        return 'user_forgot_password_type';
     }
 }

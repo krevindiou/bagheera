@@ -18,7 +18,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\Scheduler;
 use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
-use Krevindiou\BagheeraBundle\Form\SchedulerForm;
 
 /**
  * Scheduler service
@@ -82,7 +81,7 @@ class SchedulerService
             return;
         }
 
-        return $this->formFactory->create(new SchedulerForm(), $scheduler);
+        return $this->formFactory->create('scheduler_type', $scheduler);
     }
 
     /**

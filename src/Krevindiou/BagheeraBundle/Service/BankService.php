@@ -13,7 +13,6 @@ use Symfony\Component\Process\PhpExecutableFinder;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Bank;
-use Krevindiou\BagheeraBundle\Form\BankForm;
 
 /**
  * Bank service
@@ -83,7 +82,7 @@ class BankService
             return;
         }
 
-        $form = $this->formFactory->create(new BankForm(), $bank);
+        $form = $this->formFactory->create('bank_type', $bank);
 
         return $form;
     }

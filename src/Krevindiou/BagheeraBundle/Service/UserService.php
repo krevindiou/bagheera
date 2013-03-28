@@ -17,10 +17,6 @@ use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
-use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
-use Krevindiou\BagheeraBundle\Form\UserProfileForm;
-use Krevindiou\BagheeraBundle\Form\UserForgotPasswordForm;
-use Krevindiou\BagheeraBundle\Form\UserResetPasswordForm;
 use Krevindiou\BagheeraBundle\Service\BankService;
 
 /**
@@ -79,7 +75,7 @@ class UserService
     public function getRegisterForm($language)
     {
         $form = $this->formFactory->create(
-            new UserRegisterForm(),
+            'user_register_type',
             new User(),
             array('attr' => array('language' => $language))
         );
@@ -95,7 +91,7 @@ class UserService
      */
     public function getProfileForm(User $user)
     {
-        $form = $this->formFactory->create(new UserProfileForm(), $user);
+        $form = $this->formFactory->create('user_profile_type', $user);
 
         return $form;
     }
@@ -235,7 +231,7 @@ class UserService
      */
     public function getForgotPasswordForm()
     {
-        $form = $this->formFactory->create(new UserForgotPasswordForm());
+        $form = $this->formFactory->create('user_forgot_password_type');
 
         return $form;
     }
@@ -290,7 +286,7 @@ class UserService
     public function getResetPasswordForm($key)
     {
         if (null !== $this->decodeResetPasswordKey($key)) {
-            $form = $this->formFactory->create(new UserResetPasswordForm());
+            $form = $this->formFactory->create('user_reset_password_type');
 
             return $form;
         }

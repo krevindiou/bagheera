@@ -11,10 +11,13 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Scheduler form
  *
+ *
+ * @DI\FormType
  */
 class SchedulerForm extends AbstractType
 {
@@ -256,6 +259,6 @@ class SchedulerForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_schedulertype';
+        return 'scheduler_type';
     }
 }

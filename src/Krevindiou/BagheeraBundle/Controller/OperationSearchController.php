@@ -45,7 +45,7 @@ class OperationSearchController extends Controller
                 if ($operationSearchForm->isValid()) {
                     $operationSearchService->setSessionSearch(
                         $account,
-                        $request->request->get('krevindiou_bagheerabundle_operationsearchtype')
+                        $request->request->get('operation_search_type')
                     );
 
                     return $this->redirect(

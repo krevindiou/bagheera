@@ -8,10 +8,13 @@ namespace Krevindiou\BagheeraBundle\Form;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Bank access form
  *
+ *
+ * @DI\FormType
  */
 class BankAccessForm extends AbstractType
 {
@@ -52,6 +55,6 @@ class BankAccessForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_bankaccesstype';
+        return 'bank_access_type';
     }
 }

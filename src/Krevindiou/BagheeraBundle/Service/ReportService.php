@@ -12,7 +12,6 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Report;
-use Krevindiou\BagheeraBundle\Form\ReportForm;
 
 /**
  * Report service
@@ -80,7 +79,7 @@ class ReportService
             return;
         }
 
-        $form = $this->formFactory->create(new ReportForm(), $report);
+        $form = $this->formFactory->create('report_type', $report);
 
         return $form;
     }

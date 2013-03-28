@@ -11,10 +11,13 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Report form
  *
+ *
+ * @DI\FormType
  */
 class ReportForm extends AbstractType
 {
@@ -312,6 +315,6 @@ class ReportForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_reporttype';
+        return 'report_type';
     }
 }

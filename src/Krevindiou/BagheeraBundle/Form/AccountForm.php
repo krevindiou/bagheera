@@ -10,11 +10,14 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Form\Type\CurrencyType;
 
 /**
  * Account form
  *
+ *
+ * @DI\FormType
  */
 class AccountForm extends AbstractType
 {
@@ -151,6 +154,6 @@ class AccountForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_accounttype';
+        return 'account_type';
     }
 }

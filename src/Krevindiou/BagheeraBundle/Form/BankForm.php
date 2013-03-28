@@ -10,10 +10,13 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * Bank form
  *
+ *
+ * @DI\FormType
  */
 class BankForm extends AbstractType
 {
@@ -83,6 +86,6 @@ class BankForm extends AbstractType
 
     public function getName()
     {
-        return 'krevindiou_bagheerabundle_banktype';
+        return 'bank_type';
     }
 }

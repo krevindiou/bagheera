@@ -83,11 +83,11 @@ var Bagheera = {
                 e.preventDefault();
             });
 
-            $("#krevindiou_bagheerabundle_banktype_provider").change(function() {
+            $("#bank_type_provider").change(function() {
                 if ($(this).val() != '') {
-                    $("#krevindiou_bagheerabundle_banktype_name").val($(this).find(":selected").text()).focus();
+                    $("#bank_type_name").val($(this).find(":selected").text()).focus();
                 } else {
-                    $("#krevindiou_bagheerabundle_banktype_name").val("").focus();
+                    $("#bank_type_name").val("").focus();
                 }
             });
 

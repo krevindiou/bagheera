@@ -16,7 +16,6 @@ use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
-use Krevindiou\BagheeraBundle\Form\AccountForm;
 
 /**
  * Account service
@@ -98,7 +97,7 @@ class AccountService
         $account = new Account();
         $account->setBank($bank);
 
-        $form = $this->formFactory->create(new AccountForm(), $account);
+        $form = $this->formFactory->create('account_type', $account);
 
         return $form;
     }
@@ -116,7 +115,7 @@ class AccountService
             return;
         }
 
-        $form = $this->formFactory->create(new AccountForm(), $account);
+        $form = $this->formFactory->create('account_type', $account);
 
         return $form;
     }
