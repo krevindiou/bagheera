@@ -8,7 +8,7 @@
         "php": ">=5.3.3",
         "symfony/symfony": "2.2.*",
         "doctrine/orm": "~2.2,>=2.2.3",
-        "doctrine/doctrine-bundle": "1.2.*",
+        "doctrine/doctrine-bundle": "1.2.*@dev",
         "twig/extensions": "1.0.*",
         "symfony/assetic-bundle": "2.1.*",
         "kriswallsmith/assetic": "1.1.*@dev",
@@ -49,7 +49,6 @@
     "config": {
         "bin-dir": "bin"
     },
-    "minimum-stability": "alpha",
     "extra": {
         "symfony-app-dir": "app",
         "symfony-web-dir": "web",
