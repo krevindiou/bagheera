@@ -253,7 +253,7 @@ class UserService
 
         if (null !== $user) {
             // Reset password link construction
-            $key = $this->_createResetPasswordKey($user);
+            $key = $this->createResetPasswordKey($user);
             $link = $this->router->generate('user_reset_password', array('key' => $key), true);
 
             // Mail sending
@@ -328,7 +328,7 @@ class UserService
      * @param  User   $user User entity
      * @return string
      */
-    protected function _createResetPasswordKey(User $user)
+    protected function createResetPasswordKey(User $user)
     {
         $key = base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
@@ -343,7 +343,7 @@ class UserService
      * @param  string $key Reset key
      * @return User
      */
-    protected function _decodeResetPasswordKey($key)
+    protected function decodeResetPasswordKey($key)
     {
         if (false !== ($key = gzinflate(base64_decode($key)))) {
             $email = substr($key, 0, -33);

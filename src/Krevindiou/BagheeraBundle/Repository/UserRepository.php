@@ -36,7 +36,7 @@ class UserRepository extends EntityRepository
             }
         }
         $dql.= 'ORDER BY u.createdAt DESC ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->getEntityManager()->createQuery($dql);
         if (!empty($params)) {
             if (isset($params['email']) && '' != $params['email']) {
                 $query->setParameter('email', $params['email'] . '%');

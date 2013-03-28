@@ -31,7 +31,7 @@ class AccountImportService
      * @param  Account $account Account entity
      * @return integer
      */
-    protected function _getNextImportId(Account $account)
+    protected function getNextImportId(Account $account)
     {
         $dql = 'SELECT MAX(i.importId) ';
         $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i ';
@@ -73,7 +73,7 @@ class AccountImportService
         $accountImport = $this->getCurrentImport($account);
 
         if (null === $accountImport) {
-            $importId = $this->_getNextImportId($account);
+            $importId = $this->getNextImportId($account);
 
             $accountImport = new AccountImport();
             $accountImport->setImportId($importId);

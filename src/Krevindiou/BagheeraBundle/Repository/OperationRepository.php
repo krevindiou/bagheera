@@ -80,14 +80,12 @@ class OperationRepository extends EntityRepository
 
     public function getLastExternalOperationId(Account $account)
     {
-        $em = $this->getEntityManager();
-
         $dql = 'SELECT o.externalOperationId ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = :account ';
         $dql.= 'ORDER BY o.externalOperationId DESC ';
 
-        $query = $em->createQuery($dql);
+        $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('account', $account);
         $query->setMaxResults(1);
 
@@ -107,7 +105,7 @@ class OperationRepository extends EntityRepository
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    protected function _getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
+    protected function getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -128,7 +126,7 @@ class OperationRepository extends EntityRepository
         $sql.= 'GROUP BY a.currency, month ';
         $sql.= 'ORDER BY month ASC ';
 
-        $stmt = $this->_em->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('user_id', $user->getUserId());
         $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
@@ -174,7 +172,7 @@ class OperationRepository extends EntityRepository
      * @param  DateTime $stopDate Sum calculated before this date
      * @return array
      */
-    protected function _getSumBefore(User $user, \DateTime $stopDate, Account $account = null)
+    protected function getSumBefore(User $user, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -193,7 +191,7 @@ class OperationRepository extends EntityRepository
 
         $sql.= 'GROUP BY a.currency ';
 
-        $stmt = $this->_em->getConnection()->prepare($sql);
+        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('user_id', $user->getUserId());
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
 
@@ -225,10 +223,10 @@ class OperationRepository extends EntityRepository
      */
     public function getTotalByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
-        $data = $this->_getSumsByMonth($user, $startDate, $stopDate, $account);
+        $data = $this->getSumsByMonth($user, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
-            $previousMonthTotal = $this->_getSumBefore($user, $startDate, $account);
+            $previousMonthTotal = $this->getSumBefore($user, $startDate, $account);
 
             foreach ($data as $currency => $value) {
                 foreach ($value as $month => $total) {

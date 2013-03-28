@@ -111,7 +111,7 @@ class ProviderAdapter
         $data = $this->providerService->fetchTransactions($account);
 
         if (null !== $data) {
-            $data = $this->_normalizeData($account, $data);
+            $data = $this->normalizeData($account, $data);
 
             $accountImport = $this->accountImportService->getCurrentImport($account);
             $accountImport->setTotal(count($data));
@@ -126,7 +126,7 @@ class ProviderAdapter
      *
      * @see ProviderInterface::normalizeData()
      */
-    protected function _normalizeData(Account $account, array $data)
+    protected function normalizeData(Account $account, array $data)
     {
         return $this->providerService->normalizeData($account, $data);
     }

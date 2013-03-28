@@ -74,7 +74,7 @@ abstract class ProviderBase
      * @param  string $encryptedString Encrypted string
      * @return string
      */
-    protected function _decrypt($encryptedString)
+    protected function decrypt($encryptedString)
     {
         if (false !== ($encryptedString = base64_decode($encryptedString))) {
             $plainString = trim(
@@ -99,7 +99,7 @@ abstract class ProviderBase
      * @param  string  $format  Either QIF, OFX or QFX
      * @return array
      */
-    protected function _convertToArray(Account $account, $data, $format)
+    protected function convertToArray(Account $account, $data, $format)
     {
         try {
             $data = ArrayConverter::convertFromFormat($data, $format);
@@ -120,7 +120,7 @@ abstract class ProviderBase
      * @param  string  $type    Either original, json or json_normalized
      * @return void
      */
-    protected function _save(Account $account, $data, $type)
+    protected function save(Account $account, $data, $type)
     {
         $this->accountImportService->setData($account, $data, $type);
     }

@@ -16,14 +16,14 @@ class BankTest extends TestCase
 {
     public function testFindAll()
     {
-        $banks = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Bank')->findAll();
+        $banks = $this->em->getRepository('Krevindiou\BagheeraBundle\Entity\Bank')->findAll();
 
         $this->assertEquals(count($banks), 5);
     }
 
     public function testHsbc()
     {
-        $hsbc = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
+        $hsbc = $this->em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
 
         $this->assertEquals($hsbc->getName(), 'HSBC');
         $this->assertEquals($hsbc->getUser()->getEmail(), 'john@example.net');

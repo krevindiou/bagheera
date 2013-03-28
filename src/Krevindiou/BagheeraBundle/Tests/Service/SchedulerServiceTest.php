@@ -18,27 +18,27 @@ class SchedulerServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
     }
 
     public function testGetFormForForeignUser()
     {
-        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $form = $this->get('bagheera.scheduler')->getForm($this->jane, $scheduler);
         $this->assertNull($form);
     }
 
     public function testGetFormForNewScheduler()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
         $form = $this->get('bagheera.scheduler')->getForm($this->john, null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingScheduler()
     {
-        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $form = $this->get('bagheera.scheduler')->getForm($this->john, $scheduler);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -52,10 +52,10 @@ class SchedulerServiceTest extends TestCase
     public function testSaveNewSchedulerWithForeignAccount()
     {
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
+        $scheduler->setAccount($this->em->find('KrevindiouBagheeraBundle:Account', 1));
         $scheduler->setThirdParty('Test');
         $scheduler->setValueDate(new \DateTime());
-        $scheduler->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $scheduler->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
         $scheduler->setFrequencyUnit('month');
         $scheduler->setFrequencyValue(1);
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->jane, $scheduler));
@@ -64,10 +64,10 @@ class SchedulerServiceTest extends TestCase
     public function testSaveNewScheduler()
     {
         $scheduler = new Scheduler();
-        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
+        $scheduler->setAccount($this->em->find('KrevindiouBagheeraBundle:Account', 1));
         $scheduler->setThirdParty('Test');
         $scheduler->setValueDate(new \DateTime());
-        $scheduler->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $scheduler->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
         $scheduler->setFrequencyUnit('month');
         $scheduler->setFrequencyValue(1);
         $this->assertTrue($this->get('bagheera.scheduler')->save($this->john, $scheduler));
@@ -75,33 +75,33 @@ class SchedulerServiceTest extends TestCase
 
     public function testSaveExistingSchedulerWithBadData()
     {
-        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $scheduler->setThirdParty('');
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
     }
 
     public function testSaveExistingSchedulerWithForeignAccount()
     {
-        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
-        $scheduler->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 8));
+        $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler->setAccount($this->em->find('KrevindiouBagheeraBundle:Account', 8));
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
     }
 
     public function testSaveExistingSchedulerWithForeignUser()
     {
-        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->jane, $scheduler));
     }
 
     public function testSaveExistingScheduler()
     {
-        $scheduler = $this->_em->find('KrevindiouBagheeraBundle:Scheduler', 1);
+        $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $this->assertTrue($this->get('bagheera.scheduler')->save($this->john, $scheduler));
     }
 
     public function testGetSchedulers()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
         $schedulers = $this->get('bagheera.scheduler')->getList($this->john, $account);
 
         $this->assertEquals(count($schedulers), 2);
@@ -109,7 +109,7 @@ class SchedulerServiceTest extends TestCase
 
     public function testDelete()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
 
         $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
         $countSchedulersBeforeDelete = count($schedulersBeforeDelete);
@@ -129,17 +129,17 @@ class SchedulerServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 1 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
         $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 1 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
         $operationsBeforeDate = array();
@@ -167,17 +167,17 @@ class SchedulerServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 2 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
+        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
         $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 2 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
         $this->assertEquals(count($operationsBefore), count($operationsAfter));

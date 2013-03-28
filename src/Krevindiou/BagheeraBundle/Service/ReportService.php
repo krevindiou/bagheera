@@ -208,7 +208,7 @@ class ReportService
             }
 
             if (in_array($report->getType(), array('sum', 'average'))) {
-                $results = $this->_getGraphData($report, $accounts, $report->getType());
+                $results = $this->getGraphValues($report, $accounts, $report->getType());
             } elseif ('distribution' == $report->getType()) {
                 // @todo
                 $results = array();
@@ -296,7 +296,7 @@ class ReportService
      * @param  string $type     sum or average
      * @return array
      */
-    public function _getGraphData(Report $report, array $accounts, $type)
+    public function getGraphValues(Report $report, array $accounts, $type)
     {
         switch ($report->getPeriodGrouping()) {
             case 'month' :

@@ -20,7 +20,7 @@ class ArrayConverter
      */
     public static function convertFromFormat($content, $format)
     {
-        $method = 'self::_convertFrom' . ucfirst(strtolower($format));
+        $method = 'self::convertFrom' . ucfirst(strtolower($format));
 
         if (is_callable($method)) {
             return forward_static_call_array(
@@ -32,7 +32,7 @@ class ArrayConverter
         throw new InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
     }
 
-    private static function _convertFromQif($content)
+    private static function convertFromQif($content)
     {
         $data = array();
 
@@ -53,7 +53,7 @@ class ArrayConverter
         return $data;
     }
 
-    private static function _convertFromOfx($content)
+    private static function convertFromOfx($content)
     {
         $data = array();
 
@@ -61,7 +61,7 @@ class ArrayConverter
         return $data;
     }
 
-    private static function _convertFromQfx($content)
+    private static function convertFromQfx($content)
     {
         $data = array();
 

@@ -18,27 +18,27 @@ class OperationServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->_em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->_em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
     }
 
     public function testGetFormForForeignUser()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $form = $this->get('bagheera.operation')->getForm($this->jane, $operation);
         $this->assertNull($form);
     }
 
     public function testGetFormForNewOperation()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
         $form = $this->get('bagheera.operation')->getForm($this->john, null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingOperation()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $form = $this->get('bagheera.operation')->getForm($this->john, $operation);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -52,72 +52,72 @@ class OperationServiceTest extends TestCase
     public function testSaveNewOperationWithForeignAccount()
     {
         $operation = new Operation();
-        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
+        $operation->setAccount($this->em->find('KrevindiouBagheeraBundle:Account', 1));
         $operation->setThirdParty('Test');
         $operation->setValueDate(new \DateTime());
-        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
         $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));
     }
 
     public function testSaveNewOperation()
     {
         $operation = new Operation();
-        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 1));
+        $operation->setAccount($this->em->find('KrevindiouBagheeraBundle:Account', 1));
         $operation->setThirdParty('Test');
         $operation->setValueDate(new \DateTime());
-        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
+        $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 1));
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
     public function testSaveExistingOperationWithBadData()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $operation->setThirdParty('');
         $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
     public function testSaveExistingOperationWithForeignAccount()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
-        $operation->setAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 8));
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation->setAccount($this->em->find('KrevindiouBagheeraBundle:Account', 8));
         $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
     public function testSaveExistingOperationWithForeignUser()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));
     }
 
     public function testSaveExistingOperation()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 1);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
     public function testEditAndRemoveTransfer()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
         $operation->setTransferAccount(null);
-        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 5));
+        $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 5));
 
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
-        $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
         $this->assertNull($operation->getTransferOperation());
         $this->assertNull($operation->getTransferAccount());
     }
 
     public function testEditAndChangeTransfer()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
-        $operation->setTransferAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 3));
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation->setTransferAccount($this->em->find('KrevindiouBagheeraBundle:Account', 3));
 
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
-        $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
         $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
@@ -125,14 +125,14 @@ class OperationServiceTest extends TestCase
 
     public function testEditAndSetTransfer()
     {
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 2);
-        $operation->setTransferAccount($this->_em->find('KrevindiouBagheeraBundle:Account', 3));
-        $operation->setPaymentMethod($this->_em->find('KrevindiouBagheeraBundle:PaymentMethod', 4));
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
+        $operation->setTransferAccount($this->em->find('KrevindiouBagheeraBundle:Account', 3));
+        $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 4));
 
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
-        $this->_em->getUnitOfWork()->removeFromIdentityMap($operation);
-        $operation = $this->_em->find('KrevindiouBagheeraBundle:Operation', 2);
+        $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
         $this->assertEquals($operation->getTransferOperation()->getOperationId(), 15);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
@@ -140,7 +140,7 @@ class OperationServiceTest extends TestCase
 
     public function testGetOperations()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
         $operations = $this->get('bagheera.operation')->getList($this->john, $account);
 
         $this->assertEquals(count($operations), 4);
@@ -148,7 +148,7 @@ class OperationServiceTest extends TestCase
 
     public function testDelete()
     {
-        $account = $this->_em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
 
         $operationsBeforeDelete = $this->get('bagheera.operation')->getList($this->john, $account);
         $countOperationsBeforeDelete = count($operationsBeforeDelete);
@@ -168,7 +168,7 @@ class OperationServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.isReconciled = 1 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
         $operationsId = array(2);
@@ -178,7 +178,7 @@ class OperationServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.isReconciled = 1 ';
-        $query = $this->_em->createQuery($dql);
+        $query = $this->em->createQuery($dql);
         $operationsAfterReconcile = $query->getSingleScalarResult();
 
         $this->assertEquals($operationsAfterReconcile, $operationsBeforeReconcile + 1);

@@ -16,14 +16,14 @@ class SchedulerTest extends TestCase
 {
     public function testFindAll()
     {
-        $schedulers = $this->_em->getRepository('Krevindiou\BagheeraBundle\Entity\Scheduler')->findAll();
+        $schedulers = $this->em->getRepository('Krevindiou\BagheeraBundle\Entity\Scheduler')->findAll();
 
         $this->assertEquals(count($schedulers), 3);
     }
 
     public function testScheduler()
     {
-        $scheduler = $this->_em->find('Krevindiou\BagheeraBundle\Entity\Scheduler', 1);
+        $scheduler = $this->em->find('Krevindiou\BagheeraBundle\Entity\Scheduler', 1);
 
         $this->assertEquals($scheduler->getThirdParty(), 'Third party 1');
         $this->assertEquals($scheduler->getTransferAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
