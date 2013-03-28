@@ -16,7 +16,6 @@ class TwigExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            'var_dump' => new \Twig_Filter_Function('var_dump'),
             'abs' => new \Twig_Filter_Function('abs'),
             'money' => new \Twig_Filter_Method($this, 'moneyFilter'),
         );
