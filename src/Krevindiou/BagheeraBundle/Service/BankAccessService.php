@@ -42,6 +42,9 @@ class BankAccessService
     /** @DI\Inject("bagheera.bank") */
     public $bankService;
 
+    /** @DI\Inject("bagheera.crypt") */
+    public $cryptService;
+
     /**
      * Returns bank access form
      *
@@ -82,49 +85,20 @@ class BankAccessService
                     ->setParameter('bankId', $bankAccess->getBankId())
                     ->execute();
 
-                $plainLogin = $bankAccess->getPlainLogin();
-                $plainPassword = $bankAccess->getPlainPassword();
+                $encryptedLogin = $this->cryptService->crypt(array($bankAccess->getPlainLogin()));
+                $encryptedPassword = $this->cryptService->crypt(array($bankAccess->getPlainPassword()));
 
-                // AES-256 => 32 bytes long key
-                $key = $this->secret;
+                $bankAccess->setLogin($encryptedLogin);
+                $bankAccess->setPassword($encryptedPassword);
+                $bankAccess->setPlainLogin('');
+                $bankAccess->setPlainPassword('');
 
-                $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
+                $this->emSecure->persist($bankAccess);
+                $this->emSecure->flush();
 
-                $encryptedLogin = mcrypt_encrypt(
-                    MCRYPT_RIJNDAEL_128,
-                    $key,
-                    $plainLogin,
-                    MCRYPT_MODE_CBC,
-                    $iv
-                );
+                $this->bankService->importExternalBank($bank);
 
-                $encryptedLogin = base64_encode($iv . $encryptedLogin);
-
-                $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
-
-                $encryptedPassword = mcrypt_encrypt(
-                    MCRYPT_RIJNDAEL_128,
-                    $key,
-                    $plainPassword,
-                    MCRYPT_MODE_CBC,
-                    $iv
-                );
-
-                $encryptedPassword = base64_encode($iv . $encryptedPassword);
-
-                if ('' != $encryptedLogin && '' != $encryptedPassword) {
-                    $bankAccess->setLogin($encryptedLogin);
-                    $bankAccess->setPassword($encryptedPassword);
-                    $bankAccess->setPlainLogin('');
-                    $bankAccess->setPlainPassword('');
-
-                    $this->emSecure->persist($bankAccess);
-                    $this->emSecure->flush();
-
-                    $this->bankService->importExternalBank($bank);
-
-                    return true;
-                }
+                return true;
             } catch (\Exception $e) {
                 $this->logger->err($e->getMessage());
             }

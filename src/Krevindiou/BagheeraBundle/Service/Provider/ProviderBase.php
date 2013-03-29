@@ -39,11 +39,6 @@ abstract class ProviderBase
      */
     public $accountImportService;
 
-    public function __construct(Logger $logger)
-    {
-        $this->logger = $logger;
-    }
-
     public function setKey($key)
     {
         $this->key = $key;
@@ -62,29 +57,6 @@ abstract class ProviderBase
     public function setAccountImportService(AccountImportService $accountImportService)
     {
         $this->accountImportService = $accountImportService;
-    }
-
-    /**
-     * Decrypts string (used for login and password)
-     *
-     * @param  string $encryptedString Encrypted string
-     * @return string
-     */
-    protected function decrypt($encryptedString)
-    {
-        if (false !== ($encryptedString = base64_decode($encryptedString))) {
-            $plainString = trim(
-                mcrypt_decrypt(
-                    MCRYPT_RIJNDAEL_128,
-                    $this->key,
-                    substr($encryptedString, 16),
-                    MCRYPT_MODE_CBC,
-                    substr($encryptedString, 0, 16)
-                )
-            );
-
-            return $plainString;
-        }
     }
 
     /**
