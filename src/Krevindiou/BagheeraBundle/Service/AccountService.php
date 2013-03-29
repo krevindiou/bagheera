@@ -38,12 +38,6 @@ class AccountService
     /** @DI\Inject */
     public $translator;
 
-    /** @DI\Inject("bagheera.provider_adapter") */
-    public $providerAdapter;
-
-    /** @DI\Inject("bagheera.account_import") */
-    public $accountImportService;
-
     /** @DI\Inject("bagheera.operation") */
     public $operationService;
 
