@@ -6,6 +6,8 @@
     },
     "require": {
         "php": ">=5.3.3",
+        "ext-mcrypt": "*",
+        "ext-openssl": "*",
         "symfony/symfony": "2.2.*",
         "doctrine/orm": "~2.2,>=2.2.3",
         "doctrine/doctrine-bundle": "1.2.*@dev",
@@ -27,10 +29,6 @@
         "excelwebzone/recaptcha-bundle": "dev-master",
         "fabpot/goutte": "1.0.*@dev",
         "guzzle/guzzle": "~3.1"
-    },
-    "require-dev": {
-        "ext-mcrypt": "*",
-        "ext-openssl": "*"
     },
     "scripts": {
         "post-install-cmd": [
