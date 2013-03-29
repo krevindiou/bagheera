@@ -76,9 +76,7 @@ class ReportService
             return;
         }
 
-        $form = $this->formFactory->create('report_type', $report);
-
-        return $form;
+        return $this->formFactory->create('report_type', $report);
     }
 
     /**

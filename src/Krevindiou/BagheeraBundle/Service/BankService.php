@@ -79,9 +79,7 @@ class BankService
             return;
         }
 
-        $form = $this->formFactory->create('bank_type', $bank);
-
-        return $form;
+        return $this->formFactory->create('bank_type', $bank);
     }
 
     /**

@@ -94,9 +94,7 @@ class AccountService
         $account = new Account();
         $account->setBank($bank);
 
-        $form = $this->formFactory->create('account_type', $account);
-
-        return $form;
+        return $this->formFactory->create('account_type', $account);
     }
 
     /**
@@ -112,9 +110,7 @@ class AccountService
             return;
         }
 
-        $form = $this->formFactory->create('account_type', $account);
-
-        return $form;
+        return $this->formFactory->create('account_type', $account);
     }
 
     /**

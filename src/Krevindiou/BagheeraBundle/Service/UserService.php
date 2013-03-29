@@ -71,13 +71,11 @@ class UserService
      */
     public function getRegisterForm($language)
     {
-        $form = $this->formFactory->create(
+        return $this->formFactory->create(
             'user_register_type',
             new User(),
             array('attr' => array('language' => $language))
         );
-
-        return $form;
     }
 
     /**
@@ -88,9 +86,7 @@ class UserService
      */
     public function getProfileForm(User $user)
     {
-        $form = $this->formFactory->create('user_profile_type', $user);
-
-        return $form;
+        return $this->formFactory->create('user_profile_type', $user);
     }
 
     /**
@@ -228,9 +224,7 @@ class UserService
      */
     public function getForgotPasswordForm()
     {
-        $form = $this->formFactory->create('user_forgot_password_type');
-
-        return $form;
+        return $this->formFactory->create('user_forgot_password_type');
     }
 
     /**
@@ -283,9 +277,7 @@ class UserService
     public function getResetPasswordForm($key)
     {
         if (null !== $this->decodeResetPasswordKey($key)) {
-            $form = $this->formFactory->create('user_reset_password_type');
-
-            return $form;
+            return $this->formFactory->create('user_reset_password_type');
         }
     }
 
@@ -323,11 +315,9 @@ class UserService
      */
     protected function createResetPasswordKey(User $user)
     {
-        $key = base64_encode(gzdeflate(
+        return base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
         ));
-
-        return $key;
     }
 
     /**
@@ -343,7 +333,7 @@ class UserService
             $md5 = substr($key, -32);
 
             $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
-                              ->findOneBy(array('email' => $email));
+                             ->findOneBy(array('email' => $email));
 
             if (null !== $user) {
                 if (md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601)) == $md5) {
