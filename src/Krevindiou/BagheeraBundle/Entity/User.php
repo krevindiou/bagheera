@@ -13,8 +13,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use EWZ\Bundle\RecaptchaBundle\Validator\Constraints as Recaptcha;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\User
- *
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\UserRepository")
  * @ORM\Table(name="user")
  * @ORM\HasLifecycleCallbacks()

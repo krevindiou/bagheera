@@ -8,10 +8,6 @@ namespace Krevindiou\BagheeraBundle\Tests\Service;
 use Krevindiou\BagheeraBundle\Tests\TestCase;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
-/**
- * Krevindiou\BagheeraBundle\Tests\Service\OperationSearchServiceTest
- *
- */
 class OperationSearchServiceTest extends TestCase
 {
     public function setUp()

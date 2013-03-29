@@ -5,10 +5,6 @@
 
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
-/**
- * Array converter
- *
- */
 class ArrayConverter
 {
     /**

@@ -8,9 +8,6 @@ namespace Krevindiou\BagheeraBundle\Service;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Category service
- *
- *
  * @DI\Service("bagheera.category")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "category"})
  */

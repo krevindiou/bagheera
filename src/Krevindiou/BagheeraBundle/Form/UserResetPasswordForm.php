@@ -12,9 +12,6 @@ use Symfony\Component\Validator\Constraints\Length;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Reset password form
- *
- *
  * @DI\FormType
  */
 class UserResetPasswordForm extends AbstractType

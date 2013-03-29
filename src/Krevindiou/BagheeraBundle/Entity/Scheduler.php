@@ -9,8 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\Scheduler
- *
  * @ORM\Entity
  * @ORM\Table(name="scheduler")
  * @ORM\HasLifecycleCallbacks()

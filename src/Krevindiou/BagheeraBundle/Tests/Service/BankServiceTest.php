@@ -8,10 +8,6 @@ namespace Krevindiou\BagheeraBundle\Tests\Service;
 use Krevindiou\BagheeraBundle\Tests\TestCase;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 
-/**
- * Krevindiou\BagheeraBundle\Tests\Service\BankServiceTest
- *
- */
 class BankServiceTest extends TestCase
 {
     public function setUp()

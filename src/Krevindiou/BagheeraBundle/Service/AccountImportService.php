@@ -11,9 +11,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\AccountImport;
 
 /**
- * AccountImport service
- *
- *
  * @DI\Service("bagheera.account_import")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "account_import"})
  */

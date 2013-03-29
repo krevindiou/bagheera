@@ -15,9 +15,6 @@ use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 
 /**
- * Bank service
- *
- *
  * @DI\Service("bagheera.bank")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "bank"})
  */

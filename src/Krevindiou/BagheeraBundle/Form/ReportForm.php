@@ -14,9 +14,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Report form
- *
- *
  * @DI\FormType
  */
 class ReportForm extends AbstractType

@@ -8,10 +8,6 @@ namespace Krevindiou\BagheeraBundle\Tests\Entity;
 use Krevindiou\BagheeraBundle\Tests\TestCase;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 
-/**
- * Krevindiou\BagheeraBundle\Tests\Entity\Operation
- *
- */
 class OperationSearchTest extends TestCase
 {
     public function testFindAll()

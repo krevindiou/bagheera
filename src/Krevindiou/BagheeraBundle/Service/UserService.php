@@ -20,9 +20,6 @@ use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Service\BankService;
 
 /**
- * User service
- *
- *
  * @DI\Service("bagheera.user")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "user"})
  * @DI\Tag("kernel.event_listener", attributes = {"event" = "security.interactive_login", "method" = "onLogin"})

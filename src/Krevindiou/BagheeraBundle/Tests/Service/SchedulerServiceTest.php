@@ -8,10 +8,6 @@ namespace Krevindiou\BagheeraBundle\Tests\Service;
 use Krevindiou\BagheeraBundle\Tests\TestCase;
 use Krevindiou\BagheeraBundle\Entity\Scheduler;
 
-/**
- * Krevindiou\BagheeraBundle\Tests\Service\SchedulerServiceTest
- *
- */
 class SchedulerServiceTest extends TestCase
 {
     public function setUp()

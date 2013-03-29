@@ -14,9 +14,6 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Form\Type\CurrencyType;
 
 /**
- * Account form
- *
- *
  * @DI\FormType
  */
 class AccountForm extends AbstractType

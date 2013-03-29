@@ -13,9 +13,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
 
 /**
- * Provider adapter service
- *
- *
  * @DI\Service("bagheera.provider_adapter")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "provider_adapter"})
  */

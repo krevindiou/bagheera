@@ -11,9 +11,6 @@ use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * User form
- *
- *
  * @DI\FormType
  */
 class UserProfileForm extends UserRegisterForm

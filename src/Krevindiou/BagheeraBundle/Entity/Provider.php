@@ -9,8 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\Provider
- *
  * @ORM\Entity
  * @ORM\Table(name="provider")
  * @ORM\HasLifecycleCallbacks()

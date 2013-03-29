@@ -13,9 +13,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Bank form
- *
- *
  * @DI\FormType
  */
 class BankForm extends AbstractType

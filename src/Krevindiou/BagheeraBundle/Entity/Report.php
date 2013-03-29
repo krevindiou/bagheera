@@ -11,8 +11,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\Report
- *
  * @ORM\Entity
  * @ORM\Table(name="report")
  * @ORM\HasLifecycleCallbacks()

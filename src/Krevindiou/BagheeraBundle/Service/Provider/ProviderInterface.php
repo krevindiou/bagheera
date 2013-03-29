@@ -7,10 +7,6 @@ namespace Krevindiou\BagheeraBundle\Service\Provider;
 
 use Krevindiou\BagheeraBundle\Entity\Account;
 
-/**
- * Provider interface
- *
- */
 interface ProviderInterface
 {
     /**

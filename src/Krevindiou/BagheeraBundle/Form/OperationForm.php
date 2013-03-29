@@ -14,9 +14,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Operation form
- *
- *
  * @DI\FormType
  */
 class OperationForm extends AbstractType

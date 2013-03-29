@@ -10,8 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\Bank
- *
  * @ORM\Entity
  * @ORM\Table(name="bank")
  * @ORM\HasLifecycleCallbacks()

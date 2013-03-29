@@ -18,9 +18,6 @@ use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
 
 /**
- * Account service
- *
- *
  * @DI\Service("bagheera.account")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "account"})
  */

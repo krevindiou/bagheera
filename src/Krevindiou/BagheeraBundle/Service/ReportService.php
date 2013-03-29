@@ -14,9 +14,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Report;
 
 /**
- * Report service
- *
- *
  * @DI\Service("bagheera.report")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "report"})
  */

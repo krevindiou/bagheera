@@ -12,10 +12,6 @@ use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
-/**
- * Provider base service
- *
- */
 abstract class ProviderBase
 {
     /**

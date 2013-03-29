@@ -11,9 +11,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Bank access form
- *
- *
  * @DI\FormType
  */
 class BankAccessForm extends AbstractType

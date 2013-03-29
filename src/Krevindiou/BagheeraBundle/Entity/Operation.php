@@ -9,8 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\Operation
- *
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\OperationRepository")
  * @ORM\Table(
  *  name="operation",

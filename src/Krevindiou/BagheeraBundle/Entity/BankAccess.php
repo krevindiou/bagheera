@@ -9,8 +9,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\BankAccess
- *
  * @ORM\Entity
  * @ORM\Table(name="bank_access")
  * @ORM\HasLifecycleCallbacks()

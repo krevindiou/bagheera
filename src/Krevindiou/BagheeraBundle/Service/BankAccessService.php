@@ -16,9 +16,6 @@ use Krevindiou\BagheeraBundle\Entity\BankAccess;
 use Krevindiou\BagheeraBundle\Form\BankAccessForm;
 
 /**
- * Bank access service
- *
- *
  * @DI\Service("bagheera.bank_access")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "bank_access"})
  */

@@ -20,9 +20,6 @@ use Krevindiou\BagheeraBundle\Entity\Scheduler;
 use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
 
 /**
- * Scheduler service
- *
- *
  * @DI\Service("bagheera.scheduler")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "scheduler"})
  */

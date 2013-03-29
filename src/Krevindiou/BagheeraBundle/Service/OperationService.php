@@ -19,9 +19,6 @@ use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 use Krevindiou\BagheeraBundle\Entity\PaymentMethod;
 
 /**
- * Operation service
- *
- *
  * @DI\Service("bagheera.operation")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "operation"})
  */

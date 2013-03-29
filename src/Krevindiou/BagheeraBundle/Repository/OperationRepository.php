@@ -10,10 +10,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\User;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
-/**
- * Operation repository
- *
- */
 class OperationRepository extends EntityRepository
 {
     public function getQueryByAccount(Account $account, OperationSearch $operationSearch = null)

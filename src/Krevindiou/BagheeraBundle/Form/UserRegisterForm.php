@@ -12,9 +12,6 @@ use Symfony\Component\Locale\Locale;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * User form
- *
- *
  * @DI\FormType
  */
 class UserRegisterForm extends AbstractType

@@ -14,9 +14,6 @@ use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Scheduler form
- *
- *
  * @DI\FormType
  */
 class SchedulerForm extends AbstractType

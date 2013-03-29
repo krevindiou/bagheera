@@ -7,10 +7,6 @@ namespace Krevindiou\BagheeraBundle\Tests\Service;
 
 use Krevindiou\BagheeraBundle\Tests\TestCase;
 
-/**
- * Krevindiou\BagheeraBundle\Tests\Service\CategoryServiceTest
- *
- */
 class CategoryServiceTest extends TestCase
 {
     public function testGetList()

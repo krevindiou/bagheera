@@ -13,9 +13,6 @@ use Krevindiou\BagheeraBundle\Constraint\FieldExists;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * Forgot password form
- *
- *
  * @DI\FormType
  */
 class UserForgotPasswordForm extends AbstractType

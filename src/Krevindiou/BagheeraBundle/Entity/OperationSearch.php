@@ -11,8 +11,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Krevindiou\BagheeraBundle\Entity\OperationSearch
- *
  * @ORM\Entity
  * @ORM\Table(name="operation_search")
  * @ORM\HasLifecycleCallbacks()

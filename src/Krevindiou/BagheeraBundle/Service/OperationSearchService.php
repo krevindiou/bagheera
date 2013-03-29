@@ -15,9 +15,6 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
 /**
- * OperationSearch service
- *
- *
  * @DI\Service("bagheera.operation_search")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "operation_search"})
  */
