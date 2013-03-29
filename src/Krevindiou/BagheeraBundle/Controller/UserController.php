@@ -16,6 +16,7 @@ use Krevindiou\BagheeraBundle\Entity\User;
 class UserController extends Controller
 {
     /**
+     * @Route("/sign-in", name="login")
      * @Template
      */
     public function loginAction(Request $request)

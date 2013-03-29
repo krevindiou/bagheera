@@ -23,12 +23,14 @@ security:
             security: false
 
         anonymous:
-            pattern:  ^/(login|register|activate|forgot-password|reset-password|translations\.js)$
+            pattern:  ^/(sign-in|register|activate|forgot-password|reset-password|translations\.js)$
             security: false
 
         secured_area:
             pattern:    ^/
-            form_login: ~
+            form_login:
+                login_path:  login
+                check_path:  login_check
             logout:     ~
 
     access_control:
