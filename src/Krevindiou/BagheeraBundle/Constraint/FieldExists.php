@@ -4,9 +4,6 @@ namespace Krevindiou\BagheeraBundle\Constraint;
 
 use Symfony\Component\Validator\Constraint;
 
-/**
- * @Annotation
- */
 class FieldExists extends Constraint
 {
     /**

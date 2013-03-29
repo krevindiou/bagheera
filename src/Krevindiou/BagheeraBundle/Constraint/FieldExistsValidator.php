@@ -7,8 +7,7 @@ use Symfony\Component\Validator\Constraint;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * @DI\Service("bagheera.validator.field_exists")
- * @DI\Tag("validator.constraint_validator", attributes = {"alias" = "bagheera.validator.field_exists"})
+ * @DI\Validator("bagheera.validator.field_exists")
  */
 class FieldExistsValidator extends ConstraintValidator
 {
