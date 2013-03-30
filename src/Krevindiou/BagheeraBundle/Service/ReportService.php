@@ -86,7 +86,7 @@ class ReportService
      * @param  Report  $report Report entity
      * @return boolean
      */
-    protected function _save(User $user, Report $report)
+    protected function doSave(User $user, Report $report)
     {
         if ($user === $report->getUser()) {
             try {
@@ -114,7 +114,7 @@ class ReportService
         $errors = $this->validator->validate($report);
 
         if (0 == count($errors)) {
-            return $this->_save($user, $report);
+            return $this->doSave($user, $report);
         }
 
         return false;
@@ -130,7 +130,7 @@ class ReportService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            return $this->_save($user, $form->getData());
+            return $this->doSave($user, $form->getData());
         }
 
         return false;

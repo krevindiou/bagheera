@@ -114,7 +114,7 @@ class AccountService
      * @param  Account $account Account entity
      * @return boolean
      */
-    protected function _save(User $user, Account $account)
+    protected function doSave(User $user, Account $account)
     {
         if (null !== $account->getAccountId()) {
             $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);
@@ -150,7 +150,7 @@ class AccountService
         $errors = $this->validator->validate($account);
 
         if (0 == count($errors)) {
-            return $this->_save($user, $account);
+            return $this->doSave($user, $account);
         }
 
         return false;
@@ -166,7 +166,7 @@ class AccountService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            $ok = $this->_save($user, $form->getData());
+            $ok = $this->doSave($user, $form->getData());
 
             if ($form->has('initialBalance') && $form->get('initialBalance')->getData() != 0) {
                 $operation = new Operation();

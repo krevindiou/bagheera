@@ -93,7 +93,7 @@ class OperationService
      * @param  Operation $operation Operation entity
      * @return boolean
      */
-    protected function _save(User $user, Operation $operation)
+    protected function doSave(User $user, Operation $operation)
     {
         if (null !== $operation->getOperationId()) {
             $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
@@ -208,7 +208,7 @@ class OperationService
         $errors = $this->validator->validate($operation);
 
         if (0 == count($errors)) {
-            return $this->_save($user, $operation);
+            return $this->doSave($user, $operation);
         }
 
         return false;
@@ -224,7 +224,7 @@ class OperationService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            return $this->_save($user, $form->getData());
+            return $this->doSave($user, $form->getData());
         }
 
         return false;

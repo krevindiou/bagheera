@@ -71,7 +71,7 @@ class BankAccessService
      * @param  BankAccess $bankAccess BankAccess entity
      * @return boolean
      */
-    protected function _save(User $user, BankAccess $bankAccess)
+    protected function doSave(User $user, BankAccess $bankAccess)
     {
         $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankAccess->getBankId());
 
@@ -135,7 +135,7 @@ class BankAccessService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            return $this->_save($user, $form->getData());
+            return $this->doSave($user, $form->getData());
         }
 
         return false;

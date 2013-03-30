@@ -89,7 +89,7 @@ class BankService
      * @param  Bank    $bank Bank entity
      * @return boolean
      */
-    protected function _save(User $user, Bank $bank)
+    protected function doSave(User $user, Bank $bank)
     {
         if ($user === $bank->getUser()) {
             try {
@@ -124,7 +124,7 @@ class BankService
         $errors = $this->validator->validate($bank);
 
         if (0 == count($errors)) {
-            return $this->_save($user, $bank);
+            return $this->doSave($user, $bank);
         }
 
         return false;
@@ -140,7 +140,7 @@ class BankService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            return $this->_save($user, $form->getData());
+            return $this->doSave($user, $form->getData());
         }
 
         return false;

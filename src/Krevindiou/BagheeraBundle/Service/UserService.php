@@ -95,7 +95,7 @@ class UserService
      * @param  User    $user User entity
      * @return boolean
      */
-    protected function _add(User $user)
+    protected function add(User $user)
     {
         // Activation link construction
 
@@ -139,7 +139,7 @@ class UserService
      * @param  User    $user User entity
      * @return boolean
      */
-    protected function _update(User $user)
+    protected function update(User $user)
     {
         try {
             $this->em->persist($user);
@@ -165,9 +165,9 @@ class UserService
 
         if (0 == count($errors)) {
             if (null !== $user->getUserId()) {
-                return $this->_update($user);
+                return $this->update($user);
             } else {
-                return $this->_add($user);
+                return $this->add($user);
             }
         }
 
@@ -184,9 +184,9 @@ class UserService
     {
         if ($form->isValid()) {
             if (null !== $form->getData()->getUserId()) {
-                return $this->_update($form->getData());
+                return $this->update($form->getData());
             } else {
-                return $this->_add($form->getData());
+                return $this->add($form->getData());
             }
         }
 

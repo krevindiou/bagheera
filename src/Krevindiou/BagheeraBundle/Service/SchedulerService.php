@@ -88,7 +88,7 @@ class SchedulerService
      * @param  Scheduler $scheduler Scheduler entity
      * @return boolean
      */
-    protected function _save(User $user, Scheduler $scheduler)
+    protected function doSave(User $user, Scheduler $scheduler)
     {
         if (null !== $scheduler->getSchedulerId()) {
             $oldScheduler = $this->em->getUnitOfWork()->getOriginalEntityData($scheduler);
@@ -136,7 +136,7 @@ class SchedulerService
         $errors = $this->validator->validate($scheduler);
 
         if (0 == count($errors)) {
-            return $this->_save($user, $scheduler);
+            return $this->doSave($user, $scheduler);
         }
 
         return false;
@@ -152,7 +152,7 @@ class SchedulerService
     public function saveForm(User $user, Form $form)
     {
         if ($form->isValid()) {
-            return $this->_save($user, $form->getData());
+            return $this->doSave($user, $form->getData());
         }
 
         return false;
