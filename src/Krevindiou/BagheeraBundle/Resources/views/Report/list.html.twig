@@ -30,7 +30,7 @@
             <td class="check"><input type="checkbox" name="reportsId[]" value="{{ report.reportId }}" /></td>
             <td>{{ ('report_type_' ~ report.type)|trans }}</td>
             <td>{{ report.title }}</td>
-            <td><a href="{{ path('report_edit', {'reportId': report.reportId}) }}"><i class="icon-pencil"></i> {{ 'report_edit_link'|trans }}</a></td>
+            <td class="actions"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
         </tr>
         {% endfor %}
     </table>

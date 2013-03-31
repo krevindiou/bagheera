@@ -136,19 +136,24 @@ table.table {
             margin-top: -1px;
         }
     }
-    .payment-method {
-        text-align: center;
+    td, th {
+        &.amount {
+            text-align: right;
+        }
+        &.date, &.payment-method, &.actions {
+            text-align: center;
+        }
     }
 }
 
-.positive {
+.icon-arrow-up.credit, .positive {
     color: #6d9e5a;
 }
 .positive:before {
     content: "+";
 }
 
-.negative {
+.icon-arrow-down.debit, .negative {
     color: #e44a4a;
 }
 .negative:before {

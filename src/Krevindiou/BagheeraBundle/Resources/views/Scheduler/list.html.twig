@@ -21,9 +21,8 @@
             <th></th>
             <th>{{ 'scheduler_third_party'|trans }}</th>
             <th>{{ 'scheduler_category'|trans }}</th>
-            <th>{{ 'scheduler_payment_method'|trans }}</th>
-            <th>{{ 'scheduler_type_debit'|trans }}</th>
-            <th>{{ 'scheduler_type_credit'|trans }}</th>
+            <th></th>
+            <th class="amount">{{ 'scheduler_amount'|trans }}</th>
             <th>{{ 'scheduler_frequency_value'|trans }}</th>
             <th>{{ 'scheduler_frequency_unit'|trans }}</th>
             <th></th>
@@ -33,12 +32,32 @@
             <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
             <td>{{ scheduler.thirdParty }}</td>
             <td>{{ (scheduler.category is not null) ? scheduler.category.name : '' }}</td>
-            <td>{{ ('payment_method_' ~ scheduler.paymentMethod.name)|trans }}</td>
-            <td class="debit{{ (0 != scheduler.debit) ? ' negative' : '' }}">{{ (0 != scheduler.debit) ? scheduler.debit : '' }}</td>
-            <td class="credit{{ (0 != scheduler.credit) ? ' positive' : '' }}">{{ (0 != scheduler.credit) ? scheduler.credit : '' }}</td>
+            <td class="payment-method">
+                <i class="{% spaceless %}
+                {% if scheduler.paymentMethod.name == 'credit_card' %}
+                    icon-credit-card
+                {% elseif scheduler.paymentMethod.name == 'check' %}
+                    icon-list-alt
+                {% elseif scheduler.paymentMethod.name == 'withdrawal' %}
+                    icon-money
+                {% elseif scheduler.paymentMethod.name == 'transfer' %}
+                    icon-exchange
+                {% elseif scheduler.paymentMethod.name == 'deposit' %}
+                    icon-money
+                {% endif %}
+                {% endspaceless %}" title="{{ ('payment_method_' ~ scheduler.paymentMethod.name)|trans }}"></i>
+            </td>
+            <td class="amount {{ (0 != scheduler.debit) ? 'debit' : 'credit' }}">
+                {{ (0 != scheduler.debit) ? scheduler.debit : scheduler.credit }}
+                {% if (0 != scheduler.debit) %}
+                    <i class="icon-arrow-down debit" title="{{ 'operation_type_debit'|trans }}"></i>
+                {% else %}
+                    <i class="icon-arrow-up credit" title="{{ 'operation_type_credit'|trans }}"></i>
+                {% endif %}
+            </td>
             <td>{{ scheduler.frequencyValue }}</td>
             <td>{{ ('scheduler_frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
-            <td><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}"><i class="icon-pencil"></i> {{ 'scheduler_edit_link'|trans }}</a></td>
+            <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
         </tr>
         {% endfor %}
     </table>
