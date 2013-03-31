@@ -111,10 +111,16 @@
             require(
                 [
                     "jquery_flot",
-                    "jquery_flot_time",
-                    "/report_synthesis_account_{{ account.accountId }}.js"
+                    "jquery_flot_time"
                 ],
                 function() {
+                    require(
+                        [
+                            "/report_synthesis_account_{{ account.accountId }}.js"
+                        ],
+                        function() {
+                        }
+                    );
                 }
             );
         }

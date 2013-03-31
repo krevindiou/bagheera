@@ -113,11 +113,17 @@
                         require(
                             [
                                 "jquery_flot",
-                                "jquery_flot_time",
-                                "bagheera_reports",
-                                "bagheera_report_synthesis"
+                                "jquery_flot_time"
                             ],
                             function() {
+                                require(
+                                    [
+                                        "bagheera_reports",
+                                        "bagheera_report_synthesis"
+                                    ],
+                                    function() {
+                                    }
+                                );
                             }
                         );
                     }
