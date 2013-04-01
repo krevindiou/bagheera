@@ -19,20 +19,24 @@
 {% if reports|length > 0 %}
 <form method="post" action="">
     <table class="table table-striped table-bordered table-hover table-condensed">
-        <tr>
-            <th></th>
-            <th>{{ 'report_type'|trans }}</th>
-            <th>{{ 'report_title'|trans }}</th>
-            <th></th>
-        </tr>
-        {% for report in reports %}
-        <tr>
-            <td class="check"><input type="checkbox" name="reportsId[]" value="{{ report.reportId }}" /></td>
-            <td>{{ ('report_type_' ~ report.type)|trans }}</td>
-            <td>{{ report.title }}</td>
-            <td class="actions"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
-        </tr>
-        {% endfor %}
+        <thead>
+            <tr>
+                <th></th>
+                <th>{{ 'report_type'|trans }}</th>
+                <th>{{ 'report_title'|trans }}</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td class="check"><input type="checkbox" name="reportsId[]" value="{{ report.reportId }}" /></td>
+                <td>{{ ('report_type_' ~ report.type)|trans }}</td>
+                <td>{{ report.title }}</td>
+                <td class="actions"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 
     <div class="btn-group form-actions hide">
