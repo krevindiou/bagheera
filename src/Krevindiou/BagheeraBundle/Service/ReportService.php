@@ -388,8 +388,10 @@ class ReportService
                 $tmpValues = array_merge(array_values($tmpValues), array_values($values));
             }
 
-            $yaxisMin = (int) (min($tmpValues) * 0.95);
-            $yaxisMax = (int) (max($tmpValues) * 1.05);
+            $diff = (int)(max($tmpValues) - min($tmpValues));
+
+            $yaxisMin = (int) (min($tmpValues) - $diff * 0.05);
+            $yaxisMax = (int) (max($tmpValues) + $diff * 0.05);
 
             $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
             $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
