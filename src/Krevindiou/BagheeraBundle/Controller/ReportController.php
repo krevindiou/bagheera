@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Krevindiou\BagheeraBundle\Entity\Report;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
@@ -52,6 +53,7 @@ class ReportController extends Controller
     /**
      * @Route("/edit-report-{reportId}", requirements={"reportId" = "\d+"}, name="report_edit")
      * @Route("/new-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_new")
+     * @ParamConverter("report", class="KrevindiouBagheeraBundle:Report", options={"id" = "reportId"})
      * @Template()
      */
     public function formAction(Request $request, Report $report = null, $type = null)
