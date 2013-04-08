@@ -15,11 +15,15 @@ use JMS\DiExtraBundle\Annotation as DI;
 class FieldExistsValidator extends ConstraintValidator
 {
     /** @DI\Inject("doctrine") */
-    public $registry;
+    public $doctrine;
 
     public function validate($value, Constraint $constraint)
     {
-        $em = $this->registry->getEntityManager($constraint->em);
+        if (null === $value) {
+            return;
+        }
+
+        $em = $this->doctrine->getEntityManager($constraint->em);
 
         $repository = $em->getRepository($constraint->className);
         $result = $repository->findBy(array($constraint->field => $value));
