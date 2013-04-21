@@ -74,10 +74,11 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/new-account-bank-{bankId}", requirements={"bankId" = "\d+"}, name="account_new")
+     * @Route("/new-account-bank-{bankId}", requirements={"bankId" = "\d+"}, name="account_new_with_bank")
+     * @Route("/new-account", defaults={"bankId" = null}, name="account_new")
      * @Template()
      */
-    public function newFormAction(Request $request, Bank $bank)
+    public function newFormAction(Request $request, Bank $bank = null)
     {
         $user = $this->getUser();
 

@@ -4,7 +4,6 @@
         <title>Bagheera - {{ block('page_title') }}</title>
         <meta name="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link href="http://fonts.googleapis.com/css?family=Average+Sans" rel="stylesheet" type="text/css">
         {% stylesheets filter='lessphp,cssrewrite'
             'bundles/krevindioubagheera/less/main.less'
             'bundles/krevindioubagheera/vendor/jquery-ui/themes/smoothness/jquery-ui.css'
@@ -12,67 +11,81 @@
         %}
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
         {% endstylesheets %}
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,600,800">
         {% block stylesheets %}{% endblock %}
         <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/vendor/flot/excanvas.min.js') }}"></script><![endif]-->
         <script data-main="{{ asset('/bundles/krevindioubagheera/js/main') }}" src="{{ asset('/bundles/krevindioubagheera/vendor/requirejs/require.js') }}"></script>
     </head>
-    <body>
-        <header>
-            {% set user = app.getUser() %}
-
-            <nav class="navbar navbar-inverse navbar-fixed-top">
-                <div class="navbar-inner">
-                    <div class="container">
-                        <a href="{{ path('account_list') }}" class="brand">Bagheera, <span>your personal financial manager</span></a>
-
+    <body class="page-{{ app.request.get('_route')|replace({'_' : '-'}) }}">
+        {% set user = app.getUser() %}
+        <div id="wrapper">
+            <div id="topbar">
+                <div class="container">
+                    <div id="top-nav">
                         {% if user is not empty %}
-                            <ul class="nav pull-right">
-                                <li><a href="{{ path('account_list') }}"><i class="icon-home"></i> {{ 'home_link'|trans }}</a></li>
-                                <li><a href="{{ path('report_list') }}"><i class="icon-signal"></i> {{ 'reports_link'|trans }}</a></li>
-                                <li><a href="{{ path('user_profile') }}"><i class="icon-user"></i> {{ 'profile_link'|trans }}</a></li>
-                                {# <li><a href="{{ path('share_list') }}"><i class="icon-share-alt"></i> {{ 'shares_link'|trans }}</a></li> #}
-                                {# {% if user.getIsAdmin() %} #}
-                                {# <li><a href="{{ path('user_list') }}"><i class="icon-user"></i> {{ 'admin_users_link'|trans }}</a></li> #}
-                                {# <li><a href="{{ path('category_list') }}">{{ 'admin_categories_link'|trans }}</a></li> #}
-                                {# {% endif %} #}
-                                <li><a href="{{ path('logout') }}"><i class="icon-off"></i> {{ 'user_logout_link'|trans }}</a></li>
-                            </ul>
+                        <ul class="pull-right">
+                            <li class="dropdown">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="{{ path('user_profile') }}"><i class="icon-user"></i> {{ user.email }} <b class="caret"></b></a>
+                                <ul class="dropdown-menu pull-right">
+                                    <li><a href="{{ path('user_profile') }}">{{ 'user_profile_page_title'|trans }}</a></li>
+                                    <li><a href="{{ path('logout') }}">{{ 'user_logout_link'|trans }}</a></li>
+                                </ul>
+                            </li>
+                        </ul>
                         {% endif %}
                     </div>
                 </div>
-            </nav>
-
-            <div id="header">
-                <h1>{% block page_title %}{% endblock %}</h1>
-                {% block main_actions %}{% endblock %}
-                <div class="clearfix"></div>
-
-                {% if app.request.get('_route') not in ['login', 'account_list'] %}
-                    <ul class="breadcrumb">
-                        <li><a href="{{ path('account_list') }}">{{ 'home_link'|trans }}</a> <i class="icon-chevron-right"></i></li>
-                        {% block breadcrumb %}{% endblock %}
-                    </ul>
-                {% endif %}
             </div>
-        </header>
-
-        <section id="content" class="container">
-            {% for key, messages in app.session.flashbag.all() %}
-                <div class="alert alert-{{ key }}">
-                {% for message in messages %}
-                    {{ message|trans }}
-                {% endfor %}
+            <div id="header">
+                <div class="container">
+                    <a href="{{ path('account_list') }}" class="brand">Bagheera, <span>your personal financial manager</span></a>
+                    {% if user is not empty %}
+                    <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <i class="icon-reorder"></i>
+                    </a>
+                    <div class="nav-collapse">
+                        <ul id="main-nav" class="nav pull-right">
+                            <li class="nav-icon{{ 'report' not in app.request.get('_route') ? ' active' : '' }}">
+                                <a href="{{ path('account_list') }}">
+                                    <i class="icon-home"></i>
+                                    <span>{{ 'home_link'|trans }}</span>
+                                </a>
+                            </li>
+                            <li{{ 'report' in app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('report_list') }}"><i class="icon-signal"></i> {{ 'report_list_page_title'|trans }}</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
                 </div>
-            {% endfor %}
+            </div>
+            <div id="masthead">
+                <div class="container">
+                    <div class="masthead-pad">
+                        <div class="masthead-text">
+                            <h2>{% block page_title %}{% endblock %}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="content">
+                <div class="container">
+                    {% for key, messages in app.session.flashbag.all() %}
+                        <div class="alert alert-{{ key }}">
+                        {% for message in messages %}
+                            {{ message|trans }}
+                        {% endfor %}
+                        </div>
+                    {% endfor %}
 
-            {% block content %}{% endblock %}
-        </section>
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
 
-        <footer>
-            <div class="container">Bagheera © 2011-{{ 'now'|date('Y') }}</div>
-        </footer>
+        <div id="footer">
+            <div class="container">&copy; 2011-{{ 'now'|date('Y') }} Bagheera</div>
+        </div>
 
-        <div id="modal-confirmation" class="modal hide fade">
+        <div id="modal-confirmation" class="modal hide fade" tabindex="-1">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h3>{{ 'modal_confirmation_title'|trans }}</h3>
@@ -85,7 +98,6 @@
                 <button class="btn" data-dismiss="modal" aria-hidden="true">{{ 'modal_confirmation_action_cancel'|trans }}</button>
             </div>
         </div>
-
         {% block javascripts %}{% endblock %}
     </body>
 </html>

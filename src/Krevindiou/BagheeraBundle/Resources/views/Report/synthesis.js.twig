@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $.plot(
-        $("#synthesis .graph"),
+        $("#synthesis"),
         [
             {% for currency, values in points %}
             {
@@ -16,6 +16,7 @@ $(document).ready(function(){
             {% endfor %}
         ],
         {
+            colors: ['#94ba65', '#2790b0', '#777','#555','#999','#bbb','#ccc','#eee'],
             series: {
                 lines: {
                     show: true,
@@ -48,7 +49,7 @@ $(document).ready(function(){
     );
 
     var previousPoint = null;
-    $("#synthesis .graph").on("plothover", function (event, pos, item) {
+    $("#synthesis").on("plothover", function (event, pos, item) {
         if (item) {
             if (previousPoint != item.dataIndex) {
                 previousPoint = item.dataIndex;

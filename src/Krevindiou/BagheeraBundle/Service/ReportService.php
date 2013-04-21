@@ -178,11 +178,11 @@ class ReportService
         $series = array(
             array(
                 'label' => 'operation_type_credit',
-                'color' => '#4bb2c5'
+                'color' => '#94ba65'
             ),
             array(
                 'label' => 'operation_type_debit',
-                'color' => '#eaa228'
+                'color' => '#2b4e72'
             )
         );
 

@@ -53,13 +53,13 @@ class AccountForm extends AbstractType
             )
         ;
 
+        $user = $options['user'];
+
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
-            function(FormEvent $event) use ($builder) {
+            function(FormEvent $event) use ($builder, $user) {
                 $form = $event->getForm();
                 $account = $event->getData();
-
-                $user = $account->getBank()->getUser();
 
                 $edit = (null !== $account->getAccountId());
 
@@ -144,7 +144,8 @@ class AccountForm extends AbstractType
     {
         $resolver->setDefaults(
             array(
-                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Account'
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                'user' => null
             )
         );
     }

@@ -47,7 +47,7 @@ var Bagheera = {
             $("table.table td").click(function() {
                 if ($(this).find("input").length == 0) {
                     var link = $(this).parent().find("td a");
-                    if (link) {
+                    if (link.length > 0) {
                         document.location.href = link.attr("href");
                     }
                 }
@@ -78,8 +78,14 @@ var Bagheera = {
             });
 
             $("a.search").click(function(e) {
-                $("#operation-search").show();
-                $("#operation").addClass("with-sidebar");
+                $("#operation-search").toggle();
+
+                if ($("#operation-search:visible").length > 0) {
+                    $("#operation").removeClass("span12").addClass("span7");
+                } else {
+                    $("#operation").removeClass("span7").addClass("span12");
+                }
+
                 e.preventDefault();
             });
 
@@ -119,8 +125,7 @@ var Bagheera = {
                                 }
                             });
                         });
-                    })
-                    .modal();
+                    });
             });
 
             $("input[type=email]").on("blur", function() {
@@ -141,24 +146,6 @@ var Bagheera = {
     },
 
     accounts: function() {
-        if ($("input[type=checkbox][name='banksId[]']").length > 0) {
-            $("input[type=checkbox][name='banksId[]']").change(function() {
-                var inputs = $(this).parents("div.bank").next("ul").find("li input[type=checkbox][name='accountsId[]']");
-
-                inputs
-                    .attr("checked", "checked" == $(this).attr("checked"))
-                    .attr("disabled", "checked" == $(this).attr("checked"))
-                    .parent().parent()
-                    .each(function() {
-                        if ($(this).find("input[type=checkbox]:checked").length > 0) {
-                            $(this).addClass("info");
-                        } else {
-                            $(this).removeClass("info");
-                        }
-                    });
-            });
-        }
-
         // Show "delete" button when an account or a bank is checked
         $("form.accounts input[type=checkbox]").change(function() {
             var form = $(this).parents('form');
@@ -170,7 +157,7 @@ var Bagheera = {
             }
         });
 
-        $("form.accounts li.row").hover(function() {
+        $("form.accounts tr").hover(function() {
             $(this).find("a.edit-account").show();
         }, function() {
             $(this).find("a.edit-account").hide();
@@ -421,6 +408,8 @@ define(
         "bagheera_translations"
     ],
     function($) {
+        "use strict";
+
         Bagheera.baseUrl = "/";
         Bagheera.init();
     }

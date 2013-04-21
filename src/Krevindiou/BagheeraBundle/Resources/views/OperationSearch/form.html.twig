@@ -1,4 +1,4 @@
-<form id="operation-search" {% if not display %}style="display: none;"{% endif %}action="{{ path('operation_search_form', {'accountId': account.accountId}) }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(operationSearchForm) }}>
+<form action="{{ path('operation_search_form', {'accountId': account.accountId}) }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(operationSearchForm) }}>
     {{ form_errors(operationSearchForm) }}
 
     {{ form_row(operationSearchForm.type) }}

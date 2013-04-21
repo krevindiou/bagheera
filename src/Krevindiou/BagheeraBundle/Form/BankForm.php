@@ -50,6 +50,7 @@ class BankForm extends AbstractType
                             null,
                             array(
                                 'label' => 'bank_provider',
+                                'required' => false,
                                 'empty_value' => 'bank_provider_other',
                                 'empty_data' => null,
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',

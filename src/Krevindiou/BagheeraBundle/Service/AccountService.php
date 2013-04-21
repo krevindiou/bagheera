@@ -79,16 +79,18 @@ class AccountService
      * @param  Bank $bank Bank entity
      * @return Form
      */
-    public function getNewForm(User $user, Bank $bank)
+    public function getNewForm(User $user, Bank $bank = null)
     {
-        if ($user !== $bank->getUser()) {
+        if (null !== $bank && $user !== $bank->getUser()) {
             return;
         }
 
         $account = new Account();
-        $account->setBank($bank);
+        if (null !== $bank) {
+            $account->setBank($bank);
+        }
 
-        return $this->formFactory->create('account_type', $account);
+        return $this->formFactory->create('account_type', $account, array('user' => $user));
     }
 
     /**
@@ -104,7 +106,7 @@ class AccountService
             return;
         }
 
-        return $this->formFactory->create('account_type', $account);
+        return $this->formFactory->create('account_type', $account, array('user' => $user));
     }
 
     /**

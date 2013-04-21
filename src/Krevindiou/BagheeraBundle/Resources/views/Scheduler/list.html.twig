@@ -2,77 +2,72 @@
 
 {% block page_title 'scheduler_list_page_title'|trans %}
 
-{% block main_actions %}
-    <div class="btn-group">
-        <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="btn"><i class="icon-plus-sign"></i> {{ 'scheduler_new_link'|trans }}</a>
-    </div>
-{% endblock %}
-
 {% block breadcrumb %}
     <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
     <li class="active">{{ 'scheduler_list_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
+<div class="row">
+    <div class="span12 btn-group">
+        <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'scheduler_new_link'|trans }}</a>
+    </div>
+</div>
+
 {% if schedulers|length > 0 %}
-<form method="post" action="">
-    <table class="table table-striped table-bordered table-hover table-condensed">
-        <thead>
-            <tr>
-                <th></th>
-                <th>{{ 'scheduler_third_party'|trans }}</th>
-                <th>{{ 'scheduler_category'|trans }}</th>
-                <th></th>
-                <th class="amount">{{ 'scheduler_amount'|trans }}</th>
-                <th>{{ 'scheduler_frequency_value'|trans }}</th>
-                <th>{{ 'scheduler_frequency_unit'|trans }}</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for scheduler in schedulers %}
-            <tr>
-                <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
-                <td>{{ scheduler.thirdParty }}</td>
-                <td>{{ (scheduler.category is not null) ? scheduler.category.name : '' }}</td>
-                <td class="payment-method">
-                    <i class="{% spaceless %}
-                    {% if scheduler.paymentMethod.name == 'credit_card' %}
-                        icon-credit-card
-                    {% elseif scheduler.paymentMethod.name == 'check' %}
-                        icon-list-alt
-                    {% elseif scheduler.paymentMethod.name == 'withdrawal' %}
-                        icon-money
-                    {% elseif scheduler.paymentMethod.name == 'transfer' %}
-                        icon-exchange
-                    {% elseif scheduler.paymentMethod.name == 'deposit' %}
-                        icon-money
-                    {% endif %}
-                    {% endspaceless %}" title="{{ ('payment_method_' ~ scheduler.paymentMethod.name)|trans }}"></i>
-                </td>
-                <td class="amount {{ (0 != scheduler.debit) ? 'debit' : 'credit' }}">
-                    {{ (0 != scheduler.debit) ? scheduler.debit : scheduler.credit }}
-                    {% if (0 != scheduler.debit) %}
-                        <i class="icon-arrow-down debit" title="{{ 'operation_type_debit'|trans }}"></i>
-                    {% else %}
-                        <i class="icon-arrow-up credit" title="{{ 'operation_type_credit'|trans }}"></i>
-                    {% endif %}
-                </td>
-                <td>{{ scheduler.frequencyValue }}</td>
-                <td>{{ ('scheduler_frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
-                <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="row">
+    <form class="span12" method="post" action="">
+        <table class="table table-striped table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>{{ 'scheduler_third_party'|trans }}</th>
+                    <th class="amount">{{ 'scheduler_amount'|trans }}</th>
+                    <th></th>
+                    <th>{{ 'scheduler_category'|trans }}</th>
+                    <th>{{ 'scheduler_frequency_value'|trans }}</th>
+                    <th>{{ 'scheduler_frequency_unit'|trans }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scheduler in schedulers %}
+                <tr>
+                    <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
+                    <td>{{ scheduler.thirdParty }}</td>
+                    <td class="amount {{ (0 != scheduler.debit) ? 'debit' : 'credit' }}">{{ (0 != scheduler.debit) ? scheduler.debit : scheduler.credit }}</td>
+                    <td class="payment-method">
+                        <i class="{% spaceless %}
+                        {% if scheduler.paymentMethod.name == 'credit_card' %}
+                            icon-credit-card
+                        {% elseif scheduler.paymentMethod.name == 'check' %}
+                            icon-list-alt
+                        {% elseif scheduler.paymentMethod.name == 'withdrawal' %}
+                            icon-money
+                        {% elseif scheduler.paymentMethod.name == 'transfer' %}
+                            icon-exchange
+                        {% elseif scheduler.paymentMethod.name == 'deposit' %}
+                            icon-money
+                        {% endif %}
+                        {% endspaceless %}" title="{{ ('payment_method_' ~ scheduler.paymentMethod.name)|trans }}"></i>
+                    </td>
+                    <td>{{ (scheduler.category is not null) ? scheduler.category.name : '' }}</td>
+                    <td>{{ scheduler.frequencyValue }}</td>
+                    <td>{{ ('scheduler_frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
+                    <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <div class="btn-group hide">
-        <button type="submit" name="delete" class="btn" data-toggle="modal"><i class="icon-trash"></i> {{ 'scheduler_delete_button'|trans }}</button>
-    </div>
+        <div class="btn-group hide">
+            <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'scheduler_delete_button'|trans }}</button>
+        </div>
 
-    <div class="pagination pagination-right">
-    {{ pagerfanta(schedulers, 'twitter_bootstrap') }}
-    </div>
-</form>
+        <div class="pagination pagination-right">
+        {{ pagerfanta(schedulers, 'twitter_bootstrap') }}
+        </div>
+    </form>
+</div>
 {% endif %}
 {% endblock %}
