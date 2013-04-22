@@ -92,6 +92,7 @@ class ReportForm extends AbstractType
                                 null,
                                 array(
                                     'label' => 'report_third_parties',
+                                    'required' => false,
                                     'attr' => array(
                                         'class' => 'input-large'
                                     )
@@ -162,7 +163,8 @@ class ReportForm extends AbstractType
                                 'checkbox',
                                 null,
                                 array(
-                                    'label' => 'report_reconciled_only'
+                                    'label' => 'report_reconciled_only',
+                                    'required' => false
                                 )
                             )
                         )
