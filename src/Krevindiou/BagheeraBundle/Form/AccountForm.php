@@ -76,6 +76,8 @@ class AccountForm extends AbstractType
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
                                     return $repository->createQueryBuilder('b')
                                         ->where('b.user = :user')
+                                        ->andWhere('b.isDeleted = false')
+                                        ->andWhere('b.isClosed = false')
                                         ->setParameter('user', $user)
                                         ->add('orderBy', 'b.name ASC');
                                 },
