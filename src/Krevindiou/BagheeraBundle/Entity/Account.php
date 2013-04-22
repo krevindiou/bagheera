@@ -78,22 +78,6 @@ class Account
     protected $overdraftFacility = 0;
 
     /**
-     * @var string $iban
-     *
-     * @ORM\Column(name="iban", type="string", length=34, nullable=true)
-     * @Assert\Length(max = 34)
-     */
-    protected $iban;
-
-    /**
-     * @var string $bic
-     *
-     * @ORM\Column(name="bic", type="string", length=11, nullable=true)
-     * @Assert\Length(max = 11)
-     */
-    protected $bic;
-
-    /**
      * @var boolean $isDeleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
@@ -269,46 +253,6 @@ class Account
     public function getOverdraftFacility()
     {
         return $this->overdraftFacility;
-    }
-
-    /**
-     * Set iban
-     *
-     * @param string $iban
-     */
-    public function setIban($iban)
-    {
-        $this->iban = $iban;
-    }
-
-    /**
-     * Get iban
-     *
-     * @return string
-     */
-    public function getIban()
-    {
-        return $this->iban;
-    }
-
-    /**
-     * Set bic
-     *
-     * @param string $bic
-     */
-    public function setBic($bic)
-    {
-        $this->bic = $bic;
-    }
-
-    /**
-     * Get bic
-     *
-     * @return string
-     */
-    public function getBic()
-    {
-        return $this->bic;
     }
 
     /**

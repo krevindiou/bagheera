@@ -31,26 +31,6 @@ class AccountForm extends AbstractType
                     )
                 )
             )
-            ->add(
-                'iban',
-                null,
-                array(
-                    'label' => 'account_iban',
-                    'attr' => array(
-                        'class' => 'input-xlarge'
-                    )
-                )
-            )
-            ->add(
-                'bic',
-                null,
-                array(
-                    'label' => 'account_bic',
-                    'attr' => array(
-                        'class' => 'input-xlarge'
-                    )
-                )
-            )
         ;
 
         $user = $options['user'];

@@ -285,8 +285,6 @@ class AccountService
                     $account->setName($accountArray['name']);
                     $account->setExternalAccountId($accountArray['external_account_id']);
                     $account->setCurrency($accountArray['currency']);
-                    $account->setIban(isset($accountArray['iban']) ? $accountArray['iban'] : null);
-                    $account->setBic(isset($accountArray['bic']) ? $accountArray['bic'] : null);
 
                     $errors = $this->validator->validate($account);
 
