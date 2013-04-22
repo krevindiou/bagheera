@@ -144,10 +144,11 @@ class AccountForm extends AbstractType
     {
         $resolver->setDefaults(
             array(
-                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                'user' => null
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Account'
             )
         );
+
+        $resolver->setRequired(array('user'));
     }
 
     public function getName()
