@@ -205,7 +205,7 @@ class UserService
             $user = $this->em->find('KrevindiouBagheeraBundle:User', $userId);
 
             if (null !== $user) {
-                $user->setIsActive(!$user->getIsActive());
+                $user->setActive(!$user->getIsActive());
 
                 try {
                     $this->em->persist($user);
@@ -353,7 +353,7 @@ class UserService
         $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
                           ->findOneBy(array('activation' => $key));
         if (null !== $user) {
-            $user->setIsActive(true);
+            $user->setActive(true);
             $user->setActivation(null);
 
             try {

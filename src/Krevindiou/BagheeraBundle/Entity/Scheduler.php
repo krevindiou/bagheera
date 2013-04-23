@@ -291,7 +291,7 @@ class Scheduler
      *
      * @param boolean $isReconciled
      */
-    public function setIsReconciled($isReconciled)
+    public function setReconciled($isReconciled)
     {
         $this->isReconciled = (bool) $isReconciled;
     }
@@ -371,7 +371,7 @@ class Scheduler
      *
      * @param boolean $isActive
      */
-    public function setIsActive($isActive)
+    public function setActive($isActive)
     {
         $this->isActive = (bool) $isActive;
     }

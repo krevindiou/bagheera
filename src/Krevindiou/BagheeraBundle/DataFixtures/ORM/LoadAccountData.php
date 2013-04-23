@@ -22,7 +22,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - HSBC - Checking account');
         $account->setCurrency('USD');
         $account->setOverdraftFacility(100);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-checking_account', $account);
@@ -32,7 +32,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - HSBC - Certificate of deposit #1');
         $account->setCurrency('USD');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-certificate_of_deposit_1', $account);
@@ -42,7 +42,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - HSBC - Certificate of deposit #2');
         $account->setCurrency('EUR');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-certificate_of_deposit_2', $account);
@@ -52,7 +52,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - HSBC - Certificate of deposit #3');
         $account->setCurrency('USD');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(true);
+        $account->setDeleted(true);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-hsbc-certificate_of_deposit_3', $account);
@@ -65,7 +65,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - Bank of America - Checking account');
         $account->setCurrency('USD');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-bank_of_america-checking_account', $account);
@@ -78,7 +78,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - Wells Fargo - Checking account');
         $account->setCurrency('USD');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-wells_fargo-checking_account', $account);
@@ -91,7 +91,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('John - Santander - Checking account');
         $account->setCurrency('USD');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-santander-checking_account', $account);
@@ -104,7 +104,7 @@ class LoadAccountData extends AbstractFixture implements OrderedFixtureInterface
         $account->setName('Jane - BNP Paribas - Checking account');
         $account->setCurrency('EUR');
         $account->setOverdraftFacility(0);
-        $account->setIsDeleted(false);
+        $account->setDeleted(false);
         $account->setCreatedAt(new \DateTime('2011-08-31'));
         $em->persist($account);
         $this->addReference('account-bnp_paribas-checking_account', $account);

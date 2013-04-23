@@ -130,7 +130,7 @@ class OperationSearchService
             }
 
             $operationSearch->setNotes($sessionSearch[$account->getAccountId()]['notes']);
-            $operationSearch->setIsReconciled($sessionSearch[$account->getAccountId()]['isReconciled']);
+            $operationSearch->setReconciled($sessionSearch[$account->getAccountId()]['isReconciled']);
 
             return $operationSearch;
         }

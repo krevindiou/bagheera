@@ -268,7 +268,7 @@ class SchedulerService
                 $operation->setDebit($scheduler->getDebit());
                 $operation->setCredit($scheduler->getCredit());
                 $operation->setValueDate(new \DateTime($date));
-                $operation->setIsReconciled($scheduler->getIsReconciled());
+                $operation->setReconciled($scheduler->getIsReconciled());
                 $operation->setNotes($scheduler->getNotes());
                 $operation->setTransferAccount($scheduler->getTransferAccount());
 

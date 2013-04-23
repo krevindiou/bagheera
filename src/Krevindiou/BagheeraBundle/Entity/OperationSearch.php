@@ -339,7 +339,7 @@ class OperationSearch
      *
      * @param boolean $isReconciled
      */
-    public function setIsReconciled($isReconciled)
+    public function setReconciled($isReconciled)
     {
         if ('' === $isReconciled) {
             $isReconciled = null;

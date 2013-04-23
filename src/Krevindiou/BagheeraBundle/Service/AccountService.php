@@ -182,7 +182,7 @@ class AccountService
                     $operation->setDebit(abs($form->get('initialBalance')->getData()));
                 }
                 $operation->setValueDate(new \DateTime());
-                $operation->setIsReconciled(true);
+                $operation->setReconciled(true);
 
                 $this->operationService->save($user, $operation);
             }
@@ -208,7 +208,7 @@ class AccountService
 
                 if (null !== $account) {
                     if ($user === $account->getBank()->getUser()) {
-                        $account->setIsDeleted(true);
+                        $account->setDeleted(true);
                     }
                 }
             }

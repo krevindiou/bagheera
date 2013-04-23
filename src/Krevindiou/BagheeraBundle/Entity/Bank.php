@@ -225,7 +225,7 @@ class Bank
      *
      * @param boolean $isFavorite
      */
-    public function setIsFavorite($isFavorite)
+    public function setFavorite($isFavorite)
     {
         $this->isFavorite = (bool) $isFavorite;
     }
@@ -245,7 +245,7 @@ class Bank
      *
      * @param boolean $isClosed
      */
-    public function setIsClosed($isClosed)
+    public function setClosed($isClosed)
     {
         $this->isClosed = (bool) $isClosed;
     }
@@ -265,7 +265,7 @@ class Bank
      *
      * @param boolean $isDeleted
      */
-    public function setIsDeleted($isDeleted)
+    public function setDeleted($isDeleted)
     {
         $this->isDeleted = (bool) $isDeleted;
     }

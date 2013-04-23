@@ -22,8 +22,8 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $user->setPassword($encoder->encodePassword('john', $user->getSalt()));
         $user->setActivation('b4fa77f5180803d0f6f4f504594da09e');
         $user->setCountry('US');
-        $user->setIsAdmin(false);
-        $user->setIsActive(true);
+        $user->setAdmin(false);
+        $user->setActive(true);
         $em->persist($user);
         $this->addReference('user-john', $user);
 
@@ -32,8 +32,8 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $user->setPassword($encoder->encodePassword('jane', $user->getSalt()));
         $user->setActivation('a24fe4584a99123d8f38a9a4e0abae54');
         $user->setCountry('FR');
-        $user->setIsAdmin(true);
-        $user->setIsActive(true);
+        $user->setAdmin(true);
+        $user->setActive(true);
         $em->persist($user);
         $this->addReference('user-jane', $user);
 
@@ -42,8 +42,8 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $user->setPassword($encoder->encodePassword('jack', $user->getSalt()));
         $user->setActivation('c5c0d545caa2fc368922382fd7eeb150');
         $user->setCountry('US');
-        $user->setIsAdmin(false);
-        $user->setIsActive(false);
+        $user->setAdmin(false);
+        $user->setActive(false);
         $em->persist($user);
         $this->addReference('user-jack', $user);
 

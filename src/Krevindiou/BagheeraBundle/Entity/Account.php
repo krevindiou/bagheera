@@ -260,7 +260,7 @@ class Account
      *
      * @param boolean $isDeleted
      */
-    public function setIsDeleted($isDeleted)
+    public function setDeleted($isDeleted)
     {
         $this->isDeleted = (bool) $isDeleted;
     }

@@ -161,7 +161,7 @@ class BankService
 
                 if (null !== $bank) {
                     if ($user === $bank->getUser()) {
-                        $bank->setIsDeleted(true);
+                        $bank->setDeleted(true);
                     }
                 }
             }

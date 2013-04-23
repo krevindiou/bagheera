@@ -275,7 +275,7 @@ class OperationService
 
                 if (null !== $operation) {
                     if ($user === $operation->getAccount()->getBank()->getUser()) {
-                        $operation->setIsReconciled(true);
+                        $operation->setReconciled(true);
                         $this->em->persist($operation);
                     }
                 }

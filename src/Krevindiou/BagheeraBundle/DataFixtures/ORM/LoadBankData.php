@@ -22,9 +22,9 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $bank->setProvider(null);
         $bank->setName('HSBC');
         $bank->setSortOrder(1);
-        $bank->setIsFavorite(false);
-        $bank->setIsClosed(false);
-        $bank->setIsDeleted(false);
+        $bank->setFavorite(false);
+        $bank->setClosed(false);
+        $bank->setDeleted(false);
         $em->persist($bank);
         $this->addReference('bank-john-hsbc', $bank);
 
@@ -33,9 +33,9 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $bank->setProvider(null);
         $bank->setName('Bank of America');
         $bank->setSortOrder(2);
-        $bank->setIsFavorite(true);
-        $bank->setIsClosed(false);
-        $bank->setIsDeleted(false);
+        $bank->setFavorite(true);
+        $bank->setClosed(false);
+        $bank->setDeleted(false);
         $em->persist($bank);
         $this->addReference('bank-john-bank_of_america', $bank);
 
@@ -44,9 +44,9 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $bank->setProvider(null);
         $bank->setName('Wells Fargo');
         $bank->setSortOrder(3);
-        $bank->setIsFavorite(false);
-        $bank->setIsClosed(true);
-        $bank->setIsDeleted(false);
+        $bank->setFavorite(false);
+        $bank->setClosed(true);
+        $bank->setDeleted(false);
         $em->persist($bank);
         $this->addReference('bank-john-wells_fargo', $bank);
 
@@ -55,9 +55,9 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $bank->setProvider(null);
         $bank->setName('Santander');
         $bank->setSortOrder(4);
-        $bank->setIsFavorite(false);
-        $bank->setIsClosed(false);
-        $bank->setIsDeleted(true);
+        $bank->setFavorite(false);
+        $bank->setClosed(false);
+        $bank->setDeleted(true);
         $em->persist($bank);
         $this->addReference('bank-john-santander', $bank);
 
@@ -69,9 +69,9 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $bank->setProvider(null);
         $bank->setName('BNP Paribas');
         $bank->setSortOrder(1);
-        $bank->setIsFavorite(false);
-        $bank->setIsClosed(false);
-        $bank->setIsDeleted(false);
+        $bank->setFavorite(false);
+        $bank->setClosed(false);
+        $bank->setDeleted(false);
         $em->persist($bank);
         $this->addReference('bank-jane-bnp_paribas', $bank);
 

@@ -25,7 +25,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation1->setDebit(29.16);
         $operation1->setCredit(null);
         $operation1->setValueDate(new \DateTime('2011-09-01'));
-        $operation1->setIsReconciled(true);
+        $operation1->setReconciled(true);
         $operation1->setScheduler($this->getReference('scheduler-john-1'));
         $em->persist($operation1);
 
@@ -37,7 +37,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(48.69);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-02'));
-        $operation->setIsReconciled(false);
+        $operation->setReconciled(false);
         $em->persist($operation);
 
         $operation = new Operation();
@@ -48,7 +48,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(null);
         $operation->setCredit(18.05);
         $operation->setValueDate(new \DateTime('2011-09-02'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         $operation = new Operation();
@@ -59,7 +59,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(null);
         $operation->setCredit(38.31);
         $operation->setValueDate(new \DateTime('2011-10-14'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         /**
@@ -73,7 +73,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(24.77);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         $operation = new Operation();
@@ -84,7 +84,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(null);
         $operation->setCredit(29.16);
         $operation->setValueDate(new \DateTime('2011-09-02'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $operation->setTransferOperation($operation1);
         $operation1->setTransferOperation($operation);
         $em->persist($operation);
@@ -100,7 +100,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(null);
         $operation->setCredit(208.55);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         /**
@@ -114,7 +114,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(129.43);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         /**
@@ -128,7 +128,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(66.42);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         $operation = new Operation();
@@ -139,7 +139,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(null);
         $operation->setCredit(71.88);
         $operation->setValueDate(new \DateTime('2011-09-02'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         /**
@@ -153,7 +153,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(87.18);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         /**
@@ -167,7 +167,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(61.04);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         /**
@@ -181,7 +181,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(28.19);
         $operation->setCredit(null);
         $operation->setValueDate(new \DateTime('2011-09-01'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $operation->setScheduler($this->getReference('scheduler-jane-1'));
         $em->persist($operation);
 
@@ -193,7 +193,7 @@ class LoadOperationData extends AbstractFixture implements OrderedFixtureInterfa
         $operation->setDebit(null);
         $operation->setCredit(0.67);
         $operation->setValueDate(new \DateTime('2011-09-02'));
-        $operation->setIsReconciled(true);
+        $operation->setReconciled(true);
         $em->persist($operation);
 
         $em->flush();

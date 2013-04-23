@@ -338,7 +338,7 @@ class Operation
      *
      * @param boolean $isReconciled
      */
-    public function setIsReconciled($isReconciled)
+    public function setReconciled($isReconciled)
     {
         $this->isReconciled = (bool) $isReconciled;
     }

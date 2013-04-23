@@ -271,7 +271,7 @@ class User implements AdvancedUserInterface
      *
      * @param boolean $isAdmin
      */
-    public function setIsAdmin($isAdmin)
+    public function setAdmin($isAdmin)
     {
         $this->isAdmin = (bool) $isAdmin;
     }
@@ -291,7 +291,7 @@ class User implements AdvancedUserInterface
      *
      * @param boolean $isActive
      */
-    public function setIsActive($isActive)
+    public function setActive($isActive)
     {
         $this->isActive = (bool) $isActive;
     }

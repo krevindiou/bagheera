@@ -160,7 +160,7 @@ class Category
      *
      * @param boolean $isActive
      */
-    public function setIsActive($isActive)
+    public function setActive($isActive)
     {
         $this->isActive = (bool) $isActive;
     }
