@@ -103,7 +103,7 @@ class UserServiceTest extends TestCase
 
     public function testActivateWithBadKey()
     {
-        $key = 'badkey';
+        $key = 'badkeybadkeybadkeybadkeybadkeyba';
 
         $ok = $this->get('bagheera.user')->activate($key);
 
@@ -112,7 +112,9 @@ class UserServiceTest extends TestCase
 
     public function testActivateOk()
     {
-        $key = 'b4fa77f5180803d0f6f4f504594da09e';
+        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
+
+        $key = $this->get('bagheera.user')->createRegisterKey($user);
 
         $ok = $this->get('bagheera.user')->activate($key);
 

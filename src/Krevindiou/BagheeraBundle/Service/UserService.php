@@ -103,9 +103,20 @@ class UserService
      */
     protected function add(User $user)
     {
-        // Activation link construction
+        $encoder = $this->encoderFactory->getEncoder($user);
+        $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
 
-        $key = md5(uniqid(rand(), true));
+        try {
+            $this->em->persist($user);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+
+            return false;
+        }
+
+        // Activation link construction
+        $key = $this->createRegisterKey($user);
         $link = $this->router->generate('user_activate', array('key' => $key), true);
 
         $body = $this->templating->render(
@@ -119,23 +130,48 @@ class UserService
             ->setTo(array($user->getEmail()))
             ->setBody($body, 'text/html');
 
-        $user->setActivation($key);
-
-        $encoder = $this->encoderFactory->getEncoder($user);
-        $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
-
         try {
-            $this->em->persist($user);
-            $this->em->flush();
-
             $this->mailer->send($message);
-
-            return true;
         } catch (\Exception $e) {
             $this->logger->err($e->getMessage());
+
+            return false;
         }
 
-        return false;
+        return true;
+    }
+
+    /**
+     * Creates register key
+     *
+     * @param  User   $user User entity
+     * @return string
+     */
+    public function createRegisterKey(User $user)
+    {
+        $data = array(
+            'type' => 'register',
+            'email' => $user->getEmail(),
+            'createdAt' => $user->getCreatedAt()->format(\DateTime::ISO8601)
+        );
+
+        return $this->cryptService->crypt($data);
+    }
+
+    /**
+     * Decodes register key
+     *
+     * @param  string $key Encrypted register key
+     * @return User
+     */
+    protected function decodeRegisterKey($key)
+    {
+        $data = $this->cryptService->decrypt($key);
+
+        if (null !== $data && 'register' == $data['type']) {
+            return $this->em->getRepository('KrevindiouBagheeraBundle:User')
+                            ->findOneBy(array('email' => $data['email']));
+        }
     }
 
     /**
@@ -311,7 +347,7 @@ class UserService
      * @param  User   $user User entity
      * @return string
      */
-    protected function createChangePasswordKey(User $user)
+    public function createChangePasswordKey(User $user)
     {
         $data = array(
             'type' => 'change_password',
@@ -348,11 +384,8 @@ class UserService
      */
     public function activate($key)
     {
-        $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
-                          ->findOneBy(array('activation' => $key));
-        if (null !== $user) {
+        if (null !== $user = $this->decodeRegisterKey($key)) {
             $user->setActive(true);
-            $user->setActivation(null);
 
             try {
                 $this->em->persist($user);

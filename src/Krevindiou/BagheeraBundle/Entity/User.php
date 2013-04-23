@@ -63,15 +63,6 @@ class User implements AdvancedUserInterface
     protected $salt;
 
     /**
-     * @var string $activation
-     *
-     * @ORM\Column(name="activation", type="string", length=32, nullable=true)
-     * @Assert\Length(min = 32)
-     * @Assert\Length(max = 32)
-     */
-    protected $activation;
-
-    /**
      * @var string $country
      *
      * @ORM\Column(name="country", type="string", length=2, nullable=false)
@@ -224,26 +215,6 @@ class User implements AdvancedUserInterface
     public function getPlainPassword()
     {
         return $this->plainPassword;
-    }
-
-    /**
-     * Set activation
-     *
-     * @param string $activation
-     */
-    public function setActivation($activation)
-    {
-        $this->activation = $activation;
-    }
-
-    /**
-     * Get activation
-     *
-     * @return string
-     */
-    public function getActivation()
-    {
-        return $this->activation;
     }
 
     /**

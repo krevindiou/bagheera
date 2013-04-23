@@ -127,7 +127,7 @@ class UserController extends Controller
     {
         $key = $request->query->get('key');
 
-        if ('' != $key && $this->get('bagheera.user')->activate($key)) {
+        if (null !== $key && $this->get('bagheera.user')->activate($key)) {
             $this->get('session')->getFlashBag()->add('success', 'user_register_activation_confirmation');
         } else {
             $this->get('session')->getFlashBag()->add('error', 'user_register_activation_error');

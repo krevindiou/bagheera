@@ -20,7 +20,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $user = new User();
         $user->setEmail('john@example.net');
         $user->setPassword($encoder->encodePassword('john', $user->getSalt()));
-        $user->setActivation('b4fa77f5180803d0f6f4f504594da09e');
         $user->setCountry('US');
         $user->setAdmin(false);
         $user->setActive(true);
@@ -30,7 +29,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $user = new User();
         $user->setEmail('jane@example.net');
         $user->setPassword($encoder->encodePassword('jane', $user->getSalt()));
-        $user->setActivation('a24fe4584a99123d8f38a9a4e0abae54');
         $user->setCountry('FR');
         $user->setAdmin(true);
         $user->setActive(true);
@@ -40,7 +38,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
         $user = new User();
         $user->setEmail('jack@example.net');
         $user->setPassword($encoder->encodePassword('jack', $user->getSalt()));
-        $user->setActivation('c5c0d545caa2fc368922382fd7eeb150');
         $user->setCountry('US');
         $user->setAdmin(false);
         $user->setActive(false);
