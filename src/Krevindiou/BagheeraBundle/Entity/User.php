@@ -134,7 +134,7 @@ class User implements AdvancedUserInterface
 
     public function __construct()
     {
-        $this->salt = bin2hex(openssl_random_pseudo_bytes(16));
+        $this->generateSalt();
         $this->banks = new ArrayCollection();
         $this->reports = new ArrayCollection();
     }
@@ -380,6 +380,16 @@ class User implements AdvancedUserInterface
     public function getSalt()
     {
         return $this->salt;
+    }
+
+    /**
+     * Sets random salt
+     */
+    public function generateSalt()
+    {
+        $this->salt = bin2hex(openssl_random_pseudo_bytes(16));
+
+        return $this;
     }
 
     /**

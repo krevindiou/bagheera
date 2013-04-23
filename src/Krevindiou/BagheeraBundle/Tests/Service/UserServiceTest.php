@@ -85,26 +85,20 @@ class UserServiceTest extends TestCase
         $this->assertEquals(get_class($forgotPasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testGetChangePasswordFormWithBadKey()
+    public function testGetChangePasswordForm()
     {
-        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $key = base64_encode(gzdeflate('badkey'));
-
-        $changePasswordForm = $this->get('bagheera.user')->getChangePasswordForm($key);
-
-        $this->assertNotEquals(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
-    }
-
-    public function testGetChangePasswordFormOk()
-    {
-        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $key = base64_encode(gzdeflate(
-            $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
-        ));
-
-        $changePasswordForm = $this->get('bagheera.user')->getChangePasswordForm($key);
+        $changePasswordForm = $this->get('bagheera.user')->getChangePasswordForm();
 
         $this->assertEquals(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
+    }
+
+    public function testChangePassword()
+    {
+        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
+
+        $ok = $this->get('bagheera.user')->changePassword($user, 'test');
+
+        $this->assertTrue($ok);
     }
 
     public function testActivateWithBadKey()

@@ -72,9 +72,7 @@ class UserController extends Controller
             $form->bind($request);
 
             if ($form->isValid()) {
-                $data = $form->getData();
-
-                if ($this->get('bagheera.user')->sendChangePasswordEmail($data['email'])) {
+                if ($this->get('bagheera.user')->sendChangePasswordEmail($form->get('email')->getData())) {
                     $this->get('session')->getFlashBag()->add('info', 'user_forgot_password_confirmation');
 
                     return $this->redirect($this->generateUrl('login'));
@@ -88,23 +86,21 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/change-password", name="user_change_password")
+     * @Route("/change-password", name="user_change_password_with_key", requirements={"key"})
      * @Template
      */
-    public function changePasswordAction(Request $request)
+    public function changePasswordWithKeyAction(Request $request)
     {
         $key = $request->query->get('key');
 
-        $form = $this->get('bagheera.user')->getChangePasswordForm($key);
+        if ($user = $this->get('bagheera.user')->decodeChangePasswordKey($key)) {
+            $form = $this->get('bagheera.user')->getChangePasswordForm();
 
-        if (null !== $form) {
             if ($request->getMethod() == 'POST') {
                 $form->bind($request);
 
                 if ($form->isValid()) {
-                    $data = $form->getData();
-
-                    if ($this->get('bagheera.user')->changePassword($data['password'], $key)) {
+                    if ($this->get('bagheera.user')->changePassword($user, $form->get('password')->getData())) {
                         $this->get('session')->getFlashBag()->add('success', 'user_change_password_confirmation');
 
                         return $this->redirect($this->generateUrl('login'));
@@ -112,14 +108,15 @@ class UserController extends Controller
                 }
             }
         } else {
-            $this->get('session')->getFlashBag()->add('error', 'user_change_password_error');
-
             return $this->redirect($this->generateUrl('login'));
         }
 
-        return array(
-            'key' => $key,
-            'changePasswordForm' => $form->createView()
+        return $this->render(
+            'KrevindiouBagheeraBundle:User:changePassword.html.twig',
+            array(
+                'key' => $key,
+                'changePasswordForm' => $form->createView()
+            )
         );
     }
 

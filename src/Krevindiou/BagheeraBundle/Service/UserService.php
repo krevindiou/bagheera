@@ -59,6 +59,9 @@ class UserService
     /** @DI\Inject("bagheera.scheduler") */
     public $schedulerService;
 
+    /** @DI\Inject("bagheera.crypt") */
+    public $cryptService;
+
     public function onLogin(InteractiveLoginEvent $event)
     {
         $this->schedulerService->runSchedulers($event->getAuthenticationToken()->getUser());
@@ -241,7 +244,7 @@ class UserService
         if (null !== $user) {
             // Change password link construction
             $key = $this->createChangePasswordKey($user);
-            $link = $this->router->generate('user_change_password', array('key' => $key), true);
+            $link = $this->router->generate('user_change_password_with_key', array('key' => $key), true);
 
             // Mail sending
             $body = str_replace(
@@ -269,39 +272,34 @@ class UserService
     }
 
     /**
-     * Returns change password form if key is valid
+     * Returns change password form
      *
-     * @param  string $key Change key
      * @return Form
      */
-    public function getChangePasswordForm($key)
+    public function getChangePasswordForm()
     {
-        if (null !== $this->decodeChangePasswordKey($key)) {
-            return $this->formFactory->create('user_change_password_type');
-        }
+        return $this->formFactory->create('user_change_password_type');
     }
 
     /**
-     * Updates password if key is valid
+     * Updates password
      *
+     * @param  User   $user     User entity
      * @param  string $password Password to set
-     * @param  string $key      Change key
      * @return void
      */
-    public function changePassword($password, $key)
+    public function changePassword(User $user, $password)
     {
-        if (null !== ($user = $this->decodeChangePasswordKey($key))) {
-            $encoder = $this->encoderFactory->getEncoder($user);
-            $user->setPassword($encoder->encodePassword($password, $user->getSalt()));
+        $encoder = $this->encoderFactory->getEncoder($user);
+        $user->setPassword($encoder->encodePassword($password, $user->generateSalt()->getSalt()));
 
-            try {
-                $this->em->persist($user);
-                $this->em->flush();
+        try {
+            $this->em->persist($user);
+            $this->em->flush();
 
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-            }
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
         }
 
         return false;
@@ -315,31 +313,31 @@ class UserService
      */
     protected function createChangePasswordKey(User $user)
     {
-        return base64_encode(gzdeflate(
-            $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
-        ));
+        $data = array(
+            'type' => 'change_password',
+            'email' => $user->getEmail(),
+            'createdAt' => $user->getCreatedAt()->format(\DateTime::ISO8601)
+        );
+
+        $expiration = new \DateTime();
+        $expiration->modify('+2 days');
+
+        return $this->cryptService->crypt($data, $expiration);
     }
 
     /**
-     * Decodes change password key and return user model
+     * Decodes change password key
      *
-     * @param  string $key Change key
+     * @param  string $key Encrypted change password key
      * @return User
      */
-    protected function decodeChangePasswordKey($key)
+    public function decodeChangePasswordKey($key)
     {
-        if (false !== ($key = gzinflate(base64_decode($key)))) {
-            $email = substr($key, 0, -33);
-            $md5 = substr($key, -32);
+        $data = $this->cryptService->decrypt($key);
 
-            $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
-                             ->findOneBy(array('email' => $email));
-
-            if (null !== $user) {
-                if (md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601)) == $md5) {
-                    return $user;
-                }
-            }
+        if (null !== $data && 'change_password' == $data['type']) {
+            return $this->em->getRepository('KrevindiouBagheeraBundle:User')
+                            ->findOneBy(array('email' => $data['email']));
         }
     }
 
