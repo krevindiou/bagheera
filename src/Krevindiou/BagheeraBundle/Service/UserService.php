@@ -62,6 +62,9 @@ class UserService
     /** @DI\Inject("bagheera.crypt") */
     public $cryptService;
 
+    /** @DI\Inject */
+    public $templating;
+
     public function onLogin(InteractiveLoginEvent $event)
     {
         $this->schedulerService->runSchedulers($event->getAuthenticationToken()->getUser());
@@ -105,17 +108,16 @@ class UserService
         $key = md5(uniqid(rand(), true));
         $link = $this->router->generate('user_activate', array('key' => $key), true);
 
-        $body = str_replace(
-            '%link%',
-            $link,
-            $this->translator->trans('user_register_email_body')
+        $body = $this->templating->render(
+            'KrevindiouBagheeraBundle:Email:register.html.twig',
+            array('link' => $link)
         );
 
         $message = \Swift_Message::newInstance()
             ->setSubject($this->translator->trans('user_register_email_subject'))
             ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
             ->setTo(array($user->getEmail()))
-            ->setBody($body);
+            ->setBody($body, 'text/html');
 
         $user->setActivation($key);
 
@@ -246,18 +248,16 @@ class UserService
             $key = $this->createChangePasswordKey($user);
             $link = $this->router->generate('user_change_password_with_key', array('key' => $key), true);
 
-            // Mail sending
-            $body = str_replace(
-                '%link%',
-                $link,
-                $this->translator->trans('user_forgot_password_email_body')
+            $body = $this->templating->render(
+                'KrevindiouBagheeraBundle:Email:changePassword.html.twig',
+                array('link' => $link)
             );
 
             $message = \Swift_Message::newInstance()
                 ->setSubject($this->translator->trans('user_forgot_password_email_subject'))
                 ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
                 ->setTo(array($user->getEmail()))
-                ->setBody($body);
+                ->setBody($body, 'text/html');
 
             try {
                 $this->mailer->send($message);
