@@ -14,7 +14,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 /**
  * @DI\FormType
  */
-class UserResetPasswordForm extends AbstractType
+class UserChangePasswordForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -24,8 +24,8 @@ class UserResetPasswordForm extends AbstractType
                 'repeated',
                 array(
                     'type' => 'password',
-                    'first_name' => 'user_password',
-                    'second_name' => 'user_password_confirmation',
+                    'first_options' => array('label' => 'user_password'),
+                    'second_options' => array('label' => 'user_password_confirmation'),
                     'invalid_message' => 'user_password_fields_must_match',
                     'constraints' => array(
                         new NotBlank(),
@@ -41,6 +41,6 @@ class UserResetPasswordForm extends AbstractType
 
     public function getName()
     {
-        return 'user_reset_password_type';
+        return 'user_change_password_type';
     }
 }

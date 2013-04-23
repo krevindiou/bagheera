@@ -74,7 +74,7 @@ class UserController extends Controller
             if ($form->isValid()) {
                 $data = $form->getData();
 
-                if ($this->get('bagheera.user')->sendResetPasswordEmail($data['email'])) {
+                if ($this->get('bagheera.user')->sendChangePasswordEmail($data['email'])) {
                     $this->get('session')->getFlashBag()->add('info', 'user_forgot_password_confirmation');
 
                     return $this->redirect($this->generateUrl('login'));
@@ -88,14 +88,14 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/reset-password", name="user_reset_password")
+     * @Route("/change-password", name="user_change_password")
      * @Template
      */
-    public function resetPasswordAction(Request $request)
+    public function changePasswordAction(Request $request)
     {
         $key = $request->query->get('key');
 
-        $form = $this->get('bagheera.user')->getResetPasswordForm($key);
+        $form = $this->get('bagheera.user')->getChangePasswordForm($key);
 
         if (null !== $form) {
             if ($request->getMethod() == 'POST') {
@@ -104,22 +104,22 @@ class UserController extends Controller
                 if ($form->isValid()) {
                     $data = $form->getData();
 
-                    if ($this->get('bagheera.user')->resetPassword($data['password'], $key)) {
-                        $this->get('session')->getFlashBag()->add('success', 'user_reset_password_confirmation');
+                    if ($this->get('bagheera.user')->changePassword($data['password'], $key)) {
+                        $this->get('session')->getFlashBag()->add('success', 'user_change_password_confirmation');
 
                         return $this->redirect($this->generateUrl('login'));
                     }
                 }
             }
         } else {
-            $this->get('session')->getFlashBag()->add('error', 'user_reset_password_error');
+            $this->get('session')->getFlashBag()->add('error', 'user_change_password_error');
 
             return $this->redirect($this->generateUrl('login'));
         }
 
         return array(
             'key' => $key,
-            'resetPasswordForm' => $form->createView()
+            'changePasswordForm' => $form->createView()
         );
     }
 

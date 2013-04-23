@@ -23,7 +23,7 @@ security:
             security: false
 
         anonymous:
-            pattern:  ^/(sign-in|register|activate|forgot-password|reset-password|translations\.js)$
+            pattern:  ^/(sign-in|register|activate|forgot-password|change-password|translations\.js)$
             security: false
 
         secured_area:

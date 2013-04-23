@@ -85,26 +85,26 @@ class UserServiceTest extends TestCase
         $this->assertEquals(get_class($forgotPasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testGetResetPasswordFormWithBadKey()
+    public function testGetChangePasswordFormWithBadKey()
     {
         $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
         $key = base64_encode(gzdeflate('badkey'));
 
-        $resetPasswordForm = $this->get('bagheera.user')->getResetPasswordForm($key);
+        $changePasswordForm = $this->get('bagheera.user')->getChangePasswordForm($key);
 
-        $this->assertNotEquals(get_class($resetPasswordForm), 'Symfony\Component\Form\Form');
+        $this->assertNotEquals(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testGetResetPasswordFormOk()
+    public function testGetChangePasswordFormOk()
     {
         $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
         $key = base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
         ));
 
-        $resetPasswordForm = $this->get('bagheera.user')->getResetPasswordForm($key);
+        $changePasswordForm = $this->get('bagheera.user')->getChangePasswordForm($key);
 
-        $this->assertEquals(get_class($resetPasswordForm), 'Symfony\Component\Form\Form');
+        $this->assertEquals(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
     }
 
     public function testActivateWithBadKey()

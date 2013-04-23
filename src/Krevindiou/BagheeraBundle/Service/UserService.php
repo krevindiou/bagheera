@@ -228,20 +228,20 @@ class UserService
     }
 
     /**
-     * Sends email with reset password link
+     * Sends email with change password link
      *
      * @param  string  $email Email to send link
      * @return boolean
      */
-    public function sendResetPasswordEmail($email)
+    public function sendChangePasswordEmail($email)
     {
         $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
                           ->findOneBy(array('email' => $email));
 
         if (null !== $user) {
-            // Reset password link construction
-            $key = $this->createResetPasswordKey($user);
-            $link = $this->router->generate('user_reset_password', array('key' => $key), true);
+            // Change password link construction
+            $key = $this->createChangePasswordKey($user);
+            $link = $this->router->generate('user_change_password', array('key' => $key), true);
 
             // Mail sending
             $body = str_replace(
@@ -269,15 +269,15 @@ class UserService
     }
 
     /**
-     * Returns reset password form if key is valid
+     * Returns change password form if key is valid
      *
-     * @param  string $key Reset key
+     * @param  string $key Change key
      * @return Form
      */
-    public function getResetPasswordForm($key)
+    public function getChangePasswordForm($key)
     {
-        if (null !== $this->decodeResetPasswordKey($key)) {
-            return $this->formFactory->create('user_reset_password_type');
+        if (null !== $this->decodeChangePasswordKey($key)) {
+            return $this->formFactory->create('user_change_password_type');
         }
     }
 
@@ -285,12 +285,12 @@ class UserService
      * Updates password if key is valid
      *
      * @param  string $password Password to set
-     * @param  string $key      Reset key
+     * @param  string $key      Change key
      * @return void
      */
-    public function resetPassword($password, $key)
+    public function changePassword($password, $key)
     {
-        if (null !== ($user = $this->decodeResetPasswordKey($key))) {
+        if (null !== ($user = $this->decodeChangePasswordKey($key))) {
             $encoder = $this->encoderFactory->getEncoder($user);
             $user->setPassword($encoder->encodePassword($password, $user->getSalt()));
 
@@ -308,12 +308,12 @@ class UserService
     }
 
     /**
-     * Creates reset password key
+     * Creates change password key
      *
      * @param  User   $user User entity
      * @return string
      */
-    protected function createResetPasswordKey(User $user)
+    protected function createChangePasswordKey(User $user)
     {
         return base64_encode(gzdeflate(
             $user->getEmail() . '-' . md5($user->getUserId() . '-' . $user->getCreatedAt()->format(\DateTime::ISO8601))
@@ -321,12 +321,12 @@ class UserService
     }
 
     /**
-     * Decodes reset password key and return user model
+     * Decodes change password key and return user model
      *
-     * @param  string $key Reset key
+     * @param  string $key Change key
      * @return User
      */
-    protected function decodeResetPasswordKey($key)
+    protected function decodeChangePasswordKey($key)
     {
         if (false !== ($key = gzinflate(base64_decode($key)))) {
             $email = substr($key, 0, -33);
