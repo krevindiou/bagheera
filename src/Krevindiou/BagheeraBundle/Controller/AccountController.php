@@ -14,6 +14,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
+/**
+ * @Route("/manager")
+ */
 class AccountController extends Controller
 {
     /**

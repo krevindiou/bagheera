@@ -13,6 +13,9 @@ use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Form\OperationSearchForm;
 
+/**
+ * @Route("/manager")
+ */
 class OperationSearchController extends Controller
 {
     /**

@@ -14,6 +14,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Krevindiou\BagheeraBundle\Entity\Report;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
+/**
+ * @Route("/manager")
+ */
 class ReportController extends Controller
 {
     /**
@@ -106,8 +109,8 @@ class ReportController extends Controller
     }
 
     /**
-     * @Route("report_synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
-     * @Route("report_synthesis_account_{accountId}.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
+     * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
+     * @Route("/report-synthesis-account-{accountId}.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      * @Template()
      */
     public function synthesisAction(Account $account = null)

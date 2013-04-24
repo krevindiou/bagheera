@@ -22,16 +22,13 @@ security:
             pattern:  ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        anonymous:
-            pattern:  ^/(sign-in|register|activate|forgot-password|change-password|translations\.js)$
-            security: false
-
         secured_area:
             pattern:    ^/
             form_login:
                 login_path:  user_login
                 check_path:  login_check
             logout:     ~
+            anonymous:  ~
 
     access_control:
-        #- { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }
+        - { path: ^/manager, roles: ROLE_USER }

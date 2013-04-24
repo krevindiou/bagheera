@@ -15,6 +15,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
+/**
+ * @Route("/manager")
+ */
 class OperationController extends Controller
 {
     /**

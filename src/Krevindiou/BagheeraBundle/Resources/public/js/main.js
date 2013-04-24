@@ -9,8 +9,8 @@ require.config({
         bootstrap_modal: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-modal",
         bootstrap_typeahead: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-typeahead",
         bootstrap_dropdown: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-dropdown",
-        bagheera_reports: "/reports",
-        bagheera_report_synthesis: "/report_synthesis",
+        bagheera_reports: "/manager/reports",
+        bagheera_report_synthesis: "/manager/report-synthesis",
         bagheera_translations: "/translations"
     },
     shim: {

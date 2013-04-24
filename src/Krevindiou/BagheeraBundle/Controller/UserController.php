@@ -137,7 +137,7 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/profile", name="user_profile")
+     * @Route("/manager/profile", name="user_profile")
      * @Template
      */
     public function profileAction(Request $request)
@@ -160,7 +160,7 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/users", name="user_list")
+     * @Route("/manager/users", name="user_list")
      * @Template
      * @Secure(roles="ROLE_ADMIN")
      */

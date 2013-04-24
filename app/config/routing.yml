@@ -8,3 +8,10 @@ login_check:
 
 logout:
     pattern:   /logout
+
+home:
+    pattern: /
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: user_login
+        permanent: true

@@ -14,6 +14,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Krevindiou\BagheeraBundle\Entity\Scheduler;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
+/**
+ * @Route("/manager")
+ */
 class SchedulerController extends Controller
 {
     /**

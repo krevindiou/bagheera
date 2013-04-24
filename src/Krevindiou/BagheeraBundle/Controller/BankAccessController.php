@@ -11,6 +11,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 
+/**
+ * @Route("/manager")
+ */
 class BankAccessController extends Controller
 {
     /**
