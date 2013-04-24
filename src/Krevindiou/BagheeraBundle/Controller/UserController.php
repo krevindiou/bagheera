@@ -16,7 +16,7 @@ use Krevindiou\BagheeraBundle\Entity\User;
 class UserController extends Controller
 {
     /**
-     * @Route("/sign-in", name="login")
+     * @Route("/sign-in", name="user_login")
      * @Template
      */
     public function loginAction(Request $request)
@@ -51,7 +51,7 @@ class UserController extends Controller
             if ($this->get('bagheera.user')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'user_register_confirmation');
 
-                return $this->redirect($this->generateUrl('login'));
+                return $this->redirect($this->generateUrl('user_login'));
             }
         }
 
@@ -75,7 +75,7 @@ class UserController extends Controller
                 if ($this->get('bagheera.user')->sendChangePasswordEmail($form->get('email')->getData())) {
                     $this->get('session')->getFlashBag()->add('info', 'user_forgot_password_confirmation');
 
-                    return $this->redirect($this->generateUrl('login'));
+                    return $this->redirect($this->generateUrl('user_login'));
                 }
             }
         }
@@ -103,12 +103,12 @@ class UserController extends Controller
                     if ($this->get('bagheera.user')->changePassword($user, $form->get('password')->getData())) {
                         $this->get('session')->getFlashBag()->add('success', 'user_change_password_confirmation');
 
-                        return $this->redirect($this->generateUrl('login'));
+                        return $this->redirect($this->generateUrl('user_login'));
                     }
                 }
             }
         } else {
-            return $this->redirect($this->generateUrl('login'));
+            return $this->redirect($this->generateUrl('user_login'));
         }
 
         return $this->render(
@@ -133,7 +133,7 @@ class UserController extends Controller
             $this->get('session')->getFlashBag()->add('error', 'user_register_activation_error');
         }
 
-        return $this->redirect($this->generateUrl('login'));
+        return $this->redirect($this->generateUrl('user_login'));
     }
 
     /**

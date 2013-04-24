@@ -29,7 +29,7 @@ security:
         secured_area:
             pattern:    ^/
             form_login:
-                login_path:  login
+                login_path:  user_login
                 check_path:  login_check
             logout:     ~
 
