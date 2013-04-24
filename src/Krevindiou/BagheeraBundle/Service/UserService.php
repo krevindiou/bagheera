@@ -282,7 +282,7 @@ class UserService
         if (null !== $user) {
             // Change password link construction
             $key = $this->createChangePasswordKey($user);
-            $link = $this->router->generate('user_change_password_with_key', array('key' => $key), true);
+            $link = $this->router->generate('user_change_password_public', array('key' => $key), true);
 
             $body = $this->templating->render(
                 'KrevindiouBagheeraBundle:Email:changePassword.html.twig',

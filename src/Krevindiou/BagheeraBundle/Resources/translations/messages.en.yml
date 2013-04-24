@@ -22,8 +22,8 @@ user_forgot_password_email_subject: "Bagheera change password"
 user_forgot_password_email_body: |
   Click on the following link to change your password:
   %link%
-user_change_password_page_title: "Change Password"
-user_change_password_submit_button: "Change Password"
+user_change_password_page_title: "Change password"
+user_change_password_submit_button: "Change password"
 user_change_password_confirmation: "Your password has been updated."
 user_change_password_error: "Link error"
 user_profile_page_title: "Profile"

@@ -86,10 +86,10 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/change-password", name="user_change_password_with_key", requirements={"key"})
+     * @Route("/change-password", name="user_change_password_public", requirements={"key"})
      * @Template
      */
-    public function changePasswordWithKeyAction(Request $request)
+    public function changePasswordPublicAction(Request $request)
     {
         $key = $request->query->get('key');
 
@@ -111,12 +111,34 @@ class UserController extends Controller
             return $this->redirect($this->generateUrl('user_login'));
         }
 
-        return $this->render(
-            'KrevindiouBagheeraBundle:User:changePassword.html.twig',
-            array(
-                'key' => $key,
-                'changePasswordForm' => $form->createView()
-            )
+        return array(
+            'key' => $key,
+            'changePasswordForm' => $form->createView()
+        );
+    }
+
+    /**
+     * @Route("/manager/change-password", name="user_change_password")
+     * @Template
+     */
+    public function changePasswordAction(Request $request)
+    {
+        $form = $this->get('bagheera.user')->getChangePasswordForm();
+
+        if ($request->getMethod() == 'POST') {
+            $form->bind($request);
+
+            if ($form->isValid()) {
+                if ($this->get('bagheera.user')->changePassword($this->getUser(), $form->get('password')->getData())) {
+                    $this->get('session')->getFlashBag()->add('success', 'user_change_password_confirmation');
+
+                    return $this->redirect($this->generateUrl($request->get('_route')));
+                }
+            }
+        }
+
+        return array(
+            'changePasswordForm' => $form->createView()
         );
     }
 

@@ -7,11 +7,18 @@
 {% endblock %}
 
 {% block content %}
-<form action="{{ path('user_profile') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(profileForm) }}>
-    {{ form_widget(profileForm) }}
-
-    <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'user_profile_submit_button'|trans }}"/>
+<div class="row">
+    <div class="span3">
+        {{ include("KrevindiouBagheeraBundle:User:profileMenu.html.twig") }}
     </div>
-</form>
+    <div class="span9">
+        <form action="{{ path('user_profile') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(profileForm) }}>
+            {{ form_widget(profileForm) }}
+
+            <div class="form-actions">
+                <input type="submit" class="btn btn-primary" value="{{ 'user_profile_submit_button'|trans }}"/>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
