@@ -142,6 +142,12 @@ var Bagheera = {
                 $(this).parent().hide().prev("input").val($(this).data("value"));
                 e.preventDefault();
             });
+
+            // Set focus on first form field
+            $("#content form")
+                .find("input:not([type=checkbox],[type=radio],[type=image],[type=button],[type=submit],[type=reset]), textarea, select")
+                .filter(":enabled:not([readonly]):visible:first")
+                .focus();
         });
     },
 
