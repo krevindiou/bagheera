@@ -15,6 +15,8 @@
         {% block stylesheets %}{% endblock %}
         <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/vendor/flot/excanvas.min.js') }}"></script><![endif]-->
         <script data-main="{{ asset('/bundles/krevindioubagheera/js/main') }}" src="{{ asset('/bundles/krevindioubagheera/vendor/requirejs/require.js') }}"></script>
+        <link rel="icon" href="{{ asset('/favicon.png') }}" type="image/png" />
+        <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
     </head>
     <body class="page-{{ app.request.get('_route')|replace({'_' : '-'}) }}">
         {% set user = app.getUser() %}
@@ -39,6 +41,7 @@
             </div>
             <div id="header">
                 <div class="container">
+                    <img class="logo" src="{{ asset('/bundles/krevindioubagheera/img/logo.png') }}" alt="Logo" />
                     <a href="/" class="brand">Bagheera, <span>your personal financial manager</span></a>
                     {% if user is not empty %}
                     <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
