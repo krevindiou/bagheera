@@ -16,14 +16,15 @@ class TwigExtension extends \Twig_Extension
     public function getFilters()
     {
         return array(
-            'abs' => new \Twig_Filter_Function('abs'),
             'money' => new \Twig_Filter_Method($this, 'moneyFilter'),
         );
     }
 
-    public function moneyFilter($string, $currency = '')
+    public function moneyFilter($value, $currency, $locale)
     {
-        return sprintf('%.2f %s', $string, $currency);
+        $fmt = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
+
+        return $fmt->formatCurrency($value, $currency);
     }
 
     public function getName()

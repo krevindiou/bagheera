@@ -314,6 +314,16 @@ class Operation
     }
 
     /**
+     * Get credit or debit
+     *
+     * @return float
+     */
+    public function getAmount()
+    {
+        return (0 != $this->credit) ? $this->credit : -$this->debit;
+    }
+
+    /**
      * Set valueDate
      *
      * @param DateTime $valueDate
