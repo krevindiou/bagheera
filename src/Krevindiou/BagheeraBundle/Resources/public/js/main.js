@@ -1,7 +1,7 @@
 require.config({
     paths: {
         jquery: "/bundles/krevindioubagheera/vendor/jquery/jquery.min",
-        jquery_ui: "/bundles/krevindioubagheera/vendor/jquery-ui/ui/minified/jquery-ui.custom.min",
+        jquery_ui: "/bundles/krevindioubagheera/vendor/jquery-ui/ui/minified/jquery-ui.min",
         jquery_flot: "/bundles/krevindioubagheera/vendor/flot/jquery.flot",
         jquery_flot_time: "/bundles/krevindioubagheera/vendor/flot/jquery.flot.time",
         jquery_mailcheck: "/bundles/krevindioubagheera/vendor/jquery.mailcheck.min",
