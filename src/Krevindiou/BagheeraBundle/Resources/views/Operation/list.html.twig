@@ -81,7 +81,7 @@
                         {% endspaceless %}" title="{{ ('payment_method_' ~ operation.paymentMethod.name)|trans }}"></i>
                     </td>
                     <td>{{ (operation.category is not null) ? operation.category.name : '' }}</td>
-                    <td class="date">{{ operation.valueDate|date('Y-m-d') }}</td>
+                    <td class="date">{{ operation.valueDate|localized_date(app.request.preferredLanguage) }}</td>
                     <td class="actions"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}" class="btn btn-mini" title="{{ 'operation_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
