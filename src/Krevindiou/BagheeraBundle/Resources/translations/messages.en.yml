@@ -12,7 +12,7 @@ user_register_email_body: |
 
   Click on the following link to activate your account:
   %link%
-user_register_activation_confirmation: "Account activated. You can now log in."
+user_register_activation_confirmation: "Account activated. You can now sign in."
 user_register_activation_error: "Activation error (Already activated?)"
 user_forgot_password_link: "Forgot your password?"
 user_forgot_password_page_title: "Forgot password"
