@@ -35,7 +35,7 @@
                 <tr>
                     <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
                     <td>{{ scheduler.thirdParty }}</td>
-                    <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|money(scheduler.account.currency, app.request.preferredLanguage) }}</td>
+                    <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|money(scheduler.account.currency) }}</td>
                     <td class="payment-method">
                         <i class="{% spaceless %}
                         {% if scheduler.paymentMethod.name == 'credit_card' %}

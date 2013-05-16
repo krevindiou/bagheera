@@ -12,7 +12,7 @@
                     <tbody>
                         {% for currency, totalBalance in totalBalances %}
                             <tr>
-                                <td class="value {{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|money(currency, app.request.preferredLanguage) }}</td>
+                                <td class="value {{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|money(currency) }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -56,7 +56,7 @@
                                     </td>
                                     <td>
                                         {% set balance = accountService.getBalance(app.user, account) %}
-                                        <span class="{{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|money(account.currency, app.request.preferredLanguage) }}</span>
+                                        <span class="{{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|money(account.currency) }}</span>
 
                                         <div class="progress progress-striped active{% if progress|length == 0 %} hide{% endif %}" id="progress-account-{{ account.accountId }}">
                                             <div class="bar"></div>

@@ -20,8 +20,12 @@ class TwigExtension extends \Twig_Extension
         );
     }
 
-    public function moneyFilter($value, $currency, $locale)
+    public function moneyFilter($value, $currency, $locale = null)
     {
+        if (null === $locale) {
+            $locale = \Locale::getDefault();
+        }
+
         $fmt = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
 
         return $fmt->formatCurrency($value, $currency);
