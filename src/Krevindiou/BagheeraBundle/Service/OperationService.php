@@ -293,27 +293,23 @@ class OperationService
 
     public function findThirdParties(User $user, $queryString)
     {
-        $dql = 'SELECT o.thirdParty ';
+        $dql = 'SELECT o.thirdParty, c.categoryId ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+        $dql.= 'LEFT JOIN o.category c ';
         $dql.= 'JOIN o.account a ';
         $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.user = :user ';
+        $dql.= 'WHERE o.valueDate = (SELECT MAX(o2.valueDate) FROM KrevindiouBagheeraBundle:Operation o2 WHERE o2.thirdParty = o.thirdParty) ';
+        $dql.= 'AND b.user = :user ';
         $dql.= 'AND o.thirdParty LIKE :thirdParty ';
         $dql.= 'GROUP BY o.thirdParty ';
-        $dql.= 'ORDER BY o.thirdParty ASC ';
+        $dql.= 'ORDER BY o.thirdParty ASC, o.valueDate ASC ';
+
         $query = $this->em->createQuery($dql);
         $query->setMaxResults(10);
         $query->setParameter('user', $user);
         $query->setParameter('thirdParty', '%' . $queryString . '%');
 
-        $result = $query->getScalarResult();
-
-        $thirdParties = array();
-        foreach ($result as $key => $value) {
-            $thirdParties[] = $value['thirdParty'];
-        }
-
-        return $thirdParties;
+        return $query->getScalarResult();
     }
 
     /**

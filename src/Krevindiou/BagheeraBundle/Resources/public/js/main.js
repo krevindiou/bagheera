@@ -73,7 +73,37 @@ var Bagheera = {
                 autoFocus: true,
                 minLength: 2,
                 source: function(query, process) {
-                    $.getJSON("third-parties.json", { q: query }, process);
+                    var that = this;
+
+                    $.getJSON(
+                        "third-parties.json",
+                        { q: query },
+                        function(data) {
+                            var thirdParties = [];
+                            for (var k in data) {
+                                thirdParties.push(data[k].thirdParty);
+                            }
+
+                            process(thirdParties);
+
+                            that._thirdParties = data;
+                        }
+                    );
+                },
+                updater: function(item) {
+                    for (var k in this._thirdParties) {
+                        if (this._thirdParties[k].thirdParty == item) {
+                            if (null != this._thirdParties[k].categoryId) {
+                                $("select[name$='[category]']").val(this._thirdParties[k].categoryId);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    this.$element.closest(".control-group").next(".control-group").find(':input').focus();
+
+                    return item;
                 }
             });
 
