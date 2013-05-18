@@ -293,23 +293,25 @@ class OperationService
 
     public function findThirdParties(User $user, $queryString)
     {
-        $dql = 'SELECT o.thirdParty, c.categoryId ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
-        $dql.= 'LEFT JOIN o.category c ';
-        $dql.= 'JOIN o.account a ';
-        $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE o.valueDate = (SELECT MAX(o2.valueDate) FROM KrevindiouBagheeraBundle:Operation o2 WHERE o2.thirdParty = o.thirdParty) ';
-        $dql.= 'AND b.user = :user ';
-        $dql.= 'AND o.thirdParty LIKE :thirdParty ';
-        $dql.= 'GROUP BY o.thirdParty ';
-        $dql.= 'ORDER BY o.thirdParty ASC, o.valueDate ASC ';
+        $sql = 'SELECT o2.third_party AS thirdParty, o2.category_id AS categoryId ';
+        $sql.= 'FROM ( ';
+        $sql.= '    SELECT o.third_party, MAX(o.value_date) AS max_value_date ';
+        $sql.= '    FROM operation o ';
+        $sql.= '    INNER JOIN account a ON o.account_id = a.account_id ';
+        $sql.= '    INNER JOIN bank b ON a.bank_id = b.bank_id ';
+        $sql.= '    WHERE b.user_id = :user_id ';
+        $sql.= '    AND o.third_party LIKE :third_party ';
+        $sql.= '    GROUP BY o.third_party ';
+        $sql.= ') AS tmp ';
+        $sql.= 'INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date ';
+        $sql.= 'GROUP BY tmp.third_party ';
 
-        $query = $this->em->createQuery($dql);
-        $query->setMaxResults(10);
-        $query->setParameter('user', $user);
-        $query->setParameter('thirdParty', '%' . $queryString . '%');
+        $stmt = $this->em->getConnection()->prepare($sql);
+        $stmt->bindValue('user_id', $user->getUserId());
+        $stmt->bindValue('third_party', '%' . $queryString . '%');
+        $stmt->execute();
 
-        return $query->getScalarResult();
+        return $stmt->fetchAll();
     }
 
     /**
