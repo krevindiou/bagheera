@@ -208,7 +208,7 @@ class SchedulerService
             $accounts = $bank->getAccounts();
             foreach ($accounts as $account) {
                 foreach ($account->getSchedulers() as $scheduler) {
-                    if ($scheduler->getIsActive()) {
+                    if ($scheduler->isActive()) {
                         $schedulers->add($scheduler);
                     }
                 }

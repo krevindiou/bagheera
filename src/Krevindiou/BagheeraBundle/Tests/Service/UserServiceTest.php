@@ -73,7 +73,7 @@ class UserServiceTest extends TestCase
 
         $this->get('bagheera.user')->toggleDeactivation($usersId);
 
-        $users = $this->em->getRepository('KrevindiouBagheeraBundle:User')->findByIsActive(true);
+        $users = $this->em->getRepository('KrevindiouBagheeraBundle:User')->findByActive(true);
 
         $this->assertEquals(count($users), 0);
     }

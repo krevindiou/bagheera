@@ -246,7 +246,7 @@ class UserService
             $user = $this->em->find('KrevindiouBagheeraBundle:User', $userId);
 
             if (null !== $user) {
-                $user->setActive(!$user->getIsActive());
+                $user->setActive(!$user->isActive());
 
                 try {
                     $this->em->persist($user);

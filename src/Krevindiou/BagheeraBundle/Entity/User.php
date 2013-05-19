@@ -79,12 +79,12 @@ class User implements AdvancedUserInterface
     protected $isAdmin = false;
 
     /**
-     * @var boolean $isActive
+     * @var boolean $active
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isActive = false;
+    protected $active = false;
 
     /**
      * @var DateTime $createdAt
@@ -258,23 +258,23 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * Set isActive
+     * Set active
      *
-     * @param boolean $isActive
+     * @param boolean $active
      */
-    public function setActive($isActive)
+    public function setActive($active)
     {
-        $this->isActive = (bool) $isActive;
+        $this->active = (bool) $active;
     }
 
     /**
-     * Get isActive
+     * Get active
      *
      * @return boolean
      */
-    public function getIsActive()
+    public function isActive()
     {
-        return $this->isActive;
+        return $this->active;
     }
 
     /**
@@ -408,6 +408,6 @@ class User implements AdvancedUserInterface
      */
     public function isEnabled()
     {
-        return $this->getIsActive();
+        return $this->isActive();
     }
 }

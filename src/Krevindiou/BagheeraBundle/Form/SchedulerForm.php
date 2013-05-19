@@ -128,10 +128,10 @@ class SchedulerForm extends AbstractType
                 )
             )
             ->add(
-                'isActive',
+                'active',
                 null,
                 array(
-                    'label' => 'scheduler_is_active',
+                    'label' => 'scheduler_active',
                     'required' => false
                 )
             )
