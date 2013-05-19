@@ -65,9 +65,9 @@ class OperationRepository extends EntityRepository
                 $qb->andWhere($qb->expr()->like('o.notes', ':notes'))
                    ->setParameter('notes', '%' . $operationSearch->getNotes() . '%');
             }
-            if (null !== $operationSearch->getIsReconciled()) {
-                $qb->andWhere($qb->expr()->eq('o.isReconciled', ':isReconciled'))
-                   ->setParameter('isReconciled', $operationSearch->getIsReconciled());
+            if (null !== $operationSearch->isReconciled()) {
+                $qb->andWhere($qb->expr()->eq('o.reconciled', ':reconciled'))
+                   ->setParameter('reconciled', $operationSearch->isReconciled());
             }
         }
 

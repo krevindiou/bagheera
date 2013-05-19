@@ -240,7 +240,7 @@ class AccountService
             $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
             $dql.= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
-                $dql.= 'AND o.isReconciled = 1 ';
+                $dql.= 'AND o.reconciled = 1 ';
             }
 
             $query = $this->em->createQuery($dql);

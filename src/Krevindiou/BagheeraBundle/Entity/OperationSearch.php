@@ -95,12 +95,12 @@ class OperationSearch
     protected $valueDateEnd;
 
     /**
-     * @var boolean $isReconciled
+     * @var boolean $reconciled
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=true)
      * @Assert\Type("bool")
      */
-    protected $isReconciled;
+    protected $reconciled;
 
     /**
      * @var string $type
@@ -335,29 +335,29 @@ class OperationSearch
     }
 
     /**
-     * Set isReconciled
+     * Set reconciled
      *
-     * @param boolean $isReconciled
+     * @param boolean $reconciled
      */
-    public function setReconciled($isReconciled)
+    public function setReconciled($reconciled)
     {
-        if ('' === $isReconciled) {
-            $isReconciled = null;
+        if ('' === $reconciled) {
+            $reconciled = null;
         } else {
-            $isReconciled = (bool) $isReconciled;
+            $reconciled = (bool) $reconciled;
         }
 
-        $this->isReconciled = $isReconciled;
+        $this->reconciled = $reconciled;
     }
 
     /**
-     * Get isReconciled
+     * Get reconciled
      *
      * @return boolean
      */
-    public function getIsReconciled()
+    public function isReconciled()
     {
-        return $this->isReconciled;
+        return $this->reconciled;
     }
 
     /**

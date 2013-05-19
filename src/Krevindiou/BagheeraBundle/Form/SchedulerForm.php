@@ -120,10 +120,10 @@ class SchedulerForm extends AbstractType
                 )
             )
             ->add(
-                'isReconciled',
+                'reconciled',
                 null,
                 array(
-                    'label' => 'scheduler_is_reconciled',
+                    'label' => 'scheduler_reconciled',
                     'required' => false
                 )
             )

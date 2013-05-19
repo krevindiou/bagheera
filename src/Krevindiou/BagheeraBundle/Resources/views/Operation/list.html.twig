@@ -55,8 +55,8 @@
                 <tr>
                     <td class="check"><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
                     <td>
-                        {% if operation.isReconciled %}
-                        <i class="icon-ok" title="{{ 'operation_is_reconciled'|trans }}"></i>&nbsp;
+                        {% if operation.reconciled %}
+                        <i class="icon-ok" title="{{ 'operation_reconciled'|trans }}"></i>&nbsp;
                         {% endif %}
 
                         {% if operation.scheduler is not null %}

@@ -81,10 +81,10 @@ class OperationForm extends AbstractType
                 )
             )
             ->add(
-                'isReconciled',
+                'reconciled',
                 null,
                 array(
-                    'label' => 'operation_is_reconciled',
+                    'label' => 'operation_reconciled',
                     'required' => false
                 )
             )

@@ -123,12 +123,12 @@ class Operation
     protected $valueDate;
 
     /**
-     * @var boolean $isReconciled
+     * @var boolean $reconciled
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isReconciled = false;
+    protected $reconciled = false;
 
     /**
      * @var string $notes
@@ -344,23 +344,23 @@ class Operation
     }
 
     /**
-     * Set isReconciled
+     * Set reconciled
      *
-     * @param boolean $isReconciled
+     * @param boolean $reconciled
      */
-    public function setReconciled($isReconciled)
+    public function setReconciled($reconciled)
     {
-        $this->isReconciled = (bool) $isReconciled;
+        $this->reconciled = (bool) $reconciled;
     }
 
     /**
-     * Get isReconciled
+     * Get reconciled
      *
      * @return boolean
      */
-    public function getIsReconciled()
+    public function isReconciled()
     {
-        return $this->isReconciled;
+        return $this->reconciled;
     }
 
     /**

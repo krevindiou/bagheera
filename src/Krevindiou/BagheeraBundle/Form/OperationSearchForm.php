@@ -105,10 +105,10 @@ class OperationSearchForm extends AbstractType
                 )
             )
             ->add(
-                'isReconciled',
+                'reconciled',
                 'choice',
                 array(
-                    'label' => 'operation_is_reconciled',
+                    'label' => 'operation_reconciled',
                     'required' => false,
                     'empty_value' => 'operation_search_reconciled_both',
                     'choices' => array(
