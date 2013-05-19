@@ -57,7 +57,7 @@ class AccountForm extends AbstractType
                                     return $repository->createQueryBuilder('b')
                                         ->where('b.user = :user')
                                         ->andWhere('b.deleted = false')
-                                        ->andWhere('b.isClosed = false')
+                                        ->andWhere('b.closed = false')
                                         ->setParameter('user', $user)
                                         ->add('orderBy', 'b.name ASC');
                                 },

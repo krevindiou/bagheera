@@ -146,7 +146,7 @@ class ReportForm extends AbstractType
                                             ->innerJoin('a.bank', 'b')
                                             ->where('b.user = :user')
                                             ->andWhere('b.deleted = false')
-                                            ->andWhere('b.isClosed = false')
+                                            ->andWhere('b.closed = false')
                                             ->andWhere('a.deleted = false')
                                             ->setParameter('user', $user)
                                             ->add('orderBy', 'a.name ASC');
