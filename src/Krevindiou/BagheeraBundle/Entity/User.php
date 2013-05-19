@@ -71,12 +71,12 @@ class User implements AdvancedUserInterface
     protected $country;
 
     /**
-     * @var boolean $isAdmin
+     * @var boolean $admin
      *
      * @ORM\Column(name="is_admin", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isAdmin = false;
+    protected $admin = false;
 
     /**
      * @var boolean $active
@@ -238,23 +238,23 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * Set isAdmin
+     * Set admin
      *
-     * @param boolean $isAdmin
+     * @param boolean $admin
      */
-    public function setAdmin($isAdmin)
+    public function setAdmin($admin)
     {
-        $this->isAdmin = (bool) $isAdmin;
+        $this->admin = (bool) $admin;
     }
 
     /**
-     * Get isAdmin
+     * Get admin
      *
      * @return boolean
      */
     public function getIsAdmin()
     {
-        return $this->isAdmin;
+        return $this->admin;
     }
 
     /**

@@ -27,8 +27,8 @@ class UserRepository extends EntityRepository
             if (isset($params['active']) && '' != $params['active']) {
                 $dql.= 'AND u.active = :active ';
             }
-            if (isset($params['isAdmin']) && '' != $params['isAdmin']) {
-                $dql.= 'AND u.isAdmin = :isAdmin ';
+            if (isset($params['admin']) && '' != $params['admin']) {
+                $dql.= 'AND u.admin = :admin ';
             }
         }
         $dql.= 'ORDER BY u.createdAt DESC ';
@@ -40,8 +40,8 @@ class UserRepository extends EntityRepository
             if (isset($params['active']) && '' != $params['active']) {
                 $query->setParameter('active', $params['active']);
             }
-            if (isset($params['isAdmin']) && '' != $params['isAdmin']) {
-                $query->setParameter('isAdmin', $params['isAdmin']);
+            if (isset($params['admin']) && '' != $params['admin']) {
+                $query->setParameter('admin', $params['admin']);
             }
         }
 
