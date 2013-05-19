@@ -77,12 +77,12 @@ class Bank
     protected $isClosed = false;
 
     /**
-     * @var boolean $isDeleted
+     * @var boolean $deleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isDeleted = false;
+    protected $deleted = false;
 
     /**
      * @var DateTime $createdAt
@@ -261,23 +261,23 @@ class Bank
     }
 
     /**
-     * Set isDeleted
+     * Set deleted
      *
-     * @param boolean $isDeleted
+     * @param boolean $deleted
      */
-    public function setDeleted($isDeleted)
+    public function setDeleted($deleted)
     {
-        $this->isDeleted = (bool) $isDeleted;
+        $this->deleted = (bool) $deleted;
     }
 
     /**
-     * Get isDeleted
+     * Get deleted
      *
      * @return boolean
      */
     public function isDeleted()
     {
-        return $this->isDeleted;
+        return $this->deleted;
     }
 
     /**

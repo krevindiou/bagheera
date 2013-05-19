@@ -58,8 +58,8 @@ class AccountService
             $dql.= 'AND a.bank = :bank ';
         }
         if (!$deleted) {
-            $dql.= 'AND b.isDeleted = 0 ';
-            $dql.= 'AND a.isDeleted = 0 ';
+            $dql.= 'AND b.deleted = 0 ';
+            $dql.= 'AND a.deleted = 0 ';
         }
         $dql.= 'ORDER BY a.name ASC';
 

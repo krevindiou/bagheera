@@ -93,12 +93,12 @@ class AccountServiceTest extends TestCase
 
     public function testDelete()
     {
-        $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByIsDeleted(true);
+        $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByDeleted(true);
         $accountsNb = count($accounts);
 
         $this->assertTrue($this->get('bagheera.account')->delete($this->john, array(1)));
 
-        $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByIsDeleted(true);
+        $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByDeleted(true);
         $this->assertEquals(count($accounts), $accountsNb + 1);
     }
 

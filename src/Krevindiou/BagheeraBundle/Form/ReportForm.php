@@ -145,9 +145,9 @@ class ReportForm extends AbstractType
                                         return $repository->createQueryBuilder('a')
                                             ->innerJoin('a.bank', 'b')
                                             ->where('b.user = :user')
-                                            ->andWhere('b.isDeleted = false')
+                                            ->andWhere('b.deleted = false')
                                             ->andWhere('b.isClosed = false')
-                                            ->andWhere('a.isDeleted = false')
+                                            ->andWhere('a.deleted = false')
                                             ->setParameter('user', $user)
                                             ->add('orderBy', 'a.name ASC');
                                     },

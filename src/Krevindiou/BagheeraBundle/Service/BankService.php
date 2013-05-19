@@ -53,7 +53,7 @@ class BankService
         $dql = 'SELECT b FROM KrevindiouBagheeraBundle:Bank b ';
         $dql.= 'WHERE b.user = :user ';
         if (!$deleted) {
-            $dql.= 'AND b.isDeleted = 0 ';
+            $dql.= 'AND b.deleted = 0 ';
         }
         $dql.= 'ORDER BY b.sortOrder ASC';
 

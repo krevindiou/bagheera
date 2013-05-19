@@ -192,8 +192,8 @@ class ReportService
                 $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
                 $dql.= 'JOIN a.bank b ';
                 $dql.= 'WHERE b.user = :user ';
-                $dql.= 'AND b.isDeleted = 0 ';
-                $dql.= 'AND a.isDeleted = 0 ';
+                $dql.= 'AND b.deleted = 0 ';
+                $dql.= 'AND a.deleted = 0 ';
 
                 $query = $this->em->createQuery($dql);
                 $query->setParameter('user', $user);
