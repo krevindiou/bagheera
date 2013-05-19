@@ -61,12 +61,12 @@ class Bank
     protected $sortOrder;
 
     /**
-     * @var boolean $isFavorite
+     * @var boolean $favorite
      *
      * @ORM\Column(name="is_favorite", type="boolean", nullable=false)
      * @Assert\Type("bool")
      */
-    protected $isFavorite = true;
+    protected $favorite = true;
 
     /**
      * @var boolean $closed
@@ -221,23 +221,23 @@ class Bank
     }
 
     /**
-     * Set isFavorite
+     * Set favorite
      *
-     * @param boolean $isFavorite
+     * @param boolean $favorite
      */
-    public function setFavorite($isFavorite)
+    public function setFavorite($favorite)
     {
-        $this->isFavorite = (bool) $isFavorite;
+        $this->favorite = (bool) $favorite;
     }
 
     /**
-     * Get isFavorite
+     * Get favorite
      *
      * @return boolean
      */
     public function isFavorite()
     {
-        return $this->isFavorite;
+        return $this->favorite;
     }
 
     /**
