@@ -103,6 +103,8 @@ var Bagheera = {
 
                     this.$element.closest(".control-group").next(".control-group").find(':input').focus();
 
+                    this.hide();
+
                     return item;
                 }
             });
