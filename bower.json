@@ -5,7 +5,7 @@
     "jquery-ui": "~1.10.0",
     "flot": "latest",
     "bootstrap": "~2.3.0",
-    "font-awesome": "~3.0.0",
+    "font-awesome": "~3.1.0",
     "requirejs": "~2.1.0"
   }
 }
