@@ -55,7 +55,7 @@
                                     <span>{{ 'home_link'|trans }}</span>
                                 </a>
                             </li>
-                            <li{{ 'report' in app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('report_list') }}"><i class="icon-signal"></i> {{ 'report_list_page_title'|trans }}</a></li>
+                            <li{{ 'report' in app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('report_list') }}"><i class="icon-bar-chart"></i> {{ 'report_list_page_title'|trans }}</a></li>
                         </ul>
                     </div>
                     {% endif %}
