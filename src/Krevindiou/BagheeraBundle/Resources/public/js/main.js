@@ -79,6 +79,11 @@ var Bagheera = {
                         "third-parties.json",
                         { q: query },
                         function(data) {
+                            if (!$(that.$element).is(":focus")) {
+                                that.hide();
+                                return;
+                            }
+
                             var thirdParties = [];
                             for (var k in data) {
                                 thirdParties.push(data[k].thirdParty);
@@ -102,8 +107,6 @@ var Bagheera = {
                     }
 
                     this.$element.closest(".control-group").next(".control-group").find(':input').focus();
-
-                    this.hide();
 
                     return item;
                 }
