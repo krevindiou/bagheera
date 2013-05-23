@@ -56,7 +56,7 @@
                     <td class="check"><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
                     <td>
                         {% if operation.reconciled %}
-                        <i class="icon-ok" title="{{ 'operation_reconciled'|trans }}"></i>&nbsp;
+                        <i class="icon-ok-sign" title="{{ 'operation_reconciled'|trans }}"></i>&nbsp;
                         {% endif %}
 
                         {% if operation.scheduler is not null %}
@@ -90,7 +90,7 @@
 
         <div class="btn-group form-actions hide">
             <button type="submit" name="delete" class="btn delete" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'operation_delete_button'|trans }}</button>
-            <button type="submit" name="reconcile" class="btn reconcile" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-check"></i> {{ 'operation_reconcile_button'|trans }}</button>
+            <button type="submit" name="reconcile" class="btn reconcile" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-ok-sign"></i> {{ 'operation_reconcile_button'|trans }}</button>
         </div>
 
         <div class="pagination pagination-right">

@@ -21,6 +21,7 @@
             <thead>
                 <tr>
                     <th></th>
+                    <th></th>
                     <th>{{ 'scheduler_third_party'|trans }}</th>
                     <th class="amount">{{ 'scheduler_amount'|trans }}</th>
                     <th></th>
@@ -34,6 +35,11 @@
                 {% for scheduler in schedulers %}
                 <tr>
                     <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
+                    <td>
+                        {% if scheduler.active %}
+                        <i class="icon-ok" title="{{ 'scheduler_active'|trans }}"></i>
+                        {% endif %}
+                    </td>
                     <td>{{ scheduler.thirdParty }}</td>
                     <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|money(scheduler.account.currency) }}</td>
                     <td class="payment-method">
