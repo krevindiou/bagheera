@@ -155,10 +155,11 @@ var Bagheera = {
                                 data: values,
                                 url: action,
                                 success: function(data) {
-                                    $("#modal-confirmation").modal("hide");
                                     document.location.reload(true);
                                 }
                             });
+
+                            $("#modal-confirmation").modal("hide");
                         });
                     });
             });
