@@ -54,7 +54,7 @@
                 {% for operation in operations %}
                 <tr>
                     <td class="check"><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
-                    <td>
+                    <td class="status">
                         {% if operation.reconciled %}
                         <i class="icon-ok-sign" title="{{ 'operation_reconciled'|trans }}"></i>&nbsp;
                         {% endif %}

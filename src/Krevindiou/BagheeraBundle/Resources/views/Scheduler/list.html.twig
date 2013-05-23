@@ -35,7 +35,7 @@
                 {% for scheduler in schedulers %}
                 <tr>
                     <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
-                    <td>
+                    <td class="status">
                         {% if scheduler.active %}
                         <i class="icon-ok" title="{{ 'scheduler_active'|trans }}"></i>
                         {% endif %}
