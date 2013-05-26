@@ -13,6 +13,12 @@ use JMS\DiExtraBundle\Annotation as DI;
  */
 class TwigExtension extends \Twig_Extension
 {
+    /** @DI\Inject("security.context") */
+    public $security;
+
+    /** @DI\Inject("bagheera.bank") */
+    public $bankService;
+
     public function getFilters()
     {
         return array(
@@ -29,6 +35,25 @@ class TwigExtension extends \Twig_Extension
         $fmt = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
 
         return $fmt->formatCurrency($value, $currency);
+    }
+
+    public function getGlobals()
+    {
+        $banks = array();
+
+        $token = $this->security->getToken();
+
+        if (null !== $token) {
+            $user = $token->getUser();
+
+            if (is_object($user)) {
+                $banks = $this->bankService->getList($user);
+            }
+        }
+
+        return array(
+            'banks' => $banks
+        );
     }
 
     public function getName()

@@ -44,15 +44,21 @@ class BankService
     /**
      * Returns banks list
      *
-     * @param  User  $user    User entity
-     * @param  bool  $deleted Return deleted items
+     * @param  User  $user       User entity
+     * @param  bool  $activeOnly Return active banks only
      * @return array
      */
-    public function getList(User $user, $deleted = true)
+    public function getList(User $user, $activeOnly = true)
     {
-        $dql = 'SELECT b FROM KrevindiouBagheeraBundle:Bank b ';
+        $dql = 'SELECT b, a ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:Bank b ';
+        $dql.= 'LEFT JOIN b.accounts a ';
+        if ($activeOnly) {
+            $dql.= 'WITH a.deleted = 0 ';
+        }
         $dql.= 'WHERE b.user = :user ';
-        if (!$deleted) {
+        if ($activeOnly) {
+            $dql.= 'AND b.closed = 0 ';
             $dql.= 'AND b.deleted = 0 ';
         }
         $dql.= 'ORDER BY b.sortOrder ASC';

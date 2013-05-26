@@ -19,15 +19,14 @@
         <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
     </head>
     <body class="page-{{ app.request.get('_route')|replace({'_' : '-'}) }}">
-        {% set user = app.getUser() %}
         <div id="wrapper">
             <div id="topbar">
                 <div class="container">
                     <div id="top-nav">
-                        {% if user is not empty %}
+                        {% if app.user is not empty %}
                         <ul class="pull-right">
                             <li class="dropdown">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="{{ path('user_profile') }}"><i class="icon-user"></i> {{ user.email }} <b class="caret"></b></a>
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="{{ path('user_profile') }}"><i class="icon-user"></i> {{ app.user.email }} <b class="caret"></b></a>
                                 <ul class="dropdown-menu pull-right">
                                     <li><a href="{{ path('user_profile') }}">{{ 'user_profile_page_title'|trans }}</a></li>
                                     <li><a href="{{ path('user_change_password') }}">{{ 'user_change_password_page_title'|trans }}</a></li>
@@ -42,8 +41,8 @@
             <div id="header">
                 <div class="container">
                     <img class="logo" src="{{ asset('/bundles/krevindioubagheera/img/logo.png') }}" alt="Logo" />
-                    <a href="{{ user is not null ? path('account_list') : path('user_login') }}" class="brand">Bagheera, <span>your personal financial manager</span></a>
-                    {% if user is not empty %}
+                    <a href="{{ app.user is not null ? path('account_list') : path('user_login') }}" class="brand">Bagheera, <span>your personal financial manager</span></a>
+                    {% if app.user is not empty %}
                     <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                         <i class="icon-reorder"></i>
                     </a>
@@ -55,7 +54,62 @@
                                     <span>{{ 'home_link'|trans }}</span>
                                 </a>
                             </li>
-                            <li{{ 'report' in app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('report_list') }}"><i class="icon-bar-chart"></i> {{ 'report_list_page_title'|trans }}</a></li>
+
+                            <li class="{{ 'operation' in app.request.get('_route') ? 'active ' : '' }}dropdown">
+                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="icon-tasks"></i>
+                                    <span>{{ 'operation_list_page_title'|trans }}</span>
+                                    <b class="caret"></b>
+                                </a>
+
+                                <ul class="dropdown-menu pull-right">
+                                    {% for bank in banks %}
+                                        <li class="dropdown-submenu">
+                                            <a tabindex="-1" href="#">{{ bank.name }}</a>
+
+                                            <ul class="dropdown-menu">
+                                            {% if bank.accounts is not empty %}
+                                                {% for account in bank.accounts %}
+                                                    <li><a tabindex="-1" href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></li>
+                                                {% endfor  %}
+                                            {% else %}
+                                                <li><a tabindex="-1" href="{{ path('account_new', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a></li>
+                                            {% endif %}
+                                            </ul>
+                                        </li>
+                                    {% endfor  %}
+                                </ul>
+                            </li>
+
+                            <li class="{{ 'scheduler' in app.request.get('_route') ? 'active ' : '' }}dropdown">
+                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="icon-time"></i>
+                                    <span>{{ 'scheduler_list_page_title'|trans }}</span>
+                                    <b class="caret"></b>
+                                </a>
+
+                                <ul class="dropdown-menu pull-right">
+                                    {% for bank in banks %}
+                                        <li class="dropdown-submenu">
+                                            <a tabindex="-1" href="#">{{ bank.name }}</a>
+
+                                            <ul class="dropdown-menu">
+                                            {% if bank.accounts is not empty %}
+                                                {% for account in bank.accounts %}
+                                                    <li><a tabindex="-1" href="{{ path('scheduler_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></li>
+                                                {% endfor  %}
+                                            {% else %}
+                                                <li><a tabindex="-1" href="{{ path('account_new', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a></li>
+                                            {% endif %}
+                                            </ul>
+                                        </li>
+                                    {% endfor  %}
+                                </ul>
+                            </li>
+
+                            <li{{ 'report' in app.request.get('_route') ? ' class="active"' : '' }}>
+                                <a href="{{ path('report_list') }}"><i class="icon-bar-chart"></i> {{ 'report_list_page_title'|trans }}</a>
+                            </li>
                         </ul>
                     </div>
                     {% endif %}
