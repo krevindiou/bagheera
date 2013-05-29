@@ -61,8 +61,8 @@ class UserRegisterForm extends AbstractType
                 'repeated',
                 array(
                     'type' => 'password',
-                    'first_name' => 'user_password',
-                    'second_name' => 'user_password_confirmation',
+                    'first_options' => array('label' => 'user_password'),
+                    'second_options' => array('label' => 'user_password_confirmation'),
                     'invalid_message' => 'user_password_fields_must_match',
                     'options' => array(
                         'attr' => array(
