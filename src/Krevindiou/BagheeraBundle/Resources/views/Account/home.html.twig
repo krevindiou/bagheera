@@ -1,0 +1,97 @@
+{% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
+
+{% block page_title 'account_list_page_title'|trans %}
+
+{% block content %}
+    {% if global_banks|length > 0 %}
+        <div class="row">
+            <div class="span4">
+                <h3>{{ 'total_balance'|trans }}</h3>
+                <hr/>
+                <table class="table stat-table">
+                    <tbody>
+                        {% for currency, totalBalance in totalBalances %}
+                            <tr>
+                                <td class="value {{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|money(currency) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="span8">
+                <div id="synthesis" class="chart-holder graph"></div>
+            </div>
+        </div>
+        <div class="row">
+            {% set labelColors = ["primary", "secondary", "tertiary"] %}
+            {% set i = 0 %}
+
+            <form class="accounts" method="post" action="">
+                {% for bank in global_banks %}
+                    {% if bank.accounts is not empty %}
+                        {% set i = i + 1 %}
+
+                        <table class="span6 table">
+                            <tbody>
+                                {% for account in bank.accounts %}
+                                <tr>
+                                    <td>
+                                        {% if bank.isManual == false and progress|length == 0 %}
+                                            <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}"{{ bank.accounts|length == 0 ? ' class="tip"' : '' }} title="{{ bank.accounts|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"><i class="icon-refresh"></i></a>
+                                            &nbsp;
+                                        {% endif %}
+                                        <span class="label label-{{ labelColors[(i - 1) % 3] }}">{{ bank.name }}</span>&nbsp;
+                                        <a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="{{ (account.balance < 0 ? 'negative' : 'positive') }}">{{ account.balance|money(account.currency) }}</span>
+
+                                        <div class="progress progress-striped active{% if progress|length == 0 %} hide{% endif %}" id="progress-account-{{ account.accountId }}">
+                                            <div class="bar"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                {% endfor %}
+            </form>
+        </div>
+
+        <div class="row">
+            <div id="graphs" class="span12">
+                {% for report in reports %}
+                    <h3>{{ report.title }}</h3>
+                    <hr/>
+                    <div id="graph{{ report.reportId }}" class="chart-holder graph"></div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            require(
+                ["main"],
+                function() {
+                    require(
+                        [
+                            "jquery_flot",
+                            "jquery_flot_time"
+                        ],
+                        function() {
+                            require(
+                                [
+                                    "bagheera_reports",
+                                    "bagheera_report_synthesis"
+                                ],
+                                function() {
+                                }
+                            );
+                        }
+                    );
+                }
+            );
+        </script>
+    {% endif %}
+{% endblock %}

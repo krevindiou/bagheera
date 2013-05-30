@@ -280,6 +280,11 @@ class Bank
         return $this->deleted;
     }
 
+    public function isActive()
+    {
+        return !$this->isDeleted() && !$this->isClosed();
+    }
+
     /**
      * Set createdAt
      *

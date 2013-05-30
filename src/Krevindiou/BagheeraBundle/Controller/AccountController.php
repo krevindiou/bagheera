@@ -20,15 +20,13 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 class AccountController extends Controller
 {
     /**
-     * @Route("/", name="account_list")
-     * @Method("GET")
+     * @Route("/", name="account_home")
      * @Template()
      */
-    public function listAction()
+    public function homeAction()
     {
         $user = $this->getUser();
 
-        $banks = $this->get('bagheera.bank')->getList($user, false);
         $progress = $this->get('bagheera.user')->getImportProgress($user);
         $reports = $this->get('bagheera.report')->getHomepageList($user);
 
@@ -43,13 +41,25 @@ class AccountController extends Controller
         }
 
         return array(
-            'banks' => $banks,
             'accountService' => $this->get('bagheera.account'),
             'totalBalances' => $this->get('bagheera.user')->getBalances($user),
             'progress' => $progress,
             'reports' => $reports,
-            'tipNewBank' => (count($banks) == 0),
             'tipNewAccount' => $tipNewAccount
+        );
+    }
+
+    /**
+     * @Route("/accounts", name="account_list")
+     * @Method("GET")
+     * @Template()
+     */
+    public function listAction()
+    {
+        $banks = $this->get('bagheera.bank')->getList($this->getUser(), false);
+
+        return array(
+            'banks' => $banks
         );
     }
 

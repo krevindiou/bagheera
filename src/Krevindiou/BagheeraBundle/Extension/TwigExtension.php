@@ -52,7 +52,7 @@ class TwigExtension extends \Twig_Extension
         }
 
         return array(
-            'banks' => $banks
+            'global_banks' => $banks
         );
     }
 

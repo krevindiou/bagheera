@@ -198,12 +198,6 @@ var Bagheera = {
                 form.find(".btn-group.form-actions").hide();
             }
         });
-
-        $("form.accounts tr").hover(function() {
-            $(this).find("a.edit-account").show();
-        }, function() {
-            $(this).find("a.edit-account").hide();
-        });
     },
 
     initPaymentMethod: function() {

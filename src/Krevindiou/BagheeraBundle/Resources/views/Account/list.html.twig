@@ -3,111 +3,65 @@
 {% block page_title 'account_list_page_title'|trans %}
 
 {% block content %}
-    {% if banks|length > 0 %}
-        <div class="row">
-            <div class="span4">
-                <h3>{{ 'total_balance'|trans }}</h3>
-                <hr/>
-                <table class="table stat-table">
-                    <tbody>
-                        {% for currency, totalBalance in totalBalances %}
-                            <tr>
-                                <td class="value {{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|money(currency) }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <div class="btn-group">
-                    <a href="{{ path('bank_new') }}" class="btn btn-small{{ tipNewBank ? ' tip' : '' }}"{% if tipNewBank %} title="{{ 'tip_new_bank'|trans }}"{% endif %}><i class="icon-plus-sign icon-white"></i> {{ 'bank_new_link'|trans }}</a>
-                    <a href="{{ path('account_new', {'bankId': null}) }}" class="btn btn-small"><i class="icon-plus-sign icon-white"></i> {{ 'account_new_link'|trans }}</a>
-                </div>
-            </div>
+<div class="row">
+    <div class="span12 btn-group">
+        <a href="{{ path('bank_new') }}" class="btn"><i class="icon-plus-sign"></i> {{ 'bank_new_link'|trans }}</a>
+    </div>
+</div>
 
-            <div class="span8">
-                <div id="synthesis" class="chart-holder graph"></div>
-            </div>
+{% if banks|length > 0 %}
+<div class="row">
+    {% for bank in banks %}
+    <div class="span12">
+        <h3 class="pull-left">
+            {% if bank.deleted %}
+                <span class="label label-important">{{ 'account_deleted'|trans }}</span>
+            {% elseif bank.closed %}
+                <span class="label label-warning">{{ 'account_closed'|trans }}</span>
+            {% endif %}
+            {{ bank.name }}
+        </h3>
+        {% if bank.active %}
+        <div class="pull-right">
+            <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-pencil"></i> {{ 'bank_edit_link'|trans }}</a>
+            <a href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a>
         </div>
-        <div class="row">
-            {% set labelColors = ["primary", "secondary", "tertiary"] %}
-            {% set i = 0 %}
+        {% endif %}
+    </div>
+    {% if bank.active %}
+    <div class="span12">
+        {% if bank.accounts is not empty %}
+        <form method="post" action="">
+            <table class="table table-striped table-bordered table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>{{ 'account_name'|trans }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in bank.accounts %}
+                    <tr>
+                        <td class="check"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
+                        <td><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
+                        <td class="actions"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}" class="btn btn-mini" title="{{ 'account_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 
-            <form class="accounts" method="post" action="">
-                {% for bank in banks %}
-                    {% set accounts = accountService.getList(app.user, bank, false) %}
-
-                    {% if accounts is not empty %}
-                        {% set i = i + 1 %}
-
-                        <table class="span6 table">
-                            <tbody>
-                                {% for account in accounts %}
-                                <tr>
-                                    <td class="check">
-                                        <input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/>
-                                    </td>
-                                    <td>
-                                        {% if bank.isManual() == false and progress|length == 0 %}
-                                            <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}"{{ accounts|length == 0 ? ' class="tip"' : '' }} title="{{ accounts|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"><i class="icon-refresh"></i></a>
-                                            &nbsp;
-                                        {% endif %}
-                                        <a href="{{ path('bank_edit', {'bankId': account.bank.bankId}) }}" class="label label-{{ labelColors[i % 3 - 1] }}">{{ bank.name }}</a>&nbsp;
-                                        <a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a>
-                                        <a href="{{ path('account_edit', {'accountId': account.accountId}) }}" class="edit-account hide" title="{{ 'account_edit_link'|trans }}"><i class="icon-pencil"></i></a>
-                                    </td>
-                                    <td>
-                                        {% set balance = accountService.getBalance(app.user, account) %}
-                                        <span class="{{ (balance < 0 ? 'negative' : 'positive') }}">{{ balance|money(account.currency) }}</span>
-
-                                        <div class="progress progress-striped active{% if progress|length == 0 %} hide{% endif %}" id="progress-account-{{ account.accountId }}">
-                                            <div class="bar"></div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    {% endif %}
-                {% endfor %}
-
-                <div class="btn-group span12 form-actions hide">
-                    <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'account_delete_button'|trans }}</button>
-                    {#<button type="submit" name="share" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-share-alt"></i> {{ 'account_share_button'|trans }}</button>#}
-                </div>
-            </form>
-        </div>
-
-        <div class="row">
-            <div id="graphs" class="span12">
-                {% for report in reports %}
-                    <h3>{{ report.title }}</h3>
-                    <hr/>
-                    <div id="graph{{ report.reportId }}" class="chart-holder graph"></div>
-                {% endfor %}
+            <div class="btn-group form-actions hide">
+                <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'account_delete_button'|trans }}</button>
+                {#<button type="submit" name="share" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-share-alt"></i> {{ 'account_share_button'|trans }}</button>#}
             </div>
-        </div>
-
-        <script type="text/javascript">
-            require(
-                ["main"],
-                function() {
-                    require(
-                        [
-                            "jquery_flot",
-                            "jquery_flot_time"
-                        ],
-                        function() {
-                            require(
-                                [
-                                    "bagheera_reports",
-                                    "bagheera_report_synthesis"
-                                ],
-                                function() {
-                                }
-                            );
-                        }
-                    );
-                }
-            );
-        </script>
+        </form>
+        {% else %}
+            <em>{{ 'account_none'|trans }}</em>
+        {% endif %}
+    </div>
     {% endif %}
+    {% endfor %}
+</div>
+{% endif %}
 {% endblock %}

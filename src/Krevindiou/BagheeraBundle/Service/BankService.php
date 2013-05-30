@@ -50,23 +50,61 @@ class BankService
      */
     public function getList(User $user, $activeOnly = true)
     {
-        $dql = 'SELECT b, a ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Bank b ';
-        $dql.= 'LEFT JOIN b.accounts a ';
-        if ($activeOnly) {
-            $dql.= 'WITH a.deleted = 0 ';
-        }
-        $dql.= 'WHERE b.user = :user ';
-        if ($activeOnly) {
-            $dql.= 'AND b.closed = 0 ';
-            $dql.= 'AND b.deleted = 0 ';
-        }
-        $dql.= 'ORDER BY b.sortOrder ASC';
+        $banks = array();
 
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('user', $user);
+        $sql = 'SELECT ( ';
+        $sql.= '  SELECT COALESCE(SUM(operation.credit), 0) - COALESCE(SUM(operation.debit), 0) ';
+        $sql.= '  FROM operation ';
+        $sql.= '  WHERE account.account_id = operation.account_id ';
+        $sql.= ') AS account_balance, ';
+        $sql.= 'bank.bank_id, bank.provider_id AS bank_provider_id, bank.name AS bank_name, bank.is_favorite AS bank_is_favorite, bank.is_closed AS bank_is_closed, bank.is_deleted AS bank_is_deleted, ';
+        $sql.= 'account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted ';
+        $sql.= 'FROM bank ';
+        $sql.= 'LEFT JOIN account ON bank.bank_id = account.bank_id ';
+        if ($activeOnly) {
+            $sql.= 'AND account.is_deleted = 0 ';
+        }
+        $sql.= 'WHERE bank.user_id = :user_id ';
+        if ($activeOnly) {
+            $sql.= 'AND bank.is_closed = 0 ';
+            $sql.= 'AND bank.is_deleted = 0 ';
+        }
+        $sql.= 'ORDER BY bank.sort_order ASC, account.name ASC ';
 
-        return $query->getResult();
+        $stmt = $this->em->getConnection()->prepare($sql);
+        $stmt->execute(
+            array(
+                ':user_id' => $user->getUserId()
+            )
+        );
+
+        foreach ($stmt->fetchAll() as $row) {
+            if (!isset($banks[$row['bank_id']])) {
+                $banks[$row['bank_id']] = array(
+                    'bankId' => $row['bank_id'],
+                    'name' => $row['bank_name'],
+                    'isFavorite' => $row['bank_is_favorite'],
+                    'closed' => $row['bank_is_closed'],
+                    'deleted' => $row['bank_is_deleted'],
+                    'active' => !$row['bank_is_deleted'] && !$row['bank_is_closed'],
+                    'isManual' => (null === $row['bank_provider_id']),
+                    'accounts' => array()
+                );
+            }
+
+            if (isset($row['account_id'])) {
+                $banks[$row['bank_id']]['accounts'][$row['account_id']] = array(
+                    'accountId' => $row['account_id'],
+                    'name' => $row['account_name'],
+                    'currency' => $row['account_currency'],
+                    'overdraftFacility' => $row['account_overdraft_facility'],
+                    'deleted' => $row['account_is_deleted'],
+                    'balance' => $row['account_balance'],
+                );
+            }
+        }
+
+        return $banks;
     }
 
     /**

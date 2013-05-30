@@ -48,22 +48,24 @@
                     </a>
                     <div class="nav-collapse">
                         <ul id="main-nav" class="nav pull-right">
-                            <li class="nav-icon{{ 'report' not in app.request.get('_route') ? ' active' : '' }}">
-                                <a href="{{ path('account_list') }}">
+                            <li class="nav-icon{{ 'account_home' == app.request.get('_route') ? ' active' : '' }}">
+                                <a href="{{ path('account_home') }}">
                                     <i class="icon-home"></i>
                                     <span>{{ 'home_link'|trans }}</span>
                                 </a>
                             </li>
 
+                            <li{{ 'account' in app.request.get('_route') and 'account_home' != app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('account_list') }}"><i class="icon-tasks"></i> {{ 'account_list_page_title'|trans }}</a></li>
+
                             <li class="{{ 'operation' in app.request.get('_route') ? 'active ' : '' }}dropdown">
                                 <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
-                                    <i class="icon-tasks"></i>
+                                    <i class="icon-book"></i>
                                     <span>{{ 'operation_list_page_title'|trans }}</span>
                                     <b class="caret"></b>
                                 </a>
 
                                 <ul class="dropdown-menu pull-right">
-                                    {% for bank in banks %}
+                                    {% for bank in global_banks %}
                                         <li class="dropdown-submenu">
                                             <a tabindex="-1" href="#">{{ bank.name }}</a>
 
@@ -89,7 +91,7 @@
                                 </a>
 
                                 <ul class="dropdown-menu pull-right">
-                                    {% for bank in banks %}
+                                    {% for bank in global_banks %}
                                         <li class="dropdown-submenu">
                                             <a tabindex="-1" href="#">{{ bank.name }}</a>
 
