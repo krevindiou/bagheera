@@ -97,9 +97,13 @@ class OperationController extends Controller
             if ($this->get('bagheera.operation')->saveForm($user, $operationForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'operation_form_confirmation');
 
-                return $this->redirect(
-                    $this->generateUrl('operation_list', array('accountId' => $operationForm->getData()->getAccount()->getAccountId()))
-                );
+                $accountId = $operationForm->getData()->getAccount()->getAccountId();
+
+                if (null !== $request->get('save_add')) {
+                    return $this->redirect($this->generateUrl('operation_new', array('accountId' => $accountId)));
+                } else {
+                    return $this->redirect($this->generateUrl('operation_list', array('accountId' => $accountId)));
+                }
             }
         }
 

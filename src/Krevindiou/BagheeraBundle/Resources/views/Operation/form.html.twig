@@ -22,6 +22,7 @@
 
     <div class="form-actions">
         <input type="submit" class="btn btn-primary" value="{{ 'operation_form_submit_button'|trans }}"/>
+        <input type="submit" name="save_add" class="btn btn-primary" value="{{ 'operation_form_submit_add_button'|trans }}"/>
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
 </form>
