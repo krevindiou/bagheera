@@ -60,14 +60,11 @@ class BankService
         $sql.= 'bank.bank_id, bank.provider_id AS bank_provider_id, bank.name AS bank_name, bank.is_favorite AS bank_is_favorite, bank.is_closed AS bank_is_closed, bank.is_deleted AS bank_is_deleted, ';
         $sql.= 'account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted ';
         $sql.= 'FROM bank ';
-        $sql.= 'LEFT JOIN account ON bank.bank_id = account.bank_id ';
-        if ($activeOnly) {
-            $sql.= 'AND account.is_deleted = 0 ';
-        }
+        $sql.= 'LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = 0 ';
         $sql.= 'WHERE bank.user_id = :user_id ';
+        $sql.= 'AND bank.is_deleted = 0 ';
         if ($activeOnly) {
             $sql.= 'AND bank.is_closed = 0 ';
-            $sql.= 'AND bank.is_deleted = 0 ';
         }
         $sql.= 'ORDER BY bank.sort_order ASC, account.name ASC ';
 

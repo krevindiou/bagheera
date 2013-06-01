@@ -14,9 +14,7 @@
     {% for bank in banks %}
     <div class="span12">
         <h3 class="pull-left">
-            {% if bank.deleted %}
-                <span class="label label-important">{{ 'account_deleted'|trans }}</span>
-            {% elseif bank.closed %}
+            {% if bank.closed %}
                 <span class="label label-warning">{{ 'account_closed'|trans }}</span>
             {% endif %}
             {{ bank.name }}
