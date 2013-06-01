@@ -64,7 +64,7 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/")
+     * @Route("/accounts")
      * @Method("POST")
      */
     public function listActionsAction(Request $request)
