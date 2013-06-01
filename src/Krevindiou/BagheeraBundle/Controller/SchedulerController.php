@@ -20,7 +20,7 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 class SchedulerController extends Controller
 {
     /**
-     * @Route("/schedulers-account-{accountId}", requirements={"accountId" = "\d+"}, name="scheduler_list")
+     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, name="scheduler_list")
      * @Method("GET")
      * @Template()
      */
@@ -42,7 +42,7 @@ class SchedulerController extends Controller
     }
 
     /**
-     * @Route("/schedulers-account-{accountId}", requirements={"accountId" = "\d+"})
+     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"})
      * @Method("POST")
      */
     public function listActionsAction(Request $request, Account $account)
@@ -61,8 +61,8 @@ class SchedulerController extends Controller
     }
 
     /**
-     * @Route("/edit-scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_edit")
-     * @Route("/new-scheduler-account-{accountId}", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_new")
+     * @Route("/scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_edit")
+     * @Route("/account-{accountId}/new-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_new")
      * @ParamConverter("scheduler", class="KrevindiouBagheeraBundle:Scheduler", options={"id" = "schedulerId"})
      * @ParamConverter("account", class="KrevindiouBagheeraBundle:Account", options={"id" = "accountId"})
      * @Template()

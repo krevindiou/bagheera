@@ -54,7 +54,7 @@ class ReportController extends Controller
     }
 
     /**
-     * @Route("/edit-report-{reportId}", requirements={"reportId" = "\d+"}, name="report_edit")
+     * @Route("/report-{reportId}", requirements={"reportId" = "\d+"}, name="report_edit")
      * @Route("/new-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_new")
      * @ParamConverter("report", class="KrevindiouBagheeraBundle:Report", options={"id" = "reportId"})
      * @Template()
@@ -110,7 +110,7 @@ class ReportController extends Controller
 
     /**
      * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
-     * @Route("/report-synthesis-account-{accountId}.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
+     * @Route("/account-{accountId}/report-synthesis.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      * @Template()
      */
     public function synthesisAction(Account $account = null)

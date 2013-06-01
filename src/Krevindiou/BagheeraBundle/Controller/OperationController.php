@@ -21,7 +21,7 @@ use Krevindiou\BagheeraBundle\Entity\Account;
 class OperationController extends Controller
 {
     /**
-     * @Route("/operations-account-{accountId}", requirements={"accountId" = "\d+"}, name="operation_list")
+     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, name="operation_list")
      * @Method("GET")
      * @Template()
      */
@@ -53,7 +53,7 @@ class OperationController extends Controller
     }
 
     /**
-     * @Route("/operations-account-{accountId}", requirements={"accountId" = "\d+"})
+     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"})
      * @Method("POST")
      */
     public function listActionsAction(Request $request, Account $account)
@@ -76,8 +76,8 @@ class OperationController extends Controller
     }
 
     /**
-     * @Route("/edit-operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_edit")
-     * @Route("/new-operation-account-{accountId}", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_new")
+     * @Route("/operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_edit")
+     * @Route("/account-{accountId}/new-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_new")
      * @ParamConverter("operation", class="KrevindiouBagheeraBundle:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="KrevindiouBagheeraBundle:Account", options={"id" = "accountId"})
      * @Template()

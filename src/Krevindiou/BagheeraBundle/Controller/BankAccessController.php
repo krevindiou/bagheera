@@ -17,7 +17,7 @@ use Krevindiou\BagheeraBundle\Entity\Bank;
 class BankAccessController extends Controller
 {
     /**
-     * @Route("/edit-bank-access-{bankId}", requirements={"bankId" = "\d+"}, name="bank_access_edit")
+     * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_edit")
      * @Template()
      */
     public function formAction(Request $request, Bank $bank)

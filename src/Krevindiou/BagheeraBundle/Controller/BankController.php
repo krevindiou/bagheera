@@ -17,7 +17,7 @@ use Krevindiou\BagheeraBundle\Entity\Bank;
 class BankController extends Controller
 {
     /**
-     * @Route("/edit-bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_edit")
+     * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_edit")
      * @Route("/new-bank", defaults={"bankId" = null}, name="bank_new")
      * @Template()
      */
@@ -52,7 +52,7 @@ class BankController extends Controller
     }
 
     /**
-     * @Route("/import-bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_import")
+     * @Route("/bank-{bankId}/import", requirements={"bankId" = "\d+"}, name="bank_import")
      */
     public function importAction(Bank $bank)
     {

@@ -19,7 +19,7 @@ use Krevindiou\BagheeraBundle\Form\OperationSearchForm;
 class OperationSearchController extends Controller
 {
     /**
-     * @Route("/search-operation-account-{accountId}", requirements={"accountId" = "\d+"}, name="operation_search_form")
+     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form")
      * @Template()
      */
     public function formAction(Request $request, Account $account, $display = true)

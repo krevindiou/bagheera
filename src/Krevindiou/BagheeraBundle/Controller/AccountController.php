@@ -87,7 +87,7 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/new-account-bank-{bankId}", requirements={"bankId" = "\d+"}, name="account_new_with_bank")
+     * @Route("/bank-{bankId}/new-account", requirements={"bankId" = "\d+"}, name="account_new_with_bank")
      * @Route("/new-account", defaults={"bankId" = null}, name="account_new")
      * @Template()
      */
@@ -122,7 +122,7 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/edit-account-{accountId}", requirements={"accountId" = "\d+"}, name="account_edit")
+     * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_edit")
      * @Template()
      */
     public function editFormAction(Request $request, Account $account)
