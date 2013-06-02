@@ -31,12 +31,112 @@ class ReportService
     /**
      * Returns reports list
      *
-     * @param  User                                   $user User entity
-     * @return Doctrine\Common\Collections\Collection
+     * @param  User  $user User entity
+     * @return array
      */
     public function getList(User $user)
     {
-        return $user->getReports();
+        $reports = array();
+
+        $sql = 'SET SESSION group_concat_max_len = 10000';
+        $this->em->getConnection()->exec($sql);
+
+        $sql = 'SELECT
+            report.report_id,
+            report.type AS report_type,
+            report.title AS report_title,
+            report.homepage AS report_homepage,
+            report.value_date_start AS report_value_date_start,
+            report.value_date_end AS report_value_date_end,
+            report.third_parties AS report_third_parties,
+            report.reconciled_only AS report_reconciled_only,
+            report.period_grouping AS report_period_grouping,
+            report.data_grouping AS report_data_grouping,
+            report.significant_results_number AS report_significant_results_number,
+            report.month_expenses AS report_month_expenses,
+            report.month_incomes AS report_month_incomes,
+            report.estimate_duration_value AS report_estimate_duration_value,
+            report.estimate_duration_unit AS report_estimate_duration_unit, ';
+        $sql.= ' (SELECT
+            CONCAT(
+                "[",
+                GROUP_CONCAT(
+                    CONCAT("{\"accountId\": \"", account.account_id, "\""),
+                    CONCAT(", \"name\": \"", REPLACE(account.name, "\"", "\\\\\""), "\"}")
+                ),
+                "]"
+            ) ';
+        $sql.= '  FROM report_account ';
+        $sql.= '  INNER JOIN account ON report_account.account_id = account.account_id ';
+        $sql.= '  WHERE report_account.report_id = report.report_id ';
+        $sql.= '  GROUP BY report_account.report_id ';
+        $sql.= ') AS accounts, ';
+        $sql.= ' (SELECT
+            CONCAT(
+                "[",
+                GROUP_CONCAT(
+                    CONCAT("{\"categoryId\": \"", category.category_id, "\""),
+                    CONCAT(", \"name\": \"", REPLACE(category.name, "\"", "\\\\\""), "\"}")
+                ),
+                "]"
+            ) ';
+        $sql.= '  FROM report_category ';
+        $sql.= '  INNER JOIN category ON report_category.category_id = category.category_id ';
+        $sql.= '  WHERE report_category.report_id = report.report_id ';
+        $sql.= '  GROUP BY report_category.report_id ';
+        $sql.= ') AS categories, ';
+        $sql.= ' (SELECT
+            CONCAT(
+                "[",
+                GROUP_CONCAT(
+                    CONCAT("{\"paymentMethodId\": \"", payment_method.payment_method_id, "\""),
+                    CONCAT(", \"name\": \"", REPLACE(payment_method.name, "\"", "\\\\\""), "\"}")
+                ),
+                "]"
+            ) ';
+        $sql.= '  FROM report_payment_method ';
+        $sql.= '  INNER JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
+        $sql.= '  WHERE report_payment_method.report_id = report.report_id ';
+        $sql.= '  GROUP BY report_payment_method.report_id ';
+        $sql.= ') AS paymentMethods ';
+        $sql.= 'FROM report ';
+        $sql.= 'WHERE report.user_id = :user_id ';
+        $sql.= 'ORDER BY report.report_id ASC ';
+
+        $stmt = $this->em->getConnection()->prepare($sql);
+        $stmt->execute(
+            array(
+                ':user_id' => $user->getUserId()
+            )
+        );
+
+        foreach ($stmt->fetchAll() as $row) {
+            if (!isset($reports[$row['report_id']])) {
+                $reports[$row['report_id']] = array(
+                    'reportId' => $row['report_id'],
+                    'title' => $row['report_title'],
+                    'type' => $row['report_type'],
+                    'title' => $row['report_title'],
+                    'homepage' => $row['report_homepage'],
+                    'valueDateStart' => (null !== $row['report_value_date_start']) ? new \DateTime($row['report_value_date_start']) : null,
+                    'valueDateEnd' => (null !== $row['report_value_date_end']) ? new \DateTime($row['report_value_date_end']) : null,
+                    'thirdParties' => $row['report_third_parties'],
+                    'reconciledOnly' => $row['report_reconciled_only'],
+                    'periodGrouping' => $row['report_period_grouping'],
+                    'dataGrouping' => $row['report_data_grouping'],
+                    'significantResultsNumber' => $row['report_significant_results_number'],
+                    'monthExpenses' => $row['report_month_expenses'],
+                    'monthIncomes' => $row['report_month_incomes'],
+                    'estimateDurationValue' => $row['report_estimate_duration_value'],
+                    'estimateDurationUnit' => $row['report_estimate_duration_unit'],
+                    'accounts' => (null !== $row['accounts']) ? json_decode($row['accounts'], true) : array(),
+                    'categories' => (null !== $row['categories']) ? json_decode($row['categories'], true) : array(),
+                    'paymentMethods' => (null !== $row['paymentMethods']) ? json_decode($row['paymentMethods'], true) : array(),
+                );
+            }
+        }
+
+        return $reports;
     }
 
     /**
