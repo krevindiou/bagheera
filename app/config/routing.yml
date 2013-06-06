@@ -1,7 +1,9 @@
 KrevindiouBagheeraBundle:
     resource: "@KrevindiouBagheeraBundle/Controller/"
     type:     annotation
-    prefix:   /
+    prefix:   /{_locale}
+    requirements:
+        _locale: en
 
 login_check:
     pattern:   /login_check
