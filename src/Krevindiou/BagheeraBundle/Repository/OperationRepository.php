@@ -8,72 +8,9 @@ namespace Krevindiou\BagheeraBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\User;
-use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
 class OperationRepository extends EntityRepository
 {
-    public function getQueryByAccount(Account $account, OperationSearch $operationSearch = null)
-    {
-        $qb = $this->getEntityManager()->createQueryBuilder();
-        $qb->select('o')
-            ->from('KrevindiouBagheeraBundle:Operation', 'o')
-            ->where('o.account = :account')->setParameter('account', $account)
-            ->orderBy('o.valueDate', 'DESC');
-
-        if (null !== $operationSearch) {
-            if ('' != $operationSearch->getThirdParty()) {
-                $qb->andWhere($qb->expr()->like('o.thirdParty', ':thirdParty'))
-                   ->setParameter('thirdParty', '%' . $operationSearch->getThirdParty() . '%');
-            }
-            if (0 != count($operationSearch->getCategories())) {
-                $qb->andWhere($qb->expr()->in('o.category', ':categories'))
-                   ->setParameter('categories', iterator_to_array($operationSearch->getCategories()));
-            }
-            if (0 != count($operationSearch->getPaymentMethods())) {
-                $qb->andWhere($qb->expr()->in('o.paymentMethod', ':paymentMethods'))
-                   ->setParameter('paymentMethods', iterator_to_array($operationSearch->getPaymentMethods()));
-            }
-            if (null !== $operationSearch->getAmountInferiorTo()) {
-                $qb->andWhere($qb->expr()->lt('o.' . $operationSearch->getType(), ':amountInferiorTo'))
-                   ->setParameter('amountInferiorTo', $operationSearch->getAmountInferiorTo());
-            }
-            if (null !== $operationSearch->getAmountInferiorOrEqualTo()) {
-                $qb->andWhere($qb->expr()->lte('o.' . $operationSearch->getType(), ':amountInferiorOrEqualTo'))
-                   ->setParameter('amountInferiorOrEqualTo', $operationSearch->getAmountInferiorOrEqualTo());
-            }
-            if (null !== $operationSearch->getAmountEqualTo()) {
-                $qb->andWhere($qb->expr()->eq('o.' . $operationSearch->getType(), ':amountEqualTo'))
-                   ->setParameter('amountEqualTo', $operationSearch->getAmountEqualTo());
-            }
-            if (null !== $operationSearch->getAmountSuperiorOrEqualTo()) {
-                $qb->andWhere($qb->expr()->gte('o.' . $operationSearch->getType(), ':amountSuperiorOrEqualTo'))
-                   ->setParameter('amountSuperiorOrEqualTo', $operationSearch->getAmountSuperiorOrEqualTo());
-            }
-            if (null !== $operationSearch->getAmountSuperiorTo()) {
-                $qb->andWhere($qb->expr()->gt('o.' . $operationSearch->getType(), ':amountSuperiorTo'))
-                   ->setParameter('amountSuperiorTo', $operationSearch->getAmountSuperiorTo());
-            }
-            if (null !== $operationSearch->getValueDateStart()) {
-                $qb->andWhere($qb->expr()->gte('o.valueDate', ':valueDateStart'))
-                   ->setParameter('valueDateStart', $operationSearch->getValueDateStart());
-            }
-            if (null !== $operationSearch->getValueDateEnd()) {
-                $qb->andWhere($qb->expr()->lte('o.valueDate', ':valueDateEnd'))
-                   ->setParameter('valueDateEnd', $operationSearch->getValueDateEnd());
-            }
-            if ('' != $operationSearch->getNotes()) {
-                $qb->andWhere($qb->expr()->like('o.notes', ':notes'))
-                   ->setParameter('notes', '%' . $operationSearch->getNotes() . '%');
-            }
-            if (null !== $operationSearch->isReconciled()) {
-                $qb->andWhere($qb->expr()->eq('o.reconciled', ':reconciled'))
-                   ->setParameter('reconciled', $operationSearch->isReconciled());
-            }
-        }
-
-        return $qb->getQuery();
-    }
-
     public function getLastExternalOperationId(Account $account)
     {
         $dql = 'SELECT o.externalOperationId ';
