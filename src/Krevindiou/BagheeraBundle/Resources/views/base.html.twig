@@ -34,8 +34,8 @@
             </div>
             <div id="header">
                 <div class="container">
-                    <img class="logo" src="{{ asset('/bundles/krevindioubagheera/img/logo.png') }}" alt="Logo" />
-                    <a href="{{ app.user is not null ? path('account_list') : path('user_login') }}" class="brand">Bagheera, <span>your personal financial manager</span></a>
+                    <a href="{{ app.user is not null ? path('account_home') : path('user_login') }}" class="brand"><img class="logo" src="{{ asset('/bundles/krevindioubagheera/img/logo.png') }}" alt="Logo" /></a>
+
                     {% if app.user is not empty %}
                     <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                         <i class="icon-reorder"></i>
