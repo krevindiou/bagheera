@@ -37,7 +37,7 @@
                                 {% for account in bank.accounts %}
                                 <tr>
                                     <td>
-                                        {% if bank.isManual == false and progress|length == 0 %}
+                                        {% if bank.manual == false and progress|length == 0 %}
                                             <a href="{{ path('bank_import', {'bankId': bank.bankId}) }}"{{ bank.accounts|length == 0 ? ' class="tip"' : '' }} title="{{ bank.accounts|length == 0 ? 'tip_import_account'|trans : 'bank_import_link'|trans }}"><i class="icon-refresh"></i></a>
                                             &nbsp;
                                         {% endif %}

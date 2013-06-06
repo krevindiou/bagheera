@@ -80,11 +80,11 @@ class BankService
                 $banks[$row['bank_id']] = array(
                     'bankId' => $row['bank_id'],
                     'name' => $row['bank_name'],
-                    'isFavorite' => $row['bank_is_favorite'],
+                    'favorite' => $row['bank_is_favorite'],
                     'closed' => $row['bank_is_closed'],
                     'deleted' => $row['bank_is_deleted'],
                     'active' => !$row['bank_is_deleted'] && !$row['bank_is_closed'],
-                    'isManual' => (null === $row['bank_provider_id']),
+                    'manual' => (null === $row['bank_provider_id']),
                     'accounts' => array()
                 );
             }
