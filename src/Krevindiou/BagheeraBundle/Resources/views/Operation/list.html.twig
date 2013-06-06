@@ -98,10 +98,6 @@
         </div>
     </form>
 
-    <div id="operation-search" class="span5{% if not displaySearch %} hide{% endif %}">
-        {{ render(controller("KrevindiouBagheeraBundle:OperationSearch:form", {"account": account, "display": displaySearch})) }}
-    </div>
-
     <script type="text/javascript">
         require(
             ["main"],
@@ -125,5 +121,8 @@
         );
     </script>
     {% endif %}
+    <div id="operation-search" class="span5{% if not displaySearch %} hide{% endif %}">
+        {{ render(controller("KrevindiouBagheeraBundle:OperationSearch:form", {"account": account, "display": displaySearch})) }}
+    </div>
 </div>
 {% endblock %}
