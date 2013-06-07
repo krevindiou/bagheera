@@ -1,3 +1,5 @@
+var locale = document.getElementsByTagName("html")[0].lang;
+
 require.config({
     paths: {
         jquery: "/bundles/krevindioubagheera/vendor/jquery/jquery.min",
@@ -9,9 +11,9 @@ require.config({
         bootstrap_modal: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-modal",
         bootstrap_typeahead: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-typeahead",
         bootstrap_dropdown: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-dropdown",
-        bagheera_reports: "/manager/reports",
-        bagheera_report_synthesis: "/manager/report-synthesis",
-        bagheera_translations: "/" + document.getElementsByTagName("html")[0].lang + "/translations"
+        bagheera_reports: "/" + locale + "/manager/reports",
+        bagheera_report_synthesis: "/" + locale + "/manager/report-synthesis",
+        bagheera_translations: "/" + locale + "/translations"
     },
     shim: {
         jquery_ui: ["jquery"],
