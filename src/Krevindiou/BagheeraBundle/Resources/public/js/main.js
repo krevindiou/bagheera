@@ -11,7 +11,7 @@ require.config({
         bootstrap_dropdown: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-dropdown",
         bagheera_reports: "/manager/reports",
         bagheera_report_synthesis: "/manager/report-synthesis",
-        bagheera_translations: "/translations"
+        bagheera_translations: "/" + document.getElementsByTagName("html")[0].lang + "/translations"
     },
     shim: {
         jquery_ui: ["jquery"],
