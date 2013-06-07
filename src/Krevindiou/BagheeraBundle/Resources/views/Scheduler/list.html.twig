@@ -57,7 +57,7 @@
                         {% endif %}
                         {% endspaceless %}" title="{{ ('payment_method_' ~ scheduler.paymentMethod.name)|trans }}"></i>
                     </td>
-                    <td>{{ (scheduler.category is not null) ? scheduler.category.name : '' }}</td>
+                    <td>{{ scheduler.category.name }}</td>
                     <td>{{ scheduler.frequencyValue }}</td>
                     <td>{{ ('scheduler_frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
                     <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>

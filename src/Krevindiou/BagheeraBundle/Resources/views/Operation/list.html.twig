@@ -59,7 +59,7 @@
                         <i class="icon-ok-sign" title="{{ 'operation_reconciled'|trans }}"></i>&nbsp;
                         {% endif %}
 
-                        {% if operation.scheduler is not null %}
+                        {% if operation.scheduler.schedulerId is not null %}
                         <i class="icon-time" title="{{ 'operation_scheduler'|trans }}"></i>
                         {% endif %}
                     </td>
@@ -80,7 +80,7 @@
                         {% endif %}
                         {% endspaceless %}" title="{{ ('payment_method_' ~ operation.paymentMethod.name)|trans }}"></i>
                     </td>
-                    <td>{{ (operation.category is not null) ? operation.category.name : '' }}</td>
+                    <td>{{ operation.category.name }}</td>
                     <td class="date">{{ operation.valueDate|localizeddate('medium', 'none') }}</td>
                     <td class="actions"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}" class="btn btn-mini" title="{{ 'operation_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
