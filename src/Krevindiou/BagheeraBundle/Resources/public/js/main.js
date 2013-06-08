@@ -78,7 +78,7 @@ var Bagheera = {
                     var that = this;
 
                     $.getJSON(
-                        "third-parties.json",
+                        "/" + locale + "/manager/third-parties.json",
                         { q: query },
                         function(data) {
                             if (!$(that.$element).is(":focus")) {
