@@ -31,4 +31,4 @@ security:
             anonymous:  ~
 
     access_control:
-        - { path: ^/manager, roles: ROLE_USER }
+        - { path: "^/[a-z]{2}/manager", roles: ROLE_USER }
