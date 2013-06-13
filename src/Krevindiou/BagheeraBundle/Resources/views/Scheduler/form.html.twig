@@ -1,11 +1,11 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title scheduler.schedulerId is null ? 'scheduler_new_form_page_title'|trans : 'scheduler_edit_form_page_title'|trans %}
+{% block page_title scheduler.schedulerId is null ? 'scheduler.new_form_page_title'|trans : 'scheduler.edit_form_page_title'|trans %}
 
 {% block breadcrumb %}
     <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
     <li><a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}">{{ 'scheduler_list'|trans }}</a> <i class="icon-chevron-right"></i></li>
-    <li class="active">{{ scheduler.schedulerId is null ? 'scheduler_new_form_page_title'|trans : 'scheduler_edit_form_page_title'|trans }}</li>
+    <li class="active">{{ scheduler.schedulerId is null ? 'scheduler.new_form_page_title'|trans : 'scheduler.edit_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
 
     {% spaceless %}
     <div class="control-group">
-        {{ form_label(schedulerForm.frequencyValue, 'scheduler_frequency'|trans, {label_attr: {class: 'control-label'}}) }}
+        {{ form_label(schedulerForm.frequencyValue, 'scheduler.frequency'|trans, {label_attr: {class: 'control-label'}}) }}
 
         <div class="controls">
             {{ form_errors(schedulerForm.frequencyValue) }}
@@ -39,7 +39,7 @@
     {{ form_rest(schedulerForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'scheduler_form_submit_button'|trans }}"/>
+        <input type="submit" class="btn btn-primary" value="{{ 'scheduler.form_submit_button'|trans }}"/>
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
 </form>

@@ -49,7 +49,7 @@ class UserController extends Controller
             $form->bind($request);
 
             if ($this->get('bagheera.user')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('success', 'user_register_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'user.register.confirmation');
 
                 return $this->redirect($this->generateUrl('user_login'));
             }
@@ -73,7 +73,7 @@ class UserController extends Controller
 
             if ($form->isValid()) {
                 if ($this->get('bagheera.user')->sendChangePasswordEmail($form->get('email')->getData())) {
-                    $this->get('session')->getFlashBag()->add('info', 'user_forgot_password_confirmation');
+                    $this->get('session')->getFlashBag()->add('info', 'user.forgot_password.confirmation');
 
                     return $this->redirect($this->generateUrl('user_login'));
                 }
@@ -101,7 +101,7 @@ class UserController extends Controller
 
                 if ($form->isValid()) {
                     if ($this->get('bagheera.user')->changePassword($user, $form->get('password')->getData())) {
-                        $this->get('session')->getFlashBag()->add('success', 'user_change_password_confirmation');
+                        $this->get('session')->getFlashBag()->add('success', 'user.change_password.confirmation');
 
                         return $this->redirect($this->generateUrl('user_login'));
                     }
@@ -130,7 +130,7 @@ class UserController extends Controller
 
             if ($form->isValid()) {
                 if ($this->get('bagheera.user')->changePassword($this->getUser(), $form->get('password')->getData())) {
-                    $this->get('session')->getFlashBag()->add('success', 'user_change_password_confirmation');
+                    $this->get('session')->getFlashBag()->add('success', 'user.change_password.confirmation');
 
                     return $this->redirect($this->generateUrl($request->get('_route')));
                 }
@@ -150,9 +150,9 @@ class UserController extends Controller
         $key = $request->query->get('key');
 
         if (null !== $key && $this->get('bagheera.user')->activate($key)) {
-            $this->get('session')->getFlashBag()->add('success', 'user_register_activation_confirmation');
+            $this->get('session')->getFlashBag()->add('success', 'user.register.activation_confirmation');
         } else {
-            $this->get('session')->getFlashBag()->add('error', 'user_register_activation_error');
+            $this->get('session')->getFlashBag()->add('error', 'user.register.activation_error');
         }
 
         return $this->redirect($this->generateUrl('user_login'));
@@ -170,7 +170,7 @@ class UserController extends Controller
             $form->bind($request);
 
             if ($this->get('bagheera.user')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('success', 'user_profile_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'user.profile.confirmation');
 
                 return $this->redirect($this->generateUrl('user_profile'));
             }
@@ -194,7 +194,7 @@ class UserController extends Controller
         if (!empty($users)) {
             if ($request->request->get('toggleDeactivation')) {
                 $this->get('bagheera.user')->toggleDeactivation($users);
-                $this->get('session')->getFlashBag()->add('success', 'user_toggle_deactivation_ok');
+                $this->get('session')->getFlashBag()->add('success', 'user.toggle_deactivation_ok');
             }
 
             return $this->redirect($this->generateUrl('user_list', array('page' => $page)));

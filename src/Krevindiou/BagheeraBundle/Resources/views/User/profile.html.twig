@@ -1,9 +1,9 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'user_profile_page_title'|trans %}
+{% block page_title 'user.profile.page_title'|trans %}
 
 {% block breadcrumb %}
-    <li class="active">{{ 'user_profile_page_title'|trans }}</li>
+    <li class="active">{{ 'user.profile.page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
             {{ form_widget(profileForm) }}
 
             <div class="form-actions">
-                <input type="submit" class="btn btn-primary" value="{{ 'user_profile_submit_button'|trans }}"/>
+                <input type="submit" class="btn btn-primary" value="{{ 'user.profile.submit_button'|trans }}"/>
             </div>
         </form>
     </div>

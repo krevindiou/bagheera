@@ -24,7 +24,7 @@ class UserForgotPasswordForm extends AbstractType
                 'email',
                 'email',
                 array(
-                    'label' => 'user_email',
+                    'label' => 'user.email',
                     'constraints' => array(
                         new NotBlank(),
                         new Email(),

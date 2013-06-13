@@ -173,7 +173,7 @@ class AccountService
             if ($form->has('initialBalance') && $form->get('initialBalance')->getData() != 0) {
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
-                $operation->setThirdParty($this->translator->trans('account_initial_balance'));
+                $operation->setThirdParty($this->translator->trans('account.initial_balance'));
                 if ($form->get('initialBalance')->getData() > 0) {
                     $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
                     $operation->setCredit(abs($form->get('initialBalance')->getData()));

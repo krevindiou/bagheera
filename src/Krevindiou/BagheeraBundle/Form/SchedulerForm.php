@@ -25,7 +25,7 @@ class SchedulerForm extends AbstractType
                 'thirdParty',
                 null,
                 array(
-                    'label' => 'scheduler_third_party',
+                    'label' => 'scheduler.third_party',
                     'attr' => array(
                         'class' => 'input-xlarge',
                         'autocomplete' => 'off'
@@ -36,7 +36,7 @@ class SchedulerForm extends AbstractType
                 'category',
                 null,
                 array(
-                    'label' => 'scheduler_category',
+                    'label' => 'scheduler.category',
                     'empty_value' => '',
                     'required' => false,
                     'group_by' => 'type',
@@ -49,7 +49,7 @@ class SchedulerForm extends AbstractType
                 'paymentMethod',
                 null,
                 array(
-                    'label' => 'scheduler_payment_method',
+                    'label' => 'scheduler.payment_method',
                     'empty_value' => '',
                     'group_by' => 'type',
                     'attr' => array(
@@ -61,7 +61,7 @@ class SchedulerForm extends AbstractType
                 'valueDate',
                 'date',
                 array(
-                    'label' => 'scheduler_value_date',
+                    'label' => 'scheduler.value_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => array(
@@ -73,7 +73,7 @@ class SchedulerForm extends AbstractType
                 'limitDate',
                 'date',
                 array(
-                    'label' => 'scheduler_limit_date',
+                    'label' => 'scheduler.limit_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
@@ -86,12 +86,12 @@ class SchedulerForm extends AbstractType
                 'frequencyUnit',
                 'choice',
                  array(
-                    'label' => 'scheduler_frequency_unit',
+                    'label' => 'scheduler.frequency_unit',
                     'choices' => array(
-                        'day' => 'scheduler_frequency_unit_day',
-                        'week' => 'scheduler_frequency_unit_week',
-                        'month' => 'scheduler_frequency_unit_month',
-                        'year' => 'scheduler_frequency_unit_year',
+                        'day' => 'scheduler.frequency_unit_day',
+                        'week' => 'scheduler.frequency_unit_week',
+                        'month' => 'scheduler.frequency_unit_month',
+                        'year' => 'scheduler.frequency_unit_year',
                     ),
                     'attr' => array(
                         'class' => 'input-small'
@@ -102,7 +102,7 @@ class SchedulerForm extends AbstractType
                 'frequencyValue',
                 null,
                 array(
-                    'label' => 'scheduler_frequency_value',
+                    'label' => 'scheduler.frequency_value',
                     'attr' => array(
                         'class' => 'input-mini'
                     )
@@ -112,7 +112,7 @@ class SchedulerForm extends AbstractType
                 'notes',
                 null,
                 array(
-                    'label' => 'scheduler_notes',
+                    'label' => 'scheduler.notes',
                     'attr' => array(
                         'rows' => 5,
                         'class' => 'input-xlarge'
@@ -123,7 +123,7 @@ class SchedulerForm extends AbstractType
                 'reconciled',
                 null,
                 array(
-                    'label' => 'scheduler_reconciled',
+                    'label' => 'scheduler.reconciled',
                     'required' => false
                 )
             )
@@ -131,7 +131,7 @@ class SchedulerForm extends AbstractType
                 'active',
                 null,
                 array(
-                    'label' => 'scheduler_active',
+                    'label' => 'scheduler.active',
                     'required' => false
                 )
             )
@@ -152,13 +152,13 @@ class SchedulerForm extends AbstractType
                             'choice',
                             null,
                             array(
-                                'label' => 'scheduler_type',
+                                'label' => 'scheduler.type',
                                 'mapped' => false,
                                 'expanded' => true,
                                 'required' => false,
                                 'choices' => array(
-                                    'debit' => 'scheduler_type_debit',
-                                    'credit' => 'scheduler_type_credit'
+                                    'debit' => 'scheduler.type_debit',
+                                    'credit' => 'scheduler.type_credit'
                                 ),
                                 'constraints' => array(
                                     new Assert\NotBlank()
@@ -172,7 +172,7 @@ class SchedulerForm extends AbstractType
                             'money',
                             null,
                             array(
-                                'label' => 'scheduler_amount',
+                                'label' => 'scheduler.amount',
                                 'currency' => $account->getCurrency(),
                                 'mapped' => false,
                                 'constraints' => array(
@@ -190,8 +190,8 @@ class SchedulerForm extends AbstractType
                             'entity',
                             null,
                             array(
-                                'label' => 'scheduler_transfer_account',
-                                'empty_value' => 'scheduler_external_account',
+                                'label' => 'scheduler.transfer_account',
+                                'empty_value' => 'scheduler.external_account',
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                     return $repository->createQueryBuilder('a')

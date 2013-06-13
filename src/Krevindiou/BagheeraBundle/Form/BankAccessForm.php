@@ -22,7 +22,7 @@ class BankAccessForm extends AbstractType
                 'plainLogin',
                 null,
                 array(
-                    'label' => 'bank_access_login',
+                    'label' => 'bank_access.login',
                     'attr' => array(
                         'class' => 'input-large'
                     )
@@ -32,7 +32,7 @@ class BankAccessForm extends AbstractType
                 'plainPassword',
                 null,
                 array(
-                    'label' => 'bank_access_password',
+                    'label' => 'bank_access.password',
                     'attr' => array(
                         'class' => 'input-large'
                     )

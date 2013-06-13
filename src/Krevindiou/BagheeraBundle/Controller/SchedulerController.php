@@ -52,7 +52,7 @@ class SchedulerController extends Controller
             $user = $this->getUser();
 
             $this->get('bagheera.scheduler')->delete($user, $schedulersId);
-            $this->get('session')->getFlashBag()->add('success', 'scheduler_delete_confirmation');
+            $this->get('session')->getFlashBag()->add('success', 'scheduler.delete_confirmation');
         }
 
         return $this->redirect(
@@ -80,7 +80,7 @@ class SchedulerController extends Controller
             $schedulerForm->bind($request);
 
             if ($this->get('bagheera.scheduler')->saveForm($user, $schedulerForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'scheduler_form_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
 
                 return $this->redirect(
                     $this->generateUrl('scheduler_list', array('accountId' => $schedulerForm->getData()->getAccount()->getAccountId()))

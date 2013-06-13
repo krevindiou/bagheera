@@ -1,11 +1,11 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'account_list_page_title'|trans %}
+{% block page_title 'account.list_page_title'|trans %}
 
 {% block content %}
 <div class="row">
     <div class="span12 btn-group">
-        <a href="{{ path('bank_new') }}" class="btn"><i class="icon-plus-sign"></i> {{ 'bank_new_link'|trans }}</a>
+        <a href="{{ path('bank_new') }}" class="btn"><i class="icon-plus-sign"></i> {{ 'bank.new_link'|trans }}</a>
     </div>
 </div>
 
@@ -15,14 +15,14 @@
     <div class="span12">
         <h3 class="pull-left">
             {% if bank.closed %}
-                <span class="label label-warning">{{ 'account_closed'|trans }}</span>
+                <span class="label label-warning">{{ 'account.closed'|trans }}</span>
             {% endif %}
             {{ bank.name }}
         </h3>
         {% if bank.active %}
         <div class="pull-right">
-            <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-pencil"></i> {{ 'bank_edit_link'|trans }}</a>
-            <a href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a>
+            <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-pencil"></i> {{ 'bank.edit_link'|trans }}</a>
+            <a href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-plus-sign"></i> {{ 'account.new_link'|trans }}</a>
         </div>
         {% endif %}
     </div>
@@ -34,7 +34,7 @@
                 <thead>
                     <tr>
                         <th></th>
-                        <th>{{ 'account_name'|trans }}</th>
+                        <th>{{ 'account.name'|trans }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -43,19 +43,19 @@
                     <tr>
                         <td class="check"><input type="checkbox" name="accountsId[]" value="{{ account.accountId }}"/></td>
                         <td><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></td>
-                        <td class="actions"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}" class="btn btn-mini" title="{{ 'account_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                        <td class="actions"><a href="{{ path('account_edit', {'accountId': account.accountId}) }}" class="btn btn-mini" title="{{ 'account.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
 
             <div class="btn-group form-actions hide">
-                <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'account_delete_button'|trans }}</button>
-                {#<button type="submit" name="share" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-share-alt"></i> {{ 'account_share_button'|trans }}</button>#}
+                <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'account.delete_button'|trans }}</button>
+                {#<button type="submit" name="share" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-share-alt"></i> {{ 'account.share_button'|trans }}</button>#}
             </div>
         </form>
         {% else %}
-            <em>{{ 'account_none'|trans }}</em>
+            <em>{{ 'account.none'|trans }}</em>
         {% endif %}
     </div>
     {% endif %}

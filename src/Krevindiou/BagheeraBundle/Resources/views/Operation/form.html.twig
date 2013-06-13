@@ -1,10 +1,10 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title operation.operationId is null ? 'operation_new_form_page_title'|trans : 'operation_edit_form_page_title'|trans %}
+{% block page_title operation.operationId is null ? 'operation.new_form_page_title'|trans : 'operation.edit_form_page_title'|trans %}
 
 {% block breadcrumb %}
     <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
-    <li class="active">{{ operation.operationId is null ? 'operation_new_form_page_title'|trans : 'operation_edit_form_page_title'|trans }}</li>
+    <li class="active">{{ operation.operationId is null ? 'operation.new_form_page_title'|trans : 'operation.edit_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -21,9 +21,9 @@
     {{ form_rest(operationForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'operation_form_submit_button'|trans }}"/>
+        <input type="submit" class="btn btn-primary" value="{{ 'operation.form_submit_button'|trans }}"/>
         {% if operation.operationId is null %}
-        <input type="submit" name="save_add" class="btn btn-primary" value="{{ 'operation_form_submit_add_button'|trans }}"/>
+        <input type="submit" name="save_add" class="btn btn-primary" value="{{ 'operation.form_submit_add_button'|trans }}"/>
         {% endif %}
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>

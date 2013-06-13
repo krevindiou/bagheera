@@ -1,18 +1,18 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'report_list_page_title'|trans %}
+{% block page_title 'report.list_page_title'|trans %}
 
 {% block breadcrumb %}
-    <li class="active">{{ 'report_list_page_title'|trans }}</li>
+    <li class="active">{{ 'report.list_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="span12 btn-group">
-        <a href="{{ path('report_new', {type: 'sum'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report_sum_new_link'|trans }}</a>
-        <a href="{{ path('report_new', {type: 'average'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report_average_new_link'|trans }}</a>
-        {#<a href="{{ path('report_new', {type: 'distribution'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report_distribution_new_link'|trans }}</a>#}
-        {#<a href="{{ path('report_new', {type: 'estimate'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report_estimate_new_link'|trans }}</a>#}
+        <a href="{{ path('report_new', {type: 'sum'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.sum_new_link'|trans }}</a>
+        <a href="{{ path('report_new', {type: 'average'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.average_new_link'|trans }}</a>
+        {#<a href="{{ path('report_new', {type: 'distribution'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.distribution_new_link'|trans }}</a>#}
+        {#<a href="{{ path('report_new', {type: 'estimate'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.estimate_new_link'|trans }}</a>#}
     </div>
 </div>
 
@@ -23,8 +23,8 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>{{ 'report_type'|trans }}</th>
-                    <th>{{ 'report_title'|trans }}</th>
+                    <th>{{ 'report.type'|trans }}</th>
+                    <th>{{ 'report.title'|trans }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -32,16 +32,16 @@
                 {% for report in reports %}
                 <tr>
                     <td class="check"><input type="checkbox" name="reportsId[]" value="{{ report.reportId }}" /></td>
-                    <td>{{ ('report_type_' ~ report.type)|trans }}</td>
+                    <td>{{ ('report.type_' ~ report.type)|trans }}</td>
                     <td>{{ report.title }}</td>
-                    <td class="actions"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    <td class="actions"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
         <div class="btn-group form-actions hide">
-            <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'report_delete_button'|trans }}</button>
+            <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'report.delete_button'|trans }}</button>
         </div>
     </form>
 </div>

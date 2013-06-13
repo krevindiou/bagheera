@@ -277,11 +277,11 @@ class ReportService
     {
         $series = array(
             array(
-                'label' => 'operation_type_credit',
+                'label' => 'operation.type_credit',
                 'color' => '#94ba65'
             ),
             array(
-                'label' => 'operation_type_debit',
+                'label' => 'operation.type_debit',
                 'color' => '#2b4e72'
             )
         );

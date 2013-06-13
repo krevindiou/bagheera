@@ -1,10 +1,10 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title reportForm.vars.value.reportId is null ? 'report_new_form_page_title'|trans : 'report_edit_form_page_title'|trans %}
+{% block page_title reportForm.vars.value.reportId is null ? 'report.new_form_page_title'|trans : 'report.edit_form_page_title'|trans %}
 
 {% block breadcrumb %}
-    <li><a href="{{ path('report_list') }}">{{ 'report_list_page_title'|trans }}</a> <i class="icon-chevron-right"></i></li>
-    <li class="active">{{ reportForm.vars.value.reportId is null ? 'report_new_form_page_title'|trans : 'report_edit_form_page_title'|trans }}</li>
+    <li><a href="{{ path('report_list') }}">{{ 'report.list_page_title'|trans }}</a> <i class="icon-chevron-right"></i></li>
+    <li class="active">{{ reportForm.vars.value.reportId is null ? 'report.new_form_page_title'|trans : 'report.edit_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -52,7 +52,7 @@
     {{ form_rest(reportForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'report_form_submit_button'|trans }}"/>
+        <input type="submit" class="btn btn-primary" value="{{ 'report.form_submit_button'|trans }}"/>
         <a href="{{ path('report_list') }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
 </form>

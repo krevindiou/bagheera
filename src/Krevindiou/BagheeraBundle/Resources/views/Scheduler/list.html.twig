@@ -1,16 +1,16 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'scheduler_list_page_title'|trans %}
+{% block page_title 'scheduler.list_page_title'|trans %}
 
 {% block breadcrumb %}
     <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
-    <li class="active">{{ 'scheduler_list_page_title'|trans }}</li>
+    <li class="active">{{ 'scheduler.list_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="span12 btn-group">
-        <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'scheduler_new_link'|trans }}</a>
+        <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'scheduler.new_link'|trans }}</a>
     </div>
 </div>
 
@@ -22,12 +22,12 @@
                 <tr>
                     <th></th>
                     <th></th>
-                    <th>{{ 'scheduler_third_party'|trans }}</th>
-                    <th class="amount">{{ 'scheduler_amount'|trans }}</th>
+                    <th>{{ 'scheduler.third_party'|trans }}</th>
+                    <th class="amount">{{ 'scheduler.amount'|trans }}</th>
                     <th></th>
-                    <th>{{ 'scheduler_category'|trans }}</th>
-                    <th>{{ 'scheduler_frequency_value'|trans }}</th>
-                    <th>{{ 'scheduler_frequency_unit'|trans }}</th>
+                    <th>{{ 'scheduler.category'|trans }}</th>
+                    <th>{{ 'scheduler.frequency_value'|trans }}</th>
+                    <th>{{ 'scheduler.frequency_unit'|trans }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -37,7 +37,7 @@
                     <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
                     <td class="status">
                         {% if scheduler.active %}
-                        <i class="icon-ok" title="{{ 'scheduler_active'|trans }}"></i>
+                        <i class="icon-ok" title="{{ 'scheduler.active'|trans }}"></i>
                         {% endif %}
                     </td>
                     <td>{{ scheduler.thirdParty }}</td>
@@ -59,15 +59,15 @@
                     </td>
                     <td>{{ scheduler.category.name }}</td>
                     <td>{{ scheduler.frequencyValue }}</td>
-                    <td>{{ ('scheduler_frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
-                    <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    <td>{{ ('scheduler.frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
+                    <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
         <div class="btn-group hide">
-            <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'scheduler_delete_button'|trans }}</button>
+            <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'scheduler.delete_button'|trans }}</button>
         </div>
 
         <div class="pagination pagination-right">

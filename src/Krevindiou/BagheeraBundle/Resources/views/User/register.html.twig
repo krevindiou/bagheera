@@ -1,9 +1,9 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'user_register_page_title'|trans %}
+{% block page_title 'user.register.page_title'|trans %}
 
 {% block breadcrumb %}
-    <li class="active">{{ 'user_register_page_title'|trans }}</li>
+    <li class="active">{{ 'user.register.page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -11,7 +11,7 @@
     {{ form_widget(registerForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'user_register_submit_button'|trans }}"/>
+        <input type="submit" class="btn btn-primary" value="{{ 'user.register.submit_button'|trans }}"/>
         <a href="{{ path('user_login') }}" class="btn"> {{ 'cancel_link'|trans }}</a>
     </div>
 </form>

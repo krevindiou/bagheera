@@ -33,7 +33,7 @@ class BankAccessController extends Controller
             $bankAccessForm->bind($request);
 
             if ($this->get('bagheera.bank_access')->saveForm($user, $bankAccessForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'bank_access_form_confirmation');
+                $this->get('session')->getFlashBag()->add('success', 'bank_access.form_confirmation');
 
                 return $this->redirect($this->generateUrl('account_list'));
             }

@@ -2,10 +2,10 @@
 
 {% set account = accountForm.vars.value %}
 
-{% block page_title account.accountId is null ? 'account_new_form_page_title'|trans : 'account_edit_form_page_title'|trans %}
+{% block page_title account.accountId is null ? 'account.new_form_page_title'|trans : 'account.edit_form_page_title'|trans %}
 
 {% block breadcrumb %}
-    <li class="active">{{ account.accountId is null ? 'account_new_form_page_title'|trans : 'account_edit_form_page_title'|trans }}</li>
+    <li class="active">{{ account.accountId is null ? 'account.new_form_page_title'|trans : 'account.edit_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -22,7 +22,7 @@
     {{ form_rest(accountForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'account_form_submit_button'|trans }}"/>
+        <input type="submit" class="btn btn-primary" value="{{ 'account.form_submit_button'|trans }}"/>
         <a href="{{ path('account_list') }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
 </form>

@@ -25,7 +25,7 @@ class OperationForm extends AbstractType
                 'thirdParty',
                 null,
                 array(
-                    'label' => 'operation_third_party',
+                    'label' => 'operation.third_party',
                     'attr' => array(
                         'class' => 'input-xlarge',
                         'autocomplete' => 'off'
@@ -36,7 +36,7 @@ class OperationForm extends AbstractType
                 'category',
                 null,
                 array(
-                    'label' => 'operation_category',
+                    'label' => 'operation.category',
                     'empty_value' => '',
                     'required' => false,
                     'group_by' => 'type',
@@ -49,7 +49,7 @@ class OperationForm extends AbstractType
                 'paymentMethod',
                 null,
                 array(
-                    'label' => 'operation_payment_method',
+                    'label' => 'operation.payment_method',
                     'empty_value' => '',
                     'group_by' => 'type',
                     'attr' => array(
@@ -61,7 +61,7 @@ class OperationForm extends AbstractType
                 'valueDate',
                 'date',
                 array(
-                    'label' => 'operation_value_date',
+                    'label' => 'operation.value_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => array(
@@ -73,7 +73,7 @@ class OperationForm extends AbstractType
                 'notes',
                 null,
                 array(
-                    'label' => 'operation_notes',
+                    'label' => 'operation.notes',
                     'attr' => array(
                         'class' => 'input-xlarge',
                         'rows' => 5
@@ -84,7 +84,7 @@ class OperationForm extends AbstractType
                 'reconciled',
                 null,
                 array(
-                    'label' => 'operation_reconciled',
+                    'label' => 'operation.reconciled',
                     'required' => false
                 )
             )
@@ -105,13 +105,13 @@ class OperationForm extends AbstractType
                             'choice',
                             null,
                             array(
-                                'label' => 'operation_type',
+                                'label' => 'operation.type',
                                 'mapped' => false,
                                 'expanded' => true,
                                 'required' => false,
                                 'choices' => array(
-                                    'debit' => 'operation_type_debit',
-                                    'credit' => 'operation_type_credit'
+                                    'debit' => 'operation.type_debit',
+                                    'credit' => 'operation.type_credit'
                                 ),
                                 'constraints' => array(
                                     new Assert\NotBlank()
@@ -125,7 +125,7 @@ class OperationForm extends AbstractType
                             'money',
                             null,
                             array(
-                                'label' => 'operation_amount',
+                                'label' => 'operation.amount',
                                 'currency' => $account->getCurrency(),
                                 'mapped' => false,
                                 'constraints' => array(
@@ -143,8 +143,8 @@ class OperationForm extends AbstractType
                             'entity',
                             null,
                             array(
-                                'label' => 'operation_transfer_account',
-                                'empty_value' => 'operation_external_account',
+                                'label' => 'operation.transfer_account',
+                                'empty_value' => 'operation.external_account',
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                     return $repository->createQueryBuilder('a')

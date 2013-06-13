@@ -2,14 +2,14 @@
     <li{{ 'user_profile' == app.request.get('_route') ? ' class="active"' : '' }}>
         <a href="{{ path('user_profile') }}">
             <i class="icon-user"></i>
-            {{ 'user_profile_page_title'|trans }}
+            {{ 'user.profile.page_title'|trans }}
             <i class="icon-chevron-right"></i>
         </a>
     </li>
     <li{{ 'user_change_password' == app.request.get('_route') ? ' class="active"' : '' }}>
         <a href="{{ path('user_change_password') }}">
             <i class="icon-lock"></i>
-            {{ 'user_change_password_page_title'|trans }}
+            {{ 'user.change_password.page_title'|trans }}
             <i class="icon-chevron-right"></i>
         </a>
     </li>

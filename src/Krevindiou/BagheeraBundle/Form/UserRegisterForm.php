@@ -39,7 +39,7 @@ class UserRegisterForm extends AbstractType
                 'email',
                 'email',
                 array(
-                    'label' => 'user_email',
+                    'label' => 'user.email',
                     'attr' => array(
                         'class' => 'input-xlarge'
                     )
@@ -49,7 +49,7 @@ class UserRegisterForm extends AbstractType
                 'country',
                 'country',
                 array(
-                    'label' => 'user_country',
+                    'label' => 'user.country',
                     'preferred_choices' => array($preferredChoice),
                     'attr' => array(
                         'class' => 'input-large'
@@ -61,9 +61,9 @@ class UserRegisterForm extends AbstractType
                 'repeated',
                 array(
                     'type' => 'password',
-                    'first_options' => array('label' => 'user_password'),
-                    'second_options' => array('label' => 'user_password_confirmation'),
-                    'invalid_message' => 'user_password_fields_must_match',
+                    'first_options' => array('label' => 'user.password'),
+                    'second_options' => array('label' => 'user.password_confirmation'),
+                    'invalid_message' => 'user.password_fields_must_match',
                     'options' => array(
                         'attr' => array(
                             'class' => 'input-medium'
@@ -75,7 +75,7 @@ class UserRegisterForm extends AbstractType
                 'recaptcha',
                 'ewz_recaptcha',
                 array(
-                    'label' => 'user_captcha',
+                    'label' => 'user.captcha',
                     'attr' => array(
                         'options' => array(
                             'theme' => 'clean'

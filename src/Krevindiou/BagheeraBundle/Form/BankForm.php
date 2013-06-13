@@ -24,7 +24,7 @@ class BankForm extends AbstractType
                 'name',
                 null,
                 array(
-                    'label' => 'bank_name',
+                    'label' => 'bank.name',
                     'attr' => array(
                         'class' => 'input-xlarge'
                     )
@@ -49,9 +49,9 @@ class BankForm extends AbstractType
                             'entity',
                             null,
                             array(
-                                'label' => 'bank_provider',
+                                'label' => 'bank.provider',
                                 'required' => false,
-                                'empty_value' => 'bank_provider_other',
+                                'empty_value' => 'bank.provider_other',
                                 'empty_data' => null,
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {

@@ -26,7 +26,7 @@
                         {% if app.user is not empty %}
                         <ul class="pull-right">
                             <li><a href="{{ path('user_profile') }}"><i class="icon-user"></i> {{ app.user.email }}</a></li>
-                            <li><a href="{{ path('logout') }}"><i class="icon-signout"></i> {{ 'user_logout_link'|trans }}</a></li>
+                            <li><a href="{{ path('logout') }}"><i class="icon-signout"></i> {{ 'user.logout_link'|trans }}</a></li>
                         </ul>
                         {% endif %}
                     </div>
@@ -49,12 +49,12 @@
                                 </a>
                             </li>
 
-                            <li{{ 'account' in app.request.get('_route') and 'account_home' != app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('account_list') }}"><i class="icon-tasks"></i> {{ 'account_list_page_title'|trans }}</a></li>
+                            <li{{ 'account' in app.request.get('_route') and 'account_home' != app.request.get('_route') ? ' class="active"' : '' }}><a href="{{ path('account_list') }}"><i class="icon-tasks"></i> {{ 'account.list_page_title'|trans }}</a></li>
 
                             <li class="{{ 'operation' in app.request.get('_route') ? 'active ' : '' }}dropdown">
                                 <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
                                     <i class="icon-book"></i>
-                                    <span>{{ 'operation_list_page_title'|trans }}</span>
+                                    <span>{{ 'operation.list_page_title'|trans }}</span>
                                     <b class="caret"></b>
                                 </a>
 
@@ -69,7 +69,7 @@
                                                     <li><a tabindex="-1" href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></li>
                                                 {% endfor  %}
                                             {% else %}
-                                                <li><a tabindex="-1" href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a></li>
+                                                <li><a tabindex="-1" href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account.new_link'|trans }}</a></li>
                                             {% endif %}
                                             </ul>
                                         </li>
@@ -80,7 +80,7 @@
                             <li class="{{ 'scheduler' in app.request.get('_route') ? 'active ' : '' }}dropdown">
                                 <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
                                     <i class="icon-time"></i>
-                                    <span>{{ 'scheduler_list_page_title'|trans }}</span>
+                                    <span>{{ 'scheduler.list_page_title'|trans }}</span>
                                     <b class="caret"></b>
                                 </a>
 
@@ -95,7 +95,7 @@
                                                     <li><a tabindex="-1" href="{{ path('scheduler_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></li>
                                                 {% endfor  %}
                                             {% else %}
-                                                <li><a tabindex="-1" href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account_new_link'|trans }}</a></li>
+                                                <li><a tabindex="-1" href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account.new_link'|trans }}</a></li>
                                             {% endif %}
                                             </ul>
                                         </li>
@@ -104,7 +104,7 @@
                             </li>
 
                             <li{{ 'report' in app.request.get('_route') ? ' class="active"' : '' }}>
-                                <a href="{{ path('report_list') }}"><i class="icon-bar-chart"></i> {{ 'report_list_page_title'|trans }}</a>
+                                <a href="{{ path('report_list') }}"><i class="icon-bar-chart"></i> {{ 'report.list_page_title'|trans }}</a>
                             </li>
                         </ul>
                     </div>

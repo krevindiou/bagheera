@@ -125,7 +125,7 @@ class UserService
         );
 
         $message = \Swift_Message::newInstance()
-            ->setSubject($this->translator->trans('user_register_email_subject'))
+            ->setSubject($this->translator->trans('user.register.email_subject'))
             ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
             ->setTo(array($user->getEmail()))
             ->setBody($body, 'text/html');
@@ -290,7 +290,7 @@ class UserService
             );
 
             $message = \Swift_Message::newInstance()
-                ->setSubject($this->translator->trans('user_forgot_password_email_subject'))
+                ->setSubject($this->translator->trans('user.forgot_password.email_subject'))
                 ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
                 ->setTo(array($user->getEmail()))
                 ->setBody($body, 'text/html');

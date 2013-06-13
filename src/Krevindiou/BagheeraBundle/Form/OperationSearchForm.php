@@ -24,12 +24,12 @@ class OperationSearchForm extends AbstractType
                 'type',
                 'choice',
                 array(
-                    'label' => 'operation_type',
+                    'label' => 'operation.type',
                     'expanded' => true,
                     'required' => false,
                     'choices' => array(
-                        'debit' => 'operation_type_debit',
-                        'credit' => 'operation_type_credit'
+                        'debit' => 'operation.type_debit',
+                        'credit' => 'operation.type_credit'
                     )
                 )
             )
@@ -37,7 +37,7 @@ class OperationSearchForm extends AbstractType
                 'thirdParty',
                 null,
                 array(
-                    'label' => 'operation_third_party',
+                    'label' => 'operation.third_party',
                     'attr' => array(
                         'class' => 'input-large'
                     )
@@ -47,7 +47,7 @@ class OperationSearchForm extends AbstractType
                 'categories',
                 null,
                 array(
-                    'label' => 'operation_category',
+                    'label' => 'operation.category',
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => array(
@@ -59,7 +59,7 @@ class OperationSearchForm extends AbstractType
                 'paymentMethods',
                 null,
                 array(
-                    'label' => 'operation_payment_method',
+                    'label' => 'operation.payment_method',
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => array(
@@ -71,7 +71,7 @@ class OperationSearchForm extends AbstractType
                 'valueDateStart',
                 'date',
                 array(
-                    'label' => 'operation_search_value_date_start',
+                    'label' => 'operation.search_value_date_start',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
@@ -84,7 +84,7 @@ class OperationSearchForm extends AbstractType
                 'valueDateEnd',
                 'date',
                 array(
-                    'label' => 'operation_search_value_date_end',
+                    'label' => 'operation.search_value_date_end',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
@@ -97,7 +97,7 @@ class OperationSearchForm extends AbstractType
                 'notes',
                 null,
                 array(
-                    'label' => 'operation_notes',
+                    'label' => 'operation.notes',
                     'attr' => array(
                         'class' => 'input-large',
                         'rows' => 5
@@ -108,12 +108,12 @@ class OperationSearchForm extends AbstractType
                 'reconciled',
                 'choice',
                 array(
-                    'label' => 'operation_reconciled',
+                    'label' => 'operation.reconciled',
                     'required' => false,
-                    'empty_value' => 'operation_search_reconciled_both',
+                    'empty_value' => 'operation.search_reconciled_both',
                     'choices' => array(
-                        1 => 'operation_search_only_reconciled',
-                        0 => 'operation_search_only_not_reconciled',
+                        1 => 'operation.search_only_reconciled',
+                        0 => 'operation.search_only_not_reconciled',
                     )
                 )
             )
@@ -156,7 +156,7 @@ class OperationSearchForm extends AbstractType
                             'money',
                             null,
                             array(
-                                'label' => 'operation_amount',
+                                'label' => 'operation.amount',
                                 'currency' => $account->getCurrency(),
                                 'mapped' => false,
                                 'attr' => array(
@@ -193,7 +193,7 @@ class OperationSearchForm extends AbstractType
                             'money',
                             null,
                             array(
-                                'label' => 'operation_amount',
+                                'label' => 'operation.amount',
                                 'currency' => $account->getCurrency(),
                                 'mapped' => false,
                                 'attr' => array(

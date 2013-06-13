@@ -24,9 +24,9 @@ class UserChangePasswordForm extends AbstractType
                 'repeated',
                 array(
                     'type' => 'password',
-                    'first_options' => array('label' => 'user_password'),
-                    'second_options' => array('label' => 'user_password_confirmation'),
-                    'invalid_message' => 'user_password_fields_must_match',
+                    'first_options' => array('label' => 'user.password'),
+                    'second_options' => array('label' => 'user.password_confirmation'),
+                    'invalid_message' => 'user.password_fields_must_match',
                     'constraints' => array(
                         new NotBlank(),
                         new Length(array('min' => 8))

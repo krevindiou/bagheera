@@ -1,6 +1,6 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'operation_list_page_title'|trans %}
+{% block page_title 'operation.list_page_title'|trans %}
 
 {% block breadcrumb %}
     <li class="active">{{ account.bank.name }} - {{ account.name }}</li>
@@ -24,9 +24,9 @@
             </tbody>
         </table>
         <div class="btn-group">
-            <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="btn btn-small{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation_new_link'|trans }}</a>
-            <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="btn btn-small search"><i class="icon-search"></i> {{ 'operation_search_link'|trans }}</a>
-            <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-time"></i> {{ 'scheduler_list'|trans }}</a>
+            <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="btn btn-small{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation.new_link'|trans }}</a>
+            <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="btn btn-small search"><i class="icon-search"></i> {{ 'operation.search_link'|trans }}</a>
+            <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-time"></i> {{ 'scheduler.list'|trans }}</a>
         </div>
     </div>
     <div class="span8">
@@ -42,11 +42,11 @@
                 <tr>
                     <th></th>
                     <th></th>
-                    <th>{{ 'operation_third_party'|trans }}</th>
-                    <th class="amount">{{ 'operation_amount'|trans }}</th>
+                    <th>{{ 'operation.third_party'|trans }}</th>
+                    <th class="amount">{{ 'operation.amount'|trans }}</th>
                     <th></th>
-                    <th>{{ 'operation_category'|trans }}</th>
-                    <th class="date">{{ 'operation_value_date'|trans }}</th>
+                    <th>{{ 'operation.category'|trans }}</th>
+                    <th class="date">{{ 'operation.value_date'|trans }}</th>
                     <th></th>
                 </tr>
             </thead>
@@ -56,11 +56,11 @@
                     <td class="check"><input type="checkbox" name="operationsId[]" value="{{ operation.operationId }}" /></td>
                     <td class="status">
                         {% if operation.reconciled %}
-                        <i class="icon-ok-sign" title="{{ 'operation_reconciled'|trans }}"></i>&nbsp;
+                        <i class="icon-ok-sign" title="{{ 'operation.reconciled'|trans }}"></i>&nbsp;
                         {% endif %}
 
                         {% if operation.scheduler.schedulerId is not null %}
-                        <i class="icon-time" title="{{ 'operation_scheduler'|trans }}"></i>
+                        <i class="icon-time" title="{{ 'operation.scheduler'|trans }}"></i>
                         {% endif %}
                     </td>
                     <td>{{ operation.thirdParty }}</td>
@@ -82,15 +82,15 @@
                     </td>
                     <td>{{ operation.category.name }}</td>
                     <td class="date">{{ operation.valueDate|localizeddate('medium', 'none') }}</td>
-                    <td class="actions"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}" class="btn btn-mini" title="{{ 'operation_edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    <td class="actions"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}" class="btn btn-mini" title="{{ 'operation.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
         <div class="btn-group form-actions hide">
-            <button type="submit" name="delete" class="btn delete" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'operation_delete_button'|trans }}</button>
-            <button type="submit" name="reconcile" class="btn reconcile" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-ok-sign"></i> {{ 'operation_reconcile_button'|trans }}</button>
+            <button type="submit" name="delete" class="btn delete" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'operation.delete_button'|trans }}</button>
+            <button type="submit" name="reconcile" class="btn reconcile" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-ok-sign"></i> {{ 'operation.reconcile_button'|trans }}</button>
         </div>
 
         <div class="pagination pagination-right">

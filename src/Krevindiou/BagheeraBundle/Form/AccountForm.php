@@ -25,7 +25,7 @@ class AccountForm extends AbstractType
                 'name',
                 null,
                 array(
-                    'label' => 'account_name',
+                    'label' => 'account.name',
                     'attr' => array(
                         'class' => 'input-xlarge'
                     )
@@ -50,7 +50,7 @@ class AccountForm extends AbstractType
                             'entity',
                             null,
                             array(
-                                'label' => 'account_bank',
+                                'label' => 'account.bank',
                                 'empty_value' => '',
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
@@ -74,7 +74,7 @@ class AccountForm extends AbstractType
                             new CurrencyType(),
                             null,
                             array(
-                                'label' => 'account_currency',
+                                'label' => 'account.currency',
                                 'disabled' => $edit,
                                 'attr' => array(
                                     'class' => 'input-xlarge'
@@ -88,7 +88,7 @@ class AccountForm extends AbstractType
                             'money',
                             null,
                             array(
-                                'label' => 'account_overdraft_facility',
+                                'label' => 'account.overdraft_facility',
                                 'currency' => $account->getCurrency() ? : false,
                                 'attr' => array(
                                     'class' => 'input-small'
@@ -106,7 +106,7 @@ class AccountForm extends AbstractType
                                 'money',
                                 null,
                                 array(
-                                    'label' => 'account_initial_balance',
+                                    'label' => 'account.initial_balance',
                                     'mapped' => false,
                                     'required' => false,
                                     'currency' => $account->getCurrency() ? : false,
