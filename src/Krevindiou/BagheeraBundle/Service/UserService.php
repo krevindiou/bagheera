@@ -117,7 +117,7 @@ class UserService
 
         // Activation link construction
         $key = $this->createRegisterKey($user);
-        $link = $this->router->generate('user_activate', array('key' => $key), true);
+        $link = $this->router->generate('user_activate', array('_locale' => 'en', 'key' => $key), true);
 
         $body = $this->templating->render(
             'KrevindiouBagheeraBundle:Email:register.html.twig',
@@ -282,7 +282,7 @@ class UserService
         if (null !== $user) {
             // Change password link construction
             $key = $this->createChangePasswordKey($user);
-            $link = $this->router->generate('user_change_password_public', array('key' => $key), true);
+            $link = $this->router->generate('user_change_password_public', array('_locale' => 'en', 'key' => $key), true);
 
             $body = $this->templating->render(
                 'KrevindiouBagheeraBundle:Email:changePassword.html.twig',
