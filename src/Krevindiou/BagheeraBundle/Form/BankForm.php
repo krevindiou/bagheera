@@ -44,27 +44,24 @@ class BankForm extends AbstractType
 
                 $form
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'provider',
-                            'entity',
-                            null,
-                            array(
-                                'label' => 'bank.provider',
-                                'required' => false,
-                                'empty_value' => 'bank.provider_other',
-                                'empty_data' => null,
-                                'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',
-                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
-                                    return $repository->createQueryBuilder('p')
-                                        ->where('p.country = :country')
-                                        ->setParameter('country', $user->getCountry())
-                                        ->add('orderBy', 'p.name ASC');
-                                },
-                                'disabled' => $edit,
-                                'attr' => array(
-                                    'bankId' => $bank->getBankId(),
-                                    'class' => 'input-xlarge'
-                                )
+                        'provider',
+                        'entity',
+                        array(
+                            'label' => 'bank.provider',
+                            'required' => false,
+                            'empty_value' => 'bank.provider_other',
+                            'empty_data' => null,
+                            'class' => 'Krevindiou\BagheeraBundle\Entity\Provider',
+                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                                return $repository->createQueryBuilder('p')
+                                    ->where('p.country = :country')
+                                    ->setParameter('country', $user->getCountry())
+                                    ->add('orderBy', 'p.name ASC');
+                            },
+                            'disabled' => $edit,
+                            'attr' => array(
+                                'bankId' => $bank->getBankId(),
+                                'class' => 'input-xlarge'
                             )
                         )
                     )

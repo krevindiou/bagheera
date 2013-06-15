@@ -45,54 +45,45 @@ class AccountForm extends AbstractType
 
                 $form
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'bank',
-                            'entity',
-                            null,
-                            array(
-                                'label' => 'account.bank',
-                                'empty_value' => '',
-                                'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
-                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
-                                    return $repository->createQueryBuilder('b')
-                                        ->where('b.user = :user')
-                                        ->andWhere('b.deleted = false')
-                                        ->andWhere('b.closed = false')
-                                        ->setParameter('user', $user)
-                                        ->add('orderBy', 'b.name ASC');
-                                },
-                                'disabled' => $edit,
-                                'attr' => array(
-                                    'class' => 'input-xlarge'
-                                )
+                        'bank',
+                        'entity',
+                        array(
+                            'label' => 'account.bank',
+                            'empty_value' => '',
+                            'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
+                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                                return $repository->createQueryBuilder('b')
+                                    ->where('b.user = :user')
+                                    ->andWhere('b.deleted = false')
+                                    ->andWhere('b.closed = false')
+                                    ->setParameter('user', $user)
+                                    ->add('orderBy', 'b.name ASC');
+                            },
+                            'disabled' => $edit,
+                            'attr' => array(
+                                'class' => 'input-xlarge'
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'currency',
-                            new CurrencyType(),
-                            null,
-                            array(
-                                'label' => 'account.currency',
-                                'disabled' => $edit,
-                                'attr' => array(
-                                    'class' => 'input-xlarge'
-                                )
+                        'currency',
+                        new CurrencyType(),
+                        array(
+                            'label' => 'account.currency',
+                            'disabled' => $edit,
+                            'attr' => array(
+                                'class' => 'input-xlarge'
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'overdraftFacility',
-                            'money',
-                            null,
-                            array(
-                                'label' => 'account.overdraft_facility',
-                                'currency' => $account->getCurrency() ? : false,
-                                'attr' => array(
-                                    'class' => 'input-small'
-                                )
+                        'overdraftFacility',
+                        'money',
+                        array(
+                            'label' => 'account.overdraft_facility',
+                            'currency' => $account->getCurrency() ? : false,
+                            'attr' => array(
+                                'class' => 'input-small'
                             )
                         )
                     )
@@ -101,18 +92,15 @@ class AccountForm extends AbstractType
                 if (!$edit) {
                     $form
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'initialBalance',
-                                'money',
-                                null,
-                                array(
-                                    'label' => 'account.initial_balance',
-                                    'mapped' => false,
-                                    'required' => false,
-                                    'currency' => $account->getCurrency() ? : false,
-                                    'attr' => array(
-                                        'class' => 'input-small'
-                                    )
+                            'initialBalance',
+                            'money',
+                            array(
+                                'label' => 'account.initial_balance',
+                                'mapped' => false,
+                                'required' => false,
+                                'currency' => $account->getCurrency() ? : false,
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )

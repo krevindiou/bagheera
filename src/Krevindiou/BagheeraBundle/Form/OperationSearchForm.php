@@ -129,76 +129,64 @@ class OperationSearchForm extends AbstractType
 
                 $form
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'amount_comparator_1',
-                            'choice',
-                            null,
-                            array(
-                                'mapped' => false,
-                                'required' => false,
-                                'empty_value' => '',
-                                'choices' => array(
-                                    'inferiorTo' => '<',
-                                    'inferiorOrEqualTo' => '<=',
-                                    'equalTo' => '=',
-                                    'superiorOrEqualTo' => '>=',
-                                    'superiorTo' => '>',
-                                ),
-                                'attr' => array(
-                                    'class' => 'input-mini'
-                                )
+                        'amount_comparator_1',
+                        'choice',
+                        array(
+                            'mapped' => false,
+                            'required' => false,
+                            'empty_value' => '',
+                            'choices' => array(
+                                'inferiorTo' => '<',
+                                'inferiorOrEqualTo' => '<=',
+                                'equalTo' => '=',
+                                'superiorOrEqualTo' => '>=',
+                                'superiorTo' => '>',
+                            ),
+                            'attr' => array(
+                                'class' => 'input-mini'
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'amount_1',
-                            'money',
-                            null,
-                            array(
-                                'label' => 'operation.amount',
-                                'currency' => $account->getCurrency(),
-                                'mapped' => false,
-                                'attr' => array(
-                                    'class' => 'input-small'
-                                )
+                        'amount_1',
+                        'money',
+                        array(
+                            'label' => 'operation.amount',
+                            'currency' => $account->getCurrency(),
+                            'mapped' => false,
+                            'attr' => array(
+                                'class' => 'input-small'
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'amount_comparator_2',
-                            'choice',
-                            null,
-                            array(
-                                'mapped' => false,
-                                'required' => false,
-                                'empty_value' => '',
-                                'choices' => array(
-                                    'inferiorTo' => '<',
-                                    'inferiorOrEqualTo' => '<=',
-                                    'equalTo' => '=',
-                                    'superiorOrEqualTo' => '>=',
-                                    'superiorTo' => '>',
-                                ),
-                                'attr' => array(
-                                    'class' => 'input-mini'
-                                )
+                        'amount_comparator_2',
+                        'choice',
+                        array(
+                            'mapped' => false,
+                            'required' => false,
+                            'empty_value' => '',
+                            'choices' => array(
+                                'inferiorTo' => '<',
+                                'inferiorOrEqualTo' => '<=',
+                                'equalTo' => '=',
+                                'superiorOrEqualTo' => '>=',
+                                'superiorTo' => '>',
+                            ),
+                            'attr' => array(
+                                'class' => 'input-mini'
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'amount_2',
-                            'money',
-                            null,
-                            array(
-                                'label' => 'operation.amount',
-                                'currency' => $account->getCurrency(),
-                                'mapped' => false,
-                                'attr' => array(
-                                    'class' => 'input-small'
-                                )
+                        'amount_2',
+                        'money',
+                        array(
+                            'label' => 'operation.amount',
+                            'currency' => $account->getCurrency(),
+                            'mapped' => false,
+                            'attr' => array(
+                                'class' => 'input-small'
                             )
                         )
                     )

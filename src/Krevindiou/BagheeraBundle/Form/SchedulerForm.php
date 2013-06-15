@@ -147,64 +147,55 @@ class SchedulerForm extends AbstractType
 
                 $form
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'type',
-                            'choice',
-                            null,
-                            array(
-                                'label' => 'scheduler.type',
-                                'mapped' => false,
-                                'expanded' => true,
-                                'required' => false,
-                                'choices' => array(
-                                    'debit' => 'scheduler.type_debit',
-                                    'credit' => 'scheduler.type_credit'
-                                ),
-                                'constraints' => array(
-                                    new Assert\NotBlank()
-                                )
+                        'type',
+                        'choice',
+                        array(
+                            'label' => 'scheduler.type',
+                            'mapped' => false,
+                            'expanded' => true,
+                            'required' => false,
+                            'choices' => array(
+                                'debit' => 'scheduler.type_debit',
+                                'credit' => 'scheduler.type_credit'
+                            ),
+                            'constraints' => array(
+                                new Assert\NotBlank()
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'amount',
-                            'money',
-                            null,
-                            array(
-                                'label' => 'scheduler.amount',
-                                'currency' => $account->getCurrency(),
-                                'mapped' => false,
-                                'constraints' => array(
-                                    new Assert\NotBlank()
-                                ),
-                                'attr' => array(
-                                    'class' => 'input-small'
-                                )
+                        'amount',
+                        'money',
+                        array(
+                            'label' => 'scheduler.amount',
+                            'currency' => $account->getCurrency(),
+                            'mapped' => false,
+                            'constraints' => array(
+                                new Assert\NotBlank()
+                            ),
+                            'attr' => array(
+                                'class' => 'input-small'
                             )
                         )
                     )
                     ->add(
-                        $builder->getFormFactory()->createNamed(
-                            'transferAccount',
-                            'entity',
-                            null,
-                            array(
-                                'label' => 'scheduler.transfer_account',
-                                'empty_value' => 'scheduler.external_account',
-                                'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
-                                    return $repository->createQueryBuilder('a')
-                                        ->innerJoin('a.bank', 'b')
-                                        ->where('b.user = :user')
-                                        ->andWhere('a != :account')
-                                        ->setParameter('user', $account->getBank()->getUser())
-                                        ->setParameter('account', $account)
-                                        ->add('orderBy', 'a.name ASC');
-                                },
-                                'attr' => array(
-                                    'class' => 'input-xlarge'
-                                )
+                        'transferAccount',
+                        'entity',
+                        array(
+                            'label' => 'scheduler.transfer_account',
+                            'empty_value' => 'scheduler.external_account',
+                            'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
+                                return $repository->createQueryBuilder('a')
+                                    ->innerJoin('a.bank', 'b')
+                                    ->where('b.user = :user')
+                                    ->andWhere('a != :account')
+                                    ->setParameter('user', $account->getBank()->getUser())
+                                    ->setParameter('account', $account)
+                                    ->add('orderBy', 'a.name ASC');
+                            },
+                            'attr' => array(
+                                'class' => 'input-xlarge'
                             )
                         )
                     )

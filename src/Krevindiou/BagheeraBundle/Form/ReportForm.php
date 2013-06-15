@@ -54,122 +54,101 @@ class ReportForm extends AbstractType
                 if (in_array($type, array('sum', 'average', 'distribution'))) {
                     $form
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'valueDateStart',
-                                'date',
-                                null,
-                                array(
-                                    'label' => 'report.value_date_start',
-                                    'widget' => 'single_text',
-                                    'format' => 'yyyy-MM-dd',
-                                    'required' => false,
-                                    'attr' => array(
-                                        'class' => 'input-small calendar'
-                                    )
+                            'valueDateStart',
+                            'date',
+                            array(
+                                'label' => 'report.value_date_start',
+                                'widget' => 'single_text',
+                                'format' => 'yyyy-MM-dd',
+                                'required' => false,
+                                'attr' => array(
+                                    'class' => 'input-small calendar'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'valueDateEnd',
-                                'date',
-                                null,
-                                array(
-                                    'label' => 'report.value_date_end',
-                                    'widget' => 'single_text',
-                                    'format' => 'yyyy-MM-dd',
-                                    'required' => false,
-                                    'attr' => array(
-                                        'class' => 'input-small calendar'
-                                    )
+                            'valueDateEnd',
+                            'date',
+                            array(
+                                'label' => 'report.value_date_end',
+                                'widget' => 'single_text',
+                                'format' => 'yyyy-MM-dd',
+                                'required' => false,
+                                'attr' => array(
+                                    'class' => 'input-small calendar'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'thirdParties',
-                                'text',
-                                null,
-                                array(
-                                    'label' => 'report.third_parties',
-                                    'required' => false,
-                                    'attr' => array(
-                                        'class' => 'input-large'
-                                    )
+                            'thirdParties',
+                            'text',
+                            array(
+                                'label' => 'report.third_parties',
+                                'required' => false,
+                                'attr' => array(
+                                    'class' => 'input-large'
                                 )
                             )
                         )
                         /*
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'categories',
-                                null,
-                                null,
-                                array(
-                                    'label' => 'report.categories',
-                                    'empty_value' => '',
-                                    'required' => false,
-                                    'group_by' => 'type',
-                                    'attr' => array(
-                                        'class' => 'input-xlarge'
-                                    )
+                            'categories',
+                            null,
+                            array(
+                                'label' => 'report.categories',
+                                'empty_value' => '',
+                                'required' => false,
+                                'group_by' => 'type',
+                                'attr' => array(
+                                    'class' => 'input-xlarge'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'paymentMethods',
-                                null,
-                                null,
-                                array(
-                                    'label' => 'report.payment_methods',
-                                    'empty_value' => '',
-                                    'required' => false,
-                                    'group_by' => 'type',
-                                    'attr' => array(
-                                        'class' => 'input-medium'
-                                    )
+                            'paymentMethods',
+                            null,
+                            array(
+                                'label' => 'report.payment_methods',
+                                'empty_value' => '',
+                                'required' => false,
+                                'group_by' => 'type',
+                                'attr' => array(
+                                    'class' => 'input-medium'
                                 )
                             )
                         )
                         */
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'accounts',
-                                'entity',
-                                null,
-                                array(
-                                    'label' => 'report.accounts',
-                                    'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
-                                        return $repository->createQueryBuilder('a')
-                                            ->innerJoin('a.bank', 'b')
-                                            ->where('b.user = :user')
-                                            ->andWhere('b.deleted = false')
-                                            ->andWhere('b.closed = false')
-                                            ->andWhere('a.deleted = false')
-                                            ->setParameter('user', $user)
-                                            ->add('orderBy', 'a.name ASC');
-                                    },
-                                    'group_by' => 'bank.name',
-                                    'empty_value' => '',
-                                    'required' => false,
-                                    'multiple' => true,
-                                    'attr' => array(
-                                        'class' => 'input-xlarge'
-                                    )
+                            'accounts',
+                            'entity',
+                            array(
+                                'label' => 'report.accounts',
+                                'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                                    return $repository->createQueryBuilder('a')
+                                        ->innerJoin('a.bank', 'b')
+                                        ->where('b.user = :user')
+                                        ->andWhere('b.deleted = false')
+                                        ->andWhere('b.closed = false')
+                                        ->andWhere('a.deleted = false')
+                                        ->setParameter('user', $user)
+                                        ->add('orderBy', 'a.name ASC');
+                                },
+                                'group_by' => 'bank.name',
+                                'empty_value' => '',
+                                'required' => false,
+                                'multiple' => true,
+                                'attr' => array(
+                                    'class' => 'input-xlarge'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'reconciledOnly',
-                                'checkbox',
-                                null,
-                                array(
-                                    'label' => 'report.reconciled_only',
-                                    'required' => false
-                                )
+                            'reconciledOnly',
+                            'checkbox',
+                            array(
+                                'label' => 'report.reconciled_only',
+                                'required' => false
                             )
                         )
                     ;
@@ -178,22 +157,19 @@ class ReportForm extends AbstractType
                 if (in_array($type, array('sum', 'average'))) {
                     $form
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'periodGrouping',
-                                'choice',
-                                null,
-                                array(
-                                    'label' => 'report.period_grouping',
-                                    'choices' => array(
-                                        'month' => 'report.period_grouping_month',
-                                        'quarter' => 'report.period_grouping_quarter',
-                                        'year' => 'report.period_grouping_year',
-                                        'all' => 'report.period_grouping_all'
-                                    ),
-                                    'empty_value' => '',
-                                    'attr' => array(
-                                        'class' => 'input-small'
-                                    )
+                            'periodGrouping',
+                            'choice',
+                            array(
+                                'label' => 'report.period_grouping',
+                                'choices' => array(
+                                    'month' => 'report.period_grouping_month',
+                                    'quarter' => 'report.period_grouping_quarter',
+                                    'year' => 'report.period_grouping_year',
+                                    'all' => 'report.period_grouping_all'
+                                ),
+                                'empty_value' => '',
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
@@ -203,34 +179,28 @@ class ReportForm extends AbstractType
                 if (in_array($type, array('distribution'))) {
                     $form
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'dataGrouping',
-                                'choice',
-                                null,
-                                array(
-                                    'label' => 'report.data_grouping',
-                                    'choices' => array(
-                                        'category' => 'report.data_grouping_category',
-                                        'third_party' => 'report.data_grouping_third_party',
-                                        'payment_method' => 'report.data_grouping_payment_method',
-                                    ),
-                                    'empty_value' => '',
-                                    'attr' => array(
-                                        'class' => 'input-small'
-                                    )
+                            'dataGrouping',
+                            'choice',
+                            array(
+                                'label' => 'report.data_grouping',
+                                'choices' => array(
+                                    'category' => 'report.data_grouping_category',
+                                    'third_party' => 'report.data_grouping_third_party',
+                                    'payment_method' => 'report.data_grouping_payment_method',
+                                ),
+                                'empty_value' => '',
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'significantResultsNumber',
-                                null,
-                                null,
-                                array(
-                                    'label' => 'report.significant_results_number',
-                                    'attr' => array(
-                                        'class' => 'input-mini'
-                                    )
+                            'significantResultsNumber',
+                            null,
+                            array(
+                                'label' => 'report.significant_results_number',
+                                'attr' => array(
+                                    'class' => 'input-mini'
                                 )
                             )
                         )
@@ -240,61 +210,49 @@ class ReportForm extends AbstractType
                 if (in_array($type, array('estimate'))) {
                     $form
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'monthExpenses',
-                                'money',
-                                null,
-                                array(
-                                    'label' => 'report.month_expenses',
-                                    'currency' => false,
-                                    'attr' => array(
-                                        'class' => 'input-small'
-                                    )
+                            'monthExpenses',
+                            'money',
+                            array(
+                                'label' => 'report.month_expenses',
+                                'currency' => false,
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'monthIncomes',
-                                'money',
-                                null,
-                                array(
-                                    'label' => 'report.month_incomes',
-                                    'currency' => false,
-                                    'attr' => array(
-                                        'class' => 'input-small'
-                                    )
+                            'monthIncomes',
+                            'money',
+                            array(
+                                'label' => 'report.month_incomes',
+                                'currency' => false,
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'estimateDurationValue',
-                                'text',
-                                null,
-                                array(
-                                    'label' => 'report.estimate_duration_value',
-                                    'attr' => array(
-                                        'class' => 'input-mini'
-                                    )
+                            'estimateDurationValue',
+                            'text',
+                            array(
+                                'label' => 'report.estimate_duration_value',
+                                'attr' => array(
+                                    'class' => 'input-mini'
                                 )
                             )
                         )
                         ->add(
-                            $builder->getFormFactory()->createNamed(
-                                'estimateDurationUnit',
-                                'choice',
-                                null,
-                                array(
-                                    'label' => 'report.estimate_duration_unit',
-                                    'choices' => array(
-                                        'month' => 'report.estimate_duration_unit_month',
-                                        'year' => 'report.estimate_duration_unit_year',
-                                    ),
-                                    'empty_value' => '',
-                                    'attr' => array(
-                                        'class' => 'input-small'
-                                    )
+                            'estimateDurationUnit',
+                            'choice',
+                            array(
+                                'label' => 'report.estimate_duration_unit',
+                                'choices' => array(
+                                    'month' => 'report.estimate_duration_unit_month',
+                                    'year' => 'report.estimate_duration_unit_year',
+                                ),
+                                'empty_value' => '',
+                                'attr' => array(
+                                    'class' => 'input-small'
                                 )
                             )
                         )
