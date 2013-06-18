@@ -11,6 +11,7 @@ require.config({
         bootstrap_modal: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-modal",
         bootstrap_typeahead: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-typeahead",
         bootstrap_dropdown: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-dropdown",
+        bootstrap_collapse: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-collapse",
         bagheera_reports: "/" + locale + "/manager/reports",
         bagheera_report_synthesis: "/" + locale + "/manager/report-synthesis",
         bagheera_translations: "/" + locale + "/translations"
@@ -24,6 +25,7 @@ require.config({
         bootstrap_modal: ["jquery"],
         bootstrap_typeahead: ["jquery"],
         bootstrap_dropdown: ["jquery"],
+        bootstrap_collapse: ["jquery"],
         bagheera_reports: ["jquery"],
         bagheera_report_synthesis: ["jquery"],
         bagheera_translations: ["jquery"]
@@ -443,6 +445,7 @@ define(
         "bootstrap_modal",
         "bootstrap_typeahead",
         "bootstrap_dropdown",
+        "bootstrap_collapse",
         "bagheera_translations"
     ],
     function($) {
