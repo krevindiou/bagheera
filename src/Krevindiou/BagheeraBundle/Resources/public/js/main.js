@@ -18,7 +18,7 @@ require.config({
     shim: {
         jquery_ui: ["jquery"],
         jquery_flot: ["jquery"],
-        jquery_flot_time: ["jquery"],
+        jquery_flot_time: ["jquery", "jquery_flot"],
         jquery_mailcheck: ["jquery"],
         bootstrap_tooltip: ["jquery"],
         bootstrap_modal: ["jquery"],
