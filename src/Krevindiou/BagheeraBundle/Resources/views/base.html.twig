@@ -124,9 +124,11 @@
                 <div class="container">
                     {% for key, messages in app.session.flashbag.all() %}
                         <div class="alert alert-{{ key }}">
-                        {% for message in messages %}
-                            {{ message|trans }}
-                        {% endfor %}
+                            <a class="close" data-dismiss="alert" href="#">&times;</a>
+
+                            {% for message in messages %}
+                                {{ message|trans }}
+                            {% endfor %}
                         </div>
                     {% endfor %}
 
