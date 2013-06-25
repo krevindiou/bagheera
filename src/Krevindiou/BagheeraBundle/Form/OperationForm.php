@@ -136,6 +136,7 @@ class OperationForm extends AbstractType
                         'entity',
                         array(
                             'label' => 'operation.transfer_account',
+                            'required' => false,
                             'empty_value' => 'operation.external_account',
                             'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {

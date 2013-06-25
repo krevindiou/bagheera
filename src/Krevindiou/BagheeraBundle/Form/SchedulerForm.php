@@ -183,6 +183,7 @@ class SchedulerForm extends AbstractType
                         'entity',
                         array(
                             'label' => 'scheduler.transfer_account',
+                            'required' => false,
                             'empty_value' => 'scheduler.external_account',
                             'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
