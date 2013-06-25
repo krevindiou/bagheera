@@ -153,7 +153,7 @@ class SchedulerForm extends AbstractType
                             'label' => 'scheduler.type',
                             'mapped' => false,
                             'expanded' => true,
-                            'required' => false,
+                            'required' => true,
                             'choices' => array(
                                 'debit' => 'scheduler.type_debit',
                                 'credit' => 'scheduler.type_credit'

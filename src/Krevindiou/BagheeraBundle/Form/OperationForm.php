@@ -106,7 +106,7 @@ class OperationForm extends AbstractType
                             'label' => 'operation.type',
                             'mapped' => false,
                             'expanded' => true,
-                            'required' => false,
+                            'required' => true,
                             'choices' => array(
                                 'debit' => 'operation.type_debit',
                                 'credit' => 'operation.type_credit'
