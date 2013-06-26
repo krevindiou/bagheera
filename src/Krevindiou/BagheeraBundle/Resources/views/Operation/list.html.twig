@@ -78,7 +78,7 @@
                         {% elseif operation.paymentMethod.name == 'deposit' %}
                             icon-money
                         {% endif %}
-                        {% endspaceless %}" title="{{ ('payment_method_' ~ operation.paymentMethod.name)|trans }}"></i>
+                        {% endspaceless %}" title="{{ ('payment_method.' ~ operation.paymentMethod.name)|trans }}"></i>
                     </td>
                     <td>{{ operation.category.name }}</td>
                     <td class="date">{{ operation.valueDate|localizeddate('medium', 'none') }}</td>

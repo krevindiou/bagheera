@@ -55,7 +55,7 @@
                         {% elseif scheduler.paymentMethod.name == 'deposit' %}
                             icon-money
                         {% endif %}
-                        {% endspaceless %}" title="{{ ('payment_method_' ~ scheduler.paymentMethod.name)|trans }}"></i>
+                        {% endspaceless %}" title="{{ ('payment_method.' ~ scheduler.paymentMethod.name)|trans }}"></i>
                     </td>
                     <td>{{ scheduler.category.name }}</td>
                     <td>{{ scheduler.frequencyValue }}</td>
