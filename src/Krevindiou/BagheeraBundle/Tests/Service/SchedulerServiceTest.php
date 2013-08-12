@@ -125,6 +125,7 @@ class SchedulerServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 1 ';
+        $dql.= 'ORDER BY o.valueDate ASC ';
         $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
@@ -135,6 +136,7 @@ class SchedulerServiceTest extends TestCase
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
         $dql.= 'AND o.scheduler = 1 ';
+        $dql.= 'ORDER BY o.valueDate ASC ';
         $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
@@ -149,6 +151,7 @@ class SchedulerServiceTest extends TestCase
         }
 
         $newOperations = array_diff($operationsAfterDate, $operationsBeforeDate);
+
         $this->assertEquals(count($newOperations), 5);
         $this->assertEquals($newOperations[1], '2011-09-15');
         $this->assertEquals($newOperations[2], '2011-09-29');
