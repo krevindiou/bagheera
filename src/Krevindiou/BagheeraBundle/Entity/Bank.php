@@ -26,14 +26,14 @@ class Bank
     protected $bankId;
 
     /**
-     * @var Krevindiou\BagheeraBundle\Entity\User $user
+     * @var Krevindiou\BagheeraBundle\Entity\Member $member
      *
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="banks")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="user_id", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
+     * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
      * @Assert\NotBlank()
      * @Assert\Valid()
      */
-    protected $user;
+    protected $member;
 
     /**
      * @var Krevindiou\BagheeraBundle\Entity\Provider $provider
@@ -141,23 +141,23 @@ class Bank
     }
 
     /**
-     * Set user
+     * Set member
      *
-     * @param Krevindiou\BagheeraBundle\Entity\User $user
+     * @param Krevindiou\BagheeraBundle\Entity\Member $member
      */
-    public function setUser(User $user)
+    public function setMember(Member $member)
     {
-        $this->user = $user;
+        $this->member = $member;
     }
 
     /**
-     * Get user
+     * Get member
      *
-     * @return Krevindiou\BagheeraBundle\Entity\User
+     * @return Krevindiou\BagheeraBundle\Entity\Member
      */
-    public function getUser()
+    public function getMember()
     {
-        return $this->user;
+        return $this->member;
     }
 
     /**
@@ -326,7 +326,7 @@ class Bank
     }
 
     /**
-     * Get user accounts
+     * Get member accounts
      *
      * @return Doctrine\Common\Collections\Collection
      */

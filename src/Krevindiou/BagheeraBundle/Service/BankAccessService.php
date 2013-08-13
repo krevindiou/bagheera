@@ -10,7 +10,7 @@ use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Validator\Validator;
 use Symfony\Bridge\Monolog\Logger;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
 use Krevindiou\BagheeraBundle\Form\BankAccessForm;
@@ -48,13 +48,13 @@ class BankAccessService
     /**
      * Returns bank access form
      *
-     * @param  User $user User entity
-     * @param  Bank $bank Bank entity
+     * @param  Member $member Member entity
+     * @param  Bank   $bank   Bank entity
      * @return Form
      */
-    public function getForm(User $user, Bank $bank)
+    public function getForm(Member $member, Bank $bank)
     {
-        if ($user !== $bank->getUser() || null === $bank->getProvider()) {
+        if ($member !== $bank->getMember() || null === $bank->getProvider()) {
             return;
         }
 
@@ -67,15 +67,15 @@ class BankAccessService
     /**
      * Saves bank access
      *
-     * @param  User       $user       User entity
+     * @param  Member     $member     Member entity
      * @param  BankAccess $bankAccess BankAccess entity
      * @return boolean
      */
-    protected function doSave(User $user, BankAccess $bankAccess)
+    protected function doSave(Member $member, BankAccess $bankAccess)
     {
         $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankAccess->getBankId());
 
-        if (null !== $bank && $user === $bank->getUser()) {
+        if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
                 $dql = 'DELETE FROM KrevindiouBagheeraBundle:BankAccess b ';
@@ -110,16 +110,16 @@ class BankAccessService
     /**
      * Saves bank access
      *
-     * @param  User       $user       User entity
+     * @param  Member     $member     Member entity
      * @param  BankAccess $bankAccess BankAccess entity
      * @return boolean
      */
-    public function save(User $user, BankAccess $bankAccess)
+    public function save(Member $member, BankAccess $bankAccess)
     {
         $errors = $this->validator->validate($bankAccess);
 
         if (0 == count($errors)) {
-            return $this->save($user, $bankAccess);
+            return $this->save($member, $bankAccess);
         }
 
         return false;
@@ -128,14 +128,14 @@ class BankAccessService
     /**
      * Saves bank access form
      *
-     * @param  User    $user User entity
-     * @param  Form    $form BankAccess form
+     * @param  Member  $member Member entity
+     * @param  Form    $form   BankAccess form
      * @return boolean
      */
-    public function saveForm(User $user, Form $form)
+    public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            return $this->doSave($user, $form->getData());
+            return $this->doSave($member, $form->getData());
         }
 
         return false;

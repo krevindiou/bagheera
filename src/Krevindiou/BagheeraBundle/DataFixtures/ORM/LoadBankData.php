@@ -18,7 +18,7 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
          * John
          */
         $bank = new Bank();
-        $bank->setUser($this->getReference('user-john'));
+        $bank->setMember($this->getReference('member-john'));
         $bank->setProvider(null);
         $bank->setName('HSBC');
         $bank->setSortOrder(1);
@@ -29,7 +29,7 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $this->addReference('bank-john-hsbc', $bank);
 
         $bank = new Bank();
-        $bank->setUser($this->getReference('user-john'));
+        $bank->setMember($this->getReference('member-john'));
         $bank->setProvider(null);
         $bank->setName('Bank of America');
         $bank->setSortOrder(2);
@@ -40,7 +40,7 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $this->addReference('bank-john-bank_of_america', $bank);
 
         $bank = new Bank();
-        $bank->setUser($this->getReference('user-john'));
+        $bank->setMember($this->getReference('member-john'));
         $bank->setProvider(null);
         $bank->setName('Wells Fargo');
         $bank->setSortOrder(3);
@@ -51,7 +51,7 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
         $this->addReference('bank-john-wells_fargo', $bank);
 
         $bank = new Bank();
-        $bank->setUser($this->getReference('user-john'));
+        $bank->setMember($this->getReference('member-john'));
         $bank->setProvider(null);
         $bank->setName('Santander');
         $bank->setSortOrder(4);
@@ -65,7 +65,7 @@ class LoadBankData extends AbstractFixture implements OrderedFixtureInterface
          * Jane
          */
         $bank = new Bank();
-        $bank->setUser($this->getReference('user-jane'));
+        $bank->setMember($this->getReference('member-jane'));
         $bank->setProvider(null);
         $bank->setName('BNP Paribas');
         $bank->setSortOrder(1);

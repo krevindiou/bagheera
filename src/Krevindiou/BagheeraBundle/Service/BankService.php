@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Validator;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Process\PhpExecutableFinder;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 
 /**
@@ -44,11 +44,11 @@ class BankService
     /**
      * Returns banks list
      *
-     * @param  User  $user       User entity
-     * @param  bool  $activeOnly Return active banks only
+     * @param  Member $member     Member entity
+     * @param  bool   $activeOnly Return active banks only
      * @return array
      */
-    public function getList(User $user, $activeOnly = true)
+    public function getList(Member $member, $activeOnly = true)
     {
         $banks = array();
 
@@ -61,8 +61,8 @@ class BankService
         $sql.= 'account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted ';
         $sql.= 'FROM bank ';
         $sql.= 'LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = 0 ';
-        $sql.= 'WHERE bank.user_id = :user_id ';
         $sql.= 'AND bank.is_deleted = 0 ';
+        $sql.= 'WHERE bank.member_id = :member_id ';
         if ($activeOnly) {
             $sql.= 'AND bank.is_closed = 0 ';
         }
@@ -71,7 +71,7 @@ class BankService
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->execute(
             array(
-                ':user_id' => $user->getUserId()
+                ':member_id' => $member->getMemberId()
             )
         );
 
@@ -107,16 +107,16 @@ class BankService
     /**
      * Returns bank form
      *
-     * @param  User $user User entity
-     * @param  Bank $bank Bank entity
+     * @param  Member $member Member entity
+     * @param  Bank   $bank   Bank entity
      * @return Form
      */
-    public function getForm(User $user, Bank $bank = null)
+    public function getForm(Member $member, Bank $bank = null)
     {
         if (null === $bank) {
             $bank = new Bank();
-            $bank->setUser($user);
-        } elseif ($user !== $bank->getUser()) {
+            $bank->setMember($member);
+        } elseif ($member !== $bank->getMember()) {
             return;
         }
 
@@ -126,16 +126,16 @@ class BankService
     /**
      * Saves bank
      *
-     * @param  User    $user User entity
-     * @param  Bank    $bank Bank entity
+     * @param  Member $member Member entity
+     * @param  Bank   $bank   Bank entity
      * @return boolean
      */
-    protected function doSave(User $user, Bank $bank)
+    protected function doSave(Member $member, Bank $bank)
     {
-        if ($user === $bank->getUser()) {
+        if ($member === $bank->getMember()) {
             try {
                 if (null === $bank->getBankId()) {
-                    $banks = $bank->getUser()->getBanks();
+                    $banks = $bank->getMember()->getBanks();
                     $order = count($banks) + 1;
 
                     $bank->setSortOrder($order);
@@ -156,16 +156,16 @@ class BankService
     /**
      * Saves bank
      *
-     * @param  User    $user User entity
-     * @param  Bank    $bank Bank entity
+     * @param  Member $member Member entity
+     * @param  Bank   $bank   Bank entity
      * @return boolean
      */
-    public function save(User $user, Bank $bank)
+    public function save(Member $member, Bank $bank)
     {
         $errors = $this->validator->validate($bank);
 
         if (0 == count($errors)) {
-            return $this->doSave($user, $bank);
+            return $this->doSave($member, $bank);
         }
 
         return false;
@@ -174,14 +174,14 @@ class BankService
     /**
      * Saves bank form
      *
-     * @param  User    $user User entity
-     * @param  Form    $form Bank form
+     * @param  Member $member Member entity
+     * @param  Form   $form   Bank form
      * @return boolean
      */
-    public function saveForm(User $user, Form $form)
+    public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            return $this->doSave($user, $form->getData());
+            return $this->doSave($member, $form->getData());
         }
 
         return false;
@@ -190,18 +190,18 @@ class BankService
     /**
      * Deletes banks
      *
-     * @param  User    $user    User entity
-     * @param  array   $banksId Banks id to delete
+     * @param  Member $member  Member entity
+     * @param  array  $banksId Banks id to delete
      * @return boolean
      */
-    public function delete(User $user, array $banksId)
+    public function delete(Member $member, array $banksId)
     {
         try {
             foreach ($banksId as $bankId) {
                 $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankId);
 
                 if (null !== $bank) {
-                    if ($user === $bank->getUser()) {
+                    if ($member === $bank->getMember()) {
                         $bank->setDeleted(true);
                     }
                 }
@@ -220,19 +220,19 @@ class BankService
     /**
      * Gets bank balances
      *
-     * @param  User  $user User entity
-     * @param  Bank  $bank Bank entity
+     * @param  Member $member Member entity
+     * @param  Bank   $bank   Bank entity
      * @return array
      */
-    public function getBalances(User $user, Bank $bank)
+    public function getBalances(Member $member, Bank $bank)
     {
         $balances = array();
 
-        if ($user === $bank->getUser()) {
+        if ($member === $bank->getMember()) {
             $accounts = $bank->getAccounts();
             foreach ($accounts as $account) {
                 if (!$account->isDeleted()) {
-                    $accountBalance = $this->accountService->getBalance($user, $account);
+                    $accountBalance = $this->accountService->getBalance($member, $account);
 
                     if (isset($balances[$account->getCurrency()])) {
                         $balances[$account->getCurrency()]+= sprintf('%.2f', $accountBalance);

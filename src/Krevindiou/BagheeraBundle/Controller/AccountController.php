@@ -25,15 +25,15 @@ class AccountController extends Controller
      */
     public function homeAction()
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $progress = $this->get('bagheera.user')->getImportProgress($user);
-        $reports = $this->get('bagheera.report')->getHomepageList($user);
+        $progress = $this->get('bagheera.member')->getImportProgress($member);
+        $reports = $this->get('bagheera.report')->getHomepageList($member);
 
         $tipNewAccount = false;
-        $hasBankWithoutProvider = $this->get('bagheera.user')->hasBankWithoutProvider($user);
+        $hasBankWithoutProvider = $this->get('bagheera.member')->hasBankWithoutProvider($member);
         if ($hasBankWithoutProvider) {
-            $accounts = $this->get('bagheera.account')->getList($user);
+            $accounts = $this->get('bagheera.account')->getList($member);
 
             if (count($accounts) == 0) {
                 $tipNewAccount = true;
@@ -42,7 +42,7 @@ class AccountController extends Controller
 
         return array(
             'accountService' => $this->get('bagheera.account'),
-            'totalBalances' => $this->get('bagheera.user')->getBalances($user),
+            'totalBalances' => $this->get('bagheera.member')->getBalances($member),
             'progress' => $progress,
             'reports' => $reports,
             'tipNewAccount' => $tipNewAccount
@@ -72,11 +72,11 @@ class AccountController extends Controller
         $accountsId = (array) $request->request->get('accountsId');
         $banksId = (array) $request->request->get('banksId');
 
-        $user = $this->getUser();
+        $member = $this->getUser();
 
         if ($request->request->has('delete')) {
-            $this->get('bagheera.account')->delete($user, $accountsId);
-            $this->get('bagheera.bank')->delete($user, $banksId);
+            $this->get('bagheera.account')->delete($member, $accountsId);
+            $this->get('bagheera.bank')->delete($member, $banksId);
             $this->get('session')->getFlashBag()->add('success', 'account.delete_confirmation');
         } elseif ($request->request->has('share')) {
             // @todo
@@ -93,9 +93,9 @@ class AccountController extends Controller
      */
     public function newFormAction(Request $request, Bank $bank = null)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $accountForm = $this->get('bagheera.account')->getNewForm($user, $bank);
+        $accountForm = $this->get('bagheera.account')->getNewForm($member, $bank);
 
         if (null === $accountForm) {
             throw $this->createNotFoundException();
@@ -104,7 +104,7 @@ class AccountController extends Controller
         if ($request->getMethod() == 'POST') {
             $accountForm->bind($request);
 
-            if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
+            if ($this->get('bagheera.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
                 return $this->redirect(
@@ -127,9 +127,9 @@ class AccountController extends Controller
      */
     public function editFormAction(Request $request, Account $account)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $accountForm = $this->get('bagheera.account')->getEditForm($user, $account);
+        $accountForm = $this->get('bagheera.account')->getEditForm($member, $account);
 
         if (null === $accountForm) {
             throw $this->createNotFoundException();
@@ -138,7 +138,7 @@ class AccountController extends Controller
         if ($request->getMethod() == 'POST') {
             $accountForm->bind($request);
 
-            if ($this->get('bagheera.account')->saveForm($user, $accountForm)) {
+            if ($this->get('bagheera.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
                 return $this->redirect($this->generateUrl('account_list'));
@@ -159,9 +159,9 @@ class AccountController extends Controller
      */
     public function importProgressAction()
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $progress = $this->get('bagheera.user')->getImportProgress($user);
+        $progress = $this->get('bagheera.member')->getImportProgress($member);
 
         $data = array();
         foreach ($progress as $v) {

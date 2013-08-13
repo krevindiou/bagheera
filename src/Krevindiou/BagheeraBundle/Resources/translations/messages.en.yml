@@ -1,4 +1,4 @@
-user:
+member:
     logout_link: "Logout"
     login:
         page_title: "Sign in"

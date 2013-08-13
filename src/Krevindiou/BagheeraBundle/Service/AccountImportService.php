@@ -34,10 +34,10 @@ class AccountImportService
         $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i ';
         $dql.= 'JOIN i.account a ';
         $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.user = :user ';
         $dql.= 'AND i.finished = 1 ';
+        $dql.= 'WHERE b.member = :member ';
         $query = $this->em->createQuery($dql);
-        $query->setParameter('user', $account->getBank()->getUser());
+        $query->setParameter('member', $account->getBank()->getMember());
 
         return (int) $query->getSingleScalarResult() + 1;
     }

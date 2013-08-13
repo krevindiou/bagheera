@@ -25,8 +25,8 @@
                     <div id="top-nav">
                         {% if app.user is not empty %}
                         <ul class="pull-right">
-                            <li><a href="{{ path('user_profile') }}"><i class="icon-user"></i> {{ app.user.email }}</a></li>
-                            <li><a href="{{ path('logout') }}"><i class="icon-signout"></i> {{ 'user.logout_link'|trans }}</a></li>
+                            <li><a href="{{ path('member_profile') }}"><i class="icon-user"></i> {{ app.user.email }}</a></li>
+                            <li><a href="{{ path('logout') }}"><i class="icon-signout"></i> {{ 'member.logout_link'|trans }}</a></li>
                         </ul>
                         {% endif %}
                     </div>
@@ -34,7 +34,7 @@
             </div>
             <div id="header">
                 <div class="container">
-                    <a href="{{ app.user is not null ? path('account_home') : path('user_login') }}" class="brand"><img class="logo" src="{{ asset('/bundles/krevindioubagheera/img/logo.png') }}" alt="Logo" /></a>
+                    <a href="{{ app.user is not null ? path('account_home') : path('member_login') }}" class="brand"><img class="logo" src="{{ asset('/bundles/krevindioubagheera/img/logo.png') }}" alt="Logo" /></a>
 
                     {% if app.user is not empty %}
                     <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">

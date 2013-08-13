@@ -11,12 +11,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use JMS\SecurityExtraBundle\Annotation\Secure;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 
-class UserController extends Controller
+class MemberController extends Controller
 {
     /**
-     * @Route("/sign-in", name="user_login")
+     * @Route("/sign-in", name="member_login")
      * @Template
      */
     public function loginAction(Request $request)
@@ -38,20 +38,20 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/register", name="user_register")
+     * @Route("/register", name="member_register")
      * @Template
      */
     public function registerAction(Request $request)
     {
-        $form = $this->get('bagheera.user')->getRegisterForm($request->getPreferredLanguage());
+        $form = $this->get('bagheera.member')->getRegisterForm($request->getPreferredLanguage());
 
         if ($request->getMethod() == 'POST') {
             $form->bind($request);
 
-            if ($this->get('bagheera.user')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('success', 'user.register.confirmation');
+            if ($this->get('bagheera.member')->saveForm($form)) {
+                $this->get('session')->getFlashBag()->add('success', 'member.register.confirmation');
 
-                return $this->redirect($this->generateUrl('user_login'));
+                return $this->redirect($this->generateUrl('member_login'));
             }
         }
 
@@ -61,21 +61,21 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/forgot-password", name="user_forgot_password")
+     * @Route("/forgot-password", name="member_forgot_password")
      * @Template
      */
     public function forgotPasswordAction(Request $request)
     {
-        $form = $this->get('bagheera.user')->getForgotPasswordForm();
+        $form = $this->get('bagheera.member')->getForgotPasswordForm();
 
         if ($request->getMethod() == 'POST') {
             $form->bind($request);
 
             if ($form->isValid()) {
-                if ($this->get('bagheera.user')->sendChangePasswordEmail($form->get('email')->getData())) {
-                    $this->get('session')->getFlashBag()->add('info', 'user.forgot_password.confirmation');
+                if ($this->get('bagheera.member')->sendChangePasswordEmail($form->get('email')->getData())) {
+                    $this->get('session')->getFlashBag()->add('info', 'member.forgot_password.confirmation');
 
-                    return $this->redirect($this->generateUrl('user_login'));
+                    return $this->redirect($this->generateUrl('member_login'));
                 }
             }
         }
@@ -86,29 +86,29 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/change-password", name="user_change_password_public", requirements={"key"})
+     * @Route("/change-password", name="member_change_password_public", requirements={"key"})
      * @Template
      */
     public function changePasswordPublicAction(Request $request)
     {
         $key = $request->query->get('key');
 
-        if ($user = $this->get('bagheera.user')->decodeChangePasswordKey($key)) {
-            $form = $this->get('bagheera.user')->getChangePasswordForm();
+        if ($member = $this->get('bagheera.member')->decodeChangePasswordKey($key)) {
+            $form = $this->get('bagheera.member')->getChangePasswordForm();
 
             if ($request->getMethod() == 'POST') {
                 $form->bind($request);
 
                 if ($form->isValid()) {
-                    if ($this->get('bagheera.user')->changePassword($user, $form->get('password')->getData())) {
-                        $this->get('session')->getFlashBag()->add('success', 'user.change_password.confirmation');
+                    if ($this->get('bagheera.member')->changePassword($member, $form->get('password')->getData())) {
+                        $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
-                        return $this->redirect($this->generateUrl('user_login'));
+                        return $this->redirect($this->generateUrl('member_login'));
                     }
                 }
             }
         } else {
-            return $this->redirect($this->generateUrl('user_login'));
+            return $this->redirect($this->generateUrl('member_login'));
         }
 
         return array(
@@ -118,19 +118,19 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/manager/change-password", name="user_change_password")
+     * @Route("/manager/change-password", name="member_change_password")
      * @Template
      */
     public function changePasswordAction(Request $request)
     {
-        $form = $this->get('bagheera.user')->getChangePasswordForm();
+        $form = $this->get('bagheera.member')->getChangePasswordForm();
 
         if ($request->getMethod() == 'POST') {
             $form->bind($request);
 
             if ($form->isValid()) {
-                if ($this->get('bagheera.user')->changePassword($this->getUser(), $form->get('password')->getData())) {
-                    $this->get('session')->getFlashBag()->add('success', 'user.change_password.confirmation');
+                if ($this->get('bagheera.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
+                    $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
                     return $this->redirect($this->generateUrl($request->get('_route')));
                 }
@@ -143,36 +143,36 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/activate", name="user_activate")
+     * @Route("/activate", name="member_activate")
      */
     public function activateAction(Request $request)
     {
         $key = $request->query->get('key');
 
-        if (null !== $key && $this->get('bagheera.user')->activate($key)) {
-            $this->get('session')->getFlashBag()->add('success', 'user.register.activation_confirmation');
+        if (null !== $key && $this->get('bagheera.member')->activate($key)) {
+            $this->get('session')->getFlashBag()->add('success', 'member.register.activation_confirmation');
         } else {
-            $this->get('session')->getFlashBag()->add('error', 'user.register.activation_error');
+            $this->get('session')->getFlashBag()->add('error', 'member.register.activation_error');
         }
 
-        return $this->redirect($this->generateUrl('user_login'));
+        return $this->redirect($this->generateUrl('member_login'));
     }
 
     /**
-     * @Route("/manager/profile", name="user_profile")
+     * @Route("/manager/profile", name="member_profile")
      * @Template
      */
     public function profileAction(Request $request)
     {
-        $form = $this->get('bagheera.user')->getProfileForm($this->getUser());
+        $form = $this->get('bagheera.member')->getProfileForm($this->getUser());
 
         if ($request->getMethod() == 'POST') {
             $form->bind($request);
 
-            if ($this->get('bagheera.user')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('success', 'user.profile.confirmation');
+            if ($this->get('bagheera.member')->saveForm($form)) {
+                $this->get('session')->getFlashBag()->add('success', 'member.profile.confirmation');
 
-                return $this->redirect($this->generateUrl('user_profile'));
+                return $this->redirect($this->generateUrl('member_profile'));
             }
         }
 
@@ -182,26 +182,26 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/manager/users", name="user_list")
+     * @Route("/manager/members", name="member_list")
      * @Template
      * @Secure(roles="ROLE_ADMIN")
      */
     public function listAction(Request $request)
     {
         $page = $request->query->getInt('page', 1);
-        $users = (array) $request->request->get('users');
+        $members = (array) $request->request->get('members');
 
-        if (!empty($users)) {
+        if (!empty($members)) {
             if ($request->request->get('toggleDeactivation')) {
-                $this->get('bagheera.user')->toggleDeactivation($users);
-                $this->get('session')->getFlashBag()->add('success', 'user.toggle_deactivation_ok');
+                $this->get('bagheera.member')->toggleDeactivation($members);
+                $this->get('session')->getFlashBag()->add('success', 'member.toggle_deactivation_ok');
             }
 
-            return $this->redirect($this->generateUrl('user_list', array('page' => $page)));
+            return $this->redirect($this->generateUrl('member_list', array('page' => $page)));
         }
 
         return array(
-            'users' => $this->get('bagheera.user')->getUsers(array(), $page)
+            'members' => $this->get('bagheera.member')->getMembers(array(), $page)
         );
     }
 }

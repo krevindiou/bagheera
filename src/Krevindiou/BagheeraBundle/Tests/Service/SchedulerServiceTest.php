@@ -14,11 +14,11 @@ class SchedulerServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
     }
 
-    public function testGetFormForForeignUser()
+    public function testGetFormForForeignMember()
     {
         $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $form = $this->get('bagheera.scheduler')->getForm($this->jane, $scheduler);
@@ -83,7 +83,7 @@ class SchedulerServiceTest extends TestCase
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->john, $scheduler));
     }
 
-    public function testSaveExistingSchedulerWithForeignUser()
+    public function testSaveExistingSchedulerWithForeignMember()
     {
         $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', 1);
         $this->assertFalse($this->get('bagheera.scheduler')->save($this->jane, $scheduler));
@@ -129,8 +129,8 @@ class SchedulerServiceTest extends TestCase
         $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
+        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->get('bagheera.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
@@ -169,8 +169,8 @@ class SchedulerServiceTest extends TestCase
         $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
-        $user = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->get('bagheera.scheduler')->runSchedulers($user, new \DateTime('2011-11-12'));
+        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->get('bagheera.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';

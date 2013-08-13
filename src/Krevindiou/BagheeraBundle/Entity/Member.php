@@ -13,21 +13,21 @@ use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use EWZ\Bundle\RecaptchaBundle\Validator\Constraints as Recaptcha;
 
 /**
- * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\UserRepository")
- * @ORM\Table(name="user")
+ * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\MemberRepository")
+ * @ORM\Table(name="member")
  * @ORM\HasLifecycleCallbacks()
  * @DoctrineAssert\UniqueEntity("email")
  */
-class User implements AdvancedUserInterface
+class Member implements AdvancedUserInterface
 {
     /**
-     * @var integer $userId
+     * @var integer $memberId
      *
-     * @ORM\Column(name="user_id", type="integer", nullable=false)
+     * @ORM\Column(name="member_id", type="integer", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $userId;
+    protected $memberId;
 
     /**
      * @var string $email
@@ -110,7 +110,7 @@ class User implements AdvancedUserInterface
     /**
      * @var Doctrine\Common\Collections\Collection $banks
      *
-     * @ORM\OneToMany(targetEntity="Bank", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Bank", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"sortOrder" = "ASC"})
      */
     protected $banks;
@@ -118,7 +118,7 @@ class User implements AdvancedUserInterface
     /**
      * @var Doctrine\Common\Collections\Collection $reports
      *
-     * @ORM\OneToMany(targetEntity="Report", mappedBy="user", cascade={"all"}, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="Report", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"type" = "ASC", "title" = "ASC"})
      */
     protected $reports;
@@ -148,13 +148,13 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * Get userId
+     * Get memberId
      *
      * @return integer
      */
-    public function getUserId()
+    public function getMemberId()
     {
-        return $this->userId;
+        return $this->memberId;
     }
 
     /**
@@ -318,7 +318,7 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * Get user banks
+     * Get member banks
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -328,7 +328,7 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * Get user reports
+     * Get member reports
      *
      * @return Doctrine\Common\Collections\Collection
      */

@@ -14,11 +14,11 @@ class AccountServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
     }
 
-    public function testGetFormForForeignUser()
+    public function testGetFormForForeignMember()
     {
         $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
         $form = $this->get('bagheera.account')->getEditForm($this->jane, $account);
@@ -79,7 +79,7 @@ class AccountServiceTest extends TestCase
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
-    public function testSaveExistingAccountWithForeignUser()
+    public function testSaveExistingAccountWithForeignMember()
     {
         $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
         $this->assertFalse($this->get('bagheera.account')->save($this->jane, $account));

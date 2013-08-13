@@ -104,13 +104,13 @@ class Account
     /**
      * @var Doctrine\Common\Collections\Collection $sharedWith
      *
-     * @ORM\ManyToMany(targetEntity="User")
+     * @ORM\ManyToMany(targetEntity="Member")
      * @ORM\JoinTable(name="shared_account",
      *   joinColumns={
      *     @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      *   },
      *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="user_id", referencedColumnName="user_id")
+     *     @ORM\JoinColumn(name="member_id", referencedColumnName="member_id")
      *   }
      * )
      * @ORM\OrderBy({"email" = "ASC"})
@@ -316,13 +316,13 @@ class Account
     }
 
     /**
-     * Add user
+     * Add member
      *
-     * @param Krevindiou\BagheeraBundle\Entity\User $user
+     * @param Krevindiou\BagheeraBundle\Entity\Member $member
      */
-    public function addSharedWith(User $user)
+    public function addSharedWith(Member $member)
     {
-        $this->sharedWith[] = $user;
+        $this->sharedWith[] = $member;
     }
 
     /**

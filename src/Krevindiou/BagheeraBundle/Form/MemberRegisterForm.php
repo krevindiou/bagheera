@@ -14,7 +14,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 /**
  * @DI\FormType
  */
-class UserRegisterForm extends AbstractType
+class MemberRegisterForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -39,7 +39,7 @@ class UserRegisterForm extends AbstractType
                 'email',
                 'email',
                 array(
-                    'label' => 'user.email',
+                    'label' => 'member.email',
                     'attr' => array(
                         'class' => 'input-xlarge'
                     )
@@ -49,7 +49,7 @@ class UserRegisterForm extends AbstractType
                 'country',
                 'country',
                 array(
-                    'label' => 'user.country',
+                    'label' => 'member.country',
                     'preferred_choices' => array($preferredChoice),
                     'attr' => array(
                         'class' => 'input-large'
@@ -61,9 +61,9 @@ class UserRegisterForm extends AbstractType
                 'repeated',
                 array(
                     'type' => 'password',
-                    'first_options' => array('label' => 'user.password'),
-                    'second_options' => array('label' => 'user.password_confirmation'),
-                    'invalid_message' => 'user.password_fields_must_match',
+                    'first_options' => array('label' => 'member.password'),
+                    'second_options' => array('label' => 'member.password_confirmation'),
+                    'invalid_message' => 'member.password_fields_must_match',
                     'options' => array(
                         'attr' => array(
                             'class' => 'input-medium'
@@ -75,7 +75,7 @@ class UserRegisterForm extends AbstractType
                 'recaptcha',
                 'ewz_recaptcha',
                 array(
-                    'label' => 'user.captcha',
+                    'label' => 'member.captcha',
                     'attr' => array(
                         'options' => array(
                             'theme' => 'clean'
@@ -90,7 +90,7 @@ class UserRegisterForm extends AbstractType
     {
         $resolver->setDefaults(
             array(
-                'data_class' => 'Krevindiou\BagheeraBundle\Entity\User',
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Member',
                 'validation_groups' => array('Default', 'password', 'captcha')
             )
         );
@@ -98,6 +98,6 @@ class UserRegisterForm extends AbstractType
 
     public function getName()
     {
-        return 'user_register_type';
+        return 'member_register_type';
     }
 }

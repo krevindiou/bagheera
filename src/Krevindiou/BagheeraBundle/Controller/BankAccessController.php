@@ -22,9 +22,9 @@ class BankAccessController extends Controller
      */
     public function formAction(Request $request, Bank $bank)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $bankAccessForm = $this->get('bagheera.bank_access')->getForm($user, $bank);
+        $bankAccessForm = $this->get('bagheera.bank_access')->getForm($member, $bank);
         if (null === $bankAccessForm) {
             throw $this->createNotFoundException();
         }
@@ -32,7 +32,7 @@ class BankAccessController extends Controller
         if ($request->getMethod() == 'POST') {
             $bankAccessForm->bind($request);
 
-            if ($this->get('bagheera.bank_access')->saveForm($user, $bankAccessForm)) {
+            if ($this->get('bagheera.bank_access')->saveForm($member, $bankAccessForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'bank_access.form_confirmation');
 
                 return $this->redirect($this->generateUrl('account_list'));

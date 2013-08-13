@@ -23,9 +23,9 @@ class BankController extends Controller
      */
     public function formAction(Request $request, Bank $bank = null)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $bankForm = $this->get('bagheera.bank')->getForm($user, $bank);
+        $bankForm = $this->get('bagheera.bank')->getForm($member, $bank);
         if (null === $bankForm) {
             throw $this->createNotFoundException();
         }
@@ -33,7 +33,7 @@ class BankController extends Controller
         if ($request->getMethod() == 'POST') {
             $bankForm->bind($request);
 
-            if ($this->get('bagheera.bank')->saveForm($user, $bankForm)) {
+            if ($this->get('bagheera.bank')->saveForm($member, $bankForm)) {
                 if ('bank_new' == $request->get('_route') && null !== $bankForm->getData()->getProvider()) {
                     return $this->redirect(
                         $this->generateUrl('bank_access_edit', array('bankId' => $bankForm->getData()->getBankId()))

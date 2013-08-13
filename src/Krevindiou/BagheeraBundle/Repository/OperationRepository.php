@@ -7,7 +7,7 @@ namespace Krevindiou\BagheeraBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Krevindiou\BagheeraBundle\Entity\Account;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 
 class OperationRepository extends EntityRepository
 {
@@ -32,13 +32,13 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum for each month
      *
-     * @param  User     $user      User entity
+     * @param  Member   $member    Member entity
      * @param  DateTime $startDate Sum calculated after this date
      * @param  DateTime $stopDate  Sum calculated before this date
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    protected function getSumsByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
+    protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -60,7 +60,7 @@ class OperationRepository extends EntityRepository
         $sql.= 'ORDER BY month ASC ';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-        $stmt->bindValue('user_id', $user->getUserId());
+        $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
 
@@ -101,11 +101,11 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum before a specified date
      *
-     * @param  User     $user     User entity
+     * @param  Member   $member   Member entity
      * @param  DateTime $stopDate Sum calculated before this date
      * @return array
      */
-    protected function getSumBefore(User $user, \DateTime $stopDate, Account $account = null)
+    protected function getSumBefore(Member $member, \DateTime $stopDate, Account $account = null)
     {
         $data = array();
 
@@ -113,10 +113,10 @@ class OperationRepository extends EntityRepository
         $sql.= 'FROM account a ';
         $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
         $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
-        $sql.= 'WHERE b.user_id = :user_id ';
         $sql.= 'AND a.is_deleted = 0 ';
         $sql.= 'AND b.is_deleted = 0 ';
         $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") < :stop_date ';
+        $sql.= 'WHERE b.member_id = :member_id ';
 
         if (null !== $account) {
             $sql.= 'AND a.account_id = :account_id ';
@@ -125,7 +125,7 @@ class OperationRepository extends EntityRepository
         $sql.= 'GROUP BY a.currency ';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-        $stmt->bindValue('user_id', $user->getUserId());
+        $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
 
         if (null !== $account) {
@@ -148,18 +148,18 @@ class OperationRepository extends EntityRepository
     /**
      * Gets total amount by month
      *
-     * @param  User     $user      User entity
+     * @param  Member   $member    Member entity
      * @param  DateTime $startDate Sum calculated after this date
      * @param  DateTime $stopDate  Sum calculated before this date
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    public function getTotalByMonth(User $user, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
+    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
-        $data = $this->getSumsByMonth($user, $startDate, $stopDate, $account);
+        $data = $this->getSumsByMonth($member, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
-            $previousMonthTotal = $this->getSumBefore($user, $startDate, $account);
+            $previousMonthTotal = $this->getSumBefore($member, $startDate, $account);
 
             foreach ($data as $currency => $value) {
                 foreach ($value as $month => $total) {

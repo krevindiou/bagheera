@@ -7,31 +7,31 @@ namespace Krevindiou\BagheeraBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 
-class UserRepository extends EntityRepository
+class MemberRepository extends EntityRepository
 {
     /**
-     * Gets users query
+     * Gets members query
      *
      * @param  array              $params Search criterias
      * @return Doctrine\ORM\Query
      */
     public function getListQuery(array $params = array())
     {
-        $dql = 'SELECT u ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:User u ';
+        $dql = 'SELECT m ';
+        $dql.= 'FROM KrevindiouBagheeraBundle:Member m ';
         $dql.= 'WHERE 1 = 1 ';
         if (!empty($params)) {
             if (isset($params['email']) && '' != $params['email']) {
-                $dql.= 'AND u.email LIKE :email ';
+                $dql.= 'AND m.email LIKE :email ';
             }
             if (isset($params['active']) && '' != $params['active']) {
-                $dql.= 'AND u.active = :active ';
+                $dql.= 'AND m.active = :active ';
             }
             if (isset($params['admin']) && '' != $params['admin']) {
-                $dql.= 'AND u.admin = :admin ';
+                $dql.= 'AND m.admin = :admin ';
             }
         }
-        $dql.= 'ORDER BY u.createdAt DESC ';
+        $dql.= 'ORDER BY m.createdAt DESC ';
         $query = $this->getEntityManager()->createQuery($dql);
         if (!empty($params)) {
             if (isset($params['email']) && '' != $params['email']) {

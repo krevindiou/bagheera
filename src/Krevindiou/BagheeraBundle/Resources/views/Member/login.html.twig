@@ -1,6 +1,6 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'user.login.page_title'|trans %}
+{% block page_title 'member.login.page_title'|trans %}
 
 {% block content %}
 {% spaceless %}
@@ -13,31 +13,31 @@
                 {% endif %}
 
                 <div class="control-group">
-                    <label for="username" class="control-label">{{ 'user.email'|trans }}</label>
+                    <label for="username" class="control-label">{{ 'member.email'|trans }}</label>
 
                     <div class="controls">
                         <input type="email" id="username" name="_username" value="{{ last_username }}"/>
                     </div>
                 </div>
                 <div class="control-group">
-                    <label for="password" class="control-label">{{ 'user.password'|trans }}</label>
+                    <label for="password" class="control-label">{{ 'member.password'|trans }}</label>
 
                     <div class="controls">
                         <input type="password" id="password" name="_password"/>
-                        <span class="help-block"><a href="{{ path('user_forgot_password') }}">{{ 'user.forgot_password.link'|trans }}</a></span>
+                        <span class="help-block"><a href="{{ path('member_forgot_password') }}">{{ 'member.forgot_password.link'|trans }}</a></span>
                     </div>
                 </div>
             </div>
             <div class="control-group">
                 <div class="controls">
                     <input type="hidden" name="_target_path" value="{{ path('account_home') }}" />
-                    <input type="submit" name="login" class="btn btn-primary" value="{{ 'user.login.submit_button'|trans }}"/>
+                    <input type="submit" name="login" class="btn btn-primary" value="{{ 'member.login.submit_button'|trans }}"/>
                 </div>
             </div>
         </form>
     </div>
     <div class="span6">
-        <a href="{{ path('user_register') }}" class="btn btn-primary">{{ 'user.register.link'|trans }}</a>
+        <a href="{{ path('member_register') }}" class="btn btn-primary">{{ 'member.register.link'|trans }}</a>
     </div>
 </div>
 {% endspaceless %}

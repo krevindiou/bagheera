@@ -22,7 +22,7 @@ class BankTest extends TestCase
         $hsbc = $this->em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
 
         $this->assertEquals($hsbc->getName(), 'HSBC');
-        $this->assertEquals($hsbc->getUser()->getEmail(), 'john@example.net');
+        $this->assertEquals($hsbc->getMember()->getEmail(), 'john@example.net');
         $this->assertEquals(count($hsbc->getAccounts()), 4);
     }
 }

@@ -9,7 +9,7 @@ use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Bridge\Monolog\Logger;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Report;
 
@@ -31,10 +31,10 @@ class ReportService
     /**
      * Returns reports list
      *
-     * @param  User  $user User entity
+     * @param  Member $member Member entity
      * @return array
      */
-    public function getList(User $user)
+    public function getList(Member $member)
     {
         $reports = array();
 
@@ -100,13 +100,13 @@ class ReportService
         $sql.= '  GROUP BY report_payment_method.report_id ';
         $sql.= ') AS paymentMethods ';
         $sql.= 'FROM report ';
-        $sql.= 'WHERE report.user_id = :user_id ';
+        $sql.= 'WHERE report.member_id = :member_id ';
         $sql.= 'ORDER BY report.report_id ASC ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->execute(
             array(
-                ':user_id' => $user->getUserId()
+                ':member_id' => $member->getMemberId()
             )
         );
 
@@ -142,17 +142,17 @@ class ReportService
     /**
      * Returns reports list displayed on homepage
      *
-     * @param  User  $user User entity
+     * @param  Member $member Member entity
      * @return array
      */
-    public function getHomepageList(User $user)
+    public function getHomepageList(Member $member)
     {
         $dql = 'SELECT r FROM KrevindiouBagheeraBundle:Report r ';
-        $dql.= 'WHERE r.user = :user ';
+        $dql.= 'WHERE r.member = :member ';
         $dql.= 'AND r.homepage = :homepage ';
 
         $query = $this->em->createQuery($dql);
-        $query->setParameter('user', $user);
+        $query->setParameter('member', $member);
         $query->setParameter('homepage', true);
 
         return $query->getResult();
@@ -161,18 +161,18 @@ class ReportService
     /**
      * Returns report form
      *
-     * @param  User   $user   User entity
+     * @param  Member $member Member entity
      * @param  Report $report Report entity
      * @param  string $type   Report type (sum, average, distribution, estimate)
      * @return Form
      */
-    public function getForm(User $user, Report $report = null, $type = null)
+    public function getForm(Member $member, Report $report = null, $type = null)
     {
         if (null === $report) {
             $report = new Report();
-            $report->setUser($user);
+            $report->setMember($member);
             $report->setType($type);
-        } elseif ($user !== $report->getUser()) {
+        } elseif ($member !== $report->getMember()) {
             return;
         }
 
@@ -182,13 +182,13 @@ class ReportService
     /**
      * Saves report
      *
-     * @param  User    $user   User entity
-     * @param  Report  $report Report entity
+     * @param  Member $member Member entity
+     * @param  Report $report Report entity
      * @return boolean
      */
-    protected function doSave(User $user, Report $report)
+    protected function doSave(Member $member, Report $report)
     {
-        if ($user === $report->getUser()) {
+        if ($member === $report->getMember()) {
             try {
                 $this->em->persist($report);
                 $this->em->flush();
@@ -205,16 +205,16 @@ class ReportService
     /**
      * Saves report
      *
-     * @param  User    $user   User entity
-     * @param  Report  $report Report entity
+     * @param  Member $member Member entity
+     * @param  Report $report Report entity
      * @return boolean
      */
-    public function save(User $user, Report $report)
+    public function save(Member $member, Report $report)
     {
         $errors = $this->validator->validate($report);
 
         if (0 == count($errors)) {
-            return $this->doSave($user, $report);
+            return $this->doSave($member, $report);
         }
 
         return false;
@@ -223,14 +223,14 @@ class ReportService
     /**
      * Saves report form
      *
-     * @param  User    $user User entity
-     * @param  Form    $form Report form
+     * @param  Member $member Member entity
+     * @param  Form   $form Report form
      * @return boolean
      */
-    public function saveForm(User $user, Form $form)
+    public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            return $this->doSave($user, $form->getData());
+            return $this->doSave($member, $form->getData());
         }
 
         return false;
@@ -239,18 +239,18 @@ class ReportService
     /**
      * Deletes reports
      *
-     * @param  User    $user      User entity
-     * @param  array   $reportsId Reports id to delete
+     * @param  Member $member    Member entity
+     * @param  array  $reportsId Reports id to delete
      * @return boolean
      */
-    public function delete(User $user, array $reportsId)
+    public function delete(Member $member, array $reportsId)
     {
         try {
             foreach ($reportsId as $reportId) {
                 $report = $this->em->find('KrevindiouBagheeraBundle:Report', $reportId);
 
                 if (null !== $report) {
-                    if ($user === $report->getUser()) {
+                    if ($member === $report->getMember()) {
                         $this->em->remove($report);
                     }
                 }
@@ -269,11 +269,11 @@ class ReportService
     /**
      * Returns graph data
      *
-     * @param  User   $user   User entity
+     * @param  Member $member Member entity
      * @param  Report $report Report entity
      * @return array
      */
-    public function getGraphData(User $user, Report $report)
+    public function getGraphData(Member $member, Report $report)
     {
         $series = array(
             array(
@@ -286,17 +286,17 @@ class ReportService
             )
         );
 
-        if ($user === $report->getUser()) {
+        if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (count($accounts) == 0) {
                 $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
                 $dql.= 'JOIN a.bank b ';
-                $dql.= 'WHERE b.user = :user ';
                 $dql.= 'AND b.deleted = 0 ';
                 $dql.= 'AND a.deleted = 0 ';
+                $dql.= 'WHERE b.member = :member ';
 
                 $query = $this->em->createQuery($dql);
-                $query->setParameter('user', $user);
+                $query->setParameter('member', $member);
 
                 $accounts = $query->getResult();
             }
@@ -455,13 +455,13 @@ class ReportService
     /**
      * Returns synthesis graph data
      *
-     * @param  User     $user      User entity
+     * @param  Member   $member    Member entity
      * @param  DateTime $startDate Data after this date
      * @param  DateTime $stopDate  Data before this date
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    public function getSynthesis(User $user, \DateTime $startDate = null, \DateTime $stopDate = null, Account $account = null)
+    public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $stopDate = null, Account $account = null)
     {
         $graph = array();
 
@@ -476,7 +476,7 @@ class ReportService
 
         $operationRepository = $this->em->getRepository('KrevindiouBagheeraBundle:Operation');
 
-        $data = $operationRepository->getTotalByMonth($user, $startDate, $stopDate, $account);
+        $data = $operationRepository->getTotalByMonth($member, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
             $tmpValues = array();

@@ -14,11 +14,11 @@ class OperationSearchServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
     }
 
-    public function testGetFormForForeignUser()
+    public function testGetFormForForeignMember()
     {
         $operationSearch = $this->em->find('KrevindiouBagheeraBundle:OperationSearch', 1);
         $form = $this->get('bagheera.operation_search')->getForm($this->jane, $operationSearch);

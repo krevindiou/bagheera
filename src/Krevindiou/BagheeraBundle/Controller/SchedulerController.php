@@ -26,11 +26,11 @@ class SchedulerController extends Controller
      */
     public function listAction(Request $request, Account $account)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
         $page = $request->query->getInt('page', 1);
 
-        $schedulers = $this->get('bagheera.scheduler')->getList($user, $account, $page);
+        $schedulers = $this->get('bagheera.scheduler')->getList($member, $account, $page);
         if (null === $schedulers) {
             throw $this->createNotFoundException();
         }
@@ -49,9 +49,9 @@ class SchedulerController extends Controller
     {
         if ($request->request->has('delete')) {
             $schedulersId = (array) $request->request->get('schedulersId');
-            $user = $this->getUser();
+            $member = $this->getUser();
 
-            $this->get('bagheera.scheduler')->delete($user, $schedulersId);
+            $this->get('bagheera.scheduler')->delete($member, $schedulersId);
             $this->get('session')->getFlashBag()->add('success', 'scheduler.delete_confirmation');
         }
 
@@ -69,9 +69,9 @@ class SchedulerController extends Controller
      */
     public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $schedulerForm = $this->get('bagheera.scheduler')->getForm($user, $scheduler, $account);
+        $schedulerForm = $this->get('bagheera.scheduler')->getForm($member, $scheduler, $account);
         if (null === $schedulerForm) {
             throw $this->createNotFoundException();
         }
@@ -79,7 +79,7 @@ class SchedulerController extends Controller
         if ($request->getMethod() == 'POST') {
             $schedulerForm->bind($request);
 
-            if ($this->get('bagheera.scheduler')->saveForm($user, $schedulerForm)) {
+            if ($this->get('bagheera.scheduler')->saveForm($member, $schedulerForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
 
                 return $this->redirect(

@@ -27,20 +27,20 @@ class OperationController extends Controller
      */
     public function listAction(Request $request, Account $account)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
         $page = $request->query->getInt('page', 1);
 
         $operationSearch = $this->get('bagheera.operation_search')->getSessionSearch($account);
-        $operations = $this->get('bagheera.operation')->getList($user, $account, $page, $operationSearch);
+        $operations = $this->get('bagheera.operation')->getList($member, $account, $page, $operationSearch);
         if (null === $operations) {
             throw $this->createNotFoundException();
         }
 
         $accountService = $this->get('bagheera.account');
 
-        $balance = $accountService->getBalance($user, $account);
-        $reconciledBalance = $accountService->getBalance($user, $account, true);
+        $balance = $accountService->getBalance($member, $account);
+        $reconciledBalance = $accountService->getBalance($member, $account, true);
 
         return array(
             'account' => $account,
@@ -60,13 +60,13 @@ class OperationController extends Controller
     {
         $operationsId = (array) $request->request->get('operationsId');
 
-        $user = $this->getUser();
+        $member = $this->getUser();
 
         if ($request->request->has('delete')) {
-            $this->get('bagheera.operation')->delete($user, $operationsId);
+            $this->get('bagheera.operation')->delete($member, $operationsId);
             $this->get('session')->getFlashBag()->add('success', 'operation.delete_confirmation');
         } elseif ($request->request->has('reconcile')) {
-            $this->get('bagheera.operation')->reconcile($user, $operationsId);
+            $this->get('bagheera.operation')->reconcile($member, $operationsId);
             $this->get('session')->getFlashBag()->add('success', 'operation.reconcile_confirmation');
         }
 
@@ -84,9 +84,9 @@ class OperationController extends Controller
      */
     public function formAction(Request $request, Account $account = null, Operation $operation = null)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $operationForm = $this->get('bagheera.operation')->getForm($user, $operation, $account);
+        $operationForm = $this->get('bagheera.operation')->getForm($member, $operation, $account);
         if (null === $operationForm) {
             throw $this->createNotFoundException();
         }
@@ -94,7 +94,7 @@ class OperationController extends Controller
         if ($request->getMethod() == 'POST') {
             $operationForm->bind($request);
 
-            if ($this->get('bagheera.operation')->saveForm($user, $operationForm)) {
+            if ($this->get('bagheera.operation')->saveForm($member, $operationForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'operation.form_confirmation');
 
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();

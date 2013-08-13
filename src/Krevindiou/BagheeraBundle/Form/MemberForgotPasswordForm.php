@@ -15,7 +15,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 /**
  * @DI\FormType
  */
-class UserForgotPasswordForm extends AbstractType
+class MemberForgotPasswordForm extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -24,11 +24,11 @@ class UserForgotPasswordForm extends AbstractType
                 'email',
                 'email',
                 array(
-                    'label' => 'user.email',
+                    'label' => 'member.email',
                     'constraints' => array(
                         new NotBlank(),
                         new Email(),
-                        new FieldExists('Krevindiou\BagheeraBundle\Entity\User', 'email')
+                        new FieldExists('Krevindiou\BagheeraBundle\Entity\Member', 'email')
                     ),
                     'attr' => array(
                         'class' => 'input-xlarge'
@@ -40,6 +40,6 @@ class UserForgotPasswordForm extends AbstractType
 
     public function getName()
     {
-        return 'user_forgot_password_type';
+        return 'member_forgot_password_type';
     }
 }

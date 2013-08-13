@@ -7,13 +7,13 @@ namespace Krevindiou\BagheeraBundle\Form;
 
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Form\UserRegisterForm;
+use Krevindiou\BagheeraBundle\Form\MemberRegisterForm;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * @DI\FormType
  */
-class UserProfileForm extends UserRegisterForm
+class MemberProfileForm extends MemberRegisterForm
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -28,13 +28,13 @@ class UserProfileForm extends UserRegisterForm
     {
         $resolver->setDefaults(
             array(
-                'data_class' => 'Krevindiou\BagheeraBundle\Entity\User'
+                'data_class' => 'Krevindiou\BagheeraBundle\Entity\Member'
             )
         );
     }
 
     public function getName()
     {
-        return 'user_profile_type';
+        return 'member_profile_type';
     }
 }

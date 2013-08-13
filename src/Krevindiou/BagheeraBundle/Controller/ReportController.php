@@ -26,9 +26,9 @@ class ReportController extends Controller
      */
     public function listAction(Request $request)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $reports = $this->get('bagheera.report')->getList($user);
+        $reports = $this->get('bagheera.report')->getList($member);
 
         return array(
             'reports' => $reports,
@@ -43,10 +43,10 @@ class ReportController extends Controller
     {
         $reportsId = (array) $request->request->get('reportsId');
 
-        $user = $this->getUser();
+        $member = $this->getUser();
 
         if ($request->request->has('delete')) {
-            $this->get('bagheera.report')->delete($user, $reportsId);
+            $this->get('bagheera.report')->delete($member, $reportsId);
             $this->get('session')->getFlashBag()->add('success', 'report.delete_confirmation');
         }
 
@@ -61,9 +61,9 @@ class ReportController extends Controller
      */
     public function formAction(Request $request, Report $report = null, $type = null)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $reportForm = $this->get('bagheera.report')->getForm($user, $report, $type);
+        $reportForm = $this->get('bagheera.report')->getForm($member, $report, $type);
         if (null === $reportForm) {
             throw $this->createNotFoundException();
         }
@@ -71,7 +71,7 @@ class ReportController extends Controller
         if ($request->getMethod() == 'POST') {
             $reportForm->bind($request);
 
-            if ($this->get('bagheera.report')->saveForm($user, $reportForm)) {
+            if ($this->get('bagheera.report')->saveForm($member, $reportForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'report.form_confirmation');
 
                 return $this->redirect($this->generateUrl('report_list'));
@@ -91,12 +91,12 @@ class ReportController extends Controller
     {
         $graphs = array();
 
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $reports = $this->get('bagheera.report')->getHomepageList($user);
+        $reports = $this->get('bagheera.report')->getHomepageList($member);
 
         foreach ($reports as $report) {
-            $graph = $this->get('bagheera.report')->getGraphData($user, $report);
+            $graph = $this->get('bagheera.report')->getGraphData($member, $report);
 
             if (!empty($graph)) {
                 $graphs[] = $graph;
@@ -115,9 +115,9 @@ class ReportController extends Controller
      */
     public function synthesisAction(Account $account = null)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
-        $graph = $this->get('bagheera.report')->getSynthesis($user, null, null, $account);
+        $graph = $this->get('bagheera.report')->getSynthesis($member, null, null, $account);
 
         if (!empty($graph)) {
             return $graph;

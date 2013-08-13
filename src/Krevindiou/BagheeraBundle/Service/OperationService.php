@@ -12,7 +12,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
@@ -42,15 +42,15 @@ class OperationService
     /**
      * Returns operations list
      *
-     * @param  User            $user            User entity
+     * @param  Member          $member          Member entity
      * @param  Account         $account         Account entity
      * @param  integer         $currentPage     Page number
      * @param  OperationSearch $operationSearch OperationSearch entity
      * @return Pagerfanta
      */
-    public function getList(User $user, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
+    public function getList(Member $member, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
     {
-        if ($account->getBank()->getUser() == $user) {
+        if ($account->getBank()->getMember() == $member) {
             $params = array(
                 ':account_id' => $account->getAccountId()
             );
@@ -227,17 +227,17 @@ class OperationService
     /**
      * Returns operation form
      *
-     * @param  User      $user      User entity
+     * @param  Member    $member    Member entity
      * @param  Operation $operation Operation entity
      * @param  Account   $account   Account entity for new operation
      * @return Form
      */
-    public function getForm(User $user, Operation $operation = null, Account $account = null)
+    public function getForm(Member $member, Operation $operation = null, Account $account = null)
     {
         if (null === $operation && null !== $account) {
             $operation = new Operation();
             $operation->setAccount($account);
-        } elseif (null !== $operation && $user !== $operation->getAccount()->getBank()->getUser()) {
+        } elseif (null !== $operation && $member !== $operation->getAccount()->getBank()->getMember()) {
             return;
         }
 
@@ -247,21 +247,21 @@ class OperationService
     /**
      * Saves operation
      *
-     * @param  User      $user      User entity
+     * @param  Member    $member    Member entity
      * @param  Operation $operation Operation entity
      * @return boolean
      */
-    protected function doSave(User $user, Operation $operation)
+    protected function doSave(Member $member, Operation $operation)
     {
         if (null !== $operation->getOperationId()) {
             $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
 
-            if ($user !== $oldOperation['account']->getBank()->getUser()) {
+            if ($member !== $oldOperation['account']->getBank()->getMember()) {
                 return false;
             }
         }
 
-        if ($user === $operation->getAccount()->getBank()->getUser()) {
+        if ($member === $operation->getAccount()->getBank()->getMember()) {
             if (!in_array(
                 $operation->getPaymentMethod()->getPaymentMethodId(),
                 array(
@@ -357,16 +357,16 @@ class OperationService
     /**
      * Saves operation
      *
-     * @param  User      $user      User entity
+     * @param  Member    $member    Member entity
      * @param  Operation $operation Operation entity
      * @return boolean
      */
-    public function save(User $user, Operation $operation)
+    public function save(Member $member, Operation $operation)
     {
         $errors = $this->validator->validate($operation);
 
         if (0 == count($errors)) {
-            return $this->doSave($user, $operation);
+            return $this->doSave($member, $operation);
         }
 
         return false;
@@ -375,14 +375,14 @@ class OperationService
     /**
      * Saves operation form
      *
-     * @param  User    $user User entity
-     * @param  Form    $form Operation form
+     * @param  Member $member Member entity
+     * @param  Form   $form   Operation form
      * @return boolean
      */
-    public function saveForm(User $user, Form $form)
+    public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            return $this->doSave($user, $form->getData());
+            return $this->doSave($member, $form->getData());
         }
 
         return false;
@@ -391,18 +391,18 @@ class OperationService
     /**
      * Deletes operations
      *
-     * @param  User    $user         User entity
-     * @param  array   $operationsId Operations id to delete
+     * @param  Member $member       Member entity
+     * @param  array  $operationsId Operations id to delete
      * @return boolean
      */
-    public function delete(User $user, array $operationsId)
+    public function delete(Member $member, array $operationsId)
     {
         try {
             foreach ($operationsId as $operationId) {
                 $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', $operationId);
 
                 if (null !== $operation) {
-                    if ($user === $operation->getAccount()->getBank()->getUser()) {
+                    if ($member === $operation->getAccount()->getBank()->getMember()) {
                         $this->em->remove($operation);
                     }
                 }
@@ -421,18 +421,18 @@ class OperationService
     /**
      * Reconciles operations
      *
-     * @param  User    $user         User entity
-     * @param  array   $operationsId Operations id to reconcile
+     * @param  Member $member       Member entity
+     * @param  array  $operationsId Operations id to reconcile
      * @return boolean
      */
-    public function reconcile(User $user, array $operationsId)
+    public function reconcile(Member $member, array $operationsId)
     {
         try {
             foreach ($operationsId as $operationId) {
                 $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', $operationId);
 
                 if (null !== $operation) {
-                    if ($user === $operation->getAccount()->getBank()->getUser()) {
+                    if ($member === $operation->getAccount()->getBank()->getMember()) {
                         $operation->setReconciled(true);
                         $this->em->persist($operation);
                     }
@@ -449,7 +449,7 @@ class OperationService
         return true;
     }
 
-    public function findThirdParties(User $user, $queryString)
+    public function findThirdParties(Member $member, $queryString)
     {
         $sql = 'SELECT o2.third_party AS thirdParty, o2.category_id AS categoryId ';
         $sql.= 'FROM ( ';
@@ -457,7 +457,7 @@ class OperationService
         $sql.= '    FROM operation o ';
         $sql.= '    INNER JOIN account a ON o.account_id = a.account_id ';
         $sql.= '    INNER JOIN bank b ON a.bank_id = b.bank_id ';
-        $sql.= '    WHERE b.user_id = :user_id ';
+        $sql.= '    WHERE b.member_id = :member_id ';
         $sql.= '    AND o.third_party LIKE :third_party ';
         $sql.= '    GROUP BY o.third_party ';
         $sql.= ') AS tmp ';
@@ -465,7 +465,7 @@ class OperationService
         $sql.= 'GROUP BY tmp.third_party ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
-        $stmt->bindValue('user_id', $user->getUserId());
+        $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('third_party', '%' . $queryString . '%');
         $stmt->execute();
 
@@ -475,13 +475,13 @@ class OperationService
     /**
      * Saves multiple operations
      *
-     * @param  User    $user       User entity
+     * @param  Member  $member     Member entity
      * @param  Account $account    Account entity
      * @param  array   $operations Operations data
      * @param  Closure $func       Regularly called function
      * @return boolean
      */
-    public function saveMulti(User $user, Account $account, array $operations, \Closure $func)
+    public function saveMulti(Member $member, Account $account, array $operations, \Closure $func)
     {
         $error = false;
 
@@ -532,9 +532,9 @@ class OperationService
             } else {
                 $this->logger->err(
                     sprintf(
-                        'Errors importing transaction "%s" [user %d]',
+                        'Errors importing transaction "%s" [member %d]',
                         $operationArray['label'],
-                        $account->getBank()->getUser()->getUserId()
+                        $account->getBank()->getMember()->getMemberId()
                     )
                 );
                 $error = true;

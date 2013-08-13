@@ -10,7 +10,7 @@ use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\DependencyInjection\Container;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\OperationSearch;
 
@@ -32,17 +32,17 @@ class OperationSearchService
     /**
      * Returns operationSearch form
      *
-     * @param  User            $user            User entity
+     * @param  Member          $member          Member entity
      * @param  OperationSearch $operationSearch OperationSearch entity
      * @param  Account         $account         Account entity for new operationSearch
      * @return Form
      */
-    public function getForm(User $user, OperationSearch $operationSearch = null, Account $account = null)
+    public function getForm(Member $member, OperationSearch $operationSearch = null, Account $account = null)
     {
         if (null === $operationSearch && null !== $account) {
             $operationSearch = new OperationSearch();
             $operationSearch->setAccount($account);
-        } elseif (null !== $operationSearch && $user !== $operationSearch->getAccount()->getBank()->getUser()) {
+        } elseif (null !== $operationSearch && $member !== $operationSearch->getAccount()->getBank()->getMember()) {
             return;
         }
 

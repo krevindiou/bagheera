@@ -24,13 +24,13 @@ class OperationSearchController extends Controller
      */
     public function formAction(Request $request, Account $account, $display = true)
     {
-        $user = $this->getUser();
+        $member = $this->getUser();
 
         $operationSearchService = $this->get('bagheera.operation_search');
 
         $operationSearch = $operationSearchService->getSessionSearch($account);
 
-        $operationSearchForm = $operationSearchService->getForm($user, $operationSearch, $account);
+        $operationSearchForm = $operationSearchService->getForm($member, $operationSearch, $account);
         if (null === $operationSearchForm) {
             throw $this->createNotFoundException();
         }

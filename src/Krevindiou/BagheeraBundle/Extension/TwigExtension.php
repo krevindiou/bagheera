@@ -44,10 +44,10 @@ class TwigExtension extends \Twig_Extension
         $token = $this->security->getToken();
 
         if (null !== $token) {
-            $user = $token->getUser();
+            $member = $token->getUser();
 
-            if (is_object($user)) {
-                $banks = $this->bankService->getList($user);
+            if (is_object($member)) {
+                $banks = $this->bankService->getList($member);
             }
         }
 

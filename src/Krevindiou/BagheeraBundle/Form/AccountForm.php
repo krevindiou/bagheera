@@ -33,11 +33,11 @@ class AccountForm extends AbstractType
             )
         ;
 
-        $user = $options['user'];
+        $member = $options['member'];
 
         $builder->addEventListener(
             FormEvents::PRE_SET_DATA,
-            function(FormEvent $event) use ($builder, $user) {
+            function(FormEvent $event) use ($builder, $member) {
                 $form = $event->getForm();
                 $account = $event->getData();
 
@@ -51,12 +51,12 @@ class AccountForm extends AbstractType
                             'label' => 'account.bank',
                             'empty_value' => '',
                             'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
-                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                 return $repository->createQueryBuilder('b')
-                                    ->where('b.user = :user')
+                                    ->where('b.member = :member')
                                     ->andWhere('b.deleted = false')
                                     ->andWhere('b.closed = false')
-                                    ->setParameter('user', $user)
+                                    ->setParameter('member', $member)
                                     ->add('orderBy', 'b.name ASC');
                             },
                             'disabled' => $edit,
@@ -118,7 +118,7 @@ class AccountForm extends AbstractType
             )
         );
 
-        $resolver->setRequired(array('user'));
+        $resolver->setRequired(array('member'));
     }
 
     public function getName()

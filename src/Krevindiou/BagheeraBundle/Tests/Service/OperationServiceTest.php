@@ -14,11 +14,11 @@ class OperationServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
     }
 
-    public function testGetFormForForeignUser()
+    public function testGetFormForForeignMember()
     {
         $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $form = $this->get('bagheera.operation')->getForm($this->jane, $operation);
@@ -79,7 +79,7 @@ class OperationServiceTest extends TestCase
         $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
     }
 
-    public function testSaveExistingOperationWithForeignUser()
+    public function testSaveExistingOperationWithForeignMember()
     {
         $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 1);
         $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));

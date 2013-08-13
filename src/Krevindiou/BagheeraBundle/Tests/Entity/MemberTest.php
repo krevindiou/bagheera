@@ -6,20 +6,20 @@
 namespace Krevindiou\BagheeraBundle\Tests\Entity;
 
 use Krevindiou\BagheeraBundle\Tests\TestCase;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 
-class UserTest extends TestCase
+class MemberTest extends TestCase
 {
     public function testFindAll()
     {
-        $users = $this->em->getRepository('Krevindiou\BagheeraBundle\Entity\User')->findAll();
+        $members = $this->em->getRepository('Krevindiou\BagheeraBundle\Entity\Member')->findAll();
 
-        $this->assertEquals(count($users), 3);
+        $this->assertEquals(count($members), 3);
     }
 
     public function testJohn()
     {
-        $john = $this->em->find('Krevindiou\BagheeraBundle\Entity\User', 1);
+        $john = $this->em->find('Krevindiou\BagheeraBundle\Entity\Member', 1);
 
         $this->assertEquals($john->getEmail(), 'john@example.net');
         $this->assertEquals(count($john->getBanks()), 4);

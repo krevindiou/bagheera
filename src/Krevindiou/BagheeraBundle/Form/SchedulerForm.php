@@ -189,9 +189,9 @@ class SchedulerForm extends AbstractType
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                 return $repository->createQueryBuilder('a')
                                     ->innerJoin('a.bank', 'b')
-                                    ->where('b.user = :user')
+                                    ->where('b.member = :member')
                                     ->andWhere('a != :account')
-                                    ->setParameter('user', $account->getBank()->getUser())
+                                    ->setParameter('member', $account->getBank()->getMember())
                                     ->setParameter('account', $account)
                                     ->add('orderBy', 'a.name ASC');
                             },

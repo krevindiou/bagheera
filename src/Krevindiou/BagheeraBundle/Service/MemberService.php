@@ -16,15 +16,15 @@ use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Service\BankService;
 
 /**
- * @DI\Service("bagheera.user")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "user"})
+ * @DI\Service("bagheera.member")
+ * @DI\Tag("monolog.logger", attributes = {"channel" = "member"})
  * @DI\Tag("kernel.event_listener", attributes = {"event" = "security.interactive_login", "method" = "onLogin"})
  */
-class UserService
+class MemberService
 {
     /** @DI\Inject */
     public $logger;
@@ -78,8 +78,8 @@ class UserService
     public function getRegisterForm($language)
     {
         return $this->formFactory->create(
-            'user_register_type',
-            new User(),
+            'member_register_type',
+            new Member(),
             array('attr' => array('language' => $language))
         );
     }
@@ -87,27 +87,27 @@ class UserService
     /**
      * Returns profile form
      *
-     * @param  User $user User entity
+     * @param  Member $member Member entity
      * @return Form
      */
-    public function getProfileForm(User $user)
+    public function getProfileForm(Member $member)
     {
-        return $this->formFactory->create('user_profile_type', $user);
+        return $this->formFactory->create('member_profile_type', $member);
     }
 
     /**
-     * Adds user
+     * Adds member
      *
-     * @param  User    $user User entity
+     * @param  Member  $member Member entity
      * @return boolean
      */
-    protected function add(User $user)
+    protected function add(Member $member)
     {
-        $encoder = $this->encoderFactory->getEncoder($user);
-        $user->setPassword($encoder->encodePassword($user->getPlainPassword(), $user->getSalt()));
+        $encoder = $this->encoderFactory->getEncoder($member);
+        $member->setPassword($encoder->encodePassword($member->getPlainPassword(), $member->getSalt()));
 
         try {
-            $this->em->persist($user);
+            $this->em->persist($member);
             $this->em->flush();
         } catch (\Exception $e) {
             $this->logger->err($e->getMessage());
@@ -116,8 +116,8 @@ class UserService
         }
 
         // Activation link construction
-        $key = $this->createRegisterKey($user);
-        $link = $this->router->generate('user_activate', array('_locale' => 'en', 'key' => $key), true);
+        $key = $this->createRegisterKey($member);
+        $link = $this->router->generate('member_activate', array('_locale' => 'en', 'key' => $key), true);
 
         $body = $this->templating->render(
             'KrevindiouBagheeraBundle:Email:register.html.twig',
@@ -125,9 +125,9 @@ class UserService
         );
 
         $message = \Swift_Message::newInstance()
-            ->setSubject($this->translator->trans('user.register.email_subject'))
+            ->setSubject($this->translator->trans('member.register.email_subject'))
             ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
-            ->setTo(array($user->getEmail()))
+            ->setTo(array($member->getEmail()))
             ->setBody($body, 'text/html');
 
         try {
@@ -144,15 +144,15 @@ class UserService
     /**
      * Creates register key
      *
-     * @param  User   $user User entity
+     * @param Member  $member Member entity
      * @return string
      */
-    public function createRegisterKey(User $user)
+    public function createRegisterKey(Member $member)
     {
         $data = array(
             'type' => 'register',
-            'email' => $user->getEmail(),
-            'createdAt' => $user->getCreatedAt()->format(\DateTime::ISO8601)
+            'email' => $member->getEmail(),
+            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601)
         );
 
         return $this->cryptService->crypt($data);
@@ -162,28 +162,28 @@ class UserService
      * Decodes register key
      *
      * @param  string $key Encrypted register key
-     * @return User
+     * @return Member
      */
     protected function decodeRegisterKey($key)
     {
         $data = $this->cryptService->decrypt($key);
 
         if (null !== $data && 'register' == $data['type']) {
-            return $this->em->getRepository('KrevindiouBagheeraBundle:User')
+            return $this->em->getRepository('KrevindiouBagheeraBundle:Member')
                             ->findOneBy(array('email' => $data['email']));
         }
     }
 
     /**
-     * Updates user
+     * Updates member
      *
-     * @param  User    $user User entity
+     * @param  Member  $member Member entity
      * @return boolean
      */
-    protected function update(User $user)
+    protected function update(Member $member)
     {
         try {
-            $this->em->persist($user);
+            $this->em->persist($member);
             $this->em->flush();
 
             return true;
@@ -195,20 +195,20 @@ class UserService
     }
 
     /**
-     * Saves user
+     * Saves member
      *
-     * @param  User    $user User entity
+     * @param  Member  $member Member entity
      * @return boolean
      */
-    public function save(User $user)
+    public function save(Member $member)
     {
-        $errors = $this->validator->validate($user);
+        $errors = $this->validator->validate($member);
 
         if (0 == count($errors)) {
-            if (null !== $user->getUserId()) {
-                return $this->update($user);
+            if (null !== $member->getMemberId()) {
+                return $this->update($member);
             } else {
-                return $this->add($user);
+                return $this->add($member);
             }
         }
 
@@ -216,15 +216,15 @@ class UserService
     }
 
     /**
-     * Saves user form
+     * Saves member form
      *
-     * @param  Form    $form User form
+     * @param  Form    $form Member form
      * @return boolean
      */
     public function saveForm(Form $form)
     {
         if ($form->isValid()) {
-            if (null !== $form->getData()->getUserId()) {
+            if (null !== $form->getData()->getMemberId()) {
                 return $this->update($form->getData());
             } else {
                 return $this->add($form->getData());
@@ -235,21 +235,21 @@ class UserService
     }
 
     /**
-     * Activates/Deactivates users
+     * Activates/Deactivates members
      *
-     * @param  array $usersId Array of userId
+     * @param  array $membersId Array of memberId
      * @return void
      */
-    public function toggleDeactivation(array $usersId)
+    public function toggleDeactivation(array $membersId)
     {
-        foreach ($usersId as $userId) {
-            $user = $this->em->find('KrevindiouBagheeraBundle:User', $userId);
+        foreach ($membersId as $memberId) {
+            $member = $this->em->find('KrevindiouBagheeraBundle:Member', $memberId);
 
-            if (null !== $user) {
-                $user->setActive(!$user->isActive());
+            if (null !== $member) {
+                $member->setActive(!$member->isActive());
 
                 try {
-                    $this->em->persist($user);
+                    $this->em->persist($member);
                     $this->em->flush();
                 } catch (\Exception $e) {
                     $this->logger->err($e->getMessage());
@@ -265,7 +265,7 @@ class UserService
      */
     public function getForgotPasswordForm()
     {
-        return $this->formFactory->create('user_forgot_password_type');
+        return $this->formFactory->create('member_forgot_password_type');
     }
 
     /**
@@ -276,13 +276,13 @@ class UserService
      */
     public function sendChangePasswordEmail($email)
     {
-        $user = $this->em->getRepository('KrevindiouBagheeraBundle:User')
-                          ->findOneBy(array('email' => $email));
+        $member = $this->em->getRepository('KrevindiouBagheeraBundle:Member')
+                           ->findOneBy(array('email' => $email));
 
-        if (null !== $user) {
+        if (null !== $member) {
             // Change password link construction
-            $key = $this->createChangePasswordKey($user);
-            $link = $this->router->generate('user_change_password_public', array('_locale' => 'en', 'key' => $key), true);
+            $key = $this->createChangePasswordKey($member);
+            $link = $this->router->generate('member_change_password_public', array('_locale' => 'en', 'key' => $key), true);
 
             $body = $this->templating->render(
                 'KrevindiouBagheeraBundle:Email:changePassword.html.twig',
@@ -290,9 +290,9 @@ class UserService
             );
 
             $message = \Swift_Message::newInstance()
-                ->setSubject($this->translator->trans('user.forgot_password.email_subject'))
+                ->setSubject($this->translator->trans('member.forgot_password.email_subject'))
                 ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
-                ->setTo(array($user->getEmail()))
+                ->setTo(array($member->getEmail()))
                 ->setBody($body, 'text/html');
 
             try {
@@ -314,23 +314,23 @@ class UserService
      */
     public function getChangePasswordForm()
     {
-        return $this->formFactory->create('user_change_password_type');
+        return $this->formFactory->create('member_change_password_type');
     }
 
     /**
      * Updates password
      *
-     * @param  User   $user     User entity
+     * @param  Member $member   Member entity
      * @param  string $password Password to set
      * @return void
      */
-    public function changePassword(User $user, $password)
+    public function changePassword(Member $member, $password)
     {
-        $encoder = $this->encoderFactory->getEncoder($user);
-        $user->setPassword($encoder->encodePassword($password, $user->generateSalt()->getSalt()));
+        $encoder = $this->encoderFactory->getEncoder($member);
+        $member->setPassword($encoder->encodePassword($password, $member->generateSalt()->getSalt()));
 
         try {
-            $this->em->persist($user);
+            $this->em->persist($member);
             $this->em->flush();
 
             return true;
@@ -344,15 +344,15 @@ class UserService
     /**
      * Creates change password key
      *
-     * @param  User   $user User entity
+     * @param  Member $member Member entity
      * @return string
      */
-    public function createChangePasswordKey(User $user)
+    public function createChangePasswordKey(Member $member)
     {
         $data = array(
             'type' => 'change_password',
-            'email' => $user->getEmail(),
-            'createdAt' => $user->getCreatedAt()->format(\DateTime::ISO8601)
+            'email' => $member->getEmail(),
+            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601)
         );
 
         $expiration = new \DateTime();
@@ -365,30 +365,30 @@ class UserService
      * Decodes change password key
      *
      * @param  string $key Encrypted change password key
-     * @return User
+     * @return Member
      */
     public function decodeChangePasswordKey($key)
     {
         $data = $this->cryptService->decrypt($key);
 
         if (null !== $data && 'change_password' == $data['type']) {
-            return $this->em->getRepository('KrevindiouBagheeraBundle:User')
+            return $this->em->getRepository('KrevindiouBagheeraBundle:Member')
                             ->findOneBy(array('email' => $data['email']));
         }
     }
 
     /**
-     * Activates the user
+     * Activates the member
      *
      * @return boolean
      */
     public function activate($key)
     {
-        if (null !== $user = $this->decodeRegisterKey($key)) {
-            $user->setActive(true);
+        if (null !== $member = $this->decodeRegisterKey($key)) {
+            $member->setActive(true);
 
             try {
-                $this->em->persist($user);
+                $this->em->persist($member);
                 $this->em->flush();
 
                 return true;
@@ -401,16 +401,16 @@ class UserService
     }
 
     /**
-     * Gets users list
+     * Gets members list
      *
      * @param  array      $params      Search criterias
      * @param  integer    $currentPage Page number
      * @return Pagerfanta
      */
-    public function getUsers(array $params = array(), $currentPage = 1)
+    public function getMembers(array $params = array(), $currentPage = 1)
     {
         $adapter = new DoctrineORMAdapter(
-            $this->em->getRepository('KrevindiouBagheeraBundle:User')->getListQuery($params)
+            $this->em->getRepository('KrevindiouBagheeraBundle:Member')->getListQuery($params)
         );
 
         $pager = new Pagerfanta($adapter);
@@ -421,19 +421,19 @@ class UserService
     }
 
     /**
-     * Gets user balances
+     * Gets member balances
      *
-     * @param  User  $user User entity
+     * @param  Member $member Member entity
      * @return array
      */
-    public function getBalances(User $user)
+    public function getBalances(Member $member)
     {
         $balances = array();
 
-        $banks = $user->getBanks();
+        $banks = $member->getBanks();
         foreach ($banks as $bank) {
             if (!$bank->isDeleted()) {
-                $bankBalances = $this->bankService->getBalances($user, $bank);
+                $bankBalances = $this->bankService->getBalances($member, $bank);
 
                 foreach ($bankBalances as $currency => $bankBalance) {
                     if (isset($balances[$currency])) {
@@ -451,20 +451,25 @@ class UserService
     /**
      * Gets import progress data
      *
-     * @param  User  $user User entity
+     * @param  Member $member Member entity
      * @return array
      */
-    public function getImportProgress(User $user)
+    public function getImportProgress(Member $member)
     {
         // Fetch current importId
         $dql = 'SELECT MAX(i.importId) ';
         $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i ';
         $dql.= 'JOIN i.account a ';
         $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.user = :user ';
+        $dql.= 'WHERE b.member = :member ';
         $dql.= 'AND i.finished = 0 ';
         $query = $this->em->createQuery($dql);
-        $query->setParameter('user', $user);
+        $query->setParameter('member', $member);
+
+        $dql.= 'WHERE b.member = :member ';
+        $dql.= 'AND i.finished = false ';
+        $query = $this->em->createQuery($dql);
+        $query->setParameter('member', $member);
 
         try {
             $maxImportId = $query->getSingleScalarResult();
@@ -486,14 +491,14 @@ class UserService
     }
 
     /**
-     * Checks if user has one or more banks without provider
+     * Checks if member has one or more banks without provider
      *
-     * @param  User $user User entity
+     * @param  Member $member Member entity
      * @return bool
      */
-    public function hasBankWithoutProvider(User $user)
+    public function hasBankWithoutProvider(Member $member)
     {
-        $banks = $user->getBanks();
+        $banks = $member->getBanks();
 
         if (count($banks) > 0) {
             foreach ($banks as $bank) {

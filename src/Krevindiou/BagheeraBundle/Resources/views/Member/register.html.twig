@@ -1,0 +1,18 @@
+{% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
+
+{% block page_title 'member.register.page_title'|trans %}
+
+{% block breadcrumb %}
+    <li class="active">{{ 'member.register.page_title'|trans }}</li>
+{% endblock %}
+
+{% block content %}
+<form action="{{ path('member_register') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(registerForm) }}>
+    {{ form_widget(registerForm) }}
+
+    <div class="form-actions">
+        <input type="submit" class="btn btn-primary" value="{{ 'member.register.submit_button'|trans }}"/>
+        <a href="{{ path('member_login') }}" class="btn"> {{ 'cancel_link'|trans }}</a>
+    </div>
+</form>
+{% endblock %}

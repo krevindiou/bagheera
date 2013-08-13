@@ -1,0 +1,16 @@
+<ul class="nav nav-tabs nav-stacked">
+    <li{{ 'member_profile' == app.request.get('_route') ? ' class="active"' : '' }}>
+        <a href="{{ path('member_profile') }}">
+            <i class="icon-user"></i>
+            {{ 'member.profile.page_title'|trans }}
+            <i class="icon-chevron-right"></i>
+        </a>
+    </li>
+    <li{{ 'member_change_password' == app.request.get('_route') ? ' class="active"' : '' }}>
+        <a href="{{ path('member_change_password') }}">
+            <i class="icon-lock"></i>
+            {{ 'member.change_password.page_title'|trans }}
+            <i class="icon-chevron-right"></i>
+        </a>
+    </li>
+</ul>

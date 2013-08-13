@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Validator;
 use Symfony\Component\Translation\Translator;
 use Symfony\Bridge\Monolog\Logger;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
@@ -44,16 +44,16 @@ class AccountService
     /**
      * Returns accounts list
      *
-     * @param  User  $user    User entity
-     * @param  Bank  $bank    Bank entity
-     * @param  bool  $deleted Return deleted items
+     * @param  Member $member  Member entity
+     * @param  Bank   $bank    Bank entity
+     * @param  bool   $deleted Return deleted items
      * @return array
      */
-    public function getList(User $user, Bank $bank = null, $deleted = true)
+    public function getList(Member $member, Bank $bank = null, $deleted = true)
     {
         $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
         $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.user = :user ';
+        $dql.= 'WHERE b.member = :member ';
         if (null !== $bank) {
             $dql.= 'AND a.bank = :bank ';
         }
@@ -64,7 +64,7 @@ class AccountService
         $dql.= 'ORDER BY a.name ASC';
 
         $query = $this->em->createQuery($dql);
-        $query->setParameter('user', $user);
+        $query->setParameter('member', $member);
         if (null !== $bank) {
             $query->setParameter('bank', $bank);
         }
@@ -75,13 +75,13 @@ class AccountService
     /**
      * Returns account form for a new account
      *
-     * @param  User $user User entity
-     * @param  Bank $bank Bank entity
+     * @param  Member $member Member entity
+     * @param  Bank   $bank   Bank entity
      * @return Form
      */
-    public function getNewForm(User $user, Bank $bank = null)
+    public function getNewForm(Member $member, Bank $bank = null)
     {
-        if (null !== $bank && $user !== $bank->getUser()) {
+        if (null !== $bank && $member !== $bank->getMember()) {
             return;
         }
 
@@ -90,43 +90,43 @@ class AccountService
             $account->setBank($bank);
         }
 
-        return $this->formFactory->create('account_type', $account, array('user' => $user));
+        return $this->formFactory->create('account_type', $account, array('member' => $member));
     }
 
     /**
      * Returns account form for an existing account
      *
-     * @param  User    $user    User entity
+     * @param  Member  $member  Member entity
      * @param  Account $account Account entity
      * @return Form
      */
-    public function getEditForm(User $user, Account $account)
+    public function getEditForm(Member $member, Account $account)
     {
-        if ($user !== $account->getBank()->getUser()) {
+        if ($member !== $account->getBank()->getMember()) {
             return;
         }
 
-        return $this->formFactory->create('account_type', $account, array('user' => $user));
+        return $this->formFactory->create('account_type', $account, array('member' => $member));
     }
 
     /**
      * Saves account
      *
-     * @param  User    $user    User entity
+     * @param  Member  $member  Member entity
      * @param  Account $account Account entity
      * @return boolean
      */
-    protected function doSave(User $user, Account $account)
+    protected function doSave(Member $member, Account $account)
     {
         if (null !== $account->getAccountId()) {
             $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);
 
-            if ($user !== $oldAccount['bank']->getUser()) {
+            if ($member !== $oldAccount['bank']->getMember()) {
                 return false;
             }
         }
 
-        if ($user === $account->getBank()->getUser()) {
+        if ($member === $account->getBank()->getMember()) {
             try {
                 $this->em->persist($account);
                 $this->em->flush();
@@ -143,16 +143,16 @@ class AccountService
     /**
      * Saves account
      *
-     * @param  User    $user    User entity
+     * @param  Member  $member  Member entity
      * @param  Account $account Account entity
      * @return boolean
      */
-    public function save(User $user, Account $account)
+    public function save(Member $member, Account $account)
     {
         $errors = $this->validator->validate($account);
 
         if (0 == count($errors)) {
-            return $this->doSave($user, $account);
+            return $this->doSave($member, $account);
         }
 
         return false;
@@ -161,14 +161,14 @@ class AccountService
     /**
      * Saves account form
      *
-     * @param  User    $user User entity
-     * @param  Form    $form Account form
+     * @param  Member $member Member entity
+     * @param  Form   $form   Account form
      * @return boolean
      */
-    public function saveForm(User $user, Form $form)
+    public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            $ok = $this->doSave($user, $form->getData());
+            $ok = $this->doSave($member, $form->getData());
 
             if ($form->has('initialBalance') && $form->get('initialBalance')->getData() != 0) {
                 $operation = new Operation();
@@ -184,7 +184,7 @@ class AccountService
                 $operation->setValueDate(new \DateTime());
                 $operation->setReconciled(true);
 
-                $this->operationService->save($user, $operation);
+                $this->operationService->save($member, $operation);
             }
 
             return $ok;
@@ -196,18 +196,18 @@ class AccountService
     /**
      * Deletes accounts
      *
-     * @param  User    $user       User entity
-     * @param  array   $accountsId Accounts id to delete
+     * @param  Member $member     Member entity
+     * @param  array  $accountsId Accounts id to delete
      * @return boolean
      */
-    public function delete(User $user, array $accountsId)
+    public function delete(Member $member, array $accountsId)
     {
         try {
             foreach ($accountsId as $accountId) {
                 $account = $this->em->find('KrevindiouBagheeraBundle:Account', $accountId);
 
                 if (null !== $account) {
-                    if ($user === $account->getBank()->getUser()) {
+                    if ($member === $account->getBank()->getMember()) {
                         $account->setDeleted(true);
                     }
                 }
@@ -226,16 +226,16 @@ class AccountService
     /**
      * Gets account balance
      *
-     * @param  User    $user           User entity
+     * @param  Member  $member         Member entity
      * @param  Account $account        Account entity
      * @param  boolean $reconciledOnly Only consider reconciled operations
      * @return float
      */
-    public function getBalance(User $user, Account $account, $reconciledOnly = false)
+    public function getBalance(Member $member, Account $account, $reconciledOnly = false)
     {
         $balance = 0;
 
-        if ($user === $account->getBank()->getUser()) {
+        if ($member === $account->getBank()->getMember()) {
             $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
             $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
             $dql.= 'WHERE o.account = :account ';
@@ -256,16 +256,16 @@ class AccountService
     /**
      * Saves multiple accounts
      *
-     * @param  User    $user     User entity
-     * @param  Bank    $bank     Bank entity
-     * @param  array   $accounts Accounts data
+     * @param  Member $member   Member entity
+     * @param  Bank   $bank     Bank entity
+     * @param  array  $accounts Accounts data
      * @return boolean
      */
-    public function saveMulti(User $user, Bank $bank, array $accounts)
+    public function saveMulti(Member $member, Bank $bank, array $accounts)
     {
         $error = false;
 
-        if ($user !== $bank->getUser()) {
+        if ($member !== $bank->getMember()) {
             $error = true;
         } else {
             // Retrieve current accounts id
@@ -299,9 +299,9 @@ class AccountService
                     } else {
                         $this->logger->err(
                             sprintf(
-                                'Errors saving account "%s" [user %d]',
+                                'Errors saving account "%s" [member %d]',
                                 $accountArray['name'],
-                                $bank->getUser()->getUserId()
+                                $bank->getMember()->getMemberId()
                             )
                         );
 

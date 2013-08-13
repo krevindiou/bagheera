@@ -13,7 +13,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Entity\User;
+use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\Operation;
 use Krevindiou\BagheeraBundle\Entity\Scheduler;
@@ -43,14 +43,14 @@ class SchedulerService
     /**
      * Returns schedulers list
      *
-     * @param  User       $user        User entity
-     * @param  Account    $account     Account entity
-     * @param  integer    $currentPage Page number
+     * @param  Member  $member      Member entity
+     * @param  Account $account     Account entity
+     * @param  integer $currentPage Page number
      * @return Pagerfanta
      */
-    public function getList(User $user, Account $account, $currentPage = 1)
+    public function getList(Member $member, Account $account, $currentPage = 1)
     {
-        if ($account->getBank()->getUser() == $user) {
+        if ($account->getBank()->getMember() == $member) {
             $params = array(
                 ':account_id' => $account->getAccountId()
             );
@@ -157,17 +157,17 @@ class SchedulerService
     /**
      * Returns scheduler form
      *
-     * @param  User      $user      User entity
+     * @param  Member    $member    Member entity
      * @param  Scheduler $scheduler Scheduler entity
      * @param  Account   $account   Account entity for new scheduler
      * @return Form
      */
-    public function getForm(User $user, Scheduler $scheduler = null, Account $account = null)
+    public function getForm(Member $member, Scheduler $scheduler = null, Account $account = null)
     {
         if (null === $scheduler && null !== $account) {
             $scheduler = new Scheduler();
             $scheduler->setAccount($account);
-        } elseif (null !== $scheduler && $user !== $scheduler->getAccount()->getBank()->getUser()) {
+        } elseif (null !== $scheduler && $member !== $scheduler->getAccount()->getBank()->getMember()) {
             return;
         }
 
@@ -177,21 +177,21 @@ class SchedulerService
     /**
      * Saves scheduler
      *
-     * @param  User      $user      User entity
+     * @param  Member    $member    Member entity
      * @param  Scheduler $scheduler Scheduler entity
      * @return boolean
      */
-    protected function doSave(User $user, Scheduler $scheduler)
+    protected function doSave(Member $member, Scheduler $scheduler)
     {
         if (null !== $scheduler->getSchedulerId()) {
             $oldScheduler = $this->em->getUnitOfWork()->getOriginalEntityData($scheduler);
 
-            if ($user !== $oldScheduler['account']->getBank()->getUser()) {
+            if ($member !== $oldScheduler['account']->getBank()->getMember()) {
                 return false;
             }
         }
 
-        if ($user === $scheduler->getAccount()->getBank()->getUser()) {
+        if ($member === $scheduler->getAccount()->getBank()->getMember()) {
             if (!in_array(
                 $scheduler->getPaymentMethod()->getPaymentMethodId(),
                 array(
@@ -206,7 +206,7 @@ class SchedulerService
                 $this->em->persist($scheduler);
                 $this->em->flush();
 
-                $this->runSchedulers($user);
+                $this->runSchedulers($member);
 
                 return true;
             } catch (\Exception $e) {
@@ -220,16 +220,16 @@ class SchedulerService
     /**
      * Saves scheduler
      *
-     * @param  User      $user      User entity
+     * @param  Member    $member    Member entity
      * @param  Scheduler $scheduler Scheduler entity
      * @return boolean
      */
-    public function save(User $user, Scheduler $scheduler)
+    public function save(Member $member, Scheduler $scheduler)
     {
         $errors = $this->validator->validate($scheduler);
 
         if (0 == count($errors)) {
-            return $this->doSave($user, $scheduler);
+            return $this->doSave($member, $scheduler);
         }
 
         return false;
@@ -238,14 +238,14 @@ class SchedulerService
     /**
      * Saves scheduler form
      *
-     * @param  User    $user User entity
-     * @param  Form    $form Scheduler form
+     * @param  Member $member Member entity
+     * @param  Form   $form   Scheduler form
      * @return boolean
      */
-    public function saveForm(User $user, Form $form)
+    public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            return $this->doSave($user, $form->getData());
+            return $this->doSave($member, $form->getData());
         }
 
         return false;
@@ -254,18 +254,18 @@ class SchedulerService
     /**
      * Deletes schedulers
      *
-     * @param  User    $user         User entity
-     * @param  array   $schedulersId Schedulers id to delete
+     * @param  Member $member       Member entity
+     * @param  array  $schedulersId Schedulers id to delete
      * @return boolean
      */
-    public function delete(User $user, array $schedulersId)
+    public function delete(Member $member, array $schedulersId)
     {
         try {
             foreach ($schedulersId as $schedulerId) {
                 $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', $schedulerId);
 
                 if (null !== $scheduler) {
-                    if ($user === $scheduler->getAccount()->getBank()->getUser()) {
+                    if ($member === $scheduler->getAccount()->getBank()->getMember()) {
                         $this->em->remove($scheduler);
                     }
                 }
@@ -282,13 +282,13 @@ class SchedulerService
     }
 
     /**
-     * Executes schedulers for specified user
+     * Executes schedulers for specified member
      *
-     * @param  User     $user User entity
-     * @param  DateTime $now  DateTime object
+     * @param  Member   $member Member entity
+     * @param  DateTime $now    DateTime object
      * @return boolean
      */
-    public function runSchedulers(User $user, \DateTime $now = null)
+    public function runSchedulers(Member $member, \DateTime $now = null)
     {
         if (null === $now) {
             $now = new \DateTime();
@@ -296,7 +296,7 @@ class SchedulerService
 
         $schedulers = new ArrayCollection();
 
-        $banks = $user->getBanks();
+        $banks = $member->getBanks();
         foreach ($banks as $bank) {
             $accounts = $bank->getAccounts();
             foreach ($accounts as $account) {
@@ -365,7 +365,7 @@ class SchedulerService
                 $operation->setNotes($scheduler->getNotes());
                 $operation->setTransferAccount($scheduler->getTransferAccount());
 
-                $this->operationService->save($user, $operation);
+                $this->operationService->save($member, $operation);
             }
         }
     }

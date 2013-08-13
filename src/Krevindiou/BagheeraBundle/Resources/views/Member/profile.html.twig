@@ -1,0 +1,24 @@
+{% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
+
+{% block page_title 'member.profile.page_title'|trans %}
+
+{% block breadcrumb %}
+    <li class="active">{{ 'member.profile.page_title'|trans }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="span3">
+        {{ include("KrevindiouBagheeraBundle:Member:profileMenu.html.twig") }}
+    </div>
+    <div class="span9">
+        <form action="{{ path('member_profile') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(profileForm) }}>
+            {{ form_widget(profileForm) }}
+
+            <div class="form-actions">
+                <input type="submit" class="btn btn-primary" value="{{ 'member.profile.submit_button'|trans }}"/>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -14,11 +14,11 @@ class BankServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:User', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:User', 2);
+        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
     }
 
-    public function testGetFormForForeignUser()
+    public function testGetFormForForeignMember()
     {
         $hsbc = $this->em->find('KrevindiouBagheeraBundle:Bank', 1);
         $form = $this->get('bagheera.bank')->getForm($this->jane, $hsbc);
@@ -44,10 +44,10 @@ class BankServiceTest extends TestCase
         $this->assertFalse($this->get('bagheera.bank')->save($this->john, $bank));
     }
 
-    public function testSaveNewBankWithForeignUser()
+    public function testSaveNewBankWithForeignMember()
     {
         $bank = new Bank();
-        $bank->setUser($this->john);
+        $bank->setMember($this->john);
         $bank->setName('Citigroup');
         $this->assertFalse($this->get('bagheera.bank')->save($this->jane, $bank));
     }
@@ -55,7 +55,7 @@ class BankServiceTest extends TestCase
     public function testSaveNewBank()
     {
         $bank = new Bank();
-        $bank->setUser($this->john);
+        $bank->setMember($this->john);
         $bank->setName('Citigroup');
         $this->assertTrue($this->get('bagheera.bank')->save($this->john, $bank));
     }
@@ -67,7 +67,7 @@ class BankServiceTest extends TestCase
         $this->assertFalse($this->get('bagheera.bank')->save($this->john, $hsbc));
     }
 
-    public function testSaveExistingBankWithForeignUser()
+    public function testSaveExistingBankWithForeignMember()
     {
         $hsbc = $this->em->find('KrevindiouBagheeraBundle:Bank', 1);
         $this->assertFalse($this->get('bagheera.bank')->save($this->jane, $hsbc));

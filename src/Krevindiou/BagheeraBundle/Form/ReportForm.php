@@ -47,7 +47,7 @@ class ReportForm extends AbstractType
                 $form = $event->getForm();
                 $report = $event->getData();
 
-                $user = $report->getUser();
+                $member = $report->getMember();
 
                 $type = $report->getType();
 
@@ -124,14 +124,14 @@ class ReportForm extends AbstractType
                             array(
                                 'label' => 'report.accounts',
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
-                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($user) {
+                                'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                     return $repository->createQueryBuilder('a')
                                         ->innerJoin('a.bank', 'b')
-                                        ->where('b.user = :user')
+                                        ->where('b.member = :member')
                                         ->andWhere('b.deleted = false')
                                         ->andWhere('b.closed = false')
                                         ->andWhere('a.deleted = false')
-                                        ->setParameter('user', $user)
+                                        ->setParameter('member', $member)
                                         ->add('orderBy', 'a.name ASC');
                                 },
                                 'group_by' => 'bank.name',
