@@ -466,11 +466,6 @@ class MemberService
         $query = $this->em->createQuery($dql);
         $query->setParameter('member', $member);
 
-        $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND i.finished = false ';
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('member', $member);
-
         try {
             $maxImportId = $query->getSingleScalarResult();
         } catch (\Exception $e) {
