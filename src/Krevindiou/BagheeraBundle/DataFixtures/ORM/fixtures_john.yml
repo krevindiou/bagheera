@@ -97,7 +97,6 @@ Krevindiou\BagheeraBundle\Entity\Operation:
         paymentMethod: @paymentmethod-debit-transfer
         debit: 29.16
         valueDate: '2011-09-01'
-        reconciled: true
         scheduler: @scheduler-john-1
         transferAccount: @account-john-hsbc-certificate_of_deposit_1
         transferOperation: @operation-john-5
@@ -131,7 +130,6 @@ Krevindiou\BagheeraBundle\Entity\Operation:
         paymentMethod: @paymentmethod-credit-transfer
         credit: 29.16
         valueDate: '2011-09-02'
-        reconciled: true
         transferAccount: @account-john-hsbc-checking_account
         transferOperation: @operation-john-1
     operation-john-6:

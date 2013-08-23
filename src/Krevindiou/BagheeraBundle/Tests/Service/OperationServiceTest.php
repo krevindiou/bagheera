@@ -93,27 +93,27 @@ class OperationServiceTest extends TestCase
 
     public function testEditAndRemoveTransfer()
     {
-        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
         $operation->setTransferAccount(null);
         $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', 5));
 
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
-        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
         $this->assertNull($operation->getTransferOperation());
         $this->assertNull($operation->getTransferAccount());
     }
 
     public function testEditAndChangeTransfer()
     {
-        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
         $operation->setTransferAccount($this->em->find('KrevindiouBagheeraBundle:Account', 3));
 
         $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
-        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 6);
+        $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
         $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
@@ -129,7 +129,7 @@ class OperationServiceTest extends TestCase
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
         $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', 2);
-        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 15);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
     }
@@ -167,7 +167,7 @@ class OperationServiceTest extends TestCase
         $query = $this->em->createQuery($dql);
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
-        $operationsId = array(2);
+        $operationsId = array(1);
         $this->get('bagheera.operation')->reconcile($this->john, $operationsId);
 
         $dql = 'SELECT COUNT(o) ';
