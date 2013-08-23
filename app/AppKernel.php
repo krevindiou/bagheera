@@ -22,6 +22,7 @@ class AppKernel extends Kernel
             new JMS\SecurityExtraBundle\JMSSecurityExtraBundle(),
             new WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle(),
             new EWZ\Bundle\RecaptchaBundle\EWZRecaptchaBundle(),
+            new Hautelook\AliceBundle\HautelookAliceBundle(),
             new Krevindiou\BagheeraBundle\KrevindiouBagheeraBundle(),
         );
 

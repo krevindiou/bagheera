@@ -1,0 +1,5 @@
+Krevindiou\BagheeraBundle\Entity\Member:
+    member-jack:
+        email: 'jack@example.net'
+        password: 'jack'
+        country: 'US'
