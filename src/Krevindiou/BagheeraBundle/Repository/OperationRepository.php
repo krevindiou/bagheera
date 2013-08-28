@@ -42,15 +42,15 @@ class OperationRepository extends EntityRepository
     {
         $data = array();
 
-        $sql = 'SELECT a.currency, DATE_FORMAT(o.value_date, "%Y-%m") AS month, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total ';
+        $sql = 'SELECT a.currency, TO_CHAR(o.value_date, \'YYYY-MM\') AS month, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total ';
         $sql.= 'FROM account a ';
         $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
         $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
-        $sql.= 'WHERE b.user_id = :user_id ';
-        $sql.= 'AND a.is_deleted = 0 ';
-        $sql.= 'AND b.is_deleted = 0 ';
-        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") >= :start_date ';
-        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") <= :stop_date ';
+        $sql.= 'WHERE b.member_id = :member_id ';
+        $sql.= 'AND a.is_deleted = false ';
+        $sql.= 'AND b.is_deleted = false ';
+        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') >= :start_date ';
+        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') <= :stop_date ';
 
         if (null !== $account) {
             $sql.= 'AND a.account_id = :account_id ';
@@ -113,10 +113,10 @@ class OperationRepository extends EntityRepository
         $sql.= 'FROM account a ';
         $sql.= 'LEFT JOIN operation o ON o.account_id = a.account_id ';
         $sql.= 'LEFT JOIN bank b ON b.bank_id = a.bank_id ';
-        $sql.= 'AND a.is_deleted = 0 ';
-        $sql.= 'AND b.is_deleted = 0 ';
-        $sql.= 'AND DATE_FORMAT(o.value_date, "%Y-%m-%d") < :stop_date ';
         $sql.= 'WHERE b.member_id = :member_id ';
+        $sql.= 'AND a.is_deleted = false ';
+        $sql.= 'AND b.is_deleted = false ';
+        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') < :stop_date ';
 
         if (null !== $account) {
             $sql.= 'AND a.account_id = :account_id ';

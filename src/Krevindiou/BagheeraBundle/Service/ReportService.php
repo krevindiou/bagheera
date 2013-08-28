@@ -38,9 +38,6 @@ class ReportService
     {
         $reports = array();
 
-        $sql = 'SET SESSION group_concat_max_len = 10000';
-        $this->em->getConnection()->exec($sql);
-
         $sql = 'SELECT
             report.report_id,
             report.type AS report_type,
@@ -57,50 +54,18 @@ class ReportService
             report.month_incomes AS report_month_incomes,
             report.estimate_duration_value AS report_estimate_duration_value,
             report.estimate_duration_unit AS report_estimate_duration_unit, ';
-        $sql.= ' (SELECT
-            CONCAT(
-                "[",
-                GROUP_CONCAT(
-                    CONCAT("{\"accountId\": \"", account.account_id, "\""),
-                    CONCAT(", \"name\": \"", REPLACE(account.name, "\"", "\\\\\""), "\"}")
-                ),
-                "]"
-            ) ';
-        $sql.= '  FROM report_account ';
-        $sql.= '  INNER JOIN account ON report_account.account_id = account.account_id ';
-        $sql.= '  WHERE report_account.report_id = report.report_id ';
-        $sql.= '  GROUP BY report_account.report_id ';
-        $sql.= ') AS accounts, ';
-        $sql.= ' (SELECT
-            CONCAT(
-                "[",
-                GROUP_CONCAT(
-                    CONCAT("{\"categoryId\": \"", category.category_id, "\""),
-                    CONCAT(", \"name\": \"", REPLACE(category.name, "\"", "\\\\\""), "\"}")
-                ),
-                "]"
-            ) ';
-        $sql.= '  FROM report_category ';
-        $sql.= '  INNER JOIN category ON report_category.category_id = category.category_id ';
-        $sql.= '  WHERE report_category.report_id = report.report_id ';
-        $sql.= '  GROUP BY report_category.report_id ';
-        $sql.= ') AS categories, ';
-        $sql.= ' (SELECT
-            CONCAT(
-                "[",
-                GROUP_CONCAT(
-                    CONCAT("{\"paymentMethodId\": \"", payment_method.payment_method_id, "\""),
-                    CONCAT(", \"name\": \"", REPLACE(payment_method.name, "\"", "\\\\\""), "\"}")
-                ),
-                "]"
-            ) ';
-        $sql.= '  FROM report_payment_method ';
-        $sql.= '  INNER JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
-        $sql.= '  WHERE report_payment_method.report_id = report.report_id ';
-        $sql.= '  GROUP BY report_payment_method.report_id ';
-        $sql.= ') AS paymentMethods ';
+        $sql.= 'array_to_json(array_agg(account)) AS accounts, ';
+        $sql.= 'array_to_json(array_agg(category)) AS categories, ';
+        $sql.= 'array_to_json(array_agg(payment_method)) AS payment_methods ';
         $sql.= 'FROM report ';
+        $sql.= 'LEFT JOIN report_account ON report.report_id = report_account.report_id ';
+        $sql.= 'LEFT JOIN account ON report_account.account_id = account.account_id ';
+        $sql.= 'LEFT JOIN report_category ON report.report_id = report_category.report_id ';
+        $sql.= 'LEFT JOIN category ON report_category.category_id = category.category_id ';
+        $sql.= 'LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id ';
+        $sql.= 'LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
         $sql.= 'WHERE report.member_id = :member_id ';
+        $sql.= 'GROUP BY report.report_id ';
         $sql.= 'ORDER BY report.report_id ASC ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
@@ -112,6 +77,39 @@ class ReportService
 
         foreach ($stmt->fetchAll() as $row) {
             if (!isset($reports[$row['report_id']])) {
+                $accounts = array();
+                $tmpAccounts = (null !== $row['accounts']) ? json_decode($row['accounts'], true) : array();
+                foreach ($tmpAccounts as $tmpAccount) {
+                    if (null !== $tmpAccount['account_id']) {
+                        $accounts[$tmpAccount['account_id']] = array(
+                            'accountId' => $tmpAccount['account_id'],
+                            'name' => $tmpAccount['name'],
+                        );
+                    }
+                }
+
+                $categories = array();
+                $tmpCategories = (null !== $row['categories']) ? json_decode($row['categories'], true) : array();
+                foreach ($tmpCategories as $tmpCategory) {
+                    if (null !== $tmpCategory['category_id']) {
+                        $categories[$tmpCategory['category_id']] = array(
+                            'categoryId' => $tmpCategory['category_id'],
+                            'name' => $tmpCategory['name'],
+                        );
+                    }
+                }
+
+                $paymentMethods = array();
+                $tmpPaymentMethods = (null !== $row['payment_methods']) ? json_decode($row['payment_methods'], true) : array();
+                foreach ($tmpPaymentMethods as $tmpPaymentMethod) {
+                    if (null !== $tmpPaymentMethod['payment_method_id']) {
+                        $paymentMethods[$tmpPaymentMethod['payment_method_id']] = array(
+                            'paymentMethodId' => $tmpPaymentMethod['payment_method_id'],
+                            'name' => $tmpPaymentMethod['name'],
+                        );
+                    }
+                }
+
                 $reports[$row['report_id']] = array(
                     'reportId' => $row['report_id'],
                     'title' => $row['report_title'],
@@ -129,9 +127,9 @@ class ReportService
                     'monthIncomes' => $row['report_month_incomes'],
                     'estimateDurationValue' => $row['report_estimate_duration_value'],
                     'estimateDurationUnit' => $row['report_estimate_duration_unit'],
-                    'accounts' => (null !== $row['accounts']) ? json_decode($row['accounts'], true) : array(),
-                    'categories' => (null !== $row['categories']) ? json_decode($row['categories'], true) : array(),
-                    'paymentMethods' => (null !== $row['paymentMethods']) ? json_decode($row['paymentMethods'], true) : array(),
+                    'accounts' => $accounts,
+                    'categories' => $categories,
+                    'paymentMethods' => $paymentMethods,
                 );
             }
         }
@@ -291,9 +289,9 @@ class ReportService
             if (count($accounts) == 0) {
                 $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
                 $dql.= 'JOIN a.bank b ';
-                $dql.= 'AND b.deleted = 0 ';
-                $dql.= 'AND a.deleted = 0 ';
                 $dql.= 'WHERE b.member = :member ';
+                $dql.= 'AND b.deleted = false ';
+                $dql.= 'AND a.deleted = false ';
 
                 $query = $this->em->createQuery($dql);
                 $query->setParameter('member', $member);
@@ -429,7 +427,7 @@ class ReportService
             $sql.= 'AND o.third_party LIKE :third_parties ';
         }
         if ($report->getReconciledOnly()) {
-            $sql.= 'AND o.is_reconciled = 1 ';
+            $sql.= 'AND o.is_reconciled = true ';
         }
         if ('' != $groupingData) {
             $sql.= 'GROUP BY grouping_data ';

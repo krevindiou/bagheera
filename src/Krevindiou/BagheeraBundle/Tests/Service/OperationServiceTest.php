@@ -163,7 +163,7 @@ class OperationServiceTest extends TestCase
         $dql = 'SELECT COUNT(o) ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.reconciled = 1 ';
+        $dql.= 'AND o.reconciled = true ';
         $query = $this->em->createQuery($dql);
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
@@ -173,7 +173,7 @@ class OperationServiceTest extends TestCase
         $dql = 'SELECT COUNT(o) ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
         $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.reconciled = 1 ';
+        $dql.= 'AND o.reconciled = true ';
         $query = $this->em->createQuery($dql);
         $operationsAfterReconcile = $query->getSingleScalarResult();
 

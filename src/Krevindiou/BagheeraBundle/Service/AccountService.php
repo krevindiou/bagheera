@@ -58,8 +58,8 @@ class AccountService
             $dql.= 'AND a.bank = :bank ';
         }
         if (!$deleted) {
-            $dql.= 'AND b.deleted = 0 ';
-            $dql.= 'AND a.deleted = 0 ';
+            $dql.= 'AND b.deleted = false ';
+            $dql.= 'AND a.deleted = false ';
         }
         $dql.= 'ORDER BY a.name ASC';
 
@@ -240,7 +240,7 @@ class AccountService
             $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
             $dql.= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
-                $dql.= 'AND o.reconciled = 1 ';
+                $dql.= 'AND o.reconciled = true ';
             }
 
             $query = $this->em->createQuery($dql);

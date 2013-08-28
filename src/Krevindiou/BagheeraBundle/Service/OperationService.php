@@ -57,6 +57,7 @@ class OperationService
 
             $sql = 'SELECT
                 operation.operation_id,
+                operation.external_operation_id AS external_operation_id,
                 operation.third_party AS operation_third_party,
                 operation.debit AS operation_debit,
                 operation.credit AS operation_credit,
@@ -73,8 +74,7 @@ class OperationService
                 category.category_id AS category_id,
                 category.name AS category_name,
                 payment_method.payment_method_id AS payment_method_id,
-                payment_method.name AS payment_method_name,
-                external_operation.operation_id AS external_operation_id
+                payment_method.name AS payment_method_name
                 ';
             $sql.= 'FROM operation ';
             $sql.= 'INNER JOIN account ON operation.account_id = account.account_id ';
@@ -83,7 +83,6 @@ class OperationService
             $sql.= 'LEFT JOIN operation AS transfer_operation ON operation.transfer_operation_id = transfer_operation.operation_id ';
             $sql.= 'LEFT JOIN category ON operation.category_id = category.category_id ';
             $sql.= 'LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id ';
-            $sql.= 'LEFT JOIN operation AS external_operation ON operation.external_operation_id = external_operation.operation_id ';
             $sql.= 'WHERE operation.account_id = :account_id ';
 
             if (null !== $operationSearch) {
@@ -96,7 +95,7 @@ class OperationService
                         function($value) {
                             return $value->getCategoryId();
                         },
-                        iterator_to_array($operationSearch->getCategories())
+                        $operationSearch->getCategories()->toArray()
                     );
 
                     $sql.= 'AND operation.category_id IN (' . implode(',', $categories) . ') ';
@@ -106,7 +105,7 @@ class OperationService
                         function($value) {
                             return $value->getPaymentMethodId();
                         },
-                        iterator_to_array($operationSearch->getPaymentMethods())
+                        $operationSearch->getPaymentMethods()->toArray()
                     );
 
                     $sql.= 'AND operation.payment_method_id IN (' . implode(',', $paymentMethods) . ') ';
@@ -154,16 +153,20 @@ class OperationService
             $conn = $this->em->getConnection();
 
             $getNbResultsCallback = function() use ($sql, $conn, $params) {
-                $sql = 'SELECT COUNT(*) AS total ' . substr($sql, strpos($sql, ' FROM '), strlen($sql));
+                $start = strpos($sql, ' FROM ');
+                $length = strpos($sql, ' ORDER BY ') - $start;
 
-                $stmt = $conn->prepare($sql);
+                $sqlCount = 'SELECT COUNT(*) AS total ';
+                $sqlCount.= substr($sql, $start, $length);
+
+                $stmt = $conn->prepare($sqlCount);
                 $stmt->execute($params);
 
                 return $stmt->fetchColumn();
             };
 
             $getSliceCallback = function($offset, $length) use ($sql, $conn, $params) {
-                $sql.= 'LIMIT ' . $offset . ', ' . $length;
+                $sql.= 'LIMIT ' . $length . ' OFFSET ' . $offset;
 
                 $stmt = $conn->prepare($sql);
                 $stmt->execute($params);
@@ -197,9 +200,7 @@ class OperationService
                                 'paymentMethodId' => $row['payment_method_id'],
                                 'name' => $row['payment_method_name'],
                             ),
-                            'externalOperation' => array(
-                                'operationId' => $row['external_operation_id'],
-                            ),
+                            'externalOperationId' => $row['external_operation_id'],
                             'thirdParty' => $row['operation_third_party'],
                             'debit' => $row['operation_debit'],
                             'credit' => $row['operation_credit'],

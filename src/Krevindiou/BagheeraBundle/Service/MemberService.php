@@ -462,7 +462,7 @@ class MemberService
         $dql.= 'JOIN i.account a ';
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND i.finished = 0 ';
+        $dql.= 'AND i.finished = false ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('member', $member);
 

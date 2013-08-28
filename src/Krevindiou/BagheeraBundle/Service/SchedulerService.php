@@ -88,7 +88,11 @@ class SchedulerService
             $conn = $this->em->getConnection();
 
             $getNbResultsCallback = function() use ($sql, $conn, $params) {
-                $sql = 'SELECT COUNT(*) AS total ' . substr($sql, strpos($sql, ' FROM '), strlen($sql));
+                $start = strpos($sql, ' FROM ');
+                $length = strpos($sql, ' ORDER BY ') - $start;
+
+                $sqlCount = 'SELECT COUNT(*) AS total ';
+                $sqlCount.= substr($sql, $start, $length);
 
                 $stmt = $conn->prepare($sql);
                 $stmt->execute($params);
@@ -97,7 +101,7 @@ class SchedulerService
             };
 
             $getSliceCallback = function($offset, $length) use ($sql, $conn, $params) {
-                $sql.= 'LIMIT ' . $offset . ', ' . $length;
+                $sql.= 'LIMIT ' . $length . ' OFFSET ' . $offset;
 
                 $stmt = $conn->prepare($sql);
                 $stmt->execute($params);
