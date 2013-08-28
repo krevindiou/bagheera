@@ -26,7 +26,7 @@ class OperationSearchForm extends AbstractType
                 array(
                     'label' => 'operation.type',
                     'expanded' => true,
-                    'required' => false,
+                    'required' => true,
                     'choices' => array(
                         'debit' => 'operation.type_debit',
                         'credit' => 'operation.type_credit'
