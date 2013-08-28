@@ -22,6 +22,23 @@ class SchedulerForm extends AbstractType
     {
         $builder
             ->add(
+                'type',
+                'choice',
+                array(
+                    'label' => 'scheduler.type',
+                    'mapped' => false,
+                    'expanded' => true,
+                    'required' => true,
+                    'choices' => array(
+                        'debit' => 'scheduler.type_debit',
+                        'credit' => 'scheduler.type_credit'
+                    ),
+                    'constraints' => array(
+                        new Assert\NotBlank()
+                    )
+                )
+            )
+            ->add(
                 'thirdParty',
                 null,
                 array(
@@ -146,23 +163,6 @@ class SchedulerForm extends AbstractType
                 $account = $scheduler->getAccount();
 
                 $form
-                    ->add(
-                        'type',
-                        'choice',
-                        array(
-                            'label' => 'scheduler.type',
-                            'mapped' => false,
-                            'expanded' => true,
-                            'required' => true,
-                            'choices' => array(
-                                'debit' => 'scheduler.type_debit',
-                                'credit' => 'scheduler.type_credit'
-                            ),
-                            'constraints' => array(
-                                new Assert\NotBlank()
-                            )
-                        )
-                    )
                     ->add(
                         'amount',
                         'money',

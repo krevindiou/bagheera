@@ -22,6 +22,23 @@ class OperationForm extends AbstractType
     {
         $builder
             ->add(
+                'type',
+                'choice',
+                array(
+                    'label' => 'operation.type',
+                    'mapped' => false,
+                    'expanded' => true,
+                    'required' => true,
+                    'choices' => array(
+                        'debit' => 'operation.type_debit',
+                        'credit' => 'operation.type_credit'
+                    ),
+                    'constraints' => array(
+                        new Assert\NotBlank()
+                    )
+                )
+            )
+            ->add(
                 'thirdParty',
                 null,
                 array(
@@ -99,23 +116,6 @@ class OperationForm extends AbstractType
                 $account = $operation->getAccount();
 
                 $form
-                    ->add(
-                        'type',
-                        'choice',
-                        array(
-                            'label' => 'operation.type',
-                            'mapped' => false,
-                            'expanded' => true,
-                            'required' => true,
-                            'choices' => array(
-                                'debit' => 'operation.type_debit',
-                                'credit' => 'operation.type_credit'
-                            ),
-                            'constraints' => array(
-                                new Assert\NotBlank()
-                            )
-                        )
-                    )
                     ->add(
                         'amount',
                         'money',
