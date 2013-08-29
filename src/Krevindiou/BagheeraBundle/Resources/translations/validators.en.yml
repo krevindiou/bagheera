@@ -3,4 +3,3 @@ member:
 "Value is required and can't be empty": "Value is required"
 "Bad credentials": "Bad credentials"
 field_does_not_exist: "This email does not exist"
-"This value is not a valid captcha": "This value is not a valid captcha"

@@ -71,18 +71,6 @@ class MemberRegisterForm extends AbstractType
                     )
                 )
             )
-            ->add(
-                'recaptcha',
-                'ewz_recaptcha',
-                array(
-                    'label' => 'member.captcha',
-                    'attr' => array(
-                        'options' => array(
-                            'theme' => 'clean'
-                        )
-                    )
-                )
-            )
         ;
     }
 
@@ -91,7 +79,7 @@ class MemberRegisterForm extends AbstractType
         $resolver->setDefaults(
             array(
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Member',
-                'validation_groups' => array('Default', 'password', 'captcha')
+                'validation_groups' => array('Default', 'password')
             )
         );
     }

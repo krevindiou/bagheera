@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
-use EWZ\Bundle\RecaptchaBundle\Validator\Constraints as Recaptcha;
 
 /**
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\MemberRepository")
@@ -101,11 +100,6 @@ class Member implements AdvancedUserInterface
      * @Assert\DateTime()
      */
     protected $updatedAt;
-
-    /**
-     * @Recaptcha\True(groups={"captcha"})
-     */
-    public $recaptcha;
 
     /**
      * @var Doctrine\Common\Collections\Collection $banks

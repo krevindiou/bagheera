@@ -20,7 +20,6 @@ class MemberProfileForm extends MemberRegisterForm
         parent::buildForm($builder, $options);
 
         $builder->remove('plainPassword');
-        $builder->remove('recaptcha');
         $builder->remove('country');
     }
 

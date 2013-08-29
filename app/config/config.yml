@@ -27,7 +27,6 @@ twig:
     form:
         resources:
             - 'KrevindiouBagheeraBundle:Form:fields.html.twig'
-            - 'EWZRecaptchaBundle:Form:ewz_recaptcha_widget.html.twig'
 
 # Assetic Configuration
 assetic:
@@ -91,12 +90,6 @@ swiftmailer:
 jms_di_extra:
     locations:
         all_bundles: true
-
-ewz_recaptcha:
-    public_key:   %ewz_recaptcha_public_key%
-    private_key:  %ewz_recaptcha_private_key%
-    secure:       true
-    locale_key:   kernel.default_locale
 
 parameters:
     email:

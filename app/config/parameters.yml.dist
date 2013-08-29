@@ -22,9 +22,6 @@ parameters:
 
     secret: secret
 
-    ewz_recaptcha_public_key:
-    ewz_recaptcha_private_key:
-
     provider_axa_banque_base_uri:
     provider_axa_banque_client_id:
     provider_axa_banque_access_token:

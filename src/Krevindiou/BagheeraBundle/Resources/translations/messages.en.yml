@@ -40,7 +40,6 @@ member:
     password: "Password"
     password_confirmation: "Confirm password"
     country: "Country"
-    captcha: "Captcha"
     admin: "Admin"
     active: "Active"
 account:

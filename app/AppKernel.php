@@ -21,7 +21,6 @@ class AppKernel extends Kernel
             new JMS\DiExtraBundle\JMSDiExtraBundle($this),
             new JMS\SecurityExtraBundle\JMSSecurityExtraBundle(),
             new WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle(),
-            new EWZ\Bundle\RecaptchaBundle\EWZRecaptchaBundle(),
             new Hautelook\AliceBundle\HautelookAliceBundle(),
             new Nelmio\JsLoggerBundle\NelmioJsLoggerBundle(),
             new Krevindiou\BagheeraBundle\KrevindiouBagheeraBundle(),
