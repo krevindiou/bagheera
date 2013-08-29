@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "768e0b4a0134b4d845cd6d71aa85b407",
+    "hash": "e8e147ce00095accd5e0f2956b501241",
     "packages": [
         {
             "name": "doctrine/common",
@@ -1309,6 +1309,58 @@
                 "test"
             ],
             "time": "2013-08-07 13:12:13"
+        },
+        {
+            "name": "nelmio/js-logger-bundle",
+            "version": "1.2.0",
+            "target-dir": "Nelmio/JsLoggerBundle",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nelmio/NelmioJsLoggerBundle.git",
+                "reference": "3ba0fa74e627daaa77faf8d3e8359678f0841c52"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nelmio/NelmioJsLoggerBundle/zipball/3ba0fa74e627daaa77faf8d3e8359678f0841c52",
+                "reference": "3ba0fa74e627daaa77faf8d3e8359678f0841c52",
+                "shasum": ""
+            },
+            "require": {
+                "symfony/framework-bundle": "~2.0"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Nelmio\\JsLoggerBundle": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nelmio",
+                    "homepage": "http://nelm.io"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://github.com/nelmio/NelmioJsLoggerBundle/contributors"
+                }
+            ],
+            "description": "Adds logging of JS errors in your Symfony2 application",
+            "keywords": [
+                "JS",
+                "javascript",
+                "log",
+                "logging"
+            ],
+            "time": "2013-07-29 01:36:08"
         },
         {
             "name": "pagerfanta/pagerfanta",

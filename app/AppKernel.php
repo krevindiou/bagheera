@@ -23,6 +23,7 @@ class AppKernel extends Kernel
             new WhiteOctober\PagerfantaBundle\WhiteOctoberPagerfantaBundle(),
             new EWZ\Bundle\RecaptchaBundle\EWZRecaptchaBundle(),
             new Hautelook\AliceBundle\HautelookAliceBundle(),
+            new Nelmio\JsLoggerBundle\NelmioJsLoggerBundle(),
             new Krevindiou\BagheeraBundle\KrevindiouBagheeraBundle(),
         );
 

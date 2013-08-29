@@ -17,3 +17,7 @@ home:
         _controller: FrameworkBundle:Redirect:redirect
         route: member_login
         permanent: true
+
+NelmioJsLoggerBundle:
+    resource: "@NelmioJsLoggerBundle/Resources/config/routing.xml"
+    prefix:   /nelmio-js-logger

@@ -13,6 +13,11 @@
         {% endstylesheets %}
         <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,600,800">
         {% block stylesheets %}{% endblock %}
+
+        {% if app.debug %}
+        {{ nelmio_js_error_logger() }}
+        {% endif %}
+
         <!--[if lte IE 8]><script src="{{ asset('/bundles/krevindioubagheera/vendor/flot/excanvas.min.js') }}"></script><![endif]-->
         <script data-main="{{ asset('/bundles/krevindioubagheera/js/main') }}" src="{{ asset('/bundles/krevindioubagheera/vendor/requirejs/require.js') }}"></script>
         <link rel="icon" href="{{ asset('/favicon.png') }}" type="image/png" />
