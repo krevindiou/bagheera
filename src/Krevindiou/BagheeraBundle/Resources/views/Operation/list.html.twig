@@ -97,32 +97,15 @@
         {{ pagerfanta(operations, 'twitter_bootstrap') }}
         </div>
     </form>
-
-    <script type="text/javascript">
-        require(
-            ["main"],
-            function() {
-                require(
-                    [
-                        "jquery_flot",
-                        "jquery_flot_time"
-                    ],
-                    function() {
-                        require(
-                            [
-                                "/" + locale + "/manager/account-{{ account.accountId }}/report-synthesis.js"
-                            ],
-                            function() {
-                            }
-                        );
-                    }
-                );
-            }
-        );
-    </script>
     {% endif %}
     <div id="operation-search" class="span5{% if not displaySearch %} hide{% endif %}">
         {{ render(controller("KrevindiouBagheeraBundle:OperationSearch:form", {"account": account, "display": displaySearch})) }}
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {% if operations|length > 0 %}
+    <script src="/{{ app.request.locale }}/manager/account-{{ account.accountId }}/report-synthesis.js"></script>
+    {% endif %}
 {% endblock %}

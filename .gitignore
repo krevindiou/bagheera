@@ -5,6 +5,7 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 /web/bundles/
+/web/components/
 /app/bootstrap.php.cache
 /app/config/parameters.yml
 /app/cache/*
@@ -13,4 +14,3 @@ Thumbs.db
 /vendor/
 /composer.phar
 !.gitkeep
-/src/Krevindiou/BagheeraBundle/Resources/public/vendor/

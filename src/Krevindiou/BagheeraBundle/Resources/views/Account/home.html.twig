@@ -69,29 +69,10 @@
                 {% endfor %}
             </div>
         </div>
-
-        <script type="text/javascript">
-            require(
-                ["main"],
-                function() {
-                    require(
-                        [
-                            "jquery_flot",
-                            "jquery_flot_time"
-                        ],
-                        function() {
-                            require(
-                                [
-                                    "bagheera_reports",
-                                    "bagheera_report_synthesis"
-                                ],
-                                function() {
-                                }
-                            );
-                        }
-                    );
-                }
-            );
-        </script>
     {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    <script src="/{{ app.request.locale }}/manager/reports.js"></script>
+    <script src="/{{ app.request.locale }}/manager/report-synthesis.js"></script>
 {% endblock %}

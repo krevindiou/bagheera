@@ -32,7 +32,13 @@
         "fabpot/goutte": "1.0.*@dev",
         "guzzle/guzzle": "~3.6",
         "hautelook/alice-bundle": "0.1.*",
-        "nelmio/js-logger-bundle": "~1.0"
+        "nelmio/js-logger-bundle": "~1.0",
+        "components/jquery": "~1.8.0",
+        "components/jqueryui": "~1.10.0",
+        "components/bootstrap": "~2.3.0",
+        "components/font-awesome": "~3.1.0",
+        "components/flot": "0.8.1",
+        "components/mailcheck": "1.0.2"
     },
     "scripts": {
         "post-install-cmd": [
@@ -51,7 +57,8 @@
         ]
     },
     "config": {
-        "bin-dir": "bin"
+        "bin-dir": "bin",
+        "component-dir": "web/components"
     },
     "minimum-stability": "stable",
     "extra": {
@@ -59,9 +66,56 @@
         "symfony-web-dir": "web",
         "incenteev-parameters": {
             "file": "app/config/parameters.yml"
-        },
-        "branch-alias": {
-            "dev-master": "2.3-dev"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "components/flot",
+                "type": "component",
+                "version": "0.8.1",
+                "source": {
+                    "url": "https://github.com/flot/flot.git",
+                    "type": "git",
+                    "reference": "0.8.1"
+                },
+                "extra": {
+                    "component": {
+                        "scripts": [
+                            "jquery.flot.js",
+                            "jquery.flot.time.js",
+                            "excanvas.min.js"
+                        ]
+                    }
+                },
+                "require": {
+                    "robloach/component-installer": "*"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "components/mailcheck",
+                "type": "component",
+                "version": "1.0.2",
+                "source": {
+                    "url": "https://github.com/Kicksend/mailcheck.git",
+                    "type": "git",
+                    "reference": "v1.0.2"
+                },
+                "extra": {
+                    "component": {
+                        "scripts": [
+                            "src/mailcheck.min.js"
+                        ]
+                    }
+                },
+                "require": {
+                    "robloach/component-installer": "*"
+                }
+            }
+        }
+    ]
 }

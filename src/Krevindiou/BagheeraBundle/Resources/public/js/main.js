@@ -1,39 +1,5 @@
 var locale = document.getElementsByTagName("html")[0].lang;
 
-require.config({
-    paths: {
-        jquery: "/bundles/krevindioubagheera/vendor/jquery/jquery.min",
-        jquery_ui: "/bundles/krevindioubagheera/vendor/jquery-ui/ui/minified/jquery-ui.min",
-        jquery_flot: "/bundles/krevindioubagheera/vendor/flot/jquery.flot",
-        jquery_flot_time: "/bundles/krevindioubagheera/vendor/flot/jquery.flot.time",
-        jquery_mailcheck: "/bundles/krevindioubagheera/vendor/jquery.mailcheck.min",
-        bootstrap_tooltip: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-tooltip",
-        bootstrap_modal: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-modal",
-        bootstrap_typeahead: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-typeahead",
-        bootstrap_dropdown: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-dropdown",
-        bootstrap_collapse: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-collapse",
-        bootstrap_alert: "/bundles/krevindioubagheera/vendor/bootstrap/js/bootstrap-alert",
-        bagheera_reports: "/" + locale + "/manager/reports",
-        bagheera_report_synthesis: "/" + locale + "/manager/report-synthesis",
-        bagheera_translations: "/" + locale + "/translations"
-    },
-    shim: {
-        jquery_ui: ["jquery"],
-        jquery_flot: ["jquery"],
-        jquery_flot_time: ["jquery", "jquery_flot"],
-        jquery_mailcheck: ["jquery"],
-        bootstrap_tooltip: ["jquery"],
-        bootstrap_modal: ["jquery"],
-        bootstrap_typeahead: ["jquery"],
-        bootstrap_dropdown: ["jquery"],
-        bootstrap_collapse: ["jquery"],
-        bootstrap_alert: ["jquery"],
-        bagheera_reports: ["jquery"],
-        bagheera_report_synthesis: ["jquery"],
-        bagheera_translations: ["jquery"]
-    }
-});
-
 var Bagheera = {
     baseUrl: "",
     paymentMethodOptions: [],
@@ -438,23 +404,9 @@ var Bagheera = {
     }
 };
 
-define(
-    [
-        "jquery",
-        "jquery_ui",
-        "jquery_mailcheck",
-        "bootstrap_tooltip",
-        "bootstrap_modal",
-        "bootstrap_typeahead",
-        "bootstrap_dropdown",
-        "bootstrap_collapse",
-        "bootstrap_alert",
-        "bagheera_translations"
-    ],
-    function($) {
-        "use strict";
+(function() {
+    "use strict";
 
-        Bagheera.baseUrl = "/";
-        Bagheera.init();
-    }
-);
+    Bagheera.baseUrl = "/";
+    Bagheera.init();
+})();
