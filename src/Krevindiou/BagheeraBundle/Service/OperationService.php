@@ -452,7 +452,7 @@ class OperationService
 
     public function findThirdParties(Member $member, $queryString)
     {
-        $sql = 'SELECT o2.third_party AS thirdParty, o2.category_id AS categoryId ';
+        $sql = 'SELECT o2.third_party AS "thirdParty", o2.category_id AS "categoryId" ';
         $sql.= 'FROM ( ';
         $sql.= '    SELECT o.third_party, MAX(o.value_date) AS max_value_date ';
         $sql.= '    FROM operation o ';
@@ -463,7 +463,7 @@ class OperationService
         $sql.= '    GROUP BY o.third_party ';
         $sql.= ') AS tmp ';
         $sql.= 'INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date ';
-        $sql.= 'GROUP BY tmp.third_party ';
+        $sql.= 'GROUP BY o2.third_party, o2.category_id ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
