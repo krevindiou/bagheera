@@ -459,7 +459,7 @@ class OperationService
         $sql.= '    INNER JOIN account a ON o.account_id = a.account_id ';
         $sql.= '    INNER JOIN bank b ON a.bank_id = b.bank_id ';
         $sql.= '    WHERE b.member_id = :member_id ';
-        $sql.= '    AND o.third_party LIKE :third_party ';
+        $sql.= '    AND o.third_party ILIKE :third_party ';
         $sql.= '    GROUP BY o.third_party ';
         $sql.= ') AS tmp ';
         $sql.= 'INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date ';
