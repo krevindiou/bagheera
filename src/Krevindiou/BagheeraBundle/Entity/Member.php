@@ -102,6 +102,14 @@ class Member implements AdvancedUserInterface
     protected $updatedAt;
 
     /**
+     * @var DateTime $loggedAt
+     *
+     * @ORM\Column(name="logged_at", type="datetime", nullable=false)
+     * @Assert\DateTime()
+     */
+    protected $loggedAt;
+
+    /**
      * @var Doctrine\Common\Collections\Collection $banks
      *
      * @ORM\OneToMany(targetEntity="Bank", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
@@ -131,6 +139,7 @@ class Member implements AdvancedUserInterface
     {
         $this->setCreatedAt(new \DateTime());
         $this->setUpdatedAt(new \DateTime());
+        $this->setLoggedAt(new \DateTime());
     }
 
     /**
@@ -309,6 +318,26 @@ class Member implements AdvancedUserInterface
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * Set loggedAt
+     *
+     * @param DateTime $loggedAt
+     */
+    public function setLoggedAt(\DateTime $loggedAt)
+    {
+        $this->loggedAt = $loggedAt;
+    }
+
+    /**
+     * Get loggedAt
+     *
+     * @return DateTime
+     */
+    public function getLoggedAt()
+    {
+        return $this->loggedAt;
     }
 
     /**

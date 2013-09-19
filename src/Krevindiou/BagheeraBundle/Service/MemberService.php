@@ -67,7 +67,17 @@ class MemberService
 
     public function onLogin(InteractiveLoginEvent $event)
     {
-        $this->schedulerService->runSchedulers($event->getAuthenticationToken()->getUser());
+        $member = $event->getAuthenticationToken()->getUser();
+
+        $member->setLoggedAt(new \DateTime());
+
+        try {
+            $this->em->flush();
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+        }
+
+        $this->schedulerService->runSchedulers($member);
     }
 
     /**
