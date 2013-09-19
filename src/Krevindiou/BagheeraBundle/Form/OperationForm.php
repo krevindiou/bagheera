@@ -146,7 +146,7 @@ class OperationForm extends AbstractType
                                     ->andWhere('a != :account')
                                     ->setParameter('member', $account->getBank()->getMember())
                                     ->setParameter('account', $account)
-                                    ->add('orderBy', 'a.name ASC');
+                                    ->add('orderBy', 'b.name ASC, a.name ASC');
                             },
                             'attr' => array(
                                 'class' => 'input-xlarge'

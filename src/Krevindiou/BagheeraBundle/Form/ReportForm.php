@@ -132,9 +132,8 @@ class ReportForm extends AbstractType
                                         ->andWhere('b.closed = false')
                                         ->andWhere('a.deleted = false')
                                         ->setParameter('member', $member)
-                                        ->add('orderBy', 'a.name ASC');
+                                        ->add('orderBy', 'b.name ASC, a.name ASC');
                                 },
-                                'group_by' => 'bank.name',
                                 'empty_value' => '',
                                 'required' => false,
                                 'multiple' => true,

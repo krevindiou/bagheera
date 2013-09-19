@@ -410,6 +410,6 @@ class Account
 
     public function __toString()
     {
-        return $this->getName();
+        return $this->getBank()->getName() . ' - ' . $this->getName();
     }
 }
