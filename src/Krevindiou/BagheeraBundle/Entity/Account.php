@@ -78,6 +78,14 @@ class Account
     protected $overdraftFacility = 0;
 
     /**
+     * @var boolean $closed
+     *
+     * @ORM\Column(name="is_closed", type="boolean", nullable=false)
+     * @Assert\Type("bool")
+     */
+    protected $closed = false;
+
+    /**
      * @var boolean $deleted
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
@@ -253,6 +261,26 @@ class Account
     public function getOverdraftFacility()
     {
         return $this->overdraftFacility;
+    }
+
+    /**
+     * Set closed
+     *
+     * @param boolean $closed
+     */
+    public function setClosed($closed)
+    {
+        $this->closed = (bool) $closed;
+    }
+
+    /**
+     * Get closed
+     *
+     * @return boolean
+     */
+    public function isClosed()
+    {
+        return $this->closed;
     }
 
     /**

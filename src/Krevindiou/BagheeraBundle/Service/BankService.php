@@ -188,6 +188,36 @@ class BankService
     }
 
     /**
+     * Closes banks
+     *
+     * @param  Member $member  Member entity
+     * @param  array  $banksId Banks id to close
+     * @return boolean
+     */
+    public function close(Member $member, array $banksId)
+    {
+        try {
+            foreach ($banksId as $bankId) {
+                $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankId);
+
+                if (null !== $bank) {
+                    if ($member === $bank->getMember()) {
+                        $bank->setClosed(true);
+                    }
+                }
+            }
+
+            $this->em->flush();
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Deletes banks
      *
      * @param  Member $member  Member entity

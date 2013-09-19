@@ -74,7 +74,11 @@ class AccountController extends Controller
 
         $member = $this->getUser();
 
-        if ($request->request->has('delete')) {
+        if ($request->request->has('close')) {
+            $this->get('bagheera.account')->close($member, $accountsId);
+            $this->get('bagheera.bank')->close($member, $banksId);
+            $this->get('session')->getFlashBag()->add('success', 'account.close_confirmation');
+        } elseif ($request->request->has('delete')) {
             $this->get('bagheera.account')->delete($member, $accountsId);
             $this->get('bagheera.bank')->delete($member, $banksId);
             $this->get('session')->getFlashBag()->add('success', 'account.delete_confirmation');

@@ -194,6 +194,36 @@ class AccountService
     }
 
     /**
+     * Closes accounts
+     *
+     * @param  Member $member     Member entity
+     * @param  array  $accountsId Accounts id to close
+     * @return boolean
+     */
+    public function close(Member $member, array $accountsId)
+    {
+        try {
+            foreach ($accountsId as $accountId) {
+                $account = $this->em->find('KrevindiouBagheeraBundle:Account', $accountId);
+
+                if (null !== $account) {
+                    if ($member === $account->getBank()->getMember()) {
+                        $account->setClosed(true);
+                    }
+                }
+            }
+
+            $this->em->flush();
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Deletes accounts
      *
      * @param  Member $member     Member entity

@@ -111,7 +111,7 @@ var Bagheera = {
                        .wrap('<span class="add-on" />');
             });
 
-            $("button[type=submit][name=delete], button[type=submit][name=share], button[type=submit][name=reconcile]").on("click", function(e) {
+            $("button[type=submit][name=delete], button[type=submit][name=close], button[type=submit][name=share], button[type=submit][name=reconcile]").on("click", function(e) {
                 var form = $(this).closest("form");
                 var values = form.serialize();
                 var action = form.attr("action");
