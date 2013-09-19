@@ -21,7 +21,6 @@
         {{ nelmio_js_error_logger() }}
         {% endif %}
 
-        <!--[if lte IE 8]><script src="{{ asset('/components/flot/excanvas.min.js') }}"></script><![endif]-->
         <link rel="icon" href="{{ asset('/favicon.png') }}" type="image/png" />
         <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
     </head>
@@ -172,6 +171,13 @@
         %}
             <script src="{{ asset_url }}"></script>
         {% endjavascripts %}
+        <!--[if lte IE 8]>
+        {% javascripts
+            "components/flot/excanvas.min.js"
+        %}
+            <script src="{{ asset_url }}"></script>
+        {% endjavascripts %}
+        <![endif]-->
         <script src="/{{ app.request.locale }}/translations.js"></script>
         {% block javascripts %}{% endblock %}
     </body>
