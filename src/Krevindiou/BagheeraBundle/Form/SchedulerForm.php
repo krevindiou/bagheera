@@ -155,7 +155,7 @@ class SchedulerForm extends AbstractType
         ;
 
         $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
+            FormEvents::POST_SET_DATA,
             function(FormEvent $event) use ($builder) {
                 $form = $event->getForm();
                 $scheduler = $event->getData();

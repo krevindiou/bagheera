@@ -120,7 +120,7 @@ class OperationSearchForm extends AbstractType
         ;
 
         $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
+            FormEvents::POST_SET_DATA,
             function(FormEvent $event) use ($builder) {
                 $form = $event->getForm();
                 $operationSearch = $event->getData();

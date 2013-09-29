@@ -36,7 +36,7 @@ class AccountForm extends AbstractType
         $member = $options['member'];
 
         $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
+            FormEvents::POST_SET_DATA,
             function(FormEvent $event) use ($builder, $member) {
                 $form = $event->getForm();
                 $account = $event->getData();
