@@ -392,15 +392,15 @@ class ReportService
     {
         switch ($report->getPeriodGrouping()) {
             case 'month' :
-                $groupingData = 'DATE_FORMAT(o.value_date, \'%Y-%m-01\')';
+                $groupingData = 'TO_CHAR(o.value_date, \'YYYY-MM-01\')';
                 break;
 
             case 'quarter' :
-                $groupingData = 'CONCAT(DATE_FORMAT(o.value_date, \'%Y-\'), LPAD(FLOOR((DATE_FORMAT(o.value_date, \'%c\') - 1) / 3) * 3 + 1, 2, \'0\'), \'-01\')';
+                $groupingData = 'CONCAT(TO_CHAR(o.value_date, \'YYYY-\'), LPAD(FLOOR((TO_CHAR(o.value_date, \'MM\')::integer - 1) / 3) * 3 + 1, 2, \'0\'), \'-01\')';
                 break;
 
             case 'year' :
-                $groupingData = 'DATE_FORMAT(o.value_date, \'%Y-01-01\')';
+                $groupingData = 'TO_CHAR(o.value_date, \'YYYY-01-01\')';
                 break;
 
             default :
