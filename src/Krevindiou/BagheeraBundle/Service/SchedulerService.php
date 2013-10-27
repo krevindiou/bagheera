@@ -94,7 +94,7 @@ class SchedulerService
                 $sqlCount = 'SELECT COUNT(*) AS total ';
                 $sqlCount.= substr($sql, $start, $length);
 
-                $stmt = $conn->prepare($sql);
+                $stmt = $conn->prepare($sqlCount);
                 $stmt->execute($params);
 
                 return $stmt->fetchColumn();
