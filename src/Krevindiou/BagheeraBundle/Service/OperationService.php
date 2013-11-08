@@ -166,7 +166,10 @@ class OperationService
             };
 
             $getSliceCallback = function($offset, $length) use ($sql, $conn, $params) {
-                $sql.= 'LIMIT ' . $length . ' OFFSET ' . $offset;
+                $sql.= 'LIMIT :length OFFSET :offset';
+
+                $params[':length'] = $length;
+                $params[':offset'] = $offset;
 
                 $stmt = $conn->prepare($sql);
                 $stmt->execute($params);
