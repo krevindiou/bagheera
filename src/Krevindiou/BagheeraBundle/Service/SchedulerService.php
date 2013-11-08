@@ -43,9 +43,9 @@ class SchedulerService
     /**
      * Returns schedulers list
      *
-     * @param  Member  $member      Member entity
-     * @param  Account $account     Account entity
-     * @param  integer $currentPage Page number
+     * @param  Member     $member      Member entity
+     * @param  Account    $account     Account entity
+     * @param  integer    $currentPage Page number
      * @return Pagerfanta
      */
     public function getList(Member $member, Account $account, $currentPage = 1)
@@ -245,8 +245,8 @@ class SchedulerService
     /**
      * Saves scheduler form
      *
-     * @param  Member $member Member entity
-     * @param  Form   $form   Scheduler form
+     * @param  Member  $member Member entity
+     * @param  Form    $form   Scheduler form
      * @return boolean
      */
     public function saveForm(Member $member, Form $form)
@@ -261,8 +261,8 @@ class SchedulerService
     /**
      * Deletes schedulers
      *
-     * @param  Member $member       Member entity
-     * @param  array  $schedulersId Schedulers id to delete
+     * @param  Member  $member       Member entity
+     * @param  array   $schedulersId Schedulers id to delete
      * @return boolean
      */
     public function delete(Member $member, array $schedulersId)

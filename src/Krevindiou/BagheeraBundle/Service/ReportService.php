@@ -180,8 +180,8 @@ class ReportService
     /**
      * Saves report
      *
-     * @param  Member $member Member entity
-     * @param  Report $report Report entity
+     * @param  Member  $member Member entity
+     * @param  Report  $report Report entity
      * @return boolean
      */
     protected function doSave(Member $member, Report $report)
@@ -203,8 +203,8 @@ class ReportService
     /**
      * Saves report
      *
-     * @param  Member $member Member entity
-     * @param  Report $report Report entity
+     * @param  Member  $member Member entity
+     * @param  Report  $report Report entity
      * @return boolean
      */
     public function save(Member $member, Report $report)
@@ -221,8 +221,8 @@ class ReportService
     /**
      * Saves report form
      *
-     * @param  Member $member Member entity
-     * @param  Form   $form Report form
+     * @param  Member  $member Member entity
+     * @param  Form    $form   Report form
      * @return boolean
      */
     public function saveForm(Member $member, Form $form)
@@ -237,8 +237,8 @@ class ReportService
     /**
      * Deletes reports
      *
-     * @param  Member $member    Member entity
-     * @param  array  $reportsId Reports id to delete
+     * @param  Member  $member    Member entity
+     * @param  array   $reportsId Reports id to delete
      * @return boolean
      */
     public function delete(Member $member, array $reportsId)

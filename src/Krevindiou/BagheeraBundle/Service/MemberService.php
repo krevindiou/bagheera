@@ -154,7 +154,7 @@ class MemberService
     /**
      * Creates register key
      *
-     * @param Member  $member Member entity
+     * @param  Member $member Member entity
      * @return string
      */
     public function createRegisterKey(Member $member)

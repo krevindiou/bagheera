@@ -161,8 +161,8 @@ class AccountService
     /**
      * Saves account form
      *
-     * @param  Member $member Member entity
-     * @param  Form   $form   Account form
+     * @param  Member  $member Member entity
+     * @param  Form    $form   Account form
      * @return boolean
      */
     public function saveForm(Member $member, Form $form)
@@ -196,8 +196,8 @@ class AccountService
     /**
      * Closes accounts
      *
-     * @param  Member $member     Member entity
-     * @param  array  $accountsId Accounts id to close
+     * @param  Member  $member     Member entity
+     * @param  array   $accountsId Accounts id to close
      * @return boolean
      */
     public function close(Member $member, array $accountsId)
@@ -226,8 +226,8 @@ class AccountService
     /**
      * Deletes accounts
      *
-     * @param  Member $member     Member entity
-     * @param  array  $accountsId Accounts id to delete
+     * @param  Member  $member     Member entity
+     * @param  array   $accountsId Accounts id to delete
      * @return boolean
      */
     public function delete(Member $member, array $accountsId)
@@ -286,9 +286,9 @@ class AccountService
     /**
      * Saves multiple accounts
      *
-     * @param  Member $member   Member entity
-     * @param  Bank   $bank     Bank entity
-     * @param  array  $accounts Accounts data
+     * @param  Member  $member   Member entity
+     * @param  Bank    $bank     Bank entity
+     * @param  array   $accounts Accounts data
      * @return boolean
      */
     public function saveMulti(Member $member, Bank $bank, array $accounts)

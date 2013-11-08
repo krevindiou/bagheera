@@ -379,8 +379,8 @@ class OperationService
     /**
      * Saves operation form
      *
-     * @param  Member $member Member entity
-     * @param  Form   $form   Operation form
+     * @param  Member  $member Member entity
+     * @param  Form    $form   Operation form
      * @return boolean
      */
     public function saveForm(Member $member, Form $form)
@@ -395,8 +395,8 @@ class OperationService
     /**
      * Deletes operations
      *
-     * @param  Member $member       Member entity
-     * @param  array  $operationsId Operations id to delete
+     * @param  Member  $member       Member entity
+     * @param  array   $operationsId Operations id to delete
      * @return boolean
      */
     public function delete(Member $member, array $operationsId)
@@ -425,8 +425,8 @@ class OperationService
     /**
      * Reconciles operations
      *
-     * @param  Member $member       Member entity
-     * @param  array  $operationsId Operations id to reconcile
+     * @param  Member  $member       Member entity
+     * @param  array   $operationsId Operations id to reconcile
      * @return boolean
      */
     public function reconcile(Member $member, array $operationsId)

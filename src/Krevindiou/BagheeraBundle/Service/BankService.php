@@ -126,8 +126,8 @@ class BankService
     /**
      * Saves bank
      *
-     * @param  Member $member Member entity
-     * @param  Bank   $bank   Bank entity
+     * @param  Member  $member Member entity
+     * @param  Bank    $bank   Bank entity
      * @return boolean
      */
     protected function doSave(Member $member, Bank $bank)
@@ -156,8 +156,8 @@ class BankService
     /**
      * Saves bank
      *
-     * @param  Member $member Member entity
-     * @param  Bank   $bank   Bank entity
+     * @param  Member  $member Member entity
+     * @param  Bank    $bank   Bank entity
      * @return boolean
      */
     public function save(Member $member, Bank $bank)
@@ -174,8 +174,8 @@ class BankService
     /**
      * Saves bank form
      *
-     * @param  Member $member Member entity
-     * @param  Form   $form   Bank form
+     * @param  Member  $member Member entity
+     * @param  Form    $form   Bank form
      * @return boolean
      */
     public function saveForm(Member $member, Form $form)
@@ -190,8 +190,8 @@ class BankService
     /**
      * Closes banks
      *
-     * @param  Member $member  Member entity
-     * @param  array  $banksId Banks id to close
+     * @param  Member  $member  Member entity
+     * @param  array   $banksId Banks id to close
      * @return boolean
      */
     public function close(Member $member, array $banksId)
@@ -220,8 +220,8 @@ class BankService
     /**
      * Deletes banks
      *
-     * @param  Member $member  Member entity
-     * @param  array  $banksId Banks id to delete
+     * @param  Member  $member  Member entity
+     * @param  array   $banksId Banks id to delete
      * @return boolean
      */
     public function delete(Member $member, array $banksId)
