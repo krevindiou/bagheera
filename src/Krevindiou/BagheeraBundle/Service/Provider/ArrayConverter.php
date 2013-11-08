@@ -25,7 +25,7 @@ class ArrayConverter
             );
         }
 
-        throw new InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
+        throw new \InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
     }
 
     private static function convertFromQif($content)

@@ -75,7 +75,7 @@ abstract class ProviderBase
             $this->_save($account, json_encode($data), 'json');
 
             return $data;
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             throw $e;
         }
     }
