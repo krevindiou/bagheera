@@ -35,7 +35,8 @@ class CategoryService
                 if ('categoryId' == substr($k, -10) && '' != $v) {
                     $list[$category['c1_type']][$v] = '';
 
-                    for ($i = 1; $i <= substr($k, 1, 1); $i++) {
+                    $nb = substr($k, 1, 1);
+                    for ($i = 1; $i <= $nb; $i++) {
                         $list[$category['c1_type']][$v].= $category[substr($k, 0, 1) . $i . '_name'] . ' > ';
                     }
 
