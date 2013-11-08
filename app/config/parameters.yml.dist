@@ -1,12 +1,12 @@
 parameters:
-    database_driver: pdo_mysql
+    database_driver: pdo_pgsql
     database_host: localhost
     database_port:
     database_name:
     database_user:
     database_password:
 
-    database_secure_driver: pdo_mysql
+    database_secure_driver: pdo_pgsql
     database_secure_host: localhost
     database_secure_port:
     database_secure_name:
