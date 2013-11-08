@@ -7,9 +7,6 @@ namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Validator\Validator;
-use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
 use JMS\DiExtraBundle\Annotation as DI;

@@ -6,18 +6,11 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Validator\Validator;
-use Symfony\Component\Security\Core\Encoder\EncoderFactory;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\Translation\Translator;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
-use Symfony\Bridge\Monolog\Logger;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Member;
-use Krevindiou\BagheeraBundle\Service\BankService;
 
 /**
  * @DI\Service("bagheera.member")

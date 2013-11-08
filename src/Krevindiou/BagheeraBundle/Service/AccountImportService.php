@@ -5,7 +5,6 @@
 
 namespace Krevindiou\BagheeraBundle\Service;
 
-use Symfony\Bridge\Monolog\Logger;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\AccountImport;

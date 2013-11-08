@@ -6,9 +6,6 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Validator\Validator;
-use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Process\PhpExecutableFinder;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Member;

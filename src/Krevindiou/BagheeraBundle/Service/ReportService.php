@@ -6,8 +6,6 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Bridge\Monolog\Logger;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Account;

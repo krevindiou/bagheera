@@ -5,10 +5,8 @@
 
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
-use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Service\AccountImportService;
 use Krevindiou\BagheeraBundle\Entity\Account;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
 

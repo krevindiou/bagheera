@@ -6,9 +6,6 @@
 namespace Krevindiou\BagheeraBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\DependencyInjection\Container;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Account;
