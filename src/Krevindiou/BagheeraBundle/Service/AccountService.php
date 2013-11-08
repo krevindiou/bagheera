@@ -282,12 +282,11 @@ class AccountService
     /**
      * Saves multiple accounts
      *
-     * @param  Member  $member   Member entity
      * @param  Bank    $bank     Bank entity
      * @param  array   $accounts Accounts data
      * @return boolean
      */
-    public function saveMulti(Member $member, Bank $bank, array $accounts)
+    public function saveMulti(Bank $bank, array $accounts)
     {
         $error = false;
 

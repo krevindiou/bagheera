@@ -48,7 +48,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
 
                 $accounts = $provider->fetchAccounts();
 
-                $accountService->saveMulti($bank->getMember(), $bank, $accounts);
+                $accountService->saveMulti($bank, $accounts);
 
                 // Entity manager needs a refresh to fetch new accounts
                 $em->refresh($bank);
@@ -61,7 +61,6 @@ class ImportExternalBankCommand extends ContainerAwareCommand
 
                         if (!empty($transactions)) {
                             $operationService->saveMulti(
-                                $bank->getMember(),
                                 $account,
                                 $transactions,
                                 function(Account $account, $nb) use ($accountImportService) {

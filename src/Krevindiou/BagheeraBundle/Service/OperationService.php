@@ -476,13 +476,12 @@ class OperationService
     /**
      * Saves multiple operations
      *
-     * @param  Member  $member     Member entity
      * @param  Account $account    Account entity
      * @param  array   $operations Operations data
      * @param  Closure $func       Regularly called function
      * @return boolean
      */
-    public function saveMulti(Member $member, Account $account, array $operations, \Closure $func)
+    public function saveMulti(Account $account, array $operations, \Closure $func)
     {
         $error = false;
 
