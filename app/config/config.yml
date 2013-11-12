@@ -17,7 +17,9 @@ framework:
         #assets_version: SomeVersionScheme
     default_locale:  "%locale%"
     trusted_proxies: ~
-    session:         ~
+    session:
+        name:            BAGHEERA_SESS_ID
+        cookie_lifetime: ~
     fragments:       ~
 
 # Twig Configuration
