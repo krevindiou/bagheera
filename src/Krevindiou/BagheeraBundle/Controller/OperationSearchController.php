@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Krevindiou\BagheeraBundle\Entity\Account;
 
 /**
@@ -18,42 +19,18 @@ class OperationSearchController extends Controller
 {
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form")
+     * @Method("GET")
      * @Template()
      */
     public function formAction(Request $request, Account $account, $display = true)
     {
-        $member = $this->getUser();
-
         $operationSearchService = $this->get('bagheera.operation_search');
 
         $operationSearch = $operationSearchService->getSessionSearch($account);
 
-        $operationSearchForm = $operationSearchService->getForm($member, $operationSearch, $account);
+        $operationSearchForm = $operationSearchService->getForm($this->getUser(), $operationSearch, $account);
         if (null === $operationSearchForm) {
             throw $this->createNotFoundException();
-        }
-
-        if ('' != $request->request->get('clear')) {
-            $operationSearchService->clearSessionSearch($account);
-
-            return $this->redirect(
-                $this->generateUrl('operation_list', array('accountId' => $account->getAccountId()))
-            );
-        } else {
-            if ($request->getMethod() == 'POST') {
-                $operationSearchForm->bind($request);
-
-                if ($operationSearchForm->isValid()) {
-                    $operationSearchService->setSessionSearch(
-                        $account,
-                        $request->request->get('operation_search_type')
-                    );
-
-                    return $this->redirect(
-                        $this->generateUrl('operation_list', array('accountId' => $account->getAccountId()))
-                    );
-                }
-            }
         }
 
         return array(
@@ -61,5 +38,34 @@ class OperationSearchController extends Controller
             'operationSearchForm' => $operationSearchForm->createView(),
             'display' => $display
         );
+    }
+
+    /**
+     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit")
+     * @Method("POST")
+     * @Template()
+     */
+    public function submitAction(Request $request, Account $account)
+    {
+        $operationSearchService = $this->get('bagheera.operation_search');
+
+        if ('' != $request->request->get('clear')) {
+            $operationSearchService->clearSessionSearch($account);
+        } else {
+            $operationSearch = $operationSearchService->getSessionSearch($account);
+
+            $operationSearchForm = $operationSearchService->getForm($this->getUser(), $operationSearch, $account);
+            if (null === $operationSearchForm) {
+                throw $this->createNotFoundException();
+            }
+
+            $operationSearchForm->bind($request);
+
+            if ($operationSearchForm->isValid()) {
+                $operationSearchService->setSessionSearch($account, $request->request->get('operation_search_type'));
+            }
+        }
+
+        return $this->redirect($this->generateUrl('operation_list', array('accountId' => $account->getAccountId())));
     }
 }

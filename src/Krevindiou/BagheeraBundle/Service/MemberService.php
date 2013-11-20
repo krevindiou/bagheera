@@ -49,6 +49,9 @@ class MemberService
     /** @DI\Inject("bagheera.bank") */
     public $bankService;
 
+    /** @DI\Inject("bagheera.account") */
+    public $accountService;
+
     /** @DI\Inject("bagheera.scheduler") */
     public $schedulerService;
 
@@ -494,7 +497,7 @@ class MemberService
      * @param  Member $member Member entity
      * @return bool
      */
-    public function hasBankWithoutProvider(Member $member)
+    protected function hasBankWithoutProvider(Member $member)
     {
         $banks = $member->getBanks();
 
@@ -507,5 +510,27 @@ class MemberService
         }
 
         return false;
+    }
+
+    /**
+     * Checks if new account tip is displayed
+     *
+     * @param  Member $member Member entity
+     * @return bool
+     */
+    public function hasNewAccountTip(Member $member)
+    {
+        $tipNewAccount = false;
+
+        $hasBankWithoutProvider = $this->hasBankWithoutProvider($member);
+        if ($hasBankWithoutProvider) {
+            $accounts = $this->accountService->getList($member);
+
+            if (count($accounts) == 0) {
+                $tipNewAccount = true;
+            }
+        }
+
+        return $tipNewAccount;
     }
 }

@@ -7,7 +7,7 @@ namespace Krevindiou\BagheeraBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -27,25 +27,12 @@ class AccountController extends Controller
     {
         $member = $this->getUser();
 
-        $progress = $this->get('bagheera.member')->getImportProgress($member);
-        $reports = $this->get('bagheera.report')->getHomepageList($member);
-
-        $tipNewAccount = false;
-        $hasBankWithoutProvider = $this->get('bagheera.member')->hasBankWithoutProvider($member);
-        if ($hasBankWithoutProvider) {
-            $accounts = $this->get('bagheera.account')->getList($member);
-
-            if (count($accounts) == 0) {
-                $tipNewAccount = true;
-            }
-        }
-
         return array(
             'accountService' => $this->get('bagheera.account'),
             'totalBalances' => $this->get('bagheera.member')->getBalances($member),
-            'progress' => $progress,
-            'reports' => $reports,
-            'tipNewAccount' => $tipNewAccount
+            'progress' => $this->get('bagheera.member')->getImportProgress($member),
+            'reports' => $this->get('bagheera.report')->getHomepageList($member),
+            'tipNewAccount' => $this->get('bagheera.member')->hasNewAccountTip($member)
         );
     }
 
@@ -56,10 +43,8 @@ class AccountController extends Controller
      */
     public function listAction()
     {
-        $banks = $this->get('bagheera.bank')->getList($this->getUser(), false);
-
         return array(
-            'banks' => $banks
+            'banks' => $this->get('bagheera.bank')->getList($this->getUser(), false)
         );
     }
 
@@ -163,18 +148,13 @@ class AccountController extends Controller
      */
     public function importProgressAction()
     {
-        $member = $this->getUser();
-
-        $progress = $this->get('bagheera.member')->getImportProgress($member);
+        $progress = $this->get('bagheera.member')->getImportProgress($this->getUser());
 
         $data = array();
         foreach ($progress as $v) {
             $data[$v->getAccount()->getAccountId()] = $v->getProgressPct();
         }
 
-        $response = new Response(json_encode(($data)));
-        $response->headers->set('Content-Type', 'application/json');
-
-        return $response;
+        return new JsonResponse($data);
     }
 }
