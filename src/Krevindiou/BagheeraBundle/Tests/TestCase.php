@@ -31,7 +31,7 @@ class TestCase extends WebTestCase
 
         $this->runConsole('doctrine:schema:drop', array('--force' => null));
         $this->runConsole('doctrine:schema:create');
-        $this->runConsole('doctrine:schema:update', array('--force' => null));
+        $this->runConsole('doctrine:schema:update', array('--force' => null)); // Still some SQL to execute
         $this->runConsole('doctrine:fixtures:load', array('--append' => null));
     }
 
