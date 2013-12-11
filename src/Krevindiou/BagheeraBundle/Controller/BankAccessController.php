@@ -39,8 +39,8 @@ class BankAccessController extends Controller
             }
         }
 
-        return array(
+        return [
             'bankAccessForm' => $bankAccessForm->createView()
-        );
+        ];
     }
 }

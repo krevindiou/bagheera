@@ -69,7 +69,7 @@ class MemberServiceTest extends TestCase
 
     public function testToggleDeactivation()
     {
-        $membersId = array(1, 2);
+        $membersId = [1, 2];
 
         $this->get('bagheera.member')->toggleDeactivation($membersId);
 
@@ -123,9 +123,9 @@ class MemberServiceTest extends TestCase
 
     public function testGetMembersNoResult()
     {
-        $params = array(
+        $params = [
             'email' => 'james@example.net'
-        );
+        ];
 
         $members = $this->get('bagheera.member')->getMembers($params);
 
@@ -134,9 +134,9 @@ class MemberServiceTest extends TestCase
 
     public function testGetMembersJohn()
     {
-        $params = array(
+        $params = [
             'email' => 'john@example.net'
-        );
+        ];
 
         $members = $this->get('bagheera.member')->getMembers($params);
 
@@ -145,7 +145,7 @@ class MemberServiceTest extends TestCase
 
     public function testGetMembersAll()
     {
-        $params = array();
+        $params = [];
 
         $members = $this->get('bagheera.member')->getMembers($params);
 

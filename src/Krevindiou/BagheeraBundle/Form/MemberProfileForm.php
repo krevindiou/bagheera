@@ -26,9 +26,9 @@ class MemberProfileForm extends MemberRegisterForm
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Member'
-            )
+            ]
         );
     }
 

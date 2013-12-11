@@ -26,7 +26,7 @@ class FieldExistsValidator extends ConstraintValidator
         $em = $this->doctrine->getEntityManager($constraint->em);
 
         $repository = $em->getRepository($constraint->className);
-        $result = $repository->findBy(array($constraint->field => $value));
+        $result = $repository->findBy([$constraint->field => $value]);
         if (empty($result)) {
             $this->context->addViolation($constraint->message);
         }

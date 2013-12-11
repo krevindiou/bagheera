@@ -48,9 +48,9 @@ class OperationService
     public function getList(Member $member, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
     {
         if ($account->getBank()->getMember() == $member) {
-            $params = array(
+            $params = [
                 ':account_id' => $account->getAccountId()
-            );
+            ];
 
             $sql = 'SELECT
                 operation.operation_id,
@@ -171,35 +171,35 @@ class OperationService
                 $stmt = $conn->prepare($sql);
                 $stmt->execute($params);
 
-                $operations = array();
+                $operations = [];
 
                 foreach ($stmt->fetchAll() as $row) {
                     if (!isset($operations[$row['operation_id']])) {
-                        $operations[$row['operation_id']] = array(
+                        $operations[$row['operation_id']] = [
                             'operationId' => $row['operation_id'],
-                            'scheduler' => array(
+                            'scheduler' => [
                                 'schedulerId' => $row['scheduler_id'],
-                            ),
-                            'account' => array(
+                            ],
+                            'account' => [
                                 'accountId' => $row['account_id'],
                                 'currency' => $row['account_currency'],
                                 'name' => $row['account_name'],
-                            ),
-                            'transferAccount' => array(
+                            ],
+                            'transferAccount' => [
                                 'accountId' => $row['transfer_account_id'],
                                 'name' => $row['transfer_account_name'],
-                            ),
-                            'transferOperation' => array(
+                            ],
+                            'transferOperation' => [
                                 'operationId' => $row['transfer_operation_id'],
-                            ),
-                            'category' => array(
+                            ],
+                            'category' => [
                                 'categoryId' => $row['category_id'],
                                 'name' => $row['category_name'],
-                            ),
-                            'paymentMethod' => array(
+                            ],
+                            'paymentMethod' => [
                                 'paymentMethodId' => $row['payment_method_id'],
                                 'name' => $row['payment_method_name'],
-                            ),
+                            ],
                             'externalOperationId' => $row['external_operation_id'],
                             'thirdParty' => $row['operation_third_party'],
                             'debit' => $row['operation_debit'],
@@ -208,7 +208,7 @@ class OperationService
                             'valueDate' => (null !== $row['operation_value_date']) ? new \DateTime($row['operation_value_date']) : null,
                             'reconciled' => $row['operation_is_reconciled'],
                             'notes' => $row['operation_notes'],
-                        );
+                        ];
                     }
                 }
 
@@ -265,10 +265,10 @@ class OperationService
         if ($member === $operation->getAccount()->getBank()->getMember()) {
             if (!in_array(
                 $operation->getPaymentMethod()->getPaymentMethodId(),
-                array(
+                [
                     PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
                     PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                )
+                ]
             )) {
                 $operation->setTransferAccount(null);
             }

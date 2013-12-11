@@ -21,22 +21,22 @@ class BankAccessForm extends AbstractType
             ->add(
                 'plainLogin',
                 null,
-                array(
+                [
                     'label' => 'bank_access.login',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-large'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'plainPassword',
                 null,
-                array(
+                [
                     'label' => 'bank_access.password',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-large'
-                    )
-                )
+                    ]
+                ]
             )
         ;
     }
@@ -44,9 +44,9 @@ class BankAccessForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\BankAccess'
-            )
+            ]
         );
     }
 

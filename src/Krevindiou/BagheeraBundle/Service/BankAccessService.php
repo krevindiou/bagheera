@@ -82,8 +82,8 @@ class BankAccessService
                     ->setParameter('bankId', $bankAccess->getBankId())
                     ->execute();
 
-                $encryptedLogin = $this->cryptService->crypt(array($bankAccess->getPlainLogin()));
-                $encryptedPassword = $this->cryptService->crypt(array($bankAccess->getPlainPassword()));
+                $encryptedLogin = $this->cryptService->crypt([$bankAccess->getPlainLogin()]);
+                $encryptedPassword = $this->cryptService->crypt([$bankAccess->getPlainPassword()]);
 
                 $bankAccess->setLogin($encryptedLogin);
                 $bankAccess->setPassword($encryptedPassword);

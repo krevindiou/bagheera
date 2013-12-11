@@ -16,8 +16,8 @@ class CurrencyType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
-                'choices' => array(
+            [
+                'choices' => [
                     'AED' => 'AED (United Arab Emirates Dirham)',
                     'AFN' => 'AFN (Afghanistan Afghani)',
                     'ALL' => 'ALL (Albania Lek)',
@@ -182,9 +182,9 @@ class CurrencyType extends AbstractType
                     'ZAR' => 'ZAR (South Africa Rand)',
                     'ZMK' => 'ZMK (Zambia Kwacha)',
                     'ZWD' => 'ZWD (Zimbabwe Dollar)',
-                ),
-                'preferred_choices' => array('USD', 'EUR')
-            )
+                ],
+                'preferred_choices' => ['USD', 'EUR']
+            ]
         );
     }
 

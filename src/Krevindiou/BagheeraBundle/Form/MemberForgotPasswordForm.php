@@ -23,17 +23,17 @@ class MemberForgotPasswordForm extends AbstractType
             ->add(
                 'email',
                 'email',
-                array(
+                [
                     'label' => 'member.email',
-                    'constraints' => array(
+                    'constraints' => [
                         new NotBlank(),
                         new Email(),
                         new FieldExists('Krevindiou\BagheeraBundle\Entity\Member', 'email')
-                    ),
-                    'attr' => array(
+                    ],
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
         ;
     }

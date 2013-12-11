@@ -23,12 +23,12 @@ class BankForm extends AbstractType
             ->add(
                 'name',
                 null,
-                array(
+                [
                     'label' => 'bank.name',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
         ;
 
@@ -46,7 +46,7 @@ class BankForm extends AbstractType
                     ->add(
                         'provider',
                         'entity',
-                        array(
+                        [
                             'label' => 'bank.provider',
                             'required' => false,
                             'empty_value' => 'bank.provider_other',
@@ -59,11 +59,11 @@ class BankForm extends AbstractType
                                     ->add('orderBy', 'p.name ASC');
                             },
                             'disabled' => $edit,
-                            'attr' => array(
+                            'attr' => [
                                 'bankId' => $bank->getBankId(),
                                 'class' => 'input-xlarge'
-                            )
-                        )
+                            ]
+                        ]
                     )
                 ;
             }
@@ -73,9 +73,9 @@ class BankForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Bank'
-            )
+            ]
         );
     }
 

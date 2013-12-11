@@ -17,7 +17,7 @@ class TranslateController extends Controller
     public function listAction()
     {
         $translator = $this->get('translator');
-        $translations = array(
+        $translations = [
             'payment_method_credit_card' => $translator->trans('payment_method.credit_card'),
             'payment_method_check' => $translator->trans('payment_method.check'),
             'payment_method_withdrawal' => $translator->trans('payment_method.withdrawal'),
@@ -25,10 +25,10 @@ class TranslateController extends Controller
             'payment_method_deposit' => $translator->trans('payment_method.deposit'),
             'report_period_grouping_all' => $translator->trans('report.period_grouping_all'),
             'email_domain_suggest' => $translator->trans('email_domain_suggest'),
-        );
+        ];
 
         $js = 'Bagheera.translations = ' . json_encode($translations);
 
-        return new Response($js, 200, array('Content-Type' => 'application/javascript'));
+        return new Response($js, 200, ['Content-Type' => 'application/javascript']);
     }
 }

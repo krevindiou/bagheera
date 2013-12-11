@@ -30,10 +30,10 @@ class MemberController extends Controller
             $session->remove(SecurityContext::AUTHENTICATION_ERROR);
         }
 
-        return array(
+        return [
             'last_username' => $session->get(SecurityContext::LAST_USERNAME),
             'error' => $error,
-        );
+        ];
     }
 
     /**
@@ -54,9 +54,9 @@ class MemberController extends Controller
             }
         }
 
-        return array(
+        return [
             'registerForm' => $form->createView()
-        );
+        ];
     }
 
     /**
@@ -79,9 +79,9 @@ class MemberController extends Controller
             }
         }
 
-        return array(
+        return [
             'forgotPasswordForm' => $form->createView()
-        );
+        ];
     }
 
     /**
@@ -110,10 +110,10 @@ class MemberController extends Controller
             return $this->redirect($this->generateUrl('member_login'));
         }
 
-        return array(
+        return [
             'key' => $key,
             'changePasswordForm' => $form->createView()
-        );
+        ];
     }
 
     /**
@@ -136,9 +136,9 @@ class MemberController extends Controller
             }
         }
 
-        return array(
+        return [
             'changePasswordForm' => $form->createView()
-        );
+        ];
     }
 
     /**
@@ -175,9 +175,9 @@ class MemberController extends Controller
             }
         }
 
-        return array(
+        return [
             'profileForm' => $form->createView()
-        );
+        ];
     }
 
     /**
@@ -196,11 +196,11 @@ class MemberController extends Controller
                 $this->get('session')->getFlashBag()->add('success', 'member.toggle_deactivation_ok');
             }
 
-            return $this->redirect($this->generateUrl('member_list', array('page' => $page)));
+            return $this->redirect($this->generateUrl('member_list', ['page' => $page]));
         }
 
-        return array(
-            'members' => $this->get('bagheera.member')->getMembers(array(), $page)
-        );
+        return [
+            'members' => $this->get('bagheera.member')->getMembers([], $page)
+        ];
     }
 }

@@ -24,12 +24,12 @@ class AccountForm extends AbstractType
             ->add(
                 'name',
                 null,
-                array(
+                [
                     'label' => 'account.name',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
         ;
 
@@ -47,7 +47,7 @@ class AccountForm extends AbstractType
                     ->add(
                         'bank',
                         'entity',
-                        array(
+                        [
                             'label' => 'account.bank',
                             'empty_value' => '',
                             'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
@@ -60,32 +60,32 @@ class AccountForm extends AbstractType
                                     ->add('orderBy', 'b.name ASC');
                             },
                             'disabled' => $edit,
-                            'attr' => array(
+                            'attr' => [
                                 'class' => 'input-xlarge'
-                            )
-                        )
+                            ]
+                        ]
                     )
                     ->add(
                         'currency',
                         new CurrencyType(),
-                        array(
+                        [
                             'label' => 'account.currency',
                             'disabled' => $edit,
-                            'attr' => array(
+                            'attr' => [
                                 'class' => 'input-xlarge'
-                            )
-                        )
+                            ]
+                        ]
                     )
                     ->add(
                         'overdraftFacility',
                         'money',
-                        array(
+                        [
                             'label' => 'account.overdraft_facility',
                             'currency' => $account->getCurrency() ? : false,
-                            'attr' => array(
+                            'attr' => [
                                 'class' => 'input-small'
-                            )
-                        )
+                            ]
+                        ]
                     )
                 ;
 
@@ -94,15 +94,15 @@ class AccountForm extends AbstractType
                         ->add(
                             'initialBalance',
                             'money',
-                            array(
+                            [
                                 'label' => 'account.initial_balance',
                                 'mapped' => false,
                                 'required' => false,
                                 'currency' => $account->getCurrency() ? : false,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small'
-                                )
-                            )
+                                ]
+                            ]
                         )
                     ;
                 }
@@ -113,12 +113,12 @@ class AccountForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Account'
-            )
+            ]
         );
 
-        $resolver->setRequired(array('member'));
+        $resolver->setRequired(['member']);
     }
 
     public function getName()

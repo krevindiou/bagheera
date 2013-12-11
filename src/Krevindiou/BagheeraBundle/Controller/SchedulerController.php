@@ -35,10 +35,10 @@ class SchedulerController extends Controller
             throw $this->createNotFoundException();
         }
 
-        return array(
+        return [
             'account' => $account,
             'schedulers' => $schedulers,
-        );
+        ];
     }
 
     /**
@@ -56,7 +56,7 @@ class SchedulerController extends Controller
         }
 
         return $this->redirect(
-            $this->generateUrl('scheduler_list', array('accountId' => $account->getAccountId()))
+            $this->generateUrl('scheduler_list', ['accountId' => $account->getAccountId()])
         );
     }
 
@@ -83,15 +83,15 @@ class SchedulerController extends Controller
                 $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
 
                 return $this->redirect(
-                    $this->generateUrl('scheduler_list', array('accountId' => $schedulerForm->getData()->getAccount()->getAccountId()))
+                    $this->generateUrl('scheduler_list', ['accountId' => $schedulerForm->getData()->getAccount()->getAccountId()])
                 );
             }
         }
 
-        return array(
+        return [
             'account' => $account ? : $scheduler->getAccount(),
             'scheduler' => $schedulerForm->getData(),
             'schedulerForm' => $schedulerForm->createView()
-        );
+        ];
     }
 }

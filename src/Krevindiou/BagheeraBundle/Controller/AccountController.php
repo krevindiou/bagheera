@@ -27,13 +27,13 @@ class AccountController extends Controller
     {
         $member = $this->getUser();
 
-        return array(
+        return [
             'accountService' => $this->get('bagheera.account'),
             'totalBalances' => $this->get('bagheera.member')->getBalances($member),
             'progress' => $this->get('bagheera.member')->getImportProgress($member),
             'reports' => $this->get('bagheera.report')->getHomepageList($member),
             'tipNewAccount' => $this->get('bagheera.member')->hasNewAccountTip($member)
-        );
+        ];
     }
 
     /**
@@ -43,9 +43,9 @@ class AccountController extends Controller
      */
     public function listAction()
     {
-        return array(
+        return [
             'banks' => $this->get('bagheera.bank')->getList($this->getUser(), false)
-        );
+        ];
     }
 
     /**
@@ -97,16 +97,16 @@ class AccountController extends Controller
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
                 return $this->redirect(
-                    $this->generateUrl('operation_list', array('accountId' => $accountForm->getData()->getAccountId()))
+                    $this->generateUrl('operation_list', ['accountId' => $accountForm->getData()->getAccountId()])
                 );
             }
         }
 
         return $this->render(
             'KrevindiouBagheeraBundle:Account:form.html.twig',
-            array(
+            [
                 'accountForm' => $accountForm->createView()
-            )
+            ]
         );
     }
 
@@ -136,10 +136,10 @@ class AccountController extends Controller
 
         return $this->render(
             'KrevindiouBagheeraBundle:Account:form.html.twig',
-            array(
+            [
                 'account' => $account,
                 'accountForm' => $accountForm->createView()
-            )
+            ]
         );
     }
 
@@ -150,7 +150,7 @@ class AccountController extends Controller
     {
         $progress = $this->get('bagheera.member')->getImportProgress($this->getUser());
 
-        $data = array();
+        $data = [];
         foreach ($progress as $v) {
             $data[$v->getAccount()->getAccountId()] = $v->getProgressPct();
         }

@@ -33,11 +33,11 @@ class OperationSearchController extends Controller
             throw $this->createNotFoundException();
         }
 
-        return array(
+        return [
             'account' => $account,
             'operationSearchForm' => $operationSearchForm->createView(),
             'display' => $display
-        );
+        ];
     }
 
     /**
@@ -66,6 +66,6 @@ class OperationSearchController extends Controller
             }
         }
 
-        return $this->redirect($this->generateUrl('operation_list', array('accountId' => $account->getAccountId())));
+        return $this->redirect($this->generateUrl('operation_list', ['accountId' => $account->getAccountId()]));
     }
 }

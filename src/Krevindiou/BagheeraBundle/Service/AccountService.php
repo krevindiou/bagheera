@@ -86,7 +86,7 @@ class AccountService
             $account->setBank($bank);
         }
 
-        return $this->formFactory->create('account_type', $account, array('member' => $member));
+        return $this->formFactory->create('account_type', $account, ['member' => $member]);
     }
 
     /**
@@ -102,7 +102,7 @@ class AccountService
             return;
         }
 
-        return $this->formFactory->create('account_type', $account, array('member' => $member));
+        return $this->formFactory->create('account_type', $account, ['member' => $member]);
     }
 
     /**
@@ -295,7 +295,7 @@ class AccountService
         } else {
             // Retrieve current accounts id
             $currentAccounts = $bank->getAccounts();
-            $currentAccountsExternalId = array();
+            $currentAccountsExternalId = [];
 
             foreach ($currentAccounts as $currentAccount) {
                 if (null !== $currentAccount->getExternalAccountId()) {

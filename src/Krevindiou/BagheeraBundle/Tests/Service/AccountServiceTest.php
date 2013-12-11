@@ -96,7 +96,7 @@ class AccountServiceTest extends TestCase
         $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByDeleted(true);
         $accountsNb = count($accounts);
 
-        $this->assertTrue($this->get('bagheera.account')->delete($this->john, array(1)));
+        $this->assertTrue($this->get('bagheera.account')->delete($this->john, [1]));
 
         $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByDeleted(true);
         $this->assertEquals(count($accounts), $accountsNb + 1);
@@ -122,8 +122,8 @@ class AccountServiceTest extends TestCase
 
     public function testSynthesis()
     {
-        $expectedData = array(
-            'USD' => array(
+        $expectedData = [
+            'USD' => [
                 strtotime('2011-01-01 UTC') => 0,
                 strtotime('2011-02-01 UTC') => 0,
                 strtotime('2011-03-01 UTC') => 0,
@@ -136,8 +136,8 @@ class AccountServiceTest extends TestCase
                 strtotime('2011-10-01 UTC') => -98.82,
                 strtotime('2011-11-01 UTC') => -98.82,
                 strtotime('2011-12-01 UTC') => -98.82
-            ),
-            'EUR' => array(
+            ],
+            'EUR' => [
                 strtotime('2011-01-01 UTC') => 0,
                 strtotime('2011-02-01 UTC') => 0,
                 strtotime('2011-03-01 UTC') => 0,
@@ -150,8 +150,8 @@ class AccountServiceTest extends TestCase
                 strtotime('2011-10-01 UTC') => 208.55,
                 strtotime('2011-11-01 UTC') => 208.55,
                 strtotime('2011-12-01 UTC') => 208.55
-            )
-        );
+            ]
+        ];
 
         $data = $this->get('bagheera.report')->getSynthesis(
             $this->john,

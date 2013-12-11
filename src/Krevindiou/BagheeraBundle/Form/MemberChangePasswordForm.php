@@ -22,19 +22,19 @@ class MemberChangePasswordForm extends AbstractType
             ->add(
                 'password',
                 'repeated',
-                array(
+                [
                     'type' => 'password',
-                    'first_options' => array('label' => 'member.password'),
-                    'second_options' => array('label' => 'member.password_confirmation'),
+                    'first_options' => ['label' => 'member.password'],
+                    'second_options' => ['label' => 'member.password_confirmation'],
                     'invalid_message' => 'member.password_fields_must_match',
-                    'constraints' => array(
+                    'constraints' => [
                         new NotBlank(),
-                        new Length(array('min' => 8))
-                    ),
-                    'attr' => array(
+                        new Length(['min' => 8])
+                    ],
+                    'attr' => [
                         'class' => 'input-medium'
-                    )
-                )
+                    ]
+                ]
             )
         ;
     }

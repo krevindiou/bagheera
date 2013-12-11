@@ -110,7 +110,7 @@ class SchedulerServiceTest extends TestCase
         $schedulersBeforeDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
         $countSchedulersBeforeDelete = count($schedulersBeforeDelete);
 
-        $schedulersId = array(2);
+        $schedulersId = [2];
         $this->get('bagheera.scheduler')->delete($this->john, $schedulersId);
 
         $schedulersAfterDelete = $this->get('bagheera.scheduler')->getList($this->john, $account);
@@ -140,12 +140,12 @@ class SchedulerServiceTest extends TestCase
         $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
-        $operationsBeforeDate = array();
+        $operationsBeforeDate = [];
         foreach ($operationsBefore as $operationBefore) {
             $operationsBeforeDate[] = $operationBefore->getValueDate()->format('Y-m-d');
         }
 
-        $operationsAfterDate = array();
+        $operationsAfterDate = [];
         foreach ($operationsAfter as $operationAfter) {
             $operationsAfterDate[] = $operationAfter->getValueDate()->format('Y-m-d');
         }

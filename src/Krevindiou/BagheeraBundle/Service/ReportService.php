@@ -34,7 +34,7 @@ class ReportService
      */
     public function getList(Member $member)
     {
-        $reports = array();
+        $reports = [];
 
         $sql = 'SELECT
             report.report_id,
@@ -68,47 +68,47 @@ class ReportService
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->execute(
-            array(
+            [
                 ':member_id' => $member->getMemberId()
-            )
+            ]
         );
 
         foreach ($stmt->fetchAll() as $row) {
             if (!isset($reports[$row['report_id']])) {
-                $accounts = array();
-                $tmpAccounts = (null !== $row['accounts']) ? json_decode($row['accounts'], true) : array();
+                $accounts = [];
+                $tmpAccounts = (null !== $row['accounts']) ? json_decode($row['accounts'], true) : [];
                 foreach ($tmpAccounts as $tmpAccount) {
                     if (null !== $tmpAccount['account_id']) {
-                        $accounts[$tmpAccount['account_id']] = array(
+                        $accounts[$tmpAccount['account_id']] = [
                             'accountId' => $tmpAccount['account_id'],
                             'name' => $tmpAccount['name'],
-                        );
+                        ];
                     }
                 }
 
-                $categories = array();
-                $tmpCategories = (null !== $row['categories']) ? json_decode($row['categories'], true) : array();
+                $categories = [];
+                $tmpCategories = (null !== $row['categories']) ? json_decode($row['categories'], true) : [];
                 foreach ($tmpCategories as $tmpCategory) {
                     if (null !== $tmpCategory['category_id']) {
-                        $categories[$tmpCategory['category_id']] = array(
+                        $categories[$tmpCategory['category_id']] = [
                             'categoryId' => $tmpCategory['category_id'],
                             'name' => $tmpCategory['name'],
-                        );
+                        ];
                     }
                 }
 
-                $paymentMethods = array();
-                $tmpPaymentMethods = (null !== $row['payment_methods']) ? json_decode($row['payment_methods'], true) : array();
+                $paymentMethods = [];
+                $tmpPaymentMethods = (null !== $row['payment_methods']) ? json_decode($row['payment_methods'], true) : [];
                 foreach ($tmpPaymentMethods as $tmpPaymentMethod) {
                     if (null !== $tmpPaymentMethod['payment_method_id']) {
-                        $paymentMethods[$tmpPaymentMethod['payment_method_id']] = array(
+                        $paymentMethods[$tmpPaymentMethod['payment_method_id']] = [
                             'paymentMethodId' => $tmpPaymentMethod['payment_method_id'],
                             'name' => $tmpPaymentMethod['name'],
-                        );
+                        ];
                     }
                 }
 
-                $reports[$row['report_id']] = array(
+                $reports[$row['report_id']] = [
                     'reportId' => $row['report_id'],
                     'title' => $row['report_title'],
                     'type' => $row['report_type'],
@@ -128,7 +128,7 @@ class ReportService
                     'accounts' => $accounts,
                     'categories' => $categories,
                     'paymentMethods' => $paymentMethods,
-                );
+                ];
             }
         }
 
@@ -271,16 +271,16 @@ class ReportService
      */
     public function getGraphData(Member $member, Report $report)
     {
-        $series = array(
-            array(
+        $series = [
+            [
                 'label' => 'operation.type_credit',
                 'color' => '#94ba65'
-            ),
-            array(
+            ],
+            [
                 'label' => 'operation.type_debit',
                 'color' => '#2b4e72'
-            )
-        );
+            ]
+        ];
 
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
@@ -297,14 +297,14 @@ class ReportService
                 $accounts = $query->getResult();
             }
 
-            if (in_array($report->getType(), array('sum', 'average'))) {
+            if (in_array($report->getType(), ['sum', 'average'])) {
                 $results = $this->getGraphValues($report, $accounts, $report->getType());
             } elseif ('distribution' == $report->getType()) {
                 // @todo
-                $results = array();
+                $results = [];
             } elseif ('estimate' == $report->getType()) {
                 // @todo
-                $results = array();
+                $results = [];
             }
 
             foreach ($results as $result) {
@@ -370,12 +370,12 @@ class ReportService
         $tmp = pow(10, (strlen($yaxisMax) - 2));
         $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
 
-        return array(
+        return [
             'report' => $report,
             'series' => $series,
             'yaxisMin' => $yaxisMin,
             'yaxisMax' => $yaxisMax
-        );
+        ];
     }
 
     /**
@@ -409,7 +409,7 @@ class ReportService
         $sql.= (('average' == $type) ? 'AVG' : 'SUM') . '(o.credit) AS data_1, ' . (('average' == $type) ? 'AVG' : 'SUM') . '(o.debit) AS data_2 ';
         $sql.= 'FROM operation AS o ';
 
-        $accountsId = array();
+        $accountsId = [];
         foreach ($accounts as $account) {
             $accountsId[] = $account->getAccountId();
         }
@@ -459,7 +459,7 @@ class ReportService
      */
     public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $stopDate = null, Account $account = null)
     {
-        $graph = array();
+        $graph = [];
 
         if (null === $stopDate) {
             $stopDate = new \DateTime();
@@ -475,7 +475,7 @@ class ReportService
         $data = $operationRepository->getTotalByMonth($member, $startDate, $stopDate, $account);
 
         if (!empty($data)) {
-            $tmpValues = array();
+            $tmpValues = [];
             foreach ($data as $currency => $values) {
                 foreach ($values as $month => $value) {
                     $graph['points'][$currency][strtotime($month . '-01 UTC')] = $value;

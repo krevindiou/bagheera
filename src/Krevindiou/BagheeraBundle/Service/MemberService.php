@@ -86,7 +86,7 @@ class MemberService
         return $this->formFactory->create(
             'member_register_type',
             new Member(),
-            array('attr' => array('language' => $language))
+            ['attr' => ['language' => $language]]
         );
     }
 
@@ -123,17 +123,17 @@ class MemberService
 
         // Activation link construction
         $key = $this->createRegisterKey($member);
-        $link = $this->router->generate('member_activate', array('_locale' => 'en', 'key' => $key), true);
+        $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], true);
 
         $body = $this->templating->render(
             'KrevindiouBagheeraBundle:Email:register.html.twig',
-            array('link' => $link)
+            ['link' => $link]
         );
 
         $message = \Swift_Message::newInstance()
             ->setSubject($this->translator->trans('member.register.email_subject'))
-            ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
-            ->setTo(array($member->getEmail()))
+            ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
+            ->setTo([$member->getEmail()])
             ->setBody($body, 'text/html');
 
         try {
@@ -155,11 +155,11 @@ class MemberService
      */
     public function createRegisterKey(Member $member)
     {
-        $data = array(
+        $data = [
             'type' => 'register',
             'email' => $member->getEmail(),
             'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601)
-        );
+        ];
 
         return $this->cryptService->crypt($data);
     }
@@ -176,7 +176,7 @@ class MemberService
 
         if (null !== $data && 'register' == $data['type']) {
             return $this->em->getRepository('KrevindiouBagheeraBundle:Member')
-                            ->findOneBy(array('email' => $data['email']));
+                            ->findOneBy(['email' => $data['email']]);
         }
     }
 
@@ -283,22 +283,22 @@ class MemberService
     public function sendChangePasswordEmail($email)
     {
         $member = $this->em->getRepository('KrevindiouBagheeraBundle:Member')
-                           ->findOneBy(array('email' => $email));
+                           ->findOneBy(['email' => $email]);
 
         if (null !== $member) {
             // Change password link construction
             $key = $this->createChangePasswordKey($member);
-            $link = $this->router->generate('member_change_password_public', array('_locale' => 'en', 'key' => $key), true);
+            $link = $this->router->generate('member_change_password_public', ['_locale' => 'en', 'key' => $key], true);
 
             $body = $this->templating->render(
                 'KrevindiouBagheeraBundle:Email:changePassword.html.twig',
-                array('link' => $link)
+                ['link' => $link]
             );
 
             $message = \Swift_Message::newInstance()
                 ->setSubject($this->translator->trans('member.forgot_password.email_subject'))
-                ->setFrom(array($this->config['sender_email'] => $this->config['sender_name']))
-                ->setTo(array($member->getEmail()))
+                ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
+                ->setTo([$member->getEmail()])
                 ->setBody($body, 'text/html');
 
             try {
@@ -355,11 +355,11 @@ class MemberService
      */
     public function createChangePasswordKey(Member $member)
     {
-        $data = array(
+        $data = [
             'type' => 'change_password',
             'email' => $member->getEmail(),
             'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601)
-        );
+        ];
 
         $expiration = new \DateTime();
         $expiration->modify('+2 days');
@@ -379,7 +379,7 @@ class MemberService
 
         if (null !== $data && 'change_password' == $data['type']) {
             return $this->em->getRepository('KrevindiouBagheeraBundle:Member')
-                            ->findOneBy(array('email' => $data['email']));
+                            ->findOneBy(['email' => $data['email']]);
         }
     }
 
@@ -413,7 +413,7 @@ class MemberService
      * @param  integer    $currentPage Page number
      * @return Pagerfanta
      */
-    public function getMembers(array $params = array(), $currentPage = 1)
+    public function getMembers(array $params = [], $currentPage = 1)
     {
         $adapter = new DoctrineORMAdapter(
             $this->em->getRepository('KrevindiouBagheeraBundle:Member')->getListQuery($params)
@@ -434,7 +434,7 @@ class MemberService
      */
     public function getBalances(Member $member)
     {
-        $balances = array();
+        $balances = [];
 
         $banks = $member->getBanks();
         foreach ($banks as $bank) {

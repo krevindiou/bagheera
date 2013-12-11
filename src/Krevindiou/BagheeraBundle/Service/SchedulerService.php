@@ -48,9 +48,9 @@ class SchedulerService
     public function getList(Member $member, Account $account, $currentPage = 1)
     {
         if ($account->getBank()->getMember() == $member) {
-            $params = array(
+            $params = [
                 ':account_id' => $account->getAccountId()
-            );
+            ];
 
             $sql = 'SELECT
                 scheduler.scheduler_id AS scheduler_id,
@@ -106,29 +106,29 @@ class SchedulerService
                 $stmt = $conn->prepare($sql);
                 $stmt->execute($params);
 
-                $schedulers = array();
+                $schedulers = [];
 
                 foreach ($stmt->fetchAll() as $row) {
                     if (!isset($schedulers[$row['scheduler_id']])) {
-                        $schedulers[$row['scheduler_id']] = array(
+                        $schedulers[$row['scheduler_id']] = [
                             'schedulerId' => $row['scheduler_id'],
-                            'account' => array(
+                            'account' => [
                                 'accountId' => $row['account_id'],
                                 'currency' => $row['account_currency'],
                                 'name' => $row['account_name'],
-                            ),
-                            'transferAccount' => array(
+                            ],
+                            'transferAccount' => [
                                 'accountId' => $row['transfer_account_id'],
                                 'name' => $row['transfer_account_name'],
-                            ),
-                            'category' => array(
+                            ],
+                            'category' => [
                                 'categoryId' => $row['category_id'],
                                 'name' => $row['category_name'],
-                            ),
-                            'paymentMethod' => array(
+                            ],
+                            'paymentMethod' => [
                                 'paymentMethodId' => $row['payment_method_id'],
                                 'name' => $row['payment_method_name'],
-                            ),
+                            ],
 
                             'thirdParty' => $row['scheduler_third_party'],
                             'debit' => $row['scheduler_debit'],
@@ -141,7 +141,7 @@ class SchedulerService
                             'frequencyUnit' => $row['scheduler_frequency_unit'],
                             'frequencyValue' => $row['scheduler_frequency_value'],
                             'active' => $row['scheduler_is_active'],
-                        );
+                        ];
                     }
                 }
 
@@ -198,10 +198,10 @@ class SchedulerService
         if ($member === $scheduler->getAccount()->getBank()->getMember()) {
             if (!in_array(
                 $scheduler->getPaymentMethod()->getPaymentMethodId(),
-                array(
+                [
                     PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
                     PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                )
+                ]
             )) {
                 $scheduler->setTransferAccount(null);
             }
@@ -336,7 +336,7 @@ class SchedulerService
                 $endDate = $scheduler->getLimitDate();
             }
 
-            $dates = array();
+            $dates = [];
             $date = clone $startDate;
 
             while ($date <= $endDate) {

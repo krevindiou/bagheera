@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "7d2622e2b773c2b322f9e2bb93e78bbd",
+    "hash": "2eb11e70b4c010badebd2f882d2b7749",
     "packages": [
         {
             "name": "components/bootstrap",
@@ -2782,7 +2782,7 @@
         "fabpot/goutte": 20
     },
     "platform": {
-        "php": ">=5.3.3",
+        "php": ">=5.4.0",
         "ext-mcrypt": "*",
         "ext-openssl": "*",
         "ext-intl": "*"

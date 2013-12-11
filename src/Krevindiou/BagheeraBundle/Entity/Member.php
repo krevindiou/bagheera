@@ -365,7 +365,7 @@ class Member implements AdvancedUserInterface
      */
     public function getRoles()
     {
-        return $this->isAdmin() ? array('ROLE_ADMIN') : array('ROLE_USER');
+        return $this->isAdmin() ? ['ROLE_ADMIN'] : ['ROLE_USER'];
     }
 
     /**

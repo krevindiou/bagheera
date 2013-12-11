@@ -24,20 +24,20 @@ class ReportForm extends AbstractType
             ->add(
                 'title',
                 null,
-                array(
+                [
                     'label' => 'report.title',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'homepage',
                 null,
-                array(
+                [
                     'label' => 'report.homepage',
                     'required' => false
-                )
+                ]
             )
         ;
 
@@ -51,44 +51,44 @@ class ReportForm extends AbstractType
 
                 $type = $report->getType();
 
-                if (in_array($type, array('sum', 'average', 'distribution'))) {
+                if (in_array($type, ['sum', 'average', 'distribution'])) {
                     $form
                         ->add(
                             'valueDateStart',
                             'date',
-                            array(
+                            [
                                 'label' => 'report.value_date_start',
                                 'widget' => 'single_text',
                                 'format' => 'yyyy-MM-dd',
                                 'required' => false,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small calendar'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'valueDateEnd',
                             'date',
-                            array(
+                            [
                                 'label' => 'report.value_date_end',
                                 'widget' => 'single_text',
                                 'format' => 'yyyy-MM-dd',
                                 'required' => false,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small calendar'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'thirdParties',
                             'text',
-                            array(
+                            [
                                 'label' => 'report.third_parties',
                                 'required' => false,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-large'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         /*
                         ->add(
@@ -121,7 +121,7 @@ class ReportForm extends AbstractType
                         ->add(
                             'accounts',
                             'entity',
-                            array(
+                            [
                                 'label' => 'report.accounts',
                                 'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
@@ -137,123 +137,123 @@ class ReportForm extends AbstractType
                                 'empty_value' => '',
                                 'required' => false,
                                 'multiple' => true,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-xlarge'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'reconciledOnly',
                             'checkbox',
-                            array(
+                            [
                                 'label' => 'report.reconciled_only',
                                 'required' => false
-                            )
+                            ]
                         )
                     ;
                 }
 
-                if (in_array($type, array('sum', 'average'))) {
+                if (in_array($type, ['sum', 'average'])) {
                     $form
                         ->add(
                             'periodGrouping',
                             'choice',
-                            array(
+                            [
                                 'label' => 'report.period_grouping',
-                                'choices' => array(
+                                'choices' => [
                                     'month' => 'report.period_grouping_month',
                                     'quarter' => 'report.period_grouping_quarter',
                                     'year' => 'report.period_grouping_year',
                                     'all' => 'report.period_grouping_all'
-                                ),
+                                ],
                                 'empty_value' => '',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small'
-                                )
-                            )
+                                ]
+                            ]
                         )
                     ;
                 }
 
-                if (in_array($type, array('distribution'))) {
+                if (in_array($type, ['distribution'])) {
                     $form
                         ->add(
                             'dataGrouping',
                             'choice',
-                            array(
+                            [
                                 'label' => 'report.data_grouping',
-                                'choices' => array(
+                                'choices' => [
                                     'category' => 'report.data_grouping_category',
                                     'third_party' => 'report.data_grouping_third_party',
                                     'payment_method' => 'report.data_grouping_payment_method',
-                                ),
+                                ],
                                 'empty_value' => '',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'significantResultsNumber',
                             null,
-                            array(
+                            [
                                 'label' => 'report.significant_results_number',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-mini'
-                                )
-                            )
+                                ]
+                            ]
                         )
                     ;
                 }
 
-                if (in_array($type, array('estimate'))) {
+                if (in_array($type, ['estimate'])) {
                     $form
                         ->add(
                             'monthExpenses',
                             'money',
-                            array(
+                            [
                                 'label' => 'report.month_expenses',
                                 'currency' => false,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'monthIncomes',
                             'money',
-                            array(
+                            [
                                 'label' => 'report.month_incomes',
                                 'currency' => false,
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'estimateDurationValue',
                             'text',
-                            array(
+                            [
                                 'label' => 'report.estimate_duration_value',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-mini'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'estimateDurationUnit',
                             'choice',
-                            array(
+                            [
                                 'label' => 'report.estimate_duration_unit',
-                                'choices' => array(
+                                'choices' => [
                                     'month' => 'report.estimate_duration_unit_month',
                                     'year' => 'report.estimate_duration_unit_year',
-                                ),
+                                ],
                                 'empty_value' => '',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-small'
-                                )
-                            )
+                                ]
+                            ]
                         )
                     ;
                 }
@@ -264,12 +264,12 @@ class ReportForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Report',
                 'validation_groups' => function(FormInterface $form) {
-                    return array('Default', $form->getData()->getType());
+                    return ['Default', $form->getData()->getType()];
                 }
-            )
+            ]
         );
     }
 

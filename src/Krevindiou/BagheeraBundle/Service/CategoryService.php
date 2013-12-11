@@ -18,7 +18,7 @@ class CategoryService
 
     public function getList()
     {
-        $list = array();
+        $list = [];
 
         $dql = 'SELECT c1.type c1_type, c1.name c1_name, c1.categoryId c1_categoryId, ';
         $dql.= 'c2.name c2_name, c2.categoryId c2_categoryId, ';

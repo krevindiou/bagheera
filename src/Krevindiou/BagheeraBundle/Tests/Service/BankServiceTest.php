@@ -84,7 +84,7 @@ class BankServiceTest extends TestCase
         $banks = $this->em->getRepository('KrevindiouBagheeraBundle:Bank')->findByDeleted(true);
         $banksNb = count($banks);
 
-        $this->assertTrue($this->get('bagheera.bank')->delete($this->john, array(1)));
+        $this->assertTrue($this->get('bagheera.bank')->delete($this->john, [1]));
 
         $banks = $this->em->getRepository('KrevindiouBagheeraBundle:Bank')->findByDeleted(true);
         $this->assertEquals(count($banks), $banksNb + 1);

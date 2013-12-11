@@ -32,11 +32,11 @@ class TestLoader extends DataFixtureLoader
      */
     protected function getFixtures()
     {
-        return  array(
+        return  [
             __DIR__ . '/fixtures.yml',
             __DIR__ . '/fixtures_john.yml',
             __DIR__ . '/fixtures_jane.yml',
             __DIR__ . '/fixtures_jack.yml',
-        );
+        ];
     }
 }

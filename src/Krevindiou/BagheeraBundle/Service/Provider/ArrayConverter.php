@@ -21,7 +21,7 @@ class ArrayConverter
         if (is_callable($method)) {
             return forward_static_call_array(
                 $method,
-                array('content' => $content)
+                ['content' => $content]
             );
         }
 
@@ -30,7 +30,7 @@ class ArrayConverter
 
     private static function convertFromQif($content)
     {
-        $data = array();
+        $data = [];
 
         if (preg_match_all(
             '#(.*?)[\r\n]{1,2}\^#s',
@@ -51,7 +51,7 @@ class ArrayConverter
 
     private static function convertFromOfx($content)
     {
-        $data = array();
+        $data = [];
 
         // @todo
         return $data;
@@ -59,7 +59,7 @@ class ArrayConverter
 
     private static function convertFromQfx($content)
     {
-        $data = array();
+        $data = [];
 
         // @todo
         return $data;

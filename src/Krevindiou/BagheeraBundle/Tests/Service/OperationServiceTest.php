@@ -149,7 +149,7 @@ class OperationServiceTest extends TestCase
         $operationsBeforeDelete = $this->get('bagheera.operation')->getList($this->john, $account);
         $countOperationsBeforeDelete = count($operationsBeforeDelete);
 
-        $operationsId = array(1, 3);
+        $operationsId = [1, 3];
         $this->get('bagheera.operation')->delete($this->john, $operationsId);
 
         $operationsAfterDelete = $this->get('bagheera.operation')->getList($this->john, $account);
@@ -167,7 +167,7 @@ class OperationServiceTest extends TestCase
         $query = $this->em->createQuery($dql);
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
-        $operationsId = array(1);
+        $operationsId = [1];
         $this->get('bagheera.operation')->reconcile($this->john, $operationsId);
 
         $dql = 'SELECT COUNT(o) ';

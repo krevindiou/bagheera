@@ -24,86 +24,86 @@ class OperationForm extends AbstractType
             ->add(
                 'type',
                 'choice',
-                array(
+                [
                     'label' => 'operation.type',
                     'mapped' => false,
                     'expanded' => true,
                     'required' => true,
-                    'choices' => array(
+                    'choices' => [
                         'debit' => 'operation.type_debit',
                         'credit' => 'operation.type_credit'
-                    ),
-                    'constraints' => array(
+                    ],
+                    'constraints' => [
                         new Assert\NotBlank()
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'thirdParty',
                 null,
-                array(
+                [
                     'label' => 'operation.third_party',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge',
                         'autocomplete' => 'off'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'category',
                 null,
-                array(
+                [
                     'label' => 'operation.category',
                     'empty_value' => '',
                     'required' => false,
                     'group_by' => 'type',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'paymentMethod',
                 null,
-                array(
+                [
                     'label' => 'operation.payment_method',
                     'empty_value' => '',
                     'group_by' => 'type',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-medium'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'valueDate',
                 'date',
-                array(
+                [
                     'label' => 'operation.value_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-small calendar'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'notes',
                 null,
-                array(
+                [
                     'label' => 'operation.notes',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge',
                         'rows' => 5
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'reconciled',
                 null,
-                array(
+                [
                     'label' => 'operation.reconciled',
                     'required' => false
-                )
+                ]
             )
         ;
 
@@ -119,22 +119,22 @@ class OperationForm extends AbstractType
                     ->add(
                         'amount',
                         'money',
-                        array(
+                        [
                             'label' => 'operation.amount',
                             'currency' => $account->getCurrency(),
                             'mapped' => false,
-                            'constraints' => array(
+                            'constraints' => [
                                 new Assert\NotBlank()
-                            ),
-                            'attr' => array(
+                            ],
+                            'attr' => [
                                 'class' => 'input-small'
-                            )
-                        )
+                            ]
+                        ]
                     )
                     ->add(
                         'transferAccount',
                         'entity',
-                        array(
+                        [
                             'label' => 'operation.transfer_account',
                             'required' => false,
                             'empty_value' => 'operation.external_account',
@@ -148,10 +148,10 @@ class OperationForm extends AbstractType
                                     ->setParameter('account', $account)
                                     ->add('orderBy', 'b.name ASC, a.name ASC');
                             },
-                            'attr' => array(
+                            'attr' => [
                                 'class' => 'input-xlarge'
-                            )
-                        )
+                            ]
+                        ]
                     )
                 ;
 
@@ -193,9 +193,9 @@ class OperationForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Operation'
-            )
+            ]
         );
     }
 

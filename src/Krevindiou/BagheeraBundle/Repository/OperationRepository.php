@@ -40,7 +40,7 @@ class OperationRepository extends EntityRepository
      */
     protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
     {
-        $data = array();
+        $data = [];
 
         $sql = 'SELECT a.currency, TO_CHAR(o.value_date, \'YYYY-MM\') AS month, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total ';
         $sql.= 'FROM account a ';
@@ -107,7 +107,7 @@ class OperationRepository extends EntityRepository
      */
     protected function getSumBefore(Member $member, \DateTime $stopDate, Account $account = null)
     {
-        $data = array();
+        $data = [];
 
         $sql = 'SELECT a.currency, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total ';
         $sql.= 'FROM account a ';

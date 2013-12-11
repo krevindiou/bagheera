@@ -36,7 +36,7 @@ class BankController extends Controller
             if ($this->get('bagheera.bank')->saveForm($member, $bankForm)) {
                 if ('bank_new' == $request->get('_route') && null !== $bankForm->getData()->getProvider()) {
                     return $this->redirect(
-                        $this->generateUrl('bank_access_edit', array('bankId' => $bankForm->getData()->getBankId()))
+                        $this->generateUrl('bank_access_edit', ['bankId' => $bankForm->getData()->getBankId()])
                     );
                 } else {
                     $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
@@ -46,9 +46,9 @@ class BankController extends Controller
             }
         }
 
-        return array(
+        return [
             'bankForm' => $bankForm->createView()
-        );
+        ];
     }
 
     /**

@@ -21,9 +21,9 @@ class TwigExtension extends \Twig_Extension
 
     public function getFilters()
     {
-        return array(
+        return [
             'money' => new \Twig_Filter_Method($this, 'moneyFilter')
-        );
+        ];
     }
 
     public function moneyFilter($value, $currency, $locale = null)
@@ -39,7 +39,7 @@ class TwigExtension extends \Twig_Extension
 
     public function getGlobals()
     {
-        $banks = array();
+        $banks = [];
 
         $token = $this->security->getToken();
 
@@ -51,9 +51,9 @@ class TwigExtension extends \Twig_Extension
             }
         }
 
-        return array(
+        return [
             'global_banks' => $banks
-        );
+        ];
     }
 
     public function getName()

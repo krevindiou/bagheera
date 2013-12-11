@@ -42,14 +42,14 @@ class OperationController extends Controller
         $balance = $accountService->getBalance($member, $account);
         $reconciledBalance = $accountService->getBalance($member, $account, true);
 
-        return array(
+        return [
             'account' => $account,
             'operations' => $operations,
             'displaySearch' => (null !== $operationSearch),
             'tipNewOperation' => (null === $operationSearch && count($operations) == 0),
             'balance' => $balance,
             'reconciledBalance' => $reconciledBalance
-        );
+        ];
     }
 
     /**
@@ -71,7 +71,7 @@ class OperationController extends Controller
         }
 
         return $this->redirect(
-            $this->generateUrl('operation_list', array('accountId' => $account->getAccountId()))
+            $this->generateUrl('operation_list', ['accountId' => $account->getAccountId()])
         );
     }
 
@@ -100,18 +100,18 @@ class OperationController extends Controller
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();
 
                 if (null !== $request->get('save_add')) {
-                    return $this->redirect($this->generateUrl('operation_new', array('accountId' => $accountId)));
+                    return $this->redirect($this->generateUrl('operation_new', ['accountId' => $accountId]));
                 } else {
-                    return $this->redirect($this->generateUrl('operation_list', array('accountId' => $accountId)));
+                    return $this->redirect($this->generateUrl('operation_list', ['accountId' => $accountId]));
                 }
             }
         }
 
-        return array(
+        return [
             'account' => $account ? : $operation->getAccount(),
             'operation' => $operationForm->getData(),
             'operationForm' => $operationForm->createView()
-        );
+        ];
     }
 
     /**

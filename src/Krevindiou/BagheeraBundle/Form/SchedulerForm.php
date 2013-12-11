@@ -24,133 +24,133 @@ class SchedulerForm extends AbstractType
             ->add(
                 'type',
                 'choice',
-                array(
+                [
                     'label' => 'scheduler.type',
                     'mapped' => false,
                     'expanded' => true,
                     'required' => true,
-                    'choices' => array(
+                    'choices' => [
                         'debit' => 'scheduler.type_debit',
                         'credit' => 'scheduler.type_credit'
-                    ),
-                    'constraints' => array(
+                    ],
+                    'constraints' => [
                         new Assert\NotBlank()
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'thirdParty',
                 null,
-                array(
+                [
                     'label' => 'scheduler.third_party',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge',
                         'autocomplete' => 'off'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'category',
                 null,
-                array(
+                [
                     'label' => 'scheduler.category',
                     'empty_value' => '',
                     'required' => false,
                     'group_by' => 'type',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'paymentMethod',
                 null,
-                array(
+                [
                     'label' => 'scheduler.payment_method',
                     'empty_value' => '',
                     'group_by' => 'type',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-medium'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'valueDate',
                 'date',
-                array(
+                [
                     'label' => 'scheduler.value_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-small calendar'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'limitDate',
                 'date',
-                array(
+                [
                     'label' => 'scheduler.limit_date',
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-small calendar'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'frequencyUnit',
                 'choice',
-                 array(
+                 [
                     'label' => 'scheduler.frequency_unit',
-                    'choices' => array(
+                    'choices' => [
                         'day' => 'scheduler.frequency_unit_day',
                         'week' => 'scheduler.frequency_unit_week',
                         'month' => 'scheduler.frequency_unit_month',
                         'year' => 'scheduler.frequency_unit_year',
-                    ),
-                    'attr' => array(
+                    ],
+                    'attr' => [
                         'class' => 'input-small'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'frequencyValue',
                 null,
-                array(
+                [
                     'label' => 'scheduler.frequency_value',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-mini'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'notes',
                 null,
-                array(
+                [
                     'label' => 'scheduler.notes',
-                    'attr' => array(
+                    'attr' => [
                         'rows' => 5,
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'reconciled',
                 null,
-                array(
+                [
                     'label' => 'scheduler.reconciled',
                     'required' => false
-                )
+                ]
             )
             ->add(
                 'active',
                 null,
-                array(
+                [
                     'label' => 'scheduler.active',
                     'required' => false
-                )
+                ]
             )
         ;
 
@@ -166,22 +166,22 @@ class SchedulerForm extends AbstractType
                     ->add(
                         'amount',
                         'money',
-                        array(
+                        [
                             'label' => 'scheduler.amount',
                             'currency' => $account->getCurrency(),
                             'mapped' => false,
-                            'constraints' => array(
+                            'constraints' => [
                                 new Assert\NotBlank()
-                            ),
-                            'attr' => array(
+                            ],
+                            'attr' => [
                                 'class' => 'input-small'
-                            )
-                        )
+                            ]
+                        ]
                     )
                     ->add(
                         'transferAccount',
                         'entity',
-                        array(
+                        [
                             'label' => 'scheduler.transfer_account',
                             'required' => false,
                             'empty_value' => 'scheduler.external_account',
@@ -195,10 +195,10 @@ class SchedulerForm extends AbstractType
                                     ->setParameter('account', $account)
                                     ->add('orderBy', 'b.name ASC, a.name ASC');
                             },
-                            'attr' => array(
+                            'attr' => [
                                 'class' => 'input-xlarge'
-                            )
-                        )
+                            ]
+                        ]
                     )
                 ;
 
@@ -240,9 +240,9 @@ class SchedulerForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Scheduler'
-            )
+            ]
         );
     }
 

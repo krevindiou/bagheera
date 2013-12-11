@@ -47,7 +47,7 @@ class BankService
      */
     public function getList(Member $member, $activeOnly = true)
     {
-        $banks = array();
+        $banks = [];
 
         $sql = 'SELECT ( ';
         $sql.= '  SELECT COALESCE(SUM(operation.credit), 0) - COALESCE(SUM(operation.debit), 0) ';
@@ -67,14 +67,14 @@ class BankService
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->execute(
-            array(
+            [
                 ':member_id' => $member->getMemberId()
-            )
+            ]
         );
 
         foreach ($stmt->fetchAll() as $row) {
             if (!isset($banks[$row['bank_id']])) {
-                $banks[$row['bank_id']] = array(
+                $banks[$row['bank_id']] = [
                     'bankId' => $row['bank_id'],
                     'name' => $row['bank_name'],
                     'favorite' => $row['bank_is_favorite'],
@@ -82,19 +82,19 @@ class BankService
                     'deleted' => $row['bank_is_deleted'],
                     'active' => !$row['bank_is_deleted'] && !$row['bank_is_closed'],
                     'manual' => (null === $row['bank_provider_id']),
-                    'accounts' => array()
-                );
+                    'accounts' => []
+                ];
             }
 
             if (isset($row['account_id'])) {
-                $banks[$row['bank_id']]['accounts'][$row['account_id']] = array(
+                $banks[$row['bank_id']]['accounts'][$row['account_id']] = [
                     'accountId' => $row['account_id'],
                     'name' => $row['account_name'],
                     'currency' => $row['account_currency'],
                     'overdraftFacility' => $row['account_overdraft_facility'],
                     'deleted' => $row['account_is_deleted'],
                     'balance' => $row['account_balance'],
-                );
+                ];
             }
         }
 
@@ -253,7 +253,7 @@ class BankService
      */
     public function getBalances(Member $member, Bank $bank)
     {
-        $balances = array();
+        $balances = [];
 
         if ($member === $bank->getMember()) {
             $accounts = $bank->getAccounts();

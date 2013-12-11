@@ -30,7 +30,7 @@ class CryptService
         if (null !== $expiration) {
             $data = array_merge(
                 $data,
-                array('_expiration' => $expiration->format(\DateTime::ISO8601))
+                ['_expiration' => $expiration->format(\DateTime::ISO8601)]
             );
         }
 

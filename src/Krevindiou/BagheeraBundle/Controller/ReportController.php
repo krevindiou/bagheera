@@ -30,9 +30,9 @@ class ReportController extends Controller
 
         $reports = $this->get('bagheera.report')->getList($member);
 
-        return array(
+        return [
             'reports' => $reports,
-        );
+        ];
     }
 
     /**
@@ -78,9 +78,9 @@ class ReportController extends Controller
             }
         }
 
-        return array(
+        return [
             'reportForm' => $reportForm->createView()
-        );
+        ];
     }
 
     /**
@@ -89,7 +89,7 @@ class ReportController extends Controller
      */
     public function graphAction()
     {
-        $graphs = array();
+        $graphs = [];
 
         $member = $this->getUser();
 
@@ -103,9 +103,9 @@ class ReportController extends Controller
             }
         }
 
-        return array(
+        return [
             'graphs' => $graphs
-        );
+        ];
     }
 
     /**

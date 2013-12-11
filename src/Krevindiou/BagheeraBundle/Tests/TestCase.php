@@ -21,7 +21,7 @@ class TestCase extends WebTestCase
 
     public function setUp()
     {
-        static::$kernel = static::createKernel(array('environment' => 'test'));
+        static::$kernel = static::createKernel(['environment' => 'test']);
         static::$kernel->boot();
 
         $this->em = $this->get('doctrine.orm.entity_manager');
@@ -29,10 +29,10 @@ class TestCase extends WebTestCase
         $this->application = new Application(static::$kernel);
         $this->application->setAutoExit(false);
 
-        $this->runConsole('doctrine:schema:drop', array('--force' => null));
+        $this->runConsole('doctrine:schema:drop', ['--force' => null]);
         $this->runConsole('doctrine:schema:create');
-        $this->runConsole('doctrine:schema:update', array('--force' => null)); // Still some SQL to execute
-        $this->runConsole('doctrine:fixtures:load', array('--append' => null));
+        $this->runConsole('doctrine:schema:update', ['--force' => null]); // Still some SQL to execute
+        $this->runConsole('doctrine:fixtures:load', ['--append' => null]);
     }
 
     public function tearDown()
@@ -41,7 +41,7 @@ class TestCase extends WebTestCase
         parent::tearDown();
     }
 
-    protected function runConsole($command, array $options = array())
+    protected function runConsole($command, array $options = [])
     {
         $options['-e'] = 'test';
         $options['-q'] = null;

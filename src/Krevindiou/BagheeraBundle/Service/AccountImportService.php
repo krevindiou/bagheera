@@ -50,10 +50,10 @@ class AccountImportService
     public function getCurrentImport(Account $account)
     {
         return $this->em->getRepository('KrevindiouBagheeraBundle:AccountImport')->findOneBy(
-            array(
+            [
                 'account' => $account->getAccountId(),
                 'finished' => 0
-            )
+            ]
         );
     }
 

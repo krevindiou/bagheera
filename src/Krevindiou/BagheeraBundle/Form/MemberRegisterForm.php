@@ -38,38 +38,38 @@ class MemberRegisterForm extends AbstractType
             ->add(
                 'email',
                 'email',
-                array(
+                [
                     'label' => 'member.email',
-                    'attr' => array(
+                    'attr' => [
                         'class' => 'input-xlarge'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'country',
                 'country',
-                array(
+                [
                     'label' => 'member.country',
-                    'preferred_choices' => array($preferredChoice),
-                    'attr' => array(
+                    'preferred_choices' => [$preferredChoice],
+                    'attr' => [
                         'class' => 'input-large'
-                    )
-                )
+                    ]
+                ]
             )
             ->add(
                 'plainPassword',
                 'repeated',
-                array(
+                [
                     'type' => 'password',
-                    'first_options' => array('label' => 'member.password'),
-                    'second_options' => array('label' => 'member.password_confirmation'),
+                    'first_options' => ['label' => 'member.password'],
+                    'second_options' => ['label' => 'member.password_confirmation'],
                     'invalid_message' => 'member.password_fields_must_match',
-                    'options' => array(
-                        'attr' => array(
+                    'options' => [
+                        'attr' => [
                             'class' => 'input-medium'
-                        )
-                    )
-                )
+                        ]
+                    ]
+                ]
             )
         ;
     }
@@ -77,10 +77,10 @@ class MemberRegisterForm extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(
-            array(
+            [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Member',
-                'validation_groups' => array('Default', 'password')
-            )
+                'validation_groups' => ['Default', 'password']
+            ]
         );
     }
 

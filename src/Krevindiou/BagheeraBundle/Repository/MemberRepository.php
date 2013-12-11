@@ -15,7 +15,7 @@ class MemberRepository extends EntityRepository
      * @param  array              $params Search criterias
      * @return Doctrine\ORM\Query
      */
-    public function getListQuery(array $params = array())
+    public function getListQuery(array $params = [])
     {
         $dql = 'SELECT m ';
         $dql.= 'FROM KrevindiouBagheeraBundle:Member m ';
