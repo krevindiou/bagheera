@@ -19,61 +19,57 @@ class CryptService
     public $secret;
 
     /**
-     * Crypts array
+     * Crypts data
      *
-     * @param  array    $data       Data to crypt
+     * @param  mixed    $plainData  Data to crypt
      * @param  DateTime $expiration Expiration date
      * @return string
      */
-    public function crypt(array $data, \DateTime $expiration = null)
+    public function crypt($plainData, \DateTime $expiration = null)
     {
-        if (null !== $expiration) {
-            $data = array_merge(
-                $data,
-                ['_expiration' => $expiration->format(\DateTime::ISO8601)]
-            );
-        }
+        $structure = [
+            'data' => $plainData,
+            'expiration' => (null === $expiration) ? : $expiration->format(\DateTime::ISO8601)
+        ];
 
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
 
-        $encryptedStr = mcrypt_encrypt(
+        $encryptedString = mcrypt_encrypt(
             MCRYPT_RIJNDAEL_128,
             $this->secret,
-            json_encode($data),
+            json_encode($structure),
             MCRYPT_MODE_CBC,
             $iv
         );
 
-        return base64_encode($iv . $encryptedStr);
+        return base64_encode($iv . $encryptedString);
     }
 
     /**
-     * Decrypts string
+     * Decrypts data
      *
-     * @param  string $str String to decrypt
-     * @return array
+     * @param  string $encryptedString Data to decrypt
+     * @return mixed
      */
-    public function decrypt($str)
+    public function decrypt($encryptedString)
     {
-        if (false !== ($str = base64_decode($str))) {
-            $str = trim(
+        if (false !== ($encryptedString = base64_decode($encryptedString))) {
+            $encryptedString = trim(
                 mcrypt_decrypt(
                     MCRYPT_RIJNDAEL_128,
                     $this->secret,
-                    substr($str, 16),
+                    substr($encryptedString, 16),
                     MCRYPT_MODE_CBC,
-                    substr($str, 0, 16)
+                    substr($encryptedString, 0, 16)
                 )
             );
 
-            if (null !== $str && null !== ($data = json_decode($str, true))) {
+            if (null !== $encryptedString && null !== ($structure = json_decode($encryptedString, true))) {
                 $now = new \DateTime();
 
-                if (isset($data['_expiration']) && $data['_expiration'] <= $now->format(\DateTime::ISO8601)) {
-                    unset($data['_expiration']);
+                if (null === $structure['expiration'] || $structure['expiration'] <= $now->format(\DateTime::ISO8601)) {
+                    return $structure['data'];
                 }
-
-                return $data;
             }
         }
     }
