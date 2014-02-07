@@ -336,26 +336,17 @@ class SchedulerService
                 $endDate = $scheduler->getLimitDate();
             }
 
-            $dates = [];
-            $date = clone $startDate;
+            $periodInterval = new \DateInterval(
+                sprintf(
+                    'P%d%s',
+                    $scheduler->getFrequencyValue(),
+                    substr(strtoupper($scheduler->getFrequencyUnit()), 0, 1)
+                )
+            );
 
-            while ($date <= $endDate) {
-                if ($date != $startDate || null === $lastOperationDate) {
-                    $dates[] = $date->format(\DateTime::ISO8601);
-                }
+            $periodIterator = new \DatePeriod($startDate, $periodInterval, $endDate, \DatePeriod::EXCLUDE_START_DATE);
 
-                $date->add(
-                    new \DateInterval(
-                        sprintf(
-                            'P%d%s',
-                            $scheduler->getFrequencyValue(),
-                            substr(strtoupper($scheduler->getFrequencyUnit()), 0, 1)
-                        )
-                    )
-                );
-            }
-
-            foreach ($dates as $date) {
+            foreach ($periodIterator as $date) {
                 $operation = new Operation();
                 $operation->setScheduler($scheduler);
                 $operation->setAccount($scheduler->getAccount());
@@ -364,7 +355,7 @@ class SchedulerService
                 $operation->setPaymentMethod($scheduler->getPaymentMethod());
                 $operation->setDebit($scheduler->getDebit());
                 $operation->setCredit($scheduler->getCredit());
-                $operation->setValueDate(new \DateTime($date));
+                $operation->setValueDate($date);
                 $operation->setReconciled($scheduler->isReconciled());
                 $operation->setNotes($scheduler->getNotes());
                 $operation->setTransferAccount($scheduler->getTransferAccount());
