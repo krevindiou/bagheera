@@ -3,7 +3,7 @@
  * This file is part of the Bagheera project, a personal finance manager.
  */
 
-namespace Krevindiou\BagheeraBundle\Form;
+namespace Krevindiou\BagheeraBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -11,12 +11,12 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Form\Type\CurrencyType;
+use Krevindiou\BagheeraBundle\Form\Type\CurrencyFormType;
 
 /**
  * @DI\FormType
  */
-class AccountForm extends AbstractType
+class AccountFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -67,7 +67,7 @@ class AccountForm extends AbstractType
                     )
                     ->add(
                         'currency',
-                        new CurrencyType(),
+                        new CurrencyFormType(),
                         [
                             'label' => 'account.currency',
                             'disabled' => $edit,

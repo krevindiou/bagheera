@@ -8,7 +8,7 @@ namespace Krevindiou\BagheeraBundle\Form\Type;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 
-class CurrencyType extends AbstractType
+class CurrencyFormType extends AbstractType
 {
     /**
      * {@inheritDoc}

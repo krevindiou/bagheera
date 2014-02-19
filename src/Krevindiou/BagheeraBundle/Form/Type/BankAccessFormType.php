@@ -3,7 +3,7 @@
  * This file is part of the Bagheera project, a personal finance manager.
  */
 
-namespace Krevindiou\BagheeraBundle\Form;
+namespace Krevindiou\BagheeraBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -13,7 +13,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 /**
  * @DI\FormType
  */
-class BankAccessForm extends AbstractType
+class BankAccessFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {

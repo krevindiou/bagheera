@@ -3,17 +3,17 @@
  * This file is part of the Bagheera project, a personal finance manager.
  */
 
-namespace Krevindiou\BagheeraBundle\Form;
+namespace Krevindiou\BagheeraBundle\Form\Type;
 
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Form\MemberRegisterForm;
+use Krevindiou\BagheeraBundle\Form\Type\MemberRegisterFormType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * @DI\FormType
  */
-class MemberProfileForm extends MemberRegisterForm
+class MemberProfileFormType extends MemberRegisterFormType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {

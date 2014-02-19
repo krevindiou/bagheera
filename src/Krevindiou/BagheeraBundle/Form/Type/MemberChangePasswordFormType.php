@@ -3,35 +3,36 @@
  * This file is part of the Bagheera project, a personal finance manager.
  */
 
-namespace Krevindiou\BagheeraBundle\Form;
+namespace Krevindiou\BagheeraBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Email;
-use Krevindiou\BagheeraBundle\Constraint\FieldExists;
+use Symfony\Component\Validator\Constraints\Length;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
  * @DI\FormType
  */
-class MemberForgotPasswordForm extends AbstractType
+class MemberChangePasswordFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add(
-                'email',
-                'email',
+                'password',
+                'repeated',
                 [
-                    'label' => 'member.email',
+                    'type' => 'password',
+                    'first_options' => ['label' => 'member.password'],
+                    'second_options' => ['label' => 'member.password_confirmation'],
+                    'invalid_message' => 'member.password_fields_must_match',
                     'constraints' => [
                         new NotBlank(),
-                        new Email(),
-                        new FieldExists('Krevindiou\BagheeraBundle\Entity\Member', 'email')
+                        new Length(['min' => 8])
                     ],
                     'attr' => [
-                        'class' => 'input-xlarge'
+                        'class' => 'input-medium'
                     ]
                 ]
             )
@@ -40,6 +41,6 @@ class MemberForgotPasswordForm extends AbstractType
 
     public function getName()
     {
-        return 'member_forgot_password_type';
+        return 'member_change_password_type';
     }
 }
