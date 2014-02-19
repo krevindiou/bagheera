@@ -10,11 +10,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\MemberRepository")
  * @ORM\Table(name="member")
- * @ORM\HasLifecycleCallbacks()
  * @DoctrineAssert\UniqueEntity("email")
  */
 class Member implements AdvancedUserInterface
@@ -89,6 +89,7 @@ class Member implements AdvancedUserInterface
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
      * @Assert\DateTime()
      */
     protected $createdAt;
@@ -97,6 +98,7 @@ class Member implements AdvancedUserInterface
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="update")
      * @Assert\DateTime()
      */
     protected $updatedAt;
@@ -105,6 +107,7 @@ class Member implements AdvancedUserInterface
      * @var DateTime $loggedAt
      *
      * @ORM\Column(name="logged_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
      * @Assert\DateTime()
      */
     protected $loggedAt;
@@ -130,24 +133,6 @@ class Member implements AdvancedUserInterface
         $this->generateSalt();
         $this->banks = new ArrayCollection();
         $this->reports = new ArrayCollection();
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist()
-    {
-        $this->setCreatedAt(new \DateTime());
-        $this->setUpdatedAt(new \DateTime());
-        $this->setLoggedAt(new \DateTime());
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
-    {
-        $this->setUpdatedAt(new \DateTime());
     }
 
     /**

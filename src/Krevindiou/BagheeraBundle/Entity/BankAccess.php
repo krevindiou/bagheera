@@ -7,11 +7,11 @@ namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="bank_access")
- * @ORM\HasLifecycleCallbacks()
  */
 class BankAccess
 {
@@ -57,6 +57,7 @@ class BankAccess
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
      * @Assert\DateTime()
      */
     protected $createdAt;
@@ -65,26 +66,10 @@ class BankAccess
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="update")
      * @Assert\DateTime()
      */
     protected $updatedAt;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist()
-    {
-        $this->setCreatedAt(new \DateTime());
-        $this->setUpdatedAt(new \DateTime());
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
-    {
-        $this->setUpdatedAt(new \DateTime());
-    }
 
     /**
      * Set bankId

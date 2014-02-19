@@ -7,6 +7,7 @@ namespace Krevindiou\BagheeraBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\OperationRepository")
@@ -14,7 +15,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *  name="operation",
  *  indexes={@ORM\Index(name="external_operation_id_idx", columns={"external_operation_id"})}
  * )
- * @ORM\HasLifecycleCallbacks()
  */
 class Operation
 {
@@ -141,6 +141,7 @@ class Operation
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
      * @Assert\DateTime()
      */
     protected $createdAt;
@@ -149,6 +150,7 @@ class Operation
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="update")
      * @Assert\DateTime()
      */
     protected $updatedAt;
@@ -156,23 +158,6 @@ class Operation
     public function __construct()
     {
         $this->setValueDate(new \DateTime());
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist()
-    {
-        $this->setCreatedAt(new \DateTime());
-        $this->setUpdatedAt(new \DateTime());
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
-    {
-        $this->setUpdatedAt(new \DateTime());
     }
 
     /**

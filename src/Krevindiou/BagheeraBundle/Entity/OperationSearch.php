@@ -9,11 +9,11 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="operation_search")
- * @ORM\HasLifecycleCallbacks()
  */
 class OperationSearch
 {
@@ -149,6 +149,7 @@ class OperationSearch
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
      * @Assert\DateTime()
      */
     protected $createdAt;
@@ -157,6 +158,7 @@ class OperationSearch
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="update")
      * @Assert\DateTime()
      */
     protected $updatedAt;
@@ -165,23 +167,6 @@ class OperationSearch
     {
         $this->categories = new ArrayCollection();
         $this->paymentMethods = new ArrayCollection();
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist()
-    {
-        $this->setCreatedAt(new \DateTime());
-        $this->setUpdatedAt(new \DateTime());
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
-    {
-        $this->setUpdatedAt(new \DateTime());
     }
 
     /**

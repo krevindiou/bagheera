@@ -93,6 +93,11 @@ jms_di_extra:
     locations:
         all_bundles: true
 
+stof_doctrine_extensions:
+    orm:
+        default:
+            timestampable: true
+
 parameters:
     email:
         sender_name:    Bagheera

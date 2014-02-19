@@ -8,6 +8,7 @@ namespace Krevindiou\BagheeraBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
@@ -15,7 +16,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *  name="account",
  *  indexes={@ORM\Index(name="external_account_id_idx", columns={"external_account_id"})}
  * )
- * @ORM\HasLifecycleCallbacks()
  */
 class Account
 {
@@ -97,6 +97,7 @@ class Account
      * @var DateTime $createdAt
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="create")
      * @Assert\DateTime()
      */
     protected $createdAt;
@@ -105,6 +106,7 @@ class Account
      * @var DateTime $updatedAt
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @Gedmo\Timestampable(on="update")
      * @Assert\DateTime()
      */
     protected $updatedAt;
@@ -146,31 +148,6 @@ class Account
         $this->sharedWith = new ArrayCollection();
         $this->operations = new ArrayCollection();
         $this->schedulers = new ArrayCollection();
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function prePersist()
-    {
-        $this->setOverdraftFacility((float) $this->getOverdraftFacility());
-
-        if (null === $this->getCreatedAt()) {
-            $this->setCreatedAt(new \DateTime());
-        }
-
-        if (null === $this->getUpdatedAt()) {
-            $this->setUpdatedAt(new \DateTime());
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function preUpdate()
-    {
-        $this->setOverdraftFacility((float) $this->getOverdraftFacility());
-        $this->setUpdatedAt(new \DateTime());
     }
 
     /**
@@ -250,7 +227,7 @@ class Account
      */
     public function setOverdraftFacility($overdraftFacility)
     {
-        $this->overdraftFacility = $overdraftFacility;
+        $this->overdraftFacility = (float) $overdraftFacility;
     }
 
     /**
