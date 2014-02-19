@@ -52,6 +52,6 @@ class BankAccessFormType extends AbstractType
 
     public function getName()
     {
-        return 'bank_access_type';
+        return 'bank_access';
     }
 }

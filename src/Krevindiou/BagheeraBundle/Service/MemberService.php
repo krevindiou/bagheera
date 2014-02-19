@@ -84,7 +84,7 @@ class MemberService
     public function getRegisterForm($language)
     {
         return $this->formFactory->create(
-            'member_register_type',
+            'member_register',
             new Member(),
             ['attr' => ['language' => $language]]
         );
@@ -98,7 +98,7 @@ class MemberService
      */
     public function getProfileForm(Member $member)
     {
-        return $this->formFactory->create('member_profile_type', $member);
+        return $this->formFactory->create('member_profile', $member);
     }
 
     /**
@@ -271,7 +271,7 @@ class MemberService
      */
     public function getForgotPasswordForm()
     {
-        return $this->formFactory->create('member_forgot_password_type');
+        return $this->formFactory->create('member_forgot_password');
     }
 
     /**
@@ -320,7 +320,7 @@ class MemberService
      */
     public function getChangePasswordForm()
     {
-        return $this->formFactory->create('member_change_password_type');
+        return $this->formFactory->create('member_change_password');
     }
 
     /**

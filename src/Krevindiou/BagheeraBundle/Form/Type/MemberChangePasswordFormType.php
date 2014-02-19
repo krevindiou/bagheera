@@ -41,6 +41,6 @@ class MemberChangePasswordFormType extends AbstractType
 
     public function getName()
     {
-        return 'member_change_password_type';
+        return 'member_change_password';
     }
 }

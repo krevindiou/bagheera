@@ -86,7 +86,7 @@ class AccountService
             $account->setBank($bank);
         }
 
-        return $this->formFactory->create('account_type', $account, ['member' => $member]);
+        return $this->formFactory->create('account', $account, ['member' => $member]);
     }
 
     /**
@@ -102,7 +102,7 @@ class AccountService
             return;
         }
 
-        return $this->formFactory->create('account_type', $account, ['member' => $member]);
+        return $this->formFactory->create('account', $account, ['member' => $member]);
     }
 
     /**

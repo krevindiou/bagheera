@@ -175,7 +175,7 @@ class SchedulerService
             return;
         }
 
-        return $this->formFactory->create('scheduler_type', $scheduler);
+        return $this->formFactory->create('scheduler', $scheduler);
     }
 
     /**

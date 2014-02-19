@@ -201,6 +201,6 @@ class OperationFormType extends AbstractType
 
     public function getName()
     {
-        return 'operation_type';
+        return 'operation';
     }
 }

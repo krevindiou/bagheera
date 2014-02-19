@@ -248,6 +248,6 @@ class OperationSearchFormType extends AbstractType
 
     public function getName()
     {
-        return 'operation_search_type';
+        return 'operation_search';
     }
 }

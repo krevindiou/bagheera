@@ -43,7 +43,7 @@ class OperationSearchService
             return;
         }
 
-        return $this->formFactory->create('operation_search_type', $operationSearch);
+        return $this->formFactory->create('operation_search', $operationSearch);
     }
 
     /**

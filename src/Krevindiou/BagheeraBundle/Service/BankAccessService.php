@@ -10,7 +10,6 @@ use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Member;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;
-use Krevindiou\BagheeraBundle\Form\BankAccessForm;
 
 /**
  * @DI\Service("bagheera.bank_access")
@@ -58,7 +57,7 @@ class BankAccessService
         $bankAccess = new BankAccess();
         $bankAccess->setBankId($bank->getBankId());
 
-        return $this->formFactory->create(new BankAccessForm(), $bankAccess);
+        return $this->formFactory->create('bank_access', $bankAccess);
     }
 
     /**

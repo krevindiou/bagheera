@@ -123,6 +123,6 @@ class AccountFormType extends AbstractType
 
     public function getName()
     {
-        return 'account_type';
+        return 'account';
     }
 }

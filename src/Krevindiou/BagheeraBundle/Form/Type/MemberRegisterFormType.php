@@ -86,6 +86,6 @@ class MemberRegisterFormType extends AbstractType
 
     public function getName()
     {
-        return 'member_register_type';
+        return 'member_register';
     }
 }

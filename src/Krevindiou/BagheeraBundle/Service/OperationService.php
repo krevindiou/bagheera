@@ -242,7 +242,7 @@ class OperationService
             return;
         }
 
-        return $this->formFactory->create('operation_type', $operation);
+        return $this->formFactory->create('operation', $operation);
     }
 
     /**

@@ -40,6 +40,6 @@ class MemberForgotPasswordFormType extends AbstractType
 
     public function getName()
     {
-        return 'member_forgot_password_type';
+        return 'member_forgot_password';
     }
 }

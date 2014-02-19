@@ -117,7 +117,7 @@ class BankService
             return;
         }
 
-        return $this->formFactory->create('bank_type', $bank);
+        return $this->formFactory->create('bank', $bank);
     }
 
     /**
