@@ -1,5 +1,3 @@
-*.sublime-project
-*.sublime-workspace
 /web/bundles/
 /web/components/
 /app/bootstrap.php.cache
