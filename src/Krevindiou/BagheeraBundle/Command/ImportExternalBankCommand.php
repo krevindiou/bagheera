@@ -27,10 +27,10 @@ class ImportExternalBankCommand extends ContainerAwareCommand
         $em = $this->getContainer()->get('doctrine')->getEntityManager();
         $secureEm = $this->getContainer()->get('doctrine')->getEntityManager('secure');
 
-        $bank = $em->find('KrevindiouBagheeraBundle:Bank', $input->getArgument('bank_id'));
+        $bank = $em->find('Model:Bank', $input->getArgument('bank_id'));
 
         if (null !== $bank) {
-            $bankAccess = $secureEm->find('KrevindiouBagheeraBundle:BankAccess', $bank->getBankId());
+            $bankAccess = $secureEm->find('Model:BankAccess', $bank->getBankId());
 
             if (null !== $bankAccess) {
                 $accountService = $this->getContainer()->get('bagheera.account');

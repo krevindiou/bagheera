@@ -18,7 +18,7 @@ class MemberRepository extends EntityRepository
     public function getListQuery(array $params = [])
     {
         $dql = 'SELECT m ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Member m ';
+        $dql.= 'FROM Model:Member m ';
         $dql.= 'WHERE 1 = 1 ';
         if (!empty($params)) {
             if (isset($params['email']) && '' != $params['email']) {

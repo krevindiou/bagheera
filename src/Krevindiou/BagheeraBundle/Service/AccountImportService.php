@@ -30,7 +30,7 @@ class AccountImportService
     protected function getNextImportId(Account $account)
     {
         $dql = 'SELECT MAX(i.importId) ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i ';
+        $dql.= 'FROM Model:AccountImport i ';
         $dql.= 'JOIN i.account a ';
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.member = :member ';
@@ -49,7 +49,7 @@ class AccountImportService
      */
     public function getCurrentImport(Account $account)
     {
-        return $this->em->getRepository('KrevindiouBagheeraBundle:AccountImport')->findOneBy(
+        return $this->em->getRepository('Model:AccountImport')->findOneBy(
             [
                 'account' => $account->getAccountId(),
                 'finished' => 0

@@ -14,13 +14,13 @@ class AccountServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
+        $this->john = $this->em->find('Model:Member', 1);
+        $this->jane = $this->em->find('Model:Member', 2);
     }
 
     public function testGetFormForForeignMember()
     {
-        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('Model:Account', 1);
         $form = $this->get('bagheera.account')->getEditForm($this->jane, $account);
         $this->assertNull($form);
     }
@@ -35,7 +35,7 @@ class AccountServiceTest extends TestCase
 
     public function testGetFormForExistingAccount()
     {
-        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('Model:Account', 1);
         $form = $this->get('bagheera.account')->getEditForm($this->john, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -49,7 +49,7 @@ class AccountServiceTest extends TestCase
     public function testSaveNewAccountWithForeignBank()
     {
         $account = new Account();
-        $account->setBank($this->em->find('KrevindiouBagheeraBundle:Bank', 5));
+        $account->setBank($this->em->find('Model:Bank', 5));
         $account->setName('Checking account #1');
         $account->setCurrency('USD');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
@@ -58,7 +58,7 @@ class AccountServiceTest extends TestCase
     public function testSaveNewAccount()
     {
         $account = new Account();
-        $account->setBank($this->em->find('KrevindiouBagheeraBundle:Bank', 1));
+        $account->setBank($this->em->find('Model:Bank', 1));
         $account->setName('Checking account #1');
         $account->setCurrency('USD');
         $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
@@ -66,7 +66,7 @@ class AccountServiceTest extends TestCase
 
     public function testSaveExistingAccountWithBadData()
     {
-        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('Model:Account', 1);
         $account->setName('');
         $account->setCurrency('USD');
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
@@ -74,37 +74,37 @@ class AccountServiceTest extends TestCase
 
     public function testSaveExistingAccountWithForeignBank()
     {
-        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
-        $account->setBank($this->em->find('KrevindiouBagheeraBundle:Bank', 5));
+        $account = $this->em->find('Model:Account', 1);
+        $account->setBank($this->em->find('Model:Bank', 5));
         $this->assertFalse($this->get('bagheera.account')->save($this->john, $account));
     }
 
     public function testSaveExistingAccountWithForeignMember()
     {
-        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('Model:Account', 1);
         $this->assertFalse($this->get('bagheera.account')->save($this->jane, $account));
     }
 
     public function testSaveExistingAccount()
     {
-        $account = $this->em->find('KrevindiouBagheeraBundle:Account', 1);
+        $account = $this->em->find('Model:Account', 1);
         $this->assertTrue($this->get('bagheera.account')->save($this->john, $account));
     }
 
     public function testDelete()
     {
-        $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByDeleted(true);
+        $accounts = $this->em->getRepository('Model:Account')->findByDeleted(true);
         $accountsNb = count($accounts);
 
         $this->assertTrue($this->get('bagheera.account')->delete($this->john, [1]));
 
-        $accounts = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->findByDeleted(true);
+        $accounts = $this->em->getRepository('Model:Account')->findByDeleted(true);
         $this->assertEquals(count($accounts), $accountsNb + 1);
     }
 
     public function testGetBalanceNotOk()
     {
-        $account = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->em->getRepository('Model:Account')->find(1);
 
         $balance = $this->get('bagheera.account')->getBalance($this->jane, $account);
 
@@ -113,7 +113,7 @@ class AccountServiceTest extends TestCase
 
     public function testGetBalanceOk()
     {
-        $account = $this->em->getRepository('KrevindiouBagheeraBundle:Account')->find(1);
+        $account = $this->em->getRepository('Model:Account')->find(1);
 
         $balance = $this->get('bagheera.account')->getBalance($this->john, $account);
 

@@ -78,8 +78,8 @@ class OperationController extends Controller
     /**
      * @Route("/operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_edit")
      * @Route("/account-{accountId}/new-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_new")
-     * @ParamConverter("operation", class="KrevindiouBagheeraBundle:Operation", options={"id" = "operationId"})
-     * @ParamConverter("account", class="KrevindiouBagheeraBundle:Account", options={"id" = "accountId"})
+     * @ParamConverter("operation", class="Model:Operation", options={"id" = "operationId"})
+     * @ParamConverter("account", class="Model:Account", options={"id" = "accountId"})
      * @Template()
      */
     public function formAction(Request $request, Account $account = null, Operation $operation = null)

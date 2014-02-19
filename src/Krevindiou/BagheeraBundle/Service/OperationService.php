@@ -276,7 +276,7 @@ class OperationService
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
                 $operationBeforeSave = $this->em->find(
-                    'KrevindiouBagheeraBundle:Operation',
+                    'Model:Operation',
                     $operation->getOperationId()
                 );
 
@@ -301,11 +301,11 @@ class OperationService
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
                     $paymentMethod = $this->em->find(
-                        'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                        'Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
                     $paymentMethod = $this->em->find(
-                        'KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                        'Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
                 }
 
@@ -400,7 +400,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', $operationId);
+                $operation = $this->em->find('Model:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -430,7 +430,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('KrevindiouBagheeraBundle:Operation', $operationId);
+                $operation = $this->em->find('Model:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -491,7 +491,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->em->find('KrevindiouBagheeraBundle:PaymentMethod', $operationArray['payment_method_id'])
+                $this->em->find('Model:PaymentMethod', $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {

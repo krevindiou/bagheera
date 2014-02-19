@@ -14,8 +14,8 @@ class MemberServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
-        $this->jane = $this->em->find('KrevindiouBagheeraBundle:Member', 2);
+        $this->john = $this->em->find('Model:Member', 1);
+        $this->jane = $this->em->find('Model:Member', 2);
     }
 
     public function testGetRegisterForm()
@@ -45,7 +45,7 @@ class MemberServiceTest extends TestCase
 
     public function testGetProfileForm()
     {
-        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $member = $this->em->find('Model:Member', 1);
 
         $profileForm = $this->get('bagheera.member')->getProfileForm($member);
 
@@ -54,7 +54,7 @@ class MemberServiceTest extends TestCase
 
     public function testUpdateMemberWithNoData()
     {
-        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $member = $this->em->find('Model:Member', 1);
         $member->setEmail('');
 
         $this->assertFalse($this->get('bagheera.member')->save($member));
@@ -62,7 +62,7 @@ class MemberServiceTest extends TestCase
 
     public function testUpdateMember()
     {
-        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $member = $this->em->find('Model:Member', 1);
 
         $this->assertTrue($this->get('bagheera.member')->save($member));
     }
@@ -73,7 +73,7 @@ class MemberServiceTest extends TestCase
 
         $this->get('bagheera.member')->toggleDeactivation($membersId);
 
-        $members = $this->em->getRepository('KrevindiouBagheeraBundle:Member')->findByActive(true);
+        $members = $this->em->getRepository('Model:Member')->findByActive(true);
 
         $this->assertEquals(count($members), 0);
     }
@@ -94,7 +94,7 @@ class MemberServiceTest extends TestCase
 
     public function testChangePassword()
     {
-        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $member = $this->em->find('Model:Member', 1);
 
         $ok = $this->get('bagheera.member')->changePassword($member, 'test');
 
@@ -112,7 +112,7 @@ class MemberServiceTest extends TestCase
 
     public function testActivateOk()
     {
-        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $member = $this->em->find('Model:Member', 1);
 
         $key = $this->get('bagheera.member')->createRegisterKey($member);
 
@@ -154,7 +154,7 @@ class MemberServiceTest extends TestCase
 
     public function testGetBalances()
     {
-        $member = $this->em->find('KrevindiouBagheeraBundle:Member', 1);
+        $member = $this->em->find('Model:Member', 1);
 
         $balances = $this->get('bagheera.member')->getBalances($member);
 

@@ -175,7 +175,7 @@ class MemberService
         $data = $this->cryptService->decrypt($key);
 
         if (null !== $data && 'register' == $data['type']) {
-            return $this->em->getRepository('KrevindiouBagheeraBundle:Member')
+            return $this->em->getRepository('Model:Member')
                             ->findOneBy(['email' => $data['email']]);
         }
     }
@@ -249,7 +249,7 @@ class MemberService
     public function toggleDeactivation(array $membersId)
     {
         foreach ($membersId as $memberId) {
-            $member = $this->em->find('KrevindiouBagheeraBundle:Member', $memberId);
+            $member = $this->em->find('Model:Member', $memberId);
 
             if (null !== $member) {
                 $member->setActive(!$member->isActive());
@@ -282,7 +282,7 @@ class MemberService
      */
     public function sendChangePasswordEmail($email)
     {
-        $member = $this->em->getRepository('KrevindiouBagheeraBundle:Member')
+        $member = $this->em->getRepository('Model:Member')
                            ->findOneBy(['email' => $email]);
 
         if (null !== $member) {
@@ -378,7 +378,7 @@ class MemberService
         $data = $this->cryptService->decrypt($key);
 
         if (null !== $data && 'change_password' == $data['type']) {
-            return $this->em->getRepository('KrevindiouBagheeraBundle:Member')
+            return $this->em->getRepository('Model:Member')
                             ->findOneBy(['email' => $data['email']]);
         }
     }
@@ -416,7 +416,7 @@ class MemberService
     public function getMembers(array $params = [], $currentPage = 1)
     {
         $adapter = new DoctrineORMAdapter(
-            $this->em->getRepository('KrevindiouBagheeraBundle:Member')->getListQuery($params)
+            $this->em->getRepository('Model:Member')->getListQuery($params)
         );
 
         $pager = new Pagerfanta($adapter);
@@ -464,7 +464,7 @@ class MemberService
     {
         // Fetch current importId
         $dql = 'SELECT MAX(i.importId) ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i ';
+        $dql.= 'FROM Model:AccountImport i ';
         $dql.= 'JOIN i.account a ';
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.member = :member ';
@@ -479,7 +479,7 @@ class MemberService
         }
 
         $dql = 'SELECT i ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:AccountImport i INDEX BY i.accountId ';
+        $dql.= 'FROM Model:AccountImport i INDEX BY i.accountId ';
         $dql.= 'WHERE i.importId = :maxImportId ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);

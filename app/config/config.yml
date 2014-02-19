@@ -67,7 +67,6 @@ doctrine:
                 user:     %database_secure_user%
                 password: %database_secure_password%
                 charset:  UTF8
-
     orm:
         auto_generate_proxy_classes: %kernel.debug%
         default_entity_manager:   default
@@ -75,11 +74,23 @@ doctrine:
             default:
                 connection:       default
                 mappings:
-                    KrevindiouBagheeraBundle: ~
+                    KrevindiouBagheeraBundle:
+                        mapping:              true
+                        type:                 ~
+                        dir:                  ~
+                        alias:                Model
+                        prefix:               ~
+                        is_bundle:            ~
             secure:
                 connection:       secure
                 mappings:
-                    KrevindiouBagheeraBundle: ~
+                    KrevindiouBagheeraBundle:
+                        mapping:              true
+                        type:                 ~
+                        dir:                  ~
+                        alias:                Model
+                        prefix:               ~
+                        is_bundle:            ~
 
 # Swiftmailer Configuration
 swiftmailer:

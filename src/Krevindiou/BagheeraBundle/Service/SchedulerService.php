@@ -266,7 +266,7 @@ class SchedulerService
     {
         try {
             foreach ($schedulersId as $schedulerId) {
-                $scheduler = $this->em->find('KrevindiouBagheeraBundle:Scheduler', $schedulerId);
+                $scheduler = $this->em->find('Model:Scheduler', $schedulerId);
 
                 if (null !== $scheduler) {
                     if ($member === $scheduler->getAccount()->getBank()->getMember()) {
@@ -316,7 +316,7 @@ class SchedulerService
             $startDate = $scheduler->getValueDate();
 
             $dql = 'SELECT o.valueDate ';
-            $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+            $dql.= 'FROM Model:Operation o ';
             $dql.= 'WHERE o.scheduler = :scheduler ';
             $dql.= 'AND o.valueDate >= :valueDate ';
             $dql.= 'ORDER BY o.valueDate DESC ';

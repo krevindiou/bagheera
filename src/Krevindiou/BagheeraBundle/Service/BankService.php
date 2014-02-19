@@ -195,7 +195,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankId);
+                $bank = $this->em->find('Model:Bank', $bankId);
 
                 if (null !== $bank) {
                     if ($member === $bank->getMember()) {
@@ -225,7 +225,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->em->find('KrevindiouBagheeraBundle:Bank', $bankId);
+                $bank = $this->em->find('Model:Bank', $bankId);
 
                 if (null !== $bank) {
                     if ($member === $bank->getMember()) {

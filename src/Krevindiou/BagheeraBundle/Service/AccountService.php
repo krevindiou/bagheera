@@ -47,7 +47,7 @@ class AccountService
      */
     public function getList(Member $member, Bank $bank = null, $deleted = true)
     {
-        $dql = 'SELECT a FROM KrevindiouBagheeraBundle:Account a ';
+        $dql = 'SELECT a FROM Model:Account a ';
         $dql.= 'JOIN a.bank b ';
         $dql.= 'WHERE b.member = :member ';
         if (null !== $bank) {
@@ -171,10 +171,10 @@ class AccountService
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
                 if ($form->get('initialBalance')->getData() > 0) {
-                    $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
+                    $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
                     $operation->setCredit(abs($form->get('initialBalance')->getData()));
                 } else {
-                    $operation->setPaymentMethod($this->em->find('KrevindiouBagheeraBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER));
+                    $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER));
                     $operation->setDebit(abs($form->get('initialBalance')->getData()));
                 }
                 $operation->setValueDate(new \DateTime());
@@ -200,7 +200,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find('KrevindiouBagheeraBundle:Account', $accountId);
+                $account = $this->em->find('Model:Account', $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -230,7 +230,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find('KrevindiouBagheeraBundle:Account', $accountId);
+                $account = $this->em->find('Model:Account', $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -263,7 +263,7 @@ class AccountService
 
         if ($member === $account->getBank()->getMember()) {
             $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
-            $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+            $dql.= 'FROM Model:Operation o ';
             $dql.= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
                 $dql.= 'AND o.reconciled = true ';

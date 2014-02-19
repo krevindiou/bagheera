@@ -56,7 +56,7 @@ class ReportController extends Controller
     /**
      * @Route("/report-{reportId}", requirements={"reportId" = "\d+"}, name="report_edit")
      * @Route("/new-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_new")
-     * @ParamConverter("report", class="KrevindiouBagheeraBundle:Report", options={"id" = "reportId"})
+     * @ParamConverter("report", class="Model:Report", options={"id" = "reportId"})
      * @Template()
      */
     public function formAction(Request $request, Report $report = null, $type = null)

@@ -14,7 +14,7 @@ class OperationRepository extends EntityRepository
     public function getLastExternalOperationId(Account $account)
     {
         $dql = 'SELECT o.externalOperationId ';
-        $dql.= 'FROM KrevindiouBagheeraBundle:Operation o ';
+        $dql.= 'FROM Model:Operation o ';
         $dql.= 'WHERE o.account = :account ';
         $dql.= 'ORDER BY o.externalOperationId DESC ';
 
