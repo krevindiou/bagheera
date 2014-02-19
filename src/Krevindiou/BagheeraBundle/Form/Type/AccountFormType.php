@@ -11,7 +11,6 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use JMS\DiExtraBundle\Annotation as DI;
-use Krevindiou\BagheeraBundle\Form\Type\CurrencyFormType;
 
 /**
  * @DI\FormType
@@ -67,10 +66,11 @@ class AccountFormType extends AbstractType
                     )
                     ->add(
                         'currency',
-                        new CurrencyFormType(),
+                        'currency',
                         [
                             'label' => 'account.currency',
                             'disabled' => $edit,
+                            'preferred_choices' => ['USD', 'EUR'],
                             'attr' => [
                                 'class' => 'input-xlarge'
                             ]
