@@ -453,26 +453,26 @@ class ReportService
      *
      * @param  Member   $member    Member entity
      * @param  DateTime $startDate Data after this date
-     * @param  DateTime $stopDate  Data before this date
+     * @param  DateTime $endDate   Data before this date
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $stopDate = null, Account $account = null)
+    public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null)
     {
         $graph = [];
 
-        if (null === $stopDate) {
-            $stopDate = new \DateTime();
+        if (null === $endDate) {
+            $endDate = new \DateTime();
         }
 
         if (null === $startDate) {
-            $startDate = clone $stopDate;
+            $startDate = clone $endDate;
             $startDate->modify('First day of -11 months');
         }
 
         $operationRepository = $this->em->getRepository('Model:Operation');
 
-        $data = $operationRepository->getTotalByMonth($member, $startDate, $stopDate, $account);
+        $data = $operationRepository->getTotalByMonth($member, $startDate, $endDate, $account);
 
         if (!empty($data)) {
             $tmpValues = [];

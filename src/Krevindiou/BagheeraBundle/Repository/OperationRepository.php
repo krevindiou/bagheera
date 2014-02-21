@@ -34,11 +34,11 @@ class OperationRepository extends EntityRepository
      *
      * @param  Member   $member    Member entity
      * @param  DateTime $startDate Sum calculated after this date
-     * @param  DateTime $stopDate  Sum calculated before this date
+     * @param  DateTime $endDate   Sum calculated before this date
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
+    protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null)
     {
         $data = [];
 
@@ -50,7 +50,7 @@ class OperationRepository extends EntityRepository
         $sql.= 'AND a.is_deleted = false ';
         $sql.= 'AND b.is_deleted = false ';
         $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') >= :start_date ';
-        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') <= :stop_date ';
+        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') <= :end_date ';
 
         if (null !== $account) {
             $sql.= 'AND a.account_id = :account_id ';
@@ -62,7 +62,7 @@ class OperationRepository extends EntityRepository
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
-        $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
+        $stmt->bindValue('end_date', $endDate->format('Y-m-d'));
 
         if (null !== $account) {
             $stmt->bindValue('account_id', $account->getAccountId());
@@ -78,17 +78,17 @@ class OperationRepository extends EntityRepository
             }
         }
 
-        $dateTmp = clone $startDate;
-        while ($dateTmp <= $stopDate) {
-            $month = $dateTmp->format('Y-m');
+        $periodInterval = new \DateInterval('P1M');
+        $periodIterator = new \DatePeriod($startDate, $periodInterval, $endDate);
+
+        foreach ($periodIterator as $date) {
+            $month = $date->format('Y-m');
 
             foreach ($data as $currency => $value) {
                 if (!isset($data[$currency][$month])) {
                     $data[$currency][$month] = 0;
                 }
             }
-
-            $dateTmp->modify('+1 month');
         }
 
         foreach ($data as $currency => $value) {
@@ -101,11 +101,11 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum before a specified date
      *
-     * @param  Member   $member   Member entity
-     * @param  DateTime $stopDate Sum calculated before this date
+     * @param  Member   $member  Member entity
+     * @param  DateTime $endDate Sum calculated before this date
      * @return array
      */
-    protected function getSumBefore(Member $member, \DateTime $stopDate, Account $account = null)
+    protected function getSumBefore(Member $member, \DateTime $endDate, Account $account = null)
     {
         $data = [];
 
@@ -116,7 +116,7 @@ class OperationRepository extends EntityRepository
         $sql.= 'WHERE b.member_id = :member_id ';
         $sql.= 'AND a.is_deleted = false ';
         $sql.= 'AND b.is_deleted = false ';
-        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') < :stop_date ';
+        $sql.= 'AND TO_CHAR(o.value_date, \'YYYY-MM-DD\') < :end_date ';
 
         if (null !== $account) {
             $sql.= 'AND a.account_id = :account_id ';
@@ -126,7 +126,7 @@ class OperationRepository extends EntityRepository
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
-        $stmt->bindValue('stop_date', $stopDate->format('Y-m-d'));
+        $stmt->bindValue('end_date', $endDate->format('Y-m-d'));
 
         if (null !== $account) {
             $stmt->bindValue('account_id', $account->getAccountId());
@@ -150,13 +150,13 @@ class OperationRepository extends EntityRepository
      *
      * @param  Member   $member    Member entity
      * @param  DateTime $startDate Sum calculated after this date
-     * @param  DateTime $stopDate  Sum calculated before this date
+     * @param  DateTime $endDate   Sum calculated before this date
      * @param  Account  $account   Synthesis for specific account
      * @return array
      */
-    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $stopDate, Account $account = null)
+    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null)
     {
-        $data = $this->getSumsByMonth($member, $startDate, $stopDate, $account);
+        $data = $this->getSumsByMonth($member, $startDate, $endDate, $account);
 
         if (!empty($data)) {
             $previousMonthTotal = $this->getSumBefore($member, $startDate, $account);
