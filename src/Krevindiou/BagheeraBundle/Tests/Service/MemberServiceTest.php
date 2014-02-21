@@ -67,17 +67,6 @@ class MemberServiceTest extends TestCase
         $this->assertTrue($this->get('bagheera.member')->save($member));
     }
 
-    public function testToggleDeactivation()
-    {
-        $membersId = [1, 2];
-
-        $this->get('bagheera.member')->toggleDeactivation($membersId);
-
-        $members = $this->em->getRepository('Model:Member')->findByActive(true);
-
-        $this->assertEquals(count($members), 0);
-    }
-
     public function testGetForgotPasswordForm()
     {
         $forgotPasswordForm = $this->get('bagheera.member')->getForgotPasswordForm();
@@ -119,37 +108,6 @@ class MemberServiceTest extends TestCase
         $ok = $this->get('bagheera.member')->activate($key);
 
         $this->assertTrue($ok);
-    }
-
-    public function testGetMembersNoResult()
-    {
-        $params = [
-            'email' => 'james@example.net'
-        ];
-
-        $members = $this->get('bagheera.member')->getMembers($params);
-
-        $this->assertEquals(count($members), 0);
-    }
-
-    public function testGetMembersJohn()
-    {
-        $params = [
-            'email' => 'john@example.net'
-        ];
-
-        $members = $this->get('bagheera.member')->getMembers($params);
-
-        $this->assertEquals(count($members), 1);
-    }
-
-    public function testGetMembersAll()
-    {
-        $params = [];
-
-        $members = $this->get('bagheera.member')->getMembers($params);
-
-        $this->assertEquals(count($members), 3);
     }
 
     public function testGetBalances()

@@ -7,8 +7,6 @@ namespace Krevindiou\BagheeraBundle\Service;
 
 use Symfony\Component\Form\Form;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Pagerfanta\Pagerfanta;
-use Pagerfanta\Adapter\DoctrineORMAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
 use Krevindiou\BagheeraBundle\Entity\Member;
 
@@ -241,30 +239,6 @@ class MemberService
     }
 
     /**
-     * Activates/Deactivates members
-     *
-     * @param  array $membersId Array of memberId
-     * @return void
-     */
-    public function toggleDeactivation(array $membersId)
-    {
-        foreach ($membersId as $memberId) {
-            $member = $this->em->find('Model:Member', $memberId);
-
-            if (null !== $member) {
-                $member->setActive(!$member->isActive());
-
-                try {
-                    $this->em->persist($member);
-                    $this->em->flush();
-                } catch (\Exception $e) {
-                    $this->logger->err($e->getMessage());
-                }
-            }
-        }
-    }
-
-    /**
      * Returns forgot password form
      *
      * @return Form
@@ -404,26 +378,6 @@ class MemberService
         }
 
         return false;
-    }
-
-    /**
-     * Gets members list
-     *
-     * @param  array      $params      Search criterias
-     * @param  integer    $currentPage Page number
-     * @return Pagerfanta
-     */
-    public function getMembers(array $params = [], $currentPage = 1)
-    {
-        $adapter = new DoctrineORMAdapter(
-            $this->em->getRepository('Model:Member')->getListQuery($params)
-        );
-
-        $pager = new Pagerfanta($adapter);
-        $pager->setMaxPerPage(20);
-        $pager->setCurrentPage($currentPage);
-
-        return $pager;
     }
 
     /**

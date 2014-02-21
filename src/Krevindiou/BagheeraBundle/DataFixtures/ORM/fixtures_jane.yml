@@ -3,7 +3,6 @@ Krevindiou\BagheeraBundle\Entity\Member:
         email: 'jane@example.net'
         password: 'jane'
         country: 'FR'
-        admin: true
         active: true
 
 Krevindiou\BagheeraBundle\Entity\Bank:

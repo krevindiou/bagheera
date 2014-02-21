@@ -13,7 +13,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\MemberRepository")
+ * @ORM\Entity
  * @ORM\Table(name="member")
  * @DoctrineAssert\UniqueEntity("email")
  */
@@ -68,14 +68,6 @@ class Member implements AdvancedUserInterface
      * @Assert\NotBlank()
      */
     protected $country;
-
-    /**
-     * @var boolean $admin
-     *
-     * @ORM\Column(name="is_admin", type="boolean", nullable=false)
-     * @Assert\Type("bool")
-     */
-    protected $admin = false;
 
     /**
      * @var boolean $active
@@ -226,26 +218,6 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set admin
-     *
-     * @param boolean $admin
-     */
-    public function setAdmin($admin)
-    {
-        $this->admin = (bool) $admin;
-    }
-
-    /**
-     * Get admin
-     *
-     * @return boolean
-     */
-    public function isAdmin()
-    {
-        return $this->admin;
-    }
-
-    /**
      * Set active
      *
      * @param boolean $active
@@ -350,7 +322,7 @@ class Member implements AdvancedUserInterface
      */
     public function getRoles()
     {
-        return $this->isAdmin() ? ['ROLE_ADMIN'] : ['ROLE_USER'];
+        return ['ROLE_USER'];
     }
 
     /**

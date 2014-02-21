@@ -10,7 +10,6 @@ use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use JMS\SecurityExtraBundle\Annotation\Secure;
 
 class MemberController extends Controller
 {
@@ -177,30 +176,6 @@ class MemberController extends Controller
 
         return [
             'profileForm' => $form->createView()
-        ];
-    }
-
-    /**
-     * @Route("/manager/members", name="member_list")
-     * @Template
-     * @Secure(roles="ROLE_ADMIN")
-     */
-    public function listAction(Request $request)
-    {
-        $page = $request->query->getInt('page', 1);
-        $members = (array) $request->request->get('members');
-
-        if (!empty($members)) {
-            if ($request->request->get('toggleDeactivation')) {
-                $this->get('bagheera.member')->toggleDeactivation($members);
-                $this->get('session')->getFlashBag()->add('success', 'member.toggle_deactivation_ok');
-            }
-
-            return $this->redirect($this->generateUrl('member_list', ['page' => $page]));
-        }
-
-        return [
-            'members' => $this->get('bagheera.member')->getMembers([], $page)
         ];
     }
 }
