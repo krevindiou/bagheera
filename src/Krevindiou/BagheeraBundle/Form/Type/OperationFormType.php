@@ -138,7 +138,7 @@ class OperationFormType extends AbstractType
                             'label' => 'operation.transfer_account',
                             'required' => false,
                             'empty_value' => 'operation.external_account',
-                            'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                            'class' => 'Model:Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                 return $repository->createQueryBuilder('a')
                                     ->innerJoin('a.bank', 'b')

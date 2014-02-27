@@ -185,7 +185,7 @@ class SchedulerFormType extends AbstractType
                             'label' => 'scheduler.transfer_account',
                             'required' => false,
                             'empty_value' => 'scheduler.external_account',
-                            'class' => 'Krevindiou\BagheeraBundle\Entity\Account',
+                            'class' => 'Model:Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                 return $repository->createQueryBuilder('a')
                                     ->innerJoin('a.bank', 'b')

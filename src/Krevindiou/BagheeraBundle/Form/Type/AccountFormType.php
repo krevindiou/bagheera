@@ -49,7 +49,7 @@ class AccountFormType extends AbstractType
                         [
                             'label' => 'account.bank',
                             'empty_value' => '',
-                            'class' => 'Krevindiou\BagheeraBundle\Entity\Bank',
+                            'class' => 'Model:Bank',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                 return $repository->createQueryBuilder('b')
                                     ->where('b.member = :member')
