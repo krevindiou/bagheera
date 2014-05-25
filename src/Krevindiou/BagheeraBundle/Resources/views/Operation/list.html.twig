@@ -73,9 +73,9 @@
                             icon-credit-card
                         {% elseif operation.paymentMethod.name == 'check' %}
                             icon-list-alt
-                        {% elseif operation.paymentMethod.name == 'withdrawal' %}
+                        {% elseif operation.paymentMethod.name == 'cash_withdrawal' %}
                             icon-money
-                        {% elseif operation.paymentMethod.name == 'transfer' %}
+                        {% elseif operation.paymentMethod.name == 'transfer' or operation.paymentMethod.name == 'direct_debit' %}
                             icon-exchange
                         {% elseif operation.paymentMethod.name == 'deposit' %}
                             icon-money

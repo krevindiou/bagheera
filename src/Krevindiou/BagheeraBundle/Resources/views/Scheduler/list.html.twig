@@ -48,9 +48,9 @@
                             icon-credit-card
                         {% elseif scheduler.paymentMethod.name == 'check' %}
                             icon-list-alt
-                        {% elseif scheduler.paymentMethod.name == 'withdrawal' %}
+                        {% elseif scheduler.paymentMethod.name == 'cash_withdrawal' %}
                             icon-money
-                        {% elseif scheduler.paymentMethod.name == 'transfer' %}
+                        {% elseif scheduler.paymentMethod.name == 'transfer' or scheduler.paymentMethod.name == 'direct_debit' %}
                             icon-exchange
                         {% elseif scheduler.paymentMethod.name == 'deposit' %}
                             icon-money

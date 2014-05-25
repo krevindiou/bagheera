@@ -151,7 +151,8 @@ scheduler:
 payment_method:
     credit_card: "Credit card"
     check: "Check"
-    withdrawal: "Withdrawal"
+    cash_withdrawal: "Cash withdrawal"
+    direct_debit: "Direct debit"
     transfer: "Transfer"
     deposit: "Deposit"
 report:

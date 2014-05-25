@@ -5,8 +5,8 @@ Krevindiou\BagheeraBundle\Entity\PaymentMethod:
     paymentmethod-debit-check:
         name: 'check'
         type: 'debit'
-    paymentmethod-debit-withdrawal:
-        name: 'withdrawal'
+    paymentmethod-debit-cash-withdrawal:
+        name: 'cash_withdrawal'
         type: 'debit'
     paymentmethod-debit-transfer:
         name: 'transfer'
@@ -20,6 +20,9 @@ Krevindiou\BagheeraBundle\Entity\PaymentMethod:
     paymentmethod-credit-deposit:
         name: 'deposit'
         type: 'credit'
+    paymentmethod-debit-direct-debit:
+        name: 'direct_debit'
+        type: 'debit'
 
 Krevindiou\BagheeraBundle\Entity\Category:
     category-cat1:

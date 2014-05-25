@@ -17,7 +17,8 @@ class PaymentMethod
 {
     const PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD = 1;
     const PAYMENT_METHOD_ID_DEBIT_CHECK = 2;
-    const PAYMENT_METHOD_ID_DEBIT_WITHDRAWAL = 3;
+    const PAYMENT_METHOD_ID_DEBIT_CASH_WITHDRAWAL = 3;
+    const PAYMENT_METHOD_ID_DEBIT_DIRECT_DEBIT = 8;
     const PAYMENT_METHOD_ID_DEBIT_TRANSFER = 4;
     const PAYMENT_METHOD_ID_CREDIT_CHECK = 5;
     const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
@@ -37,7 +38,6 @@ class PaymentMethod
      *
      * @ORM\Column(name="name", type="string", length=16, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"credit_card", "check", "withdrawal", "transfer", "deposit"})
      */
     protected $name;
 
