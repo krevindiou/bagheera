@@ -69,7 +69,9 @@
                     <td class="amount {{ (operation.amount < 0) ? 'negative' : 'positive' }}">{{ operation.amount|money(operation.account.currency) }}</td>
                     <td class="payment-method">
                         <i class="{% spaceless %}
-                        {% if operation.paymentMethod.name == 'credit_card' %}
+                        {% if operation.paymentMethod.name == 'initial_balance' %}
+                            icon-dashboard
+                        {% elseif operation.paymentMethod.name == 'credit_card' %}
                             icon-credit-card
                         {% elseif operation.paymentMethod.name == 'check' %}
                             icon-list-alt

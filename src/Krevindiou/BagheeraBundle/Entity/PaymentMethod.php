@@ -15,6 +15,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 class PaymentMethod
 {
+    const PAYMENT_METHOD_ID_INITIAL_BALANCE = 9;
     const PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD = 1;
     const PAYMENT_METHOD_ID_DEBIT_CHECK = 2;
     const PAYMENT_METHOD_ID_DEBIT_CASH_WITHDRAWAL = 3;
@@ -44,8 +45,7 @@ class PaymentMethod
     /**
      * @var string $type
      *
-     * @ORM\Column(name="type", type="string", length=8, nullable=false)
-     * @Assert\NotBlank()
+     * @ORM\Column(name="type", type="string", length=8, nullable=true)
      * @Assert\Choice(choices = {"debit", "credit"})
      */
     protected $type;

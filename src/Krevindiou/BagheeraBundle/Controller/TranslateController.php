@@ -18,6 +18,7 @@ class TranslateController extends Controller
     {
         $translator = $this->get('translator');
         $translations = [
+            'payment_method_initial_balance' => $translator->trans('payment_method.initial_balance'),
             'payment_method_credit_card' => $translator->trans('payment_method.credit_card'),
             'payment_method_check' => $translator->trans('payment_method.check'),
             'payment_method_cash_withdrawal' => $translator->trans('payment_method.cash_withdrawal'),

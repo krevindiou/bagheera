@@ -170,11 +170,10 @@ class AccountService
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
+                $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
                 if ($form->get('initialBalance')->getData() > 0) {
-                    $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER));
                     $operation->setCredit(abs($form->get('initialBalance')->getData()));
                 } else {
-                    $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER));
                     $operation->setDebit(abs($form->get('initialBalance')->getData()));
                 }
                 $operation->setValueDate(new \DateTime());

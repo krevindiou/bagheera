@@ -44,7 +44,9 @@
                     <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|money(scheduler.account.currency) }}</td>
                     <td class="payment-method">
                         <i class="{% spaceless %}
-                        {% if scheduler.paymentMethod.name == 'credit_card' %}
+                        {% if scheduler.paymentMethod.name == 'initial_balance' %}
+                            icon-dashboard
+                        {% elseif scheduler.paymentMethod.name == 'credit_card' %}
                             icon-credit-card
                         {% elseif scheduler.paymentMethod.name == 'check' %}
                             icon-list-alt

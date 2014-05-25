@@ -23,6 +23,8 @@ Krevindiou\BagheeraBundle\Entity\PaymentMethod:
     paymentmethod-debit-direct-debit:
         name: 'direct_debit'
         type: 'debit'
+    paymentmethod-initial-balance:
+        name: 'initial_balance'
 
 Krevindiou\BagheeraBundle\Entity\Category:
     category-cat1:

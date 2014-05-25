@@ -149,6 +149,7 @@ scheduler:
     reconciled: "Reconciled"
     active: "Active"
 payment_method:
+    initial_balance: "Initial balance"
     credit_card: "Credit card"
     check: "Check"
     cash_withdrawal: "Cash withdrawal"
