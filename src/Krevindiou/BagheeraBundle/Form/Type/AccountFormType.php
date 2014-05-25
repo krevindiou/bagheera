@@ -45,7 +45,7 @@ class AccountFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function(FormEvent $event) use ($builder, $member) {
+            function (FormEvent $event) use ($builder, $member) {
                 $form = $event->getForm();
                 $account = $event->getData();
 

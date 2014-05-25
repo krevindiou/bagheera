@@ -63,7 +63,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
                             $operationService->saveMulti(
                                 $account,
                                 $transactions,
-                                function(Account $account, $nb) use ($accountImportService) {
+                                function (Account $account, $nb) use ($accountImportService) {
                                     $accountImportService->updateImport($account, $nb);
                                 }
                             );

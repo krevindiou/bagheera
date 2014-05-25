@@ -84,7 +84,7 @@ class SchedulerService
 
             $conn = $this->em->getConnection();
 
-            $getNbResultsCallback = function() use ($sql, $conn, $params) {
+            $getNbResultsCallback = function () use ($sql, $conn, $params) {
                 $start = strpos($sql, ' FROM ');
                 $length = strpos($sql, ' ORDER BY ') - $start;
 
@@ -97,7 +97,7 @@ class SchedulerService
                 return $stmt->fetchColumn();
             };
 
-            $getSliceCallback = function($offset, $length) use ($sql, $conn, $params) {
+            $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
                 $sql.= 'LIMIT :length OFFSET :offset';
 
                 $params[':length'] = $length;

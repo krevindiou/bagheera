@@ -52,7 +52,7 @@ class ReportFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function(FormEvent $event) use ($builder) {
+            function (FormEvent $event) use ($builder) {
                 $form = $event->getForm();
                 $report = $event->getData();
 
@@ -275,7 +275,7 @@ class ReportFormType extends AbstractType
         $resolver->setDefaults(
             [
                 'data_class' => 'Krevindiou\BagheeraBundle\Entity\Report',
-                'validation_groups' => function(FormInterface $form) {
+                'validation_groups' => function (FormInterface $form) {
                     return ['Default', $form->getData()->getType()];
                 }
             ]

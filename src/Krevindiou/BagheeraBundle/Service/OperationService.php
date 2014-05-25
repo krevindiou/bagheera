@@ -89,7 +89,7 @@ class OperationService
                 }
                 if (0 != count($operationSearch->getCategories())) {
                     $categories = array_map(
-                        function($value) {
+                        function ($value) {
                             return $value->getCategoryId();
                         },
                         $operationSearch->getCategories()->toArray()
@@ -99,7 +99,7 @@ class OperationService
                 }
                 if (0 != count($operationSearch->getPaymentMethods())) {
                     $paymentMethods = array_map(
-                        function($value) {
+                        function ($value) {
                             return $value->getPaymentMethodId();
                         },
                         $operationSearch->getPaymentMethods()->toArray()
@@ -149,7 +149,7 @@ class OperationService
 
             $conn = $this->em->getConnection();
 
-            $getNbResultsCallback = function() use ($sql, $conn, $params) {
+            $getNbResultsCallback = function () use ($sql, $conn, $params) {
                 $start = strpos($sql, ' FROM ');
                 $length = strpos($sql, ' ORDER BY ') - $start;
 
@@ -162,7 +162,7 @@ class OperationService
                 return $stmt->fetchColumn();
             };
 
-            $getSliceCallback = function($offset, $length) use ($sql, $conn, $params) {
+            $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
                 $sql.= 'LIMIT :length OFFSET :offset';
 
                 $params[':length'] = $length;

@@ -43,7 +43,7 @@ class BankFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function(FormEvent $event) use ($builder) {
+            function (FormEvent $event) use ($builder) {
                 $form = $event->getForm();
                 $bank = $event->getData();
 

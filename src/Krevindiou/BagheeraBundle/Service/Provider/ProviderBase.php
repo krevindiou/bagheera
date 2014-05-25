@@ -6,7 +6,6 @@
 namespace Krevindiou\BagheeraBundle\Service\Provider;
 
 use Symfony\Bridge\Monolog\Logger;
-use Krevindiou\BagheeraBundle\Service\Provider\ArrayConverter;
 use Krevindiou\BagheeraBundle\Service\AccountImportService;
 use Krevindiou\BagheeraBundle\Entity\Bank;
 use Krevindiou\BagheeraBundle\Entity\BankAccess;

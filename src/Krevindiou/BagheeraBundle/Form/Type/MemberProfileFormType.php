@@ -7,7 +7,6 @@ namespace Krevindiou\BagheeraBundle\Form\Type;
 
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Krevindiou\BagheeraBundle\Form\Type\MemberRegisterFormType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
