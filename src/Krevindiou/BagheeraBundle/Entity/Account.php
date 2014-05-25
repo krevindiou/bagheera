@@ -66,7 +66,7 @@ class Account
      *
      * @ORM\Column(name="currency", type="string", length=3, nullable=false)
      * @Assert\NotBlank()
-     * @Assert\Length(max = 3)
+     * @Assert\Currency()
      */
     protected $currency;
 
