@@ -19,7 +19,7 @@ class TestLoader extends DataFixtureLoader
         parent::load($manager);
 
         // Encrypt passwords
-        $members = $this->manager->getRepository('Krevindiou\BagheeraBundle\Entity\Member')->findAll();
+        $members = $this->manager->getRepository('Model:Member')->findAll();
         foreach ($members as $member) {
             $encoder = $this->container->get('security.encoder_factory')->getEncoder($member);
             $member->setPassword($encoder->encodePassword($member->getPassword(), $member->getSalt()));
