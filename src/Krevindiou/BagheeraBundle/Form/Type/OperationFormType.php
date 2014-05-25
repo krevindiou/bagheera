@@ -105,7 +105,26 @@ class OperationFormType extends AbstractType
                     'required' => false
                 ]
             )
-        ;
+            ->add(
+                'save',
+                'submit',
+                [
+                    'label' => 'operation.form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            )
+            ->add(
+                'saveAdd',
+                'submit',
+                [
+                    'label' => 'operation.form_submit_add_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,

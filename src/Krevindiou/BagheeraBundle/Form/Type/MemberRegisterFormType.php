@@ -71,7 +71,16 @@ class MemberRegisterFormType extends AbstractType
                     ]
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'member.register.submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

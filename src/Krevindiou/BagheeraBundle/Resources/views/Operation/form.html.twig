@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(operationForm) }}>
+{{ form_start(operationForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
     {{ form_row(operationForm.type) }}
     {{ form_row(operationForm.thirdParty) }}
     {{ form_row(operationForm.amount) }}
@@ -18,14 +18,13 @@
     {{ form_row(operationForm.valueDate) }}
     {{ form_row(operationForm.notes) }}
     {{ form_row(operationForm.reconciled) }}
-    {{ form_rest(operationForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'operation.form_submit_button'|trans }}"/>
+        {{ form_widget(operationForm.save) }}
         {% if operation.operationId is null %}
-        <input type="submit" name="save_add" class="btn btn-primary" value="{{ 'operation.form_submit_add_button'|trans }}"/>
+            {{ form_widget(operationForm.saveAdd) }}
         {% endif %}
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
-</form>
+{{ form_end(operationForm) }}
 {% endblock %}

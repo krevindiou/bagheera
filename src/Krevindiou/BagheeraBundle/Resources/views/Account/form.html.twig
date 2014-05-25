@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(accountForm) }}>
+{{ form_start(accountForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
     {{ form_row(accountForm.bank) }}
     {{ form_row(accountForm.name) }}
     {{ form_row(accountForm.currency) }}
@@ -19,11 +19,10 @@
     {% endif %}
 
     {{ form_row(accountForm.overdraftFacility) }}
-    {{ form_rest(accountForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'account.form_submit_button'|trans }}"/>
+        {{ form_widget(accountForm.submit) }}
         <a href="{{ path('account_list') }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
-</form>
+{{ form_end(accountForm) }}
 {% endblock %}

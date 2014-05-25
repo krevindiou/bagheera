@@ -35,7 +35,16 @@ class MemberForgotPasswordFormType extends AbstractType
                     ]
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'member.forgot_password.submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
     }
 
     public function getName()

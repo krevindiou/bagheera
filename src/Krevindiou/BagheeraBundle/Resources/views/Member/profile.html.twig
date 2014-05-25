@@ -12,13 +12,13 @@
         {{ include("KrevindiouBagheeraBundle:Member:profileMenu.html.twig") }}
     </div>
     <div class="span9">
-        <form action="{{ path('member_profile') }}" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(profileForm) }}>
-            {{ form_widget(profileForm) }}
+        {{ form_start(profileForm, {action: path('member_profile'), attr: {novalidate: true, class: 'form-horizontal'}}) }}
+            {{ form_row(profileForm.email) }}
 
             <div class="form-actions">
-                <input type="submit" class="btn btn-primary" value="{{ 'member.profile.submit_button'|trans }}"/>
+                {{ form_widget(profileForm.submit, {label: 'member.profile.submit_button'|trans}) }}
             </div>
-        </form>
+        {{ form_end(profileForm) }}
     </div>
 </div>
 {% endblock %}

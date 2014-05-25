@@ -30,7 +30,16 @@ class AccountFormType extends AbstractType
                     ]
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'account.form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
 
         $member = $options['member'];
 

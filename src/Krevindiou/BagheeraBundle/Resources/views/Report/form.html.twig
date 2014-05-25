@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(reportForm) }}>
+{{ form_start(reportForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
     {{ form_row(reportForm.title) }}
     {{ form_row(reportForm.homepage) }}
 
@@ -49,11 +49,9 @@
         {{ form_row(reportForm.estimateDurationUnit) }}
     {% endif %}
 
-    {{ form_rest(reportForm) }}
-
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'report.form_submit_button'|trans }}"/>
+        {{ form_widget(reportForm.submit) }}
         <a href="{{ path('report_list') }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
-</form>
+{{ form_end(reportForm) }}
 {% endblock %}

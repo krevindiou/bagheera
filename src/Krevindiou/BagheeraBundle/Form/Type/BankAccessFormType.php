@@ -38,7 +38,16 @@ class BankAccessFormType extends AbstractType
                     ]
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'bank_access.form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
     }
 
     public function setDefaultOptions(OptionsResolverInterface $resolver)

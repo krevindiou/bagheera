@@ -30,7 +30,16 @@ class BankFormType extends AbstractType
                     ]
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'bank.form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,

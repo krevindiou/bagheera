@@ -117,7 +117,26 @@ class OperationSearchFormType extends AbstractType
                     ]
                 ]
             )
-        ;
+            ->add(
+                'search',
+                'submit',
+                [
+                    'label' => 'operation.search_form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            )
+            ->add(
+                'clear',
+                'submit',
+                [
+                    'label' => 'operation.search_form_clear_button',
+                    'attr' => [
+                        'class' => 'btn'
+                    ]
+                ]
+            );
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,

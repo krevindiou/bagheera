@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(schedulerForm) }}>
+{{ form_start(schedulerForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
     {{ form_row(schedulerForm.type) }}
     {{ form_row(schedulerForm.thirdParty) }}
     {{ form_row(schedulerForm.amount) }}
@@ -36,11 +36,10 @@
     {{ form_row(schedulerForm.notes) }}
     {{ form_row(schedulerForm.reconciled) }}
     {{ form_row(schedulerForm.active) }}
-    {{ form_rest(schedulerForm) }}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'scheduler.form_submit_button'|trans }}"/>
+        {{ form_widget(schedulerForm.submit) }}
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
-</form>
+{{ form_end(schedulerForm) }}
 {% endblock %}

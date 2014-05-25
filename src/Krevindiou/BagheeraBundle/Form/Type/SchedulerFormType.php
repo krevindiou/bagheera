@@ -152,7 +152,16 @@ class SchedulerFormType extends AbstractType
                     'required' => false
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'scheduler.form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,

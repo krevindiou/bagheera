@@ -7,14 +7,19 @@
 {% endblock %}
 
 {% block content %}
-<form action="" novalidate="novalidate" method="post" class="form-horizontal" {{ form_enctype(bankForm) }}>
-    {{ form_widget(bankForm) }}
+{{ form_start(bankForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
+    {% if bankForm.name %}
+        {{ form_row(bankForm.name) }}
+    {% endif %}
+    {% if bankForm.provider %}
+        {{ form_row(bankForm.provider) }}
+    {% endif %}
 
     <div class="form-actions">
-        <input type="submit" class="btn btn-primary" value="{{ 'bank.form_submit_button'|trans }}"/>
+        {{ form_widget(bankForm.submit) }}
         <a href="{{ path('account_list') }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
-</form>
+{{ form_end(bankForm) }}
 {% endblock %}
 
 {% form_theme bankForm _self %}

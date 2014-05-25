@@ -39,7 +39,16 @@ class ReportFormType extends AbstractType
                     'required' => false
                 ]
             )
-        ;
+            ->add(
+                'submit',
+                'submit',
+                [
+                    'label' => 'report.form_submit_button',
+                    'attr' => [
+                        'class' => 'btn btn-primary'
+                    ]
+                ]
+            );
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
