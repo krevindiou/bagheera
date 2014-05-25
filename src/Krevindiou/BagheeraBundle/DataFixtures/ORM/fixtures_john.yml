@@ -104,7 +104,7 @@ Krevindiou\BagheeraBundle\Entity\Operation:
         account: @account-john-hsbc-checking_account
         category: @category-cat21
         thirdParty: 'Third party 2'
-        paymentMethod: @paymentmethod-debit-creditcard
+        paymentMethod: @paymentmethod-debit-credit-card
         debit: 48.69
         valueDate: '2011-09-02'
     operation-john-3:
@@ -136,7 +136,7 @@ Krevindiou\BagheeraBundle\Entity\Operation:
         account: @account-john-hsbc-certificate_of_deposit_1
         category: @category-cat21
         thirdParty: 'Third party 2'
-        paymentMethod: @paymentmethod-debit-creditcard
+        paymentMethod: @paymentmethod-debit-credit-card
         debit: 24.77
         valueDate: '2011-09-01'
         reconciled: true
@@ -160,7 +160,7 @@ Krevindiou\BagheeraBundle\Entity\Operation:
         account: @account-john-bank_of_america-checking_account
         category: @category-cat21
         thirdParty: 'Third party 1'
-        paymentMethod: @paymentmethod-debit-creditcard
+        paymentMethod: @paymentmethod-debit-credit-card
         debit: 66.42
         valueDate: '2011-09-01'
         reconciled: true

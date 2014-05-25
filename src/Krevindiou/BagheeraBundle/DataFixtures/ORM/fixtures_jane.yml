@@ -28,14 +28,14 @@ Krevindiou\BagheeraBundle\Entity\Scheduler:
         valueDate: '2011-09-01'
         frequencyUnit: 'month'
         frequencyValue: 1
-        paymentMethod: @paymentmethod-debit-creditcard
+        paymentMethod: @paymentmethod-debit-credit-card
 
 Krevindiou\BagheeraBundle\Entity\Operation:
     operation-jane-1:
         account: @account-jane-bnp_paribas-checking_account
         category: @category-cat21
         thirdParty: 'Third party 1'
-        paymentMethod: @paymentmethod-debit-creditcard
+        paymentMethod: @paymentmethod-debit-credit-card
         debit: 28.19
         valueDate: '2011-09-01'
         reconciled: true

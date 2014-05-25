@@ -1,5 +1,5 @@
 Krevindiou\BagheeraBundle\Entity\PaymentMethod:
-    paymentmethod-debit-creditcard:
+    paymentmethod-debit-credit-card:
         name: 'credit_card'
         type: 'debit'
     paymentmethod-debit-check:
