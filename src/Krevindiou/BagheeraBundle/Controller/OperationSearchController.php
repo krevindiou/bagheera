@@ -63,7 +63,7 @@ class OperationSearchController extends Controller
 
             if ($operationSearchForm->isSubmitted()) {
                 if ($operationSearchForm->isValid()) {
-                    $operationSearchService->setSessionSearch($account, $request->request->get('operation_search_type'));
+                    $operationSearchService->setSessionSearch($account, $request->request->get('operation_search'));
                 }
             }
         }
