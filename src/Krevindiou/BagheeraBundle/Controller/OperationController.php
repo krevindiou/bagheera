@@ -91,9 +91,9 @@ class OperationController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $operationForm->bind($request);
+        $operationForm->handleRequest($request);
 
+        if ($operationForm->isSubmitted()) {
             if ($this->get('bagheera.operation')->saveForm($member, $operationForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'operation.form_confirmation');
 

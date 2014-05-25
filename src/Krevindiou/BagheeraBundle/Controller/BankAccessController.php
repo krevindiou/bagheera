@@ -29,9 +29,9 @@ class BankAccessController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $bankAccessForm->bind($request);
+        $bankAccessForm->handleRequest($request);
 
+        if ($bankAccessForm->isSubmitted()) {
             if ($this->get('bagheera.bank_access')->saveForm($member, $bankAccessForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'bank_access.form_confirmation');
 

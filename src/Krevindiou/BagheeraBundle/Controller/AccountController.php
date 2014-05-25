@@ -90,9 +90,9 @@ class AccountController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $accountForm->bind($request);
+        $accountForm->handleRequest($request);
 
+        if ($accountForm->isSubmitted()) {
             if ($this->get('bagheera.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
@@ -124,9 +124,9 @@ class AccountController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $accountForm->bind($request);
+        $accountForm->handleRequest($request);
 
+        if ($accountForm->isSubmitted()) {
             if ($this->get('bagheera.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 

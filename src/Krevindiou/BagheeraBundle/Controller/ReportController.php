@@ -68,9 +68,9 @@ class ReportController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $reportForm->bind($request);
+        $reportForm->handleRequest($request);
 
+        if ($reportForm->isSubmitted()) {
             if ($this->get('bagheera.report')->saveForm($member, $reportForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'report.form_confirmation');
 

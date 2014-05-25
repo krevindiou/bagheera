@@ -76,9 +76,9 @@ class SchedulerController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $schedulerForm->bind($request);
+        $schedulerForm->handleRequest($request);
 
+        if ($schedulerForm->isSubmitted()) {
             if ($this->get('bagheera.scheduler')->saveForm($member, $schedulerForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
 

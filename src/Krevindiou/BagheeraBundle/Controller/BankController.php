@@ -30,9 +30,9 @@ class BankController extends Controller
             throw $this->createNotFoundException();
         }
 
-        if ($request->getMethod() == 'POST') {
-            $bankForm->bind($request);
+        $bankForm->handleRequest($request);
 
+        if ($bankForm->isSubmitted()) {
             if ($this->get('bagheera.bank')->saveForm($member, $bankForm)) {
                 if ('bank_new' == $request->get('_route') && null !== $bankForm->getData()->getProvider()) {
                     return $this->redirect(

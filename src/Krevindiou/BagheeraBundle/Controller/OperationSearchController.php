@@ -59,10 +59,12 @@ class OperationSearchController extends Controller
                 throw $this->createNotFoundException();
             }
 
-            $operationSearchForm->bind($request);
+            $operationSearchForm->handleRequest($request);
 
-            if ($operationSearchForm->isValid()) {
-                $operationSearchService->setSessionSearch($account, $request->request->get('operation_search_type'));
+            if ($operationSearchForm->isSubmitted()) {
+                if ($operationSearchForm->isValid()) {
+                    $operationSearchService->setSessionSearch($account, $request->request->get('operation_search_type'));
+                }
             }
         }
 

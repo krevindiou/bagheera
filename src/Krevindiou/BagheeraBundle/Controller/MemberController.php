@@ -43,9 +43,9 @@ class MemberController extends Controller
     {
         $form = $this->get('bagheera.member')->getRegisterForm($request->getPreferredLanguage());
 
-        if ($request->getMethod() == 'POST') {
-            $form->bind($request);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
             if ($this->get('bagheera.member')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'member.register.confirmation');
 
@@ -66,9 +66,9 @@ class MemberController extends Controller
     {
         $form = $this->get('bagheera.member')->getForgotPasswordForm();
 
-        if ($request->getMethod() == 'POST') {
-            $form->bind($request);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 if ($this->get('bagheera.member')->sendChangePasswordEmail($form->get('email')->getData())) {
                     $this->get('session')->getFlashBag()->add('info', 'member.forgot_password.confirmation');
@@ -94,9 +94,9 @@ class MemberController extends Controller
         if ($member = $this->get('bagheera.member')->decodeChangePasswordKey($key)) {
             $form = $this->get('bagheera.member')->getChangePasswordForm();
 
-            if ($request->getMethod() == 'POST') {
-                $form->bind($request);
+            $form->handleRequest($request);
 
+            if ($form->isSubmitted()) {
                 if ($form->isValid()) {
                     if ($this->get('bagheera.member')->changePassword($member, $form->get('password')->getData())) {
                         $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
@@ -124,9 +124,9 @@ class MemberController extends Controller
         $form = $this->get('bagheera.member')->getChangePasswordForm();
 
         if ($request->getMethod() == 'POST') {
-            $form->bind($request);
+            $form->handleRequest($request);
 
-            if ($form->isValid()) {
+            if ($form->isSubmitted()) {
                 if ($this->get('bagheera.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
                     $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
@@ -164,9 +164,9 @@ class MemberController extends Controller
     {
         $form = $this->get('bagheera.member')->getProfileForm($this->getUser());
 
-        if ($request->getMethod() == 'POST') {
-            $form->bind($request);
+        $form->handleRequest($request);
 
+        if ($form->isSubmitted()) {
             if ($this->get('bagheera.member')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'member.profile.confirmation');
 
