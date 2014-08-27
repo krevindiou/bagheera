@@ -201,13 +201,17 @@ report:
     estimate_duration_unit_month: "Month"
     estimate_duration_unit_year: "Year"
     synthesis: "Synthesis"
+home:
+    page_title: "Dashboard"
+    total_balance: "Total balance"
+    last_salary: "Last salary"
+    last_biggest_expense: "Last biggest expense"
 home_link: "Home"
 cancel_link: "Cancel"
 yes: "Yes"
 no: "No"
 balance: "Balance"
 reconciled_balance: "Reconciled balance"
-total_balance: "Total balance"
 download: Download
 tip_new_bank: "Welcome to Bagheera!<br/>Now, create your first bank."
 tip_import_account: "You've just associate an external bank account. Now, let's import your data."

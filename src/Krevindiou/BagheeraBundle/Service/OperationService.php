@@ -36,6 +36,9 @@ class OperationService
     /** @DI\Inject("bagheera.account_import") */
     public $accountImportService;
 
+    /** @DI\Inject("%categories_id%") */
+    public $categoriesId;
+
     /**
      * Returns operations list
      *
@@ -553,5 +556,72 @@ class OperationService
         }
 
         return !$error;
+    }
+
+    /**
+     * Returns last salary operation
+     *
+     * @param  Member $member Member entity
+     * @return Operation
+     */
+    public function getLastSalary(Member $member)
+    {
+        $category = $this->em->find('Model:Category', $this->categoriesId['salary']);
+
+        $dql = 'SELECT o ';
+        $dql.= 'FROM Model:Operation o ';
+        $dql.= 'JOIN o.account a ';
+        $dql.= 'JOIN a.bank b ';
+        $dql.= 'WHERE b.member = :member ';
+        $dql.= 'AND o.category = :category ';
+        $dql.= 'AND b.deleted = false ';
+        $dql.= 'AND b.closed = false ';
+        $dql.= 'AND a.deleted = false ';
+        $dql.= 'AND a.closed = false ';
+        $dql.= 'ORDER BY o.valueDate DESC ';
+
+        $query = $this->em->createQuery($dql);
+        $query->setParameter('member', $member);
+        $query->setParameter('category', $category);
+
+        try {
+            return $query->getSingleResult();
+        } catch (\Doctrine\ORM\NoResultException $e) {
+        }
+    }
+
+    /**
+     * Returns last biggest expense since a specified date
+     *
+     * @param  Member $member  Member entity
+     * @param  DateTime $since Biggest expense since this date
+     * @return Operation
+     */
+    public function getLastBiggestExpense(Member $member, \DateTime $since)
+    {
+        $dql = 'SELECT o ';
+        $dql.= 'FROM Model:Operation o ';
+        $dql.= 'JOIN o.account a ';
+        $dql.= 'JOIN a.bank b ';
+        $dql.= 'WHERE b.member = :member ';
+        $dql.= 'AND o.debit > 0 ';
+        $dql.= 'AND o.scheduler IS NULL ';
+        $dql.= 'AND o.valueDate >= :valueDate ';
+        $dql.= 'AND b.deleted = false ';
+        $dql.= 'AND b.closed = false ';
+        $dql.= 'AND a.deleted = false ';
+        $dql.= 'AND a.closed = false ';
+        $dql.= 'GROUP BY o.operationId ';
+        $dql.= 'HAVING o.debit = MAX(o.debit) ';
+
+        $query = $this->em->createQuery($dql);
+        $query->setMaxResults(1);
+        $query->setParameter('member', $member);
+        $query->setParameter('valueDate', $since->format(\DateTime::ISO8601));
+
+        try {
+            return $query->getSingleResult();
+        } catch (\Doctrine\ORM\NoResultException $e) {
+        }
     }
 }

@@ -19,7 +19,7 @@ class Category
     /**
      * @var integer $categoryId
      *
-     * @ORM\Column(name="category_id", type="smallint", nullable=false)
+     * @ORM\Column(name="category_id", type="integer", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */

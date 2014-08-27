@@ -405,6 +405,8 @@ class MemberService
             }
         }
 
+        arsort($balances);
+
         return $balances;
     }
 

@@ -1,25 +1,35 @@
 {% extends 'KrevindiouBagheeraBundle::base.html.twig' %}
 
-{% block page_title 'account.list_page_title'|trans %}
+{% block page_title 'home.page_title'|trans %}
 
 {% block content %}
     {% if global_banks|length > 0 %}
         <div class="row">
-            <div class="span4">
-                <h3>{{ 'total_balance'|trans }}</h3>
-                <hr/>
-                <table class="table stat-table">
-                    <tbody>
+            <div class="span12">
+                <div id="big_stats">
+                    <div class="stat">
                         {% for currency, totalBalance in totalBalances %}
-                            <tr>
-                                <td class="value {{ (totalBalance < 0 ? 'negative' : 'positive') }}">{{ totalBalance|money(currency) }}</td>
-                            </tr>
+                        <div class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}{{ loop.first ? '' : ' mini' }}">{{ totalBalance|money(currency) }}</div>
                         {% endfor %}
-                    </tbody>
-                </table>
+                        <h4>{{ 'home.total_balance'|trans }}</h4>
+                    </div>
+                    {% if lastSalary %}
+                    <div class="stat">
+                        <div class="{{ (lastSalary.amount < 0 ? 'negative' : 'positive') }}">{{ lastSalary.amount|money(lastSalary.account.currency) }}</div>
+                        <h4>{{ 'home.last_salary'|trans }} / {{ lastSalary.valueDate|localizeddate('medium', 'none') }}</h4>
+                    </div>
+                    {% endif %}
+                    {% if lastBiggestExpense %}
+                    <div class="stat">
+                        <div class="{{ (lastBiggestExpense.amount < 0 ? 'negative' : 'positive') }}">{{ lastBiggestExpense.amount|money(lastBiggestExpense.account.currency) }}</div>
+                        <h4>{{ 'home.last_biggest_expense'|trans }} / {{ lastBiggestExpense.valueDate|localizeddate('medium', 'none') }}</h4>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-
-            <div class="span8">
+        </div>
+        <div class="row">
+            <div class="span12">
                 <div id="synthesis" class="chart-holder graph">
                     <img class="loader" src="{{ asset('/bundles/krevindioubagheera/img/loading.svg') }}" alt=""/>
                 </div>

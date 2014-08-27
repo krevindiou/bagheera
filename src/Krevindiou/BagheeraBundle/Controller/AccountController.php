@@ -28,8 +28,13 @@ class AccountController extends Controller
         $member = $this->getUser();
 
         return [
-            'accountService' => $this->get('bagheera.account'),
             'totalBalances' => $this->get('bagheera.member')->getBalances($member),
+            'lastSalary' => $this->get('bagheera.operation')->getLastSalary($member),
+            'lastBiggestExpense' => $this->get('bagheera.operation')->getLastBiggestExpense(
+                $member,
+                (new \DateTime())->modify('-1 month')
+            ),
+            'accountService' => $this->get('bagheera.account'),
             'progress' => $this->get('bagheera.member')->getImportProgress($member),
             'reports' => $this->get('bagheera.report')->getHomepageList($member),
             'tipNewAccount' => $this->get('bagheera.member')->hasNewAccountTip($member)

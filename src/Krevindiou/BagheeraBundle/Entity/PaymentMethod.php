@@ -28,7 +28,7 @@ class PaymentMethod
     /**
      * @var integer $paymentMethodId
      *
-     * @ORM\Column(name="payment_method_id", type="smallint", nullable=false)
+     * @ORM\Column(name="payment_method_id", type="integer", nullable=false)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
