@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+cid=app/cache/docker.cid
+
+project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
+project_name=$(basename "$project_dir")
+
+docker run -d \
+    -P \
+    --cidfile=$cid \
+    -v $project_dir:/var/www/$project_name \
+    "$project_name"
+
+# Remove previous entries
+ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $(cat app/cache/docker.cid))
+ssh-keygen -f ~/.ssh/known_hosts -R $ip
+
+# Wait for the container to start
+sleep 2
+echo 'Waiting for SSH connection...'
+
+./bin/ssh /var/www/$project_name/bin/build /var/www/$project_name

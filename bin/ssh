@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+cid=app/cache/docker.cid
+
+args=$@
+
+if [ -f "$cid" ]; then
+    ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $(cat app/cache/docker.cid))
+    ssh root@$ip -i app/Resources/ssh/id_rsa $args
+else
+    echo "\"$cid\" file not found !"
+fi
