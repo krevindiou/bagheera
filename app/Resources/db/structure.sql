@@ -26,7 +26,7 @@ CREATE TABLE category (
 CREATE TABLE payment_method (
     payment_method_id SERIAL PRIMARY KEY,
     name VARCHAR(16) NOT NULL,
-    type VARCHAR(8) NOT NULL CHECK (type IN ('debit', 'credit')),
+    type VARCHAR(8) CHECK (type IN ('debit', 'credit')),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
