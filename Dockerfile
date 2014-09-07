@@ -54,11 +54,11 @@ RUN mkdir -p /var/run/sshd
 # PHP
 RUN echo "[global]\ndaemonize = no" > /etc/php5/fpm/pool.d/daemonize.conf
 RUN echo 'cgi.fix_pathinfo=0;' >> /etc/php5/fpm/php.ini
-RUN echo 'apc.enable_cli = 1' > /etc/php5/cli/conf.d/enable-apc-cli.ini
+RUN echo 'apc.enable_cli = 0' > /etc/php5/cli/conf.d/enable-apc-cli.ini
 RUN sed -i 's/;date.timezone =/date.timezone = "Europe\/Paris"/' /etc/php5/cli/php.ini
 RUN sed -i 's/;date.timezone =/date.timezone = "Europe\/Paris"/' /etc/php5/fpm/php.ini
 RUN php5enmod mcrypt
-RUN curl -sS https://getcomposer.org/installer | php -d 'apc.enable_cli=0'
+RUN curl -sS https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/local/bin/composer
 
 # PostgreSQL
