@@ -12,14 +12,14 @@ class OperationTest extends TestCase
 {
     public function testFindAll()
     {
-        $operations = $this->em->getRepository('Krevindiou\BagheeraBundle\Entity\Operation')->findAll();
+        $operations = $this->em->getRepository('Model:Operation')->findAll();
 
         $this->assertEquals(count($operations), 14);
     }
 
     public function testOperation()
     {
-        $operation = $this->em->find('Krevindiou\BagheeraBundle\Entity\Operation', 1);
+        $operation = $this->em->find('Model:Operation', 1);
 
         $this->assertEquals($operation->getThirdParty(), 'Third party 1');
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'John - HSBC - Certificate of deposit #1');

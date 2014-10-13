@@ -12,14 +12,14 @@ class MemberTest extends TestCase
 {
     public function testFindAll()
     {
-        $members = $this->em->getRepository('Krevindiou\BagheeraBundle\Entity\Member')->findAll();
+        $members = $this->em->getRepository('Model:Member')->findAll();
 
         $this->assertEquals(count($members), 3);
     }
 
     public function testJohn()
     {
-        $john = $this->em->find('Krevindiou\BagheeraBundle\Entity\Member', 1);
+        $john = $this->em->find('Model:Member', 1);
 
         $this->assertEquals($john->getEmail(), 'john@example.net');
         $this->assertEquals(count($john->getBanks()), 4);

@@ -27,7 +27,7 @@ class AccountServiceTest extends TestCase
 
     public function testGetFormForNewAccount()
     {
-        $hsbc = $this->em->find('Krevindiou\BagheeraBundle\Entity\Bank', 1);
+        $hsbc = $this->em->find('Model:Bank', 1);
 
         $form = $this->get('bagheera.account')->getNewForm($this->john, $hsbc);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
