@@ -112,7 +112,7 @@ class BankService
     {
         if (null === $bank) {
             return $this->formFactory->create('bank_add', null, ['member' => $member]);
-        } else {
+        } elseif ($member === $bank->getMember()) {
             return $this->formFactory->create('bank_edit', $bank);
         }
     }
