@@ -111,13 +111,10 @@ class BankService
     public function getForm(Member $member, Bank $bank = null)
     {
         if (null === $bank) {
-            $bank = new Bank();
-            $bank->setMember($member);
-        } elseif ($member !== $bank->getMember()) {
-            return;
+            return $this->formFactory->create('bank_add', null, ['member' => $member]);
+        } else {
+            return $this->formFactory->create('bank_edit', $bank);
         }
-
-        return $this->formFactory->create('bank', $bank);
     }
 
     /**
@@ -173,12 +170,39 @@ class BankService
      *
      * @param  Member  $member Member entity
      * @param  Form    $form   Bank form
-     * @return boolean
+     * @return Bank
      */
     public function saveForm(Member $member, Form $form)
     {
         if ($form->isValid()) {
-            return $this->doSave($member, $form->getData());
+            if ($form->getData() instanceof Bank) {
+                $this->doSave($member, $form->getData());
+
+                return $form->getData();
+            } else {
+                $data = $form->getData();
+
+                if (null !== $data['provider']) {
+                    $bank = new Bank;
+                    $bank->setMember($member);
+                    $bank->setProvider($data['provider']);
+                    $bank->setName($data['provider']->getName());
+
+                    $this->doSave($member, $bank);
+
+                    return $bank;
+                } elseif (null === $data['bank']) {
+                    $bank = new Bank;
+                    $bank->setMember($member);
+                    $bank->setName($data['other']);
+
+                    $this->doSave($member, $bank);
+
+                    return $bank;
+                } else {
+                    return $data['bank'];
+                }
+            }
         }
 
         return false;

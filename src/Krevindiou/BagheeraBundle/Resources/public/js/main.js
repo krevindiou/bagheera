@@ -96,12 +96,19 @@ var Bagheera = {
                 e.preventDefault();
             });
 
-            $("#bank_type_provider").change(function() {
-                if ($(this).val() != '') {
-                    $("#bank_type_name").val($(this).find(":selected").text()).focus();
-                } else {
-                    $("#bank_type_name").val("").focus();
-                }
+            $("input[name='bank_add[provider]']").change(function() {
+                $("input[name='bank_add[bank]']").attr('checked', false);
+                $("input[name='bank_add[other]']").val("");
+            });
+
+            $("input[name='bank_add[bank]']").change(function() {
+                $("input[name='bank_add[provider]']").attr('checked', false);
+                $("input[name='bank_add[other]']").val("");
+            });
+
+            $("input[name='bank_add[other]']").keydown(function() {
+                $("input[name='bank_add[provider]']").attr('checked', false);
+                $("input[name='bank_add[bank]']").attr('checked', false);
             });
 
             $("input.money").each(function() {
@@ -156,6 +163,13 @@ var Bagheera = {
                 .find("input:not([type=checkbox],[type=radio],[type=image],[type=button],[type=submit],[type=reset]), textarea, select")
                 .filter(":enabled:not([readonly]):visible:first")
                 .focus();
+
+            $("#bank_add_provider label").each(function() {
+                var providerId = $(this).data('providerId');
+                if (null !== providerId) {
+                    $(this).css("backgroundImage", "url('/bundles/krevindioubagheera/img/provider/" + providerId + ".jpg')");
+                }
+            });
         });
     },
 

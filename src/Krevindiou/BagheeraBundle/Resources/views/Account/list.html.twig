@@ -22,7 +22,6 @@
         {% if bank.active %}
         <div class="pull-right">
             <a href="{{ path('bank_edit', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-pencil"></i> {{ 'bank.edit_link'|trans }}</a>
-            <a href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}" class="btn"><i class="icon-plus-sign"></i> {{ 'account.new_link'|trans }}</a>
             <form method="post" action="{{ path('account_list') }}">
                 <input type="hidden" name="banksId[]" value="{{ bank.bankId }}"/>
                 <button type="submit" name="close" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'bank.close_button'|trans }}</button>

@@ -143,3 +143,24 @@ table.table {
 .icon-plus-sign {
     color: #56a356;
 }
+
+#bank_add_provider label {
+    background-repeat: no-repeat;
+    display: inline-block;
+    width: 160px;
+    height: 60px;
+    padding: 10px;
+    margin: 0 10px 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+    transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;
+    &:hover {
+        border-color: rgba(82, 168, 236, 0.8);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+    }
+    input {
+        margin-left: 0;
+        margin-right: 5px;
+    }
+}

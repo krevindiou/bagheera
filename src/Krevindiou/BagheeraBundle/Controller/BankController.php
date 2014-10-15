@@ -18,7 +18,7 @@ class BankController extends Controller
 {
     /**
      * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_edit")
-     * @Route("/new-bank", defaults={"bankId" = null}, name="bank_new")
+     * @Route("/select-bank", defaults={"bankId" = null}, name="bank_new")
      * @Template()
      */
     public function formAction(Request $request, Bank $bank = null)
@@ -33,15 +33,25 @@ class BankController extends Controller
         $bankForm->handleRequest($request);
 
         if ($bankForm->isSubmitted()) {
-            if ($this->get('bagheera.bank')->saveForm($member, $bankForm)) {
-                if ('bank_new' == $request->get('_route') && null !== $bankForm->getData()->getProvider()) {
-                    return $this->redirect(
-                        $this->generateUrl('bank_access_edit', ['bankId' => $bankForm->getData()->getBankId()])
-                    );
+            if ($bank = $this->get('bagheera.bank')->saveForm($member, $bankForm)) {
+                if ('bank_new' == $request->get('_route')) {
+                    if (null !== $bank->getProvider()) {
+                        $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
+
+                        return $this->redirect(
+                            $this->generateUrl('bank_access_edit', ['bankId' => $bank->getBankId()])
+                        );
+                    } else {
+                        return $this->redirect(
+                            $this->generateUrl('account_new_with_bank', ['bankId' => $bank->getBankId()])
+                        );
+                    }
                 } else {
                     $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
 
-                    return $this->redirect($this->generateUrl('account_list'));
+                    return $this->redirect(
+                        $this->generateUrl($request->get('_route'), ['bankId' => $bank->getBankId()])
+                    );
                 }
             }
         }

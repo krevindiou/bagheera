@@ -11,7 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Krevindiou\BagheeraBundle\Repository\BankRepository")
  * @ORM\Table(name="bank")
  */
 class Bank

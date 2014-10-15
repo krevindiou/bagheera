@@ -1,5 +1,7 @@
 member:
     password_fields_must_match: "The password fields must match."
+bank:
+    error_empty: "You must select a bank."
 "Value is required and can't be empty": "Value is required"
 "Bad credentials": "Bad credentials"
 field_does_not_exist: "This email does not exist"
