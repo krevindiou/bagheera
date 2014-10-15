@@ -58,7 +58,7 @@ class Bank
      *
      * @ORM\Column(name="sort_order", type="smallint", nullable=false)
      */
-    protected $sortOrder;
+    protected $sortOrder = 0;
 
     /**
      * @var boolean $favorite
