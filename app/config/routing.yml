@@ -1,5 +1,5 @@
-KrevindiouBagheeraBundle:
-    resource: "@KrevindiouBagheeraBundle/Controller/"
+AppBundle:
+    resource: "@AppBundle/Controller/"
     type:     annotation
     prefix:   /{_locale}
     requirements:

@@ -1,0 +1,81 @@
+{% extends 'AppBundle::base.html.twig' %}
+
+{% block page_title 'scheduler.list_page_title'|trans %}
+
+{% block breadcrumb %}
+    <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
+    <li class="active">{{ 'scheduler.list_page_title'|trans }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="span12 btn-group">
+        <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'scheduler.new_link'|trans }}</a>
+    </div>
+</div>
+
+{% if schedulers|length > 0 %}
+<div class="row">
+    <form class="span12" method="post" action="">
+        <table class="table table-striped table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th>{{ 'scheduler.third_party'|trans }}</th>
+                    <th class="amount">{{ 'scheduler.amount'|trans }}</th>
+                    <th></th>
+                    <th>{{ 'scheduler.category'|trans }}</th>
+                    <th>{{ 'scheduler.frequency_value'|trans }}</th>
+                    <th>{{ 'scheduler.frequency_unit'|trans }}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scheduler in schedulers %}
+                <tr>
+                    <td class="check"><input type="checkbox" name="schedulersId[]" value="{{ scheduler.schedulerId }}" /></td>
+                    <td class="status">
+                        {% if scheduler.active %}
+                        <i class="icon-ok" title="{{ 'scheduler.active'|trans }}"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ scheduler.thirdParty }}</td>
+                    <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|money(scheduler.account.currency) }}</td>
+                    <td class="payment-method">
+                        <i class="{% spaceless %}
+                        {% if scheduler.paymentMethod.name == 'initial_balance' %}
+                            icon-dashboard
+                        {% elseif scheduler.paymentMethod.name == 'credit_card' %}
+                            icon-credit-card
+                        {% elseif scheduler.paymentMethod.name == 'check' %}
+                            icon-list-alt
+                        {% elseif scheduler.paymentMethod.name == 'cash_withdrawal' %}
+                            icon-money
+                        {% elseif scheduler.paymentMethod.name == 'transfer' or scheduler.paymentMethod.name == 'direct_debit' %}
+                            icon-exchange
+                        {% elseif scheduler.paymentMethod.name == 'deposit' %}
+                            icon-money
+                        {% endif %}
+                        {% endspaceless %}" title="{{ ('payment_method.' ~ scheduler.paymentMethod.name)|trans }}"></i>
+                    </td>
+                    <td>{{ scheduler.category.name }}</td>
+                    <td>{{ scheduler.frequencyValue }}</td>
+                    <td>{{ ('scheduler.frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
+                    <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="btn-group hide">
+            <button type="submit" name="delete" class="btn" data-toggle="modal" data-target="#modal-confirmation"><i class="icon-trash"></i> {{ 'scheduler.delete_button'|trans }}</button>
+        </div>
+
+        <div class="pagination pagination-right">
+        {{ pagerfanta(schedulers, 'twitter_bootstrap') }}
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

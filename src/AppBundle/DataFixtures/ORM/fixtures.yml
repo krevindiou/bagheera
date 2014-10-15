@@ -1,0 +1,47 @@
+AppBundle\Entity\PaymentMethod:
+    paymentmethod-debit-credit-card:
+        name: 'credit_card'
+        type: 'debit'
+    paymentmethod-debit-check:
+        name: 'check'
+        type: 'debit'
+    paymentmethod-debit-cash-withdrawal:
+        name: 'cash_withdrawal'
+        type: 'debit'
+    paymentmethod-debit-transfer:
+        name: 'transfer'
+        type: 'debit'
+    paymentmethod-credit-check:
+        name: 'check'
+        type: 'credit'
+    paymentmethod-credit-transfer:
+        name: 'transfer'
+        type: 'credit'
+    paymentmethod-credit-deposit:
+        name: 'deposit'
+        type: 'credit'
+    paymentmethod-debit-direct-debit:
+        name: 'direct_debit'
+        type: 'debit'
+    paymentmethod-initial-balance:
+        name: 'initial_balance'
+
+AppBundle\Entity\Category:
+    category-cat1:
+        type: 'credit'
+        name: 'Cat 1'
+    category-cat11:
+        parentCategory: @category-cat1
+        type: 'credit'
+        name: 'Cat 1.1'
+    category-cat2:
+        type: 'debit'
+        name: 'Cat 2'
+    category-cat21:
+        parentCategory: @category-cat2
+        type: 'debit'
+        name: 'Cat 2.1'
+    category-cat22:
+        parentCategory: @category-cat2
+        type: 'debit'
+        name: 'Cat 2.2'

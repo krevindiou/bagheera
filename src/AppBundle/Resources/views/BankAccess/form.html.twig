@@ -1,0 +1,16 @@
+{% extends 'AppBundle::base.html.twig' %}
+
+{% block page_title 'bank_access.form_page_title'|trans %}
+
+{% block content %}
+{{ form_start(bankAccessForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
+    {{ form_row(bankAccessForm.plainLogin) }}
+    {{ form_row(bankAccessForm.plainPassword) }}
+
+    <div class="control-group">
+        <div class="controls">
+            {{ form_widget(bankAccessForm.submit) }}
+        </div>
+    </div>
+{{ form_end(bankAccessForm) }}
+{% endblock %}

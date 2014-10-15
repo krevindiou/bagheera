@@ -1,0 +1,45 @@
+{% extends 'AppBundle::base.html.twig' %}
+
+{% block page_title scheduler.schedulerId is null ? 'scheduler.new_form_page_title'|trans : 'scheduler.edit_form_page_title'|trans %}
+
+{% block breadcrumb %}
+    <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
+    <li><a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}">{{ 'scheduler_list'|trans }}</a> <i class="icon-chevron-right"></i></li>
+    <li class="active">{{ scheduler.schedulerId is null ? 'scheduler.new_form_page_title'|trans : 'scheduler.edit_form_page_title'|trans }}</li>
+{% endblock %}
+
+{% block content %}
+{{ form_start(schedulerForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
+    {{ form_row(schedulerForm.type) }}
+    {{ form_row(schedulerForm.thirdParty) }}
+    {{ form_row(schedulerForm.amount) }}
+    {{ form_row(schedulerForm.category) }}
+    {{ form_row(schedulerForm.paymentMethod) }}
+    {{ form_row(schedulerForm.transferAccount) }}
+    {{ form_row(schedulerForm.valueDate) }}
+    {{ form_row(schedulerForm.limitDate) }}
+
+    {% spaceless %}
+    <div class="control-group">
+        {{ form_label(schedulerForm.frequencyValue, 'scheduler.frequency'|trans, {label_attr: {class: 'control-label'}}) }}
+
+        <div class="controls">
+            {{ form_errors(schedulerForm.frequencyValue) }}
+            {{ form_widget(schedulerForm.frequencyValue) }}
+            &nbsp;
+            {{ form_errors(schedulerForm.frequencyUnit) }}
+            {{ form_widget(schedulerForm.frequencyUnit) }}
+        </div>
+    </div>
+    {% endspaceless %}
+
+    {{ form_row(schedulerForm.notes) }}
+    {{ form_row(schedulerForm.reconciled) }}
+    {{ form_row(schedulerForm.active) }}
+
+    <div class="form-actions">
+        {{ form_widget(schedulerForm.submit) }}
+        <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
+    </div>
+{{ form_end(schedulerForm) }}
+{% endblock %}

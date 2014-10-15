@@ -15,7 +15,7 @@ security:
 
     providers:
         main:
-            entity: { class: Krevindiou\BagheeraBundle\Entity\Member, property: email }
+            entity: { class: AppBundle\Entity\Member, property: email }
 
     firewalls:
         dev:
