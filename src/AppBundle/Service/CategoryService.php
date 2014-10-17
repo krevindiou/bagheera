@@ -8,7 +8,7 @@ namespace AppBundle\Service;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * @DI\Service("bagheera.category")
+ * @DI\Service("app.category")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "category"})
  */
 class CategoryService

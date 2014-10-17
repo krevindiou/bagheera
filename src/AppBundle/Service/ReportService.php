@@ -12,7 +12,7 @@ use AppBundle\Entity\Account;
 use AppBundle\Entity\Report;
 
 /**
- * @DI\Service("bagheera.report")
+ * @DI\Service("app.report")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "report"})
  */
 class ReportService

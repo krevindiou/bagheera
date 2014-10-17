@@ -16,7 +16,7 @@ class TwigExtension extends \Twig_Extension
     /** @DI\Inject("security.context") */
     public $security;
 
-    /** @DI\Inject("bagheera.bank") */
+    /** @DI\Inject("app.bank") */
     public $bankService;
 
     public function getFilters()

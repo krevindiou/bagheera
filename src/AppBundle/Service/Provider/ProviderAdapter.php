@@ -11,7 +11,7 @@ use AppBundle\Entity\Account;
 use AppBundle\Entity\BankAccess;
 
 /**
- * @DI\Service("bagheera.provider_adapter")
+ * @DI\Service("app.provider_adapter")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "provider_adapter"})
  */
 class ProviderAdapter
@@ -22,7 +22,7 @@ class ProviderAdapter
     /** @DI\Inject("%secret%") */
     public $key;
 
-    /** @DI\Inject("bagheera.account_import") */
+    /** @DI\Inject("app.account_import") */
     public $accountImportService;
 
     /** @DI\Inject("service_container") */
@@ -47,7 +47,7 @@ class ProviderAdapter
 
             if (null !== $provider) {
                 try {
-                    $providerService = $this->container->get('bagheera.provider_adapter.' . $provider->getProviderId());
+                    $providerService = $this->container->get('app.provider_adapter.' . $provider->getProviderId());
                     $providerService->setBank($bank);
                     $providerService->setBankAccess($bankAccess);
                     $providerService->setKey($this->key);

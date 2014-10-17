@@ -12,7 +12,7 @@ use AppBundle\Entity\Member;
 use AppBundle\Entity\Bank;
 
 /**
- * @DI\Service("bagheera.bank")
+ * @DI\Service("app.bank")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "bank"})
  */
 class BankService
@@ -29,7 +29,7 @@ class BankService
     /** @DI\Inject */
     public $validator;
 
-    /** @DI\Inject("bagheera.account") */
+    /** @DI\Inject("app.account") */
     public $accountService;
 
     /** @DI\Inject("%kernel.root_dir%") */

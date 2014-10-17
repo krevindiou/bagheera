@@ -12,7 +12,7 @@ use AppBundle\Entity\Account;
 use AppBundle\Entity\OperationSearch;
 
 /**
- * @DI\Service("bagheera.operation_search")
+ * @DI\Service("app.operation_search")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "operation_search"})
  */
 class OperationSearchService

@@ -28,16 +28,16 @@ class AccountController extends Controller
         $member = $this->getUser();
 
         return [
-            'totalBalances' => $this->get('bagheera.member')->getBalances($member),
-            'lastSalary' => $this->get('bagheera.operation')->getLastSalary($member),
-            'lastBiggestExpense' => $this->get('bagheera.operation')->getLastBiggestExpense(
+            'totalBalances' => $this->get('app.member')->getBalances($member),
+            'lastSalary' => $this->get('app.operation')->getLastSalary($member),
+            'lastBiggestExpense' => $this->get('app.operation')->getLastBiggestExpense(
                 $member,
                 (new \DateTime())->modify('-1 month')
             ),
-            'accountService' => $this->get('bagheera.account'),
-            'progress' => $this->get('bagheera.member')->getImportProgress($member),
-            'reports' => $this->get('bagheera.report')->getHomepageList($member),
-            'tipNewAccount' => $this->get('bagheera.member')->hasNewAccountTip($member)
+            'accountService' => $this->get('app.account'),
+            'progress' => $this->get('app.member')->getImportProgress($member),
+            'reports' => $this->get('app.report')->getHomepageList($member),
+            'tipNewAccount' => $this->get('app.member')->hasNewAccountTip($member)
         ];
     }
 
@@ -49,7 +49,7 @@ class AccountController extends Controller
     public function listAction()
     {
         return [
-            'banks' => $this->get('bagheera.bank')->getList($this->getUser(), false)
+            'banks' => $this->get('app.bank')->getList($this->getUser(), false)
         ];
     }
 
@@ -65,12 +65,12 @@ class AccountController extends Controller
         $member = $this->getUser();
 
         if ($request->request->has('close')) {
-            $this->get('bagheera.account')->close($member, $accountsId);
-            $this->get('bagheera.bank')->close($member, $banksId);
+            $this->get('app.account')->close($member, $accountsId);
+            $this->get('app.bank')->close($member, $banksId);
             $this->get('session')->getFlashBag()->add('success', 'account.close_confirmation');
         } elseif ($request->request->has('delete')) {
-            $this->get('bagheera.account')->delete($member, $accountsId);
-            $this->get('bagheera.bank')->delete($member, $banksId);
+            $this->get('app.account')->delete($member, $accountsId);
+            $this->get('app.bank')->delete($member, $banksId);
             $this->get('session')->getFlashBag()->add('success', 'account.delete_confirmation');
         } elseif ($request->request->has('share')) {
             // @todo
@@ -89,7 +89,7 @@ class AccountController extends Controller
     {
         $member = $this->getUser();
 
-        $accountForm = $this->get('bagheera.account')->getNewForm($member, $bank);
+        $accountForm = $this->get('app.account')->getNewForm($member, $bank);
 
         if (null === $accountForm) {
             throw $this->createNotFoundException();
@@ -98,7 +98,7 @@ class AccountController extends Controller
         $accountForm->handleRequest($request);
 
         if ($accountForm->isSubmitted()) {
-            if ($this->get('bagheera.account')->saveForm($member, $accountForm)) {
+            if ($this->get('app.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
                 return $this->redirect(
@@ -123,7 +123,7 @@ class AccountController extends Controller
     {
         $member = $this->getUser();
 
-        $accountForm = $this->get('bagheera.account')->getEditForm($member, $account);
+        $accountForm = $this->get('app.account')->getEditForm($member, $account);
 
         if (null === $accountForm) {
             throw $this->createNotFoundException();
@@ -132,7 +132,7 @@ class AccountController extends Controller
         $accountForm->handleRequest($request);
 
         if ($accountForm->isSubmitted()) {
-            if ($this->get('bagheera.account')->saveForm($member, $accountForm)) {
+            if ($this->get('app.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
                 return $this->redirect($this->generateUrl('account_list'));
@@ -153,7 +153,7 @@ class AccountController extends Controller
      */
     public function importProgressAction()
     {
-        $progress = $this->get('bagheera.member')->getImportProgress($this->getUser());
+        $progress = $this->get('app.member')->getImportProgress($this->getUser());
 
         $data = [];
         foreach ($progress as $v) {

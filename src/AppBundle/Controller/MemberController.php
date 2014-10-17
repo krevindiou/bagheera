@@ -41,12 +41,12 @@ class MemberController extends Controller
      */
     public function registerAction(Request $request)
     {
-        $form = $this->get('bagheera.member')->getRegisterForm($request->getPreferredLanguage());
+        $form = $this->get('app.member')->getRegisterForm($request->getPreferredLanguage());
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($this->get('bagheera.member')->saveForm($form)) {
+            if ($this->get('app.member')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'member.register.confirmation');
 
                 return $this->redirect($this->generateUrl('member_login'));
@@ -64,13 +64,13 @@ class MemberController extends Controller
      */
     public function forgotPasswordAction(Request $request)
     {
-        $form = $this->get('bagheera.member')->getForgotPasswordForm();
+        $form = $this->get('app.member')->getForgotPasswordForm();
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                if ($this->get('bagheera.member')->sendChangePasswordEmail($form->get('email')->getData())) {
+                if ($this->get('app.member')->sendChangePasswordEmail($form->get('email')->getData())) {
                     $this->get('session')->getFlashBag()->add('info', 'member.forgot_password.confirmation');
 
                     return $this->redirect($this->generateUrl('member_login'));
@@ -91,14 +91,14 @@ class MemberController extends Controller
     {
         $key = $request->query->get('key');
 
-        if ($member = $this->get('bagheera.member')->decodeChangePasswordKey($key)) {
-            $form = $this->get('bagheera.member')->getChangePasswordForm();
+        if ($member = $this->get('app.member')->decodeChangePasswordKey($key)) {
+            $form = $this->get('app.member')->getChangePasswordForm();
 
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
                 if ($form->isValid()) {
-                    if ($this->get('bagheera.member')->changePassword($member, $form->get('password')->getData())) {
+                    if ($this->get('app.member')->changePassword($member, $form->get('password')->getData())) {
                         $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
                         return $this->redirect($this->generateUrl('member_login'));
@@ -121,13 +121,13 @@ class MemberController extends Controller
      */
     public function changePasswordAction(Request $request)
     {
-        $form = $this->get('bagheera.member')->getChangePasswordForm();
+        $form = $this->get('app.member')->getChangePasswordForm();
 
         if ($request->getMethod() == 'POST') {
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
-                if ($this->get('bagheera.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
+                if ($this->get('app.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
                     $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
                     return $this->redirect($this->generateUrl($request->get('_route')));
@@ -147,7 +147,7 @@ class MemberController extends Controller
     {
         $key = $request->query->get('key');
 
-        if (null !== $key && $this->get('bagheera.member')->activate($key)) {
+        if (null !== $key && $this->get('app.member')->activate($key)) {
             $this->get('session')->getFlashBag()->add('success', 'member.register.activation_confirmation');
         } else {
             $this->get('session')->getFlashBag()->add('error', 'member.register.activation_error');
@@ -162,12 +162,12 @@ class MemberController extends Controller
      */
     public function profileAction(Request $request)
     {
-        $form = $this->get('bagheera.member')->getProfileForm($this->getUser());
+        $form = $this->get('app.member')->getProfileForm($this->getUser());
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($this->get('bagheera.member')->saveForm($form)) {
+            if ($this->get('app.member')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'member.profile.confirmation');
 
                 return $this->redirect($this->generateUrl('member_profile'));

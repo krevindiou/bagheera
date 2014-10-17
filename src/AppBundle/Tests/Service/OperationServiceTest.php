@@ -21,28 +21,28 @@ class OperationServiceTest extends TestCase
     public function testGetFormForForeignMember()
     {
         $operation = $this->em->find('Model:Operation', 1);
-        $form = $this->get('bagheera.operation')->getForm($this->jane, $operation);
+        $form = $this->get('app.operation')->getForm($this->jane, $operation);
         $this->assertNull($form);
     }
 
     public function testGetFormForNewOperation()
     {
         $account = $this->em->find('Model:Account', 1);
-        $form = $this->get('bagheera.operation')->getForm($this->john, null, $account);
+        $form = $this->get('app.operation')->getForm($this->john, null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingOperation()
     {
         $operation = $this->em->find('Model:Operation', 1);
-        $form = $this->get('bagheera.operation')->getForm($this->john, $operation);
+        $form = $this->get('app.operation')->getForm($this->john, $operation);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testSaveNewOperationWithNoData()
     {
         $operation = new Operation();
-        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertFalse($this->get('app.operation')->save($this->john, $operation));
     }
 
     public function testSaveNewOperationWithForeignAccount()
@@ -52,7 +52,7 @@ class OperationServiceTest extends TestCase
         $operation->setThirdParty('Test');
         $operation->setValueDate(new \DateTime());
         $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', 1));
-        $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));
+        $this->assertFalse($this->get('app.operation')->save($this->jane, $operation));
     }
 
     public function testSaveNewOperation()
@@ -62,33 +62,33 @@ class OperationServiceTest extends TestCase
         $operation->setThirdParty('Test');
         $operation->setValueDate(new \DateTime());
         $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', 1));
-        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
     }
 
     public function testSaveExistingOperationWithBadData()
     {
         $operation = $this->em->find('Model:Operation', 1);
         $operation->setThirdParty('');
-        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertFalse($this->get('app.operation')->save($this->john, $operation));
     }
 
     public function testSaveExistingOperationWithForeignAccount()
     {
         $operation = $this->em->find('Model:Operation', 1);
         $operation->setAccount($this->em->find('Model:Account', 8));
-        $this->assertFalse($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertFalse($this->get('app.operation')->save($this->john, $operation));
     }
 
     public function testSaveExistingOperationWithForeignMember()
     {
         $operation = $this->em->find('Model:Operation', 1);
-        $this->assertFalse($this->get('bagheera.operation')->save($this->jane, $operation));
+        $this->assertFalse($this->get('app.operation')->save($this->jane, $operation));
     }
 
     public function testSaveExistingOperation()
     {
         $operation = $this->em->find('Model:Operation', 1);
-        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
     }
 
     public function testEditAndRemoveTransfer()
@@ -97,7 +97,7 @@ class OperationServiceTest extends TestCase
         $operation->setTransferAccount(null);
         $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', 5));
 
-        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
         $operation = $this->em->find('Model:Operation', 2);
@@ -110,7 +110,7 @@ class OperationServiceTest extends TestCase
         $operation = $this->em->find('Model:Operation', 2);
         $operation->setTransferAccount($this->em->find('Model:Account', 3));
 
-        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
         $operation = $this->em->find('Model:Operation', 2);
@@ -125,7 +125,7 @@ class OperationServiceTest extends TestCase
         $operation->setTransferAccount($this->em->find('Model:Account', 3));
         $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', 4));
 
-        $this->assertTrue($this->get('bagheera.operation')->save($this->john, $operation));
+        $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
         $operation = $this->em->find('Model:Operation', 2);
@@ -137,7 +137,7 @@ class OperationServiceTest extends TestCase
     public function testGetOperations()
     {
         $account = $this->em->find('Model:Account', 1);
-        $operations = $this->get('bagheera.operation')->getList($this->john, $account);
+        $operations = $this->get('app.operation')->getList($this->john, $account);
 
         $this->assertEquals(count($operations), 4);
     }
@@ -146,13 +146,13 @@ class OperationServiceTest extends TestCase
     {
         $account = $this->em->find('Model:Account', 1);
 
-        $operationsBeforeDelete = $this->get('bagheera.operation')->getList($this->john, $account);
+        $operationsBeforeDelete = $this->get('app.operation')->getList($this->john, $account);
         $countOperationsBeforeDelete = count($operationsBeforeDelete);
 
         $operationsId = [1, 3];
-        $this->get('bagheera.operation')->delete($this->john, $operationsId);
+        $this->get('app.operation')->delete($this->john, $operationsId);
 
-        $operationsAfterDelete = $this->get('bagheera.operation')->getList($this->john, $account);
+        $operationsAfterDelete = $this->get('app.operation')->getList($this->john, $account);
         $countOperationsAfterDelete = count($operationsAfterDelete);
 
         $this->assertEquals($countOperationsAfterDelete, $countOperationsBeforeDelete - 2);
@@ -168,7 +168,7 @@ class OperationServiceTest extends TestCase
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
         $operationsId = [1];
-        $this->get('bagheera.operation')->reconcile($this->john, $operationsId);
+        $this->get('app.operation')->reconcile($this->john, $operationsId);
 
         $dql = 'SELECT COUNT(o) ';
         $dql.= 'FROM Model:Operation o ';

@@ -10,7 +10,7 @@ use AppBundle\Entity\Account;
 use AppBundle\Entity\AccountImport;
 
 /**
- * @DI\Service("bagheera.account_import")
+ * @DI\Service("app.account_import")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "account_import"})
  */
 class AccountImportService

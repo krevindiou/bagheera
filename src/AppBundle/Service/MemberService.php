@@ -11,7 +11,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 use AppBundle\Entity\Member;
 
 /**
- * @DI\Service("bagheera.member")
+ * @DI\Service("app.member")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "member"})
  * @DI\Tag("kernel.event_listener", attributes = {"event" = "security.interactive_login", "method" = "onLogin"})
  */
@@ -44,16 +44,16 @@ class MemberService
     /** @DI\Inject */
     public $validator;
 
-    /** @DI\Inject("bagheera.bank") */
+    /** @DI\Inject("app.bank") */
     public $bankService;
 
-    /** @DI\Inject("bagheera.account") */
+    /** @DI\Inject("app.account") */
     public $accountService;
 
-    /** @DI\Inject("bagheera.scheduler") */
+    /** @DI\Inject("app.scheduler") */
     public $schedulerService;
 
-    /** @DI\Inject("bagheera.crypt") */
+    /** @DI\Inject("app.crypt") */
     public $cryptService;
 
     /** @DI\Inject */

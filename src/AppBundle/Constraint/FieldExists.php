@@ -46,6 +46,6 @@ class FieldExists extends Constraint
      */
     public function validatedBy()
     {
-        return 'bagheera.validator.field_exists';
+        return 'app.validator.field_exists';
     }
 }

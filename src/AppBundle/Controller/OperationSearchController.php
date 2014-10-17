@@ -24,7 +24,7 @@ class OperationSearchController extends Controller
      */
     public function formAction(Request $request, Account $account, $display = true)
     {
-        $operationSearchService = $this->get('bagheera.operation_search');
+        $operationSearchService = $this->get('app.operation_search');
 
         $operationSearch = $operationSearchService->getSessionSearch($account);
 
@@ -47,7 +47,7 @@ class OperationSearchController extends Controller
      */
     public function submitAction(Request $request, Account $account)
     {
-        $operationSearchService = $this->get('bagheera.operation_search');
+        $operationSearchService = $this->get('app.operation_search');
 
         if ('' != $request->request->get('clear')) {
             $operationSearchService->clearSessionSearch($account);

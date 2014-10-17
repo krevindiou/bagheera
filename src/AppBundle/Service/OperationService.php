@@ -16,7 +16,7 @@ use AppBundle\Entity\OperationSearch;
 use AppBundle\Entity\PaymentMethod;
 
 /**
- * @DI\Service("bagheera.operation")
+ * @DI\Service("app.operation")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "operation"})
  */
 class OperationService
@@ -33,7 +33,7 @@ class OperationService
     /** @DI\Inject */
     public $validator;
 
-    /** @DI\Inject("bagheera.account_import") */
+    /** @DI\Inject("app.account_import") */
     public $accountImportService;
 
     /** @DI\Inject("%categories_id%") */

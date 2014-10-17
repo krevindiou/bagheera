@@ -14,7 +14,7 @@ use AppBundle\Entity\Operation;
 use AppBundle\Entity\PaymentMethod;
 
 /**
- * @DI\Service("bagheera.account")
+ * @DI\Service("app.account")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "account"})
  */
 class AccountService
@@ -34,7 +34,7 @@ class AccountService
     /** @DI\Inject */
     public $translator;
 
-    /** @DI\Inject("bagheera.operation") */
+    /** @DI\Inject("app.operation") */
     public $operationService;
 
     /**

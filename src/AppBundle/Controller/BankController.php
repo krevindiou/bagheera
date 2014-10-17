@@ -25,7 +25,7 @@ class BankController extends Controller
     {
         $member = $this->getUser();
 
-        $bankForm = $this->get('bagheera.bank')->getForm($member, $bank);
+        $bankForm = $this->get('app.bank')->getForm($member, $bank);
         if (null === $bankForm) {
             throw $this->createNotFoundException();
         }
@@ -33,7 +33,7 @@ class BankController extends Controller
         $bankForm->handleRequest($request);
 
         if ($bankForm->isSubmitted()) {
-            if ($bank = $this->get('bagheera.bank')->saveForm($member, $bankForm)) {
+            if ($bank = $this->get('app.bank')->saveForm($member, $bankForm)) {
                 if ('bank_new' == $request->get('_route')) {
                     if (null !== $bank->getProvider()) {
                         $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
@@ -66,7 +66,7 @@ class BankController extends Controller
      */
     public function importAction(Bank $bank)
     {
-        $this->get('bagheera.bank')->importExternalBank($bank);
+        $this->get('app.bank')->importExternalBank($bank);
 
         return $this->redirect($this->generateUrl('account_list'));
     }

@@ -17,7 +17,7 @@ use AppBundle\Entity\Scheduler;
 use AppBundle\Entity\PaymentMethod;
 
 /**
- * @DI\Service("bagheera.scheduler")
+ * @DI\Service("app.scheduler")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "scheduler"})
  */
 class SchedulerService
@@ -34,7 +34,7 @@ class SchedulerService
     /** @DI\Inject */
     public $validator;
 
-    /** @DI\Inject("bagheera.operation") */
+    /** @DI\Inject("app.operation") */
     public $operationService;
 
     /**

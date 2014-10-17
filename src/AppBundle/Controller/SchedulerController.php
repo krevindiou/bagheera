@@ -30,7 +30,7 @@ class SchedulerController extends Controller
 
         $page = $request->query->getInt('page', 1);
 
-        $schedulers = $this->get('bagheera.scheduler')->getList($member, $account, $page);
+        $schedulers = $this->get('app.scheduler')->getList($member, $account, $page);
         if (null === $schedulers) {
             throw $this->createNotFoundException();
         }
@@ -51,7 +51,7 @@ class SchedulerController extends Controller
             $schedulersId = (array) $request->request->get('schedulersId');
             $member = $this->getUser();
 
-            $this->get('bagheera.scheduler')->delete($member, $schedulersId);
+            $this->get('app.scheduler')->delete($member, $schedulersId);
             $this->get('session')->getFlashBag()->add('success', 'scheduler.delete_confirmation');
         }
 
@@ -71,7 +71,7 @@ class SchedulerController extends Controller
     {
         $member = $this->getUser();
 
-        $schedulerForm = $this->get('bagheera.scheduler')->getForm($member, $scheduler, $account);
+        $schedulerForm = $this->get('app.scheduler')->getForm($member, $scheduler, $account);
         if (null === $schedulerForm) {
             throw $this->createNotFoundException();
         }
@@ -79,7 +79,7 @@ class SchedulerController extends Controller
         $schedulerForm->handleRequest($request);
 
         if ($schedulerForm->isSubmitted()) {
-            if ($this->get('bagheera.scheduler')->saveForm($member, $schedulerForm)) {
+            if ($this->get('app.scheduler')->saveForm($member, $schedulerForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
 
                 return $this->redirect(

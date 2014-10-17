@@ -31,13 +31,13 @@ class OperationController extends Controller
 
         $page = $request->query->getInt('page', 1);
 
-        $operationSearch = $this->get('bagheera.operation_search')->getSessionSearch($account);
-        $operations = $this->get('bagheera.operation')->getList($member, $account, $page, $operationSearch);
+        $operationSearch = $this->get('app.operation_search')->getSessionSearch($account);
+        $operations = $this->get('app.operation')->getList($member, $account, $page, $operationSearch);
         if (null === $operations) {
             throw $this->createNotFoundException();
         }
 
-        $accountService = $this->get('bagheera.account');
+        $accountService = $this->get('app.account');
 
         $balance = $accountService->getBalance($member, $account);
         $reconciledBalance = $accountService->getBalance($member, $account, true);
@@ -63,10 +63,10 @@ class OperationController extends Controller
         $member = $this->getUser();
 
         if ($request->request->has('delete')) {
-            $this->get('bagheera.operation')->delete($member, $operationsId);
+            $this->get('app.operation')->delete($member, $operationsId);
             $this->get('session')->getFlashBag()->add('success', 'operation.delete_confirmation');
         } elseif ($request->request->has('reconcile')) {
-            $this->get('bagheera.operation')->reconcile($member, $operationsId);
+            $this->get('app.operation')->reconcile($member, $operationsId);
             $this->get('session')->getFlashBag()->add('success', 'operation.reconcile_confirmation');
         }
 
@@ -86,7 +86,7 @@ class OperationController extends Controller
     {
         $member = $this->getUser();
 
-        $operationForm = $this->get('bagheera.operation')->getForm($member, $operation, $account);
+        $operationForm = $this->get('app.operation')->getForm($member, $operation, $account);
         if (null === $operationForm) {
             throw $this->createNotFoundException();
         }
@@ -94,7 +94,7 @@ class OperationController extends Controller
         $operationForm->handleRequest($request);
 
         if ($operationForm->isSubmitted()) {
-            if ($this->get('bagheera.operation')->saveForm($member, $operationForm)) {
+            if ($this->get('app.operation')->saveForm($member, $operationForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'operation.form_confirmation');
 
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();
@@ -119,7 +119,7 @@ class OperationController extends Controller
      */
     public function thirdPartyAction(Request $request)
     {
-        $thirdParties = $this->get('bagheera.operation')->findThirdParties(
+        $thirdParties = $this->get('app.operation')->findThirdParties(
             $this->getUser(),
             $request->query->get('q')
         );

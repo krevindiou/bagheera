@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraint;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * @DI\Validator("bagheera.validator.field_exists")
+ * @DI\Validator("app.validator.field_exists")
  */
 class FieldExistsValidator extends ConstraintValidator
 {

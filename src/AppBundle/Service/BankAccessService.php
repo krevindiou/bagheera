@@ -12,7 +12,7 @@ use AppBundle\Entity\Bank;
 use AppBundle\Entity\BankAccess;
 
 /**
- * @DI\Service("bagheera.bank_access")
+ * @DI\Service("app.bank_access")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "bank_access"})
  */
 class BankAccessService
@@ -35,10 +35,10 @@ class BankAccessService
     /** @DI\Inject */
     public $validator;
 
-    /** @DI\Inject("bagheera.bank") */
+    /** @DI\Inject("app.bank") */
     public $bankService;
 
-    /** @DI\Inject("bagheera.crypt") */
+    /** @DI\Inject("app.crypt") */
     public $cryptService;
 
     /**

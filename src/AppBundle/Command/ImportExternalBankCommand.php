@@ -33,11 +33,11 @@ class ImportExternalBankCommand extends ContainerAwareCommand
             $bankAccess = $secureEm->find('Model:BankAccess', $bank->getBankId());
 
             if (null !== $bankAccess) {
-                $accountService = $this->getContainer()->get('bagheera.account');
-                $accountImportService = $this->getContainer()->get('bagheera.account_import');
-                $operationService = $this->getContainer()->get('bagheera.operation');
+                $accountService = $this->getContainer()->get('app.account');
+                $accountImportService = $this->getContainer()->get('app.account_import');
+                $operationService = $this->getContainer()->get('app.operation');
 
-                $provider = $this->getContainer()->get('bagheera.provider_adapter');
+                $provider = $this->getContainer()->get('app.provider_adapter');
                 try {
                     $provider->setBankAccess($bankAccess);
                 } catch (\RuntimeException $e) {
