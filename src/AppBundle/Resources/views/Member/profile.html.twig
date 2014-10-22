@@ -7,18 +7,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="span3">
-        {{ include("AppBundle:Member:profileMenu.html.twig") }}
-    </div>
-    <div class="span9">
-        {{ form_start(profileForm, {action: path('member_profile'), attr: {novalidate: true, class: 'form-horizontal'}}) }}
-            {{ form_row(profileForm.email) }}
+{{ form_start(profileForm, {action: path('member_profile'), attr: {novalidate: true, class: 'form-horizontal'}}) }}
+    {{ form_row(profileForm.email) }}
 
-            <div class="form-actions">
-                {{ form_widget(profileForm.submit, {label: 'member.profile.submit_button'|trans}) }}
-            </div>
-        {{ form_end(profileForm) }}
+    <div class="form-actions">
+        {{ form_widget(profileForm.submit, {label: 'member.profile.submit_button'|trans}) }}
     </div>
-</div>
+{{ form_end(profileForm) }}
 {% endblock %}
