@@ -168,8 +168,8 @@ class BankService
     /**
      * Saves bank form
      *
-     * @param  Member  $member Member entity
-     * @param  Form    $form   Bank form
+     * @param  Member $member Member entity
+     * @param  Form   $form   Bank form
      * @return Bank
      */
     public function saveForm(Member $member, Form $form)

@@ -561,7 +561,7 @@ class OperationService
     /**
      * Returns last salary operation
      *
-     * @param  Member $member Member entity
+     * @param  Member    $member Member entity
      * @return Operation
      */
     public function getLastSalary(Member $member)
@@ -593,8 +593,8 @@ class OperationService
     /**
      * Returns last biggest expense since a specified date
      *
-     * @param  Member $member  Member entity
-     * @param  DateTime $since Biggest expense since this date
+     * @param  Member    $member Member entity
+     * @param  DateTime  $since  Biggest expense since this date
      * @return Operation
      */
     public function getLastBiggestExpense(Member $member, \DateTime $since)
