@@ -55,7 +55,7 @@ class CryptService
     {
         if (false !== ($encryptedString = base64_decode($encryptedString))) {
             $encryptedString = trim(
-                mcrypt_decrypt(
+                @mcrypt_decrypt(
                     MCRYPT_RIJNDAEL_128,
                     $this->secret,
                     substr($encryptedString, 16),
