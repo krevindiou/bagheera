@@ -2,10 +2,10 @@
 
 {% set account = accountForm.vars.value %}
 
-{% block page_title account.accountId is null ? 'account.new_form_page_title'|trans : 'account.edit_form_page_title'|trans %}
+{% block page_title account.accountId is null ? 'account.create_form_page_title'|trans : 'account.update_form_page_title'|trans %}
 
 {% block breadcrumb %}
-    <li class="active">{{ account.accountId is null ? 'account.new_form_page_title'|trans : 'account.edit_form_page_title'|trans }}</li>
+    <li class="active">{{ account.accountId is null ? 'account.create_form_page_title'|trans : 'account.update_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}

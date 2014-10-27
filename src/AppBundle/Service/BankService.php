@@ -111,9 +111,9 @@ class BankService
     public function getForm(Member $member, Bank $bank = null)
     {
         if (null === $bank) {
-            return $this->formFactory->create('bank_add', null, ['member' => $member]);
+            return $this->formFactory->create('bank_choose', null, ['member' => $member]);
         } elseif ($member === $bank->getMember()) {
-            return $this->formFactory->create('bank_edit', $bank);
+            return $this->formFactory->create('bank_update', $bank);
         }
     }
 

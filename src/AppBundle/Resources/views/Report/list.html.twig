@@ -9,10 +9,10 @@
 {% block content %}
 <div class="row">
     <div class="span12 btn-group">
-        <a href="{{ path('report_new', {type: 'sum'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.sum_new_link'|trans }}</a>
-        <a href="{{ path('report_new', {type: 'average'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.average_new_link'|trans }}</a>
-        {#<a href="{{ path('report_new', {type: 'distribution'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.distribution_new_link'|trans }}</a>#}
-        {#<a href="{{ path('report_new', {type: 'estimate'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.estimate_new_link'|trans }}</a>#}
+        <a href="{{ path('report_create', {type: 'sum'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.sum_create_link'|trans }}</a>
+        <a href="{{ path('report_create', {type: 'average'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.average_create_link'|trans }}</a>
+        {#<a href="{{ path('report_create', {type: 'distribution'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.distribution_create_link'|trans }}</a>#}
+        {#<a href="{{ path('report_create', {type: 'estimate'}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'report.estimate_create_link'|trans }}</a>#}
     </div>
 </div>
 
@@ -34,7 +34,7 @@
                     <td class="check"><input type="checkbox" name="reportsId[]" value="{{ report.reportId }}" /></td>
                     <td>{{ ('report.type_' ~ report.type)|trans }}</td>
                     <td>{{ report.title }}</td>
-                    <td class="actions"><a href="{{ path('report_edit', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    <td class="actions"><a href="{{ path('report_update', {'reportId': report.reportId}) }}" class="btn btn-mini" title="{{ 'report.update_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

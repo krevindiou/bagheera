@@ -96,19 +96,19 @@ var Bagheera = {
                 e.preventDefault();
             });
 
-            $("input[name='bank_add[provider]']").change(function() {
-                $("input[name='bank_add[bank]']").attr('checked', false);
-                $("input[name='bank_add[other]']").val("");
+            $("input[name='bank_choose[provider]']").change(function() {
+                $("input[name='bank_choose[bank]']").attr('checked', false);
+                $("input[name='bank_choose[other]']").val("");
             });
 
-            $("input[name='bank_add[bank]']").change(function() {
-                $("input[name='bank_add[provider]']").attr('checked', false);
-                $("input[name='bank_add[other]']").val("");
+            $("input[name='bank_choose[bank]']").change(function() {
+                $("input[name='bank_choose[provider]']").attr('checked', false);
+                $("input[name='bank_choose[other]']").val("");
             });
 
-            $("input[name='bank_add[other]']").keydown(function() {
-                $("input[name='bank_add[provider]']").attr('checked', false);
-                $("input[name='bank_add[bank]']").attr('checked', false);
+            $("input[name='bank_choose[other]']").keydown(function() {
+                $("input[name='bank_choose[provider]']").attr('checked', false);
+                $("input[name='bank_choose[bank]']").attr('checked', false);
             });
 
             $("input.money").each(function() {
@@ -164,7 +164,7 @@ var Bagheera = {
                 .filter(":enabled:not([readonly]):visible:first")
                 .focus();
 
-            $("#bank_add_provider label").each(function() {
+            $("#bank_choose_provider label").each(function() {
                 var providerId = $(this).data('providerId');
                 if (null !== providerId) {
                     $(this).css("backgroundImage", "url('/bundles/app/img/provider/" + providerId + ".jpg')");

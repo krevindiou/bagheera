@@ -75,7 +75,7 @@ class AccountService
      * @param  Bank   $bank   Bank entity
      * @return Form
      */
-    public function getNewForm(Member $member, Bank $bank = null)
+    public function getCreateForm(Member $member, Bank $bank = null)
     {
         if (null !== $bank && $member !== $bank->getMember()) {
             return;
@@ -96,7 +96,7 @@ class AccountService
      * @param  Account $account Account entity
      * @return Form
      */
-    public function getEditForm(Member $member, Account $account)
+    public function getUpdateForm(Member $member, Account $account)
     {
         if ($member !== $account->getBank()->getMember()) {
             return;

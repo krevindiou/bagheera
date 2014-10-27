@@ -81,15 +81,15 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/bank-{bankId}/new-account", requirements={"bankId" = "\d+"}, name="account_new_with_bank")
-     * @Route("/new-account", defaults={"bankId" = null}, name="account_new")
+     * @Route("/bank-{bankId}/create-account", requirements={"bankId" = "\d+"}, name="account_create_with_bank")
+     * @Route("/create-account", defaults={"bankId" = null}, name="account_create")
      * @Template()
      */
-    public function newFormAction(Request $request, Bank $bank = null)
+    public function createAction(Request $request, Bank $bank = null)
     {
         $member = $this->getUser();
 
-        $accountForm = $this->get('app.account')->getNewForm($member, $bank);
+        $accountForm = $this->get('app.account')->getCreateForm($member, $bank);
 
         if (null === $accountForm) {
             throw $this->createNotFoundException();
@@ -116,14 +116,14 @@ class AccountController extends Controller
     }
 
     /**
-     * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_edit")
+     * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_update")
      * @Template()
      */
-    public function editFormAction(Request $request, Account $account)
+    public function updateAction(Request $request, Account $account)
     {
         $member = $this->getUser();
 
-        $accountForm = $this->get('app.account')->getEditForm($member, $account);
+        $accountForm = $this->get('app.account')->getUpdateForm($member, $account);
 
         if (null === $accountForm) {
             throw $this->createNotFoundException();

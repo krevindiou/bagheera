@@ -1,9 +1,9 @@
 {% extends 'AppBundle::base.html.twig' %}
 
-{% block page_title bankForm.provider is defined ? 'bank.new_form_page_title'|trans : 'bank.edit_form_page_title'|trans %}
+{% block page_title bankForm.provider is defined ? 'bank.create_form_page_title'|trans : 'bank.update_form_page_title'|trans %}
 
 {% block breadcrumb %}
-    <li class="active">{{ bankForm.provider is defined ? 'bank.new_form_page_title'|trans : 'bank.edit_form_page_title'|trans }}</li>
+    <li class="active">{{ bankForm.provider is defined ? 'bank.create_form_page_title'|trans : 'bank.update_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -34,16 +34,16 @@
 
 {% form_theme bankForm _self %}
 
-{% block _bank_edit_name_widget %}
+{% block _bank_update_name_widget %}
 {% spaceless %}
     {{ block('form_widget') }}
     {% if attr.bankId is not null and attr.hasProvider %}
-        &nbsp;<a href="{{ path('bank_access_edit', {bankId: attr.bankId}) }}">{{ 'bank_access.update_login_password'|trans }}</a>
+        &nbsp;<a href="{{ path('bank_access_update', {bankId: attr.bankId}) }}">{{ 'bank_access.update_login_password'|trans }}</a>
     {% endif %}
 {% endspaceless %}
 {% endblock %}
 
-{% block _bank_add_provider_widget %}
+{% block _bank_choose_provider_widget %}
 {% spaceless %}
     {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' inline radio')|trim}) %}
     <div {{ block('widget_container_attributes') }}>

@@ -54,8 +54,8 @@ class ReportController extends Controller
     }
 
     /**
-     * @Route("/report-{reportId}", requirements={"reportId" = "\d+"}, name="report_edit")
-     * @Route("/new-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_new")
+     * @Route("/report-{reportId}", requirements={"reportId" = "\d+"}, name="report_update")
+     * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
      * @ParamConverter("report", class="Model:Report", options={"id" = "reportId"})
      * @Template()
      */

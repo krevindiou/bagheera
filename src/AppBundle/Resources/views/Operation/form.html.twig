@@ -1,10 +1,10 @@
 {% extends 'AppBundle::base.html.twig' %}
 
-{% block page_title operation.operationId is null ? 'operation.new_form_page_title'|trans : 'operation.edit_form_page_title'|trans %}
+{% block page_title operation.operationId is null ? 'operation.create_form_page_title'|trans : 'operation.update_form_page_title'|trans %}
 
 {% block breadcrumb %}
     <li><a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.bank.name }} - {{ account.name }}</a> <i class="icon-chevron-right"></i></li>
-    <li class="active">{{ operation.operationId is null ? 'operation.new_form_page_title'|trans : 'operation.edit_form_page_title'|trans }}</li>
+    <li class="active">{{ operation.operationId is null ? 'operation.create_form_page_title'|trans : 'operation.update_form_page_title'|trans }}</li>
 {% endblock %}
 
 {% block content %}
@@ -22,7 +22,7 @@
     <div class="form-actions">
         {{ form_widget(operationForm.save) }}
         {% if operation.operationId is null %}
-            {{ form_widget(operationForm.saveAdd) }}
+            {{ form_widget(operationForm.saveCreate) }}
         {% endif %}
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>

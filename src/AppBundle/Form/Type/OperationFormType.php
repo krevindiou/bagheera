@@ -116,10 +116,10 @@ class OperationFormType extends AbstractType
                 ]
             )
             ->add(
-                'saveAdd',
+                'saveCreate',
                 'submit',
                 [
-                    'label' => 'operation.form_submit_add_button',
+                    'label' => 'operation.form_submit_create_button',
                     'attr' => [
                         'class' => 'btn btn-primary'
                     ]

@@ -10,7 +10,7 @@
 {% block content %}
 <div class="row">
     <div class="span12 btn-group">
-        <a href="{{ path('scheduler_new', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'scheduler.new_link'|trans }}</a>
+        <a href="{{ path('scheduler_create', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-plus-sign"></i> {{ 'scheduler.create_link'|trans }}</a>
     </div>
 </div>
 
@@ -62,7 +62,7 @@
                     <td>{{ scheduler.category.name }}</td>
                     <td>{{ scheduler.frequencyValue }}</td>
                     <td>{{ ('scheduler.frequency_unit_' ~ scheduler.frequencyUnit)|trans }}</td>
-                    <td class="actions"><a href="{{ path('scheduler_edit', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    <td class="actions"><a href="{{ path('scheduler_update', {'schedulerId': scheduler.schedulerId}) }}" class="btn btn-mini" title="{{ 'scheduler.update_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

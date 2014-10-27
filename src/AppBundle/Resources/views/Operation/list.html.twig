@@ -24,7 +24,7 @@
             </tbody>
         </table>
         <div class="btn-group">
-            <a href="{{ path('operation_new', {'accountId': account.accountId}) }}" class="btn btn-small{{ tipNewOperation ? ' tip' : '' }}"{% if tipNewOperation %} title="{{ "tip_new_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation.new_link'|trans }}</a>
+            <a href="{{ path('operation_create', {'accountId': account.accountId}) }}" class="btn btn-small{{ tipCreateOperation ? ' tip' : '' }}"{% if tipCreateOperation %} title="{{ "tip_create_operation"|trans }}"{% endif %}><i class="icon-plus-sign"></i> {{ 'operation.create_link'|trans }}</a>
             <a href="{{ path('operation_search_form', {'accountId': account.accountId}) }}" class="btn btn-small search"><i class="icon-search"></i> {{ 'operation.search_link'|trans }}</a>
             <a href="{{ path('scheduler_list', {'accountId': account.accountId}) }}" class="btn btn-small"><i class="icon-time"></i> {{ 'scheduler.list'|trans }}</a>
         </div>
@@ -86,7 +86,7 @@
                     </td>
                     <td>{{ operation.category.name }}</td>
                     <td class="date">{{ operation.valueDate|localizeddate('medium', 'none') }}</td>
-                    <td class="actions"><a href="{{ path('operation_edit', {'operationId': operation.operationId}) }}" class="btn btn-mini" title="{{ 'operation.edit_link'|trans }}"><i class="icon-pencil"></i></a></td>
+                    <td class="actions"><a href="{{ path('operation_update', {'operationId': operation.operationId}) }}" class="btn btn-mini" title="{{ 'operation.update_link'|trans }}"><i class="icon-pencil"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

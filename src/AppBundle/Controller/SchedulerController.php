@@ -61,8 +61,8 @@ class SchedulerController extends Controller
     }
 
     /**
-     * @Route("/scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_edit")
-     * @Route("/account-{accountId}/new-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_new")
+     * @Route("/scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_update")
+     * @Route("/account-{accountId}/create-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_create")
      * @ParamConverter("scheduler", class="Model:Scheduler", options={"id" = "schedulerId"})
      * @ParamConverter("account", class="Model:Account", options={"id" = "accountId"})
      * @Template()

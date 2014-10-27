@@ -16,7 +16,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 /**
  * @DI\FormType
  */
-class BankAddFormType extends AbstractType
+class BankChooseFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -93,6 +93,6 @@ class BankAddFormType extends AbstractType
 
     public function getName()
     {
-        return 'bank_add';
+        return 'bank_choose';
     }
 }

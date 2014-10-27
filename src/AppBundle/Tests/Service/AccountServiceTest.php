@@ -21,7 +21,7 @@ class AccountServiceTest extends TestCase
     public function testGetFormForForeignMember()
     {
         $account = $this->em->find('Model:Account', 1);
-        $form = $this->get('app.account')->getEditForm($this->jane, $account);
+        $form = $this->get('app.account')->getUpdateForm($this->jane, $account);
         $this->assertNull($form);
     }
 
@@ -29,14 +29,14 @@ class AccountServiceTest extends TestCase
     {
         $hsbc = $this->em->find('Model:Bank', 1);
 
-        $form = $this->get('app.account')->getNewForm($this->john, $hsbc);
+        $form = $this->get('app.account')->getCreateForm($this->john, $hsbc);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingAccount()
     {
         $account = $this->em->find('Model:Account', 1);
-        $form = $this->get('app.account')->getEditForm($this->john, $account);
+        $form = $this->get('app.account')->getUpdateForm($this->john, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 

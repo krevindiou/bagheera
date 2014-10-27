@@ -17,8 +17,8 @@ use AppBundle\Entity\Bank;
 class BankController extends Controller
 {
     /**
-     * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_edit")
-     * @Route("/select-bank", defaults={"bankId" = null}, name="bank_new")
+     * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
+     * @Route("/choose-bank", defaults={"bankId" = null}, name="bank_choose")
      * @Template()
      */
     public function formAction(Request $request, Bank $bank = null)
@@ -34,16 +34,16 @@ class BankController extends Controller
 
         if ($bankForm->isSubmitted()) {
             if ($bank = $this->get('app.bank')->saveForm($member, $bankForm)) {
-                if ('bank_new' == $request->get('_route')) {
+                if ('bank_choose' == $request->get('_route')) {
                     if (null !== $bank->getProvider()) {
                         $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
 
                         return $this->redirect(
-                            $this->generateUrl('bank_access_edit', ['bankId' => $bank->getBankId()])
+                            $this->generateUrl('bank_access_update', ['bankId' => $bank->getBankId()])
                         );
                     } else {
                         return $this->redirect(
-                            $this->generateUrl('account_new_with_bank', ['bankId' => $bank->getBankId()])
+                            $this->generateUrl('account_create_with_bank', ['bankId' => $bank->getBankId()])
                         );
                     }
                 } else {

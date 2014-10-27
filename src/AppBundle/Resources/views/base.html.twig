@@ -73,7 +73,7 @@
                                                     <li><a tabindex="-1" href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></li>
                                                 {% endfor  %}
                                             {% else %}
-                                                <li><a tabindex="-1" href="{{ path('account_new_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account.new_link'|trans }}</a></li>
+                                                <li><a tabindex="-1" href="{{ path('account_create_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account.create_link'|trans }}</a></li>
                                             {% endif %}
                                             </ul>
                                         </li>

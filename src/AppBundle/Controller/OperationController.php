@@ -46,7 +46,7 @@ class OperationController extends Controller
             'account' => $account,
             'operations' => $operations,
             'displaySearch' => (null !== $operationSearch),
-            'tipNewOperation' => (null === $operationSearch && count($operations) == 0),
+            'tipCreateOperation' => (null === $operationSearch && count($operations) == 0),
             'balance' => $balance,
             'reconciledBalance' => $reconciledBalance
         ];
@@ -76,8 +76,8 @@ class OperationController extends Controller
     }
 
     /**
-     * @Route("/operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_edit")
-     * @Route("/account-{accountId}/new-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_new")
+     * @Route("/operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_update")
+     * @Route("/account-{accountId}/create-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_create")
      * @ParamConverter("operation", class="Model:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="Model:Account", options={"id" = "accountId"})
      * @Template()

@@ -17,7 +17,7 @@ use AppBundle\Entity\Bank;
 class BankAccessController extends Controller
 {
     /**
-     * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_edit")
+     * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_update")
      * @Template()
      */
     public function formAction(Request $request, Bank $bank)
