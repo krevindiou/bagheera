@@ -103,28 +103,28 @@ class ReportFormType extends AbstractType
                         ->add(
                             'categories',
                             null,
-                            array(
+                            [
                                 'label' => 'report.categories',
                                 'empty_value' => '',
                                 'required' => false,
                                 'group_by' => 'type',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-xlarge'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         ->add(
                             'paymentMethods',
                             null,
-                            array(
+                            [
                                 'label' => 'report.payment_methods',
                                 'empty_value' => '',
                                 'required' => false,
                                 'group_by' => 'type',
-                                'attr' => array(
+                                'attr' => [
                                     'class' => 'input-medium'
-                                )
-                            )
+                                ]
+                            ]
                         )
                         */
                         ->add(
