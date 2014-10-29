@@ -26,5 +26,7 @@
         {% endif %}
         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}" class="btn">{{ 'cancel_link'|trans }}</a>
     </div>
-{{ form_end(operationForm) }}
+
+    {{ form_widget(operationForm._token) }}
+</form>
 {% endblock %}
