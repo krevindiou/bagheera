@@ -38,6 +38,7 @@ class TestCase extends WebTestCase
     public function tearDown()
     {
         $this->em->getUnitOfWork()->clear();
+        $this->em->getConnection()->close();
         parent::tearDown();
     }
 
@@ -48,5 +49,18 @@ class TestCase extends WebTestCase
         $options['command'] = $command;
 
         return $this->application->run(new ArrayInput($options));
+    }
+
+    public function initClient($username = 'john@example.net', $password = 'john')
+    {
+        $this->client = static::createClient(
+            [],
+            [
+                'PHP_AUTH_USER' => $username,
+                'PHP_AUTH_PW' => $password,
+            ]
+        );
+
+        $this->get('router')->getContext()->setHost(gethostname());
     }
 }

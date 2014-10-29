@@ -7,7 +7,6 @@ framework:
         storage_id: session.storage.mock_file
     profiler:
         enabled: false
-    csrf_protection: false
 
 web_profiler:
     toolbar: false
@@ -21,3 +20,8 @@ doctrine:
         connections:
             default:
                 dbname:   %database_name%_test
+security:
+    firewalls:
+        secured_area:
+            http_basic: ~
+            anonymous:  ~
