@@ -12,7 +12,6 @@ use Symfony\Component\Console\Input\ArrayInput;
 class TestCase extends WebTestCase
 {
     protected $em;
-    protected $application;
 
     public function get($service)
     {
@@ -25,30 +24,14 @@ class TestCase extends WebTestCase
         static::$kernel->boot();
 
         $this->em = $this->get('doctrine.orm.entity_manager');
-
-        $this->application = new Application(static::$kernel);
-        $this->application->setAutoExit(false);
-
-        $this->runConsole('doctrine:schema:drop', ['--force' => null]);
-        $this->runConsole('doctrine:schema:create');
-        $this->runConsole('doctrine:schema:update', ['--force' => null]); // Still some SQL to execute
-        $this->runConsole('doctrine:fixtures:load', ['--append' => null]);
+        $this->em->getConnection()->beginTransaction();
     }
 
     public function tearDown()
     {
-        $this->em->getUnitOfWork()->clear();
+        $this->em->getConnection()->rollback();
         $this->em->getConnection()->close();
         parent::tearDown();
-    }
-
-    protected function runConsole($command, array $options = [])
-    {
-        $options['-e'] = 'test';
-        $options['-q'] = null;
-        $options['command'] = $command;
-
-        return $this->application->run(new ArrayInput($options));
     }
 
     public function initClient($username = 'john@example.net', $password = 'john')
