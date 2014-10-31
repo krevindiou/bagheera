@@ -4,7 +4,7 @@ set :repository,                    "git@bitbucket.org:krevindiou/bagheera.git"
 set :scm,                           :git
 set :user,                          "pi"
 set :model_manager,                 "doctrine"
-set :keep_releases,                 5
+set :keep_releases,                 2
 set :shared_files,                  [app_path + "/config/parameters.yml"]
 set :shared_children,               [app_path + "/logs"]
 set :deploy_via,                    :remote_cache
