@@ -580,7 +580,7 @@ class OperationService
         $dql.= 'AND a.closed = false ';
         $dql.= 'ORDER BY o.valueDate DESC ';
 
-        $query = $this->em->createQuery($dql);
+        $query = $this->em->createQuery($dql)->setMaxResults(1);
         $query->setParameter('member', $member);
         $query->setParameter('category', $category);
 
