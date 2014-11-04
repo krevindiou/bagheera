@@ -99,8 +99,8 @@ class OperationController extends Controller
 
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();
 
-                if (null !== $request->get('save_add')) {
-                    return $this->redirect($this->generateUrl('operation_new', ['accountId' => $accountId]));
+                if (isset($request->request->get('operation')['saveCreate'])) {
+                    return $this->redirect($this->generateUrl('operation_create', ['accountId' => $accountId]));
                 } else {
                     return $this->redirect($this->generateUrl('operation_list', ['accountId' => $accountId]));
                 }
