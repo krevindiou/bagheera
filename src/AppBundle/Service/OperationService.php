@@ -601,18 +601,20 @@ class OperationService
     {
         $dql = 'SELECT o ';
         $dql.= 'FROM Model:Operation o ';
-        $dql.= 'JOIN o.account a ';
-        $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND o.debit > 0 ';
-        $dql.= 'AND o.scheduler IS NULL ';
-        $dql.= 'AND o.valueDate >= :valueDate ';
-        $dql.= 'AND b.deleted = false ';
-        $dql.= 'AND b.closed = false ';
-        $dql.= 'AND a.deleted = false ';
-        $dql.= 'AND a.closed = false ';
-        $dql.= 'GROUP BY o.operationId ';
-        $dql.= 'HAVING o.debit = MAX(o.debit) ';
+        $dql.= 'WHERE o.debit = ( ';
+        $dql.= '  SELECT MAX(o2.debit) ';
+        $dql.= '  FROM Model:Operation o2 ';
+        $dql.= '  JOIN o2.account a ';
+        $dql.= '  JOIN a.bank b ';
+        $dql.= '  WHERE b.member = :member ';
+        $dql.= '  AND o2.debit > 0 ';
+        $dql.= '  AND o2.scheduler IS NULL ';
+        $dql.= '  AND o2.valueDate >= :valueDate ';
+        $dql.= '  AND b.deleted = false ';
+        $dql.= '  AND b.closed = false ';
+        $dql.= '  AND a.deleted = false ';
+        $dql.= '  AND a.closed = false ';
+        $dql.= ') ';
 
         $query = $this->em->createQuery($dql);
         $query->setMaxResults(1);
