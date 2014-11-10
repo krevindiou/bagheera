@@ -49,7 +49,7 @@ class OperationSearchController extends Controller
     {
         $operationSearchService = $this->get('app.operation_search');
 
-        if ('' != $request->request->get('clear')) {
+        if (isset($request->request->get('operation_search')['clear'])) {
             $operationSearchService->clearSessionSearch($account);
         } else {
             $operationSearch = $operationSearchService->getSessionSearch($account);
