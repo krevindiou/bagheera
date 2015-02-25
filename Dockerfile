@@ -57,6 +57,7 @@ RUN echo 'cgi.fix_pathinfo=0;' >> /etc/php5/fpm/php.ini
 RUN echo 'apc.enable_cli = 0' > /etc/php5/cli/conf.d/enable-apc-cli.ini
 RUN sed -i 's/;date.timezone =/date.timezone = "Europe\/Paris"/' /etc/php5/cli/php.ini
 RUN sed -i 's/;date.timezone =/date.timezone = "Europe\/Paris"/' /etc/php5/fpm/php.ini
+RUN echo 'xdebug.max_nesting_level=500' >> /etc/php5/fpm/conf.d/20-xdebug.ini
 RUN php5enmod mcrypt
 RUN curl -sS https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/local/bin/composer
