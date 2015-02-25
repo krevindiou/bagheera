@@ -4,6 +4,7 @@
 /app/config/parameters.yml
 /app/cache/*
 /app/logs/*
+/app/Resources/node_modules/*
 /build/
 /vendor/
 /composer.phar

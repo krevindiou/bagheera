@@ -13,8 +13,8 @@ fi
 project_dir=$1
 
 cd $project_dir
-mkdir /dev/shm/bagheera
-setfacl -R -m u:www-data:rwX -m u:`whoami`:rwX /dev/shm/bagheera
-setfacl -dR -m u:www-data:rwx -m u:`whoami`:rwx /dev/shm/bagheera
+setfacl -R -m u:www-data:rwX -m u:`whoami`:rwX app/cache app/logs
+setfacl -dR -m u:www-data:rwX -m u:`whoami`:rwX app/cache app/logs
 composer install
+npm install --prefix app/Resources
 cd -

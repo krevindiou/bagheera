@@ -38,9 +38,13 @@ assetic:
         - AppBundle
     filters:
         cssrewrite: ~
-        lessphp:
-            file: %kernel.root_dir%/../vendor/leafo/lessphp/lessc.inc.php
-            apply_to: "\.less$"
+        less:
+            node: /usr/bin/node
+            node_paths: [%kernel.root_dir%/Resources/node_modules]
+        uglifyjs2:
+            bin: %kernel.root_dir%/Resources/node_modules/uglify-js/bin/uglifyjs
+        uglifycss:
+            bin: %kernel.root_dir%/Resources/node_modules/uglifycss/uglifycss
 
 # Doctrine Configuration
 doctrine:

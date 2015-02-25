@@ -4,12 +4,16 @@
         <title>Bagheera - {{ block('page_title') }}</title>
         <meta name="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        {% stylesheets filter='lessphp,cssrewrite'
+        {% stylesheets filter='cssrewrite'
             'components/bootstrap/css/bootstrap.min.css'
             'components/bootstrap/css/bootstrap-responsive.min.css'
             'components/jquery-ui/themes/smoothness/jquery-ui.min.css'
             'components/jquery-ui/themes/smoothness/jquery.ui.theme.css'
             'components/font-awesome/css/font-awesome.min.css'
+        %}
+            <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
+        {% endstylesheets %}
+        {% stylesheets filter='less,cssrewrite,uglifycss'
             'bundles/app/less/main.less'
         %}
             <link href="{{ asset_url }}" rel="stylesheet" type="text/css" />
@@ -144,7 +148,7 @@
                 <button class="btn" data-dismiss="modal" aria-hidden="true">{{ 'modal_confirmation_action_cancel'|trans }}</button>
             </div>
         </div>
-        {% javascripts
+        {% javascripts filter='uglifyjs2'
             "components/jquery/jquery.js"
             "components/jquery-ui/ui/minified/jquery-ui.min.js"
             "components/flot/jquery.flot.js"

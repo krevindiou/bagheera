@@ -13,6 +13,8 @@ RUN apt-get -y install \
   htop \
   curl \
   acl \
+  npm \
+  nodejs-legacy \
   php5-cli \
   php5-fpm \
   php5-mcrypt \

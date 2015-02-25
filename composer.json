@@ -25,7 +25,6 @@
         "jms/security-extra-bundle": "~1.5",
         "jms/di-extra-bundle": "~1.4",
         "doctrine/doctrine-fixtures-bundle": "~2.2",
-        "leafo/lessphp": "~0.4",
         "white-october/pagerfanta-bundle": "~1.0",
         "fabpot/goutte": "~2.0",
         "guzzlehttp/guzzle": "~4.0",
