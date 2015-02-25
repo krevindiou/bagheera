@@ -79,6 +79,7 @@ RUN service postgresql start &&\
 
 # Nginx
 RUN echo "\ndaemon off;" >> /etc/nginx/nginx.conf
+RUN sed -i 's/# gzip_types/gzip_types application\/javascript/' /etc/nginx/nginx.conf
 ADD app/Resources/vhost.nginx /etc/nginx/sites-available/default
 
 CMD ["/usr/bin/supervisord"]
