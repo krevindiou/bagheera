@@ -31,9 +31,7 @@ RUN apt-get -y install \
   openssh-server \
   supervisor
 
-ENV WWW_DIR             /var/www
 ENV PROJECT_NAME        bagheera
-ENV PROJECT_DIR         $WWW_DIR/$PROJECT_NAME
 ENV PROJECT_DB_USER     username
 ENV PROJECT_DB_PASSWORD password
 ENV PROJECT_DB_NAME     $PROJECT_NAME
