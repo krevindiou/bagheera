@@ -1,22 +1,14 @@
 #!/usr/bin/env bash
 
-cid=app/cache/docker.cid
+cid=$(docker ps -a|grep php|cut -c 1-12)
 
 project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
 project_name=$(basename "$project_dir")
 
-docker run -d \
-    -P \
-    --cidfile=$cid \
-    -v $project_dir:/var/www/$project_name \
-    "$project_name"
+docker-compose up -d
 
-# Remove previous entries
-ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $(cat app/cache/docker.cid))
-ssh-keygen -f ~/.ssh/known_hosts -R $ip
+docker exec -ti $cid "$project_dir"/bin/build $project_dir
 
-# Wait for the container to start
-sleep 2
-echo 'Waiting for SSH connection...'
+"$project_dir"/bin/http
 
-./bin/ssh /var/www/$project_name/bin/build /var/www/$project_name
+docker-compose logs

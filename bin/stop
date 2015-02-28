@@ -1,9 +1,3 @@
 #!/usr/bin/env bash
 
-cid=app/cache/docker.cid
-
-if [ -f "$cid" ]; then
-    docker stop $(cat $cid) && rm -f app/cache/docker.cid
-else
-    echo "\"$cid\" file not found !"
-fi
+docker-compose stop

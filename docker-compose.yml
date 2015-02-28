@@ -1,0 +1,20 @@
+postgresql:
+  build: ./app/Resources/config/docker/postgresql
+  environment:
+    - POSTGRES_USER=bagheera
+    - POSTGRES_PASSWORD=password
+    - DB_NAME=bagheera
+
+php:
+  build: ./app/Resources/config/docker/php
+  volumes:
+    - .:/var/www/bagheera
+  links:
+    - postgresql
+
+nginx:
+  build: ./app/Resources/config/docker/nginx
+  volumes:
+    - .:/usr/share/nginx/www/bagheera
+  links:
+    - php

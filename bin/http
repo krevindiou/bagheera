@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-cid=app/cache/docker.cid
+cid=$(docker ps -a|grep nginx|cut -c 1-12)
 
 if [ 'Darwin' == $(uname -s) ]; then
     alias 'xdg-open'='open'
 fi
 
-if [ -f "$cid" ]; then
-    ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $(cat app/cache/docker.cid))
+if [ -n "$cid" ]; then
+    ip=$(docker inspect --format='{{.NetworkSettings.IPAddress}}' $cid)
     xdg-open http://$ip
 else
-    echo "\"$cid\" file not found !"
+    echo "\"$cid\" not found !"
 fi

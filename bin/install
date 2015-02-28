@@ -3,6 +3,6 @@
 project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
 project_name=$(basename "$project_dir")
 
-./app/console cache:clear --no-warmup
+docker build --force-rm=true -t ${project_name}_base .
 
-docker build --rm=true -t "$project_name" .
+"$project_dir"/bin/start
