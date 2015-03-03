@@ -62,6 +62,7 @@ class SchedulerServiceTest extends TestCase
         $scheduler = new Scheduler();
         $scheduler->setAccount($this->em->find('Model:Account', 1));
         $scheduler->setThirdParty('Test');
+        $scheduler->setDebit(1);
         $scheduler->setValueDate(new \DateTime());
         $scheduler->setPaymentMethod($this->em->find('Model:PaymentMethod', 1));
         $scheduler->setFrequencyUnit('month');

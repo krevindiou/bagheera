@@ -8,9 +8,9 @@ CREATE TABLE member (
     salt VARCHAR(32) NOT NULL,
     country VARCHAR(2) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    logged_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    logged_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE category (
@@ -19,24 +19,24 @@ CREATE TABLE category (
     type VARCHAR(8) NOT NULL CHECK (type IN ('debit', 'credit')),
     name VARCHAR(32) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE payment_method (
     payment_method_id SERIAL PRIMARY KEY,
     name VARCHAR(16) NOT NULL,
     type VARCHAR(8) CHECK (type IN ('debit', 'credit')),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE provider (
     provider_id SERIAL PRIMARY KEY,
     name VARCHAR(64) NOT NULL,
     country VARCHAR(2) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE bank (
@@ -48,16 +48,16 @@ CREATE TABLE bank (
     is_favorite BOOLEAN NOT NULL DEFAULT TRUE,
     is_closed BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE bank_access (
     bank_id INT NOT NULL PRIMARY KEY,
     login VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE account (
@@ -69,8 +69,8 @@ CREATE TABLE account (
     overdraft_facility NUMERIC(10,2) NOT NULL,
     is_closed BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 CREATE INDEX external_account_id_idx ON account (external_account_id);
 
@@ -83,8 +83,8 @@ CREATE TABLE account_import (
     original_data TEXT,
     json_data TEXT,
     json_normalized_data TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
     PRIMARY KEY(import_id, account_id)
 );
 
@@ -110,8 +110,8 @@ CREATE TABLE scheduler (
     frequency_unit VARCHAR(16) NOT NULL DEFAULT 'month' CHECK (frequency_unit IN ('day', 'week', 'month', 'year')),
     frequency_value SMALLINT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
     CHECK (debit IS NOT NULL OR credit IS NOT NULL)
 );
 
@@ -120,7 +120,7 @@ CREATE TABLE operation (
     scheduler_id INT REFERENCES scheduler (scheduler_id),
     account_id INT NOT NULL REFERENCES account (account_id),
     transfer_account_id INT REFERENCES account (account_id),
-    transfer_operation_id INT UNIQUE REFERENCES operation (operation_id),
+    transfer_operation_id INT UNIQUE REFERENCES operation (operation_id) ON DELETE SET NULL,
     category_id INT REFERENCES category (category_id),
     payment_method_id INT NOT NULL REFERENCES payment_method (payment_method_id),
     external_operation_id VARCHAR(32),
@@ -130,8 +130,8 @@ CREATE TABLE operation (
     value_date DATE NOT NULL,
     is_reconciled BOOLEAN NOT NULL DEFAULT FALSE,
     notes TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
     CHECK (debit IS NOT NULL OR credit IS NOT NULL)
 );
 CREATE INDEX external_operation_id_idx ON operation (external_operation_id);
@@ -150,8 +150,8 @@ CREATE TABLE operation_search (
     amount_equal_to NUMERIC(10,2),
     amount_superior_or_equal_to NUMERIC(10,2),
     amount_superior_to NUMERIC(10,2),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE operation_search_category (
@@ -183,8 +183,8 @@ CREATE TABLE report (
     month_incomes INT,
     estimate_duration_value SMALLINT,
     estimate_duration_unit VARCHAR(8) CHECK (estimate_duration_unit IN ('month', 'year')),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP(0) NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE report_category (

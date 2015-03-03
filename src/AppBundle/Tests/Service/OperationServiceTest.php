@@ -60,6 +60,7 @@ class OperationServiceTest extends TestCase
         $operation = new Operation();
         $operation->setAccount($this->em->find('Model:Account', 1));
         $operation->setThirdParty('Test');
+        $operation->setDebit(1);
         $operation->setValueDate(new \DateTime());
         $operation->setPaymentMethod($this->em->find('Model:PaymentMethod', 1));
         $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
@@ -107,14 +108,14 @@ class OperationServiceTest extends TestCase
 
     public function testEditAndChangeTransfer()
     {
-        $operation = $this->em->find('Model:Operation', 2);
+        $operation = $this->em->find('Model:Operation', 1);
         $operation->setTransferAccount($this->em->find('Model:Account', 3));
 
         $this->assertTrue($this->get('app.operation')->save($this->john, $operation));
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
-        $operation = $this->em->find('Model:Operation', 2);
-        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
+        $operation = $this->em->find('Model:Operation', 1);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 5);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
     }
@@ -129,7 +130,7 @@ class OperationServiceTest extends TestCase
 
         $this->em->getUnitOfWork()->removeFromIdentityMap($operation);
         $operation = $this->em->find('Model:Operation', 2);
-        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 1);
+        $this->assertEquals($operation->getTransferOperation()->getOperationId(), 15);
         $this->assertEquals($operation->getTransferOperation()->getAccount()->getAccountId(), 3);
         $this->assertEquals($operation->getTransferAccount()->getAccountId(), 3);
     }
