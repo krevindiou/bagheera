@@ -25,6 +25,14 @@ class TestCase extends WebTestCase
 
         $this->em = $this->get('doctrine.orm.entity_manager');
         $this->em->getConnection()->beginTransaction();
+
+        $this->em->getConnection()->exec('DROP SCHEMA public CASCADE');
+
+        $sql = file_get_contents(__DIR__ . '/../../../app/Resources/config/db/structure.sql');
+        $this->em->getConnection()->exec($sql);
+
+        $sql = file_get_contents(__DIR__ . '/../../../app/Resources/config/db/fixtures.sql');
+        $this->em->getConnection()->exec($sql);
     }
 
     public function tearDown()

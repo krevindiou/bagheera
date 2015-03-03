@@ -18,3 +18,4 @@ gosu postgres postgres --single -jE ${DB_NAME}_test <<-EOSQL
 EOSQL
 
 gosu postgres postgres --single -jE ${DB_NAME} < /structure.sql
+gosu postgres postgres --single -jE ${DB_NAME} < /fixtures.sql
