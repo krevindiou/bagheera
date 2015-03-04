@@ -307,7 +307,7 @@ class MemberService
     public function changePassword(Member $member, $password)
     {
         $encoder = $this->encoderFactory->getEncoder($member);
-        $member->setPassword($encoder->encodePassword($password, $member->generateSalt()->getSalt()));
+        $member->setPassword($encoder->encodePassword($password, ''));
 
         try {
             $this->em->persist($member);

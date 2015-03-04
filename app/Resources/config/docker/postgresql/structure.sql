@@ -4,8 +4,7 @@ CREATE SCHEMA IF NOT EXISTS public;
 CREATE TABLE member (
     member_id SERIAL PRIMARY KEY,
     email VARCHAR(128) UNIQUE NOT NULL,
-    password VARCHAR(128) NOT NULL,
-    salt VARCHAR(32) NOT NULL,
+    password VARCHAR(60) NOT NULL,
     country VARCHAR(2) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP(0) NOT NULL DEFAULT NOW(),

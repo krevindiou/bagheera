@@ -5,9 +5,7 @@ jms_security_extra:
 security:
     encoders:
         Symfony\Component\Security\Core\User\UserInterface:
-            algorithm: sha512
-            iterations: 1
-            encode_as_base64: false
+            algorithm: bcrypt
 
     role_hierarchy:
         ROLE_ADMIN:       ROLE_USER

@@ -9,7 +9,6 @@
     "require": {
         "php": ">=5.4.0",
         "ext-mcrypt": "*",
-        "ext-openssl": "*",
         "ext-intl": "*",
         "symfony/symfony": "~2.4",
         "doctrine/orm": "~2.2,>=2.2.3",

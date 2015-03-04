@@ -42,7 +42,7 @@ class TestCase extends WebTestCase
         parent::tearDown();
     }
 
-    public function initClient($username = 'john@example.net', $password = 'john')
+    public function initClient($username = 'john@example.net', $password = 'johnjohn')
     {
         $this->client = static::createClient(
             [],
