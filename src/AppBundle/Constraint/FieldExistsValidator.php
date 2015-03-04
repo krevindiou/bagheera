@@ -23,7 +23,7 @@ class FieldExistsValidator extends ConstraintValidator
             return;
         }
 
-        $em = $this->doctrine->getEntityManager($constraint->em);
+        $em = $this->doctrine->getManager($constraint->em);
 
         $repository = $em->getRepository($constraint->className);
         $result = $repository->findBy([$constraint->field => $value]);

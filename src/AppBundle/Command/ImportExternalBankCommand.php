@@ -24,8 +24,8 @@ class ImportExternalBankCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $em = $this->getContainer()->get('doctrine')->getEntityManager();
-        $secureEm = $this->getContainer()->get('doctrine')->getEntityManager('secure');
+        $em = $this->getContainer()->get('doctrine')->getManager();
+        $secureEm = $this->getContainer()->get('doctrine')->getManager('secure');
 
         $bank = $em->find('Model:Bank', $input->getArgument('bank_id'));
 
