@@ -19,7 +19,7 @@ class IndexControllerTest extends TestCase
     /** @dataProvider provideUrls */
     public function testPageIsSuccessful($url, $redirectUrl = null)
     {
-        $this->client->request('GET', 'http://' . gethostname() . $url);
+        $this->client->request('GET', $url);
 
         if (null !== $redirectUrl) {
             $targetUrl = parse_url($this->client->getResponse()->getTargetUrl());

@@ -12,34 +12,35 @@ use Symfony\Component\Console\Input\ArrayInput;
 class TestCase extends WebTestCase
 {
     protected $em;
+    static public $kernel;
+    static public $conn;
 
     public function get($service)
     {
-        return static::$kernel->getContainer()->get($service);
+        return self::$kernel->getContainer()->get($service);
     }
 
     public function setUp()
     {
-        static::$kernel = static::createKernel(['environment' => 'test']);
-        static::$kernel->boot();
+        if (!self::$kernel) {
+            self::$kernel = self::createKernel(['environment' => 'test']);
+            self::$kernel->boot();
+
+            self::$conn = self::$kernel->getContainer()->get('doctrine.dbal.default_connection');
+        } else {
+            self::$kernel->boot();
+            self::$kernel->getContainer()->set('doctrine.dbal.default_connection', self::$conn);
+        }
 
         $this->em = $this->get('doctrine.orm.entity_manager');
-        $this->em->getConnection()->beginTransaction();
 
-        $this->em->getConnection()->exec('DROP SCHEMA public CASCADE');
+        self::$conn->exec('DROP SCHEMA public CASCADE');
 
         $sql = file_get_contents(__DIR__ . '/../../../app/Resources/config/db/structure.sql');
-        $this->em->getConnection()->exec($sql);
+        self::$conn->exec($sql);
 
         $sql = file_get_contents(__DIR__ . '/../../../app/Resources/config/db/fixtures.sql');
-        $this->em->getConnection()->exec($sql);
-    }
-
-    public function tearDown()
-    {
-        $this->em->getConnection()->rollback();
-        $this->em->getConnection()->close();
-        parent::tearDown();
+        self::$conn->exec($sql);
     }
 
     public function initClient($username = 'john@example.net', $password = 'johnjohn')
@@ -51,7 +52,5 @@ class TestCase extends WebTestCase
                 'PHP_AUTH_PW' => $password,
             ]
         );
-
-        $this->get('router')->getContext()->setHost(gethostname());
     }
 }
