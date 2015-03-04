@@ -19,7 +19,7 @@ INSERT INTO category (category_id, parent_category_id, type, name) VALUES
 INSERT INTO member (member_id, email, password, country, is_active) VALUES
 (1, 'john@example.net', '$2y$13$PCfoqiVWPQy9QpXQIwXdO.miaTHkhr/Ba/eoX6S2BLlRabbv22bHC', 'US', true), -- password: johnjohn
 (2, 'jane@example.net', '$2y$13$TY8WtjG4HlelaHFTdt1WxOahe9HmQq2UgUUm/QR3z8xvzdMma/rqG', 'FR', true), -- password: janejane
-(3, 'jack@example.net', '2y$13$XaTlNmAoSKYrthKC/83/E.zrUEDQ/7bfq9sOWCYMepQ3gC2dHnD2m', 'US', false); -- password: jackjack
+(3, 'jack@example.net', '$2y$13$XaTlNmAoSKYrthKC/83/E.zrUEDQ/7bfq9sOWCYMepQ3gC2dHnD2m', 'US', false); -- password: jackjack
 
 INSERT INTO bank (bank_id, member_id, name, sort_order, is_favorite, is_closed, is_deleted) VALUES
 (1, 1, 'HSBC', 1, false, false, false),
