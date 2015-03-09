@@ -6,14 +6,12 @@
 namespace AppBundle\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
 
 class TestCase extends WebTestCase
 {
     protected $em;
-    static public $kernel;
-    static public $conn;
+    public static $kernel;
+    public static $conn;
 
     public function get($service)
     {
