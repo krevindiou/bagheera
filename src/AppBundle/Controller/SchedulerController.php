@@ -11,6 +11,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use AppBundle\Entity\Scheduler;
 use AppBundle\Entity\Account;
 
@@ -21,16 +22,16 @@ class SchedulerController extends Controller
 {
     /**
      * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, name="scheduler_list")
+     * @Security("account.isOwner(user)")
      * @Method("GET")
      * @Template()
      */
     public function listAction(Request $request, Account $account)
     {
-        $member = $this->getUser();
-
         $page = $request->query->getInt('page', 1);
 
-        $schedulers = $this->get('app.scheduler')->getList($member, $account, $page);
+        $schedulers = $this->get('app.scheduler')->getList($account, $page);
+
         if (null === $schedulers) {
             throw $this->createNotFoundException();
         }
@@ -43,6 +44,7 @@ class SchedulerController extends Controller
 
     /**
      * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"})
+     * @Security("account.isOwner(user)")
      * @Method("POST")
      */
     public function listActionsAction(Request $request, Account $account)
@@ -51,7 +53,15 @@ class SchedulerController extends Controller
             $schedulersId = (array) $request->request->get('schedulersId');
             $member = $this->getUser();
 
-            $this->get('app.scheduler')->delete($member, $schedulersId);
+            foreach ($schedulersId as $schedulerId) {
+                $scheduler = $this->em->find('Model:Scheduler', $schedulerId);
+
+                if (!$scheduler->isOwner($member)) {
+                    throw $this->createAccessDeniedException();
+                }
+            }
+
+            $this->get('app.scheduler')->delete($scheduler);
             $this->get('session')->getFlashBag()->add('success', 'scheduler.delete_confirmation');
         }
 
@@ -65,13 +75,12 @@ class SchedulerController extends Controller
      * @Route("/account-{accountId}/create-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_create")
      * @ParamConverter("scheduler", class="Model:Scheduler", options={"id" = "schedulerId"})
      * @ParamConverter("account", class="Model:Account", options={"id" = "accountId"})
+     * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      * @Template()
      */
     public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
     {
-        $member = $this->getUser();
-
-        $schedulerForm = $this->get('app.scheduler')->getForm($member, $scheduler, $account);
+        $schedulerForm = $this->get('app.scheduler')->getForm($scheduler, $account);
         if (null === $schedulerForm) {
             throw $this->createNotFoundException();
         }
@@ -79,7 +88,7 @@ class SchedulerController extends Controller
         $schedulerForm->handleRequest($request);
 
         if ($schedulerForm->isSubmitted()) {
-            if ($this->get('app.scheduler')->saveForm($member, $schedulerForm)) {
+            if ($this->get('app.scheduler')->saveForm($schedulerForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
 
                 return $this->redirect(

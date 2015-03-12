@@ -500,4 +500,9 @@ class Scheduler
     {
         return $this->paymentMethod;
     }
+
+    public function isOwner(Member $member)
+    {
+        return $this->getAccount()->getBank()->getMember()->getMemberId() == $member->getMemberId();
+    }
 }

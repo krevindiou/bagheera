@@ -389,4 +389,9 @@ class Account
     {
         return $this->getBank()->getName() . ' - ' . $this->getName();
     }
+
+    public function isOwner(Member $member)
+    {
+        return $this->getBank()->getMember()->getMemberId() == $member->getMemberId();
+    }
 }

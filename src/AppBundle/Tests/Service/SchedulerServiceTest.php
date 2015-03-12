@@ -18,43 +18,24 @@ class SchedulerServiceTest extends TestCase
         $this->jane = $this->em->find('Model:Member', 2);
     }
 
-    public function testGetFormForForeignMember()
-    {
-        $scheduler = $this->em->find('Model:Scheduler', 1);
-        $form = $this->get('app.scheduler')->getForm($this->jane, $scheduler);
-        $this->assertNull($form);
-    }
-
     public function testGetFormForNewScheduler()
     {
         $account = $this->em->find('Model:Account', 1);
-        $form = $this->get('app.scheduler')->getForm($this->john, null, $account);
+        $form = $this->get('app.scheduler')->getForm(null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingScheduler()
     {
         $scheduler = $this->em->find('Model:Scheduler', 1);
-        $form = $this->get('app.scheduler')->getForm($this->john, $scheduler);
+        $form = $this->get('app.scheduler')->getForm($scheduler);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testSaveNewSchedulerWithNoData()
     {
         $scheduler = new Scheduler();
-        $this->assertFalse($this->get('app.scheduler')->save($this->john, $scheduler));
-    }
-
-    public function testSaveNewSchedulerWithForeignAccount()
-    {
-        $scheduler = new Scheduler();
-        $scheduler->setAccount($this->em->find('Model:Account', 1));
-        $scheduler->setThirdParty('Test');
-        $scheduler->setValueDate(new \DateTime());
-        $scheduler->setPaymentMethod($this->em->find('Model:PaymentMethod', 1));
-        $scheduler->setFrequencyUnit('month');
-        $scheduler->setFrequencyValue(1);
-        $this->assertFalse($this->get('app.scheduler')->save($this->jane, $scheduler));
+        $this->assertFalse($this->get('app.scheduler')->save($scheduler));
     }
 
     public function testSaveNewScheduler()
@@ -67,39 +48,26 @@ class SchedulerServiceTest extends TestCase
         $scheduler->setPaymentMethod($this->em->find('Model:PaymentMethod', 1));
         $scheduler->setFrequencyUnit('month');
         $scheduler->setFrequencyValue(1);
-        $this->assertTrue($this->get('app.scheduler')->save($this->john, $scheduler));
+        $this->assertTrue($this->get('app.scheduler')->save($scheduler));
     }
 
     public function testSaveExistingSchedulerWithBadData()
     {
         $scheduler = $this->em->find('Model:Scheduler', 1);
         $scheduler->setThirdParty('');
-        $this->assertFalse($this->get('app.scheduler')->save($this->john, $scheduler));
-    }
-
-    public function testSaveExistingSchedulerWithForeignAccount()
-    {
-        $scheduler = $this->em->find('Model:Scheduler', 1);
-        $scheduler->setAccount($this->em->find('Model:Account', 8));
-        $this->assertFalse($this->get('app.scheduler')->save($this->john, $scheduler));
-    }
-
-    public function testSaveExistingSchedulerWithForeignMember()
-    {
-        $scheduler = $this->em->find('Model:Scheduler', 1);
-        $this->assertFalse($this->get('app.scheduler')->save($this->jane, $scheduler));
+        $this->assertFalse($this->get('app.scheduler')->save($scheduler));
     }
 
     public function testSaveExistingScheduler()
     {
         $scheduler = $this->em->find('Model:Scheduler', 1);
-        $this->assertTrue($this->get('app.scheduler')->save($this->john, $scheduler));
+        $this->assertTrue($this->get('app.scheduler')->save($scheduler));
     }
 
     public function testGetSchedulers()
     {
         $account = $this->em->find('Model:Account', 1);
-        $schedulers = $this->get('app.scheduler')->getList($this->john, $account);
+        $schedulers = $this->get('app.scheduler')->getList($account);
 
         $this->assertEquals(count($schedulers), 2);
     }
@@ -108,13 +76,12 @@ class SchedulerServiceTest extends TestCase
     {
         $account = $this->em->find('Model:Account', 1);
 
-        $schedulersBeforeDelete = $this->get('app.scheduler')->getList($this->john, $account);
+        $schedulersBeforeDelete = $this->get('app.scheduler')->getList($account);
         $countSchedulersBeforeDelete = count($schedulersBeforeDelete);
 
-        $schedulersId = [2];
-        $this->get('app.scheduler')->delete($this->john, $schedulersId);
+        $this->get('app.scheduler')->delete($this->em->find('Model:Scheduler', 2));
 
-        $schedulersAfterDelete = $this->get('app.scheduler')->getList($this->john, $account);
+        $schedulersAfterDelete = $this->get('app.scheduler')->getList($account);
         $countSchedulersAfterDelete = count($schedulersAfterDelete);
 
         $this->assertEquals($countSchedulersAfterDelete, $countSchedulersBeforeDelete - 1);
