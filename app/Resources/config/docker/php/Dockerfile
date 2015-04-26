@@ -6,6 +6,7 @@ RUN echo 'deb http://packages.dotdeb.org wheezy-php55 all' > /etc/apt/sources.li
 RUN echo 'deb-src http://packages.dotdeb.org wheezy-php55 all' >> /etc/apt/sources.list.d/dotdeb.list
 RUN echo 'deb http://http.debian.net/debian wheezy-backports main' >> /etc/apt/sources.list
 RUN apt-get -y update && apt-get -y install \
+    curl \
     acl \
     php5-cli \
     php5-fpm \
@@ -36,7 +37,7 @@ RUN wget --quiet https://phar.phpunit.de/phpunit.phar
 RUN chmod +x phpunit.phar
 RUN mv phpunit.phar /usr/local/bin/phpunit
 
-RUN wget --quiet https://www.npmjs.org/install.sh | sh
+RUN wget --quiet https://www.npmjs.org/install.sh && sh install.sh && rm install.sh
 
 CMD ["/usr/sbin/php5-fpm"]
 
