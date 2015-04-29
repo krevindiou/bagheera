@@ -38,20 +38,14 @@ class BankController extends Controller
                     if (null !== $bank->getProvider()) {
                         $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
 
-                        return $this->redirect(
-                            $this->generateUrl('bank_access_update', ['bankId' => $bank->getBankId()])
-                        );
+                        return $this->redirectToRoute('bank_access_update', ['bankId' => $bank->getBankId()]);
                     } else {
-                        return $this->redirect(
-                            $this->generateUrl('account_create_with_bank', ['bankId' => $bank->getBankId()])
-                        );
+                        return $this->redirectToRoute('account_create_with_bank', ['bankId' => $bank->getBankId()]);
                     }
                 } else {
                     $this->get('session')->getFlashBag()->add('success', 'bank.form_confirmation');
 
-                    return $this->redirect(
-                        $this->generateUrl($request->get('_route'), ['bankId' => $bank->getBankId()])
-                    );
+                    return $this->redirectToRoute($request->get('_route'), ['bankId' => $bank->getBankId()]);
                 }
             }
         }
@@ -68,6 +62,6 @@ class BankController extends Controller
     {
         $this->get('app.bank')->importExternalBank($bank);
 
-        return $this->redirect($this->generateUrl('account_list'));
+        return $this->redirectToRoute('account_list');
     }
 }

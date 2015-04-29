@@ -52,7 +52,7 @@ class ReportController extends Controller
             $this->get('session')->getFlashBag()->add('success', 'report.delete_confirmation');
         }
 
-        return $this->redirect($this->generateUrl('report_list'));
+        return $this->redirectToRoute('report_list');
     }
 
     /**
@@ -76,7 +76,7 @@ class ReportController extends Controller
             if ($this->get('app.report')->saveForm($member, $reportForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'report.form_confirmation');
 
-                return $this->redirect($this->generateUrl('report_list'));
+                return $this->redirectToRoute('report_list');
             }
         }
 

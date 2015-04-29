@@ -49,7 +49,7 @@ class MemberController extends Controller
             if ($this->get('app.member')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'member.register.confirmation');
 
-                return $this->redirect($this->generateUrl('member_login'));
+                return $this->redirectToRoute('member_login');
             }
         }
 
@@ -73,7 +73,7 @@ class MemberController extends Controller
                 if ($this->get('app.member')->sendChangePasswordEmail($form->get('email')->getData())) {
                     $this->get('session')->getFlashBag()->add('info', 'member.forgot_password.confirmation');
 
-                    return $this->redirect($this->generateUrl('member_login'));
+                    return $this->redirectToRoute('member_login');
                 }
             }
         }
@@ -101,12 +101,12 @@ class MemberController extends Controller
                     if ($this->get('app.member')->changePassword($member, $form->get('password')->getData())) {
                         $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
-                        return $this->redirect($this->generateUrl('member_login'));
+                        return $this->redirectToRoute('member_login');
                     }
                 }
             }
         } else {
-            return $this->redirect($this->generateUrl('member_login'));
+            return $this->redirectToRoute('member_login');
         }
 
         return [
@@ -130,7 +130,7 @@ class MemberController extends Controller
                 if ($this->get('app.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
                     $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
 
-                    return $this->redirect($this->generateUrl($request->get('_route')));
+                    return $this->redirectToRoute($request->get('_route'));
                 }
             }
         }
@@ -153,7 +153,7 @@ class MemberController extends Controller
             $this->get('session')->getFlashBag()->add('error', 'member.register.activation_error');
         }
 
-        return $this->redirect($this->generateUrl('member_login'));
+        return $this->redirectToRoute('member_login');
     }
 
     /**
@@ -170,7 +170,7 @@ class MemberController extends Controller
             if ($this->get('app.member')->saveForm($form)) {
                 $this->get('session')->getFlashBag()->add('success', 'member.profile.confirmation');
 
-                return $this->redirect($this->generateUrl('member_profile'));
+                return $this->redirectToRoute('member_profile');
             }
         }
 

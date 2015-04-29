@@ -79,7 +79,7 @@ class AccountController extends Controller
             $this->get('session')->getFlashBag()->add('success', 'account.share_confirmation');
         }
 
-        return $this->redirect($this->generateUrl('account_list'));
+        return $this->redirectToRoute('account_list');
     }
 
     /**
@@ -103,8 +103,9 @@ class AccountController extends Controller
             if ($this->get('app.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
-                return $this->redirect(
-                    $this->generateUrl('operation_list', ['accountId' => $accountForm->getData()->getAccountId()])
+                return $this->redirectToRoute(
+                    'operation_list',
+                    ['accountId' => $accountForm->getData()->getAccountId()]
                 );
             }
         }
@@ -137,7 +138,7 @@ class AccountController extends Controller
             if ($this->get('app.account')->saveForm($member, $accountForm)) {
                 $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
 
-                return $this->redirect($this->generateUrl('account_list'));
+                return $this->redirectToRoute('account_list');
             }
         }
 

@@ -72,9 +72,7 @@ class OperationController extends Controller
             $this->get('session')->getFlashBag()->add('success', 'operation.reconcile_confirmation');
         }
 
-        return $this->redirect(
-            $this->generateUrl('operation_list', ['accountId' => $account->getAccountId()])
-        );
+        return $this->redirectToRoute('operation_list', ['accountId' => $account->getAccountId()]);
     }
 
     /**
@@ -102,9 +100,9 @@ class OperationController extends Controller
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();
 
                 if (isset($request->request->get('operation')['saveCreate'])) {
-                    return $this->redirect($this->generateUrl('operation_create', ['accountId' => $accountId]));
+                    return $this->redirectToRoute('operation_create', ['accountId' => $accountId]);
                 } else {
-                    return $this->redirect($this->generateUrl('operation_list', ['accountId' => $accountId]));
+                    return $this->redirectToRoute('operation_list', ['accountId' => $accountId]);
                 }
             }
         }

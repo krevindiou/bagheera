@@ -70,6 +70,6 @@ class OperationSearchController extends Controller
             }
         }
 
-        return $this->redirect($this->generateUrl('operation_list', ['accountId' => $account->getAccountId()]));
+        return $this->redirectToRoute('operation_list', ['accountId' => $account->getAccountId()]);
     }
 }
