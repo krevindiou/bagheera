@@ -7,7 +7,7 @@ project_name=$(basename "$project_dir")
 
 docker-compose up -d
 
-docker exec -ti $cid "$project_dir"/bin/build $project_dir
+docker exec -ti $cid /var/www/bagheera/bin/build /var/www/bagheera
 
 "$project_dir"/bin/http
 
