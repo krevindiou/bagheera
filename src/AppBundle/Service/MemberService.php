@@ -35,8 +35,8 @@ class MemberService
     /** @DI\Inject */
     public $router;
 
-    /** @DI\Inject("security.encoder_factory") */
-    public $encoderFactory;
+    /** @DI\Inject("security.password_encoder") */
+    public $passwordEncoder;
 
     /** @DI\Inject("form.factory") */
     public $formFactory;
@@ -109,8 +109,7 @@ class MemberService
      */
     protected function add(Member $member)
     {
-        $encoder = $this->encoderFactory->getEncoder($member);
-        $member->setPassword($encoder->encodePassword($member->getPlainPassword(), $member->getSalt()));
+        $member->setPassword($this->passwordEncoder->encodePassword($member, $member->getPlainPassword()));
 
         try {
             $this->em->persist($member);
@@ -313,8 +312,7 @@ class MemberService
      */
     public function changePassword(Member $member, $password)
     {
-        $encoder = $this->encoderFactory->getEncoder($member);
-        $member->setPassword($encoder->encodePassword($password, ''));
+        $member->setPassword($this->passwordEncoder->encodePassword($member, $password));
 
         try {
             $this->em->persist($member);

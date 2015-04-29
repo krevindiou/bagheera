@@ -33,11 +33,11 @@ class MemberServiceTest extends TestCase
 
     public function testAddMember()
     {
+        $encoder = $this->get('security.password_encoder');
+
         $member = new Member();
         $member->setEmail('james@example.net');
-
-        $encoder = $this->get('security.encoder_factory')->getEncoder($member);
-        $member->setPassword($encoder->encodePassword('james123', $member->getSalt()));
+        $member->setPassword($encoder->encodePassword($member, 'james123'));
         $member->setCountry('US');
 
         $this->assertTrue($this->get('app.member')->save($member));
