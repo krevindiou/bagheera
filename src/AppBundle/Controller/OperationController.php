@@ -66,10 +66,10 @@ class OperationController extends Controller
 
         if ($request->request->has('delete')) {
             $this->get('app.operation')->delete($member, $operationsId);
-            $this->get('session')->getFlashBag()->add('success', 'operation.delete_confirmation');
+            $this->addFlash('success', 'operation.delete_confirmation');
         } elseif ($request->request->has('reconcile')) {
             $this->get('app.operation')->reconcile($member, $operationsId);
-            $this->get('session')->getFlashBag()->add('success', 'operation.reconcile_confirmation');
+            $this->addFlash('success', 'operation.reconcile_confirmation');
         }
 
         return $this->redirectToRoute('operation_list', ['accountId' => $account->getAccountId()]);
@@ -95,7 +95,7 @@ class OperationController extends Controller
 
         if ($operationForm->isSubmitted()) {
             if ($this->get('app.operation')->saveForm($member, $operationForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'operation.form_confirmation');
+                $this->addFlash('success', 'operation.form_confirmation');
 
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();
 

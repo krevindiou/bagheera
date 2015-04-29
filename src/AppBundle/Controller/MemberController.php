@@ -47,7 +47,7 @@ class MemberController extends Controller
 
         if ($form->isSubmitted()) {
             if ($this->get('app.member')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('success', 'member.register.confirmation');
+                $this->addFlash('success', 'member.register.confirmation');
 
                 return $this->redirectToRoute('member_login');
             }
@@ -71,7 +71,7 @@ class MemberController extends Controller
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 if ($this->get('app.member')->sendChangePasswordEmail($form->get('email')->getData())) {
-                    $this->get('session')->getFlashBag()->add('info', 'member.forgot_password.confirmation');
+                    $this->addFlash('info', 'member.forgot_password.confirmation');
 
                     return $this->redirectToRoute('member_login');
                 }
@@ -99,7 +99,7 @@ class MemberController extends Controller
             if ($form->isSubmitted()) {
                 if ($form->isValid()) {
                     if ($this->get('app.member')->changePassword($member, $form->get('password')->getData())) {
-                        $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
+                        $this->addFlash('success', 'member.change_password.confirmation');
 
                         return $this->redirectToRoute('member_login');
                     }
@@ -128,7 +128,7 @@ class MemberController extends Controller
 
             if ($form->isSubmitted()) {
                 if ($this->get('app.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
-                    $this->get('session')->getFlashBag()->add('success', 'member.change_password.confirmation');
+                    $this->addFlash('success', 'member.change_password.confirmation');
 
                     return $this->redirectToRoute($request->get('_route'));
                 }
@@ -148,9 +148,9 @@ class MemberController extends Controller
         $key = $request->query->get('key');
 
         if (null !== $key && $this->get('app.member')->activate($key)) {
-            $this->get('session')->getFlashBag()->add('success', 'member.register.activation_confirmation');
+            $this->addFlash('success', 'member.register.activation_confirmation');
         } else {
-            $this->get('session')->getFlashBag()->add('error', 'member.register.activation_error');
+            $this->addFlash('error', 'member.register.activation_error');
         }
 
         return $this->redirectToRoute('member_login');
@@ -168,7 +168,7 @@ class MemberController extends Controller
 
         if ($form->isSubmitted()) {
             if ($this->get('app.member')->saveForm($form)) {
-                $this->get('session')->getFlashBag()->add('success', 'member.profile.confirmation');
+                $this->addFlash('success', 'member.profile.confirmation');
 
                 return $this->redirectToRoute('member_profile');
             }

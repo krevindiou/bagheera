@@ -69,14 +69,14 @@ class AccountController extends Controller
         if ($request->request->has('close')) {
             $this->get('app.account')->close($member, $accountsId);
             $this->get('app.bank')->close($member, $banksId);
-            $this->get('session')->getFlashBag()->add('success', 'account.close_confirmation');
+            $this->addFlash('success', 'account.close_confirmation');
         } elseif ($request->request->has('delete')) {
             $this->get('app.account')->delete($member, $accountsId);
             $this->get('app.bank')->delete($member, $banksId);
-            $this->get('session')->getFlashBag()->add('success', 'account.delete_confirmation');
+            $this->addFlash('success', 'account.delete_confirmation');
         } elseif ($request->request->has('share')) {
             // @todo
-            $this->get('session')->getFlashBag()->add('success', 'account.share_confirmation');
+            $this->addFlash('success', 'account.share_confirmation');
         }
 
         return $this->redirectToRoute('account_list');
@@ -101,7 +101,7 @@ class AccountController extends Controller
 
         if ($accountForm->isSubmitted()) {
             if ($this->get('app.account')->saveForm($member, $accountForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
+                $this->addFlash('success', 'account.form_confirmation');
 
                 return $this->redirectToRoute(
                     'operation_list',
@@ -136,7 +136,7 @@ class AccountController extends Controller
 
         if ($accountForm->isSubmitted()) {
             if ($this->get('app.account')->saveForm($member, $accountForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'account.form_confirmation');
+                $this->addFlash('success', 'account.form_confirmation');
 
                 return $this->redirectToRoute('account_list');
             }

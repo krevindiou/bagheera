@@ -64,7 +64,7 @@ class SchedulerController extends Controller
             }
 
             $this->get('app.scheduler')->delete($scheduler);
-            $this->get('session')->getFlashBag()->add('success', 'scheduler.delete_confirmation');
+            $this->addFlash('success', 'scheduler.delete_confirmation');
         }
 
         return $this->redirectToRoute('scheduler_list', ['accountId' => $account->getAccountId()]);
@@ -89,7 +89,7 @@ class SchedulerController extends Controller
 
         if ($schedulerForm->isSubmitted()) {
             if ($this->get('app.scheduler')->saveForm($schedulerForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'scheduler.form_confirmation');
+                $this->addFlash('success', 'scheduler.form_confirmation');
 
                 return $this->redirectToRoute(
                     'scheduler_list',

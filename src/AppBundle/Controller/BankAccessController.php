@@ -33,7 +33,7 @@ class BankAccessController extends Controller
 
         if ($bankAccessForm->isSubmitted()) {
             if ($this->get('app.bank_access')->saveForm($member, $bankAccessForm)) {
-                $this->get('session')->getFlashBag()->add('success', 'bank_access.form_confirmation');
+                $this->addFlash('success', 'bank_access.form_confirmation');
 
                 return $this->redirectToRoute('account_list');
             }
