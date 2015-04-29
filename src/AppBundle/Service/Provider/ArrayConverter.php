@@ -1,22 +1,23 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service\Provider;
 
 class ArrayConverter
 {
     /**
-     * Converts string data to an array
+     * Converts string data to an array.
      *
-     * @param  string $content Data to convert
-     * @param  string $format  Either QIF, OFX or QFX
+     * @param string $content Data to convert
+     * @param string $format  Either QIF, OFX or QFX
+     *
      * @return array
      */
     public static function convertFromFormat($content, $format)
     {
-        $method = 'self::convertFrom' . ucfirst(strtolower($format));
+        $method = 'self::convertFrom'.ucfirst(strtolower($format));
 
         if (is_callable($method)) {
             return forward_static_call_array(

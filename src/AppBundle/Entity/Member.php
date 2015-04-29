@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -20,7 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Member implements AdvancedUserInterface
 {
     /**
-     * @var integer $memberId
+     * @var int
      *
      * @ORM\Column(name="member_id", type="integer", nullable=false)
      * @ORM\Id
@@ -29,7 +29,7 @@ class Member implements AdvancedUserInterface
     protected $memberId;
 
     /**
-     * @var string $email
+     * @var string
      *
      * @ORM\Column(name="email", type="string", length=128, unique=true, nullable=false)
      * @Assert\NotBlank()
@@ -39,14 +39,14 @@ class Member implements AdvancedUserInterface
     protected $email;
 
     /**
-     * @var string $password
+     * @var string
      *
      * @ORM\Column(name="password", type="string", length=128, nullable=false)
      */
     protected $password;
 
     /**
-     * @var string $plainPassword
+     * @var string
      *
      * @Assert\NotBlank(groups={"password"})
      * @Assert\Length(min = 8)
@@ -54,7 +54,7 @@ class Member implements AdvancedUserInterface
     protected $plainPassword;
 
     /**
-     * @var string $country
+     * @var string
      *
      * @ORM\Column(name="country", type="string", length=2, nullable=false)
      * @Assert\NotBlank()
@@ -62,7 +62,7 @@ class Member implements AdvancedUserInterface
     protected $country;
 
     /**
-     * @var boolean $active
+     * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -70,7 +70,7 @@ class Member implements AdvancedUserInterface
     protected $active = false;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -79,7 +79,7 @@ class Member implements AdvancedUserInterface
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -88,7 +88,7 @@ class Member implements AdvancedUserInterface
     protected $updatedAt;
 
     /**
-     * @var DateTime $loggedAt
+     * @var DateTime
      *
      * @ORM\Column(name="logged_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -97,7 +97,7 @@ class Member implements AdvancedUserInterface
     protected $loggedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $banks
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="Bank", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"sortOrder" = "ASC"})
@@ -105,7 +105,7 @@ class Member implements AdvancedUserInterface
     protected $banks;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $reports
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="Report", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"type" = "ASC", "title" = "ASC"})
@@ -119,9 +119,9 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get memberId
+     * Get memberId.
      *
-     * @return integer
+     * @return int
      */
     public function getMemberId()
     {
@@ -129,7 +129,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set email
+     * Set email.
      *
      * @param string $email
      */
@@ -139,7 +139,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get email
+     * Get email.
      *
      * @return string
      */
@@ -149,7 +149,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set password
+     * Set password.
      *
      * @param string $password
      */
@@ -159,7 +159,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get password
+     * Get password.
      *
      * @return string
      */
@@ -169,7 +169,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set plainPassword
+     * Set plainPassword.
      *
      * @param string $plainPassword
      */
@@ -179,7 +179,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get plainPassword
+     * Get plainPassword.
      *
      * @return string
      */
@@ -189,7 +189,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set country
+     * Set country.
      *
      * @param string $country
      */
@@ -199,7 +199,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get country
+     * Get country.
      *
      * @return string
      */
@@ -209,9 +209,9 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set active
+     * Set active.
      *
-     * @param boolean $active
+     * @param bool $active
      */
     public function setActive($active)
     {
@@ -219,9 +219,9 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get active
+     * Get active.
      *
-     * @return boolean
+     * @return bool
      */
     public function isActive()
     {
@@ -229,7 +229,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -239,7 +239,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -249,7 +249,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -259,7 +259,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -269,7 +269,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set loggedAt
+     * Set loggedAt.
      *
      * @param DateTime $loggedAt
      */
@@ -279,7 +279,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get loggedAt
+     * Get loggedAt.
      *
      * @return DateTime
      */
@@ -289,7 +289,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get member banks
+     * Get member banks.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -299,7 +299,7 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Get member reports
+     * Get member reports.
      *
      * @return Doctrine\Common\Collections\Collection
      */

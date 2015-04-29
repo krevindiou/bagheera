@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class AccountImport
 {
     /**
-     * @var integer $importId
+     * @var int
      *
      * @ORM\Column(name="import_id", type="integer", nullable=false)
      * @ORM\Id
@@ -24,14 +24,14 @@ class AccountImport
     protected $importId;
 
     /**
-     * @var integer $accountId
+     * @var int
      *
      * @ORM\Column(name="account_id", type="integer", nullable=false)
      */
     protected $accountId;
 
     /**
-     * @var AppBundle\Entity\Account $account
+     * @var AppBundle\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
@@ -42,21 +42,21 @@ class AccountImport
     protected $account;
 
     /**
-     * @var integer $total
+     * @var int
      *
      * @ORM\Column(name="total", type="integer", nullable=true)
      */
     protected $total = 0;
 
     /**
-     * @var integer $progress
+     * @var int
      *
      * @ORM\Column(name="progress", type="integer", nullable=true)
      */
     protected $progress = 0;
 
     /**
-     * @var boolean $finished
+     * @var bool
      *
      * @ORM\Column(name="finished", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -64,28 +64,28 @@ class AccountImport
     protected $finished = false;
 
     /**
-     * @var string $originalData
+     * @var string
      *
      * @ORM\Column(name="original_data", type="text", nullable=true)
      */
     protected $originalData;
 
     /**
-     * @var string $jsonData
+     * @var string
      *
      * @ORM\Column(name="json_data", type="text", nullable=true)
      */
     protected $jsonData;
 
     /**
-     * @var string $jsonNormalizedData
+     * @var string
      *
      * @ORM\Column(name="json_normalized_data", type="text", nullable=true)
      */
     protected $jsonNormalizedData;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -94,7 +94,7 @@ class AccountImport
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -103,9 +103,9 @@ class AccountImport
     protected $updatedAt;
 
     /**
-     * Set importId
+     * Set importId.
      *
-     * @param integer $importId
+     * @param int $importId
      */
     public function setImportId($importId)
     {
@@ -113,9 +113,9 @@ class AccountImport
     }
 
     /**
-     * Get importId
+     * Get importId.
      *
-     * @return integer
+     * @return int
      */
     public function getImportId()
     {
@@ -123,7 +123,7 @@ class AccountImport
     }
 
     /**
-     * Set account
+     * Set account.
      *
      * @param AppBundle\Entity\Account $account
      */
@@ -133,7 +133,7 @@ class AccountImport
     }
 
     /**
-     * Get account
+     * Get account.
      *
      * @return AppBundle\Entity\Account
      */
@@ -143,9 +143,9 @@ class AccountImport
     }
 
     /**
-     * Set total
+     * Set total.
      *
-     * @param integer $total
+     * @param int $total
      */
     public function setTotal($total)
     {
@@ -153,9 +153,9 @@ class AccountImport
     }
 
     /**
-     * Get total
+     * Get total.
      *
-     * @return integer
+     * @return int
      */
     public function getTotal()
     {
@@ -163,9 +163,9 @@ class AccountImport
     }
 
     /**
-     * Set progress
+     * Set progress.
      *
-     * @param integer $progress
+     * @param int $progress
      */
     public function setProgress($progress)
     {
@@ -173,9 +173,9 @@ class AccountImport
     }
 
     /**
-     * Get progress
+     * Get progress.
      *
-     * @return integer
+     * @return int
      */
     public function getProgress()
     {
@@ -183,9 +183,9 @@ class AccountImport
     }
 
     /**
-     * Set finished
+     * Set finished.
      *
-     * @param boolean $finished
+     * @param bool $finished
      */
     public function setFinished($finished)
     {
@@ -193,9 +193,9 @@ class AccountImport
     }
 
     /**
-     * Get finished
+     * Get finished.
      *
-     * @return boolean
+     * @return bool
      */
     public function isFinished()
     {
@@ -203,7 +203,7 @@ class AccountImport
     }
 
     /**
-     * Set originalData
+     * Set originalData.
      *
      * @param string originalData
      */
@@ -213,7 +213,7 @@ class AccountImport
     }
 
     /**
-     * Get originalData
+     * Get originalData.
      *
      * @return string
      */
@@ -223,7 +223,7 @@ class AccountImport
     }
 
     /**
-     * Set jsonData
+     * Set jsonData.
      *
      * @param string jsonData
      */
@@ -233,7 +233,7 @@ class AccountImport
     }
 
     /**
-     * Get jsonData
+     * Get jsonData.
      *
      * @return string
      */
@@ -243,7 +243,7 @@ class AccountImport
     }
 
     /**
-     * Set jsonNormalizedData
+     * Set jsonNormalizedData.
      *
      * @param string jsonNormalizedData
      */
@@ -253,7 +253,7 @@ class AccountImport
     }
 
     /**
-     * Get jsonNormalizedData
+     * Get jsonNormalizedData.
      *
      * @return string
      */
@@ -263,7 +263,7 @@ class AccountImport
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -273,7 +273,7 @@ class AccountImport
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -283,7 +283,7 @@ class AccountImport
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -293,7 +293,7 @@ class AccountImport
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -303,9 +303,9 @@ class AccountImport
     }
 
     /**
-     * Returns current import progress
+     * Returns current import progress.
      *
-     * @return integer
+     * @return int
      */
     public function getProgressPct()
     {

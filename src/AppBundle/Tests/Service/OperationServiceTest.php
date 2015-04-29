@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Tests\Service;
 
 use AppBundle\Tests\TestCase;
@@ -162,9 +162,9 @@ class OperationServiceTest extends TestCase
     public function testReconcile()
     {
         $dql = 'SELECT COUNT(o) ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.reconciled = true ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.account = 1 ';
+        $dql .= 'AND o.reconciled = true ';
         $query = $this->em->createQuery($dql);
         $operationsBeforeReconcile = $query->getSingleScalarResult();
 
@@ -172,9 +172,9 @@ class OperationServiceTest extends TestCase
         $this->get('app.operation')->reconcile($this->john, $operationsId);
 
         $dql = 'SELECT COUNT(o) ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.reconciled = true ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.account = 1 ';
+        $dql .= 'AND o.reconciled = true ';
         $query = $this->em->createQuery($dql);
         $operationsAfterReconcile = $query->getSingleScalarResult();
 

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Tests\Service;
 
 use AppBundle\Tests\TestCase;
@@ -135,7 +135,7 @@ class AccountServiceTest extends TestCase
                 strtotime('2011-09-01 UTC') => -137.13,
                 strtotime('2011-10-01 UTC') => -98.82,
                 strtotime('2011-11-01 UTC') => -98.82,
-                strtotime('2011-12-01 UTC') => -98.82
+                strtotime('2011-12-01 UTC') => -98.82,
             ],
             'EUR' => [
                 strtotime('2011-01-01 UTC') => 0,
@@ -149,8 +149,8 @@ class AccountServiceTest extends TestCase
                 strtotime('2011-09-01 UTC') => 208.55,
                 strtotime('2011-10-01 UTC') => 208.55,
                 strtotime('2011-11-01 UTC') => 208.55,
-                strtotime('2011-12-01 UTC') => 208.55
-            ]
+                strtotime('2011-12-01 UTC') => 208.55,
+            ],
         ];
 
         $data = $this->get('app.report')->getSynthesis(

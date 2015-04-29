@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;
@@ -42,10 +42,11 @@ class BankAccessService
     public $cryptService;
 
     /**
-     * Returns bank access form
+     * Returns bank access form.
      *
-     * @param  Member $member Member entity
-     * @param  Bank   $bank   Bank entity
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
      * @return Form
      */
     public function getForm(Member $member, Bank $bank)
@@ -61,11 +62,12 @@ class BankAccessService
     }
 
     /**
-     * Saves bank access
+     * Saves bank access.
      *
-     * @param  Member     $member     Member entity
-     * @param  BankAccess $bankAccess BankAccess entity
-     * @return boolean
+     * @param Member     $member     Member entity
+     * @param BankAccess $bankAccess BankAccess entity
+     *
+     * @return bool
      */
     protected function doSave(Member $member, BankAccess $bankAccess)
     {
@@ -75,7 +77,7 @@ class BankAccessService
             try {
                 // Delete previous access data
                 $dql = 'DELETE FROM Model:BankAccess b ';
-                $dql.= 'WHERE b.bankId = :bankId ';
+                $dql .= 'WHERE b.bankId = :bankId ';
 
                 $this->emSecure->createQuery($dql)
                     ->setParameter('bankId', $bankAccess->getBankId())
@@ -104,11 +106,12 @@ class BankAccessService
     }
 
     /**
-     * Saves bank access
+     * Saves bank access.
      *
-     * @param  Member     $member     Member entity
-     * @param  BankAccess $bankAccess BankAccess entity
-     * @return boolean
+     * @param Member     $member     Member entity
+     * @param BankAccess $bankAccess BankAccess entity
+     *
+     * @return bool
      */
     public function save(Member $member, BankAccess $bankAccess)
     {
@@ -122,11 +125,12 @@ class BankAccessService
     }
 
     /**
-     * Saves bank access form
+     * Saves bank access form.
      *
-     * @param  Member  $member Member entity
-     * @param  Form    $form   BankAccess form
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Form   $form   BankAccess form
+     *
+     * @return bool
      */
     public function saveForm(Member $member, Form $form)
     {

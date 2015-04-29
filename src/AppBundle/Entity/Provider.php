@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Provider
 {
     /**
-     * @var integer $providerId
+     * @var int
      *
      * @ORM\Column(name="provider_id", type="smallint", nullable=false)
      * @ORM\Id
@@ -25,7 +25,7 @@ class Provider
     protected $providerId;
 
     /**
-     * @var string $name
+     * @var string
      *
      * @ORM\Column(name="name", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
@@ -33,7 +33,7 @@ class Provider
     protected $name;
 
     /**
-     * @var string $country
+     * @var string
      *
      * @ORM\Column(name="country", type="string", length=2, nullable=false)
      * @Assert\NotBlank()
@@ -41,7 +41,7 @@ class Provider
     protected $country;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -50,7 +50,7 @@ class Provider
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -59,9 +59,9 @@ class Provider
     protected $updatedAt;
 
     /**
-     * Get providerId
+     * Get providerId.
      *
-     * @return integer
+     * @return int
      */
     public function getProviderId()
     {
@@ -69,7 +69,7 @@ class Provider
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      */
@@ -79,7 +79,7 @@ class Provider
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -89,7 +89,7 @@ class Provider
     }
 
     /**
-     * Set country
+     * Set country.
      *
      * @param string $country
      */
@@ -99,7 +99,7 @@ class Provider
     }
 
     /**
-     * Get country
+     * Get country.
      *
      * @return string
      */
@@ -109,7 +109,7 @@ class Provider
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -119,7 +119,7 @@ class Provider
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -129,7 +129,7 @@ class Provider
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -139,7 +139,7 @@ class Provider
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */

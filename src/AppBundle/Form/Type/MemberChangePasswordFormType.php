@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -29,11 +29,11 @@ class MemberChangePasswordFormType extends AbstractType
                     'invalid_message' => 'member.password_fields_must_match',
                     'constraints' => [
                         new NotBlank(),
-                        new Length(['min' => 8])
+                        new Length(['min' => 8]),
                     ],
                     'attr' => [
-                        'class' => 'input-medium'
-                    ]
+                        'class' => 'input-medium',
+                    ],
                 ]
             )
             ->add(
@@ -42,8 +42,8 @@ class MemberChangePasswordFormType extends AbstractType
                 [
                     'label' => 'member.change_password.submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
     }

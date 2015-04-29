@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -19,7 +19,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Operation
 {
     /**
-     * @var integer $operationId
+     * @var int
      *
      * @ORM\Column(name="operation_id", type="integer", nullable=false)
      * @ORM\Id
@@ -28,14 +28,14 @@ class Operation
     protected $operationId;
 
     /**
-     * @var string $externalOperationId
+     * @var string
      *
      * @ORM\Column(name="external_operation_id", type="string", length=32, nullable=true)
      */
     protected $externalOperationId;
 
     /**
-     * @var AppBundle\Entity\Scheduler $scheduler
+     * @var AppBundle\Entity\Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
@@ -44,7 +44,7 @@ class Operation
     protected $scheduler;
 
     /**
-     * @var AppBundle\Entity\Account $account
+     * @var AppBundle\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
@@ -54,7 +54,7 @@ class Operation
     protected $account;
 
     /**
-     * @var AppBundle\Entity\Account $transferAccount
+     * @var AppBundle\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
@@ -63,7 +63,7 @@ class Operation
     protected $transferAccount;
 
     /**
-     * @var AppBundle\Entity\Operation $transferOperation
+     * @var AppBundle\Entity\Operation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
@@ -72,7 +72,7 @@ class Operation
     protected $transferOperation;
 
     /**
-     * @var AppBundle\Entity\Category $category
+     * @var AppBundle\Entity\Category
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
@@ -81,7 +81,7 @@ class Operation
     protected $category;
 
     /**
-     * @var AppBundle\Entity\PaymentMethod $paymentMethod
+     * @var AppBundle\Entity\PaymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
@@ -91,7 +91,7 @@ class Operation
     protected $paymentMethod;
 
     /**
-     * @var string $thirdParty
+     * @var string
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
@@ -100,21 +100,21 @@ class Operation
     protected $thirdParty;
 
     /**
-     * @var float $debit
+     * @var float
      *
      * @ORM\Column(name="debit", type="decimal", scale=2, nullable=true)
      */
     protected $debit;
 
     /**
-     * @var float $credit
+     * @var float
      *
      * @ORM\Column(name="credit", type="decimal", scale=2, nullable=true)
      */
     protected $credit;
 
     /**
-     * @var DateTime $valueDate
+     * @var DateTime
      *
      * @ORM\Column(name="value_date", type="date", nullable=false)
      * @Assert\NotBlank()
@@ -123,7 +123,7 @@ class Operation
     protected $valueDate;
 
     /**
-     * @var boolean $reconciled
+     * @var bool
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -131,14 +131,14 @@ class Operation
     protected $reconciled = false;
 
     /**
-     * @var string $notes
+     * @var string
      *
      * @ORM\Column(name="notes", type="text", nullable=true)
      */
     protected $notes;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -147,7 +147,7 @@ class Operation
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -161,9 +161,9 @@ class Operation
     }
 
     /**
-     * Get operationId
+     * Get operationId.
      *
-     * @return integer
+     * @return int
      */
     public function getOperationId()
     {
@@ -171,7 +171,7 @@ class Operation
     }
 
     /**
-     * Set externalOperationId
+     * Set externalOperationId.
      *
      * @param string $externalOperationId
      */
@@ -181,7 +181,7 @@ class Operation
     }
 
     /**
-     * Get externalOperationId
+     * Get externalOperationId.
      *
      * @return string
      */
@@ -191,7 +191,7 @@ class Operation
     }
 
     /**
-     * Set transferAccount
+     * Set transferAccount.
      *
      * @param AppBundle\Entity\Account $transferAccount
      */
@@ -201,7 +201,7 @@ class Operation
     }
 
     /**
-     * Get transferAccount
+     * Get transferAccount.
      *
      * @return AppBundle\Entity\Account
      */
@@ -211,7 +211,7 @@ class Operation
     }
 
     /**
-     * Set transferOperation
+     * Set transferOperation.
      *
      * @param AppBundle\Entity\Operation $transferOperation
      */
@@ -229,7 +229,7 @@ class Operation
     }
 
     /**
-     * Get transferOperation
+     * Get transferOperation.
      *
      * @return AppBundle\Entity\Operation
      */
@@ -239,7 +239,7 @@ class Operation
     }
 
     /**
-     * Set thirdParty
+     * Set thirdParty.
      *
      * @param string $thirdParty
      */
@@ -249,7 +249,7 @@ class Operation
     }
 
     /**
-     * Get thirdParty
+     * Get thirdParty.
      *
      * @return string
      */
@@ -259,7 +259,7 @@ class Operation
     }
 
     /**
-     * Set debit
+     * Set debit.
      *
      * @param float $debit
      */
@@ -269,7 +269,7 @@ class Operation
     }
 
     /**
-     * Get debit
+     * Get debit.
      *
      * @return float
      */
@@ -279,7 +279,7 @@ class Operation
     }
 
     /**
-     * Set credit
+     * Set credit.
      *
      * @param float $credit
      */
@@ -289,7 +289,7 @@ class Operation
     }
 
     /**
-     * Get credit
+     * Get credit.
      *
      * @return float
      */
@@ -299,7 +299,7 @@ class Operation
     }
 
     /**
-     * Get credit or debit
+     * Get credit or debit.
      *
      * @return float
      */
@@ -309,7 +309,7 @@ class Operation
     }
 
     /**
-     * Set valueDate
+     * Set valueDate.
      *
      * @param DateTime $valueDate
      */
@@ -319,7 +319,7 @@ class Operation
     }
 
     /**
-     * Get valueDate
+     * Get valueDate.
      *
      * @return DateTime
      */
@@ -329,9 +329,9 @@ class Operation
     }
 
     /**
-     * Set reconciled
+     * Set reconciled.
      *
-     * @param boolean $reconciled
+     * @param bool $reconciled
      */
     public function setReconciled($reconciled)
     {
@@ -339,9 +339,9 @@ class Operation
     }
 
     /**
-     * Get reconciled
+     * Get reconciled.
      *
-     * @return boolean
+     * @return bool
      */
     public function isReconciled()
     {
@@ -349,7 +349,7 @@ class Operation
     }
 
     /**
-     * Set notes
+     * Set notes.
      *
      * @param string $notes
      */
@@ -359,7 +359,7 @@ class Operation
     }
 
     /**
-     * Get notes
+     * Get notes.
      *
      * @return string
      */
@@ -369,7 +369,7 @@ class Operation
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -379,7 +379,7 @@ class Operation
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -389,7 +389,7 @@ class Operation
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -399,7 +399,7 @@ class Operation
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -409,7 +409,7 @@ class Operation
     }
 
     /**
-     * Set account
+     * Set account.
      *
      * @param AppBundle\Entity\Account $account
      */
@@ -419,7 +419,7 @@ class Operation
     }
 
     /**
-     * Get account
+     * Get account.
      *
      * @return AppBundle\Entity\Account
      */
@@ -429,7 +429,7 @@ class Operation
     }
 
     /**
-     * Set category
+     * Set category.
      *
      * @param AppBundle\Entity\Category $category
      */
@@ -439,7 +439,7 @@ class Operation
     }
 
     /**
-     * Get category
+     * Get category.
      *
      * @return AppBundle\Entity\Category
      */
@@ -449,7 +449,7 @@ class Operation
     }
 
     /**
-     * Set paymentMethod
+     * Set paymentMethod.
      *
      * @param AppBundle\Entity\PaymentMethod $paymentMethod
      */
@@ -459,7 +459,7 @@ class Operation
     }
 
     /**
-     * Get paymentMethod
+     * Get paymentMethod.
      *
      * @return AppBundle\Entity\PaymentMethod
      */
@@ -469,7 +469,7 @@ class Operation
     }
 
     /**
-     * Set scheduler
+     * Set scheduler.
      *
      * @param AppBundle\Entity\Scheduler $scheduler
      */
@@ -479,7 +479,7 @@ class Operation
     }
 
     /**
-     * Get scheduler
+     * Get scheduler.
      *
      * @return AppBundle\Entity\Scheduler
      */

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -41,8 +41,8 @@ class MemberRegisterFormType extends AbstractType
                 [
                     'label' => 'member.email',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -52,8 +52,8 @@ class MemberRegisterFormType extends AbstractType
                     'label' => 'member.country',
                     'preferred_choices' => [$preferredChoice],
                     'attr' => [
-                        'class' => 'input-large'
-                    ]
+                        'class' => 'input-large',
+                    ],
                 ]
             )
             ->add(
@@ -66,9 +66,9 @@ class MemberRegisterFormType extends AbstractType
                     'invalid_message' => 'member.password_fields_must_match',
                     'options' => [
                         'attr' => [
-                            'class' => 'input-medium'
-                        ]
-                    ]
+                            'class' => 'input-medium',
+                        ],
+                    ],
                 ]
             )
             ->add(
@@ -77,8 +77,8 @@ class MemberRegisterFormType extends AbstractType
                 [
                     'label' => 'member.register.submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
     }
@@ -88,7 +88,7 @@ class MemberRegisterFormType extends AbstractType
         $resolver->setDefaults(
             [
                 'data_class' => 'AppBundle\Entity\Member',
-                'validation_groups' => ['Default', 'password']
+                'validation_groups' => ['Default', 'password'],
             ]
         );
     }

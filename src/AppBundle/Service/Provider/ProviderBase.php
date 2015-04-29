@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service\Provider;
 
 use Symfony\Bridge\Monolog\Logger;
@@ -59,11 +59,12 @@ abstract class ProviderBase
     }
 
     /**
-     * Converts transactions data to an array
+     * Converts transactions data to an array.
      *
-     * @param  Account $account Account entity
-     * @param  string  $data    Data to convert
-     * @param  string  $format  Either QIF, OFX or QFX
+     * @param Account $account Account entity
+     * @param string  $data    Data to convert
+     * @param string  $format  Either QIF, OFX or QFX
+     *
      * @return array
      */
     protected function convertToArray(Account $account, $data, $format)
@@ -80,12 +81,11 @@ abstract class ProviderBase
     }
 
     /**
-     * Saves transactions data depending on type
+     * Saves transactions data depending on type.
      *
-     * @param  Account $account Account entity
-     * @param  string  $data    Data to save
-     * @param  string  $type    Either original, json or json_normalized
-     * @return void
+     * @param Account $account Account entity
+     * @param string  $data    Data to save
+     * @param string  $type    Either original, json or json_normalized
      */
     protected function save(Account $account, $data, $type)
     {

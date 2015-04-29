@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -26,7 +26,7 @@ class PaymentMethod
     const PAYMENT_METHOD_ID_CREDIT_DEPOSIT = 7;
 
     /**
-     * @var integer $paymentMethodId
+     * @var int
      *
      * @ORM\Column(name="payment_method_id", type="integer", nullable=false)
      * @ORM\Id
@@ -35,7 +35,7 @@ class PaymentMethod
     protected $paymentMethodId;
 
     /**
-     * @var string $name
+     * @var string
      *
      * @ORM\Column(name="name", type="string", length=16, nullable=false)
      * @Assert\NotBlank()
@@ -43,7 +43,7 @@ class PaymentMethod
     protected $name;
 
     /**
-     * @var string $type
+     * @var string
      *
      * @ORM\Column(name="type", type="string", length=8, nullable=true)
      * @Assert\Choice(choices = {"debit", "credit"})
@@ -51,7 +51,7 @@ class PaymentMethod
     protected $type;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -60,7 +60,7 @@ class PaymentMethod
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -69,9 +69,9 @@ class PaymentMethod
     protected $updatedAt;
 
     /**
-     * Get paymentMethodId
+     * Get paymentMethodId.
      *
-     * @return integer
+     * @return int
      */
     public function getPaymentMethodId()
     {
@@ -79,7 +79,7 @@ class PaymentMethod
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      */
@@ -89,7 +89,7 @@ class PaymentMethod
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -99,7 +99,7 @@ class PaymentMethod
     }
 
     /**
-     * Set type
+     * Set type.
      *
      * @param string $type
      */
@@ -109,7 +109,7 @@ class PaymentMethod
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -119,7 +119,7 @@ class PaymentMethod
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -129,7 +129,7 @@ class PaymentMethod
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -139,7 +139,7 @@ class PaymentMethod
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -149,7 +149,7 @@ class PaymentMethod
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */

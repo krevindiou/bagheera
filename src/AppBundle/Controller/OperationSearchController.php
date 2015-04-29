@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -19,6 +19,7 @@ class OperationSearchController extends Controller
 {
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form")
+     *
      * @Method("GET")
      * @Template()
      */
@@ -36,12 +37,13 @@ class OperationSearchController extends Controller
         return [
             'account' => $account,
             'operationSearchForm' => $operationSearchForm->createView(),
-            'display' => $display
+            'display' => $display,
         ];
     }
 
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit")
+     *
      * @Method("POST")
      * @Template()
      */

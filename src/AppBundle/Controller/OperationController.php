@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -22,6 +22,7 @@ class OperationController extends Controller
 {
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, name="operation_list")
+     *
      * @Method("GET")
      * @Template()
      */
@@ -48,12 +49,13 @@ class OperationController extends Controller
             'displaySearch' => (null !== $operationSearch),
             'tipCreateOperation' => (null === $operationSearch && count($operations) == 0),
             'balance' => $balance,
-            'reconciledBalance' => $reconciledBalance
+            'reconciledBalance' => $reconciledBalance,
         ];
     }
 
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"})
+     *
      * @Method("POST")
      */
     public function listActionsAction(Request $request, Account $account)
@@ -108,9 +110,9 @@ class OperationController extends Controller
         }
 
         return [
-            'account' => $account ? : $operation->getAccount(),
+            'account' => $account ?: $operation->getAccount(),
             'operation' => $operationForm->getData(),
-            'operationForm' => $operationForm->createView()
+            'operationForm' => $operationForm->createView(),
         ];
     }
 

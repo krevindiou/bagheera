@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -29,7 +29,7 @@ class TranslateController extends Controller
             'email_domain_suggest' => $translator->trans('email_domain_suggest'),
         ];
 
-        $js = 'Bagheera.translations = ' . json_encode($translations);
+        $js = 'Bagheera.translations = '.json_encode($translations);
 
         return new Response($js, 200, ['Content-Type' => 'application/javascript']);
     }

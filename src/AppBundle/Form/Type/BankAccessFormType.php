@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -24,8 +24,8 @@ class BankAccessFormType extends AbstractType
                 [
                     'label' => 'bank_access.login',
                     'attr' => [
-                        'class' => 'input-large'
-                    ]
+                        'class' => 'input-large',
+                    ],
                 ]
             )
             ->add(
@@ -34,8 +34,8 @@ class BankAccessFormType extends AbstractType
                 [
                     'label' => 'bank_access.password',
                     'attr' => [
-                        'class' => 'input-large'
-                    ]
+                        'class' => 'input-large',
+                    ],
                 ]
             )
             ->add(
@@ -44,8 +44,8 @@ class BankAccessFormType extends AbstractType
                 [
                     'label' => 'bank_access.form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
     }
@@ -54,7 +54,7 @@ class BankAccessFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\BankAccess'
+                'data_class' => 'AppBundle\Entity\BankAccess',
             ]
         );
     }

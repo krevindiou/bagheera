@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -32,7 +32,7 @@ class BankChooseFormType extends AbstractType
                     'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                         return $repository->getAvailableProvidersQueryBuilder($member);
                     },
-                    'expanded' => true
+                    'expanded' => true,
                 ]
             )
             ->add(
@@ -44,7 +44,7 @@ class BankChooseFormType extends AbstractType
                     'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                         return $repository->getActiveManualBanksQueryBuilder($member);
                     },
-                    'expanded' => true
+                    'expanded' => true,
                 ]
             )
             ->add(
@@ -53,8 +53,8 @@ class BankChooseFormType extends AbstractType
                 [
                     'label' => 'bank.other',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -63,8 +63,8 @@ class BankChooseFormType extends AbstractType
                 [
                     'label' => 'bank.form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
 

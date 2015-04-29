@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
@@ -14,10 +14,10 @@ class ProviderRepository extends EntityRepository
     {
         // Retrieve used providers
         $dql = 'SELECT p.providerId ';
-        $dql.= 'FROM Model:Bank b ';
-        $dql.= 'JOIN b.provider p ';
-        $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND b.provider IS NOT NULL ';
+        $dql .= 'FROM Model:Bank b ';
+        $dql .= 'JOIN b.provider p ';
+        $dql .= 'WHERE b.member = :member ';
+        $dql .= 'AND b.provider IS NOT NULL ';
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
 
@@ -29,7 +29,7 @@ class ProviderRepository extends EntityRepository
                    ->setParameter('country', $member->getCountry());
 
         if (!empty($providers)) {
-            $qb->andWhere('p.providerId NOT IN (' . implode(', ', $providers) . ')');
+            $qb->andWhere('p.providerId NOT IN ('.implode(', ', $providers).')');
         }
 
         return $qb;

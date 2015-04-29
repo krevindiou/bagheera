@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -27,11 +27,12 @@ class OperationSearchService
     public $container;
 
     /**
-     * Returns operationSearch form
+     * Returns operationSearch form.
      *
-     * @param  Member          $member          Member entity
-     * @param  OperationSearch $operationSearch OperationSearch entity
-     * @param  Account         $account         Account entity for new operationSearch
+     * @param Member          $member          Member entity
+     * @param OperationSearch $operationSearch OperationSearch entity
+     * @param Account         $account         Account entity for new operationSearch
+     *
      * @return Form
      */
     public function getForm(Member $member, OperationSearch $operationSearch = null, Account $account = null)
@@ -47,9 +48,10 @@ class OperationSearchService
     }
 
     /**
-     * Gets operationSearch from session
+     * Gets operationSearch from session.
      *
-     * @param  Account         $account Account entity
+     * @param Account $account Account entity
+     *
      * @return OperationSearch
      */
     public function getSessionSearch(Account $account)
@@ -64,8 +66,8 @@ class OperationSearchService
 
             if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
                 $dql = 'SELECT c ';
-                $dql.= 'FROM Model:Category c ';
-                $dql.= 'WHERE c.categoryId IN (' . implode(', ', $sessionSearch[$account->getAccountId()]['categories']) . ') ';
+                $dql .= 'FROM Model:Category c ';
+                $dql .= 'WHERE c.categoryId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['categories']).') ';
                 $query = $this->em->createQuery($dql);
                 $categories = $query->getResult();
                 $operationSearch->setCategories(new ArrayCollection($categories));
@@ -73,42 +75,42 @@ class OperationSearchService
 
             if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
                 $dql = 'SELECT p ';
-                $dql.= 'FROM Model:PaymentMethod p ';
-                $dql.= 'WHERE p.paymentMethodId IN (' . implode(', ', $sessionSearch[$account->getAccountId()]['paymentMethods']) . ') ';
+                $dql .= 'FROM Model:PaymentMethod p ';
+                $dql .= 'WHERE p.paymentMethodId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['paymentMethods']).') ';
                 $query = $this->em->createQuery($dql);
                 $paymentMethods = $query->getResult();
                 $operationSearch->setPaymentMethods(new ArrayCollection($paymentMethods));
             }
 
             for ($i = 1; $i <= 2; $i++) {
-                switch ($sessionSearch[$account->getAccountId()]['amount_comparator_' . $i]) {
+                switch ($sessionSearch[$account->getAccountId()]['amount_comparator_'.$i]) {
                     case 'inferiorTo':
                         $operationSearch->setAmountInferiorTo(
-                            $sessionSearch[$account->getAccountId()]['amount_' . $i]
+                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
                         break;
 
                     case 'inferiorOrEqualTo':
                         $operationSearch->setAmountInferiorOrEqualTo(
-                            $sessionSearch[$account->getAccountId()]['amount_' . $i]
+                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
                         break;
 
                     case 'equalTo':
                         $operationSearch->setAmountEqualTo(
-                            $sessionSearch[$account->getAccountId()]['amount_' . $i]
+                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
                         break;
 
                     case 'superiorOrEqualTo':
                         $operationSearch->setAmountSuperiorOrEqualTo(
-                            $sessionSearch[$account->getAccountId()]['amount_' . $i]
+                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
                         break;
 
                     case 'superiorTo':
                         $operationSearch->setAmountSuperiorTo(
-                            $sessionSearch[$account->getAccountId()]['amount_' . $i]
+                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
                         break;
                 }
@@ -134,11 +136,10 @@ class OperationSearchService
     }
 
     /**
-     * Sets operationSearch from session
+     * Sets operationSearch from session.
      *
-     * @param  Account $account Account entity
-     * @param  array   $search  Search param
-     * @return void
+     * @param Account $account Account entity
+     * @param array   $search  Search param
      */
     public function setSessionSearch(Account $account, array $search)
     {
@@ -150,10 +151,9 @@ class OperationSearchService
     }
 
     /**
-     * Clears operationSearch from session
+     * Clears operationSearch from session.
      *
-     * @param  Account $account Account entity
-     * @return void
+     * @param Account $account Account entity
      */
     public function clearSessionSearch(Account $account)
     {

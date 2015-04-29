@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -40,7 +40,7 @@ class BankAccessController extends Controller
         }
 
         return [
-            'bankAccessForm' => $bankAccessForm->createView()
+            'bankAccessForm' => $bankAccessForm->createView(),
         ];
     }
 }

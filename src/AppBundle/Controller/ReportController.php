@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -21,6 +21,7 @@ class ReportController extends Controller
 {
     /**
      * @Route("/reports", name="report_list")
+     *
      * @Method("GET")
      * @Template()
      */
@@ -37,6 +38,7 @@ class ReportController extends Controller
 
     /**
      * @Route("/reports")
+     *
      * @Method("POST")
      */
     public function listActionsAction(Request $request)
@@ -79,7 +81,7 @@ class ReportController extends Controller
         }
 
         return [
-            'reportForm' => $reportForm->createView()
+            'reportForm' => $reportForm->createView(),
         ];
     }
 
@@ -104,7 +106,7 @@ class ReportController extends Controller
         }
 
         return [
-            'graphs' => $graphs
+            'graphs' => $graphs,
         ];
     }
 

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -18,7 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Report
 {
     /**
-     * @var integer $reportId
+     * @var int
      *
      * @ORM\Column(name="report_id", type="integer", nullable=false)
      * @ORM\Id
@@ -27,7 +27,7 @@ class Report
     protected $reportId;
 
     /**
-     * @var AppBundle\Entity\Member $member
+     * @var AppBundle\Entity\Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="reports")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
@@ -37,7 +37,7 @@ class Report
     protected $member;
 
     /**
-     * @var string $type
+     * @var string
      *
      * @ORM\Column(name="type", type="string", length=16, nullable=false)
      * @Assert\NotBlank()
@@ -46,7 +46,7 @@ class Report
     protected $type;
 
     /**
-     * @var string $title
+     * @var string
      *
      * @ORM\Column(name="title", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
@@ -55,7 +55,7 @@ class Report
     protected $title;
 
     /**
-     * @var boolean $homepage
+     * @var bool
      *
      * @ORM\Column(name="homepage", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -63,7 +63,7 @@ class Report
     protected $homepage = false;
 
     /**
-     * @var DateTime $valueDateStart
+     * @var DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
      * @Assert\DateTime()
@@ -71,7 +71,7 @@ class Report
     protected $valueDateStart;
 
     /**
-     * @var DateTime $valueDateEnd
+     * @var DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
      * @Assert\DateTime()
@@ -79,14 +79,14 @@ class Report
     protected $valueDateEnd;
 
     /**
-     * @var string $thirdParties
+     * @var string
      *
      * @ORM\Column(name="third_parties", type="string", length=255, nullable=true)
      */
     protected $thirdParties;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $categories
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinTable(name="report_category",
@@ -101,7 +101,7 @@ class Report
     protected $categories;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $paymentMethods
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="PaymentMethod", fetch="EAGER")
      * @ORM\JoinTable(name="report_payment_method",
@@ -116,7 +116,7 @@ class Report
     protected $paymentMethods;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $accounts
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinTable(name="report_account",
@@ -131,7 +131,7 @@ class Report
     protected $accounts;
 
     /**
-     * @var boolean $reconciledOnly
+     * @var bool
      *
      * @ORM\Column(name="reconciled_only", type="boolean", nullable=true)
      * @Assert\Type("bool")
@@ -139,7 +139,7 @@ class Report
     protected $reconciledOnly;
 
     /**
-     * @var string $periodGrouping
+     * @var string
      *
      * @ORM\Column(name="period_grouping", type="string", length=8, nullable=true)
      * @Assert\NotBlank(groups={"sum", "average"})
@@ -148,7 +148,7 @@ class Report
     protected $periodGrouping;
 
     /**
-     * @var string $dataGrouping
+     * @var string
      *
      * @ORM\Column(name="data_grouping", type="string", length=16, nullable=true)
      * @Assert\NotBlank(groups={"distribution"})
@@ -157,7 +157,7 @@ class Report
     protected $dataGrouping;
 
     /**
-     * @var integer $significantResultsNumber
+     * @var int
      *
      * @ORM\Column(name="significant_results_number", type="smallint", nullable=true)
      * @Assert\NotBlank(groups={"distribution"})
@@ -165,7 +165,7 @@ class Report
     protected $significantResultsNumber;
 
     /**
-     * @var integer $monthExpenses
+     * @var int
      *
      * @ORM\Column(name="month_expenses", type="integer", nullable=true)
      * @Assert\NotBlank(groups={"estimate"})
@@ -173,7 +173,7 @@ class Report
     protected $monthExpenses;
 
     /**
-     * @var integer $monthIncomes
+     * @var int
      *
      * @ORM\Column(name="month_incomes", type="integer", nullable=true)
      * @Assert\NotBlank(groups={"estimate"})
@@ -181,7 +181,7 @@ class Report
     protected $monthIncomes;
 
     /**
-     * @var integer $estimateDurationValue
+     * @var int
      *
      * @ORM\Column(name="estimate_duration_value", type="smallint", nullable=true)
      * @Assert\NotBlank(groups={"estimate"})
@@ -189,7 +189,7 @@ class Report
     protected $estimateDurationValue;
 
     /**
-     * @var string $estimateDurationUnit
+     * @var string
      *
      * @ORM\Column(name="estimate_duration_unit", type="string", length=8, nullable=true)
      * @Assert\NotBlank(groups={"estimate"})
@@ -198,7 +198,7 @@ class Report
     protected $estimateDurationUnit;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -207,7 +207,7 @@ class Report
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -223,9 +223,9 @@ class Report
     }
 
     /**
-     * Get reportId
+     * Get reportId.
      *
-     * @return integer
+     * @return int
      */
     public function getReportId()
     {
@@ -233,7 +233,7 @@ class Report
     }
 
     /**
-     * Set member
+     * Set member.
      *
      * @param AppBundle\Entity\Member $member
      */
@@ -243,7 +243,7 @@ class Report
     }
 
     /**
-     * Get member
+     * Get member.
      *
      * @return AppBundle\Entity\Member
      */
@@ -253,7 +253,7 @@ class Report
     }
 
     /**
-     * Set type
+     * Set type.
      *
      * @param string $type
      */
@@ -263,7 +263,7 @@ class Report
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -273,7 +273,7 @@ class Report
     }
 
     /**
-     * Set title
+     * Set title.
      *
      * @param string $title
      */
@@ -283,7 +283,7 @@ class Report
     }
 
     /**
-     * Get title
+     * Get title.
      *
      * @return string
      */
@@ -293,9 +293,9 @@ class Report
     }
 
     /**
-     * Set homepage
+     * Set homepage.
      *
-     * @param boolean $homepage
+     * @param bool $homepage
      */
     public function setHomepage($homepage)
     {
@@ -303,9 +303,9 @@ class Report
     }
 
     /**
-     * Get homepage
+     * Get homepage.
      *
-     * @return boolean
+     * @return bool
      */
     public function getHomepage()
     {
@@ -313,7 +313,7 @@ class Report
     }
 
     /**
-     * Set valueDateStart
+     * Set valueDateStart.
      *
      * @param DateTime $valueDateStart
      */
@@ -323,7 +323,7 @@ class Report
     }
 
     /**
-     * Get valueDateStart
+     * Get valueDateStart.
      *
      * @return DateTime
      */
@@ -333,7 +333,7 @@ class Report
     }
 
     /**
-     * Set valueDateEnd
+     * Set valueDateEnd.
      *
      * @param DateTime $valueDateEnd
      */
@@ -343,7 +343,7 @@ class Report
     }
 
     /**
-     * Get valueDateEnd
+     * Get valueDateEnd.
      *
      * @return DateTime
      */
@@ -353,7 +353,7 @@ class Report
     }
 
     /**
-     * Set thirdParties
+     * Set thirdParties.
      *
      * @param string $thirdParties
      */
@@ -363,7 +363,7 @@ class Report
     }
 
     /**
-     * Get thirdParties
+     * Get thirdParties.
      *
      * @return string
      */
@@ -373,7 +373,7 @@ class Report
     }
 
     /**
-     * Set categories
+     * Set categories.
      *
      * @param array $categories
      */
@@ -383,7 +383,7 @@ class Report
     }
 
     /**
-     * Get categories
+     * Get categories.
      *
      * @return array
      */
@@ -393,7 +393,7 @@ class Report
     }
 
     /**
-     * Set paymentMethods
+     * Set paymentMethods.
      *
      * @param array $paymentMethods
      */
@@ -403,7 +403,7 @@ class Report
     }
 
     /**
-     * Get paymentMethods
+     * Get paymentMethods.
      *
      * @return array
      */
@@ -413,7 +413,7 @@ class Report
     }
 
     /**
-     * Set accounts
+     * Set accounts.
      *
      * @param array                                  $accounts
      * @param Doctrine\Common\Collections\Collection $accounts
@@ -424,7 +424,7 @@ class Report
     }
 
     /**
-     * Get accounts
+     * Get accounts.
      *
      * @return array
      */
@@ -434,9 +434,9 @@ class Report
     }
 
     /**
-     * Set reconciledOnly
+     * Set reconciledOnly.
      *
-     * @param boolean $reconciledOnly
+     * @param bool $reconciledOnly
      */
     public function setReconciledOnly($reconciledOnly)
     {
@@ -444,9 +444,9 @@ class Report
     }
 
     /**
-     * Get reconciledOnly
+     * Get reconciledOnly.
      *
-     * @return boolean
+     * @return bool
      */
     public function getReconciledOnly()
     {
@@ -454,7 +454,7 @@ class Report
     }
 
     /**
-     * Set periodGrouping
+     * Set periodGrouping.
      *
      * @param string $periodGrouping
      */
@@ -464,7 +464,7 @@ class Report
     }
 
     /**
-     * Get periodGrouping
+     * Get periodGrouping.
      *
      * @return string
      */
@@ -474,7 +474,7 @@ class Report
     }
 
     /**
-     * Set dataGrouping
+     * Set dataGrouping.
      *
      * @param string $dataGrouping
      */
@@ -484,7 +484,7 @@ class Report
     }
 
     /**
-     * Get dataGrouping
+     * Get dataGrouping.
      *
      * @return string
      */
@@ -494,9 +494,9 @@ class Report
     }
 
     /**
-     * Set significantResultsNumber
+     * Set significantResultsNumber.
      *
-     * @param integer $significantResultsNumber
+     * @param int $significantResultsNumber
      */
     public function setSignificantResultsNumber($significantResultsNumber)
     {
@@ -504,9 +504,9 @@ class Report
     }
 
     /**
-     * Get significantResultsNumber
+     * Get significantResultsNumber.
      *
-     * @return integer
+     * @return int
      */
     public function getSignificantResultsNumber()
     {
@@ -514,9 +514,9 @@ class Report
     }
 
     /**
-     * Set monthExpenses
+     * Set monthExpenses.
      *
-     * @param integer $monthExpenses
+     * @param int $monthExpenses
      */
     public function setMonthExpenses($monthExpenses)
     {
@@ -524,9 +524,9 @@ class Report
     }
 
     /**
-     * Get monthExpenses
+     * Get monthExpenses.
      *
-     * @return integer
+     * @return int
      */
     public function getMonthExpenses()
     {
@@ -534,9 +534,9 @@ class Report
     }
 
     /**
-     * Set monthIncomes
+     * Set monthIncomes.
      *
-     * @param integer $monthIncomes
+     * @param int $monthIncomes
      */
     public function setMonthIncomes($monthIncomes)
     {
@@ -544,9 +544,9 @@ class Report
     }
 
     /**
-     * Get monthIncomes
+     * Get monthIncomes.
      *
-     * @return integer
+     * @return int
      */
     public function getMonthIncomes()
     {
@@ -554,9 +554,9 @@ class Report
     }
 
     /**
-     * Set estimateDurationValue
+     * Set estimateDurationValue.
      *
-     * @param integer $estimateDurationValue
+     * @param int $estimateDurationValue
      */
     public function setEstimateDurationValue($estimateDurationValue)
     {
@@ -564,9 +564,9 @@ class Report
     }
 
     /**
-     * Get estimateDurationValue
+     * Get estimateDurationValue.
      *
-     * @return integer
+     * @return int
      */
     public function getEstimateDurationValue()
     {
@@ -574,7 +574,7 @@ class Report
     }
 
     /**
-     * Set estimateDurationUnit
+     * Set estimateDurationUnit.
      *
      * @param string $estimateDurationUnit
      */
@@ -584,7 +584,7 @@ class Report
     }
 
     /**
-     * Get estimateDurationUnit
+     * Get estimateDurationUnit.
      *
      * @return string
      */
@@ -594,7 +594,7 @@ class Report
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -604,7 +604,7 @@ class Report
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -614,7 +614,7 @@ class Report
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -624,7 +624,7 @@ class Report
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */

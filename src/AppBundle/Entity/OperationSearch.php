@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -18,7 +18,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class OperationSearch
 {
     /**
-     * @var integer $operationSearchId
+     * @var int
      *
      * @ORM\Column(name="operation_search_id", type="integer", nullable=false)
      * @ORM\Id
@@ -63,7 +63,7 @@ class OperationSearch
     protected $paymentMethods;
 
     /**
-     * @var string $thirdParty
+     * @var string
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=true)
      * @Assert\Length(max = 64)
@@ -71,7 +71,7 @@ class OperationSearch
     protected $thirdParty;
 
     /**
-     * @var string $notes
+     * @var string
      *
      * @ORM\Column(name="notes", type="string", length=128, nullable=true)
      * @Assert\Length(max = 128)
@@ -79,7 +79,7 @@ class OperationSearch
     protected $notes;
 
     /**
-     * @var DateTime $valueDateStart
+     * @var DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
      * @Assert\DateTime()
@@ -87,7 +87,7 @@ class OperationSearch
     protected $valueDateStart;
 
     /**
-     * @var DateTime $valueDateEnd
+     * @var DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
      * @Assert\DateTime()
@@ -95,7 +95,7 @@ class OperationSearch
     protected $valueDateEnd;
 
     /**
-     * @var boolean $reconciled
+     * @var bool
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=true)
      * @Assert\Type("bool")
@@ -103,7 +103,7 @@ class OperationSearch
     protected $reconciled;
 
     /**
-     * @var string $type
+     * @var string
      *
      * @ORM\Column(name="type", type="string", length=8, nullable=true)
      * @Assert\Choice(choices = {"debit", "credit"})
@@ -111,42 +111,42 @@ class OperationSearch
     protected $type = 'debit';
 
     /**
-     * @var decimal $amountInferiorTo
+     * @var decimal
      *
      * @ORM\Column(name="amount_inferior_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountInferiorTo;
 
     /**
-     * @var decimal $amountInferiorOrEqualTo
+     * @var decimal
      *
      * @ORM\Column(name="amount_inferior_or_equal_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountInferiorOrEqualTo;
 
     /**
-     * @var decimal $amountEqualTo
+     * @var decimal
      *
      * @ORM\Column(name="amount_equal_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountEqualTo;
 
     /**
-     * @var decimal $amountSuperiorOrEqualTo
+     * @var decimal
      *
      * @ORM\Column(name="amount_superior_or_equal_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountSuperiorOrEqualTo;
 
     /**
-     * @var decimal $amountSuperiorTo
+     * @var decimal
      *
      * @ORM\Column(name="amount_superior_to", type="decimal", scale=2, nullable=true)
      */
     protected $amountSuperiorTo;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -155,7 +155,7 @@ class OperationSearch
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -170,9 +170,9 @@ class OperationSearch
     }
 
     /**
-     * Get operationSearchId
+     * Get operationSearchId.
      *
-     * @return integer
+     * @return int
      */
     public function getOperationSearchId()
     {
@@ -180,7 +180,7 @@ class OperationSearch
     }
 
     /**
-     * Set account
+     * Set account.
      *
      * @param AppBundle\Entity\Account $account
      */
@@ -190,7 +190,7 @@ class OperationSearch
     }
 
     /**
-     * Get account
+     * Get account.
      *
      * @return AppBundle\Entity\Account
      */
@@ -200,7 +200,7 @@ class OperationSearch
     }
 
     /**
-     * Set categories
+     * Set categories.
      *
      * @param Doctrine\Common\Collections\Collection $categories
      */
@@ -210,7 +210,7 @@ class OperationSearch
     }
 
     /**
-     * Get categories
+     * Get categories.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -220,7 +220,7 @@ class OperationSearch
     }
 
     /**
-     * Set paymentMethods
+     * Set paymentMethods.
      *
      * @param Doctrine\Common\Collections\Collection $paymentMethods
      */
@@ -230,7 +230,7 @@ class OperationSearch
     }
 
     /**
-     * Get paymentMethods
+     * Get paymentMethods.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -240,7 +240,7 @@ class OperationSearch
     }
 
     /**
-     * Set thirdParty
+     * Set thirdParty.
      *
      * @param string $thirdParty
      */
@@ -250,7 +250,7 @@ class OperationSearch
     }
 
     /**
-     * Get thirdParty
+     * Get thirdParty.
      *
      * @return string
      */
@@ -260,7 +260,7 @@ class OperationSearch
     }
 
     /**
-     * Set notes
+     * Set notes.
      *
      * @param string $notes
      */
@@ -270,7 +270,7 @@ class OperationSearch
     }
 
     /**
-     * Get notes
+     * Get notes.
      *
      * @return string
      */
@@ -280,7 +280,7 @@ class OperationSearch
     }
 
     /**
-     * Set valueDateStart
+     * Set valueDateStart.
      *
      * @param DateTime $valueDateStart
      */
@@ -290,7 +290,7 @@ class OperationSearch
     }
 
     /**
-     * Get valueDateStart
+     * Get valueDateStart.
      *
      * @return DateTime
      */
@@ -300,7 +300,7 @@ class OperationSearch
     }
 
     /**
-     * Set valueDateEnd
+     * Set valueDateEnd.
      *
      * @param DateTime $valueDateEnd
      */
@@ -310,7 +310,7 @@ class OperationSearch
     }
 
     /**
-     * Get valueDateEnd
+     * Get valueDateEnd.
      *
      * @return DateTime
      */
@@ -320,9 +320,9 @@ class OperationSearch
     }
 
     /**
-     * Set reconciled
+     * Set reconciled.
      *
-     * @param boolean $reconciled
+     * @param bool $reconciled
      */
     public function setReconciled($reconciled)
     {
@@ -336,9 +336,9 @@ class OperationSearch
     }
 
     /**
-     * Get reconciled
+     * Get reconciled.
      *
-     * @return boolean
+     * @return bool
      */
     public function isReconciled()
     {
@@ -346,7 +346,7 @@ class OperationSearch
     }
 
     /**
-     * Set type
+     * Set type.
      *
      * @param string $type
      */
@@ -356,7 +356,7 @@ class OperationSearch
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -366,7 +366,7 @@ class OperationSearch
     }
 
     /**
-     * Set amountInferiorTo
+     * Set amountInferiorTo.
      *
      * @param decimal $amountInferiorTo
      */
@@ -376,7 +376,7 @@ class OperationSearch
     }
 
     /**
-     * Get amountInferiorTo
+     * Get amountInferiorTo.
      *
      * @return decimal
      */
@@ -386,7 +386,7 @@ class OperationSearch
     }
 
     /**
-     * Set amountInferiorOrEqualTo
+     * Set amountInferiorOrEqualTo.
      *
      * @param decimal $amountInferiorOrEqualTo
      */
@@ -396,7 +396,7 @@ class OperationSearch
     }
 
     /**
-     * Get amountInferiorOrEqualTo
+     * Get amountInferiorOrEqualTo.
      *
      * @return decimal
      */
@@ -406,7 +406,7 @@ class OperationSearch
     }
 
     /**
-     * Set amountEqualTo
+     * Set amountEqualTo.
      *
      * @param decimal $amountEqualTo
      */
@@ -416,7 +416,7 @@ class OperationSearch
     }
 
     /**
-     * Get amountEqualTo
+     * Get amountEqualTo.
      *
      * @return decimal
      */
@@ -426,7 +426,7 @@ class OperationSearch
     }
 
     /**
-     * Set amountSuperiorOrEqualTo
+     * Set amountSuperiorOrEqualTo.
      *
      * @param decimal $amountSuperiorOrEqualTo
      */
@@ -436,7 +436,7 @@ class OperationSearch
     }
 
     /**
-     * Get amountSuperiorOrEqualTo
+     * Get amountSuperiorOrEqualTo.
      *
      * @return decimal
      */
@@ -446,7 +446,7 @@ class OperationSearch
     }
 
     /**
-     * Set amountSuperiorTo
+     * Set amountSuperiorTo.
      *
      * @param decimal $amountSuperiorTo
      */
@@ -456,7 +456,7 @@ class OperationSearch
     }
 
     /**
-     * Get amountSuperiorTo
+     * Get amountSuperiorTo.
      *
      * @return decimal
      */
@@ -466,7 +466,7 @@ class OperationSearch
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -476,7 +476,7 @@ class OperationSearch
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -486,7 +486,7 @@ class OperationSearch
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -496,7 +496,7 @@ class OperationSearch
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -54,7 +54,7 @@ class MemberController extends Controller
         }
 
         return [
-            'registerForm' => $form->createView()
+            'registerForm' => $form->createView(),
         ];
     }
 
@@ -79,7 +79,7 @@ class MemberController extends Controller
         }
 
         return [
-            'forgotPasswordForm' => $form->createView()
+            'forgotPasswordForm' => $form->createView(),
         ];
     }
 
@@ -111,7 +111,7 @@ class MemberController extends Controller
 
         return [
             'key' => $key,
-            'changePasswordForm' => $form->createView()
+            'changePasswordForm' => $form->createView(),
         ];
     }
 
@@ -136,7 +136,7 @@ class MemberController extends Controller
         }
 
         return [
-            'changePasswordForm' => $form->createView()
+            'changePasswordForm' => $form->createView(),
         ];
     }
 
@@ -175,7 +175,7 @@ class MemberController extends Controller
         }
 
         return [
-            'profileForm' => $form->createView()
+            'profileForm' => $form->createView(),
         ];
     }
 }

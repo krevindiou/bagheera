@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -37,24 +37,26 @@ class AccountController extends Controller
             'accountService' => $this->get('app.account'),
             'progress' => $this->get('app.member')->getImportProgress($member),
             'reports' => $this->get('app.report')->getHomepageList($member),
-            'tipNewAccount' => $this->get('app.member')->hasNewAccountTip($member)
+            'tipNewAccount' => $this->get('app.member')->hasNewAccountTip($member),
         ];
     }
 
     /**
      * @Route("/accounts", name="account_list")
+     *
      * @Method("GET")
      * @Template()
      */
     public function listAction()
     {
         return [
-            'banks' => $this->get('app.bank')->getList($this->getUser(), false)
+            'banks' => $this->get('app.bank')->getList($this->getUser(), false),
         ];
     }
 
     /**
      * @Route("/accounts")
+     *
      * @Method("POST")
      */
     public function listActionsAction(Request $request)
@@ -110,7 +112,7 @@ class AccountController extends Controller
         return $this->render(
             'AppBundle:Account:form.html.twig',
             [
-                'accountForm' => $accountForm->createView()
+                'accountForm' => $accountForm->createView(),
             ]
         );
     }
@@ -143,7 +145,7 @@ class AccountController extends Controller
             'AppBundle:Account:form.html.twig',
             [
                 'account' => $account,
-                'accountForm' => $accountForm->createView()
+                'accountForm' => $accountForm->createView(),
             ]
         );
     }

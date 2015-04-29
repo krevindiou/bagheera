@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -17,7 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Category
 {
     /**
-     * @var integer $categoryId
+     * @var int
      *
      * @ORM\Column(name="category_id", type="integer", nullable=false)
      * @ORM\Id
@@ -26,7 +26,7 @@ class Category
     protected $categoryId;
 
     /**
-     * @var AppBundle\Entity\Category $parentCategory
+     * @var AppBundle\Entity\Category
      *
      * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
      * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
@@ -35,7 +35,7 @@ class Category
     protected $parentCategory;
 
     /**
-     * @var string $type
+     * @var string
      *
      * @ORM\Column(name="type", type="string", length=8, nullable=true)
      * @Assert\NotBlank()
@@ -44,7 +44,7 @@ class Category
     protected $type;
 
     /**
-     * @var string $name
+     * @var string
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
      * @Assert\NotBlank()
@@ -53,7 +53,7 @@ class Category
     protected $name;
 
     /**
-     * @var boolean $active
+     * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -61,7 +61,7 @@ class Category
     protected $active = true;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -70,7 +70,7 @@ class Category
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -79,7 +79,7 @@ class Category
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $subCategories
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory", fetch="EXTRA_LAZY")
      */
@@ -91,7 +91,7 @@ class Category
     }
 
     /**
-     * Get categoryId
+     * Get categoryId.
      *
      * @return smallint
      */
@@ -101,7 +101,7 @@ class Category
     }
 
     /**
-     * Set type
+     * Set type.
      *
      * @param string $type
      */
@@ -111,7 +111,7 @@ class Category
     }
 
     /**
-     * Get type
+     * Get type.
      *
      * @return string
      */
@@ -121,7 +121,7 @@ class Category
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      */
@@ -131,7 +131,7 @@ class Category
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -141,9 +141,9 @@ class Category
     }
 
     /**
-     * Set active
+     * Set active.
      *
-     * @param boolean $active
+     * @param bool $active
      */
     public function setActive($active)
     {
@@ -151,9 +151,9 @@ class Category
     }
 
     /**
-     * Get active
+     * Get active.
      *
-     * @return boolean
+     * @return bool
      */
     public function isActive()
     {
@@ -161,7 +161,7 @@ class Category
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -171,7 +171,7 @@ class Category
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -181,7 +181,7 @@ class Category
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -191,7 +191,7 @@ class Category
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -201,7 +201,7 @@ class Category
     }
 
     /**
-     * Set parentCategory
+     * Set parentCategory.
      *
      * @param AppBundle\Entity\Category $parentCategory
      */
@@ -211,7 +211,7 @@ class Category
     }
 
     /**
-     * Get parentCategory
+     * Get parentCategory.
      *
      * @return AppBundle\Entity\Category
      */
@@ -221,7 +221,7 @@ class Category
     }
 
     /**
-     * Get subCategories
+     * Get subCategories.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -236,7 +236,7 @@ class Category
 
         $parentCategory = $this->getParentCategory();
         if (null !== $parentCategory) {
-            $str = $parentCategory->getName() . ' > ' . $str;
+            $str = $parentCategory->getName().' > '.$str;
         }
 
         return $str;

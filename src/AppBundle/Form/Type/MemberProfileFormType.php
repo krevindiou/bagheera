@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\FormBuilderInterface;
@@ -26,7 +26,7 @@ class MemberProfileFormType extends MemberRegisterFormType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Member'
+                'data_class' => 'AppBundle\Entity\Member',
             ]
         );
     }

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -29,8 +29,8 @@ class OperationSearchFormType extends AbstractType
                     'required' => true,
                     'choices' => [
                         'debit' => 'operation.type_debit',
-                        'credit' => 'operation.type_credit'
-                    ]
+                        'credit' => 'operation.type_credit',
+                    ],
                 ]
             )
             ->add(
@@ -39,8 +39,8 @@ class OperationSearchFormType extends AbstractType
                 [
                     'label' => 'operation.third_party',
                     'attr' => [
-                        'class' => 'input-large'
-                    ]
+                        'class' => 'input-large',
+                    ],
                 ]
             )
             ->add(
@@ -51,8 +51,8 @@ class OperationSearchFormType extends AbstractType
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -63,8 +63,8 @@ class OperationSearchFormType extends AbstractType
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => [
-                        'class' => 'input-medium'
-                    ]
+                        'class' => 'input-medium',
+                    ],
                 ]
             )
             ->add(
@@ -76,8 +76,8 @@ class OperationSearchFormType extends AbstractType
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
                     'attr' => [
-                        'class' => 'input-small calendar'
-                    ]
+                        'class' => 'input-small calendar',
+                    ],
                 ]
             )
             ->add(
@@ -89,8 +89,8 @@ class OperationSearchFormType extends AbstractType
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
                     'attr' => [
-                        'class' => 'input-small calendar'
-                    ]
+                        'class' => 'input-small calendar',
+                    ],
                 ]
             )
             ->add(
@@ -100,8 +100,8 @@ class OperationSearchFormType extends AbstractType
                     'label' => 'operation.notes',
                     'attr' => [
                         'class' => 'input-large',
-                        'rows' => 5
-                    ]
+                        'rows' => 5,
+                    ],
                 ]
             )
             ->add(
@@ -114,7 +114,7 @@ class OperationSearchFormType extends AbstractType
                     'choices' => [
                         1 => 'operation.search_only_reconciled',
                         0 => 'operation.search_only_not_reconciled',
-                    ]
+                    ],
                 ]
             )
             ->add(
@@ -123,8 +123,8 @@ class OperationSearchFormType extends AbstractType
                 [
                     'label' => 'operation.search_form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             )
             ->add(
@@ -133,8 +133,8 @@ class OperationSearchFormType extends AbstractType
                 [
                     'label' => 'operation.search_form_clear_button',
                     'attr' => [
-                        'class' => 'btn'
-                    ]
+                        'class' => 'btn',
+                    ],
                 ]
             );
 
@@ -162,8 +162,8 @@ class OperationSearchFormType extends AbstractType
                                 'superiorTo' => '>',
                             ],
                             'attr' => [
-                                'class' => 'input-mini'
-                            ]
+                                'class' => 'input-mini',
+                            ],
                         ]
                     )
                     ->add(
@@ -174,8 +174,8 @@ class OperationSearchFormType extends AbstractType
                             'currency' => $account->getCurrency(),
                             'mapped' => false,
                             'attr' => [
-                                'class' => 'input-small'
-                            ]
+                                'class' => 'input-small',
+                            ],
                         ]
                     )
                     ->add(
@@ -193,8 +193,8 @@ class OperationSearchFormType extends AbstractType
                                 'superiorTo' => '>',
                             ],
                             'attr' => [
-                                'class' => 'input-mini'
-                            ]
+                                'class' => 'input-mini',
+                            ],
                         ]
                     )
                     ->add(
@@ -205,8 +205,8 @@ class OperationSearchFormType extends AbstractType
                             'currency' => $account->getCurrency(),
                             'mapped' => false,
                             'attr' => [
-                                'class' => 'input-small'
-                            ]
+                                'class' => 'input-small',
+                            ],
                         ]
                     )
                 ;
@@ -215,31 +215,31 @@ class OperationSearchFormType extends AbstractType
                 if ('' != $operationSearch->getAmountInferiorTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'inferiorTo',
-                        'amount' => $operationSearch->getAmountInferiorTo()
+                        'amount' => $operationSearch->getAmountInferiorTo(),
                     ];
                 }
                 if ('' != $operationSearch->getAmountInferiorOrEqualTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'inferiorOrEqualTo',
-                        'amount' => $operationSearch->getAmountInferiorOrEqualTo()
+                        'amount' => $operationSearch->getAmountInferiorOrEqualTo(),
                     ];
                 }
                 if ('' != $operationSearch->getAmountEqualTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'equalTo',
-                        'amount' => $operationSearch->getAmountEqualTo()
+                        'amount' => $operationSearch->getAmountEqualTo(),
                     ];
                 }
                 if ('' != $operationSearch->getAmountSuperiorOrEqualTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'superiorOrEqualTo',
-                        'amount' => $operationSearch->getAmountSuperiorOrEqualTo()
+                        'amount' => $operationSearch->getAmountSuperiorOrEqualTo(),
                     ];
                 }
                 if ('' != $operationSearch->getAmountSuperiorTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'superiorTo',
-                        'amount' => $operationSearch->getAmountSuperiorTo()
+                        'amount' => $operationSearch->getAmountSuperiorTo(),
                     ];
                 }
 
@@ -260,7 +260,7 @@ class OperationSearchFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\OperationSearch'
+                'data_class' => 'AppBundle\Entity\OperationSearch',
             ]
         );
     }

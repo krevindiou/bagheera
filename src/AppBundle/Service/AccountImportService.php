@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use JMS\DiExtraBundle\Annotation as DI;
@@ -22,19 +22,20 @@ class AccountImportService
     public $em;
 
     /**
-     * Returns next import id to be used
+     * Returns next import id to be used.
      *
-     * @param  Account $account Account entity
-     * @return integer
+     * @param Account $account Account entity
+     *
+     * @return int
      */
     protected function getNextImportId(Account $account)
     {
         $dql = 'SELECT MAX(i.importId) ';
-        $dql.= 'FROM Model:AccountImport i ';
-        $dql.= 'JOIN i.account a ';
-        $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND i.finished = true ';
+        $dql .= 'FROM Model:AccountImport i ';
+        $dql .= 'JOIN i.account a ';
+        $dql .= 'JOIN a.bank b ';
+        $dql .= 'WHERE b.member = :member ';
+        $dql .= 'AND i.finished = true ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('member', $account->getBank()->getMember());
 
@@ -42,9 +43,10 @@ class AccountImportService
     }
 
     /**
-     * Returns current import
+     * Returns current import.
      *
-     * @param  Account       $account Account entity
+     * @param Account $account Account entity
+     *
      * @return AccountImport
      */
     public function getCurrentImport(Account $account)
@@ -52,17 +54,16 @@ class AccountImportService
         return $this->em->getRepository('Model:AccountImport')->findOneBy(
             [
                 'account' => $account->getAccountId(),
-                'finished' => 0
+                'finished' => 0,
             ]
         );
     }
 
     /**
-     * Init import progress data
+     * Init import progress data.
      *
-     * @param  Account $account Account entity
-     * @param  integer $total   Total
-     * @return void
+     * @param Account $account Account entity
+     * @param int     $total   Total
      */
     public function initImport(Account $account)
     {
@@ -80,11 +81,10 @@ class AccountImportService
     }
 
     /**
-     * Updates import progress data
+     * Updates import progress data.
      *
-     * @param  Account $account  Account entity
-     * @param  integer $progress Current progress
-     * @return void
+     * @param Account $account  Account entity
+     * @param int     $progress Current progress
      */
     public function updateImport(Account $account, $progress)
     {
@@ -98,10 +98,9 @@ class AccountImportService
     }
 
     /**
-     * Closes import progress data
+     * Closes import progress data.
      *
-     * @param  Account $account Account entity
-     * @return void
+     * @param Account $account Account entity
      */
     public function closeImport(Account $account)
     {
@@ -115,12 +114,11 @@ class AccountImportService
     }
 
     /**
-     * Saves transactions data depending on type
+     * Saves transactions data depending on type.
      *
-     * @param  Account $account Account entity
-     * @param  string  $data    Data to save
-     * @param  string  $type    Either original, json or json_normalized
-     * @return void
+     * @param Account $account Account entity
+     * @param string  $data    Data to save
+     * @param string  $type    Either original, json or json_normalized
      */
     public function setData(Account $account, $data, $type)
     {

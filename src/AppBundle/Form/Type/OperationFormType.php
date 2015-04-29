@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -31,11 +31,11 @@ class OperationFormType extends AbstractType
                     'required' => true,
                     'choices' => [
                         'debit' => 'operation.type_debit',
-                        'credit' => 'operation.type_credit'
+                        'credit' => 'operation.type_credit',
                     ],
                     'constraints' => [
-                        new Assert\NotBlank()
-                    ]
+                        new Assert\NotBlank(),
+                    ],
                 ]
             )
             ->add(
@@ -45,8 +45,8 @@ class OperationFormType extends AbstractType
                     'label' => 'operation.third_party',
                     'attr' => [
                         'class' => 'input-xlarge',
-                        'autocomplete' => 'off'
-                    ]
+                        'autocomplete' => 'off',
+                    ],
                 ]
             )
             ->add(
@@ -58,8 +58,8 @@ class OperationFormType extends AbstractType
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -70,8 +70,8 @@ class OperationFormType extends AbstractType
                     'empty_value' => '',
                     'group_by' => 'type',
                     'attr' => [
-                        'class' => 'input-medium'
-                    ]
+                        'class' => 'input-medium',
+                    ],
                 ]
             )
             ->add(
@@ -82,8 +82,8 @@ class OperationFormType extends AbstractType
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => [
-                        'class' => 'input-small calendar'
-                    ]
+                        'class' => 'input-small calendar',
+                    ],
                 ]
             )
             ->add(
@@ -93,8 +93,8 @@ class OperationFormType extends AbstractType
                     'label' => 'operation.notes',
                     'attr' => [
                         'class' => 'input-xlarge',
-                        'rows' => 5
-                    ]
+                        'rows' => 5,
+                    ],
                 ]
             )
             ->add(
@@ -102,7 +102,7 @@ class OperationFormType extends AbstractType
                 null,
                 [
                     'label' => 'operation.reconciled',
-                    'required' => false
+                    'required' => false,
                 ]
             )
             ->add(
@@ -111,8 +111,8 @@ class OperationFormType extends AbstractType
                 [
                     'label' => 'operation.form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             )
             ->add(
@@ -121,8 +121,8 @@ class OperationFormType extends AbstractType
                 [
                     'label' => 'operation.form_submit_create_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
 
@@ -143,11 +143,11 @@ class OperationFormType extends AbstractType
                             'currency' => $account->getCurrency(),
                             'mapped' => false,
                             'constraints' => [
-                                new Assert\NotBlank()
+                                new Assert\NotBlank(),
                             ],
                             'attr' => [
-                                'class' => 'input-small'
-                            ]
+                                'class' => 'input-small',
+                            ],
                         ]
                     )
                     ->add(
@@ -168,8 +168,8 @@ class OperationFormType extends AbstractType
                                     ->add('orderBy', 'b.name ASC, a.name ASC');
                             },
                             'attr' => [
-                                'class' => 'input-xlarge'
-                            ]
+                                'class' => 'input-xlarge',
+                            ],
                         ]
                     )
                 ;
@@ -213,7 +213,7 @@ class OperationFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Operation'
+                'data_class' => 'AppBundle\Entity\Operation',
             ]
         );
     }

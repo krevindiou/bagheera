@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Scheduler
 {
     /**
-     * @var integer $schedulerId
+     * @var int
      *
      * @ORM\Column(name="scheduler_id", type="integer", nullable=false)
      * @ORM\Id
@@ -25,7 +25,7 @@ class Scheduler
     protected $schedulerId;
 
     /**
-     * @var AppBundle\Entity\Account $account
+     * @var AppBundle\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
@@ -35,7 +35,7 @@ class Scheduler
     protected $account;
 
     /**
-     * @var AppBundle\Entity\Account $transferAccount
+     * @var AppBundle\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
@@ -44,7 +44,7 @@ class Scheduler
     protected $transferAccount;
 
     /**
-     * @var AppBundle\Entity\Category $category
+     * @var AppBundle\Entity\Category
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
@@ -53,7 +53,7 @@ class Scheduler
     protected $category;
 
     /**
-     * @var AppBundle\Entity\PaymentMethod $paymentMethod
+     * @var AppBundle\Entity\PaymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
@@ -63,7 +63,7 @@ class Scheduler
     protected $paymentMethod;
 
     /**
-     * @var string $thirdParty
+     * @var string
      *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
@@ -72,21 +72,21 @@ class Scheduler
     protected $thirdParty;
 
     /**
-     * @var float $debit
+     * @var float
      *
      * @ORM\Column(name="debit", type="decimal", scale=2, nullable=true)
      */
     protected $debit;
 
     /**
-     * @var float $credit
+     * @var float
      *
      * @ORM\Column(name="credit", type="decimal", scale=2, nullable=true)
      */
     protected $credit;
 
     /**
-     * @var DateTime $valueDate
+     * @var DateTime
      *
      * @ORM\Column(name="value_date", type="date", nullable=false)
      * @Assert\NotBlank()
@@ -95,7 +95,7 @@ class Scheduler
     protected $valueDate;
 
     /**
-     * @var DateTime $limitDate
+     * @var DateTime
      *
      * @ORM\Column(name="limit_date", type="date", nullable=true)
      * @Assert\DateTime()
@@ -103,7 +103,7 @@ class Scheduler
     protected $limitDate;
 
     /**
-     * @var boolean $reconciled
+     * @var bool
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -111,14 +111,14 @@ class Scheduler
     protected $reconciled = false;
 
     /**
-     * @var string $notes
+     * @var string
      *
      * @ORM\Column(name="notes", type="text", nullable=true)
      */
     protected $notes;
 
     /**
-     * @var string $frequencyUnit
+     * @var string
      *
      * @ORM\Column(name="frequency_unit", type="string", length=16, nullable=false)
      * @Assert\NotBlank()
@@ -127,7 +127,7 @@ class Scheduler
     protected $frequencyUnit = 'month';
 
     /**
-     * @var integer $frequencyValue
+     * @var int
      *
      * @ORM\Column(name="frequency_value", type="smallint", nullable=false)
      * @Assert\NotBlank()
@@ -136,7 +136,7 @@ class Scheduler
     protected $frequencyValue;
 
     /**
-     * @var boolean $active
+     * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -144,7 +144,7 @@ class Scheduler
     protected $active = true;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -153,7 +153,7 @@ class Scheduler
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -162,9 +162,9 @@ class Scheduler
     protected $updatedAt;
 
     /**
-     * Get schedulerId
+     * Get schedulerId.
      *
-     * @return integer
+     * @return int
      */
     public function getSchedulerId()
     {
@@ -172,7 +172,7 @@ class Scheduler
     }
 
     /**
-     * Set thirdParty
+     * Set thirdParty.
      *
      * @param string $thirdParty
      */
@@ -182,7 +182,7 @@ class Scheduler
     }
 
     /**
-     * Get thirdParty
+     * Get thirdParty.
      *
      * @return string
      */
@@ -192,7 +192,7 @@ class Scheduler
     }
 
     /**
-     * Set debit
+     * Set debit.
      *
      * @param float $debit
      */
@@ -202,7 +202,7 @@ class Scheduler
     }
 
     /**
-     * Get debit
+     * Get debit.
      *
      * @return float
      */
@@ -212,7 +212,7 @@ class Scheduler
     }
 
     /**
-     * Set credit
+     * Set credit.
      *
      * @param float $credit
      */
@@ -222,7 +222,7 @@ class Scheduler
     }
 
     /**
-     * Get credit
+     * Get credit.
      *
      * @return float
      */
@@ -232,7 +232,7 @@ class Scheduler
     }
 
     /**
-     * Get credit or debit
+     * Get credit or debit.
      *
      * @return float
      */
@@ -242,7 +242,7 @@ class Scheduler
     }
 
     /**
-     * Set valueDate
+     * Set valueDate.
      *
      * @param DateTime $valueDate
      */
@@ -252,7 +252,7 @@ class Scheduler
     }
 
     /**
-     * Get valueDate
+     * Get valueDate.
      *
      * @return DateTime
      */
@@ -262,7 +262,7 @@ class Scheduler
     }
 
     /**
-     * Set limitDate
+     * Set limitDate.
      *
      * @param DateTime $limitDate
      */
@@ -272,7 +272,7 @@ class Scheduler
     }
 
     /**
-     * Get limitDate
+     * Get limitDate.
      *
      * @return DateTime
      */
@@ -282,9 +282,9 @@ class Scheduler
     }
 
     /**
-     * Set reconciled
+     * Set reconciled.
      *
-     * @param boolean $reconciled
+     * @param bool $reconciled
      */
     public function setReconciled($reconciled)
     {
@@ -292,9 +292,9 @@ class Scheduler
     }
 
     /**
-     * Get reconciled
+     * Get reconciled.
      *
-     * @return boolean
+     * @return bool
      */
     public function isReconciled()
     {
@@ -302,7 +302,7 @@ class Scheduler
     }
 
     /**
-     * Set notes
+     * Set notes.
      *
      * @param string $notes
      */
@@ -312,7 +312,7 @@ class Scheduler
     }
 
     /**
-     * Get notes
+     * Get notes.
      *
      * @return string
      */
@@ -322,7 +322,7 @@ class Scheduler
     }
 
     /**
-     * Set frequencyUnit
+     * Set frequencyUnit.
      *
      * @param string $frequencyUnit
      */
@@ -332,7 +332,7 @@ class Scheduler
     }
 
     /**
-     * Get frequencyUnit
+     * Get frequencyUnit.
      *
      * @return string
      */
@@ -342,9 +342,9 @@ class Scheduler
     }
 
     /**
-     * Set frequencyValue
+     * Set frequencyValue.
      *
-     * @param integer $frequencyValue
+     * @param int $frequencyValue
      */
     public function setFrequencyValue($frequencyValue)
     {
@@ -352,9 +352,9 @@ class Scheduler
     }
 
     /**
-     * Get frequencyValue
+     * Get frequencyValue.
      *
-     * @return integer
+     * @return int
      */
     public function getFrequencyValue()
     {
@@ -362,9 +362,9 @@ class Scheduler
     }
 
     /**
-     * Set active
+     * Set active.
      *
-     * @param boolean $active
+     * @param bool $active
      */
     public function setActive($active)
     {
@@ -372,9 +372,9 @@ class Scheduler
     }
 
     /**
-     * Get active
+     * Get active.
      *
-     * @return boolean
+     * @return bool
      */
     public function isActive()
     {
@@ -382,7 +382,7 @@ class Scheduler
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -392,7 +392,7 @@ class Scheduler
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -402,7 +402,7 @@ class Scheduler
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -412,7 +412,7 @@ class Scheduler
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -422,7 +422,7 @@ class Scheduler
     }
 
     /**
-     * Set account
+     * Set account.
      *
      * @param AppBundle\Entity\Account $account
      */
@@ -432,7 +432,7 @@ class Scheduler
     }
 
     /**
-     * Get account
+     * Get account.
      *
      * @return AppBundle\Entity\Account
      */
@@ -442,7 +442,7 @@ class Scheduler
     }
 
     /**
-     * Set transferAccount
+     * Set transferAccount.
      *
      * @param AppBundle\Entity\Account $transferAccount
      */
@@ -452,7 +452,7 @@ class Scheduler
     }
 
     /**
-     * Get transferAccount
+     * Get transferAccount.
      *
      * @return AppBundle\Entity\Account
      */
@@ -462,7 +462,7 @@ class Scheduler
     }
 
     /**
-     * Set category
+     * Set category.
      *
      * @param AppBundle\Entity\Category $category
      */
@@ -472,7 +472,7 @@ class Scheduler
     }
 
     /**
-     * Get category
+     * Get category.
      *
      * @return AppBundle\Entity\Category
      */
@@ -482,7 +482,7 @@ class Scheduler
     }
 
     /**
-     * Set paymentMethod
+     * Set paymentMethod.
      *
      * @param AppBundle\Entity\PaymentMethod $paymentMethod
      */
@@ -492,7 +492,7 @@ class Scheduler
     }
 
     /**
-     * Get paymentMethod
+     * Get paymentMethod.
      *
      * @return AppBundle\Entity\PaymentMethod
      */

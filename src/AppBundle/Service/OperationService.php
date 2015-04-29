@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;
@@ -40,19 +40,20 @@ class OperationService
     public $categoriesId;
 
     /**
-     * Returns operations list
+     * Returns operations list.
      *
-     * @param  Member          $member          Member entity
-     * @param  Account         $account         Account entity
-     * @param  integer         $currentPage     Page number
-     * @param  OperationSearch $operationSearch OperationSearch entity
+     * @param Member          $member          Member entity
+     * @param Account         $account         Account entity
+     * @param int             $currentPage     Page number
+     * @param OperationSearch $operationSearch OperationSearch entity
+     *
      * @return Pagerfanta
      */
     public function getList(Member $member, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
     {
         if ($account->getBank()->getMember() == $member) {
             $params = [
-                ':account_id' => $account->getAccountId()
+                ':account_id' => $account->getAccountId(),
             ];
 
             $sql = 'SELECT
@@ -76,19 +77,19 @@ class OperationService
                 payment_method.payment_method_id AS payment_method_id,
                 payment_method.name AS payment_method_name
                 ';
-            $sql.= 'FROM operation ';
-            $sql.= 'INNER JOIN account ON operation.account_id = account.account_id ';
-            $sql.= 'LEFT JOIN scheduler ON operation.scheduler_id = scheduler.scheduler_id ';
-            $sql.= 'LEFT JOIN account AS transfer_account ON operation.transfer_account_id = transfer_account.account_id ';
-            $sql.= 'LEFT JOIN operation AS transfer_operation ON operation.transfer_operation_id = transfer_operation.operation_id ';
-            $sql.= 'LEFT JOIN category ON operation.category_id = category.category_id ';
-            $sql.= 'LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id ';
-            $sql.= 'WHERE operation.account_id = :account_id ';
+            $sql .= 'FROM operation ';
+            $sql .= 'INNER JOIN account ON operation.account_id = account.account_id ';
+            $sql .= 'LEFT JOIN scheduler ON operation.scheduler_id = scheduler.scheduler_id ';
+            $sql .= 'LEFT JOIN account AS transfer_account ON operation.transfer_account_id = transfer_account.account_id ';
+            $sql .= 'LEFT JOIN operation AS transfer_operation ON operation.transfer_operation_id = transfer_operation.operation_id ';
+            $sql .= 'LEFT JOIN category ON operation.category_id = category.category_id ';
+            $sql .= 'LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id ';
+            $sql .= 'WHERE operation.account_id = :account_id ';
 
             if (null !== $operationSearch) {
                 if ('' != $operationSearch->getThirdParty()) {
-                    $sql.= 'AND operation.third_party LIKE :third_party ';
-                    $params[':third_party'] = '%' . $operationSearch->getThirdParty() . '%';
+                    $sql .= 'AND operation.third_party LIKE :third_party ';
+                    $params[':third_party'] = '%'.$operationSearch->getThirdParty().'%';
                 }
                 if (0 != count($operationSearch->getCategories())) {
                     $categories = array_map(
@@ -98,7 +99,7 @@ class OperationService
                         $operationSearch->getCategories()->toArray()
                     );
 
-                    $sql.= 'AND operation.category_id IN (' . implode(',', $categories) . ') ';
+                    $sql .= 'AND operation.category_id IN ('.implode(',', $categories).') ';
                 }
                 if (0 != count($operationSearch->getPaymentMethods())) {
                     $paymentMethods = array_map(
@@ -108,47 +109,47 @@ class OperationService
                         $operationSearch->getPaymentMethods()->toArray()
                     );
 
-                    $sql.= 'AND operation.payment_method_id IN (' . implode(',', $paymentMethods) . ') ';
+                    $sql .= 'AND operation.payment_method_id IN ('.implode(',', $paymentMethods).') ';
                 }
                 if (null !== $operationSearch->getAmountInferiorTo()) {
-                    $sql.= 'AND operation.' . $operationSearch->getType() . ' < :amount_inferior_to ';
+                    $sql .= 'AND operation.'.$operationSearch->getType().' < :amount_inferior_to ';
                     $params[':amount_inferior_to'] = $operationSearch->getAmountInferiorTo();
                 }
                 if (null !== $operationSearch->getAmountInferiorOrEqualTo()) {
-                    $sql.= 'AND operation.' . $operationSearch->getType() . ' <= :amount_inferior_or_equal_to ';
+                    $sql .= 'AND operation.'.$operationSearch->getType().' <= :amount_inferior_or_equal_to ';
                     $params[':amount_inferior_or_equal_to'] = $operationSearch->getAmountInferiorOrEqualTo();
                 }
                 if (null !== $operationSearch->getAmountEqualTo()) {
-                    $sql.= 'AND operation.' . $operationSearch->getType() . ' = :amount_equal_to ';
+                    $sql .= 'AND operation.'.$operationSearch->getType().' = :amount_equal_to ';
                     $params[':amount_equal_to'] = $operationSearch->getAmountEqualTo();
                 }
                 if (null !== $operationSearch->getAmountSuperiorOrEqualTo()) {
-                    $sql.= 'AND operation.' . $operationSearch->getType() . ' >= :amount_superior_or_equal_to ';
+                    $sql .= 'AND operation.'.$operationSearch->getType().' >= :amount_superior_or_equal_to ';
                     $params[':amount_superior_or_equal_to'] = $operationSearch->getAmountSuperiorOrEqualTo();
                 }
                 if (null !== $operationSearch->getAmountSuperiorTo()) {
-                    $sql.= 'AND operation.' . $operationSearch->getType() . ' > :amount_superior_to ';
+                    $sql .= 'AND operation.'.$operationSearch->getType().' > :amount_superior_to ';
                     $params[':amount_superior_to'] = $operationSearch->getAmountSuperiorTo();
                 }
                 if (null !== $operationSearch->getValueDateStart()) {
-                    $sql.= 'AND operation.value_date >= :value_date_start ';
+                    $sql .= 'AND operation.value_date >= :value_date_start ';
                     $params[':value_date_start'] = $operationSearch->getValueDateStart()->format(\DateTime::ISO8601);
                 }
                 if (null !== $operationSearch->getValueDateEnd()) {
-                    $sql.= 'AND operation.value_date <= :value_date_end ';
+                    $sql .= 'AND operation.value_date <= :value_date_end ';
                     $params[':value_date_end'] = $operationSearch->getValueDateEnd()->format(\DateTime::ISO8601);
                 }
                 if ('' != $operationSearch->getNotes()) {
-                    $sql.= 'AND operation.notes LIKE :notes ';
-                    $params[':notes'] = '%' . $operationSearch->getNotes() . '%';
+                    $sql .= 'AND operation.notes LIKE :notes ';
+                    $params[':notes'] = '%'.$operationSearch->getNotes().'%';
                 }
                 if (null !== $operationSearch->isReconciled()) {
-                    $sql.= 'AND operation.is_reconciled = :reconciled ';
+                    $sql .= 'AND operation.is_reconciled = :reconciled ';
                     $params[':reconciled'] = $operationSearch->isReconciled();
                 }
             }
 
-            $sql.= 'ORDER BY operation.value_date DESC ';
+            $sql .= 'ORDER BY operation.value_date DESC ';
 
             $conn = $this->em->getConnection();
 
@@ -157,7 +158,7 @@ class OperationService
                 $length = strpos($sql, ' ORDER BY ') - $start;
 
                 $sqlCount = 'SELECT COUNT(*) AS total ';
-                $sqlCount.= substr($sql, $start, $length);
+                $sqlCount .= substr($sql, $start, $length);
 
                 $stmt = $conn->prepare($sqlCount);
                 $stmt->execute($params);
@@ -166,7 +167,7 @@ class OperationService
             };
 
             $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
-                $sql.= 'LIMIT :length OFFSET :offset';
+                $sql .= 'LIMIT :length OFFSET :offset';
 
                 $params[':length'] = $length;
                 $params[':offset'] = $offset;
@@ -229,11 +230,12 @@ class OperationService
     }
 
     /**
-     * Returns operation form
+     * Returns operation form.
      *
-     * @param  Member    $member    Member entity
-     * @param  Operation $operation Operation entity
-     * @param  Account   $account   Account entity for new operation
+     * @param Member    $member    Member entity
+     * @param Operation $operation Operation entity
+     * @param Account   $account   Account entity for new operation
+     *
      * @return Form
      */
     public function getForm(Member $member, Operation $operation = null, Account $account = null)
@@ -249,11 +251,12 @@ class OperationService
     }
 
     /**
-     * Saves operation
+     * Saves operation.
      *
-     * @param  Member    $member    Member entity
-     * @param  Operation $operation Operation entity
-     * @return boolean
+     * @param Member    $member    Member entity
+     * @param Operation $operation Operation entity
+     *
+     * @return bool
      */
     protected function doSave(Member $member, Operation $operation)
     {
@@ -270,7 +273,7 @@ class OperationService
                 $operation->getPaymentMethod()->getPaymentMethodId(),
                 [
                     PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                    PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                    PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER,
                 ]
             )) {
                 $operation->setTransferAccount(null);
@@ -359,11 +362,12 @@ class OperationService
     }
 
     /**
-     * Saves operation
+     * Saves operation.
      *
-     * @param  Member    $member    Member entity
-     * @param  Operation $operation Operation entity
-     * @return boolean
+     * @param Member    $member    Member entity
+     * @param Operation $operation Operation entity
+     *
+     * @return bool
      */
     public function save(Member $member, Operation $operation)
     {
@@ -377,11 +381,12 @@ class OperationService
     }
 
     /**
-     * Saves operation form
+     * Saves operation form.
      *
-     * @param  Member  $member Member entity
-     * @param  Form    $form   Operation form
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Form   $form   Operation form
+     *
+     * @return bool
      */
     public function saveForm(Member $member, Form $form)
     {
@@ -393,11 +398,12 @@ class OperationService
     }
 
     /**
-     * Deletes operations
+     * Deletes operations.
      *
-     * @param  Member  $member       Member entity
-     * @param  array   $operationsId Operations id to delete
-     * @return boolean
+     * @param Member $member       Member entity
+     * @param array  $operationsId Operations id to delete
+     *
+     * @return bool
      */
     public function delete(Member $member, array $operationsId)
     {
@@ -423,11 +429,12 @@ class OperationService
     }
 
     /**
-     * Reconciles operations
+     * Reconciles operations.
      *
-     * @param  Member  $member       Member entity
-     * @param  array   $operationsId Operations id to reconcile
-     * @return boolean
+     * @param Member $member       Member entity
+     * @param array  $operationsId Operations id to reconcile
+     *
+     * @return bool
      */
     public function reconcile(Member $member, array $operationsId)
     {
@@ -456,33 +463,34 @@ class OperationService
     public function findThirdParties(Member $member, $queryString)
     {
         $sql = 'SELECT o2.third_party AS "thirdParty", o2.category_id AS "categoryId" ';
-        $sql.= 'FROM ( ';
-        $sql.= '    SELECT o.third_party, MAX(o.value_date) AS max_value_date ';
-        $sql.= '    FROM operation o ';
-        $sql.= '    INNER JOIN account a ON o.account_id = a.account_id ';
-        $sql.= '    INNER JOIN bank b ON a.bank_id = b.bank_id ';
-        $sql.= '    WHERE b.member_id = :member_id ';
-        $sql.= '    AND o.third_party ILIKE :third_party ';
-        $sql.= '    GROUP BY o.third_party ';
-        $sql.= ') AS tmp ';
-        $sql.= 'INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date ';
-        $sql.= 'GROUP BY o2.third_party, o2.category_id ';
+        $sql .= 'FROM ( ';
+        $sql .= '    SELECT o.third_party, MAX(o.value_date) AS max_value_date ';
+        $sql .= '    FROM operation o ';
+        $sql .= '    INNER JOIN account a ON o.account_id = a.account_id ';
+        $sql .= '    INNER JOIN bank b ON a.bank_id = b.bank_id ';
+        $sql .= '    WHERE b.member_id = :member_id ';
+        $sql .= '    AND o.third_party ILIKE :third_party ';
+        $sql .= '    GROUP BY o.third_party ';
+        $sql .= ') AS tmp ';
+        $sql .= 'INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date ';
+        $sql .= 'GROUP BY o2.third_party, o2.category_id ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
-        $stmt->bindValue('third_party', '%' . $queryString . '%');
+        $stmt->bindValue('third_party', '%'.$queryString.'%');
         $stmt->execute();
 
         return $stmt->fetchAll();
     }
 
     /**
-     * Saves multiple operations
+     * Saves multiple operations.
      *
-     * @param  Account $account    Account entity
-     * @param  array   $operations Operations data
-     * @param  Closure $func       Regularly called function
-     * @return boolean
+     * @param Account $account    Account entity
+     * @param array   $operations Operations data
+     * @param Closure $func       Regularly called function
+     *
+     * @return bool
      */
     public function saveMulti(Account $account, array $operations, \Closure $func)
     {
@@ -559,9 +567,10 @@ class OperationService
     }
 
     /**
-     * Returns last salary operation
+     * Returns last salary operation.
      *
-     * @param  Member    $member Member entity
+     * @param Member $member Member entity
+     *
      * @return Operation
      */
     public function getLastSalary(Member $member)
@@ -569,16 +578,16 @@ class OperationService
         $category = $this->em->find('Model:Category', $this->categoriesId['salary']);
 
         $dql = 'SELECT o ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'JOIN o.account a ';
-        $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND o.category = :category ';
-        $dql.= 'AND b.deleted = false ';
-        $dql.= 'AND b.closed = false ';
-        $dql.= 'AND a.deleted = false ';
-        $dql.= 'AND a.closed = false ';
-        $dql.= 'ORDER BY o.valueDate DESC ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'JOIN o.account a ';
+        $dql .= 'JOIN a.bank b ';
+        $dql .= 'WHERE b.member = :member ';
+        $dql .= 'AND o.category = :category ';
+        $dql .= 'AND b.deleted = false ';
+        $dql .= 'AND b.closed = false ';
+        $dql .= 'AND a.deleted = false ';
+        $dql .= 'AND a.closed = false ';
+        $dql .= 'ORDER BY o.valueDate DESC ';
 
         $query = $this->em->createQuery($dql)->setMaxResults(1);
         $query->setParameter('member', $member);
@@ -591,30 +600,31 @@ class OperationService
     }
 
     /**
-     * Returns last biggest expense since a specified date
+     * Returns last biggest expense since a specified date.
      *
-     * @param  Member    $member Member entity
-     * @param  DateTime  $since  Biggest expense since this date
+     * @param Member   $member Member entity
+     * @param DateTime $since  Biggest expense since this date
+     *
      * @return Operation
      */
     public function getLastBiggestExpense(Member $member, \DateTime $since)
     {
         $dql = 'SELECT o ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.debit = ( ';
-        $dql.= '  SELECT MAX(o2.debit) ';
-        $dql.= '  FROM Model:Operation o2 ';
-        $dql.= '  JOIN o2.account a ';
-        $dql.= '  JOIN a.bank b ';
-        $dql.= '  WHERE b.member = :member ';
-        $dql.= '  AND o2.debit > 0 ';
-        $dql.= '  AND o2.scheduler IS NULL ';
-        $dql.= '  AND o2.valueDate >= :valueDate ';
-        $dql.= '  AND b.deleted = false ';
-        $dql.= '  AND b.closed = false ';
-        $dql.= '  AND a.deleted = false ';
-        $dql.= '  AND a.closed = false ';
-        $dql.= ') ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.debit = ( ';
+        $dql .= '  SELECT MAX(o2.debit) ';
+        $dql .= '  FROM Model:Operation o2 ';
+        $dql .= '  JOIN o2.account a ';
+        $dql .= '  JOIN a.bank b ';
+        $dql .= '  WHERE b.member = :member ';
+        $dql .= '  AND o2.debit > 0 ';
+        $dql .= '  AND o2.scheduler IS NULL ';
+        $dql .= '  AND o2.valueDate >= :valueDate ';
+        $dql .= '  AND b.deleted = false ';
+        $dql .= '  AND b.closed = false ';
+        $dql .= '  AND a.deleted = false ';
+        $dql .= '  AND a.closed = false ';
+        $dql .= ') ';
 
         $query = $this->em->createQuery($dql);
         $query->setMaxResults(1);

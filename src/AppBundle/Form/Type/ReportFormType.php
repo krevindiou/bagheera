@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -27,8 +27,8 @@ class ReportFormType extends AbstractType
                 [
                     'label' => 'report.title',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -36,7 +36,7 @@ class ReportFormType extends AbstractType
                 null,
                 [
                     'label' => 'report.homepage',
-                    'required' => false
+                    'required' => false,
                 ]
             )
             ->add(
@@ -45,8 +45,8 @@ class ReportFormType extends AbstractType
                 [
                     'label' => 'report.form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
 
@@ -71,8 +71,8 @@ class ReportFormType extends AbstractType
                                 'format' => 'yyyy-MM-dd',
                                 'required' => false,
                                 'attr' => [
-                                    'class' => 'input-small calendar'
-                                ]
+                                    'class' => 'input-small calendar',
+                                ],
                             ]
                         )
                         ->add(
@@ -84,8 +84,8 @@ class ReportFormType extends AbstractType
                                 'format' => 'yyyy-MM-dd',
                                 'required' => false,
                                 'attr' => [
-                                    'class' => 'input-small calendar'
-                                ]
+                                    'class' => 'input-small calendar',
+                                ],
                             ]
                         )
                         ->add(
@@ -95,8 +95,8 @@ class ReportFormType extends AbstractType
                                 'label' => 'report.third_parties',
                                 'required' => false,
                                 'attr' => [
-                                    'class' => 'input-large'
-                                ]
+                                    'class' => 'input-large',
+                                ],
                             ]
                         )
                         /*
@@ -147,8 +147,8 @@ class ReportFormType extends AbstractType
                                 'required' => false,
                                 'multiple' => true,
                                 'attr' => [
-                                    'class' => 'input-xlarge'
-                                ]
+                                    'class' => 'input-xlarge',
+                                ],
                             ]
                         )
                         ->add(
@@ -156,7 +156,7 @@ class ReportFormType extends AbstractType
                             'checkbox',
                             [
                                 'label' => 'report.reconciled_only',
-                                'required' => false
+                                'required' => false,
                             ]
                         )
                     ;
@@ -173,12 +173,12 @@ class ReportFormType extends AbstractType
                                     'month' => 'report.period_grouping_month',
                                     'quarter' => 'report.period_grouping_quarter',
                                     'year' => 'report.period_grouping_year',
-                                    'all' => 'report.period_grouping_all'
+                                    'all' => 'report.period_grouping_all',
                                 ],
                                 'empty_value' => '',
                                 'attr' => [
-                                    'class' => 'input-small'
-                                ]
+                                    'class' => 'input-small',
+                                ],
                             ]
                         )
                     ;
@@ -198,8 +198,8 @@ class ReportFormType extends AbstractType
                                 ],
                                 'empty_value' => '',
                                 'attr' => [
-                                    'class' => 'input-small'
-                                ]
+                                    'class' => 'input-small',
+                                ],
                             ]
                         )
                         ->add(
@@ -208,8 +208,8 @@ class ReportFormType extends AbstractType
                             [
                                 'label' => 'report.significant_results_number',
                                 'attr' => [
-                                    'class' => 'input-mini'
-                                ]
+                                    'class' => 'input-mini',
+                                ],
                             ]
                         )
                     ;
@@ -224,8 +224,8 @@ class ReportFormType extends AbstractType
                                 'label' => 'report.month_expenses',
                                 'currency' => false,
                                 'attr' => [
-                                    'class' => 'input-small'
-                                ]
+                                    'class' => 'input-small',
+                                ],
                             ]
                         )
                         ->add(
@@ -235,8 +235,8 @@ class ReportFormType extends AbstractType
                                 'label' => 'report.month_incomes',
                                 'currency' => false,
                                 'attr' => [
-                                    'class' => 'input-small'
-                                ]
+                                    'class' => 'input-small',
+                                ],
                             ]
                         )
                         ->add(
@@ -245,8 +245,8 @@ class ReportFormType extends AbstractType
                             [
                                 'label' => 'report.estimate_duration_value',
                                 'attr' => [
-                                    'class' => 'input-mini'
-                                ]
+                                    'class' => 'input-mini',
+                                ],
                             ]
                         )
                         ->add(
@@ -260,8 +260,8 @@ class ReportFormType extends AbstractType
                                 ],
                                 'empty_value' => '',
                                 'attr' => [
-                                    'class' => 'input-small'
-                                ]
+                                    'class' => 'input-small',
+                                ],
                             ]
                         )
                     ;
@@ -277,7 +277,7 @@ class ReportFormType extends AbstractType
                 'data_class' => 'AppBundle\Entity\Report',
                 'validation_groups' => function (FormInterface $form) {
                     return ['Default', $form->getData()->getType()];
-                }
+                },
             ]
         );
     }

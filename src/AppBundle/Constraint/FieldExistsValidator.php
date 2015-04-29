@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Constraint;
 
 use Symfony\Component\Validator\ConstraintValidator;

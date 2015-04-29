@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Tests\Service;
 
 use AppBundle\Tests\TestCase;
@@ -90,10 +90,10 @@ class SchedulerServiceTest extends TestCase
     public function testRunSchedulers()
     {
         $dql = 'SELECT o ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.scheduler = 1 ';
-        $dql.= 'ORDER BY o.valueDate ASC ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.account = 1 ';
+        $dql .= 'AND o.scheduler = 1 ';
+        $dql .= 'ORDER BY o.valueDate ASC ';
         $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
@@ -101,10 +101,10 @@ class SchedulerServiceTest extends TestCase
         $this->get('app.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.scheduler = 1 ';
-        $dql.= 'ORDER BY o.valueDate ASC ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.account = 1 ';
+        $dql .= 'AND o.scheduler = 1 ';
+        $dql .= 'ORDER BY o.valueDate ASC ';
         $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
@@ -131,9 +131,9 @@ class SchedulerServiceTest extends TestCase
     public function testRunSchedulersWithFutureValueDate()
     {
         $dql = 'SELECT o ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.scheduler = 2 ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.account = 1 ';
+        $dql .= 'AND o.scheduler = 2 ';
         $query = $this->em->createQuery($dql);
         $operationsBefore = $query->getResult();
 
@@ -141,9 +141,9 @@ class SchedulerServiceTest extends TestCase
         $this->get('app.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
-        $dql.= 'FROM Model:Operation o ';
-        $dql.= 'WHERE o.account = 1 ';
-        $dql.= 'AND o.scheduler = 2 ';
+        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'WHERE o.account = 1 ';
+        $dql .= 'AND o.scheduler = 2 ';
         $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 

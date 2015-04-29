@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -16,7 +16,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class BankAccess
 {
     /**
-     * @var integer $bankId
+     * @var int
      *
      * @ORM\Column(name="bank_id", type="integer")
      * @ORM\Id
@@ -24,7 +24,7 @@ class BankAccess
     protected $bankId;
 
     /**
-     * @var string $plainLogin
+     * @var string
      *
      * @Assert\NotBlank()
      * @Assert\Length(max = 255)
@@ -32,7 +32,7 @@ class BankAccess
     protected $plainLogin;
 
     /**
-     * @var string $plainPassword
+     * @var string
      *
      * @Assert\NotBlank()
      * @Assert\Length(max = 255)
@@ -40,21 +40,21 @@ class BankAccess
     protected $plainPassword;
 
     /**
-     * @var string $login
+     * @var string
      *
      * @ORM\Column(name="login", type="string", length=255)
      */
     protected $login;
 
     /**
-     * @var string $password
+     * @var string
      *
      * @ORM\Column(name="password", type="string", length=255)
      */
     protected $password;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -63,7 +63,7 @@ class BankAccess
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -72,9 +72,9 @@ class BankAccess
     protected $updatedAt;
 
     /**
-     * Set bankId
+     * Set bankId.
      *
-     * @param integer $bankId
+     * @param int $bankId
      */
     public function setBankId($bankId)
     {
@@ -82,9 +82,9 @@ class BankAccess
     }
 
     /**
-     * Get bankId
+     * Get bankId.
      *
-     * @return integer
+     * @return int
      */
     public function getBankId()
     {
@@ -92,7 +92,7 @@ class BankAccess
     }
 
     /**
-     * Set plainLogin
+     * Set plainLogin.
      *
      * @param string $plainLogin
      */
@@ -102,7 +102,7 @@ class BankAccess
     }
 
     /**
-     * Get plainLogin
+     * Get plainLogin.
      *
      * @return string
      */
@@ -112,7 +112,7 @@ class BankAccess
     }
 
     /**
-     * Set plainPassword
+     * Set plainPassword.
      *
      * @param string $plainPassword
      */
@@ -122,7 +122,7 @@ class BankAccess
     }
 
     /**
-     * Get plainPassword
+     * Get plainPassword.
      *
      * @return string
      */
@@ -132,7 +132,7 @@ class BankAccess
     }
 
     /**
-     * Set login
+     * Set login.
      *
      * @param string $login
      */
@@ -142,7 +142,7 @@ class BankAccess
     }
 
     /**
-     * Get login
+     * Get login.
      *
      * @return string
      */
@@ -152,7 +152,7 @@ class BankAccess
     }
 
     /**
-     * Set password
+     * Set password.
      *
      * @param string $password
      */
@@ -162,7 +162,7 @@ class BankAccess
     }
 
     /**
-     * Get password
+     * Get password.
      *
      * @return string
      */
@@ -172,7 +172,7 @@ class BankAccess
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -182,7 +182,7 @@ class BankAccess
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -192,7 +192,7 @@ class BankAccess
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -202,7 +202,7 @@ class BankAccess
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */

@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;
@@ -39,10 +39,11 @@ class BankService
     public $environment;
 
     /**
-     * Returns banks list
+     * Returns banks list.
      *
-     * @param  Member $member     Member entity
-     * @param  bool   $activeOnly Return active banks only
+     * @param Member $member     Member entity
+     * @param bool   $activeOnly Return active banks only
+     *
      * @return array
      */
     public function getList(Member $member, $activeOnly = true)
@@ -50,25 +51,25 @@ class BankService
         $banks = [];
 
         $sql = 'SELECT ( ';
-        $sql.= '  SELECT COALESCE(SUM(operation.credit), 0) - COALESCE(SUM(operation.debit), 0) ';
-        $sql.= '  FROM operation ';
-        $sql.= '  WHERE account.account_id = operation.account_id ';
-        $sql.= ') AS account_balance, ';
-        $sql.= 'bank.bank_id, bank.provider_id AS bank_provider_id, bank.name AS bank_name, bank.is_favorite AS bank_is_favorite, bank.is_closed AS bank_is_closed, bank.is_deleted AS bank_is_deleted, ';
-        $sql.= 'account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted ';
-        $sql.= 'FROM bank ';
-        $sql.= 'LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = false ';
-        $sql.= 'WHERE bank.member_id = :member_id ';
-        $sql.= 'AND bank.is_deleted = false ';
+        $sql .= '  SELECT COALESCE(SUM(operation.credit), 0) - COALESCE(SUM(operation.debit), 0) ';
+        $sql .= '  FROM operation ';
+        $sql .= '  WHERE account.account_id = operation.account_id ';
+        $sql .= ') AS account_balance, ';
+        $sql .= 'bank.bank_id, bank.provider_id AS bank_provider_id, bank.name AS bank_name, bank.is_favorite AS bank_is_favorite, bank.is_closed AS bank_is_closed, bank.is_deleted AS bank_is_deleted, ';
+        $sql .= 'account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted ';
+        $sql .= 'FROM bank ';
+        $sql .= 'LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = false ';
+        $sql .= 'WHERE bank.member_id = :member_id ';
+        $sql .= 'AND bank.is_deleted = false ';
         if ($activeOnly) {
-            $sql.= 'AND bank.is_closed = false ';
+            $sql .= 'AND bank.is_closed = false ';
         }
-        $sql.= 'ORDER BY bank.sort_order ASC, account.name ASC ';
+        $sql .= 'ORDER BY bank.sort_order ASC, account.name ASC ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->execute(
             [
-                ':member_id' => $member->getMemberId()
+                ':member_id' => $member->getMemberId(),
             ]
         );
 
@@ -82,7 +83,7 @@ class BankService
                     'deleted' => $row['bank_is_deleted'],
                     'active' => !$row['bank_is_deleted'] && !$row['bank_is_closed'],
                     'manual' => (null === $row['bank_provider_id']),
-                    'accounts' => []
+                    'accounts' => [],
                 ];
             }
 
@@ -102,10 +103,11 @@ class BankService
     }
 
     /**
-     * Returns bank form
+     * Returns bank form.
      *
-     * @param  Member $member Member entity
-     * @param  Bank   $bank   Bank entity
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
      * @return Form
      */
     public function getForm(Member $member, Bank $bank = null)
@@ -118,11 +120,12 @@ class BankService
     }
 
     /**
-     * Saves bank
+     * Saves bank.
      *
-     * @param  Member  $member Member entity
-     * @param  Bank    $bank   Bank entity
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
+     * @return bool
      */
     protected function doSave(Member $member, Bank $bank)
     {
@@ -148,11 +151,12 @@ class BankService
     }
 
     /**
-     * Saves bank
+     * Saves bank.
      *
-     * @param  Member  $member Member entity
-     * @param  Bank    $bank   Bank entity
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
+     * @return bool
      */
     public function save(Member $member, Bank $bank)
     {
@@ -166,10 +170,11 @@ class BankService
     }
 
     /**
-     * Saves bank form
+     * Saves bank form.
      *
-     * @param  Member $member Member entity
-     * @param  Form   $form   Bank form
+     * @param Member $member Member entity
+     * @param Form   $form   Bank form
+     *
      * @return Bank
      */
     public function saveForm(Member $member, Form $form)
@@ -183,7 +188,7 @@ class BankService
                 $data = $form->getData();
 
                 if (null !== $data['provider']) {
-                    $bank = new Bank;
+                    $bank = new Bank();
                     $bank->setMember($member);
                     $bank->setProvider($data['provider']);
                     $bank->setName($data['provider']->getName());
@@ -192,7 +197,7 @@ class BankService
 
                     return $bank;
                 } elseif (null === $data['bank']) {
-                    $bank = new Bank;
+                    $bank = new Bank();
                     $bank->setMember($member);
                     $bank->setName($data['other']);
 
@@ -209,11 +214,12 @@ class BankService
     }
 
     /**
-     * Closes banks
+     * Closes banks.
      *
-     * @param  Member  $member  Member entity
-     * @param  array   $banksId Banks id to close
-     * @return boolean
+     * @param Member $member  Member entity
+     * @param array  $banksId Banks id to close
+     *
+     * @return bool
      */
     public function close(Member $member, array $banksId)
     {
@@ -239,11 +245,12 @@ class BankService
     }
 
     /**
-     * Deletes banks
+     * Deletes banks.
      *
-     * @param  Member  $member  Member entity
-     * @param  array   $banksId Banks id to delete
-     * @return boolean
+     * @param Member $member  Member entity
+     * @param array  $banksId Banks id to delete
+     *
+     * @return bool
      */
     public function delete(Member $member, array $banksId)
     {
@@ -269,10 +276,11 @@ class BankService
     }
 
     /**
-     * Gets bank balances
+     * Gets bank balances.
      *
-     * @param  Member $member Member entity
-     * @param  Bank   $bank   Bank entity
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
      * @return array
      */
     public function getBalances(Member $member, Bank $bank)
@@ -286,7 +294,7 @@ class BankService
                     $accountBalance = $this->accountService->getBalance($member, $account);
 
                     if (isset($balances[$account->getCurrency()])) {
-                        $balances[$account->getCurrency()]+= sprintf('%.2f', $accountBalance);
+                        $balances[$account->getCurrency()] += sprintf('%.2f', $accountBalance);
                     } else {
                         $balances[$account->getCurrency()] = sprintf('%.2f', $accountBalance);
                     }
@@ -298,10 +306,9 @@ class BankService
     }
 
     /**
-     * Retrieves external bank data
+     * Retrieves external bank data.
      *
-     * @param  Bank $bank Bank entity
-     * @return void
+     * @param Bank $bank Bank entity
      */
     public function importExternalBank(Bank $bank)
     {

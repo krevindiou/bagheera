@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -38,16 +38,17 @@ class SchedulerService
     public $operationService;
 
     /**
-     * Returns schedulers list
+     * Returns schedulers list.
      *
-     * @param  Account    $account     Account entity
-     * @param  integer    $currentPage Page number
+     * @param Account $account     Account entity
+     * @param int     $currentPage Page number
+     *
      * @return Pagerfanta
      */
     public function getList(Account $account, $currentPage = 1)
     {
         $params = [
-            ':account_id' => $account->getAccountId()
+            ':account_id' => $account->getAccountId(),
         ];
 
         $sql = 'SELECT
@@ -72,13 +73,13 @@ class SchedulerService
             payment_method.payment_method_id AS payment_method_id,
             payment_method.name AS payment_method_name
             ';
-        $sql.= 'FROM scheduler ';
-        $sql.= 'INNER JOIN account ON scheduler.account_id = account.account_id ';
-        $sql.= 'LEFT JOIN account AS transfer_account ON scheduler.transfer_account_id = transfer_account.account_id ';
-        $sql.= 'LEFT JOIN category ON scheduler.category_id = category.category_id ';
-        $sql.= 'LEFT JOIN payment_method ON scheduler.payment_method_id = payment_method.payment_method_id ';
-        $sql.= 'WHERE scheduler.account_id = :account_id ';
-        $sql.= 'ORDER BY scheduler.created_at DESC ';
+        $sql .= 'FROM scheduler ';
+        $sql .= 'INNER JOIN account ON scheduler.account_id = account.account_id ';
+        $sql .= 'LEFT JOIN account AS transfer_account ON scheduler.transfer_account_id = transfer_account.account_id ';
+        $sql .= 'LEFT JOIN category ON scheduler.category_id = category.category_id ';
+        $sql .= 'LEFT JOIN payment_method ON scheduler.payment_method_id = payment_method.payment_method_id ';
+        $sql .= 'WHERE scheduler.account_id = :account_id ';
+        $sql .= 'ORDER BY scheduler.created_at DESC ';
 
         $conn = $this->em->getConnection();
 
@@ -87,7 +88,7 @@ class SchedulerService
             $length = strpos($sql, ' ORDER BY ') - $start;
 
             $sqlCount = 'SELECT COUNT(*) AS total ';
-            $sqlCount.= substr($sql, $start, $length);
+            $sqlCount .= substr($sql, $start, $length);
 
             $stmt = $conn->prepare($sqlCount);
             $stmt->execute($params);
@@ -96,7 +97,7 @@ class SchedulerService
         };
 
         $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
-            $sql.= 'LIMIT :length OFFSET :offset';
+            $sql .= 'LIMIT :length OFFSET :offset';
 
             $params[':length'] = $length;
             $params[':offset'] = $offset;
@@ -156,10 +157,11 @@ class SchedulerService
     }
 
     /**
-     * Returns scheduler form
+     * Returns scheduler form.
      *
-     * @param  Scheduler $scheduler Scheduler entity
-     * @param  Account   $account   Account entity for new scheduler
+     * @param Scheduler $scheduler Scheduler entity
+     * @param Account   $account   Account entity for new scheduler
+     *
      * @return Form
      */
     public function getForm(Scheduler $scheduler = null, Account $account = null)
@@ -177,10 +179,11 @@ class SchedulerService
     }
 
     /**
-     * Saves scheduler
+     * Saves scheduler.
      *
-     * @param  Scheduler $scheduler Scheduler entity
-     * @return boolean
+     * @param Scheduler $scheduler Scheduler entity
+     *
+     * @return bool
      */
     protected function doSave(Scheduler $scheduler)
     {
@@ -188,7 +191,7 @@ class SchedulerService
             $scheduler->getPaymentMethod()->getPaymentMethodId(),
             [
                 PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER,
             ]
         )) {
             $scheduler->setTransferAccount(null);
@@ -207,10 +210,11 @@ class SchedulerService
     }
 
     /**
-     * Saves scheduler
+     * Saves scheduler.
      *
-     * @param  Scheduler $scheduler Scheduler entity
-     * @return boolean
+     * @param Scheduler $scheduler Scheduler entity
+     *
+     * @return bool
      */
     public function save(Scheduler $scheduler)
     {
@@ -224,10 +228,11 @@ class SchedulerService
     }
 
     /**
-     * Saves scheduler form
+     * Saves scheduler form.
      *
-     * @param  Form    $form   Scheduler form
-     * @return boolean
+     * @param Form $form Scheduler form
+     *
+     * @return bool
      */
     public function saveForm(Form $form)
     {
@@ -239,10 +244,11 @@ class SchedulerService
     }
 
     /**
-     * Deletes scheduler
+     * Deletes scheduler.
      *
-     * @param  Scheduler $scheduler Scheduler entity
-     * @return boolean
+     * @param Scheduler $scheduler Scheduler entity
+     *
+     * @return bool
      */
     public function delete(Scheduler $scheduler)
     {
@@ -259,11 +265,12 @@ class SchedulerService
     }
 
     /**
-     * Executes schedulers for specified member
+     * Executes schedulers for specified member.
      *
-     * @param  Member   $member Member entity
-     * @param  DateTime $now    DateTime object
-     * @return boolean
+     * @param Member   $member Member entity
+     * @param DateTime $now    DateTime object
+     *
+     * @return bool
      */
     public function runSchedulers(Member $member, \DateTime $now = null)
     {
@@ -289,10 +296,10 @@ class SchedulerService
             $startDate = $scheduler->getValueDate();
 
             $dql = 'SELECT o.valueDate ';
-            $dql.= 'FROM Model:Operation o ';
-            $dql.= 'WHERE o.scheduler = :scheduler ';
-            $dql.= 'AND o.valueDate >= :valueDate ';
-            $dql.= 'ORDER BY o.valueDate DESC ';
+            $dql .= 'FROM Model:Operation o ';
+            $dql .= 'WHERE o.scheduler = :scheduler ';
+            $dql .= 'AND o.valueDate >= :valueDate ';
+            $dql .= 'ORDER BY o.valueDate DESC ';
             $q = $this->em->createQuery($dql);
             $q->setMaxResults(1);
             $q->setParameter('scheduler', $scheduler);

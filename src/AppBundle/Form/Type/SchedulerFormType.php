@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -31,11 +31,11 @@ class SchedulerFormType extends AbstractType
                     'required' => true,
                     'choices' => [
                         'debit' => 'scheduler.type_debit',
-                        'credit' => 'scheduler.type_credit'
+                        'credit' => 'scheduler.type_credit',
                     ],
                     'constraints' => [
-                        new Assert\NotBlank()
-                    ]
+                        new Assert\NotBlank(),
+                    ],
                 ]
             )
             ->add(
@@ -45,8 +45,8 @@ class SchedulerFormType extends AbstractType
                     'label' => 'scheduler.third_party',
                     'attr' => [
                         'class' => 'input-xlarge',
-                        'autocomplete' => 'off'
-                    ]
+                        'autocomplete' => 'off',
+                    ],
                 ]
             )
             ->add(
@@ -58,8 +58,8 @@ class SchedulerFormType extends AbstractType
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -70,8 +70,8 @@ class SchedulerFormType extends AbstractType
                     'empty_value' => '',
                     'group_by' => 'type',
                     'attr' => [
-                        'class' => 'input-medium'
-                    ]
+                        'class' => 'input-medium',
+                    ],
                 ]
             )
             ->add(
@@ -82,8 +82,8 @@ class SchedulerFormType extends AbstractType
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
                     'attr' => [
-                        'class' => 'input-small calendar'
-                    ]
+                        'class' => 'input-small calendar',
+                    ],
                 ]
             )
             ->add(
@@ -95,8 +95,8 @@ class SchedulerFormType extends AbstractType
                     'format' => 'yyyy-MM-dd',
                     'required' => false,
                     'attr' => [
-                        'class' => 'input-small calendar'
-                    ]
+                        'class' => 'input-small calendar',
+                    ],
                 ]
             )
             ->add(
@@ -111,8 +111,8 @@ class SchedulerFormType extends AbstractType
                         'year' => 'scheduler.frequency_unit_year',
                     ],
                     'attr' => [
-                        'class' => 'input-small'
-                    ]
+                        'class' => 'input-small',
+                    ],
                 ]
             )
             ->add(
@@ -121,8 +121,8 @@ class SchedulerFormType extends AbstractType
                 [
                     'label' => 'scheduler.frequency_value',
                     'attr' => [
-                        'class' => 'input-mini'
-                    ]
+                        'class' => 'input-mini',
+                    ],
                 ]
             )
             ->add(
@@ -132,8 +132,8 @@ class SchedulerFormType extends AbstractType
                     'label' => 'scheduler.notes',
                     'attr' => [
                         'rows' => 5,
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -141,7 +141,7 @@ class SchedulerFormType extends AbstractType
                 null,
                 [
                     'label' => 'scheduler.reconciled',
-                    'required' => false
+                    'required' => false,
                 ]
             )
             ->add(
@@ -149,7 +149,7 @@ class SchedulerFormType extends AbstractType
                 null,
                 [
                     'label' => 'scheduler.active',
-                    'required' => false
+                    'required' => false,
                 ]
             )
             ->add(
@@ -158,8 +158,8 @@ class SchedulerFormType extends AbstractType
                 [
                     'label' => 'scheduler.form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
 
@@ -180,11 +180,11 @@ class SchedulerFormType extends AbstractType
                             'currency' => $account->getCurrency(),
                             'mapped' => false,
                             'constraints' => [
-                                new Assert\NotBlank()
+                                new Assert\NotBlank(),
                             ],
                             'attr' => [
-                                'class' => 'input-small'
-                            ]
+                                'class' => 'input-small',
+                            ],
                         ]
                     )
                     ->add(
@@ -205,8 +205,8 @@ class SchedulerFormType extends AbstractType
                                     ->add('orderBy', 'b.name ASC, a.name ASC');
                             },
                             'attr' => [
-                                'class' => 'input-xlarge'
-                            ]
+                                'class' => 'input-xlarge',
+                            ],
                         ]
                     )
                 ;
@@ -250,7 +250,7 @@ class SchedulerFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Scheduler'
+                'data_class' => 'AppBundle\Entity\Scheduler',
             ]
         );
     }

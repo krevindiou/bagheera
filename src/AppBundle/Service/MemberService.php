@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;
@@ -75,7 +75,7 @@ class MemberService
     }
 
     /**
-     * Returns register form
+     * Returns register form.
      *
      * @return Form
      */
@@ -89,9 +89,10 @@ class MemberService
     }
 
     /**
-     * Returns profile form
+     * Returns profile form.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return Form
      */
     public function getProfileForm(Member $member)
@@ -100,10 +101,11 @@ class MemberService
     }
 
     /**
-     * Adds member
+     * Adds member.
      *
-     * @param  Member  $member Member entity
-     * @return boolean
+     * @param Member $member Member entity
+     *
+     * @return bool
      */
     protected function add(Member $member)
     {
@@ -146,9 +148,10 @@ class MemberService
     }
 
     /**
-     * Creates register key
+     * Creates register key.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return string
      */
     public function createRegisterKey(Member $member)
@@ -156,16 +159,17 @@ class MemberService
         $data = [
             'type' => 'register',
             'email' => $member->getEmail(),
-            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601)
+            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601),
         ];
 
         return $this->cryptService->crypt($data);
     }
 
     /**
-     * Decodes register key
+     * Decodes register key.
      *
-     * @param  string $key Encrypted register key
+     * @param string $key Encrypted register key
+     *
      * @return Member
      */
     protected function decodeRegisterKey($key)
@@ -179,10 +183,11 @@ class MemberService
     }
 
     /**
-     * Updates member
+     * Updates member.
      *
-     * @param  Member  $member Member entity
-     * @return boolean
+     * @param Member $member Member entity
+     *
+     * @return bool
      */
     protected function update(Member $member)
     {
@@ -199,10 +204,11 @@ class MemberService
     }
 
     /**
-     * Saves member
+     * Saves member.
      *
-     * @param  Member  $member Member entity
-     * @return boolean
+     * @param Member $member Member entity
+     *
+     * @return bool
      */
     public function save(Member $member)
     {
@@ -220,10 +226,11 @@ class MemberService
     }
 
     /**
-     * Saves member form
+     * Saves member form.
      *
-     * @param  Form    $form Member form
-     * @return boolean
+     * @param Form $form Member form
+     *
+     * @return bool
      */
     public function saveForm(Form $form)
     {
@@ -239,7 +246,7 @@ class MemberService
     }
 
     /**
-     * Returns forgot password form
+     * Returns forgot password form.
      *
      * @return Form
      */
@@ -249,10 +256,11 @@ class MemberService
     }
 
     /**
-     * Sends email with change password link
+     * Sends email with change password link.
      *
-     * @param  string  $email Email to send link
-     * @return boolean
+     * @param string $email Email to send link
+     *
+     * @return bool
      */
     public function sendChangePasswordEmail($email)
     {
@@ -288,7 +296,7 @@ class MemberService
     }
 
     /**
-     * Returns change password form
+     * Returns change password form.
      *
      * @return Form
      */
@@ -298,11 +306,10 @@ class MemberService
     }
 
     /**
-     * Updates password
+     * Updates password.
      *
-     * @param  Member $member   Member entity
-     * @param  string $password Password to set
-     * @return void
+     * @param Member $member   Member entity
+     * @param string $password Password to set
      */
     public function changePassword(Member $member, $password)
     {
@@ -322,9 +329,10 @@ class MemberService
     }
 
     /**
-     * Creates change password key
+     * Creates change password key.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return string
      */
     public function createChangePasswordKey(Member $member)
@@ -332,7 +340,7 @@ class MemberService
         $data = [
             'type' => 'change_password',
             'email' => $member->getEmail(),
-            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601)
+            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601),
         ];
 
         $expiration = new \DateTime();
@@ -342,9 +350,10 @@ class MemberService
     }
 
     /**
-     * Decodes change password key
+     * Decodes change password key.
      *
-     * @param  string $key Encrypted change password key
+     * @param string $key Encrypted change password key
+     *
      * @return Member
      */
     public function decodeChangePasswordKey($key)
@@ -358,9 +367,9 @@ class MemberService
     }
 
     /**
-     * Activates the member
+     * Activates the member.
      *
-     * @return boolean
+     * @return bool
      */
     public function activate($key)
     {
@@ -381,9 +390,10 @@ class MemberService
     }
 
     /**
-     * Gets member balances
+     * Gets member balances.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return array
      */
     public function getBalances(Member $member)
@@ -397,7 +407,7 @@ class MemberService
 
                 foreach ($bankBalances as $currency => $bankBalance) {
                     if (isset($balances[$currency])) {
-                        $balances[$currency]+= $bankBalance;
+                        $balances[$currency] += $bankBalance;
                     } else {
                         $balances[$currency] = $bankBalance;
                     }
@@ -411,46 +421,48 @@ class MemberService
     }
 
     /**
-     * Gets import progress data
+     * Gets import progress data.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return array
      */
     public function getImportProgress(Member $member)
     {
         // Fetch current importId
         $dql = 'SELECT MAX(i.importId) ';
-        $dql.= 'FROM Model:AccountImport i ';
-        $dql.= 'JOIN i.account a ';
-        $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.member = :member ';
-        $dql.= 'AND i.finished = false ';
+        $dql .= 'FROM Model:AccountImport i ';
+        $dql .= 'JOIN i.account a ';
+        $dql .= 'JOIN a.bank b ';
+        $dql .= 'WHERE b.member = :member ';
+        $dql .= 'AND i.finished = false ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('member', $member);
 
         try {
             $maxImportId = $query->getSingleScalarResult();
         } catch (\Exception $e) {
-            return null;
+            return;
         }
 
         $dql = 'SELECT i ';
-        $dql.= 'FROM Model:AccountImport i INDEX BY i.accountId ';
-        $dql.= 'WHERE i.importId = :maxImportId ';
+        $dql .= 'FROM Model:AccountImport i INDEX BY i.accountId ';
+        $dql .= 'WHERE i.importId = :maxImportId ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);
 
         try {
             return $query->getResult();
         } catch (\Exception $e) {
-            return null;
+            return;
         }
     }
 
     /**
-     * Checks if member has one or more banks without provider
+     * Checks if member has one or more banks without provider.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return bool
      */
     protected function hasBankWithoutProvider(Member $member)
@@ -469,9 +481,10 @@ class MemberService
     }
 
     /**
-     * Checks if new account tip is displayed
+     * Checks if new account tip is displayed.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return bool
      */
     public function hasNewAccountTip(Member $member)

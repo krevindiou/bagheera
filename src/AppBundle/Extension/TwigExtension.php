@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Extension;
 
 use JMS\DiExtraBundle\Annotation as DI;
@@ -22,7 +22,7 @@ class TwigExtension extends \Twig_Extension
     public function getFilters()
     {
         return [
-            'money' => new \Twig_Filter_Method($this, 'moneyFilter')
+            'money' => new \Twig_Filter_Method($this, 'moneyFilter'),
         ];
     }
 
@@ -52,7 +52,7 @@ class TwigExtension extends \Twig_Extension
         }
 
         return [
-            'global_banks' => $banks
+            'global_banks' => $banks,
         ];
     }
 

@@ -1,14 +1,14 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
- * AES-256 encryption (32 bytes long key)
+ * AES-256 encryption (32 bytes long key).
  *
  * @DI\Service("app.crypt")
  * @DI\Tag("monolog.logger", attributes = {"channel" = "crypt"})
@@ -19,17 +19,18 @@ class CryptService
     public $secret;
 
     /**
-     * Crypts data
+     * Crypts data.
      *
-     * @param  mixed    $plainData  Data to crypt
-     * @param  DateTime $expiration Expiration date
+     * @param mixed    $plainData  Data to crypt
+     * @param DateTime $expiration Expiration date
+     *
      * @return string
      */
     public function crypt($plainData, \DateTime $expiration = null)
     {
         $structure = [
             'data' => $plainData,
-            'expiration' => (null === $expiration) ? : $expiration->format(\DateTime::ISO8601)
+            'expiration' => (null === $expiration) ?: $expiration->format(\DateTime::ISO8601),
         ];
 
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
@@ -42,13 +43,14 @@ class CryptService
             $iv
         );
 
-        return base64_encode($iv . $encryptedString);
+        return base64_encode($iv.$encryptedString);
     }
 
     /**
-     * Decrypts data
+     * Decrypts data.
      *
-     * @param  string $encryptedString Data to decrypt
+     * @param string $encryptedString Data to decrypt
+     *
      * @return mixed
      */
     public function decrypt($encryptedString)

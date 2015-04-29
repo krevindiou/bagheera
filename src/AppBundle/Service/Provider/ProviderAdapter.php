@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service\Provider;
 
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
@@ -34,7 +34,7 @@ class ProviderAdapter
     protected $providerService;
 
     /**
-     * Defines BankAccess entity (used to retrieve bank's specific service)
+     * Defines BankAccess entity (used to retrieve bank's specific service).
      *
      * @param BankAccess $bankAccess BankAccess entity
      */
@@ -47,7 +47,7 @@ class ProviderAdapter
 
             if (null !== $provider) {
                 try {
-                    $providerService = $this->container->get('app.provider_adapter.' . $provider->getProviderId());
+                    $providerService = $this->container->get('app.provider_adapter.'.$provider->getProviderId());
                     $providerService->setBank($bank);
                     $providerService->setBankAccess($bankAccess);
                     $providerService->setKey($this->key);
@@ -65,7 +65,7 @@ class ProviderAdapter
     }
 
     /**
-     * Proxy method towards bank's specific method
+     * Proxy method towards bank's specific method.
      *
      * @see ProviderInterface::connect()
      */
@@ -75,7 +75,7 @@ class ProviderAdapter
     }
 
     /**
-     * Proxy method towards bank's specific method
+     * Proxy method towards bank's specific method.
      *
      * @see ProviderInterface::fetchAccounts()
      */
@@ -91,7 +91,7 @@ class ProviderAdapter
     }
 
     /**
-     * Proxy method towards bank's specific method
+     * Proxy method towards bank's specific method.
      *
      * @see ProviderInterface::fetchTransactions()
      */
@@ -117,7 +117,7 @@ class ProviderAdapter
     }
 
     /**
-     * Proxy method towards bank's specific method
+     * Proxy method towards bank's specific method.
      *
      * @see ProviderInterface::normalizeData()
      */

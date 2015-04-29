@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;
@@ -27,9 +27,10 @@ class ReportService
     public $formFactory;
 
     /**
-     * Returns reports list
+     * Returns reports list.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return array
      */
     public function getList(Member $member)
@@ -52,24 +53,24 @@ class ReportService
             report.month_incomes AS report_month_incomes,
             report.estimate_duration_value AS report_estimate_duration_value,
             report.estimate_duration_unit AS report_estimate_duration_unit, ';
-        $sql.= 'array_to_json(array_agg(account)) AS accounts, ';
-        $sql.= 'array_to_json(array_agg(category)) AS categories, ';
-        $sql.= 'array_to_json(array_agg(payment_method)) AS payment_methods ';
-        $sql.= 'FROM report ';
-        $sql.= 'LEFT JOIN report_account ON report.report_id = report_account.report_id ';
-        $sql.= 'LEFT JOIN account ON report_account.account_id = account.account_id ';
-        $sql.= 'LEFT JOIN report_category ON report.report_id = report_category.report_id ';
-        $sql.= 'LEFT JOIN category ON report_category.category_id = category.category_id ';
-        $sql.= 'LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id ';
-        $sql.= 'LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
-        $sql.= 'WHERE report.member_id = :member_id ';
-        $sql.= 'GROUP BY report.report_id ';
-        $sql.= 'ORDER BY report.report_id ASC ';
+        $sql .= 'array_to_json(array_agg(account)) AS accounts, ';
+        $sql .= 'array_to_json(array_agg(category)) AS categories, ';
+        $sql .= 'array_to_json(array_agg(payment_method)) AS payment_methods ';
+        $sql .= 'FROM report ';
+        $sql .= 'LEFT JOIN report_account ON report.report_id = report_account.report_id ';
+        $sql .= 'LEFT JOIN account ON report_account.account_id = account.account_id ';
+        $sql .= 'LEFT JOIN report_category ON report.report_id = report_category.report_id ';
+        $sql .= 'LEFT JOIN category ON report_category.category_id = category.category_id ';
+        $sql .= 'LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id ';
+        $sql .= 'LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
+        $sql .= 'WHERE report.member_id = :member_id ';
+        $sql .= 'GROUP BY report.report_id ';
+        $sql .= 'ORDER BY report.report_id ASC ';
 
         $stmt = $this->em->getConnection()->prepare($sql);
         $stmt->execute(
             [
-                ':member_id' => $member->getMemberId()
+                ':member_id' => $member->getMemberId(),
             ]
         );
 
@@ -136,16 +137,17 @@ class ReportService
     }
 
     /**
-     * Returns reports list displayed on homepage
+     * Returns reports list displayed on homepage.
      *
-     * @param  Member $member Member entity
+     * @param Member $member Member entity
+     *
      * @return array
      */
     public function getHomepageList(Member $member)
     {
         $dql = 'SELECT r FROM Model:Report r ';
-        $dql.= 'WHERE r.member = :member ';
-        $dql.= 'AND r.homepage = :homepage ';
+        $dql .= 'WHERE r.member = :member ';
+        $dql .= 'AND r.homepage = :homepage ';
 
         $query = $this->em->createQuery($dql);
         $query->setParameter('member', $member);
@@ -155,11 +157,12 @@ class ReportService
     }
 
     /**
-     * Returns report form
+     * Returns report form.
      *
-     * @param  Member $member Member entity
-     * @param  Report $report Report entity
-     * @param  string $type   Report type (sum, average, distribution, estimate)
+     * @param Member $member Member entity
+     * @param Report $report Report entity
+     * @param string $type   Report type (sum, average, distribution, estimate)
+     *
      * @return Form
      */
     public function getForm(Member $member, Report $report = null, $type = null)
@@ -176,11 +179,12 @@ class ReportService
     }
 
     /**
-     * Saves report
+     * Saves report.
      *
-     * @param  Member  $member Member entity
-     * @param  Report  $report Report entity
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Report $report Report entity
+     *
+     * @return bool
      */
     protected function doSave(Member $member, Report $report)
     {
@@ -199,11 +203,12 @@ class ReportService
     }
 
     /**
-     * Saves report
+     * Saves report.
      *
-     * @param  Member  $member Member entity
-     * @param  Report  $report Report entity
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Report $report Report entity
+     *
+     * @return bool
      */
     public function save(Member $member, Report $report)
     {
@@ -217,11 +222,12 @@ class ReportService
     }
 
     /**
-     * Saves report form
+     * Saves report form.
      *
-     * @param  Member  $member Member entity
-     * @param  Form    $form   Report form
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Form   $form   Report form
+     *
+     * @return bool
      */
     public function saveForm(Member $member, Form $form)
     {
@@ -233,11 +239,12 @@ class ReportService
     }
 
     /**
-     * Deletes reports
+     * Deletes reports.
      *
-     * @param  Member  $member    Member entity
-     * @param  array   $reportsId Reports id to delete
-     * @return boolean
+     * @param Member $member    Member entity
+     * @param array  $reportsId Reports id to delete
+     *
+     * @return bool
      */
     public function delete(Member $member, array $reportsId)
     {
@@ -263,10 +270,11 @@ class ReportService
     }
 
     /**
-     * Returns graph data
+     * Returns graph data.
      *
-     * @param  Member $member Member entity
-     * @param  Report $report Report entity
+     * @param Member $member Member entity
+     * @param Report $report Report entity
+     *
      * @return array
      */
     public function getGraphData(Member $member, Report $report)
@@ -274,22 +282,22 @@ class ReportService
         $series = [
             [
                 'label' => 'operation.type_credit',
-                'color' => '#94ba65'
+                'color' => '#94ba65',
             ],
             [
                 'label' => 'operation.type_debit',
-                'color' => '#2b4e72'
-            ]
+                'color' => '#2b4e72',
+            ],
         ];
 
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (count($accounts) == 0) {
                 $dql = 'SELECT a FROM Model:Account a ';
-                $dql.= 'JOIN a.bank b ';
-                $dql.= 'WHERE b.member = :member ';
-                $dql.= 'AND b.deleted = false ';
-                $dql.= 'AND a.deleted = false ';
+                $dql .= 'JOIN a.bank b ';
+                $dql .= 'WHERE b.member = :member ';
+                $dql .= 'AND b.deleted = false ';
+                $dql .= 'AND a.deleted = false ';
 
                 $query = $this->em->createQuery($dql);
                 $query->setParameter('member', $member);
@@ -309,11 +317,11 @@ class ReportService
 
             foreach ($results as $result) {
                 if (isset($result['grouping_data'])) {
-                    $series[0]['points'][strtotime($result['grouping_data'] . ' UTC')] = round($result['data_1'], 2);
-                    $series[1]['points'][strtotime($result['grouping_data'] . ' UTC')] = round($result['data_2'], 2);
+                    $series[0]['points'][strtotime($result['grouping_data'].' UTC')] = round($result['data_1'], 2);
+                    $series[1]['points'][strtotime($result['grouping_data'].' UTC')] = round($result['data_2'], 2);
                 } else {
-                    $series[0]['points'][strtotime(date('Y-01-01') . ' UTC')] = round($result['data_1'], 2);
-                    $series[1]['points'][strtotime(date('Y-01-01') . ' UTC')] = round($result['data_2'], 2);
+                    $series[0]['points'][strtotime(date('Y-01-01').' UTC')] = round($result['data_1'], 2);
+                    $series[1]['points'][strtotime(date('Y-01-01').' UTC')] = round($result['data_2'], 2);
                 }
             }
 
@@ -350,8 +358,8 @@ class ReportService
                         while ($date < $lastDate) {
                             $date->add(new \DateInterval($interval));
 
-                            if (!isset($serie['points'][strtotime($date->format('Y-m-d') . ' UTC')])) {
-                                $series[$k]['points'][strtotime($date->format('Y-m-d') . ' UTC')] = 0;
+                            if (!isset($serie['points'][strtotime($date->format('Y-m-d').' UTC')])) {
+                                $series[$k]['points'][strtotime($date->format('Y-m-d').' UTC')] = 0;
                             }
                         }
                     }
@@ -374,16 +382,17 @@ class ReportService
             'report' => $report,
             'series' => $series,
             'yaxisMin' => $yaxisMin,
-            'yaxisMax' => $yaxisMax
+            'yaxisMax' => $yaxisMax,
         ];
     }
 
     /**
-     * Returns graph data
+     * Returns graph data.
      *
-     * @param  Report $report   Report entity
-     * @param  array  $accounts Accounts list
-     * @param  string $type     sum or average
+     * @param Report $report   Report entity
+     * @param array  $accounts Accounts list
+     * @param string $type     sum or average
+     *
      * @return array
      */
     public function getGraphValues(Report $report, array $accounts, $type)
@@ -405,31 +414,31 @@ class ReportService
                 $groupingData = '';
         }
 
-        $sql = 'SELECT ' . (('' != $groupingData) ? $groupingData . ' AS grouping_data, ' : '');
-        $sql.= (('average' == $type) ? 'AVG' : 'SUM') . '(o.credit) AS data_1, ' . (('average' == $type) ? 'AVG' : 'SUM') . '(o.debit) AS data_2 ';
-        $sql.= 'FROM operation AS o ';
+        $sql = 'SELECT '.(('' != $groupingData) ? $groupingData.' AS grouping_data, ' : '');
+        $sql .= (('average' == $type) ? 'AVG' : 'SUM').'(o.credit) AS data_1, '.(('average' == $type) ? 'AVG' : 'SUM').'(o.debit) AS data_2 ';
+        $sql .= 'FROM operation AS o ';
 
         $accountsId = [];
         foreach ($accounts as $account) {
             $accountsId[] = $account->getAccountId();
         }
 
-        $sql.= 'WHERE o.account_id IN (' . implode(', ', $accountsId) . ') ';
+        $sql .= 'WHERE o.account_id IN ('.implode(', ', $accountsId).') ';
         if (null !== $report->getValueDateStart()) {
-            $sql.= 'AND o.value_date >= :value_date_start ';
+            $sql .= 'AND o.value_date >= :value_date_start ';
         }
         if (null !== $report->getValueDateEnd()) {
-            $sql.= 'AND o.value_date <= :value_date_end ';
+            $sql .= 'AND o.value_date <= :value_date_end ';
         }
         if (null !== $report->getThirdParties()) {
-            $sql.= 'AND o.third_party LIKE :third_parties ';
+            $sql .= 'AND o.third_party LIKE :third_parties ';
         }
         if ($report->getReconciledOnly()) {
-            $sql.= 'AND o.is_reconciled = true ';
+            $sql .= 'AND o.is_reconciled = true ';
         }
         if ('' != $groupingData) {
-            $sql.= 'GROUP BY grouping_data ';
-            $sql.= 'ORDER BY grouping_data ASC ';
+            $sql .= 'GROUP BY grouping_data ';
+            $sql .= 'ORDER BY grouping_data ASC ';
         }
 
         $stmt = $this->em->getConnection()->prepare($sql);
@@ -440,7 +449,7 @@ class ReportService
             $stmt->bindValue('value_date_end', $report->getValueDateEnd()->format(\DateTime::ISO8601));
         }
         if (null !== $report->getThirdParties()) {
-            $stmt->bindValue('third_parties', '%' . $report->getThirdParties() . '%');
+            $stmt->bindValue('third_parties', '%'.$report->getThirdParties().'%');
         }
 
         $stmt->execute();
@@ -449,12 +458,13 @@ class ReportService
     }
 
     /**
-     * Returns synthesis graph data
+     * Returns synthesis graph data.
      *
-     * @param  Member   $member    Member entity
-     * @param  DateTime $startDate Data after this date
-     * @param  DateTime $endDate   Data before this date
-     * @param  Account  $account   Synthesis for specific account
+     * @param Member   $member    Member entity
+     * @param DateTime $startDate Data after this date
+     * @param DateTime $endDate   Data before this date
+     * @param Account  $account   Synthesis for specific account
+     *
      * @return array
      */
     public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null)
@@ -478,7 +488,7 @@ class ReportService
             $tmpValues = [];
             foreach ($data as $currency => $values) {
                 foreach ($values as $month => $value) {
-                    $graph['points'][$currency][strtotime($month . '-01 UTC')] = $value;
+                    $graph['points'][$currency][strtotime($month.'-01 UTC')] = $value;
                 }
 
                 $tmpValues = array_merge(array_values($tmpValues), array_values($values));

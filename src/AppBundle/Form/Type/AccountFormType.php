@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
@@ -26,8 +26,8 @@ class AccountFormType extends AbstractType
                 [
                     'label' => 'account.name',
                     'attr' => [
-                        'class' => 'input-xlarge'
-                    ]
+                        'class' => 'input-xlarge',
+                    ],
                 ]
             )
             ->add(
@@ -36,8 +36,8 @@ class AccountFormType extends AbstractType
                 [
                     'label' => 'account.form_submit_button',
                     'attr' => [
-                        'class' => 'btn btn-primary'
-                    ]
+                        'class' => 'btn btn-primary',
+                    ],
                 ]
             );
 
@@ -69,8 +69,8 @@ class AccountFormType extends AbstractType
                             },
                             'disabled' => $edit,
                             'attr' => [
-                                'class' => 'input-xlarge'
-                            ]
+                                'class' => 'input-xlarge',
+                            ],
                         ]
                     )
                     ->add(
@@ -81,8 +81,8 @@ class AccountFormType extends AbstractType
                             'disabled' => $edit,
                             'preferred_choices' => ['USD', 'EUR'],
                             'attr' => [
-                                'class' => 'input-xlarge'
-                            ]
+                                'class' => 'input-xlarge',
+                            ],
                         ]
                     )
                     ->add(
@@ -90,10 +90,10 @@ class AccountFormType extends AbstractType
                         'money',
                         [
                             'label' => 'account.overdraft_facility',
-                            'currency' => $account->getCurrency() ? : false,
+                            'currency' => $account->getCurrency() ?: false,
                             'attr' => [
-                                'class' => 'input-small'
-                            ]
+                                'class' => 'input-small',
+                            ],
                         ]
                     )
                 ;
@@ -107,10 +107,10 @@ class AccountFormType extends AbstractType
                                 'label' => 'account.initial_balance',
                                 'mapped' => false,
                                 'required' => false,
-                                'currency' => $account->getCurrency() ? : false,
+                                'currency' => $account->getCurrency() ?: false,
                                 'attr' => [
-                                    'class' => 'input-small'
-                                ]
+                                    'class' => 'input-small',
+                                ],
                             ]
                         )
                     ;
@@ -123,7 +123,7 @@ class AccountFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Account'
+                'data_class' => 'AppBundle\Entity\Account',
             ]
         );
 

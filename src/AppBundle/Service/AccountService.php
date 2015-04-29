@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;
@@ -38,26 +38,27 @@ class AccountService
     public $operationService;
 
     /**
-     * Returns accounts list
+     * Returns accounts list.
      *
-     * @param  Member $member  Member entity
-     * @param  Bank   $bank    Bank entity
-     * @param  bool   $deleted Return deleted items
+     * @param Member $member  Member entity
+     * @param Bank   $bank    Bank entity
+     * @param bool   $deleted Return deleted items
+     *
      * @return array
      */
     public function getList(Member $member, Bank $bank = null, $deleted = true)
     {
         $dql = 'SELECT a FROM Model:Account a ';
-        $dql.= 'JOIN a.bank b ';
-        $dql.= 'WHERE b.member = :member ';
+        $dql .= 'JOIN a.bank b ';
+        $dql .= 'WHERE b.member = :member ';
         if (null !== $bank) {
-            $dql.= 'AND a.bank = :bank ';
+            $dql .= 'AND a.bank = :bank ';
         }
         if (!$deleted) {
-            $dql.= 'AND b.deleted = false ';
-            $dql.= 'AND a.deleted = false ';
+            $dql .= 'AND b.deleted = false ';
+            $dql .= 'AND a.deleted = false ';
         }
-        $dql.= 'ORDER BY a.name ASC';
+        $dql .= 'ORDER BY a.name ASC';
 
         $query = $this->em->createQuery($dql);
         $query->setParameter('member', $member);
@@ -69,10 +70,11 @@ class AccountService
     }
 
     /**
-     * Returns account form for a new account
+     * Returns account form for a new account.
      *
-     * @param  Member $member Member entity
-     * @param  Bank   $bank   Bank entity
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
      * @return Form
      */
     public function getCreateForm(Member $member, Bank $bank = null)
@@ -90,10 +92,11 @@ class AccountService
     }
 
     /**
-     * Returns account form for an existing account
+     * Returns account form for an existing account.
      *
-     * @param  Member  $member  Member entity
-     * @param  Account $account Account entity
+     * @param Member  $member  Member entity
+     * @param Account $account Account entity
+     *
      * @return Form
      */
     public function getUpdateForm(Member $member, Account $account)
@@ -106,11 +109,12 @@ class AccountService
     }
 
     /**
-     * Saves account
+     * Saves account.
      *
-     * @param  Member  $member  Member entity
-     * @param  Account $account Account entity
-     * @return boolean
+     * @param Member  $member  Member entity
+     * @param Account $account Account entity
+     *
+     * @return bool
      */
     protected function doSave(Member $member, Account $account)
     {
@@ -137,11 +141,12 @@ class AccountService
     }
 
     /**
-     * Saves account
+     * Saves account.
      *
-     * @param  Member  $member  Member entity
-     * @param  Account $account Account entity
-     * @return boolean
+     * @param Member  $member  Member entity
+     * @param Account $account Account entity
+     *
+     * @return bool
      */
     public function save(Member $member, Account $account)
     {
@@ -155,11 +160,12 @@ class AccountService
     }
 
     /**
-     * Saves account form
+     * Saves account form.
      *
-     * @param  Member  $member Member entity
-     * @param  Form    $form   Account form
-     * @return boolean
+     * @param Member $member Member entity
+     * @param Form   $form   Account form
+     *
+     * @return bool
      */
     public function saveForm(Member $member, Form $form)
     {
@@ -189,11 +195,12 @@ class AccountService
     }
 
     /**
-     * Closes accounts
+     * Closes accounts.
      *
-     * @param  Member  $member     Member entity
-     * @param  array   $accountsId Accounts id to close
-     * @return boolean
+     * @param Member $member     Member entity
+     * @param array  $accountsId Accounts id to close
+     *
+     * @return bool
      */
     public function close(Member $member, array $accountsId)
     {
@@ -219,11 +226,12 @@ class AccountService
     }
 
     /**
-     * Deletes accounts
+     * Deletes accounts.
      *
-     * @param  Member  $member     Member entity
-     * @param  array   $accountsId Accounts id to delete
-     * @return boolean
+     * @param Member $member     Member entity
+     * @param array  $accountsId Accounts id to delete
+     *
+     * @return bool
      */
     public function delete(Member $member, array $accountsId)
     {
@@ -249,11 +257,12 @@ class AccountService
     }
 
     /**
-     * Gets account balance
+     * Gets account balance.
      *
-     * @param  Member  $member         Member entity
-     * @param  Account $account        Account entity
-     * @param  boolean $reconciledOnly Only consider reconciled operations
+     * @param Member  $member         Member entity
+     * @param Account $account        Account entity
+     * @param bool    $reconciledOnly Only consider reconciled operations
+     *
      * @return float
      */
     public function getBalance(Member $member, Account $account, $reconciledOnly = false)
@@ -262,10 +271,10 @@ class AccountService
 
         if ($member === $account->getBank()->getMember()) {
             $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
-            $dql.= 'FROM Model:Operation o ';
-            $dql.= 'WHERE o.account = :account ';
+            $dql .= 'FROM Model:Operation o ';
+            $dql .= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
-                $dql.= 'AND o.reconciled = true ';
+                $dql .= 'AND o.reconciled = true ';
             }
 
             $query = $this->em->createQuery($dql);
@@ -279,11 +288,12 @@ class AccountService
     }
 
     /**
-     * Saves multiple accounts
+     * Saves multiple accounts.
      *
-     * @param  Bank    $bank     Bank entity
-     * @param  array   $accounts Accounts data
-     * @return boolean
+     * @param Bank  $bank     Bank entity
+     * @param array $accounts Accounts data
+     *
+     * @return bool
      */
     public function saveMulti(Bank $bank, array $accounts)
     {

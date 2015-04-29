@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -17,7 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Bank
 {
     /**
-     * @var integer $bankId
+     * @var int
      *
      * @ORM\Column(name="bank_id", type="integer", nullable=false)
      * @ORM\Id
@@ -26,7 +26,7 @@ class Bank
     protected $bankId;
 
     /**
-     * @var AppBundle\Entity\Member $member
+     * @var AppBundle\Entity\Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
@@ -36,7 +36,7 @@ class Bank
     protected $member;
 
     /**
-     * @var AppBundle\Entity\Provider $provider
+     * @var AppBundle\Entity\Provider
      *
      * @ORM\ManyToOne(targetEntity="Provider")
      * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id", nullable=true)
@@ -45,7 +45,7 @@ class Bank
     protected $provider;
 
     /**
-     * @var string $name
+     * @var string
      *
      * @ORM\Column(name="name", type="string", length=32, nullable=false)
      * @Assert\NotBlank()
@@ -54,14 +54,14 @@ class Bank
     protected $name;
 
     /**
-     * @var integer $sortOrder
+     * @var int
      *
      * @ORM\Column(name="sort_order", type="smallint", nullable=false)
      */
     protected $sortOrder = 0;
 
     /**
-     * @var boolean $favorite
+     * @var bool
      *
      * @ORM\Column(name="is_favorite", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -69,7 +69,7 @@ class Bank
     protected $favorite = true;
 
     /**
-     * @var boolean $closed
+     * @var bool
      *
      * @ORM\Column(name="is_closed", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -77,7 +77,7 @@ class Bank
     protected $closed = false;
 
     /**
-     * @var boolean $deleted
+     * @var bool
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -85,7 +85,7 @@ class Bank
     protected $deleted = false;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -94,7 +94,7 @@ class Bank
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -103,7 +103,7 @@ class Bank
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $accounts
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})
@@ -116,9 +116,9 @@ class Bank
     }
 
     /**
-     * Get bankId
+     * Get bankId.
      *
-     * @return integer
+     * @return int
      */
     public function getBankId()
     {
@@ -126,7 +126,7 @@ class Bank
     }
 
     /**
-     * Set member
+     * Set member.
      *
      * @param AppBundle\Entity\Member $member
      */
@@ -136,7 +136,7 @@ class Bank
     }
 
     /**
-     * Get member
+     * Get member.
      *
      * @return AppBundle\Entity\Member
      */
@@ -146,7 +146,7 @@ class Bank
     }
 
     /**
-     * Set provider
+     * Set provider.
      *
      * @param AppBundle\Entity\Provider $provider
      */
@@ -156,7 +156,7 @@ class Bank
     }
 
     /**
-     * Get provider
+     * Get provider.
      *
      * @return Provider
      */
@@ -166,7 +166,7 @@ class Bank
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      */
@@ -176,7 +176,7 @@ class Bank
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -186,9 +186,9 @@ class Bank
     }
 
     /**
-     * Set sortOrder
+     * Set sortOrder.
      *
-     * @param integer $sortOrder
+     * @param int $sortOrder
      */
     public function setSortOrder($sortOrder)
     {
@@ -196,9 +196,9 @@ class Bank
     }
 
     /**
-     * Get sortOrder
+     * Get sortOrder.
      *
-     * @return integer
+     * @return int
      */
     public function getSortOrder()
     {
@@ -206,9 +206,9 @@ class Bank
     }
 
     /**
-     * Set favorite
+     * Set favorite.
      *
-     * @param boolean $favorite
+     * @param bool $favorite
      */
     public function setFavorite($favorite)
     {
@@ -216,9 +216,9 @@ class Bank
     }
 
     /**
-     * Get favorite
+     * Get favorite.
      *
-     * @return boolean
+     * @return bool
      */
     public function isFavorite()
     {
@@ -226,9 +226,9 @@ class Bank
     }
 
     /**
-     * Set closed
+     * Set closed.
      *
-     * @param boolean $closed
+     * @param bool $closed
      */
     public function setClosed($closed)
     {
@@ -236,9 +236,9 @@ class Bank
     }
 
     /**
-     * Get closed
+     * Get closed.
      *
-     * @return boolean
+     * @return bool
      */
     public function isClosed()
     {
@@ -246,9 +246,9 @@ class Bank
     }
 
     /**
-     * Set deleted
+     * Set deleted.
      *
-     * @param boolean $deleted
+     * @param bool $deleted
      */
     public function setDeleted($deleted)
     {
@@ -256,9 +256,9 @@ class Bank
     }
 
     /**
-     * Get deleted
+     * Get deleted.
      *
-     * @return boolean
+     * @return bool
      */
     public function isDeleted()
     {
@@ -271,7 +271,7 @@ class Bank
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -281,7 +281,7 @@ class Bank
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -291,7 +291,7 @@ class Bank
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -301,7 +301,7 @@ class Bank
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -311,7 +311,7 @@ class Bank
     }
 
     /**
-     * Get member accounts
+     * Get member accounts.
      *
      * @return Doctrine\Common\Collections\Collection
      */

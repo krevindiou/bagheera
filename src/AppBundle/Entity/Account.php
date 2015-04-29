@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -20,7 +20,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 class Account
 {
     /**
-     * @var integer $accountId
+     * @var int
      *
      * @ORM\Column(name="account_id", type="integer", nullable=false)
      * @ORM\Id
@@ -29,21 +29,21 @@ class Account
     protected $accountId;
 
     /**
-     * @var string $externalAccountId
+     * @var string
      *
      * @ORM\Column(name="external_account_id", type="string", length=32, nullable=true)
      */
     protected $externalAccountId;
 
     /**
-     * @var integer $bankId
+     * @var int
      *
      * @ORM\Column(name="bank_id", type="integer", nullable=false)
      */
     protected $bankId;
 
     /**
-     * @var AppBundle\Entity\Bank $bank
+     * @var AppBundle\Entity\Bank
      *
      * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
      * @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
@@ -53,7 +53,7 @@ class Account
     protected $bank;
 
     /**
-     * @var string $name
+     * @var string
      *
      * @ORM\Column(name="name", type="string", length=64, nullable=false)
      * @Assert\NotBlank()
@@ -62,7 +62,7 @@ class Account
     protected $name;
 
     /**
-     * @var string $currency
+     * @var string
      *
      * @ORM\Column(name="currency", type="string", length=3, nullable=false)
      * @Assert\NotBlank()
@@ -71,14 +71,14 @@ class Account
     protected $currency;
 
     /**
-     * @var float $overdraftFacility
+     * @var float
      *
      * @ORM\Column(name="overdraft_facility", type="decimal", scale=2, nullable=false)
      */
     protected $overdraftFacility = 0;
 
     /**
-     * @var boolean $closed
+     * @var bool
      *
      * @ORM\Column(name="is_closed", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -86,7 +86,7 @@ class Account
     protected $closed = false;
 
     /**
-     * @var boolean $deleted
+     * @var bool
      *
      * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
      * @Assert\Type("bool")
@@ -94,7 +94,7 @@ class Account
     protected $deleted = false;
 
     /**
-     * @var DateTime $createdAt
+     * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="create")
@@ -103,7 +103,7 @@ class Account
     protected $createdAt;
 
     /**
-     * @var DateTime $updatedAt
+     * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
      * @Gedmo\Timestampable(on="update")
@@ -112,7 +112,7 @@ class Account
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection $sharedWith
+     * @var Doctrine\Common\Collections\Collection
      *
      * @ORM\ManyToMany(targetEntity="Member")
      * @ORM\JoinTable(name="shared_account",
@@ -151,9 +151,9 @@ class Account
     }
 
     /**
-     * Get accountId
+     * Get accountId.
      *
-     * @return integer
+     * @return int
      */
     public function getAccountId()
     {
@@ -161,7 +161,7 @@ class Account
     }
 
     /**
-     * Set externalAccountId
+     * Set externalAccountId.
      *
      * @param string $externalAccountId
      */
@@ -171,7 +171,7 @@ class Account
     }
 
     /**
-     * Get externalAccountId
+     * Get externalAccountId.
      *
      * @return string
      */
@@ -181,7 +181,7 @@ class Account
     }
 
     /**
-     * Set name
+     * Set name.
      *
      * @param string $name
      */
@@ -191,7 +191,7 @@ class Account
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -201,7 +201,7 @@ class Account
     }
 
     /**
-     * Set currency
+     * Set currency.
      *
      * @param string $currency
      */
@@ -211,7 +211,7 @@ class Account
     }
 
     /**
-     * Get currency
+     * Get currency.
      *
      * @return string
      */
@@ -221,7 +221,7 @@ class Account
     }
 
     /**
-     * Set overdraftFacility
+     * Set overdraftFacility.
      *
      * @param float $overdraftFacility
      */
@@ -231,7 +231,7 @@ class Account
     }
 
     /**
-     * Get overdraftFacility
+     * Get overdraftFacility.
      *
      * @return float
      */
@@ -241,9 +241,9 @@ class Account
     }
 
     /**
-     * Set closed
+     * Set closed.
      *
-     * @param boolean $closed
+     * @param bool $closed
      */
     public function setClosed($closed)
     {
@@ -251,9 +251,9 @@ class Account
     }
 
     /**
-     * Get closed
+     * Get closed.
      *
-     * @return boolean
+     * @return bool
      */
     public function isClosed()
     {
@@ -261,9 +261,9 @@ class Account
     }
 
     /**
-     * Set deleted
+     * Set deleted.
      *
-     * @param boolean $deleted
+     * @param bool $deleted
      */
     public function setDeleted($deleted)
     {
@@ -271,9 +271,9 @@ class Account
     }
 
     /**
-     * Get deleted
+     * Get deleted.
      *
-     * @return boolean
+     * @return bool
      */
     public function isDeleted()
     {
@@ -281,7 +281,7 @@ class Account
     }
 
     /**
-     * Set createdAt
+     * Set createdAt.
      *
      * @param DateTime $createdAt
      */
@@ -291,7 +291,7 @@ class Account
     }
 
     /**
-     * Get createdAt
+     * Get createdAt.
      *
      * @return DateTime
      */
@@ -301,7 +301,7 @@ class Account
     }
 
     /**
-     * Set updatedAt
+     * Set updatedAt.
      *
      * @param DateTime $updatedAt
      */
@@ -311,7 +311,7 @@ class Account
     }
 
     /**
-     * Get updatedAt
+     * Get updatedAt.
      *
      * @return DateTime
      */
@@ -321,7 +321,7 @@ class Account
     }
 
     /**
-     * Add member
+     * Add member.
      *
      * @param AppBundle\Entity\Member $member
      */
@@ -331,7 +331,7 @@ class Account
     }
 
     /**
-     * Get sharedWith
+     * Get sharedWith.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -341,7 +341,7 @@ class Account
     }
 
     /**
-     * Set bank
+     * Set bank.
      *
      * @param AppBundle\Entity\Bank $bank
      */
@@ -351,7 +351,7 @@ class Account
     }
 
     /**
-     * Get bank
+     * Get bank.
      *
      * @return AppBundle\Entity\Bank
      */
@@ -361,7 +361,7 @@ class Account
     }
 
     /**
-     * Get account operations
+     * Get account operations.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -371,7 +371,7 @@ class Account
     }
 
     /**
-     * Get account schedulers
+     * Get account schedulers.
      *
      * @return Doctrine\Common\Collections\Collection
      */
@@ -387,7 +387,7 @@ class Account
 
     public function __toString()
     {
-        return $this->getBank()->getName() . ' - ' . $this->getName();
+        return $this->getBank()->getName().' - '.$this->getName();
     }
 
     public function isOwner(Member $member)

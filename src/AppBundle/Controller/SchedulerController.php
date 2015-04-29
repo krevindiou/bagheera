@@ -1,8 +1,8 @@
 <?php
+
 /**
  * This file is part of the Bagheera project, a personal finance manager.
  */
-
 namespace AppBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -23,6 +23,7 @@ class SchedulerController extends Controller
     /**
      * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, name="scheduler_list")
      * @Security("account.isOwner(user)")
+     *
      * @Method("GET")
      * @Template()
      */
@@ -45,6 +46,7 @@ class SchedulerController extends Controller
     /**
      * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"})
      * @Security("account.isOwner(user)")
+     *
      * @Method("POST")
      */
     public function listActionsAction(Request $request, Account $account)
@@ -98,9 +100,9 @@ class SchedulerController extends Controller
         }
 
         return [
-            'account' => $account ? : $scheduler->getAccount(),
+            'account' => $account ?: $scheduler->getAccount(),
             'scheduler' => $schedulerForm->getData(),
-            'schedulerForm' => $schedulerForm->createView()
+            'schedulerForm' => $schedulerForm->createView(),
         ];
     }
 }
