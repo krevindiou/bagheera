@@ -8,7 +8,6 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use AppBundle\Entity\Bank;
 
 /**
@@ -18,7 +17,6 @@ class BankAccessController extends Controller
 {
     /**
      * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_update")
-     * @Template()
      */
     public function formAction(Request $request, Bank $bank)
     {
@@ -39,8 +37,11 @@ class BankAccessController extends Controller
             }
         }
 
-        return [
-            'bankAccessForm' => $bankAccessForm->createView(),
-        ];
+        return $this->render(
+            'AppBundle:BankAccess:form.html.twig',
+            [
+                'bankAccessForm' => $bankAccessForm->createView(),
+            ]
+        );
     }
 }

@@ -8,7 +8,6 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -25,7 +24,6 @@ class SchedulerController extends Controller
      * @Security("account.isOwner(user)")
      *
      * @Method("GET")
-     * @Template()
      */
     public function listAction(Request $request, Account $account)
     {
@@ -37,10 +35,13 @@ class SchedulerController extends Controller
             throw $this->createNotFoundException();
         }
 
-        return [
-            'account' => $account,
-            'schedulers' => $schedulers,
-        ];
+        return $this->render(
+            'AppBundle:Scheduler:list.html.twig',
+            [
+                'account' => $account,
+                'schedulers' => $schedulers,
+            ]
+        );
     }
 
     /**
@@ -76,7 +77,6 @@ class SchedulerController extends Controller
      * @ParamConverter("scheduler", class="AppBundle:Scheduler", options={"id" = "schedulerId"})
      * @ParamConverter("account", class="AppBundle:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
-     * @Template()
      */
     public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
     {
@@ -98,10 +98,13 @@ class SchedulerController extends Controller
             }
         }
 
-        return [
-            'account' => $account ?: $scheduler->getAccount(),
-            'scheduler' => $schedulerForm->getData(),
-            'schedulerForm' => $schedulerForm->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Scheduler:form.html.twig',
+            [
+                'account' => $account ?: $scheduler->getAccount(),
+                'scheduler' => $schedulerForm->getData(),
+                'schedulerForm' => $schedulerForm->createView(),
+            ]
+        );
     }
 }

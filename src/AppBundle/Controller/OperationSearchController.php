@@ -8,7 +8,6 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use AppBundle\Entity\Account;
 
@@ -21,7 +20,6 @@ class OperationSearchController extends Controller
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form")
      *
      * @Method("GET")
-     * @Template()
      */
     public function formAction(Request $request, Account $account, $display = true)
     {
@@ -34,18 +32,20 @@ class OperationSearchController extends Controller
             throw $this->createNotFoundException();
         }
 
-        return [
-            'account' => $account,
-            'operationSearchForm' => $operationSearchForm->createView(),
-            'display' => $display,
-        ];
+        return $this->render(
+            'AppBundle:OperationSearch:form.html.twig',
+            [
+                'account' => $account,
+                'operationSearchForm' => $operationSearchForm->createView(),
+                'display' => $display,
+            ]
+        );
     }
 
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit")
      *
      * @Method("POST")
-     * @Template()
      */
     public function submitAction(Request $request, Account $account)
     {

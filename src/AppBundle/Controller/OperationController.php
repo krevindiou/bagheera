@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use AppBundle\Entity\Operation;
@@ -24,7 +23,6 @@ class OperationController extends Controller
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, name="operation_list")
      *
      * @Method("GET")
-     * @Template()
      */
     public function listAction(Request $request, Account $account)
     {
@@ -43,14 +41,17 @@ class OperationController extends Controller
         $balance = $accountService->getBalance($member, $account);
         $reconciledBalance = $accountService->getBalance($member, $account, true);
 
-        return [
-            'account' => $account,
-            'operations' => $operations,
-            'displaySearch' => (null !== $operationSearch),
-            'tipCreateOperation' => (null === $operationSearch && count($operations) == 0),
-            'balance' => $balance,
-            'reconciledBalance' => $reconciledBalance,
-        ];
+        return $this->render(
+            'AppBundle:Operation:list.html.twig',
+            [
+                'account' => $account,
+                'operations' => $operations,
+                'displaySearch' => (null !== $operationSearch),
+                'tipCreateOperation' => (null === $operationSearch && count($operations) == 0),
+                'balance' => $balance,
+                'reconciledBalance' => $reconciledBalance,
+            ]
+        );
     }
 
     /**
@@ -80,7 +81,6 @@ class OperationController extends Controller
      * @Route("/account-{accountId}/create-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_create")
      * @ParamConverter("operation", class="AppBundle:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="AppBundle:Account", options={"id" = "accountId"})
-     * @Template()
      */
     public function formAction(Request $request, Account $account = null, Operation $operation = null)
     {
@@ -107,11 +107,14 @@ class OperationController extends Controller
             }
         }
 
-        return [
-            'account' => $account ?: $operation->getAccount(),
-            'operation' => $operationForm->getData(),
-            'operationForm' => $operationForm->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Operation:form.html.twig',
+            [
+                'account' => $account ?: $operation->getAccount(),
+                'operation' => $operationForm->getData(),
+                'operationForm' => $operationForm->createView(),
+            ]
+        );
     }
 
     /**

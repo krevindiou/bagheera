@@ -8,7 +8,6 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use AppBundle\Entity\Bank;
 
 /**
@@ -19,7 +18,6 @@ class BankController extends Controller
     /**
      * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
      * @Route("/choose-bank", defaults={"bankId" = null}, name="bank_choose")
-     * @Template()
      */
     public function formAction(Request $request, Bank $bank = null)
     {
@@ -50,9 +48,12 @@ class BankController extends Controller
             }
         }
 
-        return [
-            'bankForm' => $bankForm->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Bank:form.html.twig',
+            [
+                'bankForm' => $bankForm->createView(),
+            ]
+        );
     }
 
     /**

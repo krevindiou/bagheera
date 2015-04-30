@@ -8,27 +8,27 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
 class MemberController extends Controller
 {
     /**
      * @Route("/sign-in", name="member_login")
-     * @Template
      */
     public function loginAction(Request $request)
     {
         $helper = $this->get('security.authentication_utils');
 
-        return [
-            'last_username' => $helper->getLastUsername(),
-            'error' => $helper->getLastAuthenticationError(),
-        ];
+        return $this->render(
+            'AppBundle:Member:login.html.twig',
+            [
+                'last_username' => $helper->getLastUsername(),
+                'error' => $helper->getLastAuthenticationError(),
+            ]
+        );
     }
 
     /**
      * @Route("/register", name="member_register")
-     * @Template
      */
     public function registerAction(Request $request)
     {
@@ -44,14 +44,16 @@ class MemberController extends Controller
             }
         }
 
-        return [
-            'registerForm' => $form->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Member:register.html.twig',
+            [
+                'registerForm' => $form->createView(),
+            ]
+        );
     }
 
     /**
      * @Route("/forgot-password", name="member_forgot_password")
-     * @Template
      */
     public function forgotPasswordAction(Request $request)
     {
@@ -69,14 +71,16 @@ class MemberController extends Controller
             }
         }
 
-        return [
-            'forgotPasswordForm' => $form->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Member:forgotPassword.html.twig',
+            [
+                'forgotPasswordForm' => $form->createView(),
+            ]
+        );
     }
 
     /**
      * @Route("/change-password", name="member_change_password_public", requirements={"key"})
-     * @Template
      */
     public function changePasswordPublicAction(Request $request)
     {
@@ -100,15 +104,17 @@ class MemberController extends Controller
             return $this->redirectToRoute('member_login');
         }
 
-        return [
-            'key' => $key,
-            'changePasswordForm' => $form->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Member:changePasswordPublic.html.twig',
+            [
+                'key' => $key,
+                'changePasswordForm' => $form->createView(),
+            ]
+        );
     }
 
     /**
      * @Route("/manager/change-password", name="member_change_password")
-     * @Template
      */
     public function changePasswordAction(Request $request)
     {
@@ -126,9 +132,12 @@ class MemberController extends Controller
             }
         }
 
-        return [
-            'changePasswordForm' => $form->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Member:changePassword.html.twig',
+            [
+                'changePasswordForm' => $form->createView(),
+            ]
+        );
     }
 
     /**
@@ -149,7 +158,6 @@ class MemberController extends Controller
 
     /**
      * @Route("/manager/profile", name="member_profile")
-     * @Template
      */
     public function profileAction(Request $request)
     {
@@ -165,8 +173,11 @@ class MemberController extends Controller
             }
         }
 
-        return [
-            'profileForm' => $form->createView(),
-        ];
+        return $this->render(
+            'AppBundle:Member:profile.html.twig',
+            [
+                'profileForm' => $form->createView(),
+            ]
+        );
     }
 }

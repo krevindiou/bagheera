@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use AppBundle\Entity\Bank;
 use AppBundle\Entity\Account;
@@ -21,37 +20,41 @@ class AccountController extends Controller
 {
     /**
      * @Route("/", name="account_home")
-     * @Template()
      */
     public function homeAction()
     {
         $member = $this->getUser();
 
-        return [
-            'totalBalances' => $this->get('app.member')->getBalances($member),
-            'lastSalary' => $this->get('app.operation')->getLastSalary($member),
-            'lastBiggestExpense' => $this->get('app.operation')->getLastBiggestExpense(
-                $member,
-                (new \DateTime())->modify('-1 month')
-            ),
-            'accountService' => $this->get('app.account'),
-            'progress' => $this->get('app.member')->getImportProgress($member),
-            'reports' => $this->get('app.report')->getHomepageList($member),
-            'tipNewAccount' => $this->get('app.member')->hasNewAccountTip($member),
-        ];
+        return $this->render(
+            'AppBundle:Account:home.html.twig',
+            [
+                'totalBalances' => $this->get('app.member')->getBalances($member),
+                'lastSalary' => $this->get('app.operation')->getLastSalary($member),
+                'lastBiggestExpense' => $this->get('app.operation')->getLastBiggestExpense(
+                    $member,
+                    (new \DateTime())->modify('-1 month')
+                ),
+                'accountService' => $this->get('app.account'),
+                'progress' => $this->get('app.member')->getImportProgress($member),
+                'reports' => $this->get('app.report')->getHomepageList($member),
+                'tipNewAccount' => $this->get('app.member')->hasNewAccountTip($member),
+            ]
+        );
     }
 
     /**
      * @Route("/accounts", name="account_list")
      *
      * @Method("GET")
-     * @Template()
      */
     public function listAction()
     {
-        return [
-            'banks' => $this->get('app.bank')->getList($this->getUser(), false),
-        ];
+        return $this->render(
+            'AppBundle:Account:list.html.twig',
+            [
+                'banks' => $this->get('app.bank')->getList($this->getUser(), false),
+            ]
+        );
     }
 
     /**
@@ -85,7 +88,6 @@ class AccountController extends Controller
     /**
      * @Route("/bank-{bankId}/create-account", requirements={"bankId" = "\d+"}, name="account_create_with_bank")
      * @Route("/create-account", defaults={"bankId" = null}, name="account_create")
-     * @Template()
      */
     public function createAction(Request $request, Bank $bank = null)
     {
@@ -120,7 +122,6 @@ class AccountController extends Controller
 
     /**
      * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_update")
-     * @Template()
      */
     public function updateAction(Request $request, Account $account)
     {
