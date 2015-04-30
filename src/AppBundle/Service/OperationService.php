@@ -593,10 +593,7 @@ class OperationService
         $query->setParameter('member', $member);
         $query->setParameter('category', $category);
 
-        try {
-            return $query->getSingleResult();
-        } catch (\Doctrine\ORM\NoResultException $e) {
-        }
+        return $query->getOneOrNullResult();
     }
 
     /**
@@ -631,9 +628,6 @@ class OperationService
         $query->setParameter('member', $member);
         $query->setParameter('valueDate', $since->format(\DateTime::ISO8601));
 
-        try {
-            return $query->getSingleResult();
-        } catch (\Doctrine\ORM\NoResultException $e) {
-        }
+        return $query->getOneOrNullResult();
     }
 }
