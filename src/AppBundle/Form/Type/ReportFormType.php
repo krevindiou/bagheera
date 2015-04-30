@@ -284,6 +284,6 @@ class ReportFormType extends AbstractType
 
     public function getName()
     {
-        return 'report';
+        return 'app_report';
     }
 }

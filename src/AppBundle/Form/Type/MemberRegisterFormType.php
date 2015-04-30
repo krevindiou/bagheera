@@ -95,6 +95,6 @@ class MemberRegisterFormType extends AbstractType
 
     public function getName()
     {
-        return 'member_register';
+        return 'app_member_register';
     }
 }

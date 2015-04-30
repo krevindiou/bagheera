@@ -175,7 +175,7 @@ class ReportService
             return;
         }
 
-        return $this->formFactory->create('report', $report);
+        return $this->formFactory->create('app_report', $report);
     }
 
     /**

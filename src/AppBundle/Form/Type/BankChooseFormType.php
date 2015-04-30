@@ -93,6 +93,6 @@ class BankChooseFormType extends AbstractType
 
     public function getName()
     {
-        return 'bank_choose';
+        return 'app_bank_choose';
     }
 }

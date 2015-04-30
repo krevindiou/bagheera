@@ -58,7 +58,7 @@ class BankAccessService
         $bankAccess = new BankAccess();
         $bankAccess->setBankId($bank->getBankId());
 
-        return $this->formFactory->create('bank_access', $bankAccess);
+        return $this->formFactory->create('app_bank_access', $bankAccess);
     }
 
     /**

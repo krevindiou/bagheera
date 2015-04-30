@@ -44,7 +44,7 @@ class OperationSearchService
             return;
         }
 
-        return $this->formFactory->create('operation_search', $operationSearch);
+        return $this->formFactory->create('app_operation_search', $operationSearch);
     }
 
     /**

@@ -33,6 +33,6 @@ class MemberProfileFormType extends MemberRegisterFormType
 
     public function getName()
     {
-        return 'member_profile';
+        return 'app_member_profile';
     }
 }

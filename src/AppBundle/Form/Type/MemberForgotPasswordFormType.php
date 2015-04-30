@@ -49,6 +49,6 @@ class MemberForgotPasswordFormType extends AbstractType
 
     public function getName()
     {
-        return 'member_forgot_password';
+        return 'app_member_forgot_password';
     }
 }

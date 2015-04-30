@@ -132,6 +132,6 @@ class AccountFormType extends AbstractType
 
     public function getName()
     {
-        return 'account';
+        return 'app_account';
     }
 }

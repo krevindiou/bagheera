@@ -53,6 +53,6 @@ class BankUpdateFormType extends AbstractType
 
     public function getName()
     {
-        return 'bank_update';
+        return 'app_bank_update';
     }
 }

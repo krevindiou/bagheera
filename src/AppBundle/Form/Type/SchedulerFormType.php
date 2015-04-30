@@ -257,6 +257,6 @@ class SchedulerFormType extends AbstractType
 
     public function getName()
     {
-        return 'scheduler';
+        return 'app_scheduler';
     }
 }
