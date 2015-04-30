@@ -29,7 +29,7 @@ class MemberChangePasswordFormType extends AbstractType
                     'invalid_message' => 'member.password_fields_must_match',
                     'constraints' => [
                         new NotBlank(),
-                        new Length(['min' => 8]),
+                        new Length(['min' => 8, 'max' => 4096]),
                     ],
                     'attr' => [
                         'class' => 'input-medium',

@@ -50,6 +50,7 @@ class Member implements AdvancedUserInterface
      *
      * @Assert\NotBlank(groups={"password"})
      * @Assert\Length(min = 8)
+     * @Assert\Length(max = 4096)
      */
     protected $plainPassword;
 
