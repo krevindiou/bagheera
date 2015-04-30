@@ -66,7 +66,7 @@ class OperationSearchService
 
             if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
                 $dql = 'SELECT c ';
-                $dql .= 'FROM Model:Category c ';
+                $dql .= 'FROM AppBundle:Category c ';
                 $dql .= 'WHERE c.categoryId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['categories']).') ';
                 $query = $this->em->createQuery($dql);
                 $categories = $query->getResult();
@@ -75,7 +75,7 @@ class OperationSearchService
 
             if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
                 $dql = 'SELECT p ';
-                $dql .= 'FROM Model:PaymentMethod p ';
+                $dql .= 'FROM AppBundle:PaymentMethod p ';
                 $dql .= 'WHERE p.paymentMethodId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['paymentMethods']).') ';
                 $query = $this->em->createQuery($dql);
                 $paymentMethods = $query->getResult();

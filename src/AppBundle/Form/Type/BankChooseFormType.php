@@ -28,7 +28,7 @@ class BankChooseFormType extends AbstractType
                 'entity',
                 [
                     'label' => 'bank.auto',
-                    'class' => 'Model:Provider',
+                    'class' => 'AppBundle:Provider',
                     'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                         return $repository->getAvailableProvidersQueryBuilder($member);
                     },
@@ -40,7 +40,7 @@ class BankChooseFormType extends AbstractType
                 'entity',
                 [
                     'label' => 'bank.manual',
-                    'class' => 'Model:Bank',
+                    'class' => 'AppBundle:Bank',
                     'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                         return $repository->getActiveManualBanksQueryBuilder($member);
                     },

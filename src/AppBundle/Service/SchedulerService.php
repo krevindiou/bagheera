@@ -296,7 +296,7 @@ class SchedulerService
             $startDate = $scheduler->getValueDate();
 
             $dql = 'SELECT o.valueDate ';
-            $dql .= 'FROM Model:Operation o ';
+            $dql .= 'FROM AppBundle:Operation o ';
             $dql .= 'WHERE o.scheduler = :scheduler ';
             $dql .= 'AND o.valueDate >= :valueDate ';
             $dql .= 'ORDER BY o.valueDate DESC ';

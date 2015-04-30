@@ -28,7 +28,7 @@ class MemberForgotPasswordFormType extends AbstractType
                     'constraints' => [
                         new NotBlank(),
                         new Email(),
-                        new FieldExists('Model:Member', 'email'),
+                        new FieldExists('AppBundle:Member', 'email'),
                     ],
                     'attr' => [
                         'class' => 'input-xlarge',

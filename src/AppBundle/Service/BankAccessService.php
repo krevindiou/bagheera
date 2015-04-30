@@ -71,12 +71,12 @@ class BankAccessService
      */
     protected function doSave(Member $member, BankAccess $bankAccess)
     {
-        $bank = $this->em->find('Model:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find('AppBundle:Bank', $bankAccess->getBankId());
 
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                $dql = 'DELETE FROM Model:BankAccess b ';
+                $dql = 'DELETE FROM AppBundle:BankAccess b ';
                 $dql .= 'WHERE b.bankId = :bankId ';
 
                 $this->emSecure->createQuery($dql)

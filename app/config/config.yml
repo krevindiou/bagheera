@@ -73,23 +73,11 @@ doctrine:
             default:
                 connection:       default
                 mappings:
-                    AppBundle:
-                        mapping:              true
-                        type:                 ~
-                        dir:                  ~
-                        alias:                Model
-                        prefix:               ~
-                        is_bundle:            ~
+                    AppBundle:    ~
             secure:
                 connection:       secure
                 mappings:
-                    AppBundle:
-                        mapping:              true
-                        type:                 ~
-                        dir:                  ~
-                        alias:                Model
-                        prefix:               ~
-                        is_bundle:            ~
+                    AppBundle:    ~
 
 # Swiftmailer Configuration
 swiftmailer:

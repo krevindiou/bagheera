@@ -56,7 +56,7 @@ class SchedulerController extends Controller
             $member = $this->getUser();
 
             foreach ($schedulersId as $schedulerId) {
-                $scheduler = $this->em->find('Model:Scheduler', $schedulerId);
+                $scheduler = $this->em->find('AppBundle:Scheduler', $schedulerId);
 
                 if (!$scheduler->isOwner($member)) {
                     throw $this->createAccessDeniedException();
@@ -73,8 +73,8 @@ class SchedulerController extends Controller
     /**
      * @Route("/scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_update")
      * @Route("/account-{accountId}/create-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_create")
-     * @ParamConverter("scheduler", class="Model:Scheduler", options={"id" = "schedulerId"})
-     * @ParamConverter("account", class="Model:Account", options={"id" = "accountId"})
+     * @ParamConverter("scheduler", class="AppBundle:Scheduler", options={"id" = "schedulerId"})
+     * @ParamConverter("account", class="AppBundle:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      * @Template()
      */

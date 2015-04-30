@@ -145,7 +145,7 @@ class ReportService
      */
     public function getHomepageList(Member $member)
     {
-        $dql = 'SELECT r FROM Model:Report r ';
+        $dql = 'SELECT r FROM AppBundle:Report r ';
         $dql .= 'WHERE r.member = :member ';
         $dql .= 'AND r.homepage = :homepage ';
 
@@ -250,7 +250,7 @@ class ReportService
     {
         try {
             foreach ($reportsId as $reportId) {
-                $report = $this->em->find('Model:Report', $reportId);
+                $report = $this->em->find('AppBundle:Report', $reportId);
 
                 if (null !== $report) {
                     if ($member === $report->getMember()) {
@@ -293,7 +293,7 @@ class ReportService
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (count($accounts) == 0) {
-                $dql = 'SELECT a FROM Model:Account a ';
+                $dql = 'SELECT a FROM AppBundle:Account a ';
                 $dql .= 'JOIN a.bank b ';
                 $dql .= 'WHERE b.member = :member ';
                 $dql .= 'AND b.deleted = false ';
@@ -480,7 +480,7 @@ class ReportService
             $startDate->modify('First day of -11 months');
         }
 
-        $operationRepository = $this->em->getRepository('Model:Operation');
+        $operationRepository = $this->em->getRepository('AppBundle:Operation');
 
         $data = $operationRepository->getTotalByMonth($member, $startDate, $endDate, $account);
 

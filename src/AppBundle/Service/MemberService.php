@@ -176,7 +176,7 @@ class MemberService
         $data = $this->cryptService->decrypt($key);
 
         if (null !== $data && 'register' == $data['type']) {
-            return $this->em->getRepository('Model:Member')
+            return $this->em->getRepository('AppBundle:Member')
                             ->findOneBy(['email' => $data['email']]);
         }
     }
@@ -263,7 +263,7 @@ class MemberService
      */
     public function sendChangePasswordEmail($email)
     {
-        $member = $this->em->getRepository('Model:Member')
+        $member = $this->em->getRepository('AppBundle:Member')
                            ->findOneBy(['email' => $email]);
 
         if (null !== $member) {
@@ -359,7 +359,7 @@ class MemberService
         $data = $this->cryptService->decrypt($key);
 
         if (null !== $data && 'change_password' == $data['type']) {
-            return $this->em->getRepository('Model:Member')
+            return $this->em->getRepository('AppBundle:Member')
                             ->findOneBy(['email' => $data['email']]);
         }
     }
@@ -429,7 +429,7 @@ class MemberService
     {
         // Fetch current importId
         $dql = 'SELECT MAX(i.importId) ';
-        $dql .= 'FROM Model:AccountImport i ';
+        $dql .= 'FROM AppBundle:AccountImport i ';
         $dql .= 'JOIN i.account a ';
         $dql .= 'JOIN a.bank b ';
         $dql .= 'WHERE b.member = :member ';
@@ -444,7 +444,7 @@ class MemberService
         }
 
         $dql = 'SELECT i ';
-        $dql .= 'FROM Model:AccountImport i INDEX BY i.accountId ';
+        $dql .= 'FROM AppBundle:AccountImport i INDEX BY i.accountId ';
         $dql .= 'WHERE i.importId = :maxImportId ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);

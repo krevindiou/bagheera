@@ -14,7 +14,7 @@ class ProviderRepository extends EntityRepository
     {
         // Retrieve used providers
         $dql = 'SELECT p.providerId ';
-        $dql .= 'FROM Model:Bank b ';
+        $dql .= 'FROM AppBundle:Bank b ';
         $dql .= 'JOIN b.provider p ';
         $dql .= 'WHERE b.member = :member ';
         $dql .= 'AND b.provider IS NOT NULL ';

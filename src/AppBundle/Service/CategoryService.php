@@ -23,7 +23,7 @@ class CategoryService
         $dql = 'SELECT c1.type c1_type, c1.name c1_name, c1.categoryId c1_categoryId, ';
         $dql .= 'c2.name c2_name, c2.categoryId c2_categoryId, ';
         $dql .= 'c3.name c3_name, c3.categoryId c3_categoryId ';
-        $dql .= 'FROM Model:Category c1 ';
+        $dql .= 'FROM AppBundle:Category c1 ';
         $dql .= 'LEFT JOIN c1.subCategories c2 ';
         $dql .= 'LEFT JOIN c2.subCategories c3 ';
         $dql .= 'WHERE c1.parentCategory IS NULL ';

@@ -40,7 +40,7 @@ class ProviderAdapter
      */
     public function setBankAccess(BankAccess $bankAccess)
     {
-        $bank = $this->em->find('Model:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find('AppBundle:Bank', $bankAccess->getBankId());
 
         if (null !== $bank) {
             $provider = $bank->getProvider();

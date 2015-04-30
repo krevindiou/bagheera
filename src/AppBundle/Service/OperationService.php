@@ -282,7 +282,7 @@ class OperationService
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
                 $operationBeforeSave = $this->em->find(
-                    'Model:Operation',
+                    'AppBundle:Operation',
                     $operation->getOperationId()
                 );
 
@@ -307,11 +307,11 @@ class OperationService
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
                     $paymentMethod = $this->em->find(
-                        'Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                        'AppBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
                     $paymentMethod = $this->em->find(
-                        'Model:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                        'AppBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
                 }
 
@@ -409,7 +409,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('Model:Operation', $operationId);
+                $operation = $this->em->find('AppBundle:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -440,7 +440,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('Model:Operation', $operationId);
+                $operation = $this->em->find('AppBundle:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -502,7 +502,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->em->find('Model:PaymentMethod', $operationArray['payment_method_id'])
+                $this->em->find('AppBundle:PaymentMethod', $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {
@@ -575,10 +575,10 @@ class OperationService
      */
     public function getLastSalary(Member $member)
     {
-        $category = $this->em->find('Model:Category', $this->categoriesId['salary']);
+        $category = $this->em->find('AppBundle:Category', $this->categoriesId['salary']);
 
         $dql = 'SELECT o ';
-        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'FROM AppBundle:Operation o ';
         $dql .= 'JOIN o.account a ';
         $dql .= 'JOIN a.bank b ';
         $dql .= 'WHERE b.member = :member ';
@@ -610,10 +610,10 @@ class OperationService
     public function getLastBiggestExpense(Member $member, \DateTime $since)
     {
         $dql = 'SELECT o ';
-        $dql .= 'FROM Model:Operation o ';
+        $dql .= 'FROM AppBundle:Operation o ';
         $dql .= 'WHERE o.debit = ( ';
         $dql .= '  SELECT MAX(o2.debit) ';
-        $dql .= '  FROM Model:Operation o2 ';
+        $dql .= '  FROM AppBundle:Operation o2 ';
         $dql .= '  JOIN o2.account a ';
         $dql .= '  JOIN a.bank b ';
         $dql .= '  WHERE b.member = :member ';

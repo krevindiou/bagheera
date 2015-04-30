@@ -132,7 +132,7 @@ class ReportFormType extends AbstractType
                             'entity',
                             [
                                 'label' => 'report.accounts',
-                                'class' => 'Model:Account',
+                                'class' => 'AppBundle:Account',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                     return $repository->createQueryBuilder('a')
                                         ->innerJoin('a.bank', 'b')
