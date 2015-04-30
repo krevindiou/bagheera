@@ -29,7 +29,7 @@ class Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
-     * @Assert\NotBlank()
+     * @Assert\NotNull()
      * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
@@ -60,7 +60,7 @@ class Scheduler
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
-     * @Assert\NotBlank()
+     * @Assert\NotNull()
      * @Assert\Type(type="AppBundle\Entity\PaymentMethod")
      * @Assert\Valid()
      */

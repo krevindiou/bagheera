@@ -30,7 +30,7 @@ class Bank
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
-     * @Assert\NotBlank()
+     * @Assert\NotNull()
      * @Assert\Type(type="AppBundle\Entity\Member")
      * @Assert\Valid()
      */

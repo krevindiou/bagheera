@@ -31,7 +31,7 @@ class OperationSearch
      *
      * @ORM\ManyToOne(targetEntity="Account", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
-     * @Assert\NotBlank()
+     * @Assert\NotNull()
      * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */

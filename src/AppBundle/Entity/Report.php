@@ -31,7 +31,7 @@ class Report
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="reports")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
-     * @Assert\NotBlank()
+     * @Assert\NotNull()
      * @Assert\Type(type="AppBundle\Entity\Member")
      * @Assert\Valid()
      */

@@ -36,7 +36,7 @@ class AccountImport
      * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @ORM\Id
-     * @Assert\NotBlank()
+     * @Assert\NotNull()
      * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
