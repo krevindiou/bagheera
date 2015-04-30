@@ -12,7 +12,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 class TranslateController extends Controller
 {
     /**
-     * @Route("/translations.js")
+     * @Route("/translations.js", defaults={"_format"="js"})
      */
     public function listAction()
     {
@@ -31,6 +31,6 @@ class TranslateController extends Controller
 
         $js = 'Bagheera.translations = '.json_encode($translations);
 
-        return new Response($js, 200, ['Content-Type' => 'application/javascript']);
+        return new Response($js);
     }
 }
