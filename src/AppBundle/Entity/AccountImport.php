@@ -37,6 +37,7 @@ class AccountImport
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @ORM\Id
      * @Assert\NotBlank()
+     * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;

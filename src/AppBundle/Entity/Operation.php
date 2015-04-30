@@ -39,6 +39,7 @@ class Operation
      *
      * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
+     * @Assert\Type(type="AppBundle\Entity\Scheduler")
      * @Assert\Valid()
      */
     protected $scheduler;
@@ -49,6 +50,7 @@ class Operation
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;
@@ -58,6 +60,7 @@ class Operation
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
+     * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
     protected $transferAccount;
@@ -67,6 +70,7 @@ class Operation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
+     * @Assert\Type(type="AppBundle\Entity\Operation")
      * @Assert\Valid()
      */
     protected $transferOperation;
@@ -76,6 +80,7 @@ class Operation
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
+     * @Assert\Type(type="AppBundle\Entity\Category")
      * @Assert\Valid()
      */
     protected $category;
@@ -86,6 +91,7 @@ class Operation
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Type(type="AppBundle\Entity\PaymentMethod")
      * @Assert\Valid()
      */
     protected $paymentMethod;

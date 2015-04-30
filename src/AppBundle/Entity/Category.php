@@ -30,6 +30,7 @@ class Category
      *
      * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
      * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
+     * @Assert\Type(type="AppBundle\Entity\Category")
      * @Assert\Valid()
      */
     protected $parentCategory;

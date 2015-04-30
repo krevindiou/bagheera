@@ -30,6 +30,7 @@ class Scheduler
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;
@@ -39,6 +40,7 @@ class Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
+     * @Assert\Type(type="AppBundle\Entity\Account")
      * @Assert\Valid()
      */
     protected $transferAccount;
@@ -48,6 +50,7 @@ class Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
+     * @Assert\Type(type="AppBundle\Entity\Category")
      * @Assert\Valid()
      */
     protected $category;
@@ -58,6 +61,7 @@ class Scheduler
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
      * @Assert\NotBlank()
+     * @Assert\Type(type="AppBundle\Entity\PaymentMethod")
      * @Assert\Valid()
      */
     protected $paymentMethod;
