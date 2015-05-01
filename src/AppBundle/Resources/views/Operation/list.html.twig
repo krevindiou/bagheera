@@ -14,11 +14,11 @@
         <table class="table stat-table">
             <tbody>
                 <tr>
-                    <td class="value {{ balance < 0 ? 'negative' : 'positive' }}">{{ balance|money(account.currency) }}</td>
+                    <td class="value {{ balance < 0 ? 'negative' : 'positive' }}">{{ balance|localizedcurrency(account.currency) }}</td>
                     <td class="full">{{ 'balance'|trans }}</td>
                 </tr>
                 <tr>
-                    <td class="value {{ reconciledBalance < 0 ? 'negative' : 'positive' }}">{{ reconciledBalance|money(account.currency) }}</td>
+                    <td class="value {{ reconciledBalance < 0 ? 'negative' : 'positive' }}">{{ reconciledBalance|localizedcurrency(account.currency) }}</td>
                     <td class="full">{{ 'reconciled_balance'|trans }}</td>
                 </tr>
             </tbody>
@@ -66,7 +66,7 @@
                         {% endif %}
                     </td>
                     <td>{{ operation.thirdParty }}</td>
-                    <td class="amount {{ (operation.amount < 0) ? 'negative' : 'positive' }}">{{ operation.amount|money(operation.account.currency) }}</td>
+                    <td class="amount {{ (operation.amount < 0) ? 'negative' : 'positive' }}">{{ operation.amount|localizedcurrency(operation.account.currency) }}</td>
                     <td class="payment-method">
                         <i class="{% spaceless %}
                         {% if operation.paymentMethod.name == 'initial_balance' %}

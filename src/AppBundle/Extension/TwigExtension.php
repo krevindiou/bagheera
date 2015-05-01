@@ -19,24 +19,6 @@ class TwigExtension extends \Twig_Extension
     /** @DI\Inject("app.bank") */
     public $bankService;
 
-    public function getFilters()
-    {
-        return [
-            'money' => new \Twig_Filter_Method($this, 'moneyFilter'),
-        ];
-    }
-
-    public function moneyFilter($value, $currency, $locale = null)
-    {
-        if (null === $locale) {
-            $locale = \Locale::getDefault();
-        }
-
-        $fmt = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
-
-        return $fmt->formatCurrency($value, $currency);
-    }
-
     public function getGlobals()
     {
         $banks = [];
