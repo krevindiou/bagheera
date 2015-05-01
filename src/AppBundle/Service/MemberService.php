@@ -191,7 +191,6 @@ class MemberService
     protected function update(Member $member)
     {
         try {
-            $this->em->persist($member);
             $this->em->flush();
 
             return true;
@@ -315,7 +314,6 @@ class MemberService
         $member->setPassword($this->passwordEncoder->encodePassword($member, $password));
 
         try {
-            $this->em->persist($member);
             $this->em->flush();
 
             return true;
@@ -375,7 +373,6 @@ class MemberService
             $member->setActive(true);
 
             try {
-                $this->em->persist($member);
                 $this->em->flush();
 
                 return true;
