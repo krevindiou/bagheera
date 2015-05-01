@@ -13,8 +13,8 @@ use JMS\DiExtraBundle\Annotation as DI;
  */
 class TwigExtension extends \Twig_Extension
 {
-    /** @DI\Inject("security.context") */
-    public $security;
+    /** @DI\Inject("security.token_storage") */
+    public $tokenStorage;
 
     /** @DI\Inject("app.bank") */
     public $bankService;
@@ -41,7 +41,7 @@ class TwigExtension extends \Twig_Extension
     {
         $banks = [];
 
-        $token = $this->security->getToken();
+        $token = $this->tokenStorage->getToken();
 
         if (null !== $token) {
             $member = $token->getUser();
