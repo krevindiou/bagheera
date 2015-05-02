@@ -32,7 +32,7 @@ class TestCase extends WebTestCase
 
         $this->em = $this->get('doctrine.orm.entity_manager');
 
-        self::$conn->exec('DROP SCHEMA public CASCADE');
+        self::$conn->exec('DROP SCHEMA IF EXISTS public CASCADE');
 
         $sql = file_get_contents(__DIR__.'/../../../app/Resources/config/db/structure.sql');
         self::$conn->exec($sql);
