@@ -10,7 +10,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
@@ -74,8 +73,6 @@ class Member implements AdvancedUserInterface
      * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
-     * @Gedmo\Timestampable(on="create")
-     * @Assert\DateTime()
      */
     protected $createdAt;
 
@@ -83,16 +80,13 @@ class Member implements AdvancedUserInterface
      * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
-     * @Gedmo\Timestampable(on="update")
-     * @Assert\DateTime()
      */
     protected $updatedAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="logged_at", type="datetime", nullable=false)
-     * @Gedmo\Timestampable(on="create")
+     * @ORM\Column(name="logged_at", type="datetime", nullable=true)
      * @Assert\DateTime()
      */
     protected $loggedAt;
@@ -230,16 +224,6 @@ class Member implements AdvancedUserInterface
     }
 
     /**
-     * Set createdAt.
-     *
-     * @param DateTime $createdAt
-     */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
-    }
-
-    /**
      * Get createdAt.
      *
      * @return DateTime
@@ -247,16 +231,6 @@ class Member implements AdvancedUserInterface
     public function getCreatedAt()
     {
         return $this->createdAt;
-    }
-
-    /**
-     * Set updatedAt.
-     *
-     * @param DateTime $updatedAt
-     */
-    public function setUpdatedAt(\DateTime $updatedAt)
-    {
-        $this->updatedAt = $updatedAt;
     }
 
     /**

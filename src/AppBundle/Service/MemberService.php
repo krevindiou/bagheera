@@ -158,7 +158,7 @@ class MemberService
         $data = [
             'type' => 'register',
             'email' => $member->getEmail(),
-            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601),
+            'memberId' => $member->getMemberId(),
         ];
 
         return $this->cryptService->crypt($data);
@@ -336,7 +336,7 @@ class MemberService
         $data = [
             'type' => 'change_password',
             'email' => $member->getEmail(),
-            'createdAt' => $member->getCreatedAt()->format(\DateTime::ISO8601),
+            'memberId' => $member->getMemberId(),
         ];
 
         $expiration = new \DateTime();

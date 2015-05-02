@@ -92,13 +92,6 @@ jms_di_extra:
         all_bundles: false
         bundles: [AppBundle]
 
-stof_doctrine_extensions:
-    orm:
-        default:
-            timestampable: true
-        secure:
-            timestampable: true
-
 parameters:
     email:
         sender_name:    Bagheera

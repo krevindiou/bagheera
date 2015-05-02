@@ -7,7 +7,6 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity
@@ -89,8 +88,6 @@ class AccountImport
      * @var DateTime
      *
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
-     * @Gedmo\Timestampable(on="create")
-     * @Assert\DateTime()
      */
     protected $createdAt;
 
@@ -98,8 +95,6 @@ class AccountImport
      * @var DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=false)
-     * @Gedmo\Timestampable(on="update")
-     * @Assert\DateTime()
      */
     protected $updatedAt;
 
@@ -264,16 +259,6 @@ class AccountImport
     }
 
     /**
-     * Set createdAt.
-     *
-     * @param DateTime $createdAt
-     */
-    public function setCreatedAt(\DateTime $createdAt)
-    {
-        $this->createdAt = $createdAt;
-    }
-
-    /**
      * Get createdAt.
      *
      * @return DateTime
@@ -281,16 +266,6 @@ class AccountImport
     public function getCreatedAt()
     {
         return $this->createdAt;
-    }
-
-    /**
-     * Set updatedAt.
-     *
-     * @param DateTime $updatedAt
-     */
-    public function setUpdatedAt(\DateTime $updatedAt)
-    {
-        $this->updatedAt = $updatedAt;
     }
 
     /**
