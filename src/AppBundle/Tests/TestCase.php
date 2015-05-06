@@ -41,9 +41,9 @@ class TestCase extends WebTestCase
         self::$conn->exec($sql);
     }
 
-    public function initClient($username = 'john@example.net', $password = 'johnjohn')
+    public static function createAuthenticatedClient($username = 'john@example.net', $password = 'johnjohn')
     {
-        $this->client = static::createClient(
+        return static::createClient(
             [],
             [
                 'PHP_AUTH_USER' => $username,

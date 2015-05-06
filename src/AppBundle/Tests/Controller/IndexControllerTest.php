@@ -13,7 +13,7 @@ class IndexControllerTest extends TestCase
     {
         parent::setUp();
 
-        $this->initClient();
+        $this->client = static::createAuthenticatedClient();
     }
 
     /** @dataProvider provideUrls */
