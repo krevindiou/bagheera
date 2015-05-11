@@ -37,14 +37,18 @@ assetic:
     bundles:
         - AppBundle
     filters:
-        cssrewrite: ~
+        cssrewrite:
+            apply_to: "\.(less|css)$"
         less:
             node: /usr/bin/node
             node_paths: [%kernel.root_dir%/Resources/node_modules]
+            apply_to: "\.less$"
         uglifyjs2:
             bin: %kernel.root_dir%/Resources/node_modules/uglify-js/bin/uglifyjs
+            apply_to: "\.js$"
         uglifycss:
             bin: %kernel.root_dir%/Resources/node_modules/uglifycss/uglifycss
+            apply_to: "\.less$"
 
 # Doctrine Configuration
 doctrine:
