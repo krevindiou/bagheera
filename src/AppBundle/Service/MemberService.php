@@ -17,6 +17,9 @@ use AppBundle\Entity\Member;
  */
 class MemberService
 {
+    /** @DI\Inject("%secret%") */
+    public $secret;
+
     /** @DI\Inject */
     public $logger;
 
@@ -158,10 +161,9 @@ class MemberService
         $data = [
             'type' => 'register',
             'email' => $member->getEmail(),
-            'memberId' => $member->getMemberId(),
         ];
 
-        return $this->cryptService->crypt($data);
+        return $this->cryptService->encrypt(json_encode($data), $this->secret);
     }
 
     /**
@@ -173,11 +175,13 @@ class MemberService
      */
     protected function decodeRegisterKey($key)
     {
-        $data = $this->cryptService->decrypt($key);
+        $data = $this->cryptService->decrypt($key, $this->secret);
 
-        if (null !== $data && 'register' == $data['type']) {
-            return $this->em->getRepository('AppBundle:Member')
-                            ->findOneBy(['email' => $data['email']]);
+        if (null !== ($data = json_decode($data, true))) {
+            if (isset($data['type'], $data['email']) && 'register' == $data['type']) {
+                return $this->em->getRepository('AppBundle:Member')
+                                ->findOneBy(['email' => $data['email']]);
+            }
         }
     }
 
@@ -333,16 +337,16 @@ class MemberService
      */
     public function createChangePasswordKey(Member $member)
     {
-        $data = [
-            'type' => 'change_password',
-            'email' => $member->getEmail(),
-            'memberId' => $member->getMemberId(),
-        ];
-
         $expiration = new \DateTime();
         $expiration->modify('+2 days');
 
-        return $this->cryptService->crypt($data, $expiration);
+        $data = [
+            'type' => 'change_password',
+            'email' => $member->getEmail(),
+            'expiration' => $expiration->format(\DateTime::ISO8601),
+        ];
+
+        return $this->cryptService->encrypt(json_encode($data), $this->secret);
     }
 
     /**
@@ -354,11 +358,17 @@ class MemberService
      */
     public function decodeChangePasswordKey($key)
     {
-        $data = $this->cryptService->decrypt($key);
+        $data = $this->cryptService->decrypt($key, $this->secret);
 
-        if (null !== $data && 'change_password' == $data['type']) {
-            return $this->em->getRepository('AppBundle:Member')
-                            ->findOneBy(['email' => $data['email']]);
+        if (null !== ($data = json_decode($data, true))) {
+            if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' == $data['type']) {
+                $now = new \DateTime();
+
+                if ($data['expiration'] <= $now->format(\DateTime::ISO8601)) {
+                    return $this->em->getRepository('AppBundle:Member')
+                                    ->findOneBy(['email' => $data['email']]);
+                }
+            }
         }
     }
 

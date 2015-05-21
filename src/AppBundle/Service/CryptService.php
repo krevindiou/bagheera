@@ -15,64 +15,73 @@ use JMS\DiExtraBundle\Annotation as DI;
  */
 class CryptService
 {
-    /** @DI\Inject("%secret%") */
-    public $secret;
+    const METHOD = 'aes-256-cbc';
 
     /**
-     * Crypts data.
-     *
-     * @param mixed    $plainData  Data to crypt
-     * @param DateTime $expiration Expiration date
+     * Returns a random initialization vector.
      *
      * @return string
      */
-    public function crypt($plainData, \DateTime $expiration = null)
+    protected function getRandomIv()
     {
-        $structure = [
-            'data' => $plainData,
-            'expiration' => (null === $expiration) ?: $expiration->format(\DateTime::ISO8601),
-        ];
+        $ivLength = openssl_cipher_iv_length(self::METHOD);
 
-        $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), MCRYPT_RAND);
+        return openssl_random_pseudo_bytes($ivLength);
+    }
 
-        $encryptedString = mcrypt_encrypt(
-            MCRYPT_RIJNDAEL_128,
-            $this->secret,
-            json_encode($structure),
-            MCRYPT_MODE_CBC,
+    /**
+     * Encrypts data.
+     *
+     * @param string $message Data to encrypt
+     * @param string $key     Key used to encrypt
+     *
+     * @return string
+     */
+    public function encrypt($message, $key)
+    {
+        if (mb_strlen($key, '8bit') !== 32) {
+            throw new \Exception('Key must be 256-bit long');
+        }
+
+        $iv = $this->getRandomIv();
+
+        $ciphertext = openssl_encrypt(
+            $message,
+            self::METHOD,
+            $key,
+            OPENSSL_RAW_DATA,
             $iv
         );
 
-        return base64_encode($iv.$encryptedString);
+        return base64_encode($iv.$ciphertext);
     }
 
     /**
      * Decrypts data.
      *
-     * @param string $encryptedString Data to decrypt
+     * @param string $message Data to decrypt
+     * @param string $key     Key used to decrypt
      *
-     * @return mixed
+     * @return string
      */
-    public function decrypt($encryptedString)
+    public function decrypt($message, $key)
     {
-        if (false !== ($encryptedString = base64_decode($encryptedString))) {
-            $encryptedString = trim(
-                @mcrypt_decrypt(
-                    MCRYPT_RIJNDAEL_128,
-                    $this->secret,
-                    substr($encryptedString, 16),
-                    MCRYPT_MODE_CBC,
-                    substr($encryptedString, 0, 16)
-                )
+        if (mb_strlen($key, '8bit') !== 32) {
+            throw new \Exception('Key must be 256-bit long');
+        }
+
+        if (false !== ($message = base64_decode($message))) {
+            $ivLength = openssl_cipher_iv_length(self::METHOD);
+            $iv = mb_substr($message, 0, $ivLength, '8bit');
+            $ciphertext = mb_substr($message, $ivLength, null, '8bit');
+
+            return openssl_decrypt(
+                $ciphertext,
+                self::METHOD,
+                $key,
+                OPENSSL_RAW_DATA,
+                $iv
             );
-
-            if (null !== $encryptedString && null !== ($structure = json_decode($encryptedString, true))) {
-                $now = new \DateTime();
-
-                if (null === $structure['expiration'] || $structure['expiration'] <= $now->format(\DateTime::ISO8601)) {
-                    return $structure['data'];
-                }
-            }
         }
     }
 }
