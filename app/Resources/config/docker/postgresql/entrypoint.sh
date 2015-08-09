@@ -1,21 +1,13 @@
 #!/bin/bash
 set -e
 
-gosu postgres postgres --single -jE <<-EOSQL
-    ALTER DATABASE ${DB_NAME} OWNER TO ${POSTGRES_USER}
-EOSQL
+gosu postgres pg_ctl -w start
 
-gosu postgres postgres --single -jE ${DB_NAME} <<-EOSQL
-    ALTER SCHEMA public OWNER TO ${POSTGRES_USER}
-EOSQL
+gosu postgres psql -c "ALTER DATABASE ${DB_NAME} OWNER TO ${POSTGRES_USER}"
+gosu postgres psql -d ${DB_NAME} -c "ALTER SCHEMA public OWNER TO ${POSTGRES_USER}"
 
-gosu postgres postgres --single -jE <<-EOSQL
-    CREATE DATABASE ${DB_NAME}_test WITH OWNER ${POSTGRES_USER}
-EOSQL
+gosu postgres psql -c "CREATE DATABASE ${DB_NAME}_test WITH OWNER ${POSTGRES_USER}"
+gosu postgres psql -d ${DB_NAME}_test -c "ALTER SCHEMA public OWNER TO ${POSTGRES_USER}"
 
-gosu postgres postgres --single -jE ${DB_NAME}_test <<-EOSQL
-    ALTER SCHEMA public OWNER TO ${POSTGRES_USER}
-EOSQL
-
-gosu postgres postgres --single -jE ${DB_NAME} < /structure.sql
-gosu postgres postgres --single -jE ${DB_NAME} < /fixtures.sql
+gosu postgres psql -d ${DB_NAME} -a -f /srv/www/bagheera/app/Resources/config/docker/postgresql/structure.sql
+gosu postgres psql -d ${DB_NAME} -a -f /srv/www/bagheera/app/Resources/config/docker/postgresql/fixtures.sql

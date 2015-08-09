@@ -1,10 +1,6 @@
 FROM bagheera_base
 
 
-RUN wget --quiet -O - http://www.dotdeb.org/dotdeb.gpg | apt-key add -
-RUN echo 'deb http://packages.dotdeb.org wheezy-php55 all' > /etc/apt/sources.list.d/dotdeb.list
-RUN echo 'deb-src http://packages.dotdeb.org wheezy-php55 all' >> /etc/apt/sources.list.d/dotdeb.list
-RUN echo 'deb http://http.debian.net/debian wheezy-backports main' >> /etc/apt/sources.list
 RUN apt-get -y update && apt-get -y install \
     curl \
     acl \

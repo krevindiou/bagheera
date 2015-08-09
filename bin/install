@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
-project_name=$(basename "$project_dir")
-
-docker build --force-rm=true -t ${project_name}_base .
-
-"$project_dir"/bin/start
