@@ -7,8 +7,8 @@ base:
 postgresql:
   build: ./app/Resources/config/docker/postgresql
   environment:
-    - POSTGRES_USER=bagheera
-    - POSTGRES_PASSWORD=password
+    - DB_USER=bagheera
+    - DB_PASSWORD=password
     - DB_NAME=bagheera
   volumes_from:
     - base
