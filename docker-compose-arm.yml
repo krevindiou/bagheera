@@ -1,0 +1,28 @@
+base:
+  build: .
+  dockerfile: ./app/Resources/config/docker/base/arm.Dockerfile
+  volumes:
+    - .:/srv/www/bagheera
+
+postgresql:
+  build: ./app/Resources/config/docker/postgresql
+  environment:
+    - DB_USER=bagheera
+    - DB_PASSWORD=password
+    - DB_NAME=bagheera
+  volumes_from:
+    - base
+
+php:
+  build: ./app/Resources/config/docker/php
+  volumes_from:
+    - base
+  links:
+    - postgresql
+
+nginx:
+  build: ./app/Resources/config/docker/nginx
+  volumes_from:
+    - base
+  links:
+    - php
