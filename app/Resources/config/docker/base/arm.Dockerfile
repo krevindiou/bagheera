@@ -1,4 +1,4 @@
-FROM armbuild/debian
+FROM armbuild/debian:jessie
 
 
 RUN echo "Europe/Paris" > /etc/timezone
