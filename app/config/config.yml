@@ -55,7 +55,7 @@ doctrine:
     dbal:
         connections:
             default:
-                driver:   %database_driver%
+                driver:   pdo_pgsql
                 host:     %database_host%
                 port:     %database_port%
                 dbname:   %database_name%
@@ -63,7 +63,7 @@ doctrine:
                 password: %database_password%
                 charset:  UTF8
             secure:
-                driver:   %database_secure_driver%
+                driver:   pdo_pgsql
                 host:     %database_secure_host%
                 port:     %database_secure_port%
                 dbname:   %database_secure_name%

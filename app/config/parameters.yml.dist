@@ -1,27 +1,20 @@
 parameters:
-    database_driver: pdo_pgsql
-    database_host: postgresql
-    database_port:
-    database_name:
-    database_user:
-    database_password:
-
-    database_secure_driver: pdo_pgsql
-    database_secure_host: postgresql
-    database_secure_port:
-    database_secure_name:
-    database_secure_user:
-    database_secure_password:
-
+    database_host: bagheera_postgresql_1
+    database_port: ~
+    database_name: bagheera
+    database_user: ~
+    database_password: ~
+    database_secure_host: bagheera_postgresql_1
+    database_secure_port: ~
+    database_secure_name: bagheera
+    database_secure_user: ~
+    database_secure_password: ~
     mailer_transport: smtp
     mailer_host: localhost
-    mailer_user:
-    mailer_password:
-
+    mailer_user: ~
+    mailer_password: ~
     locale: en
-
     secret: secret
-
-    provider_axa_banque_base_uri:
+    provider_axa_banque_base_uri: 'https://sandbox-api.axabanque.fr'
     provider_axa_banque_client_id:
     provider_axa_banque_access_token:

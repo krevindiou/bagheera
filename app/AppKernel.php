@@ -41,19 +41,11 @@ class AppKernel extends Kernel
 
     public function getCacheDir()
     {
-        if (in_array($this->environment, ['dev', 'test'])) {
-            return '/dev/shm/bagheera/cache/' .  $this->environment;
-        }
-
-        return parent::getCacheDir();
+        return '/dev/shm/bagheera/cache/' .  $this->environment;
     }
 
     public function getLogDir()
     {
-        if (in_array($this->environment, ['dev', 'test'])) {
-            return '/dev/shm/bagheera/logs';
-        }
-
-        return parent::getLogDir();
+        return '/dev/shm/bagheera/logs';
     }
 }

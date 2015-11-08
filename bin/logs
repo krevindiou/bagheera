@@ -5,7 +5,7 @@ project_name=$(basename "$project_dir")
 env=$1
 
 if [ 'prod' == "$env" ]; then
-    docker-compose -f ${project_dir}/docker-compose-prod.yml stop "${@:2}"
+    docker-compose -f ${project_dir}/docker-compose-prod.yml logs "${@:2}"
 else
-    docker-compose -f ${project_dir}/docker-compose-dev.yml stop "${@:2}"
+    docker-compose -f ${project_dir}/docker-compose-dev.yml logs "${@:2}"
 fi

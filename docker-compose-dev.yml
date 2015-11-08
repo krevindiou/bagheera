@@ -4,17 +4,31 @@ base:
   volumes:
     - .:/srv/www/bagheera
 
-postgresql:
-  build: ./app/Resources/config/docker/postgresql
+postgresqldata:
+  image: bagheera_base
   environment:
-    - DB_USER=bagheera
-    - DB_PASSWORD=password
-    - DB_NAME=bagheera
+    - ENV=dev
+  volumes:
+    - /var/lib/postgresql
   volumes_from:
     - base
 
+postgresql:
+  build: ./app/Resources/config/docker/postgresql
+  restart: always
+  env_file: .docker-compose.env
+  environment:
+    - ENV=dev
+  volumes_from:
+    - base
+    - postgresqldata
+
 php:
   build: ./app/Resources/config/docker/php
+  restart: always
+  env_file: .docker-compose.env
+  environment:
+    - ENV=dev
   volumes_from:
     - base
   links:
@@ -22,6 +36,12 @@ php:
 
 nginx:
   build: ./app/Resources/config/docker/nginx
+  restart: always
+  environment:
+    - ENV=dev
+  ports:
+    - "80:80"
+    - "443:443"
   volumes_from:
     - base
   links:
