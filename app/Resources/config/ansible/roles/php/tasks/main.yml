@@ -1,0 +1,154 @@
+- name: Install packages
+  become: true
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+  with_items:
+    - acl
+    - php5-cli
+    - php5-fpm
+    - php5-mcrypt
+    - php5-intl
+    - php5-pgsql
+    - php5-curl
+    - php5-gd
+    - php5-xdebug
+    - php5-apcu
+    - nodejs-legacy
+
+- name: Fix CGI parameter
+  become: true
+  ini_file:
+    dest: /etc/php5/fpm/php.ini
+    section: PHP
+    option: cgi.fix_pathinfo
+    value: 0
+  notify: restart php
+
+- name: Set PHP timezone (fpm)
+  become: true
+  ini_file:
+    dest: /etc/php5/fpm/php.ini
+    section: PHP
+    option: date.timezone
+    value: '"Europe/Paris"'
+  notify: restart php
+
+- name: Set PHP timezone (cli)
+  become: true
+  ini_file:
+    dest: /etc/php5/cli/php.ini
+    section: PHP
+    option: date.timezone
+    value: '"Europe/Paris"'
+
+- name: Set realpath_cache_size (fpm)
+  become: true
+  ini_file:
+    dest: /etc/php5/fpm/php.ini
+    section: PHP
+    option: realpath_cache_size
+    value: '5120k'
+  notify: restart php
+
+- name: Set realpath_cache_size (cli)
+  become: true
+  ini_file:
+    dest: /etc/php5/cli/php.ini
+    section: PHP
+    option: realpath_cache_size
+    value: '5120k'
+
+- name: Set PHP-FPM port
+  become: true
+  ini_file:
+    dest: /etc/php5/fpm/pool.d/www.conf
+    section: www
+    option: listen
+    value: '9000'
+  notify: restart php
+
+- name: Set max_nesting_level
+  become: true
+  lineinfile:
+    dest: /etc/php5/fpm/conf.d/20-xdebug.ini
+    regexp: 'xdebug\.max_nesting_level.*'
+    line: 'xdebug.max_nesting_level=500'
+  when: env == 'dev'
+  notify: restart php
+
+- name: Deactivate Xdebug (fpm)
+  become: true
+  shell: rm -f /etc/php5/fpm/conf.d/20-xdebug.ini
+  when: env == 'prod'
+  notify: restart php
+
+- name: Deactivate Xdebug (cli)
+  become: true
+  shell: rm -f /etc/php5/cli/conf.d/20-xdebug.ini
+
+- name: Install mcrypt module
+  become: true
+  shell: php5enmod mcrypt
+
+- name: Install Composer
+  become: true
+  shell: wget --quiet https://getcomposer.org/installer -O - | php && mv composer.phar /usr/local/bin/composer
+
+- name: Install PHPUnit
+  become: true
+  shell: wget --quiet https://phar.phpunit.de/phpunit.phar -O /usr/local/bin/phpunit && chmod +x /usr/local/bin/phpunit
+  when: env == 'dev'
+
+- name: Install npm
+  become: true
+  shell: wget --quiet https://www.npmjs.org/install.sh -O - | sh
+
+- name: Create project tmp directories
+  become: true
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: www-data
+    group: www-data
+  with_items:
+    - /dev/shm/bagheera/cache
+    - /dev/shm/bagheera/logs
+
+- name: ACL
+  become: true
+  acl:
+    name: '{{ item }}'
+    entity: www-data
+    etype: user
+    permissions: rwX
+    recursive: yes
+    state: present
+  with_items:
+    - /dev/shm/bagheera/cache
+    - /dev/shm/bagheera/logs
+
+- name: ACL (default option)
+  become: true
+  acl:
+    name: '{{ item }}'
+    entity: www-data
+    etype: user
+    permissions: rwX
+    recursive: yes
+    default: yes
+    state: present
+  with_items:
+    - /dev/shm/bagheera/cache
+    - /dev/shm/bagheera/logs
+
+- name: Build project
+  become: true
+  shell: '{{ project_dir }}/bin/build {{ env }}'
+  environment:
+    DATABASE_NAME: '{{ database_name }}'
+    DATABASE_USER: '{{ database_user }}'
+    DATABASE_PASSWORD: '{{ database_password }}'
+    DATABASE_SECURE_NAME: '{{ database_secure_name }}'
+    DATABASE_SECURE_USER: '{{ database_secure_user }}'
+    DATABASE_SECURE_PASSWORD: '{{ database_secure_password }}'

@@ -1,0 +1,52 @@
+- name: Install packages
+  become: true
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+  with_items:
+    - postgresql-9.4
+    - postgresql-contrib-9.4
+    - postgresql-client-9.4
+    - pgtop
+
+- name: Create user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name: '{{ database_user }}'
+    password: '{{ database_password }}'
+    role_attr_flags: CREATEDB
+
+- name: Create database
+  become: true
+  postgresql_db:
+    login_host: 127.0.0.1
+    login_user: '{{ database_user }}'
+    login_password: '{{ database_password }}'
+    name: '{{ database_name }}'
+    owner: '{{ database_user }}'
+
+- name: Create test database
+  become: true
+  postgresql_db:
+    login_host: 127.0.0.1
+    login_user: '{{ database_user }}'
+    login_password: '{{ database_password }}'
+    name: '{{ database_name }}_test'
+    owner: '{{ database_user }}'
+  when: env == 'dev'
+
+- name: Create pgpass
+  become: true
+  copy:
+    content: 127.0.0.1:5432:{{ database_name }}:{{ database_user }}:{{ database_password }}
+    dest: ~/.pgpass
+    mode: 0600
+
+- name: Create db structure
+  become: true
+  shell: >
+    if psql -h 127.0.0.1 -U {{ database_user }} -d {{ database_name }} -c "\dt"|grep "No relations found"; then
+      psql -h 127.0.0.1 -U {{ database_user }} -d {{ database_name }} -f {{ project_dir }}/app/Resources/config/postgresql/structure.sql;
+      psql -h 127.0.0.1 -U {{ database_user }} -d {{ database_name }} -f {{ project_dir }}/app/Resources/config/postgresql/fixtures.sql;
+    fi

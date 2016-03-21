@@ -1,0 +1,10 @@
+- name: Install the web server
+  vars_files:
+    - group_vars/vault.yml
+    - group_vars/all.yml
+  hosts: all
+  roles:
+    - base
+    - postgresql
+    - php
+    - nginx

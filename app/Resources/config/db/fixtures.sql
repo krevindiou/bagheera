@@ -1,1 +1,0 @@
-../docker/postgresql/fixtures.sql

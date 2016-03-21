@@ -1,3 +1,4 @@
+/.vagrant/
 /web/bundles/
 /web/components/
 /app/bootstrap.php.cache
@@ -8,5 +9,6 @@
 /build/
 /vendor/
 /composer.phar
-/.docker-compose.env
+/web/css/*
+/web/js/*
 !.gitkeep

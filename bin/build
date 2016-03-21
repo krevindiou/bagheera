@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
+env=$1
+if [ "$env" == "" ] ; then
+    env="dev"
+fi
+
+#
+# NPM INSTALL
+#
+params=""
+if [ "$env" == "prod" ] ; then
+    params="--production"
+fi
+
+cmd="npm install --prefix ${project_dir}/app/Resources $params"
+eval $cmd
+
+#
+# COMPOSER INSTALL
+#
+params=""
+if [ "$env" == "prod" ] ; then
+    params="--no-dev --prefer-dist --optimize-autoloader"
+fi
+
+cmd="SYMFONY_ENV=$env composer --working-dir=${project_dir} --no-interaction install $params"
+eval $cmd
+
+${project_dir}/app/console cache:clear --env=$env
+${project_dir}/app/console assetic:dump --env=$env

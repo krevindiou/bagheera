@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-cid=$(docker ps -a|grep bagheera_php|cut -c 1-12)
-
-project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
-project_name=$(basename "$project_dir")
-
-docker exec -ti $cid phpunit -c /srv/www/bagheera/app $@

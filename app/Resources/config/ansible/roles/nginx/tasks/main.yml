@@ -1,0 +1,35 @@
+- name: Install packages
+  become: true
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+  with_items:
+    - nginx
+
+- name: Install ngxtop
+  become: true
+  pip:
+    name: ngxtop
+
+- name: Hide nginx infos
+  become: true
+  lineinfile:
+    dest: /etc/nginx/nginx.conf
+    backrefs: yes
+    regexp: '(\s*)# (server_tokens off;)'
+    line: '\1\2'
+  notify: restart nginx
+
+- name: Activate gzip
+  become: true
+  lineinfile:
+    dest: /etc/nginx/nginx.conf
+    backrefs: yes
+    regexp: '(\s*)# (gzip_types .*)'
+    line: '\1\2'
+  notify: restart nginx
+
+- name: Add nginx virtual host
+  become: true
+  shell: cp {{ project_dir }}/app/Resources/config/nginx/bagheera.{{ env }}.conf /etc/nginx/sites-available/default
+  notify: restart nginx

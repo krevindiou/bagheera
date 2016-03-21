@@ -1,0 +1,71 @@
+- name: Install packages
+  become: true
+  apt:
+    name: '{{ item }}'
+    update_cache: yes
+  with_items:
+    - python-httplib2 # Required by uri module
+    - python-psycopg2 # Required by postgresql_user module
+    - curl
+    - vim-nox
+    - fail2ban
+    - acl
+    - git
+    - htop
+    - python-pip
+
+- name: Change hostname
+  become: true
+  hostname:
+    name: '{{ hostname }}'
+
+- name: Adding host entry
+  become: true
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '^{{ hostvars[item].ansible_default_ipv4.address }} {{ hostname }}'
+    line: '{{ hostvars[item].ansible_default_ipv4.address }} {{ hostname }}'
+    insertafter: EOF
+  with_items: groups['all']
+
+- name: Generate locale
+  become: true
+  locale_gen:
+    name: en_US.UTF-8
+
+- name: Create project directory
+  become: true
+  file:
+    path: '{{ project_dir }}'
+    state: directory
+  when: vagrant == '0'
+
+- name: Stop PHP-FPM service
+  become: true
+  service:
+    name: php5-fpm
+    state: stopped
+  ignore_errors: yes
+
+- name: Change www-data home directory
+  become: true
+  user:
+    name: www-data
+    home: /srv/www
+
+- name: Keep SSH_AUTH_SOCK env var after sudo
+  become: true
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: SSH_AUTH_SOCK
+    line: Defaults env_keep += "SSH_AUTH_SOCK"
+  when: vagrant == '0'
+
+- name: Fetch project sources
+  become: true
+  git:
+    repo: git@bitbucket.org:krevindiou/bagheera.git
+    dest: '{{ project_dir }}'
+    ssh_opts: '-o StrictHostKeyChecking=no'
+  when: vagrant == '0'

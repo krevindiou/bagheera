@@ -62,7 +62,8 @@
     },
     "config": {
         "bin-dir": "bin",
-        "component-dir": "web/components"
+        "component-dir": "web/components",
+        "vendor-dir": "../bagheera_vendor"
     },
     "minimum-stability": "stable",
     "extra": {
