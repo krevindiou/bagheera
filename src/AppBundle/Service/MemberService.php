@@ -363,8 +363,8 @@ class MemberService
         if (null !== ($data = json_decode($data, true))) {
             if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' == $data['type']) {
                 $now = new \DateTime();
+                if ($data['expiration'] >= $now->format(\DateTime::ISO8601)) {
 
-                if ($data['expiration'] <= $now->format(\DateTime::ISO8601)) {
                     return $this->em->getRepository('AppBundle:Member')
                                     ->findOneBy(['email' => $data['email']]);
                 }
