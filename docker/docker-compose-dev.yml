@@ -1,0 +1,45 @@
+version: "3"
+services:
+  postgresql:
+    container_name: bagheera_postgresql
+    build:
+      context: ..
+      dockerfile: docker/postgresql/Dockerfile
+    image: bagheera_postgresql
+    restart: always
+    env_file: .docker-compose.env
+    environment:
+    - ENV=dev
+    volumes:
+    - ..:/srv/www/bagheera
+
+  php:
+    container_name: bagheera_php
+    build:
+      context: ..
+      dockerfile: docker/php/Dockerfile
+    image: bagheera_php
+    restart: always
+    env_file: .docker-compose.env
+    environment:
+    - ENV=dev
+    - SYMFONY_ENV=dev
+    - NODE_ENV=dev
+    volumes:
+    - ..:/srv/www/bagheera
+    links:
+    - postgresql
+
+  nginx:
+    container_name: bagheera_nginx
+    build:
+      context: ..
+      dockerfile: docker/nginx/Dockerfile
+    image: bagheera_nginx
+    restart: always
+    environment:
+    - ENV=dev
+    volumes:
+    - ..:/srv/www/bagheera
+    links:
+    - php

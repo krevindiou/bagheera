@@ -1,12 +1,12 @@
 parameters:
     database_host: 127.0.0.1
     database_port: ~
-    database_name: ~
+    database_name: bagheera
     database_user: ~
     database_password: ~
     database_secure_host: 127.0.0.1
     database_secure_port: ~
-    database_secure_name: ~
+    database_secure_name: bagheera
     database_secure_user: ~
     database_secure_password: ~
     mailer_transport: smtp

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+cid=$(docker ps -a | grep bagheera_php | cut -c 1-12)
+
+if [[ -z $cid ]]; then
+    echo 'Container not found!'
+    exit 1
+fi
+
+docker exec -ti "$cid" phpunit -c /srv/www/bagheera/app "$@"

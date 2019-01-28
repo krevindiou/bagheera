@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+cid=$(docker ps -a | grep bagheera_nginx | cut -c 1-12)
+
+if [[ -z $cid ]]; then
+    echo 'Container not found!'
+    exit 1
+fi
+
+if [[ $(uname -s) = 'Darwin' ]]; then
+    alias 'xdg-open'='open'
+fi
+
+ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$cid")
+if [[ -z $ip ]]; then
+    echo 'IP not found!'
+    exit 1
+fi
+
+xdg-open "http://$ip"

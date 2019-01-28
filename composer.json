@@ -63,7 +63,7 @@
     "config": {
         "bin-dir": "bin",
         "component-dir": "web/components",
-        "vendor-dir": "../bagheera_vendor"
+        "secure-http": false
     },
     "minimum-stability": "stable",
     "extra": {
@@ -73,12 +73,14 @@
         "incenteev-parameters": {
             "file": "app/config/parameters.yml",
             "env-map": {
-                "database_name": "DATABASE_NAME",
-                "database_user": "DATABASE_USER",
-                "database_password": "DATABASE_PASSWORD",
-                "database_secure_name": "DATABASE_SECURE_NAME",
-                "database_secure_user": "DATABASE_SECURE_USER",
-                "database_secure_password": "DATABASE_SECURE_PASSWORD"
+                "database_host": "POSTGRES_HOST",
+                "database_name": "POSTGRES_DB",
+                "database_user": "POSTGRES_USER",
+                "database_password": "POSTGRES_PASSWORD",
+                "database_secure_host": "POSTGRES_SECURE_HOST",
+                "database_secure_name": "POSTGRES_SECURE_DB",
+                "database_secure_user": "POSTGRES_SECURE_USER",
+                "database_secure_password": "POSTGRES_SECURE_PASSWORD"
             }
         }
     },

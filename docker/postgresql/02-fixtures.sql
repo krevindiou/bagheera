@@ -1,0 +1,1 @@
+../../app/Resources/config/db/fixtures.sql

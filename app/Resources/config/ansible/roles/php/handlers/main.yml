@@ -1,5 +1,0 @@
-- name: restart php
-  become: true
-  service:
-    name: php5-fpm
-    state: restarted

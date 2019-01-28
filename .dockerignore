@@ -1,0 +1,4 @@
+app/logs
+app/cache
+app/Resources/node_modules
+vendor
