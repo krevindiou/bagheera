@@ -51,7 +51,7 @@ class OperationSearchController extends Controller
     {
         $operationSearchService = $this->get('app.operation_search');
 
-        if (isset($request->request->get('operation_search')['clear'])) {
+        if (isset($request->request->get('app_operation_search')['clear'])) {
             $operationSearchService->clearSessionSearch($account);
         } else {
             $operationSearch = $operationSearchService->getSessionSearch($account);
@@ -65,7 +65,7 @@ class OperationSearchController extends Controller
 
             if ($operationSearchForm->isSubmitted()) {
                 if ($operationSearchForm->isValid()) {
-                    $operationSearchService->setSessionSearch($account, $request->request->get('operation_search'));
+                    $operationSearchService->setSessionSearch($account, $request->request->get('app_operation_search'));
                 }
             }
         }
