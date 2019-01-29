@@ -1,8 +1,5 @@
 <?php
 
-/**
- * This file is part of the Bagheera project, a personal finance manager.
- */
 namespace AppBundle\Service;
 
 use Symfony\Component\Form\Form;

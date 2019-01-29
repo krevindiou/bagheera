@@ -1,8 +1,5 @@
 <?php
 
-/**
- * This file is part of the Bagheera project, a personal finance manager.
- */
 namespace AppBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
