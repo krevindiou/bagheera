@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
-cid=$(docker ps -a | grep bagheera_php | cut -c 1-12)
+php_cid=$(docker ps -a | grep bagheera_php | cut -c 1-12)
+postgresql_cid=$(docker ps -a | grep bagheera_postgresql | cut -c 1-12)
 
-if [[ -z $cid ]]; then
+if [[ -z $php_cid || -z $postgresql_cid ]]; then
     echo 'Container not found!'
     exit 1
 fi
 
-docker exec -ti "$cid" phpunit -c /srv/www/bagheera/app "$@"
+if ! docker exec -ti "$postgresql_cid" psql -U bagheera -lqt | awk '{print $1}' | grep -qw bagheera_test; then
+    docker exec -ti "$postgresql_cid" createdb -U bagheera bagheera_test
+fi
+
+docker exec -ti "$php_cid" phpunit -c /srv/www/bagheera/app "$@"
