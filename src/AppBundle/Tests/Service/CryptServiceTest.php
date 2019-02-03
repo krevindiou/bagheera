@@ -10,7 +10,10 @@ class CryptServiceTest extends TestCase
     {
         $iv = hex2bin('c9cb372e627ce7f0c17742a71b76bc4a');
 
-        $stub = $this->getMock('AppBundle\Service\CryptService', array('getRandomIv'));
+        $stub = $this
+            ->getMockBuilder('AppBundle\Service\CryptService')
+            ->setMethods(array('getRandomIv'))
+            ->getMock();
         $stub->method('getRandomIv')
              ->willReturn($iv);
 
