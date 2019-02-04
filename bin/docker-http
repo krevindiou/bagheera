@@ -17,4 +17,9 @@ if [[ -z $ip ]]; then
     exit 1
 fi
 
+while [[ $(curl -Lso /dev/null -w '%{response_code}' "http://$ip") != 200 ]]; do
+    echo 'Waiting for nginx startup'
+    sleep 2
+done
+
 xdg-open "http://$ip"
