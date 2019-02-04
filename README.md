@@ -1,4 +1,7 @@
-# Bagheera, a personal finance manager
+# Bagheera
+A personal finance manager
+
+[![Build Status](https://travis-ci.org/krevindiou/bagheera.svg?branch=master)](https://travis-ci.org/krevindiou/bagheera)
 
 ## Install
 - Install Docker and Docker Compose

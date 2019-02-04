@@ -8,6 +8,24 @@ if [[ -z $php_cid || -z $postgresql_cid ]]; then
     exit 1
 fi
 
+php_ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$php_cid")
+postgresql_ip=$(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$postgresql_cid")
+
+if [[ -z $php_ip || -z $postgresql_ip ]]; then
+    echo 'IP not found!'
+    exit 1
+fi
+
+while ! nc -zv "$php_ip" 9000 &>/dev/null; do
+    echo 'Waiting for php startup'
+    sleep 2
+done
+
+while ! nc -zv "$postgresql_ip" 5432 &>/dev/null; do
+    echo 'Waiting for postgresql startup'
+    sleep 2
+done
+
 if ! docker exec -ti "$postgresql_cid" psql -U bagheera -lqt | awk '{print $1}' | grep -qw bagheera_test; then
     docker exec -ti "$postgresql_cid" createdb -U bagheera bagheera_test
 fi

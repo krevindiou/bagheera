@@ -14,5 +14,3 @@ if [[ $env = 'prod' ]]; then
 fi
 
 docker-compose -f "$project_dir/docker/docker-compose-$suffix.yml" up -d "${@:2}"
-
-"$project_dir/bin/docker-logs"

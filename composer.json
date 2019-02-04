@@ -73,6 +73,7 @@
         "incenteev-parameters": {
             "file": "app/config/parameters.yml",
             "env-map": {
+                "secret": "SECRET",
                 "database_host": "POSTGRES_HOST",
                 "database_name": "POSTGRES_DB",
                 "database_user": "POSTGRES_USER",
