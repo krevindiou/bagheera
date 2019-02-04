@@ -9,4 +9,7 @@ before_install:
   - ./bin/docker-start
 
 script:
-  - ./bin/docker-phpunit
+  - ./bin/docker-phpunit --coverage-clover=coverage.xml
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

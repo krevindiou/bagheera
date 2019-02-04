@@ -2,6 +2,7 @@
 A personal finance manager
 
 [![Build Status](https://travis-ci.org/krevindiou/bagheera.svg?branch=master)](https://travis-ci.org/krevindiou/bagheera)
+[![Code Coverage](https://codecov.io/gh/krevindiou/bagheera/branch/master/graph/badge.svg)](https://codecov.io/gh/krevindiou/bagheera)
 
 ## Install
 - Install Docker and Docker Compose
