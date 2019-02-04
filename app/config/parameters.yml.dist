@@ -15,6 +15,3 @@ parameters:
     mailer_password: ~
     locale: en
     secret: secret
-    provider_axa_banque_base_uri: 'https://sandbox-api.axabanque.fr'
-    provider_axa_banque_client_id:
-    provider_axa_banque_access_token:
