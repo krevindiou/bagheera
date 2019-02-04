@@ -103,7 +103,6 @@ operation:
     notes: "Notes"
     transfer_account: "Transfer account"
     external_account: "External account"
-    category: "Category"
     delete_button: "Delete"
     reconcile_button: "Reconcile"
     delete_confirmation: "Operations deleted"
