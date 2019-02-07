@@ -8,7 +8,7 @@ security:
             algorithm: bcrypt
 
     role_hierarchy:
-        ROLE_ADMIN:       ROLE_USER
+        ROLE_ADMIN: ROLE_USER
         ROLE_SUPER_ADMIN: [ROLE_USER, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
 
     providers:
@@ -17,16 +17,16 @@ security:
 
     firewalls:
         dev:
-            pattern:  ^/(_(profiler|wdt)|css|images|js)/
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
         secured_area:
-            pattern:    ^/
+            pattern: ^/
             form_login:
-                login_path:  member_login
-                check_path:  login_check
-            logout:     ~
-            anonymous:  ~
+                login_path: member_login
+                check_path: login_check
+            logout: ~
+            anonymous: ~
 
     access_control:
         - { path: "^/[a-z]{2}/manager", roles: ROLE_USER }

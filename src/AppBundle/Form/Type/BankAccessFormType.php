@@ -4,7 +4,8 @@ namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -37,7 +38,7 @@ class BankAccessFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'bank_access.form_submit_button',
                     'attr' => [
@@ -47,7 +48,7 @@ class BankAccessFormType extends AbstractType
             );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

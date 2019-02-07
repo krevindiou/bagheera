@@ -6,7 +6,11 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -19,14 +23,14 @@ class OperationSearchFormType extends AbstractType
         $builder
             ->add(
                 'type',
-                'choice',
+                ChoiceType::class,
                 [
                     'label' => 'operation.type',
                     'expanded' => true,
                     'required' => true,
                     'choices' => [
-                        'debit' => 'operation.type_debit',
-                        'credit' => 'operation.type_credit',
+                        'operation.type_debit' => 'debit',
+                        'operation.type_credit' => 'credit',
                     ],
                 ]
             )
@@ -66,7 +70,7 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'valueDateStart',
-                'date',
+                DateType::class,
                 [
                     'label' => 'operation.search_value_date_start',
                     'widget' => 'single_text',
@@ -79,7 +83,7 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'valueDateEnd',
-                'date',
+                DateType::class,
                 [
                     'label' => 'operation.search_value_date_end',
                     'widget' => 'single_text',
@@ -103,20 +107,20 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'reconciled',
-                'choice',
+                ChoiceType::class,
                 [
                     'label' => 'operation.reconciled',
                     'required' => false,
-                    'empty_value' => 'operation.search_reconciled_both',
+                    'placeholder' => 'operation.search_reconciled_both',
                     'choices' => [
-                        1 => 'operation.search_only_reconciled',
-                        0 => 'operation.search_only_not_reconciled',
+                        'operation.search_only_reconciled' => 1,
+                        'operation.search_only_not_reconciled' => 0,
                     ],
                 ]
             )
             ->add(
                 'search',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'operation.search_form_submit_button',
                     'attr' => [
@@ -126,7 +130,7 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'clear',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'operation.search_form_clear_button',
                     'attr' => [
@@ -146,17 +150,17 @@ class OperationSearchFormType extends AbstractType
                 $form
                     ->add(
                         'amount_comparator_1',
-                        'choice',
+                        ChoiceType::class,
                         [
                             'mapped' => false,
                             'required' => false,
-                            'empty_value' => '',
+                            'placeholder' => '',
                             'choices' => [
-                                'inferiorTo' => '<',
-                                'inferiorOrEqualTo' => '<=',
-                                'equalTo' => '=',
-                                'superiorOrEqualTo' => '>=',
-                                'superiorTo' => '>',
+                                '<' => 'inferiorTo',
+                                '<=' => 'inferiorOrEqualTo',
+                                '=' => 'equalTo',
+                                '>=' => 'superiorOrEqualTo',
+                                '>' => 'superiorTo',
                             ],
                             'attr' => [
                                 'class' => 'input-mini',
@@ -165,7 +169,7 @@ class OperationSearchFormType extends AbstractType
                     )
                     ->add(
                         'amount_1',
-                        'money',
+                        MoneyType::class,
                         [
                             'label' => 'operation.amount',
                             'currency' => $account->getCurrency(),
@@ -177,17 +181,17 @@ class OperationSearchFormType extends AbstractType
                     )
                     ->add(
                         'amount_comparator_2',
-                        'choice',
+                        ChoiceType::class,
                         [
                             'mapped' => false,
                             'required' => false,
-                            'empty_value' => '',
+                            'placeholder' => '',
                             'choices' => [
-                                'inferiorTo' => '<',
-                                'inferiorOrEqualTo' => '<=',
-                                'equalTo' => '=',
-                                'superiorOrEqualTo' => '>=',
-                                'superiorTo' => '>',
+                                '<' => 'inferiorTo',
+                                '<=' => 'inferiorOrEqualTo',
+                                '=' => 'equalTo',
+                                '>=' => 'superiorOrEqualTo',
+                                '>' => 'superiorTo',
                             ],
                             'attr' => [
                                 'class' => 'input-mini',
@@ -196,7 +200,7 @@ class OperationSearchFormType extends AbstractType
                     )
                     ->add(
                         'amount_2',
-                        'money',
+                        MoneyType::class,
                         [
                             'label' => 'operation.amount',
                             'currency' => $account->getCurrency(),
@@ -253,7 +257,7 @@ class OperationSearchFormType extends AbstractType
         );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

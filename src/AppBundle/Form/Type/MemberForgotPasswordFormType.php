@@ -6,6 +6,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use AppBundle\Constraint\FieldExists;
 use JMS\DiExtraBundle\Annotation as DI;
 
@@ -19,7 +21,7 @@ class MemberForgotPasswordFormType extends AbstractType
         $builder
             ->add(
                 'email',
-                'email',
+                EmailType::class,
                 [
                     'label' => 'member.email',
                     'constraints' => [
@@ -34,7 +36,7 @@ class MemberForgotPasswordFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'member.forgot_password.submit_button',
                     'attr' => [

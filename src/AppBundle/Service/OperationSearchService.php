@@ -7,6 +7,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 use AppBundle\Entity\Member;
 use AppBundle\Entity\Account;
 use AppBundle\Entity\OperationSearch;
+use AppBundle\Form\Type\OperationSearchFormType;
 
 /**
  * @DI\Service("app.operation_search")
@@ -20,8 +21,8 @@ class OperationSearchService
     /** @DI\Inject("form.factory") */
     public $formFactory;
 
-    /** @DI\Inject("service_container") */
-    public $container;
+    /** @DI\Inject("request_stack") */
+    public $requestStack;
 
     /**
      * Returns operationSearch form.
@@ -41,7 +42,7 @@ class OperationSearchService
             return;
         }
 
-        return $this->formFactory->create('app_operation_search', $operationSearch);
+        return $this->formFactory->create(OperationSearchFormType::class, $operationSearch);
     }
 
     /**
@@ -53,7 +54,7 @@ class OperationSearchService
      */
     public function getSessionSearch(Account $account)
     {
-        $sessionSearch = $this->container->get('request')->getSession()->get('search');
+        $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
         if (is_array($sessionSearch) && isset($sessionSearch[$account->getAccountId()])) {
             $operationSearch = new OperationSearch();
@@ -140,11 +141,11 @@ class OperationSearchService
      */
     public function setSessionSearch(Account $account, array $search)
     {
-        $sessionSearch = $this->container->get('request')->getSession()->get('search');
+        $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
         $sessionSearch[$account->getAccountId()] = $search;
 
-        $this->container->get('request')->getSession()->set('search', $sessionSearch);
+        $this->requestStack->getCurrentRequest()->getSession()->set('search', $sessionSearch);
     }
 
     /**
@@ -154,11 +155,11 @@ class OperationSearchService
      */
     public function clearSessionSearch(Account $account)
     {
-        $sessionSearch = $this->container->get('request')->getSession()->get('search');
+        $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
         if (is_array($sessionSearch) && isset($sessionSearch[$account->getAccountId()])) {
             unset($sessionSearch[$account->getAccountId()]);
-            $this->container->get('request')->getSession()->set('search', $sessionSearch);
+            $this->requestStack->getCurrentRequest()->getSession()->set('search', $sessionSearch);
         }
     }
 }

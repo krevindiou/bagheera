@@ -2,12 +2,17 @@
 
 namespace AppBundle\Form\Type;
 
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -20,15 +25,15 @@ class OperationFormType extends AbstractType
         $builder
             ->add(
                 'type',
-                'choice',
+                ChoiceType::class,
                 [
                     'label' => 'operation.type',
                     'mapped' => false,
                     'expanded' => true,
                     'required' => true,
                     'choices' => [
-                        'debit' => 'operation.type_debit',
-                        'credit' => 'operation.type_credit',
+                        'operation.type_debit' => 'debit',
+                        'operation.type_credit' => 'credit',
                     ],
                     'constraints' => [
                         new Assert\NotBlank(),
@@ -51,7 +56,7 @@ class OperationFormType extends AbstractType
                 null,
                 [
                     'label' => 'operation.category',
-                    'empty_value' => '',
+                    'placeholder' => '',
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => [
@@ -64,7 +69,7 @@ class OperationFormType extends AbstractType
                 null,
                 [
                     'label' => 'operation.payment_method',
-                    'empty_value' => '',
+                    'placeholder' => '',
                     'group_by' => 'type',
                     'attr' => [
                         'class' => 'input-medium',
@@ -73,7 +78,7 @@ class OperationFormType extends AbstractType
             )
             ->add(
                 'valueDate',
-                'date',
+                DateType::class,
                 [
                     'label' => 'operation.value_date',
                     'widget' => 'single_text',
@@ -104,7 +109,7 @@ class OperationFormType extends AbstractType
             )
             ->add(
                 'save',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'operation.form_submit_button',
                     'attr' => [
@@ -114,7 +119,7 @@ class OperationFormType extends AbstractType
             )
             ->add(
                 'saveCreate',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'operation.form_submit_create_button',
                     'attr' => [
@@ -134,7 +139,7 @@ class OperationFormType extends AbstractType
                 $form
                     ->add(
                         'amount',
-                        'money',
+                        MoneyType::class,
                         [
                             'label' => 'operation.amount',
                             'currency' => $account->getCurrency(),
@@ -149,11 +154,11 @@ class OperationFormType extends AbstractType
                     )
                     ->add(
                         'transferAccount',
-                        'entity',
+                        EntityType::class,
                         [
                             'label' => 'operation.transfer_account',
                             'required' => false,
-                            'empty_value' => 'operation.external_account',
+                            'placeholder' => 'operation.external_account',
                             'class' => 'AppBundle:Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                 return $repository->createQueryBuilder('a')
@@ -206,7 +211,7 @@ class OperationFormType extends AbstractType
         );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

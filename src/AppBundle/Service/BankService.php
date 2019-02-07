@@ -7,6 +7,8 @@ use Symfony\Component\Process\PhpExecutableFinder;
 use JMS\DiExtraBundle\Annotation as DI;
 use AppBundle\Entity\Member;
 use AppBundle\Entity\Bank;
+use AppBundle\Form\Type\BankChooseFormType;
+use AppBundle\Form\Type\BankUpdateFormType;
 
 /**
  * @DI\Service("app.bank")
@@ -110,9 +112,9 @@ class BankService
     public function getForm(Member $member, Bank $bank = null)
     {
         if (null === $bank) {
-            return $this->formFactory->create('app_bank_choose', null, ['member' => $member]);
+            return $this->formFactory->create(BankChooseFormType::class, null, ['member' => $member]);
         } elseif ($member === $bank->getMember()) {
-            return $this->formFactory->create('app_bank_update', $bank);
+            return $this->formFactory->create(BankUpdateFormType::class, $bank);
         }
     }
 

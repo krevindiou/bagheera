@@ -1,8 +1,8 @@
 <?php
 
-namespace AppBundle\Tests\Entity;
+namespace Tests\AppBundle\Entity;
 
-use AppBundle\Tests\TestCase;
+use Tests\AppBundle\TestCase;
 use AppBundle\Entity\Scheduler;
 
 class SchedulerTest extends TestCase

@@ -11,6 +11,7 @@ use AppBundle\Entity\Account;
 use AppBundle\Entity\Operation;
 use AppBundle\Entity\OperationSearch;
 use AppBundle\Entity\PaymentMethod;
+use AppBundle\Form\Type\OperationFormType;
 
 /**
  * @DI\Service("app.operation")
@@ -244,7 +245,7 @@ class OperationService
             return;
         }
 
-        return $this->formFactory->create('app_operation', $operation);
+        return $this->formFactory->create(OperationFormType::class, $operation);
     }
 
     /**

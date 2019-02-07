@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Tests;
+namespace Tests\AppBundle;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -31,10 +31,10 @@ class TestCase extends WebTestCase
 
         self::$conn->exec('DROP SCHEMA IF EXISTS public CASCADE');
 
-        $sql = file_get_contents(__DIR__.'/../../../app/Resources/config/db/structure.sql');
+        $sql = file_get_contents(__DIR__.'/../../app/Resources/config/db/structure.sql');
         self::$conn->exec($sql);
 
-        $sql = file_get_contents(__DIR__.'/../../../app/Resources/config/db/fixtures.sql');
+        $sql = file_get_contents(__DIR__.'/../../app/Resources/config/db/fixtures.sql');
         self::$conn->exec($sql);
     }
 

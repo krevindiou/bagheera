@@ -2,11 +2,15 @@
 
 namespace AppBundle\Form\Type;
 
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\CurrencyType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -29,7 +33,7 @@ class AccountFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'account.form_submit_button',
                     'attr' => [
@@ -51,10 +55,10 @@ class AccountFormType extends AbstractType
                 $form
                     ->add(
                         'bank',
-                        'entity',
+                        EntityType::class,
                         [
                             'label' => 'account.bank',
-                            'empty_value' => '',
+                            'placeholder' => '',
                             'class' => 'AppBundle:Bank',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                 return $repository->createQueryBuilder('b')
@@ -72,7 +76,7 @@ class AccountFormType extends AbstractType
                     )
                     ->add(
                         'currency',
-                        'currency',
+                        CurrencyType::class,
                         [
                             'label' => 'account.currency',
                             'disabled' => $edit,
@@ -84,7 +88,7 @@ class AccountFormType extends AbstractType
                     )
                     ->add(
                         'overdraftFacility',
-                        'money',
+                        MoneyType::class,
                         [
                             'label' => 'account.overdraft_facility',
                             'currency' => $account->getCurrency() ?: false,
@@ -99,7 +103,7 @@ class AccountFormType extends AbstractType
                     $form
                         ->add(
                             'initialBalance',
-                            'money',
+                            MoneyType::class,
                             [
                                 'label' => 'account.initial_balance',
                                 'mapped' => false,
@@ -116,7 +120,7 @@ class AccountFormType extends AbstractType
         );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

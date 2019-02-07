@@ -6,7 +6,7 @@ framework:
     session:
         storage_id: session.storage.mock_file
     profiler:
-        enabled: false
+        collect: false
 
 web_profiler:
     toolbar: false
@@ -19,9 +19,9 @@ doctrine:
     dbal:
         connections:
             default:
-                dbname:   %database_name%_test
+                dbname: '%database_name%_test'
 security:
     firewalls:
         secured_area:
             http_basic: ~
-            anonymous:  ~
+            anonymous: ~

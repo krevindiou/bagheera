@@ -4,8 +4,13 @@ namespace AppBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
-use Symfony\Component\Locale\Locale;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Intl\Intl;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\CountryType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -24,7 +29,7 @@ class MemberRegisterFormType extends AbstractType
             if (count($languageParts) > 1) {
                 $country = $languageParts[1];
 
-                $countries = Locale::getDisplayCountries('en');
+                $countries = Intl::getRegionBundle()->getCountryNames('en');
                 if (isset($countries[$country])) {
                     $preferredChoice = $country;
                 }
@@ -34,7 +39,7 @@ class MemberRegisterFormType extends AbstractType
         $builder
             ->add(
                 'email',
-                'email',
+                EmailType::class,
                 [
                     'label' => 'member.email',
                     'attr' => [
@@ -44,7 +49,7 @@ class MemberRegisterFormType extends AbstractType
             )
             ->add(
                 'country',
-                'country',
+                CountryType::class,
                 [
                     'label' => 'member.country',
                     'preferred_choices' => [$preferredChoice],
@@ -55,9 +60,9 @@ class MemberRegisterFormType extends AbstractType
             )
             ->add(
                 'plainPassword',
-                'repeated',
+                RepeatedType::class,
                 [
-                    'type' => 'password',
+                    'type' => PasswordType::class,
                     'first_options' => ['label' => 'member.password'],
                     'second_options' => ['label' => 'member.password_confirmation'],
                     'invalid_message' => 'member.password_fields_must_match',
@@ -70,7 +75,7 @@ class MemberRegisterFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'member.register.submit_button',
                     'attr' => [
@@ -80,7 +85,7 @@ class MemberRegisterFormType extends AbstractType
             );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

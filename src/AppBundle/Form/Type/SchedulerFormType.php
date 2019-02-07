@@ -2,12 +2,17 @@
 
 namespace AppBundle\Form\Type;
 
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -20,15 +25,15 @@ class SchedulerFormType extends AbstractType
         $builder
             ->add(
                 'type',
-                'choice',
+                ChoiceType::class,
                 [
                     'label' => 'scheduler.type',
                     'mapped' => false,
                     'expanded' => true,
                     'required' => true,
                     'choices' => [
-                        'debit' => 'scheduler.type_debit',
-                        'credit' => 'scheduler.type_credit',
+                        'scheduler.type_debit' => 'debit',
+                        'scheduler.type_credit' => 'credit',
                     ],
                     'constraints' => [
                         new Assert\NotBlank(),
@@ -51,7 +56,7 @@ class SchedulerFormType extends AbstractType
                 null,
                 [
                     'label' => 'scheduler.category',
-                    'empty_value' => '',
+                    'placeholder' => '',
                     'required' => false,
                     'group_by' => 'type',
                     'attr' => [
@@ -64,7 +69,7 @@ class SchedulerFormType extends AbstractType
                 null,
                 [
                     'label' => 'scheduler.payment_method',
-                    'empty_value' => '',
+                    'placeholder' => '',
                     'group_by' => 'type',
                     'attr' => [
                         'class' => 'input-medium',
@@ -73,7 +78,7 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'valueDate',
-                'date',
+                DateType::class,
                 [
                     'label' => 'scheduler.value_date',
                     'widget' => 'single_text',
@@ -85,7 +90,7 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'limitDate',
-                'date',
+                DateType::class,
                 [
                     'label' => 'scheduler.limit_date',
                     'widget' => 'single_text',
@@ -98,14 +103,14 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'frequencyUnit',
-                'choice',
+                ChoiceType::class,
                  [
                     'label' => 'scheduler.frequency_unit',
                     'choices' => [
-                        'day' => 'scheduler.frequency_unit_day',
-                        'week' => 'scheduler.frequency_unit_week',
-                        'month' => 'scheduler.frequency_unit_month',
-                        'year' => 'scheduler.frequency_unit_year',
+                        'scheduler.frequency_unit_day' => 'day',
+                        'scheduler.frequency_unit_week' => 'week',
+                        'scheduler.frequency_unit_month' => 'month',
+                        'scheduler.frequency_unit_year' => 'year',
                     ],
                     'attr' => [
                         'class' => 'input-small',
@@ -151,7 +156,7 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'scheduler.form_submit_button',
                     'attr' => [
@@ -171,7 +176,7 @@ class SchedulerFormType extends AbstractType
                 $form
                     ->add(
                         'amount',
-                        'money',
+                        MoneyType::class,
                         [
                             'label' => 'scheduler.amount',
                             'currency' => $account->getCurrency(),
@@ -186,11 +191,11 @@ class SchedulerFormType extends AbstractType
                     )
                     ->add(
                         'transferAccount',
-                        'entity',
+                        EntityType::class,
                         [
                             'label' => 'scheduler.transfer_account',
                             'required' => false,
-                            'empty_value' => 'scheduler.external_account',
+                            'placeholder' => 'scheduler.external_account',
                             'class' => 'AppBundle:Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                 return $repository->createQueryBuilder('a')
@@ -243,7 +248,7 @@ class SchedulerFormType extends AbstractType
         );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

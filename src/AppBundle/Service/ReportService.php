@@ -7,6 +7,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 use AppBundle\Entity\Member;
 use AppBundle\Entity\Account;
 use AppBundle\Entity\Report;
+use AppBundle\Form\Type\ReportFormType;
 
 /**
  * @DI\Service("app.report")
@@ -172,7 +173,7 @@ class ReportService
             return;
         }
 
-        return $this->formFactory->create('app_report', $report);
+        return $this->formFactory->create(ReportFormType::class, $report);
     }
 
     /**

@@ -6,6 +6,10 @@ use Symfony\Component\Form\Form;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use JMS\DiExtraBundle\Annotation as DI;
 use AppBundle\Entity\Member;
+use AppBundle\Form\Type\MemberChangePasswordFormType;
+use AppBundle\Form\Type\MemberForgotPasswordFormType;
+use AppBundle\Form\Type\MemberProfileFormType;
+use AppBundle\Form\Type\MemberRegisterFormType;
 
 /**
  * @DI\Service("app.member")
@@ -82,7 +86,7 @@ class MemberService
     public function getRegisterForm($language)
     {
         return $this->formFactory->create(
-            'app_member_register',
+            MemberRegisterFormType::class,
             new Member(),
             ['attr' => ['language' => $language]]
         );
@@ -97,7 +101,7 @@ class MemberService
      */
     public function getProfileForm(Member $member)
     {
-        return $this->formFactory->create('app_member_profile', $member);
+        return $this->formFactory->create(MemberProfileFormType::class, $member);
     }
 
     /**
@@ -251,7 +255,7 @@ class MemberService
      */
     public function getForgotPasswordForm()
     {
-        return $this->formFactory->create('app_member_forgot_password');
+        return $this->formFactory->create(MemberForgotPasswordFormType::class);
     }
 
     /**
@@ -301,7 +305,7 @@ class MemberService
      */
     public function getChangePasswordForm()
     {
-        return $this->formFactory->create('app_member_change_password');
+        return $this->formFactory->create(MemberChangePasswordFormType::class);
     }
 
     /**

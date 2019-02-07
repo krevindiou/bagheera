@@ -1,8 +1,8 @@
 <?php
 
-namespace AppBundle\Tests\Service;
+namespace Tests\AppBundle\Service;
 
-use AppBundle\Tests\TestCase;
+use Tests\AppBundle\TestCase;
 use AppBundle\Entity\Account;
 
 class AccountServiceTest extends TestCase

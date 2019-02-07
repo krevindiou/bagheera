@@ -6,6 +6,9 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -18,9 +21,9 @@ class MemberChangePasswordFormType extends AbstractType
         $builder
             ->add(
                 'password',
-                'repeated',
+                RepeatedType::class,
                 [
-                    'type' => 'password',
+                    'type' => PasswordType::class,
                     'first_options' => ['label' => 'member.password'],
                     'second_options' => ['label' => 'member.password_confirmation'],
                     'invalid_message' => 'member.password_fields_must_match',
@@ -35,7 +38,7 @@ class MemberChangePasswordFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'member.change_password.submit_button',
                     'attr' => [

@@ -5,7 +5,6 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use AppBundle\Entity\Account;
 
 /**
@@ -14,9 +13,7 @@ use AppBundle\Entity\Account;
 class OperationSearchController extends Controller
 {
     /**
-     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form")
-     *
-     * @Method("GET")
+     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
      */
     public function formAction(Request $request, Account $account, $display = true)
     {
@@ -40,15 +37,13 @@ class OperationSearchController extends Controller
     }
 
     /**
-     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit")
-     *
-     * @Method("POST")
+     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit", methods={"POST"})
      */
     public function submitAction(Request $request, Account $account)
     {
         $operationSearchService = $this->get('app.operation_search');
 
-        if (isset($request->request->get('app_operation_search')['clear'])) {
+        if (isset($request->request->get('operation_search_form')['clear'])) {
             $operationSearchService->clearSessionSearch($account);
         } else {
             $operationSearch = $operationSearchService->getSessionSearch($account);
@@ -62,7 +57,7 @@ class OperationSearchController extends Controller
 
             if ($operationSearchForm->isSubmitted()) {
                 if ($operationSearchForm->isValid()) {
-                    $operationSearchService->setSessionSearch($account, $request->request->get('app_operation_search'));
+                    $operationSearchService->setSessionSearch($account, $request->request->get('operation_search_form'));
                 }
             }
         }

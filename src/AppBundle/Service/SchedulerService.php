@@ -12,6 +12,7 @@ use AppBundle\Entity\Account;
 use AppBundle\Entity\Operation;
 use AppBundle\Entity\Scheduler;
 use AppBundle\Entity\PaymentMethod;
+use AppBundle\Form\Type\SchedulerFormType;
 
 /**
  * @DI\Service("app.scheduler")
@@ -172,7 +173,7 @@ class SchedulerService
             }
         }
 
-        return $this->formFactory->create('app_scheduler', $scheduler);
+        return $this->formFactory->create(SchedulerFormType::class, $scheduler);
     }
 
     /**

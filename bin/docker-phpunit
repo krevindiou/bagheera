@@ -30,4 +30,4 @@ if ! docker exec -ti "$postgresql_cid" psql -U bagheera -lqt | awk '{print $1}' 
     docker exec -ti "$postgresql_cid" createdb -U bagheera bagheera_test
 fi
 
-docker exec -ti "$php_cid" phpunit -c /srv/www/bagheera/app "$@"
+docker exec -ti "$php_cid" phpunit -c /srv/www/bagheera "$@"

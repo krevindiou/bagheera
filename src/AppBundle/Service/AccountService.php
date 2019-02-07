@@ -9,6 +9,7 @@ use AppBundle\Entity\Bank;
 use AppBundle\Entity\Account;
 use AppBundle\Entity\Operation;
 use AppBundle\Entity\PaymentMethod;
+use AppBundle\Form\Type\AccountFormType;
 
 /**
  * @DI\Service("app.account")
@@ -85,7 +86,7 @@ class AccountService
             $account->setBank($bank);
         }
 
-        return $this->formFactory->create('app_account', $account, ['member' => $member]);
+        return $this->formFactory->create(AccountFormType::class, $account, ['member' => $member]);
     }
 
     /**
@@ -102,7 +103,7 @@ class AccountService
             return;
         }
 
-        return $this->formFactory->create('app_account', $account, ['member' => $member]);
+        return $this->formFactory->create(AccountFormType::class, $account, ['member' => $member]);
     }
 
     /**

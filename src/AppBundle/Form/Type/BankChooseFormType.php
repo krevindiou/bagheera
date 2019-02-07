@@ -2,12 +2,14 @@
 
 namespace AppBundle\Form\Type;
 
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormError;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -22,7 +24,7 @@ class BankChooseFormType extends AbstractType
         $builder
             ->add(
                 'provider',
-                'entity',
+                EntityType::class,
                 [
                     'label' => 'bank.auto',
                     'class' => 'AppBundle:Provider',
@@ -34,7 +36,7 @@ class BankChooseFormType extends AbstractType
             )
             ->add(
                 'bank',
-                'entity',
+                EntityType::class,
                 [
                     'label' => 'bank.manual',
                     'class' => 'AppBundle:Bank',
@@ -56,7 +58,7 @@ class BankChooseFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'bank.form_submit_button',
                     'attr' => [
@@ -83,7 +85,7 @@ class BankChooseFormType extends AbstractType
         );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setRequired(['member']);
     }

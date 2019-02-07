@@ -2,12 +2,19 @@
 
 namespace AppBundle\Form\Type;
 
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormEvent;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -38,7 +45,7 @@ class ReportFormType extends AbstractType
             )
             ->add(
                 'submit',
-                'submit',
+                SubmitType::class,
                 [
                     'label' => 'report.form_submit_button',
                     'attr' => [
@@ -61,7 +68,7 @@ class ReportFormType extends AbstractType
                     $form
                         ->add(
                             'valueDateStart',
-                            'date',
+                            DateType::class,
                             [
                                 'label' => 'report.value_date_start',
                                 'widget' => 'single_text',
@@ -74,7 +81,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'valueDateEnd',
-                            'date',
+                            DateType::class,
                             [
                                 'label' => 'report.value_date_end',
                                 'widget' => 'single_text',
@@ -87,7 +94,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'thirdParties',
-                            'text',
+                            TextType::class,
                             [
                                 'label' => 'report.third_parties',
                                 'required' => false,
@@ -102,7 +109,7 @@ class ReportFormType extends AbstractType
                             null,
                             [
                                 'label' => 'report.categories',
-                                'empty_value' => '',
+                                'placeholder' => '',
                                 'required' => false,
                                 'group_by' => 'type',
                                 'attr' => [
@@ -115,7 +122,7 @@ class ReportFormType extends AbstractType
                             null,
                             [
                                 'label' => 'report.payment_methods',
-                                'empty_value' => '',
+                                'placeholder' => '',
                                 'required' => false,
                                 'group_by' => 'type',
                                 'attr' => [
@@ -126,7 +133,7 @@ class ReportFormType extends AbstractType
                         */
                         ->add(
                             'accounts',
-                            'entity',
+                            EntityType::class,
                             [
                                 'label' => 'report.accounts',
                                 'class' => 'AppBundle:Account',
@@ -140,7 +147,7 @@ class ReportFormType extends AbstractType
                                         ->setParameter('member', $member)
                                         ->add('orderBy', 'b.name ASC, a.name ASC');
                                 },
-                                'empty_value' => '',
+                                'placeholder' => '',
                                 'required' => false,
                                 'multiple' => true,
                                 'attr' => [
@@ -150,7 +157,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'reconciledOnly',
-                            'checkbox',
+                            CheckboxType::class,
                             [
                                 'label' => 'report.reconciled_only',
                                 'required' => false,
@@ -163,16 +170,16 @@ class ReportFormType extends AbstractType
                     $form
                         ->add(
                             'periodGrouping',
-                            'choice',
+                            ChoiceType::class,
                             [
                                 'label' => 'report.period_grouping',
                                 'choices' => [
-                                    'month' => 'report.period_grouping_month',
-                                    'quarter' => 'report.period_grouping_quarter',
-                                    'year' => 'report.period_grouping_year',
-                                    'all' => 'report.period_grouping_all',
+                                    'report.period_grouping_month' => 'month',
+                                    'report.period_grouping_quarter' => 'quarter',
+                                    'report.period_grouping_year' => 'year',
+                                    'report.period_grouping_all' => 'all',
                                 ],
-                                'empty_value' => '',
+                                'placeholder' => '',
                                 'attr' => [
                                     'class' => 'input-small',
                                 ],
@@ -185,15 +192,15 @@ class ReportFormType extends AbstractType
                     $form
                         ->add(
                             'dataGrouping',
-                            'choice',
+                            ChoiceType::class,
                             [
                                 'label' => 'report.data_grouping',
                                 'choices' => [
-                                    'category' => 'report.data_grouping_category',
-                                    'third_party' => 'report.data_grouping_third_party',
-                                    'payment_method' => 'report.data_grouping_payment_method',
+                                    'report.data_grouping_category' => 'category',
+                                    'report.data_grouping_third_party' => 'third_party',
+                                    'report.data_grouping_payment_method' => 'payment_method',
                                 ],
-                                'empty_value' => '',
+                                'placeholder' => '',
                                 'attr' => [
                                     'class' => 'input-small',
                                 ],
@@ -216,7 +223,7 @@ class ReportFormType extends AbstractType
                     $form
                         ->add(
                             'monthExpenses',
-                            'money',
+                            MoneyType::class,
                             [
                                 'label' => 'report.month_expenses',
                                 'currency' => false,
@@ -227,7 +234,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'monthIncomes',
-                            'money',
+                            MoneyType::class,
                             [
                                 'label' => 'report.month_incomes',
                                 'currency' => false,
@@ -238,7 +245,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'estimateDurationValue',
-                            'text',
+                            TextType::class,
                             [
                                 'label' => 'report.estimate_duration_value',
                                 'attr' => [
@@ -248,14 +255,14 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'estimateDurationUnit',
-                            'choice',
+                            ChoiceType::class,
                             [
                                 'label' => 'report.estimate_duration_unit',
                                 'choices' => [
-                                    'month' => 'report.estimate_duration_unit_month',
-                                    'year' => 'report.estimate_duration_unit_year',
+                                    'report.estimate_duration_unit_month' => 'month',
+                                    'report.estimate_duration_unit_year' => 'year',
                                 ],
-                                'empty_value' => '',
+                                'placeholderplaceholder' => '',
                                 'attr' => [
                                     'class' => 'input-small',
                                 ],
@@ -267,7 +274,7 @@ class ReportFormType extends AbstractType
         );
     }
 
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(
             [

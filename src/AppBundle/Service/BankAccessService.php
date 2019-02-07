@@ -7,6 +7,7 @@ use JMS\DiExtraBundle\Annotation as DI;
 use AppBundle\Entity\Member;
 use AppBundle\Entity\Bank;
 use AppBundle\Entity\BankAccess;
+use AppBundle\Form\Type\BankAccessFormType;
 
 /**
  * @DI\Service("app.bank_access")
@@ -55,7 +56,7 @@ class BankAccessService
         $bankAccess = new BankAccess();
         $bankAccess->setBankId($bank->getBankId());
 
-        return $this->formFactory->create('app_bank_access', $bankAccess);
+        return $this->formFactory->create(BankAccessFormType::class, $bankAccess);
     }
 
     /**
