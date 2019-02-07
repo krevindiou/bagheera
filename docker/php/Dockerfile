@@ -1,4 +1,4 @@
-FROM php:5.6-fpm
+FROM php:7.3-fpm
 
 RUN usermod -u 1000 www-data
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y zip git
 
 # mcrypt
 RUN apt-get update && apt-get install -y libmcrypt-dev
-RUN docker-php-ext-install mcrypt
+RUN yes '' | pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt
 
 # postgresql
 RUN apt-get update && apt-get install -y libpq-dev
@@ -18,14 +18,14 @@ RUN docker-php-ext-install pdo_pgsql
 
 # intl
 RUN apt-get update && apt-get install -y libicu-dev
-RUN pecl install intl-3.0.0 && docker-php-ext-enable intl
+RUN docker-php-ext-install intl
 
 # xdebug
-RUN pecl install xdebug-2.5.5 && docker-php-ext-enable xdebug
+RUN pecl install xdebug-2.7.0RC1 && docker-php-ext-enable xdebug
 RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 
 # apc
-RUN pecl install apcu-4.0.11 && docker-php-ext-enable apcu
+RUN yes '' | pecl install apcu-5.1.16 && docker-php-ext-enable apcu
 
 # phpunit
 RUN curl -L -o /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-5.phar
