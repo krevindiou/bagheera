@@ -16,6 +16,10 @@ RUN yes '' | pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt
 RUN apt-get update && apt-get install -y libpq-dev
 RUN docker-php-ext-install pdo_pgsql
 
+# zip
+RUN apt-get update && apt-get install -y libzip-dev
+RUN docker-php-ext-install zip
+
 # intl
 RUN apt-get update && apt-get install -y libicu-dev
 RUN docker-php-ext-install intl
