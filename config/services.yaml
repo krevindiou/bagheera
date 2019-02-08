@@ -1,0 +1,20 @@
+parameters:
+    locale: 'en'
+    email:
+        sender_name: Bagheera
+        sender_email: contact@bagheera-manager.com
+    categories_id:
+        salary: 21
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
