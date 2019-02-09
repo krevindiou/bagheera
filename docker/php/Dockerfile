@@ -31,6 +31,9 @@ RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 # apc
 RUN yes '' | pecl install apcu-5.1.16 && docker-php-ext-enable apcu
 
+# opcache
+RUN docker-php-ext-install opcache
+
 # phpunit
 RUN curl -L -o /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-5.phar
 RUN chmod +x /usr/local/bin/phpunit
