@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -44,7 +44,7 @@ class BankUpdateFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Bank',
+                'data_class' => 'App\Entity\Bank',
             ]
         );
     }

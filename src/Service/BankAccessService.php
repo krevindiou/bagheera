@@ -1,13 +1,13 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Bank;
-use AppBundle\Entity\BankAccess;
-use AppBundle\Form\Type\BankAccessFormType;
+use App\Entity\Member;
+use App\Entity\Bank;
+use App\Entity\BankAccess;
+use App\Form\Type\BankAccessFormType;
 
 /**
  * @DI\Service("app.bank_access")
@@ -69,12 +69,12 @@ class BankAccessService
      */
     protected function doSave(Member $member, BankAccess $bankAccess)
     {
-        $bank = $this->em->find('AppBundle:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
 
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                $dql = 'DELETE FROM AppBundle:BankAccess b ';
+                $dql = 'DELETE FROM App:BankAccess b ';
                 $dql .= 'WHERE b.bankId = :bankId ';
 
                 $this->emSecure->createQuery($dql)

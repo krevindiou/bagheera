@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -89,7 +89,7 @@ class MemberRegisterFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Member',
+                'data_class' => 'App\Entity\Member',
                 'validation_groups' => ['Default', 'password'],
             ]
         );

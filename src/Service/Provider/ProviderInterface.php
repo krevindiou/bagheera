@@ -1,8 +1,8 @@
 <?php
 
-namespace AppBundle\Service\Provider;
+namespace App\Service\Provider;
 
-use AppBundle\Entity\Account;
+use App\Entity\Account;
 
 interface ProviderInterface
 {

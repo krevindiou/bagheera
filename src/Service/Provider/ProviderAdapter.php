@@ -1,11 +1,11 @@
 <?php
 
-namespace AppBundle\Service\Provider;
+namespace App\Service\Provider;
 
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\BankAccess;
+use App\Entity\Account;
+use App\Entity\BankAccess;
 
 /**
  * @DI\Service("app.provider_adapter")
@@ -37,7 +37,7 @@ class ProviderAdapter
      */
     public function setBankAccess(BankAccess $bankAccess)
     {
-        $bank = $this->em->find('AppBundle:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
 
         if (null !== $bank) {
             $provider = $bank->getProvider();

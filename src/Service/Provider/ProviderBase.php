@@ -1,12 +1,12 @@
 <?php
 
-namespace AppBundle\Service\Provider;
+namespace App\Service\Provider;
 
 use Symfony\Bridge\Monolog\Logger;
-use AppBundle\Service\AccountImportService;
-use AppBundle\Entity\Bank;
-use AppBundle\Entity\BankAccess;
-use AppBundle\Entity\Account;
+use App\Service\AccountImportService;
+use App\Entity\Bank;
+use App\Entity\BankAccess;
+use App\Entity\Account;
 
 abstract class ProviderBase
 {

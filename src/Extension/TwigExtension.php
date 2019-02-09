@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Extension;
+namespace App\Extension;
 
 use JMS\DiExtraBundle\Annotation as DI;
 

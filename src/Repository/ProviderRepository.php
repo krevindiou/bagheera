@@ -1,9 +1,9 @@
 <?php
 
-namespace AppBundle\Repository;
+namespace App\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use AppBundle\Entity\Member;
+use App\Entity\Member;
 
 class ProviderRepository extends EntityRepository
 {
@@ -11,7 +11,7 @@ class ProviderRepository extends EntityRepository
     {
         // Retrieve used providers
         $dql = 'SELECT p.providerId ';
-        $dql .= 'FROM AppBundle:Bank b ';
+        $dql .= 'FROM App:Bank b ';
         $dql .= 'JOIN b.provider p ';
         $dql .= 'WHERE b.member = :member ';
         $dql .= 'AND b.provider IS NOT NULL ';

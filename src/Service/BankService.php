@@ -1,14 +1,14 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use Symfony\Component\Process\PhpExecutableFinder;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Bank;
-use AppBundle\Form\Type\BankChooseFormType;
-use AppBundle\Form\Type\BankUpdateFormType;
+use App\Entity\Member;
+use App\Entity\Bank;
+use App\Form\Type\BankChooseFormType;
+use App\Form\Type\BankUpdateFormType;
 
 /**
  * @DI\Service("app.bank")
@@ -224,7 +224,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->em->find('AppBundle:Bank', $bankId);
+                $bank = $this->em->find('App:Bank', $bankId);
 
                 if (null !== $bank) {
                     if ($member === $bank->getMember()) {
@@ -255,7 +255,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->em->find('AppBundle:Bank', $bankId);
+                $bank = $this->em->find('App:Bank', $bankId);
 
                 if (null !== $bank) {
                     if ($member === $bank->getMember()) {

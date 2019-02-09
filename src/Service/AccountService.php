@@ -1,15 +1,15 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Bank;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\Operation;
-use AppBundle\Entity\PaymentMethod;
-use AppBundle\Form\Type\AccountFormType;
+use App\Entity\Member;
+use App\Entity\Bank;
+use App\Entity\Account;
+use App\Entity\Operation;
+use App\Entity\PaymentMethod;
+use App\Form\Type\AccountFormType;
 
 /**
  * @DI\Service("app.account")
@@ -46,7 +46,7 @@ class AccountService
      */
     public function getList(Member $member, Bank $bank = null, $deleted = true)
     {
-        $dql = 'SELECT a FROM AppBundle:Account a ';
+        $dql = 'SELECT a FROM App:Account a ';
         $dql .= 'JOIN a.bank b ';
         $dql .= 'WHERE b.member = :member ';
         if (null !== $bank) {
@@ -174,7 +174,7 @@ class AccountService
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
-                $operation->setPaymentMethod($this->em->find('AppBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
+                $operation->setPaymentMethod($this->em->find('App:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
                 if ($form->get('initialBalance')->getData() > 0) {
                     $operation->setCredit(abs($form->get('initialBalance')->getData()));
                 } else {
@@ -204,7 +204,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find('AppBundle:Account', $accountId);
+                $account = $this->em->find('App:Account', $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -235,7 +235,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find('AppBundle:Account', $accountId);
+                $account = $this->em->find('App:Account', $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -269,7 +269,7 @@ class AccountService
 
         if ($member === $account->getBank()->getMember()) {
             $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
-            $dql .= 'FROM AppBundle:Operation o ';
+            $dql .= 'FROM App:Operation o ';
             $dql .= 'WHERE o.account = :account ';
             if ($reconciledOnly) {
                 $dql .= 'AND o.reconciled = true ';

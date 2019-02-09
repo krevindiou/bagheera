@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -21,43 +21,43 @@ class Scheduler
     protected $schedulerId;
 
     /**
-     * @var AppBundle\Entity\Account
+     * @var App\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Account")
+     * @Assert\Type(type="App\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;
 
     /**
-     * @var AppBundle\Entity\Account
+     * @var App\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
-     * @Assert\Type(type="AppBundle\Entity\Account")
+     * @Assert\Type(type="App\Entity\Account")
      * @Assert\Valid()
      */
     protected $transferAccount;
 
     /**
-     * @var AppBundle\Entity\Category
+     * @var App\Entity\Category
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     * @Assert\Type(type="AppBundle\Entity\Category")
+     * @Assert\Type(type="App\Entity\Category")
      * @Assert\Valid()
      */
     protected $category;
 
     /**
-     * @var AppBundle\Entity\PaymentMethod
+     * @var App\Entity\PaymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\PaymentMethod")
+     * @Assert\Type(type="App\Entity\PaymentMethod")
      * @Assert\Valid()
      */
     protected $paymentMethod;
@@ -400,7 +400,7 @@ class Scheduler
     /**
      * Set account.
      *
-     * @param AppBundle\Entity\Account $account
+     * @param App\Entity\Account $account
      */
     public function setAccount(Account $account)
     {
@@ -410,7 +410,7 @@ class Scheduler
     /**
      * Get account.
      *
-     * @return AppBundle\Entity\Account
+     * @return App\Entity\Account
      */
     public function getAccount()
     {
@@ -420,7 +420,7 @@ class Scheduler
     /**
      * Set transferAccount.
      *
-     * @param AppBundle\Entity\Account $transferAccount
+     * @param App\Entity\Account $transferAccount
      */
     public function setTransferAccount(Account $transferAccount = null)
     {
@@ -430,7 +430,7 @@ class Scheduler
     /**
      * Get transferAccount.
      *
-     * @return AppBundle\Entity\Account
+     * @return App\Entity\Account
      */
     public function getTransferAccount()
     {
@@ -440,7 +440,7 @@ class Scheduler
     /**
      * Set category.
      *
-     * @param AppBundle\Entity\Category $category
+     * @param App\Entity\Category $category
      */
     public function setCategory(Category $category = null)
     {
@@ -450,7 +450,7 @@ class Scheduler
     /**
      * Get category.
      *
-     * @return AppBundle\Entity\Category
+     * @return App\Entity\Category
      */
     public function getCategory()
     {
@@ -460,7 +460,7 @@ class Scheduler
     /**
      * Set paymentMethod.
      *
-     * @param AppBundle\Entity\PaymentMethod $paymentMethod
+     * @param App\Entity\PaymentMethod $paymentMethod
      */
     public function setPaymentMethod(PaymentMethod $paymentMethod = null)
     {
@@ -470,7 +470,7 @@ class Scheduler
     /**
      * Get paymentMethod.
      *
-     * @return AppBundle\Entity\PaymentMethod
+     * @return App\Entity\PaymentMethod
      */
     public function getPaymentMethod()
     {

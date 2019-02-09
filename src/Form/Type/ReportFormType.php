@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -136,7 +136,7 @@ class ReportFormType extends AbstractType
                             EntityType::class,
                             [
                                 'label' => 'report.accounts',
-                                'class' => 'AppBundle:Account',
+                                'class' => 'App:Account',
                                 'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                     return $repository->createQueryBuilder('a')
                                         ->innerJoin('a.bank', 'b')
@@ -278,7 +278,7 @@ class ReportFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Report',
+                'data_class' => 'App\Entity\Report',
                 'validation_groups' => function (FormInterface $form) {
                     return ['Default', $form->getData()->getType()];
                 },

@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Service\Provider;
+namespace App\Service\Provider;
 
 class ArrayConverter
 {

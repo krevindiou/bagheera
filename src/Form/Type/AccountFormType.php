@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -59,7 +59,7 @@ class AccountFormType extends AbstractType
                         [
                             'label' => 'account.bank',
                             'placeholder' => '',
-                            'class' => 'AppBundle:Bank',
+                            'class' => 'App:Bank',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                                 return $repository->createQueryBuilder('b')
                                     ->where('b.member = :member')
@@ -124,7 +124,7 @@ class AccountFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Account',
+                'data_class' => 'App\Entity\Account',
             ]
         );
 

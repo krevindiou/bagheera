@@ -1,14 +1,14 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use AppBundle\Entity\Report;
-use AppBundle\Entity\Account;
+use App\Entity\Report;
+use App\Entity\Account;
 
 /**
  * @Route("/manager")
@@ -27,7 +27,7 @@ class ReportController extends Controller
         $reports = $this->get('app.report')->getList($member);
 
         return $this->render(
-            'AppBundle:Report:list.html.twig',
+            'App:Report:list.html.twig',
             [
                 'reports' => $reports,
             ]
@@ -56,7 +56,7 @@ class ReportController extends Controller
     /**
      * @Route("/report-{reportId}", requirements={"reportId" = "\d+"}, name="report_update")
      * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
-     * @ParamConverter("report", class="AppBundle:Report", options={"id" = "reportId"})
+     * @ParamConverter("report", class="App:Report", options={"id" = "reportId"})
      */
     public function formAction(Request $request, Report $report = null, $type = null)
     {
@@ -78,7 +78,7 @@ class ReportController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Report:form.html.twig',
+            'App:Report:form.html.twig',
             [
                 'reportForm' => $reportForm->createView(),
             ]
@@ -105,7 +105,7 @@ class ReportController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Report:graph.js.twig',
+            'App:Report:graph.js.twig',
             [
                 'graphs' => $graphs,
             ]
@@ -123,7 +123,7 @@ class ReportController extends Controller
         $graph = $this->get('app.report')->getSynthesis($member, null, null, $account);
 
         if (!empty($graph)) {
-            return $this->render('AppBundle:Report:synthesis.js.twig', $graph);
+            return $this->render('App:Report:synthesis.js.twig', $graph);
         }
 
         throw $this->createNotFoundException();

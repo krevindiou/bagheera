@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\AppBundle\Service;
+namespace App\Tests\Service;
 
-use Tests\AppBundle\TestCase;
+use App\Tests\TestCase;
 
 class CryptServiceTest extends TestCase
 {
@@ -11,7 +11,7 @@ class CryptServiceTest extends TestCase
         $iv = hex2bin('c9cb372e627ce7f0c17742a71b76bc4a');
 
         $stub = $this
-            ->getMockBuilder('AppBundle\Service\CryptService')
+            ->getMockBuilder('App\Service\CryptService')
             ->setMethods(array('getRandomIv'))
             ->getMock();
         $stub->method('getRandomIv')

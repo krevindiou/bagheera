@@ -1,12 +1,12 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Repository\OperationRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\OperationRepository")
  * @ORM\Table(
  *  name="operation",
  *  indexes={@ORM\Index(name="external_operation_id_idx", columns={"external_operation_id"})}
@@ -31,63 +31,63 @@ class Operation
     protected $externalOperationId;
 
     /**
-     * @var AppBundle\Entity\Scheduler
+     * @var App\Entity\Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
-     * @Assert\Type(type="AppBundle\Entity\Scheduler")
+     * @Assert\Type(type="App\Entity\Scheduler")
      * @Assert\Valid()
      */
     protected $scheduler;
 
     /**
-     * @var AppBundle\Entity\Account
+     * @var App\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Account")
+     * @Assert\Type(type="App\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;
 
     /**
-     * @var AppBundle\Entity\Account
+     * @var App\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
-     * @Assert\Type(type="AppBundle\Entity\Account")
+     * @Assert\Type(type="App\Entity\Account")
      * @Assert\Valid()
      */
     protected $transferAccount;
 
     /**
-     * @var AppBundle\Entity\Operation
+     * @var App\Entity\Operation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
-     * @Assert\Type(type="AppBundle\Entity\Operation")
+     * @Assert\Type(type="App\Entity\Operation")
      * @Assert\Valid()
      */
     protected $transferOperation;
 
     /**
-     * @var AppBundle\Entity\Category
+     * @var App\Entity\Category
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     * @Assert\Type(type="AppBundle\Entity\Category")
+     * @Assert\Type(type="App\Entity\Category")
      * @Assert\Valid()
      */
     protected $category;
 
     /**
-     * @var AppBundle\Entity\PaymentMethod
+     * @var App\Entity\PaymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\PaymentMethod")
+     * @Assert\Type(type="App\Entity\PaymentMethod")
      * @Assert\Valid()
      */
     protected $paymentMethod;
@@ -191,7 +191,7 @@ class Operation
     /**
      * Set transferAccount.
      *
-     * @param AppBundle\Entity\Account $transferAccount
+     * @param App\Entity\Account $transferAccount
      */
     public function setTransferAccount(Account $transferAccount = null)
     {
@@ -201,7 +201,7 @@ class Operation
     /**
      * Get transferAccount.
      *
-     * @return AppBundle\Entity\Account
+     * @return App\Entity\Account
      */
     public function getTransferAccount()
     {
@@ -211,7 +211,7 @@ class Operation
     /**
      * Set transferOperation.
      *
-     * @param AppBundle\Entity\Operation $transferOperation
+     * @param App\Entity\Operation $transferOperation
      */
     public function setTransferOperation(Operation $transferOperation = null)
     {
@@ -229,7 +229,7 @@ class Operation
     /**
      * Get transferOperation.
      *
-     * @return AppBundle\Entity\Operation
+     * @return App\Entity\Operation
      */
     public function getTransferOperation()
     {
@@ -389,7 +389,7 @@ class Operation
     /**
      * Set account.
      *
-     * @param AppBundle\Entity\Account $account
+     * @param App\Entity\Account $account
      */
     public function setAccount(Account $account)
     {
@@ -399,7 +399,7 @@ class Operation
     /**
      * Get account.
      *
-     * @return AppBundle\Entity\Account
+     * @return App\Entity\Account
      */
     public function getAccount()
     {
@@ -409,7 +409,7 @@ class Operation
     /**
      * Set category.
      *
-     * @param AppBundle\Entity\Category $category
+     * @param App\Entity\Category $category
      */
     public function setCategory(Category $category = null)
     {
@@ -419,7 +419,7 @@ class Operation
     /**
      * Get category.
      *
-     * @return AppBundle\Entity\Category
+     * @return App\Entity\Category
      */
     public function getCategory()
     {
@@ -429,7 +429,7 @@ class Operation
     /**
      * Set paymentMethod.
      *
-     * @param AppBundle\Entity\PaymentMethod $paymentMethod
+     * @param App\Entity\PaymentMethod $paymentMethod
      */
     public function setPaymentMethod(PaymentMethod $paymentMethod = null)
     {
@@ -439,7 +439,7 @@ class Operation
     /**
      * Get paymentMethod.
      *
-     * @return AppBundle\Entity\PaymentMethod
+     * @return App\Entity\PaymentMethod
      */
     public function getPaymentMethod()
     {
@@ -449,7 +449,7 @@ class Operation
     /**
      * Set scheduler.
      *
-     * @param AppBundle\Entity\Scheduler $scheduler
+     * @param App\Entity\Scheduler $scheduler
      */
     public function setScheduler(Scheduler $scheduler = null)
     {
@@ -459,7 +459,7 @@ class Operation
     /**
      * Get scheduler.
      *
-     * @return AppBundle\Entity\Scheduler
+     * @return App\Entity\Scheduler
      */
     public function getScheduler()
     {

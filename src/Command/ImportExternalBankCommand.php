@@ -1,12 +1,12 @@
 <?php
 
-namespace AppBundle\Command;
+namespace App\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use AppBundle\Entity\Account;
+use App\Entity\Account;
 
 class ImportExternalBankCommand extends ContainerAwareCommand
 {
@@ -24,10 +24,10 @@ class ImportExternalBankCommand extends ContainerAwareCommand
         $em = $this->getContainer()->get('doctrine')->getManager();
         $secureEm = $this->getContainer()->get('doctrine')->getManager('secure');
 
-        $bank = $em->find('AppBundle:Bank', $input->getArgument('bank_id'));
+        $bank = $em->find('App:Bank', $input->getArgument('bank_id'));
 
         if (null !== $bank) {
-            $bankAccess = $secureEm->find('AppBundle:BankAccess', $bank->getBankId());
+            $bankAccess = $secureEm->find('App:BankAccess', $bank->getBankId());
 
             if (null !== $bankAccess) {
                 $accountService = $this->getContainer()->get('app.account');

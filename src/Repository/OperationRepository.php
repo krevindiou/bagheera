@@ -1,17 +1,17 @@
 <?php
 
-namespace AppBundle\Repository;
+namespace App\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\Member;
+use App\Entity\Account;
+use App\Entity\Member;
 
 class OperationRepository extends EntityRepository
 {
     public function getLastExternalOperationId(Account $account)
     {
         $dql = 'SELECT o.externalOperationId ';
-        $dql .= 'FROM AppBundle:Operation o ';
+        $dql .= 'FROM App:Operation o ';
         $dql .= 'WHERE o.account = :account ';
         $dql .= 'ORDER BY o.externalOperationId DESC ';
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\AppBundle\Service;
+namespace App\Tests\Service;
 
-use Tests\AppBundle\TestCase;
+use App\Tests\TestCase;
 
 class CategoryServiceTest extends TestCase
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use AppBundle\Entity\Account;
+use App\Entity\Account;
 
 /**
  * @Route("/manager")
@@ -27,7 +27,7 @@ class OperationSearchController extends Controller
         }
 
         return $this->render(
-            'AppBundle:OperationSearch:form.html.twig',
+            'App:OperationSearch:form.html.twig',
             [
                 'account' => $account,
                 'operationSearchForm' => $operationSearchForm->createView(),

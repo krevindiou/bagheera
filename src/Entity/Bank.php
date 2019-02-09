@@ -1,13 +1,13 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass="AppBundle\Repository\BankRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\BankRepository")
  * @ORM\Table(name="bank")
  */
 class Bank
@@ -22,22 +22,22 @@ class Bank
     protected $bankId;
 
     /**
-     * @var AppBundle\Entity\Member
+     * @var App\Entity\Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Member")
+     * @Assert\Type(type="App\Entity\Member")
      * @Assert\Valid()
      */
     protected $member;
 
     /**
-     * @var AppBundle\Entity\Provider
+     * @var App\Entity\Provider
      *
      * @ORM\ManyToOne(targetEntity="Provider")
      * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id", nullable=true)
-     * @Assert\Type(type="AppBundle\Entity\Provider")
+     * @Assert\Type(type="App\Entity\Provider")
      * @Assert\Valid()
      */
     protected $provider;
@@ -122,7 +122,7 @@ class Bank
     /**
      * Set member.
      *
-     * @param AppBundle\Entity\Member $member
+     * @param App\Entity\Member $member
      */
     public function setMember(Member $member)
     {
@@ -132,7 +132,7 @@ class Bank
     /**
      * Get member.
      *
-     * @return AppBundle\Entity\Member
+     * @return App\Entity\Member
      */
     public function getMember()
     {
@@ -142,7 +142,7 @@ class Bank
     /**
      * Set provider.
      *
-     * @param AppBundle\Entity\Provider $provider
+     * @param App\Entity\Provider $provider
      */
     public function setProvider(Provider $provider = null)
     {

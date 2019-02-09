@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\AppBundle\Service;
+namespace App\Tests\Service;
 
-use Tests\AppBundle\TestCase;
-use AppBundle\Entity\Bank;
+use App\Tests\TestCase;
+use App\Entity\Bank;
 
 class BankServiceTest extends TestCase
 {
@@ -11,13 +11,13 @@ class BankServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('AppBundle:Member', 1);
-        $this->jane = $this->em->find('AppBundle:Member', 2);
+        $this->john = $this->em->find('App:Member', 1);
+        $this->jane = $this->em->find('App:Member', 2);
     }
 
     public function testGetFormForForeignMember()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
         $form = $this->get('app.bank')->getForm($this->jane, $hsbc);
         $this->assertNull($form);
     }
@@ -30,7 +30,7 @@ class BankServiceTest extends TestCase
 
     public function testGetFormForExistingBank()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
         $form = $this->get('app.bank')->getForm($this->john, $hsbc);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
@@ -59,37 +59,37 @@ class BankServiceTest extends TestCase
 
     public function testSaveExistingBankWithBadData()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
         $hsbc->setName('');
         $this->assertFalse($this->get('app.bank')->save($this->john, $hsbc));
     }
 
     public function testSaveExistingBankWithForeignMember()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
         $this->assertFalse($this->get('app.bank')->save($this->jane, $hsbc));
     }
 
     public function testSaveExistingBank()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
         $this->assertTrue($this->get('app.bank')->save($this->john, $hsbc));
     }
 
     public function testDelete()
     {
-        $banks = $this->em->getRepository('AppBundle:Bank')->findByDeleted(true);
+        $banks = $this->em->getRepository('App:Bank')->findByDeleted(true);
         $banksNb = count($banks);
 
         $this->assertTrue($this->get('app.bank')->delete($this->john, [1]));
 
-        $banks = $this->em->getRepository('AppBundle:Bank')->findByDeleted(true);
+        $banks = $this->em->getRepository('App:Bank')->findByDeleted(true);
         $this->assertEquals(count($banks), $banksNb + 1);
     }
 
     public function testGetBalancesNotOk()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
 
         $balances = $this->get('app.bank')->getBalances($this->jane, $hsbc);
 
@@ -98,7 +98,7 @@ class BankServiceTest extends TestCase
 
     public function testGetBalancesOk()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
 
         $balances = $this->get('app.bank')->getBalances($this->john, $hsbc);
 

@@ -1,13 +1,13 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\OperationSearch;
-use AppBundle\Form\Type\OperationSearchFormType;
+use App\Entity\Member;
+use App\Entity\Account;
+use App\Entity\OperationSearch;
+use App\Form\Type\OperationSearchFormType;
 
 /**
  * @DI\Service("app.operation_search")
@@ -64,7 +64,7 @@ class OperationSearchService
 
             if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
                 $dql = 'SELECT c ';
-                $dql .= 'FROM AppBundle:Category c ';
+                $dql .= 'FROM App:Category c ';
                 $dql .= 'WHERE c.categoryId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['categories']).') ';
                 $query = $this->em->createQuery($dql);
                 $categories = $query->getResult();
@@ -73,7 +73,7 @@ class OperationSearchService
 
             if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
                 $dql = 'SELECT p ';
-                $dql .= 'FROM AppBundle:PaymentMethod p ';
+                $dql .= 'FROM App:PaymentMethod p ';
                 $dql .= 'WHERE p.paymentMethodId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['paymentMethods']).') ';
                 $query = $this->em->createQuery($dql);
                 $paymentMethods = $query->getResult();

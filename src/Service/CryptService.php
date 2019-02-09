@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use JMS\DiExtraBundle\Annotation as DI;
 

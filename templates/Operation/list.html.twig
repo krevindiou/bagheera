@@ -1,4 +1,4 @@
-{% extends 'AppBundle::base.html.twig' %}
+{% extends 'App::base.html.twig' %}
 
 {% block page_title 'operation.list_page_title'|trans %}
 
@@ -103,7 +103,7 @@
     </form>
     {% endif %}
     <div id="operation-search" class="span5{% if not displaySearch %} hide{% endif %}">
-        {{ render(controller("AppBundle:OperationSearch:form", {"account": account, "display": displaySearch})) }}
+        {{ render(controller("App:OperationSearch:form", {"account": account, "display": displaySearch})) }}
     </div>
 </div>
 {% endblock %}

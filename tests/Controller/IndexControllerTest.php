@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\AppBundle\Controller;
+namespace App\Tests\Controller;
 
-use Tests\AppBundle\TestCase;
+use App\Tests\TestCase;
 
 class IndexControllerTest extends TestCase
 {

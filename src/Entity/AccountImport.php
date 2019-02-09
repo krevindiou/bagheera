@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -27,13 +27,13 @@ class AccountImport
     protected $accountId;
 
     /**
-     * @var AppBundle\Entity\Account
+     * @var App\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @ORM\Id
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Account")
+     * @Assert\Type(type="App\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;
@@ -118,7 +118,7 @@ class AccountImport
     /**
      * Set account.
      *
-     * @param AppBundle\Entity\Account $account
+     * @param App\Entity\Account $account
      */
     public function setAccount(Account $account)
     {
@@ -128,7 +128,7 @@ class AccountImport
     /**
      * Get account.
      *
-     * @return AppBundle\Entity\Account
+     * @return App\Entity\Account
      */
     public function getAccount()
     {

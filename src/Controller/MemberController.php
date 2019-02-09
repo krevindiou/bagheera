@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +16,7 @@ class MemberController extends Controller
         $helper = $this->get('security.authentication_utils');
 
         return $this->render(
-            'AppBundle:Member:login.html.twig',
+            'App:Member:login.html.twig',
             [
                 'last_username' => $helper->getLastUsername(),
                 'error' => $helper->getLastAuthenticationError(),
@@ -42,7 +42,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Member:register.html.twig',
+            'App:Member:register.html.twig',
             [
                 'registerForm' => $form->createView(),
             ]
@@ -69,7 +69,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Member:forgotPassword.html.twig',
+            'App:Member:forgotPassword.html.twig',
             [
                 'forgotPasswordForm' => $form->createView(),
             ]
@@ -102,7 +102,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Member:changePasswordPublic.html.twig',
+            'App:Member:changePasswordPublic.html.twig',
             [
                 'key' => $key,
                 'changePasswordForm' => $form->createView(),
@@ -130,7 +130,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Member:changePassword.html.twig',
+            'App:Member:changePassword.html.twig',
             [
                 'changePasswordForm' => $form->createView(),
             ]
@@ -171,7 +171,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Member:profile.html.twig',
+            'App:Member:profile.html.twig',
             [
                 'profileForm' => $form->createView(),
             ]

@@ -1,18 +1,18 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\Form;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\Operation;
-use AppBundle\Entity\Scheduler;
-use AppBundle\Entity\PaymentMethod;
-use AppBundle\Form\Type\SchedulerFormType;
+use App\Entity\Member;
+use App\Entity\Account;
+use App\Entity\Operation;
+use App\Entity\Scheduler;
+use App\Entity\PaymentMethod;
+use App\Form\Type\SchedulerFormType;
 
 /**
  * @DI\Service("app.scheduler")
@@ -294,7 +294,7 @@ class SchedulerService
             $startDate = $scheduler->getValueDate();
 
             $dql = 'SELECT o.valueDate ';
-            $dql .= 'FROM AppBundle:Operation o ';
+            $dql .= 'FROM App:Operation o ';
             $dql .= 'WHERE o.scheduler = :scheduler ';
             $dql .= 'AND o.valueDate >= :valueDate ';
             $dql .= 'ORDER BY o.valueDate DESC ';

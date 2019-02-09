@@ -1,14 +1,14 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use AppBundle\Entity\Bank;
-use AppBundle\Entity\Account;
+use App\Entity\Bank;
+use App\Entity\Account;
 
 /**
  * @Route("/manager")
@@ -23,7 +23,7 @@ class AccountController extends Controller
         $member = $this->getUser();
 
         return $this->render(
-            'AppBundle:Account:home.html.twig',
+            'App:Account:home.html.twig',
             [
                 'totalBalances' => $this->get('app.member')->getBalances($member),
                 'lastSalary' => $this->get('app.operation')->getLastSalary($member),
@@ -47,7 +47,7 @@ class AccountController extends Controller
     public function listAction()
     {
         return $this->render(
-            'AppBundle:Account:list.html.twig',
+            'App:Account:list.html.twig',
             [
                 'banks' => $this->get('app.bank')->getList($this->getUser(), false),
             ]
@@ -110,7 +110,7 @@ class AccountController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Account:form.html.twig',
+            'App:Account:form.html.twig',
             [
                 'accountForm' => $accountForm->createView(),
             ]
@@ -141,7 +141,7 @@ class AccountController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Account:form.html.twig',
+            'App:Account:form.html.twig',
             [
                 'account' => $account,
                 'accountForm' => $accountForm->createView(),

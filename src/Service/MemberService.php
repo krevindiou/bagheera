@@ -1,15 +1,15 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Form\Type\MemberChangePasswordFormType;
-use AppBundle\Form\Type\MemberForgotPasswordFormType;
-use AppBundle\Form\Type\MemberProfileFormType;
-use AppBundle\Form\Type\MemberRegisterFormType;
+use App\Entity\Member;
+use App\Form\Type\MemberChangePasswordFormType;
+use App\Form\Type\MemberForgotPasswordFormType;
+use App\Form\Type\MemberProfileFormType;
+use App\Form\Type\MemberRegisterFormType;
 
 /**
  * @DI\Service("app.member")
@@ -129,7 +129,7 @@ class MemberService
         $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], true);
 
         $body = $this->templating->render(
-            'AppBundle:Email:register.html.twig',
+            'App:Email:register.html.twig',
             ['link' => $link]
         );
 
@@ -180,7 +180,7 @@ class MemberService
 
         if (null !== ($data = json_decode($data, true))) {
             if (isset($data['type'], $data['email']) && 'register' == $data['type']) {
-                return $this->em->getRepository('AppBundle:Member')
+                return $this->em->getRepository('App:Member')
                                 ->findOneBy(['email' => $data['email']]);
             }
         }
@@ -267,7 +267,7 @@ class MemberService
      */
     public function sendChangePasswordEmail($email)
     {
-        $member = $this->em->getRepository('AppBundle:Member')
+        $member = $this->em->getRepository('App:Member')
                            ->findOneBy(['email' => $email]);
 
         if (null !== $member) {
@@ -276,7 +276,7 @@ class MemberService
             $link = $this->router->generate('member_change_password_public', ['_locale' => 'en', 'key' => $key], true);
 
             $body = $this->templating->render(
-                'AppBundle:Email:changePassword.html.twig',
+                'App:Email:changePassword.html.twig',
                 ['link' => $link]
             );
 
@@ -366,7 +366,7 @@ class MemberService
                 $now = new \DateTime();
                 if ($data['expiration'] >= $now->format(\DateTime::ISO8601)) {
 
-                    return $this->em->getRepository('AppBundle:Member')
+                    return $this->em->getRepository('App:Member')
                                     ->findOneBy(['email' => $data['email']]);
                 }
             }
@@ -437,7 +437,7 @@ class MemberService
     {
         // Fetch current importId
         $dql = 'SELECT MAX(i.importId) ';
-        $dql .= 'FROM AppBundle:AccountImport i ';
+        $dql .= 'FROM App:AccountImport i ';
         $dql .= 'JOIN i.account a ';
         $dql .= 'JOIN a.bank b ';
         $dql .= 'WHERE b.member = :member ';
@@ -452,7 +452,7 @@ class MemberService
         }
 
         $dql = 'SELECT i ';
-        $dql .= 'FROM AppBundle:AccountImport i INDEX BY i.accountId ';
+        $dql .= 'FROM App:AccountImport i INDEX BY i.accountId ';
         $dql .= 'WHERE i.importId = :maxImportId ';
         $query = $this->em->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);

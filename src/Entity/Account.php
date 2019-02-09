@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -39,12 +39,12 @@ class Account
     protected $bankId;
 
     /**
-     * @var AppBundle\Entity\Bank
+     * @var App\Entity\Bank
      *
      * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
      * @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Bank")
+     * @Assert\Type(type="App\Entity\Bank")
      * @Assert\Valid()
      */
     protected $bank;
@@ -296,7 +296,7 @@ class Account
     /**
      * Add member.
      *
-     * @param AppBundle\Entity\Member $member
+     * @param App\Entity\Member $member
      */
     public function addSharedWith(Member $member)
     {
@@ -316,7 +316,7 @@ class Account
     /**
      * Set bank.
      *
-     * @param AppBundle\Entity\Bank $bank
+     * @param App\Entity\Bank $bank
      */
     public function setBank(Bank $bank)
     {
@@ -326,7 +326,7 @@ class Account
     /**
      * Get bank.
      *
-     * @return AppBundle\Entity\Bank
+     * @return App\Entity\Bank
      */
     public function getBank()
     {

@@ -1,13 +1,13 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\Report;
-use AppBundle\Form\Type\ReportFormType;
+use App\Entity\Member;
+use App\Entity\Account;
+use App\Entity\Report;
+use App\Form\Type\ReportFormType;
 
 /**
  * @DI\Service("app.report")
@@ -143,7 +143,7 @@ class ReportService
      */
     public function getHomepageList(Member $member)
     {
-        $dql = 'SELECT r FROM AppBundle:Report r ';
+        $dql = 'SELECT r FROM App:Report r ';
         $dql .= 'WHERE r.member = :member ';
         $dql .= 'AND r.homepage = :homepage ';
 
@@ -248,7 +248,7 @@ class ReportService
     {
         try {
             foreach ($reportsId as $reportId) {
-                $report = $this->em->find('AppBundle:Report', $reportId);
+                $report = $this->em->find('App:Report', $reportId);
 
                 if (null !== $report) {
                     if ($member === $report->getMember()) {
@@ -291,7 +291,7 @@ class ReportService
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (count($accounts) == 0) {
-                $dql = 'SELECT a FROM AppBundle:Account a ';
+                $dql = 'SELECT a FROM App:Account a ';
                 $dql .= 'JOIN a.bank b ';
                 $dql .= 'WHERE b.member = :member ';
                 $dql .= 'AND b.deleted = false ';
@@ -478,7 +478,7 @@ class ReportService
             $startDate->modify('First day of -11 months');
         }
 
-        $operationRepository = $this->em->getRepository('AppBundle:Operation');
+        $operationRepository = $this->em->getRepository('App:Operation');
 
         $data = $operationRepository->getTotalByMonth($member, $startDate, $endDate, $account);
 

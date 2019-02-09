@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\AppBundle\Service;
+namespace App\Tests\Service;
 
-use Tests\AppBundle\TestCase;
-use AppBundle\Entity\Member;
+use App\Tests\TestCase;
+use App\Entity\Member;
 
 class MemberServiceTest extends TestCase
 {
@@ -11,8 +11,8 @@ class MemberServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->john = $this->em->find('AppBundle:Member', 1);
-        $this->jane = $this->em->find('AppBundle:Member', 2);
+        $this->john = $this->em->find('App:Member', 1);
+        $this->jane = $this->em->find('App:Member', 2);
     }
 
     public function testGetRegisterForm()
@@ -42,7 +42,7 @@ class MemberServiceTest extends TestCase
 
     public function testGetProfileForm()
     {
-        $member = $this->em->find('AppBundle:Member', 1);
+        $member = $this->em->find('App:Member', 1);
 
         $profileForm = $this->get('app.member')->getProfileForm($member);
 
@@ -51,7 +51,7 @@ class MemberServiceTest extends TestCase
 
     public function testUpdateMemberWithNoData()
     {
-        $member = $this->em->find('AppBundle:Member', 1);
+        $member = $this->em->find('App:Member', 1);
         $member->setEmail('');
 
         $this->assertFalse($this->get('app.member')->save($member));
@@ -59,7 +59,7 @@ class MemberServiceTest extends TestCase
 
     public function testUpdateMember()
     {
-        $member = $this->em->find('AppBundle:Member', 1);
+        $member = $this->em->find('App:Member', 1);
 
         $this->assertTrue($this->get('app.member')->save($member));
     }
@@ -80,7 +80,7 @@ class MemberServiceTest extends TestCase
 
     public function testChangePassword()
     {
-        $member = $this->em->find('AppBundle:Member', 1);
+        $member = $this->em->find('App:Member', 1);
 
         $ok = $this->get('app.member')->changePassword($member, 'test');
 
@@ -98,7 +98,7 @@ class MemberServiceTest extends TestCase
 
     public function testActivateOk()
     {
-        $member = $this->em->find('AppBundle:Member', 1);
+        $member = $this->em->find('App:Member', 1);
 
         $key = $this->get('app.member')->createRegisterKey($member);
 
@@ -109,7 +109,7 @@ class MemberServiceTest extends TestCase
 
     public function testGetBalances()
     {
-        $member = $this->em->find('AppBundle:Member', 1);
+        $member = $this->em->find('App:Member', 1);
 
         $balances = $this->get('app.member')->getBalances($member);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -8,8 +8,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use AppBundle\Entity\Scheduler;
-use AppBundle\Entity\Account;
+use App\Entity\Scheduler;
+use App\Entity\Account;
 
 /**
  * @Route("/manager")
@@ -33,7 +33,7 @@ class SchedulerController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Scheduler:list.html.twig',
+            'App:Scheduler:list.html.twig',
             [
                 'account' => $account,
                 'schedulers' => $schedulers,
@@ -54,7 +54,7 @@ class SchedulerController extends Controller
             $member = $this->getUser();
 
             foreach ($schedulersId as $schedulerId) {
-                $scheduler = $this->em->find('AppBundle:Scheduler', $schedulerId);
+                $scheduler = $this->em->find('App:Scheduler', $schedulerId);
 
                 if (!$scheduler->isOwner($member)) {
                     throw $this->createAccessDeniedException();
@@ -71,8 +71,8 @@ class SchedulerController extends Controller
     /**
      * @Route("/scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_update")
      * @Route("/account-{accountId}/create-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_create")
-     * @ParamConverter("scheduler", class="AppBundle:Scheduler", options={"id" = "schedulerId"})
-     * @ParamConverter("account", class="AppBundle:Account", options={"id" = "accountId"})
+     * @ParamConverter("scheduler", class="App:Scheduler", options={"id" = "schedulerId"})
+     * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      */
     public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
@@ -96,7 +96,7 @@ class SchedulerController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Scheduler:form.html.twig',
+            'App:Scheduler:form.html.twig',
             [
                 'account' => $account ?: $scheduler->getAccount(),
                 'scheduler' => $schedulerForm->getData(),

@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use AppBundle\Entity\Operation;
-use AppBundle\Entity\Account;
+use App\Entity\Operation;
+use App\Entity\Account;
 
 /**
  * @Route("/manager")
@@ -39,7 +39,7 @@ class OperationController extends Controller
         $reconciledBalance = $accountService->getBalance($member, $account, true);
 
         return $this->render(
-            'AppBundle:Operation:list.html.twig',
+            'App:Operation:list.html.twig',
             [
                 'account' => $account,
                 'operations' => $operations,
@@ -76,8 +76,8 @@ class OperationController extends Controller
     /**
      * @Route("/operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_update")
      * @Route("/account-{accountId}/create-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_create")
-     * @ParamConverter("operation", class="AppBundle:Operation", options={"id" = "operationId"})
-     * @ParamConverter("account", class="AppBundle:Account", options={"id" = "accountId"})
+     * @ParamConverter("operation", class="App:Operation", options={"id" = "operationId"})
+     * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      */
     public function formAction(Request $request, Account $account = null, Operation $operation = null)
     {
@@ -105,7 +105,7 @@ class OperationController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Operation:form.html.twig',
+            'App:Operation:form.html.twig',
             [
                 'account' => $account ?: $operation->getAccount(),
                 'operation' => $operationForm->getData(),

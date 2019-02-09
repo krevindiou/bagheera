@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -196,7 +196,7 @@ class SchedulerFormType extends AbstractType
                             'label' => 'scheduler.transfer_account',
                             'required' => false,
                             'placeholder' => 'scheduler.external_account',
-                            'class' => 'AppBundle:Account',
+                            'class' => 'App:Account',
                             'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
                                 return $repository->createQueryBuilder('a')
                                     ->innerJoin('a.bank', 'b')
@@ -252,7 +252,7 @@ class SchedulerFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'AppBundle\Entity\Scheduler',
+                'data_class' => 'App\Entity\Scheduler',
             ]
         );
     }

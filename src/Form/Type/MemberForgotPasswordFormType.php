@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use AppBundle\Constraint\FieldExists;
+use App\Constraint\FieldExists;
 use JMS\DiExtraBundle\Annotation as DI;
 
 /**
@@ -27,7 +27,7 @@ class MemberForgotPasswordFormType extends AbstractType
                     'constraints' => [
                         new NotBlank(),
                         new Email(),
-                        new FieldExists('AppBundle:Member', 'email'),
+                        new FieldExists('App:Member', 'email'),
                     ],
                     'attr' => [
                         'class' => 'input-xlarge',

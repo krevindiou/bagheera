@@ -1,9 +1,9 @@
 <?php
 
-namespace AppBundle\Repository;
+namespace App\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use AppBundle\Entity\Member;
+use App\Entity\Member;
 
 class BankRepository extends EntityRepository
 {

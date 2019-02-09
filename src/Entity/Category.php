@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -22,11 +22,11 @@ class Category
     protected $categoryId;
 
     /**
-     * @var AppBundle\Entity\Category
+     * @var App\Entity\Category
      *
      * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
      * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
-     * @Assert\Type(type="AppBundle\Entity\Category")
+     * @Assert\Type(type="App\Entity\Category")
      * @Assert\Valid()
      */
     protected $parentCategory;
@@ -176,7 +176,7 @@ class Category
     /**
      * Set parentCategory.
      *
-     * @param AppBundle\Entity\Category $parentCategory
+     * @param App\Entity\Category $parentCategory
      */
     public function setParentCategory(Category $parentCategory)
     {
@@ -186,7 +186,7 @@ class Category
     /**
      * Get parentCategory.
      *
-     * @return AppBundle\Entity\Category
+     * @return App\Entity\Category
      */
     public function getParentCategory()
     {

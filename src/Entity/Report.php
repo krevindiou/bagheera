@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
@@ -23,12 +23,12 @@ class Report
     protected $reportId;
 
     /**
-     * @var AppBundle\Entity\Member
+     * @var App\Entity\Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="reports")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Member")
+     * @Assert\Type(type="App\Entity\Member")
      * @Assert\Valid()
      */
     protected $member;
@@ -228,7 +228,7 @@ class Report
     /**
      * Set member.
      *
-     * @param AppBundle\Entity\Member $member
+     * @param App\Entity\Member $member
      */
     public function setMember(Member $member)
     {
@@ -238,7 +238,7 @@ class Report
     /**
      * Get member.
      *
-     * @return AppBundle\Entity\Member
+     * @return App\Entity\Member
      */
     public function getMember()
     {

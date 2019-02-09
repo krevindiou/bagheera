@@ -1,17 +1,17 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Member;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\Operation;
-use AppBundle\Entity\OperationSearch;
-use AppBundle\Entity\PaymentMethod;
-use AppBundle\Form\Type\OperationFormType;
+use App\Entity\Member;
+use App\Entity\Account;
+use App\Entity\Operation;
+use App\Entity\OperationSearch;
+use App\Entity\PaymentMethod;
+use App\Form\Type\OperationFormType;
 
 /**
  * @DI\Service("app.operation")
@@ -280,7 +280,7 @@ class OperationService
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
                 $operationBeforeSave = $this->em->find(
-                    'AppBundle:Operation',
+                    'App:Operation',
                     $operation->getOperationId()
                 );
 
@@ -305,11 +305,11 @@ class OperationService
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
                     $paymentMethod = $this->em->find(
-                        'AppBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                        'App:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
                     $paymentMethod = $this->em->find(
-                        'AppBundle:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                        'App:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
                 }
 
@@ -407,7 +407,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('AppBundle:Operation', $operationId);
+                $operation = $this->em->find('App:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -438,7 +438,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('AppBundle:Operation', $operationId);
+                $operation = $this->em->find('App:Operation', $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -499,7 +499,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->em->find('AppBundle:PaymentMethod', $operationArray['payment_method_id'])
+                $this->em->find('App:PaymentMethod', $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {
@@ -572,10 +572,10 @@ class OperationService
      */
     public function getLastSalary(Member $member)
     {
-        $category = $this->em->find('AppBundle:Category', $this->categoriesId['salary']);
+        $category = $this->em->find('App:Category', $this->categoriesId['salary']);
 
         $dql = 'SELECT o ';
-        $dql .= 'FROM AppBundle:Operation o ';
+        $dql .= 'FROM App:Operation o ';
         $dql .= 'JOIN o.account a ';
         $dql .= 'JOIN a.bank b ';
         $dql .= 'WHERE b.member = :member ';
@@ -604,10 +604,10 @@ class OperationService
     public function getLastBiggestExpense(Member $member, \DateTime $since)
     {
         $dql = 'SELECT o ';
-        $dql .= 'FROM AppBundle:Operation o ';
+        $dql .= 'FROM App:Operation o ';
         $dql .= 'WHERE o.debit = ( ';
         $dql .= '  SELECT MAX(o2.debit) ';
-        $dql .= '  FROM AppBundle:Operation o2 ';
+        $dql .= '  FROM App:Operation o2 ';
         $dql .= '  JOIN o2.account a ';
         $dql .= '  JOIN a.bank b ';
         $dql .= '  WHERE b.member = :member ';

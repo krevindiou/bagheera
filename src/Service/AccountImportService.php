@@ -1,10 +1,10 @@
 <?php
 
-namespace AppBundle\Service;
+namespace App\Service;
 
 use JMS\DiExtraBundle\Annotation as DI;
-use AppBundle\Entity\Account;
-use AppBundle\Entity\AccountImport;
+use App\Entity\Account;
+use App\Entity\AccountImport;
 
 /**
  * @DI\Service("app.account_import")
@@ -28,7 +28,7 @@ class AccountImportService
     protected function getNextImportId(Account $account)
     {
         $dql = 'SELECT MAX(i.importId) ';
-        $dql .= 'FROM AppBundle:AccountImport i ';
+        $dql .= 'FROM App:AccountImport i ';
         $dql .= 'JOIN i.account a ';
         $dql .= 'JOIN a.bank b ';
         $dql .= 'WHERE b.member = :member ';
@@ -48,7 +48,7 @@ class AccountImportService
      */
     public function getCurrentImport(Account $account)
     {
-        return $this->em->getRepository('AppBundle:AccountImport')->findOneBy(
+        return $this->em->getRepository('App:AccountImport')->findOneBy(
             [
                 'account' => $account->getAccountId(),
                 'finished' => 0,

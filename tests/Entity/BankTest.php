@@ -1,22 +1,22 @@
 <?php
 
-namespace Tests\AppBundle\Entity;
+namespace App\Tests\Entity;
 
-use Tests\AppBundle\TestCase;
-use AppBundle\Entity\Bank;
+use App\Tests\TestCase;
+use App\Entity\Bank;
 
 class BankTest extends TestCase
 {
     public function testFindAll()
     {
-        $banks = $this->em->getRepository('AppBundle:Bank')->findAll();
+        $banks = $this->em->getRepository('App:Bank')->findAll();
 
         $this->assertEquals(count($banks), 5);
     }
 
     public function testHsbc()
     {
-        $hsbc = $this->em->find('AppBundle:Bank', 1);
+        $hsbc = $this->em->find('App:Bank', 1);
 
         $this->assertEquals($hsbc->getName(), 'HSBC');
         $this->assertEquals($hsbc->getMember()->getEmail(), 'john@example.net');

@@ -1,11 +1,11 @@
 <?php
 
-namespace AppBundle\Controller;
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use AppBundle\Entity\Bank;
+use App\Entity\Bank;
 
 /**
  * @Route("/manager")
@@ -46,7 +46,7 @@ class BankController extends Controller
         }
 
         return $this->render(
-            'AppBundle:Bank:form.html.twig',
+            'App:Bank:form.html.twig',
             [
                 'bankForm' => $bankForm->createView(),
             ]

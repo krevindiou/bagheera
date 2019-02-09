@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
@@ -28,7 +28,7 @@ class OperationSearch
      * @ORM\ManyToOne(targetEntity="Account", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
      * @Assert\NotNull()
-     * @Assert\Type(type="AppBundle\Entity\Account")
+     * @Assert\Type(type="App\Entity\Account")
      * @Assert\Valid()
      */
     protected $account;
@@ -175,7 +175,7 @@ class OperationSearch
     /**
      * Set account.
      *
-     * @param AppBundle\Entity\Account $account
+     * @param App\Entity\Account $account
      */
     public function setAccount(Account $account)
     {
@@ -185,7 +185,7 @@ class OperationSearch
     /**
      * Get account.
      *
-     * @return AppBundle\Entity\Account
+     * @return App\Entity\Account
      */
     public function getAccount()
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Form\Type;
+namespace App\Form\Type;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -27,7 +27,7 @@ class BankChooseFormType extends AbstractType
                 EntityType::class,
                 [
                     'label' => 'bank.auto',
-                    'class' => 'AppBundle:Provider',
+                    'class' => 'App:Provider',
                     'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                         return $repository->getAvailableProvidersQueryBuilder($member);
                     },
@@ -39,7 +39,7 @@ class BankChooseFormType extends AbstractType
                 EntityType::class,
                 [
                     'label' => 'bank.manual',
-                    'class' => 'AppBundle:Bank',
+                    'class' => 'App:Bank',
                     'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
                         return $repository->getActiveManualBanksQueryBuilder($member);
                     },
