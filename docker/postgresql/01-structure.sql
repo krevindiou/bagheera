@@ -1,1 +1,1 @@
-../../app/Resources/config/db/structure.sql
+../../src/Resources/config/db/structure.sql
