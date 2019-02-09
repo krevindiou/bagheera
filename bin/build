@@ -7,9 +7,9 @@ umask 000
 
 if [[ -z $ENV || $ENV = 'dev' ]]; then
     composer --working-dir="$project_dir" install --no-ansi --no-interaction --no-progress
-    npm install --prefix "$project_dir/app/Resources"
+    npm install --prefix "$project_dir/src/Resources"
 else
     composer --working-dir="$project_dir" install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
-    npm install --prefix "$project_dir/app/Resources"
+    npm install --prefix "$project_dir/src/Resources"
     "$project_dir/bin/console" assetic:dump
 fi
