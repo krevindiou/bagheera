@@ -27,7 +27,7 @@ class ReportController extends Controller
         $reports = $this->get('app.report')->getList($member);
 
         return $this->render(
-            'App:Report:list.html.twig',
+            'Report/list.html.twig',
             [
                 'reports' => $reports,
             ]
@@ -78,7 +78,7 @@ class ReportController extends Controller
         }
 
         return $this->render(
-            'App:Report:form.html.twig',
+            'Report/form.html.twig',
             [
                 'reportForm' => $reportForm->createView(),
             ]
@@ -105,7 +105,7 @@ class ReportController extends Controller
         }
 
         return $this->render(
-            'App:Report:graph.js.twig',
+            'Report/graph.js.twig',
             [
                 'graphs' => $graphs,
             ]
@@ -123,7 +123,7 @@ class ReportController extends Controller
         $graph = $this->get('app.report')->getSynthesis($member, null, null, $account);
 
         if (!empty($graph)) {
-            return $this->render('App:Report:synthesis.js.twig', $graph);
+            return $this->render('Report/synthesis.js.twig', $graph);
         }
 
         throw $this->createNotFoundException();

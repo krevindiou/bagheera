@@ -129,7 +129,7 @@ class MemberService
         $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], true);
 
         $body = $this->templating->render(
-            'App:Email:register.html.twig',
+            'Email/register.html.twig',
             ['link' => $link]
         );
 
@@ -276,7 +276,7 @@ class MemberService
             $link = $this->router->generate('member_change_password_public', ['_locale' => 'en', 'key' => $key], true);
 
             $body = $this->templating->render(
-                'App:Email:changePassword.html.twig',
+                'Email/changePassword.html.twig',
                 ['link' => $link]
             );
 

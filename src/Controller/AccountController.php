@@ -23,7 +23,7 @@ class AccountController extends Controller
         $member = $this->getUser();
 
         return $this->render(
-            'App:Account:home.html.twig',
+            'Account/home.html.twig',
             [
                 'totalBalances' => $this->get('app.member')->getBalances($member),
                 'lastSalary' => $this->get('app.operation')->getLastSalary($member),
@@ -47,7 +47,7 @@ class AccountController extends Controller
     public function listAction()
     {
         return $this->render(
-            'App:Account:list.html.twig',
+            'Account/list.html.twig',
             [
                 'banks' => $this->get('app.bank')->getList($this->getUser(), false),
             ]
@@ -110,7 +110,7 @@ class AccountController extends Controller
         }
 
         return $this->render(
-            'App:Account:form.html.twig',
+            'Account/form.html.twig',
             [
                 'accountForm' => $accountForm->createView(),
             ]
@@ -141,7 +141,7 @@ class AccountController extends Controller
         }
 
         return $this->render(
-            'App:Account:form.html.twig',
+            'Account/form.html.twig',
             [
                 'account' => $account,
                 'accountForm' => $accountForm->createView(),

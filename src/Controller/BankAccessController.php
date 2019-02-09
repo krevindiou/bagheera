@@ -35,7 +35,7 @@ class BankAccessController extends Controller
         }
 
         return $this->render(
-            'App:BankAccess:form.html.twig',
+            'BankAccess/form.html.twig',
             [
                 'bankAccessForm' => $bankAccessForm->createView(),
             ]

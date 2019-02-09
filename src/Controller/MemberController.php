@@ -16,7 +16,7 @@ class MemberController extends Controller
         $helper = $this->get('security.authentication_utils');
 
         return $this->render(
-            'App:Member:login.html.twig',
+            'Member/login.html.twig',
             [
                 'last_username' => $helper->getLastUsername(),
                 'error' => $helper->getLastAuthenticationError(),
@@ -42,7 +42,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'App:Member:register.html.twig',
+            'Member/register.html.twig',
             [
                 'registerForm' => $form->createView(),
             ]
@@ -69,7 +69,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'App:Member:forgotPassword.html.twig',
+            'Member/forgotPassword.html.twig',
             [
                 'forgotPasswordForm' => $form->createView(),
             ]
@@ -102,7 +102,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'App:Member:changePasswordPublic.html.twig',
+            'Member/changePasswordPublic.html.twig',
             [
                 'key' => $key,
                 'changePasswordForm' => $form->createView(),
@@ -130,7 +130,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'App:Member:changePassword.html.twig',
+            'Member/changePassword.html.twig',
             [
                 'changePasswordForm' => $form->createView(),
             ]
@@ -171,7 +171,7 @@ class MemberController extends Controller
         }
 
         return $this->render(
-            'App:Member:profile.html.twig',
+            'Member/profile.html.twig',
             [
                 'profileForm' => $form->createView(),
             ]

@@ -27,7 +27,7 @@ class OperationSearchController extends Controller
         }
 
         return $this->render(
-            'App:OperationSearch:form.html.twig',
+            'OperationSearch/form.html.twig',
             [
                 'account' => $account,
                 'operationSearchForm' => $operationSearchForm->createView(),

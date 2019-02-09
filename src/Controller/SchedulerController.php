@@ -33,7 +33,7 @@ class SchedulerController extends Controller
         }
 
         return $this->render(
-            'App:Scheduler:list.html.twig',
+            'Scheduler/list.html.twig',
             [
                 'account' => $account,
                 'schedulers' => $schedulers,
@@ -96,7 +96,7 @@ class SchedulerController extends Controller
         }
 
         return $this->render(
-            'App:Scheduler:form.html.twig',
+            'Scheduler/form.html.twig',
             [
                 'account' => $account ?: $scheduler->getAccount(),
                 'scheduler' => $schedulerForm->getData(),

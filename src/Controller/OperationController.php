@@ -39,7 +39,7 @@ class OperationController extends Controller
         $reconciledBalance = $accountService->getBalance($member, $account, true);
 
         return $this->render(
-            'App:Operation:list.html.twig',
+            'Operation/list.html.twig',
             [
                 'account' => $account,
                 'operations' => $operations,
@@ -105,7 +105,7 @@ class OperationController extends Controller
         }
 
         return $this->render(
-            'App:Operation:form.html.twig',
+            'Operation/form.html.twig',
             [
                 'account' => $account ?: $operation->getAccount(),
                 'operation' => $operationForm->getData(),

@@ -46,7 +46,7 @@ class BankController extends Controller
         }
 
         return $this->render(
-            'App:Bank:form.html.twig',
+            'Bank/form.html.twig',
             [
                 'bankForm' => $bankForm->createView(),
             ]
