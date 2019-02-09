@@ -11,5 +11,5 @@ if [[ -z $ENV || $ENV = 'dev' ]]; then
 else
     composer --working-dir="$project_dir" install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
     npm install --prefix "$project_dir/app/Resources"
-    "$project_dir/app/console" assetic:dump
+    "$project_dir/bin/console" assetic:dump
 fi

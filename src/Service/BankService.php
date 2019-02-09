@@ -31,8 +31,8 @@ class BankService
     /** @DI\Inject("app.account") */
     public $accountService;
 
-    /** @DI\Inject("%kernel.root_dir%") */
-    public $rootDir;
+    /** @DI\Inject("%kernel.project_dir%") */
+    public $projectDir;
 
     /** @DI\Inject("%kernel.environment%") */
     public $environment;
@@ -325,9 +325,9 @@ class BankService
             $cmd = sprintf(
                 '%s > /dev/null 2>&1 & echo $!',
                 sprintf(
-                    '%s %s/console --env=%s bagheera:import_external_bank %d',
+                    '%s %s/bin/console --env=%s bagheera:import_external_bank %d',
                     $phpBin,
-                    $this->rootDir,
+                    $this->projectDir,
                     $this->environment,
                     $bank->getBankId()
                 )
