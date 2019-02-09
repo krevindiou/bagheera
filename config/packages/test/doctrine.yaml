@@ -2,4 +2,6 @@ doctrine:
     dbal:
         connections:
             default:
-                dbname: '%database_name%_test'
+                dbname: bagheera_test
+            secure:
+                dbname: bagheera_test
