@@ -1,4 +1,3 @@
-app/logs
-app/cache
-app/Resources/node_modules
+src/Resources/node_modules
+var
 vendor
