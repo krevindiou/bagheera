@@ -5,7 +5,7 @@ project_dir=$(cd "$(dirname "$0")" && cd .. && pwd)
 # will let the permissions be 0777
 umask 000
 
-if [[ -z $ENV || $ENV = 'dev' ]]; then
+if [[ -z $APP_ENV || $APP_ENV = 'dev' ]]; then
     composer --working-dir="$project_dir" install --no-ansi --no-interaction --no-progress
     npm install --prefix "$project_dir/src/Resources"
 else
