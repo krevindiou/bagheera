@@ -8,11 +8,6 @@
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
-
-        {% if app.debug %}
-        {{ nelmio_js_error_logger() }}
-        {% endif %}
-
         <link rel="icon" href="{{ asset('/favicon.png') }}" type="image/png" />
         <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
     </head>
