@@ -1,4 +1,10 @@
 require('../css/app.less');
+require('../../vendor/components/jquery/jquery.js');
+require('../../vendor/components/jqueryui/ui/minified/jquery-ui.min.js');
+require('../../vendor/components/flot/jquery.flot.js');
+require('../../vendor/components/flot/jquery.flot.time.js');
+require('../../vendor/components/bootstrap/js/bootstrap.min.js');
+require('../../vendor/components/mailcheck/src/mailcheck.min.js');
 
 var locale = document.getElementsByTagName("html")[0].lang;
 
