@@ -1,3 +1,5 @@
+require('../css/app.less');
+
 var locale = document.getElementsByTagName("html")[0].lang;
 
 var Bagheera = {
