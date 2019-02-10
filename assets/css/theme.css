@@ -832,7 +832,6 @@ jQuery UI Styles
   z-index: 2;
   width: 25px;
   height: 16px;
-  background: url(../img/jquery/handle.png) no-repeat;
   border: none;
   cursor: pointer;
 }
@@ -937,7 +936,6 @@ jQuery UI Styles
   margin-bottom: -0.6em;
   width: 15px;
   height: 24px;
-  background: url(../img/jquery/handle-vertical.png) no-repeat;
 }
 .ui-slider-vertical .ui-slider-handle:hover {
   background-position: 0 -24px;
@@ -1036,7 +1034,6 @@ jQuery UI Styles
 .ui-datepicker-next-hover .ui-icon,
 .ui-datepicker-prev-hover .ui-icon {
   background-color: #ffffff;
-  background-image: url(../css/ui-lightness/images/ui-icons_222222_256x240.png);
   opacity: .5;
 }
 /*------------------------------------------------------------------
@@ -1047,7 +1044,6 @@ Signin
 body.login {
   color: #838383;
   font: 13px/1.7em 'Open Sans';
-  background: url(../img/signin/login-bg.png);
 }
 .account-container {
   width: 380px;
@@ -1085,10 +1081,8 @@ body.login {
   box-shadow: inset 2px 2px 4px #f1f1f1;
 }
 .login-fields .username-field {
-  background: url(../img/signin/user.png) no-repeat;
 }
 .login-fields .password-field {
-  background: url(../img/signin/password.png) no-repeat;
 }
 .login-actions {
   float: left;
@@ -1131,7 +1125,6 @@ span.login-checkbox > input[type='checkbox'] + label {
   margin: 0;
   font-size: 12px;
   line-height: 1.2em;
-  background: url(../img/signin/check.png) no-repeat 0 0;
   cursor: pointer;
 }
 span.login-checkbox > input[type='checkbox']:checked + label {
@@ -1144,7 +1137,6 @@ span.login-checkbox > input[type='checkbox']:checked + label {
   height: 32px;
   width: 157px;
   display: inline-block;
-  background: url(../img/signin/twitter_btn.png) no-repeat;
 }
 .twitter:active,
 .fb:active {
@@ -1171,7 +1163,6 @@ span.login-checkbox > input[type='checkbox']:checked + label {
 }
 .fb {
   width: 162px;
-  background: url(../img/signin/fb_btn.png) no-repeat;
 }
 .fb a {
   padding: 5px 0 0 31px;
@@ -1274,7 +1265,6 @@ Validation Styles
   display: inline-block;
   width: 15px;
   height: 15px;
-  background: url(../img/validation/validation-success.png) no-repeat 0 0;
 }
 .control-group.success input + div.clean,
 .control-group.success select + div.clean,
@@ -1698,7 +1688,6 @@ Gallery
   width: 184px;
   height: 120px;
   background-color: rgba(0, 0, 0, 0.65);
-  background-image: url(../img/gallery/zoom.png);
   background-position: 50% 50%;
   background-repeat: no-repeat;
   -webkit-border-radius: 3px;
