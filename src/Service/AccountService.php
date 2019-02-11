@@ -3,37 +3,44 @@
 namespace App\Service;
 
 use Symfony\Component\Form\Form;
-use JMS\DiExtraBundle\Annotation as DI;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use App\Entity\Member;
 use App\Entity\Bank;
 use App\Entity\Account;
 use App\Entity\Operation;
 use App\Entity\PaymentMethod;
+use App\Service\OperationService;
 use App\Form\Type\AccountFormType;
 
-/**
- * @DI\Service("app.account")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "account"})
- */
 class AccountService
 {
-    /** @DI\Inject */
-    public $logger;
+    private $logger;
+    private $em;
+    private $formFactory;
+    private $validator;
+    private $translator;
+    private $operationService;
 
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject */
-    public $validator;
-
-    /** @DI\Inject */
-    public $translator;
-
-    /** @DI\Inject("app.operation") */
-    public $operationService;
+    public function __construct(
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator,
+        TranslatorInterface $translator,
+        OperationService $operationService
+    )
+    {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+        $this->translator = $translator;
+        $this->operationService = $operationService;
+    }
 
     /**
      * Returns accounts list.

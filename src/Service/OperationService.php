@@ -5,7 +5,10 @@ namespace App\Service;
 use Symfony\Component\Form\Form;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
-use JMS\DiExtraBundle\Annotation as DI;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Member;
 use App\Entity\Account;
 use App\Entity\Operation;
@@ -13,29 +16,28 @@ use App\Entity\OperationSearch;
 use App\Entity\PaymentMethod;
 use App\Form\Type\OperationFormType;
 
-/**
- * @DI\Service("app.operation")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "operation"})
- */
 class OperationService
 {
-    /** @DI\Inject */
-    public $logger;
+    private $logger;
+    private $em;
+    private $formFactory;
+    private $validator;
+    private $categoriesId;
 
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject */
-    public $validator;
-
-    /** @DI\Inject("app.account_import") */
-    public $accountImportService;
-
-    /** @DI\Inject("%categories_id%") */
-    public $categoriesId;
+    public function __construct(
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator,
+        $categoriesId
+    )
+    {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+        $this->categoriesId = $categoriesId;
+    }
 
     /**
      * Returns operations list.

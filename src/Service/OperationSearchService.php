@@ -3,26 +3,31 @@
 namespace App\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use JMS\DiExtraBundle\Annotation as DI;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use App\Entity\Member;
 use App\Entity\Account;
 use App\Entity\OperationSearch;
 use App\Form\Type\OperationSearchFormType;
 
-/**
- * @DI\Service("app.operation_search")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "operation_search"})
- */
 class OperationSearchService
 {
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
+    private $em;
+    private $formFactory;
+    private $requestStack;
 
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject("request_stack") */
-    public $requestStack;
+    public function __construct(
+        EntityManagerInterface $em,
+        FormFactoryInterface $formFactory,
+        RequestStack $requestStack
+    )
+    {
+        $this->em = $em;
+        $this->formFactory = $formFactory;
+        $this->requestStack = $requestStack;
+    }
 
     /**
      * Returns operationSearch form.

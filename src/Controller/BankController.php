@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use App\Entity\Bank;
+use App\Service\BankService;
 
 /**
  * @Route("/manager")
@@ -16,11 +17,11 @@ class BankController extends Controller
      * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
      * @Route("/choose-bank", defaults={"bankId" = null}, name="bank_choose")
      */
-    public function formAction(Request $request, Bank $bank = null)
+    public function formAction(Request $request, BankService $bankService, Bank $bank = null)
     {
         $member = $this->getUser();
 
-        $bankForm = $this->get('app.bank')->getForm($member, $bank);
+        $bankForm = $bankService->getForm($member, $bank);
         if (null === $bankForm) {
             throw $this->createNotFoundException();
         }
@@ -28,7 +29,7 @@ class BankController extends Controller
         $bankForm->handleRequest($request);
 
         if ($bankForm->isSubmitted()) {
-            if ($bank = $this->get('app.bank')->saveForm($member, $bankForm)) {
+            if ($bank = $bankService->saveForm($member, $bankForm)) {
                 if ('bank_choose' == $request->get('_route')) {
                     if (null !== $bank->getProvider()) {
                         $this->addFlash('success', 'bank.form_confirmation');
@@ -56,9 +57,9 @@ class BankController extends Controller
     /**
      * @Route("/bank-{bankId}/import", requirements={"bankId" = "\d+"}, name="bank_import")
      */
-    public function importAction(Bank $bank)
+    public function importAction(Bank $bank, BankService $bankService)
     {
-        $this->get('app.bank')->importExternalBank($bank);
+        $bankService->importExternalBank($bank);
 
         return $this->redirectToRoute('account_list');
     }

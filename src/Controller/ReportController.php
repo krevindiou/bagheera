@@ -9,6 +9,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use App\Entity\Report;
 use App\Entity\Account;
+use App\Service\ReportService;
 
 /**
  * @Route("/manager")
@@ -20,11 +21,11 @@ class ReportController extends Controller
      *
      * @Method("GET")
      */
-    public function listAction(Request $request)
+    public function listAction(Request $request, ReportService $reportService)
     {
         $member = $this->getUser();
 
-        $reports = $this->get('app.report')->getList($member);
+        $reports = $reportService->getList($member);
 
         return $this->render(
             'Report/list.html.twig',
@@ -39,14 +40,14 @@ class ReportController extends Controller
      *
      * @Method("POST")
      */
-    public function listActionsAction(Request $request)
+    public function listActionsAction(Request $request, ReportService $reportService)
     {
         $reportsId = (array) $request->request->get('reportsId');
 
         $member = $this->getUser();
 
         if ($request->request->has('delete')) {
-            $this->get('app.report')->delete($member, $reportsId);
+            $reportService->delete($member, $reportsId);
             $this->addFlash('success', 'report.delete_confirmation');
         }
 
@@ -58,11 +59,11 @@ class ReportController extends Controller
      * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
      * @ParamConverter("report", class="App:Report", options={"id" = "reportId"})
      */
-    public function formAction(Request $request, Report $report = null, $type = null)
+    public function formAction(Request $request, ReportService $reportService, Report $report = null, $type = null)
     {
         $member = $this->getUser();
 
-        $reportForm = $this->get('app.report')->getForm($member, $report, $type);
+        $reportForm = $reportService->getForm($member, $report, $type);
         if (null === $reportForm) {
             throw $this->createNotFoundException();
         }
@@ -70,7 +71,7 @@ class ReportController extends Controller
         $reportForm->handleRequest($request);
 
         if ($reportForm->isSubmitted()) {
-            if ($this->get('app.report')->saveForm($member, $reportForm)) {
+            if ($reportService->saveForm($member, $reportForm)) {
                 $this->addFlash('success', 'report.form_confirmation');
 
                 return $this->redirectToRoute('report_list');
@@ -88,16 +89,16 @@ class ReportController extends Controller
     /**
      * @Route("/reports.js", defaults={"_format"="js"}, name="report_graph")
      */
-    public function graphAction()
+    public function graphAction(ReportService $reportService)
     {
         $graphs = [];
 
         $member = $this->getUser();
 
-        $reports = $this->get('app.report')->getHomepageList($member);
+        $reports = $reportService->getHomepageList($member);
 
         foreach ($reports as $report) {
-            $graph = $this->get('app.report')->getGraphData($member, $report);
+            $graph = $reportService->getGraphData($member, $report);
 
             if (!empty($graph)) {
                 $graphs[] = $graph;
@@ -116,11 +117,11 @@ class ReportController extends Controller
      * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
      * @Route("/account-{accountId}/report-synthesis.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      */
-    public function synthesisAction(Account $account = null)
+    public function synthesisAction(ReportService $reportService, Account $account = null)
     {
         $member = $this->getUser();
 
-        $graph = $this->get('app.report')->getSynthesis($member, null, null, $account);
+        $graph = $reportService->getSynthesis($member, null, null, $account);
 
         if (!empty($graph)) {
             return $this->render('Report/synthesis.js.twig', $graph);

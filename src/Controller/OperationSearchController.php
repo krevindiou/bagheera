@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use App\Entity\Account;
+use App\Service\OperationSearchService;
 
 /**
  * @Route("/manager")
@@ -15,10 +16,8 @@ class OperationSearchController extends Controller
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
      */
-    public function formAction(Request $request, Account $account, $display = true)
+    public function formAction(Request $request, OperationSearchService $operationSearchService, Account $account, $display = true)
     {
-        $operationSearchService = $this->get('app.operation_search');
-
         $operationSearch = $operationSearchService->getSessionSearch($account);
 
         $operationSearchForm = $operationSearchService->getForm($this->getUser(), $operationSearch, $account);
@@ -39,10 +38,8 @@ class OperationSearchController extends Controller
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit", methods={"POST"})
      */
-    public function submitAction(Request $request, Account $account)
+    public function submitAction(Request $request, OperationSearchService $operationSearchService, Account $account)
     {
-        $operationSearchService = $this->get('app.operation_search');
-
         if (isset($request->request->get('operation_search_form')['clear'])) {
             $operationSearchService->clearSessionSearch($account);
         } else {

@@ -3,26 +3,34 @@
 namespace App\Service;
 
 use Symfony\Component\Form\Form;
-use JMS\DiExtraBundle\Annotation as DI;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Member;
 use App\Entity\Account;
 use App\Entity\Report;
 use App\Form\Type\ReportFormType;
 
-/**
- * @DI\Service("app.report")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "report"})
- */
 class ReportService
 {
-    /** @DI\Inject */
-    public $logger;
+    private $logger;
+    private $em;
+    private $formFactory;
+    private $validator;
 
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
+    public function __construct(
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator
+    )
+    {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+    }
 
     /**
      * Returns reports list.

@@ -3,8 +3,15 @@
 namespace App\Service;
 
 use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use JMS\DiExtraBundle\Annotation as DI;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Templating\EngineInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Member;
 use App\Form\Type\MemberChangePasswordFormType;
 use App\Form\Type\MemberForgotPasswordFormType;
@@ -12,56 +19,60 @@ use App\Form\Type\MemberProfileFormType;
 use App\Form\Type\MemberRegisterFormType;
 
 /**
- * @DI\Service("app.member")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "member"})
  * @DI\Tag("kernel.event_listener", attributes = {"event" = "security.interactive_login", "method" = "onLogin"})
  */
 class MemberService
 {
-    /** @DI\Inject("%secret%") */
-    public $secret;
+    private $secret;
+    private $logger;
+    private $em;
+    private $mailer;
+    private $config;
+    private $translator;
+    private $router;
+    private $passwordEncoder;
+    private $formFactory;
+    private $validator;
+    private $bankService;
+    private $accountService;
+    private $schedulerService;
+    private $cryptService;
+    private $templating;
 
-    /** @DI\Inject */
-    public $logger;
-
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject */
-    public $mailer;
-
-    /** @DI\Inject("%email%") */
-    public $config;
-
-    /** @DI\Inject */
-    public $translator;
-
-    /** @DI\Inject */
-    public $router;
-
-    /** @DI\Inject("security.password_encoder") */
-    public $passwordEncoder;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject */
-    public $validator;
-
-    /** @DI\Inject("app.bank") */
-    public $bankService;
-
-    /** @DI\Inject("app.account") */
-    public $accountService;
-
-    /** @DI\Inject("app.scheduler") */
-    public $schedulerService;
-
-    /** @DI\Inject("app.crypt") */
-    public $cryptService;
-
-    /** @DI\Inject */
-    public $templating;
+    public function __construct(
+        $secret,
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        \Swift_Mailer $mailer,
+        $config,
+        TranslatorInterface $translator,
+        RouterInterface $router,
+        UserPasswordEncoderInterface $passwordEncoder,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator,
+        BankService $bankService,
+        AccountService $accountService,
+        SchedulerService $schedulerService,
+        CryptService $cryptService,
+        EngineInterface $templating
+    )
+    {
+        $this->secret = $secret;
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->mailer = $mailer;
+        $this->config = $config;
+        $this->translator = $translator;
+        $this->router = $router;
+        $this->passwordEncoder = $passwordEncoder;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+        $this->bankService = $bankService;
+        $this->accountService = $accountService;
+        $this->schedulerService = $schedulerService;
+        $this->cryptService = $cryptService;
+        $this->templating = $templating;
+    }
 
     public function onLogin(InteractiveLoginEvent $event)
     {

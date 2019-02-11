@@ -10,6 +10,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use App\Entity\Scheduler;
 use App\Entity\Account;
+use App\Service\SchedulerService;
 
 /**
  * @Route("/manager")
@@ -22,11 +23,11 @@ class SchedulerController extends Controller
      *
      * @Method("GET")
      */
-    public function listAction(Request $request, Account $account)
+    public function listAction(Request $request, SchedulerService $schedulerService, Account $account)
     {
         $page = $request->query->getInt('page', 1);
 
-        $schedulers = $this->get('app.scheduler')->getList($account, $page);
+        $schedulers = $schedulerService->getList($account, $page);
 
         if (null === $schedulers) {
             throw $this->createNotFoundException();
@@ -47,7 +48,7 @@ class SchedulerController extends Controller
      *
      * @Method("POST")
      */
-    public function listActionsAction(Request $request, Account $account)
+    public function listActionsAction(Request $request, SchedulerService $schedulerService, Account $account)
     {
         if ($request->request->has('delete')) {
             $schedulersId = (array) $request->request->get('schedulersId');
@@ -61,7 +62,7 @@ class SchedulerController extends Controller
                 }
             }
 
-            $this->get('app.scheduler')->delete($scheduler);
+            $schedulerService->delete($scheduler);
             $this->addFlash('success', 'scheduler.delete_confirmation');
         }
 
@@ -75,9 +76,9 @@ class SchedulerController extends Controller
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      */
-    public function formAction(Request $request, Account $account = null, Scheduler $scheduler = null)
+    public function formAction(Request $request, SchedulerService $schedulerService, Account $account = null, Scheduler $scheduler = null)
     {
-        $schedulerForm = $this->get('app.scheduler')->getForm($scheduler, $account);
+        $schedulerForm = $schedulerService->getForm($scheduler, $account);
         if (null === $schedulerForm) {
             throw $this->createNotFoundException();
         }
@@ -85,7 +86,7 @@ class SchedulerController extends Controller
         $schedulerForm->handleRequest($request);
 
         if ($schedulerForm->isSubmitted()) {
-            if ($this->get('app.scheduler')->saveForm($schedulerForm)) {
+            if ($schedulerService->saveForm($schedulerForm)) {
                 $this->addFlash('success', 'scheduler.form_confirmation');
 
                 return $this->redirectToRoute(

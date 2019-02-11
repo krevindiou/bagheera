@@ -4,22 +4,22 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use App\Service\MemberService;
 
 class MemberController extends Controller
 {
     /**
      * @Route("/sign-in", name="member_login")
      */
-    public function loginAction(Request $request)
+    public function loginAction(Request $request, AuthenticationUtils $authenticationUtils)
     {
-        $helper = $this->get('security.authentication_utils');
-
         return $this->render(
             'Member/login.html.twig',
             [
-                'last_username' => $helper->getLastUsername(),
-                'error' => $helper->getLastAuthenticationError(),
+                'last_username' => $authenticationUtils->getLastUsername(),
+                'error' => $authenticationUtils->getLastAuthenticationError(),
             ]
         );
     }
@@ -27,14 +27,14 @@ class MemberController extends Controller
     /**
      * @Route("/register", name="member_register")
      */
-    public function registerAction(Request $request)
+    public function registerAction(Request $request, MemberService $memberService)
     {
-        $form = $this->get('app.member')->getRegisterForm($request->getPreferredLanguage());
+        $form = $memberService->getRegisterForm($request->getPreferredLanguage());
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($this->get('app.member')->saveForm($form)) {
+            if ($memberService->saveForm($form)) {
                 $this->addFlash('success', 'member.register.confirmation');
 
                 return $this->redirectToRoute('member_login');
@@ -52,15 +52,15 @@ class MemberController extends Controller
     /**
      * @Route("/forgot-password", name="member_forgot_password")
      */
-    public function forgotPasswordAction(Request $request)
+    public function forgotPasswordAction(Request $request, MemberService $memberService)
     {
-        $form = $this->get('app.member')->getForgotPasswordForm();
+        $form = $memberService->getForgotPasswordForm();
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                if ($this->get('app.member')->sendChangePasswordEmail($form->get('email')->getData())) {
+                if ($memberService->sendChangePasswordEmail($form->get('email')->getData())) {
                     $this->addFlash('info', 'member.forgot_password.confirmation');
 
                     return $this->redirectToRoute('member_login');
@@ -79,18 +79,18 @@ class MemberController extends Controller
     /**
      * @Route("/change-password", name="member_change_password_public", requirements={"key"})
      */
-    public function changePasswordPublicAction(Request $request)
+    public function changePasswordPublicAction(Request $request, MemberService $memberService)
     {
         $key = $request->query->get('key');
 
-        if ($member = $this->get('app.member')->decodeChangePasswordKey($key)) {
-            $form = $this->get('app.member')->getChangePasswordForm();
+        if ($member = $memberService->decodeChangePasswordKey($key)) {
+            $form = $memberService->getChangePasswordForm();
 
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
                 if ($form->isValid()) {
-                    if ($this->get('app.member')->changePassword($member, $form->get('password')->getData())) {
+                    if ($memberService->changePassword($member, $form->get('password')->getData())) {
                         $this->addFlash('success', 'member.change_password.confirmation');
 
                         return $this->redirectToRoute('member_login');
@@ -113,15 +113,15 @@ class MemberController extends Controller
     /**
      * @Route("/manager/change-password", name="member_change_password")
      */
-    public function changePasswordAction(Request $request)
+    public function changePasswordAction(Request $request, MemberService $memberService)
     {
-        $form = $this->get('app.member')->getChangePasswordForm();
+        $form = $memberService->getChangePasswordForm();
 
         if ($request->getMethod() == 'POST') {
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
-                if ($this->get('app.member')->changePassword($this->getUser(), $form->get('password')->getData())) {
+                if ($memberService->changePassword($this->getUser(), $form->get('password')->getData())) {
                     $this->addFlash('success', 'member.change_password.confirmation');
 
                     return $this->redirectToRoute($request->get('_route'));
@@ -140,11 +140,11 @@ class MemberController extends Controller
     /**
      * @Route("/activate", name="member_activate")
      */
-    public function activateAction(Request $request)
+    public function activateAction(Request $request, MemberService $memberService)
     {
         $key = $request->query->get('key');
 
-        if (null !== $key && $this->get('app.member')->activate($key)) {
+        if (null !== $key && $memberService->activate($key)) {
             $this->addFlash('success', 'member.register.activation_confirmation');
         } else {
             $this->addFlash('error', 'member.register.activation_error');
@@ -156,14 +156,14 @@ class MemberController extends Controller
     /**
      * @Route("/manager/profile", name="member_profile")
      */
-    public function profileAction(Request $request)
+    public function profileAction(Request $request, MemberService $memberService)
     {
-        $form = $this->get('app.member')->getProfileForm($this->getUser());
+        $form = $memberService->getProfileForm($this->getUser());
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($this->get('app.member')->saveForm($form)) {
+            if ($memberService->saveForm($form)) {
                 $this->addFlash('success', 'member.profile.confirmation');
 
                 return $this->redirectToRoute('member_profile');

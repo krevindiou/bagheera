@@ -6,34 +6,40 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\Form;
 use Pagerfanta\Pagerfanta;
 use Pagerfanta\Adapter\CallbackAdapter;
-use JMS\DiExtraBundle\Annotation as DI;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Member;
 use App\Entity\Account;
 use App\Entity\Operation;
 use App\Entity\Scheduler;
 use App\Entity\PaymentMethod;
+use App\Service\OperationService;
 use App\Form\Type\SchedulerFormType;
 
-/**
- * @DI\Service("app.scheduler")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "scheduler"})
- */
 class SchedulerService
 {
-    /** @DI\Inject */
-    public $logger;
+    private $logger;
+    private $em;
+    private $formFactory;
+    private $validator;
+    private $operationService;
 
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject */
-    public $validator;
-
-    /** @DI\Inject("app.operation") */
-    public $operationService;
+    public function __construct(
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator,
+        OperationService $operationService
+    )
+    {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+        $this->operationService = $operationService;
+    }
 
     /**
      * Returns schedulers list.

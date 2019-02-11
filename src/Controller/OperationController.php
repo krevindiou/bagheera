@@ -10,6 +10,9 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use App\Entity\Operation;
 use App\Entity\Account;
+use App\Service\OperationService;
+use App\Service\OperationSearchService;
+use App\Service\AccountService;
 
 /**
  * @Route("/manager")
@@ -21,19 +24,19 @@ class OperationController extends Controller
      *
      * @Method("GET")
      */
-    public function listAction(Request $request, Account $account)
+    public function listAction(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account)
     {
         $member = $this->getUser();
 
         $page = $request->query->getInt('page', 1);
 
-        $operationSearch = $this->get('app.operation_search')->getSessionSearch($account);
-        $operations = $this->get('app.operation')->getList($member, $account, $page, $operationSearch);
+        $operationSearch = $operationSearchService->getSessionSearch($account);
+        $operations = $operationService->getList($member, $account, $page, $operationSearch);
         if (null === $operations) {
             throw $this->createNotFoundException();
         }
 
-        $accountService = $this->get('app.account');
+        $accountService = $accountService;
 
         $balance = $accountService->getBalance($member, $account);
         $reconciledBalance = $accountService->getBalance($member, $account, true);
@@ -56,17 +59,17 @@ class OperationController extends Controller
      *
      * @Method("POST")
      */
-    public function listActionsAction(Request $request, Account $account)
+    public function listActionsAction(Request $request, OperationService $operationService, Account $account)
     {
         $operationsId = (array) $request->request->get('operationsId');
 
         $member = $this->getUser();
 
         if ($request->request->has('delete')) {
-            $this->get('app.operation')->delete($member, $operationsId);
+            $operationService->delete($member, $operationsId);
             $this->addFlash('success', 'operation.delete_confirmation');
         } elseif ($request->request->has('reconcile')) {
-            $this->get('app.operation')->reconcile($member, $operationsId);
+            $operationService->reconcile($member, $operationsId);
             $this->addFlash('success', 'operation.reconcile_confirmation');
         }
 
@@ -79,11 +82,11 @@ class OperationController extends Controller
      * @ParamConverter("operation", class="App:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      */
-    public function formAction(Request $request, Account $account = null, Operation $operation = null)
+    public function formAction(Request $request, OperationService $operationService, Account $account = null, Operation $operation = null)
     {
         $member = $this->getUser();
 
-        $operationForm = $this->get('app.operation')->getForm($member, $operation, $account);
+        $operationForm = $operationService->getForm($member, $operation, $account);
         if (null === $operationForm) {
             throw $this->createNotFoundException();
         }
@@ -91,7 +94,7 @@ class OperationController extends Controller
         $operationForm->handleRequest($request);
 
         if ($operationForm->isSubmitted()) {
-            if ($this->get('app.operation')->saveForm($member, $operationForm)) {
+            if ($operationService->saveForm($member, $operationForm)) {
                 $this->addFlash('success', 'operation.form_confirmation');
 
                 $accountId = $operationForm->getData()->getAccount()->getAccountId();
@@ -117,9 +120,9 @@ class OperationController extends Controller
     /**
      * @Route("/third-parties.json", name="operation_third_party_list")
      */
-    public function thirdPartyAction(Request $request)
+    public function thirdPartyAction(Request $request, OperationService $operationService)
     {
-        $thirdParties = $this->get('app.operation')->findThirdParties(
+        $thirdParties = $operationService->findThirdParties(
             $this->getUser(),
             $request->query->get('q')
         );

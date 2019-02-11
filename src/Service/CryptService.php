@@ -2,13 +2,8 @@
 
 namespace App\Service;
 
-use JMS\DiExtraBundle\Annotation as DI;
-
 /**
  * AES-256 encryption (32 bytes long key).
- *
- * @DI\Service("app.crypt")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "crypt"})
  */
 class CryptService
 {

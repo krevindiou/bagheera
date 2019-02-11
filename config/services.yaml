@@ -18,3 +18,29 @@ services:
     App\Controller\:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
+
+    App\Command\ImportExternalBankCommand:
+        arguments:
+            $emSecure: '@doctrine.orm.secure_entity_manager'
+
+    App\Service\BankAccessService:
+        arguments:
+            $emSecure: '@doctrine.orm.secure_entity_manager'
+
+    App\Service\BankService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $environment: '%kernel.environment%'
+
+    App\Service\MemberService:
+        arguments:
+            $secret: '%kernel.secret%'
+            $config: '%email%'
+
+    App\Service\OperationService:
+        arguments:
+            $categoriesId: '%categories_id%'
+
+    App\Service\Provider\ProviderAdapter:
+        arguments:
+            $key: '%kernel.secret%'

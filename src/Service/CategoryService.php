@@ -2,16 +2,16 @@
 
 namespace App\Service;
 
-use JMS\DiExtraBundle\Annotation as DI;
+use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * @DI\Service("app.category")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "category"})
- */
 class CategoryService
 {
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
+    private $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
 
     public function getList()
     {

@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use App\Entity\Bank;
+use App\Service\BankAccessService;
 
 /**
  * @Route("/manager")
@@ -15,11 +16,11 @@ class BankAccessController extends Controller
     /**
      * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_update")
      */
-    public function formAction(Request $request, Bank $bank)
+    public function formAction(Request $request, BankAccessService $bankAccessService, Bank $bank)
     {
         $member = $this->getUser();
 
-        $bankAccessForm = $this->get('app.bank_access')->getForm($member, $bank);
+        $bankAccessForm = $bankAccessService->getForm($member, $bank);
         if (null === $bankAccessForm) {
             throw $this->createNotFoundException();
         }
@@ -27,7 +28,7 @@ class BankAccessController extends Controller
         $bankAccessForm->handleRequest($request);
 
         if ($bankAccessForm->isSubmitted()) {
-            if ($this->get('app.bank_access')->saveForm($member, $bankAccessForm)) {
+            if ($bankAccessService->saveForm($member, $bankAccessForm)) {
                 $this->addFlash('success', 'bank_access.form_confirmation');
 
                 return $this->redirectToRoute('account_list');

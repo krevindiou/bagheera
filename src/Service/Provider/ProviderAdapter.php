@@ -2,33 +2,33 @@
 
 namespace App\Service\Provider;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
-use JMS\DiExtraBundle\Annotation as DI;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Account;
 use App\Entity\BankAccess;
+use App\Service\AccountImportService;
 
-/**
- * @DI\Service("app.provider_adapter")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "provider_adapter"})
- */
 class ProviderAdapter
 {
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("%secret%") */
-    public $key;
-
-    /** @DI\Inject("app.account_import") */
-    public $accountImportService;
-
-    /** @DI\Inject("service_container") */
-    public $container;
-
-    /**
-     * @var ProviderService
-     */
+    private $em;
+    private $key;
+    private $accountImportService;
+    private $container;
     protected $providerService;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        $key,
+        AccountImportService $accountImportService,
+        ContainerInterface $container
+    )
+    {
+        $this->em = $em;
+        $this->key = $key;
+        $this->accountImportService = $accountImportService;
+        $this->container = $container;
+    }
 
     /**
      * Defines BankAccess entity (used to retrieve bank's specific service).
@@ -44,13 +44,11 @@ class ProviderAdapter
 
             if (null !== $provider) {
                 try {
-                    $providerService = $this->container->get('app.provider_adapter.'.$provider->getProviderId());
-                    $providerService->setBank($bank);
-                    $providerService->setBankAccess($bankAccess);
-                    $providerService->setKey($this->key);
-                    $providerService->setAccountImportService($this->accountImportService);
-
-                    $this->providerService = $providerService;
+                    $this->providerService = $this->container->get('app.provider_adapter.'.$provider->getProviderId());
+                    $this->providerService->setBank($bank);
+                    $this->providerService->setBankAccess($bankAccess);
+                    $this->providerService->setKey($this->key);
+                    $this->providerService->setAccountImportService($this->accountImportService);
                 } catch (ServiceNotFoundException $e) {
                 }
             }

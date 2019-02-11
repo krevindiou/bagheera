@@ -3,41 +3,48 @@
 namespace App\Service;
 
 use Symfony\Component\Form\Form;
-use JMS\DiExtraBundle\Annotation as DI;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Member;
 use App\Entity\Bank;
 use App\Entity\BankAccess;
+use App\Service\BankService;
+use App\Service\CryptService;
 use App\Form\Type\BankAccessFormType;
 
-/**
- * @DI\Service("app.bank_access")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "bank_access"})
- */
 class BankAccessService
 {
-    /** @DI\Inject("%secret%") */
-    public $secret;
+    private $secret;
+    private $logger;
+    private $em;
+    private $emSecure;
+    private $formFactory;
+    private $validator;
+    private $bankService;
+    private $cryptService;
 
-    /** @DI\Inject */
-    public $logger;
-
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("doctrine.orm.secure_entity_manager") */
-    public $emSecure;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject */
-    public $validator;
-
-    /** @DI\Inject("app.bank") */
-    public $bankService;
-
-    /** @DI\Inject("app.crypt") */
-    public $cryptService;
+    public function __construct(
+        $secret,
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        EntityManagerInterface $emSecure,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator,
+        BankService $bankService,
+        CryptService $cryptService
+    )
+    {
+        $this->secret = $secret;
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->emSecure = $emSecure;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+        $this->bankService = $bankService;
+        $this->cryptService = $cryptService;
+    }
 
     /**
      * Returns bank access form.

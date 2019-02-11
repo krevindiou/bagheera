@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 
 class TranslateController extends Controller
@@ -11,9 +12,8 @@ class TranslateController extends Controller
     /**
      * @Route("/translations.js", defaults={"_format"="js"})
      */
-    public function listAction()
+    public function listAction(TranslatorInterface $translator)
     {
-        $translator = $this->get('translator');
         $translations = [
             'payment_method_initial_balance' => $translator->trans('payment_method.initial_balance'),
             'payment_method_credit_card' => $translator->trans('payment_method.credit_card'),

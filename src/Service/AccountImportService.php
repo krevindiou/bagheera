@@ -2,21 +2,18 @@
 
 namespace App\Service;
 
-use JMS\DiExtraBundle\Annotation as DI;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Account;
 use App\Entity\AccountImport;
 
-/**
- * @DI\Service("app.account_import")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "account_import"})
- */
 class AccountImportService
 {
-    /** @DI\Inject */
-    public $logger;
+    private $em;
 
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
 
     /**
      * Returns next import id to be used.

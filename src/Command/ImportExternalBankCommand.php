@@ -2,14 +2,48 @@
 
 namespace App\Command;
 
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use App\Entity\Account;
+use App\Service\AccountService;
+use App\Service\AccountImportService;
+use App\Service\OperationService;
+use App\Service\Provider\ProviderAdapter;
 
 class ImportExternalBankCommand extends ContainerAwareCommand
 {
+    private $logger;
+    private $em;
+    private $emSecure;
+    private $accountService;
+    private $accountImportService;
+    private $operationService;
+    private $provider;
+
+    public function __construct(
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        EntityManagerInterface $emSecure,
+        AccountService $accountService,
+        AccountImportService $accountImportService,
+        OperationService $operationService,
+        ProviderAdapter $provider
+    )
+    {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->emSecure = $emSecure;
+        $this->accountService = $accountService;
+        $this->accountImportService = $accountImportService;
+        $this->operationService = $operationService;
+        $this->provider = $provider;
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
@@ -21,52 +55,44 @@ class ImportExternalBankCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $em = $this->getContainer()->get('doctrine')->getManager();
-        $secureEm = $this->getContainer()->get('doctrine')->getManager('secure');
-
-        $bank = $em->find('App:Bank', $input->getArgument('bank_id'));
+        $bank = $this->em->find('App:Bank', $input->getArgument('bank_id'));
 
         if (null !== $bank) {
-            $bankAccess = $secureEm->find('App:BankAccess', $bank->getBankId());
+            $bankAccess = $this->emSecure->find('App:BankAccess', $bank->getBankId());
 
             if (null !== $bankAccess) {
-                $accountService = $this->getContainer()->get('app.account');
-                $accountImportService = $this->getContainer()->get('app.account_import');
-                $operationService = $this->getContainer()->get('app.operation');
-
-                $provider = $this->getContainer()->get('app.provider_adapter');
                 try {
-                    $provider->setBankAccess($bankAccess);
+                    $this->provider->setBankAccess($bankAccess);
                 } catch (\RuntimeException $e) {
-                    $this->getContainer()->get('logger')->err($e->getMessage());
+                    $this->logger->err($e->getMessage());
 
                     return;
                 }
 
-                $accounts = $provider->fetchAccounts();
+                $accounts = $this->provider->fetchAccounts();
 
-                $accountService->saveMulti($bank, $accounts);
+                $this->accountService->saveMulti($bank, $accounts);
 
                 // Entity manager needs a refresh to fetch new accounts
-                $em->refresh($bank);
+                $this->em->refresh($bank);
 
                 foreach ($bank->getAccounts() as $account) {
                     if (null !== $account->getExternalAccountId()) {
-                        $accountImportService->initImport($account);
+                        $this->accountImportService->initImport($account);
 
-                        $transactions = $provider->fetchTransactions($account);
+                        $transactions = $this->provider->fetchTransactions($account);
 
                         if (!empty($transactions)) {
-                            $operationService->saveMulti(
+                            $this->operationService->saveMulti(
                                 $account,
                                 $transactions,
-                                function (Account $account, $nb) use ($accountImportService) {
-                                    $accountImportService->updateImport($account, $nb);
+                                function (Account $account, $nb) {
+                                    $this->accountImportService->updateImport($account, $nb);
                                 }
                             );
                         }
 
-                        $accountImportService->closeImport($account);
+                        $this->accountImportService->closeImport($account);
                     }
                 }
             }

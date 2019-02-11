@@ -4,38 +4,44 @@ namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use Symfony\Component\Process\PhpExecutableFinder;
-use JMS\DiExtraBundle\Annotation as DI;
+use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\Member;
 use App\Entity\Bank;
+use App\Service\AccountService;
 use App\Form\Type\BankChooseFormType;
 use App\Form\Type\BankUpdateFormType;
 
-/**
- * @DI\Service("app.bank")
- * @DI\Tag("monolog.logger", attributes = {"channel" = "bank"})
- */
 class BankService
 {
-    /** @DI\Inject */
-    public $logger;
+    private $logger;
+    private $em;
+    private $formFactory;
+    private $validator;
+    private $accountService;
+    private $projectDir;
+    private $environment;
 
-    /** @DI\Inject("doctrine.orm.entity_manager") */
-    public $em;
-
-    /** @DI\Inject("form.factory") */
-    public $formFactory;
-
-    /** @DI\Inject */
-    public $validator;
-
-    /** @DI\Inject("app.account") */
-    public $accountService;
-
-    /** @DI\Inject("%kernel.project_dir%") */
-    public $projectDir;
-
-    /** @DI\Inject("%kernel.environment%") */
-    public $environment;
+    public function __construct(
+        LoggerInterface $logger,
+        EntityManagerInterface $em,
+        FormFactoryInterface $formFactory,
+        ValidatorInterface $validator,
+        AccountService $accountService,
+        $projectDir,
+        $environment
+    )
+    {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->formFactory = $formFactory;
+        $this->validator = $validator;
+        $this->accountService = $accountService;
+        $this->projectDir = $projectDir;
+        $this->environment = $environment;
+    }
 
     /**
      * Returns banks list.
