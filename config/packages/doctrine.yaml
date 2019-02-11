@@ -22,9 +22,15 @@ doctrine:
                 connection: default
                 naming_strategy: doctrine.orm.naming_strategy.underscore
                 mappings:
-                    App: ~
+                    App:
+                        type: annotation
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
             secure:
                 connection: secure
                 naming_strategy: doctrine.orm.naming_strategy.underscore
                 mappings:
-                    App: ~
+                    App:
+                        type: annotation
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'

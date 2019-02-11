@@ -9,7 +9,7 @@ security:
 
     providers:
         main:
-            entity: { class: Entity\Member, property: email }
+            entity: { class: App\Entity\Member, property: email }
 
     firewalls:
         dev:
