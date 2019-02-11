@@ -6,11 +6,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use JMS\DiExtraBundle\Annotation as DI;
 
-/**
- * @DI\FormType
- */
 class BankAccessFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)

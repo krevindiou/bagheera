@@ -11,11 +11,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\CurrencyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use JMS\DiExtraBundle\Annotation as DI;
 
-/**
- * @DI\FormType
- */
 class AccountFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)

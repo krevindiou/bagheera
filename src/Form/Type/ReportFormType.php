@@ -15,11 +15,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use JMS\DiExtraBundle\Annotation as DI;
 
-/**
- * @DI\FormType
- */
 class ReportFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)

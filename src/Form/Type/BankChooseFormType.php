@@ -10,11 +10,7 @@ use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use JMS\DiExtraBundle\Annotation as DI;
 
-/**
- * @DI\FormType
- */
 class BankChooseFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)

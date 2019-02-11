@@ -4,11 +4,7 @@ namespace App\Form\Type;
 
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use JMS\DiExtraBundle\Annotation as DI;
 
-/**
- * @DI\FormType
- */
 class MemberProfileFormType extends MemberRegisterFormType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
