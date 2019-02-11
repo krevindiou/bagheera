@@ -144,7 +144,7 @@ class MemberService
             ['link' => $link]
         );
 
-        $message = \Swift_Message::newInstance()
+        $message = (new \Swift_Message())
             ->setSubject($this->translator->trans('member.register.email_subject'))
             ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
             ->setTo([$member->getEmail()])
@@ -291,7 +291,7 @@ class MemberService
                 ['link' => $link]
             );
 
-            $message = \Swift_Message::newInstance()
+            $message = (new \Swift_Message())
                 ->setSubject($this->translator->trans('member.forgot_password.email_subject'))
                 ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
                 ->setTo([$member->getEmail()])
