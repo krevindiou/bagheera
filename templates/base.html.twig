@@ -5,9 +5,7 @@
         <meta name="Content-Type" content="text/html; charset=utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,800">
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-        {% endblock %}
+        {{ encore_entry_link_tags('app') }}
         <link rel="icon" href="{{ asset('/favicon.png') }}" type="image/png" />
         <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
     </head>
@@ -132,8 +130,8 @@
             </div>
         </div>
 
+        {{ encore_entry_script_tags('app') }}
         {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
         {% endblock %}
         <script src="/{{ app.request.locale }}/translations.js"></script>
     </body>
