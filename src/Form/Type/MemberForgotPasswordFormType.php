@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-use App\Constraint\FieldExists;
+use App\Validator\Constraints\FieldExists;
 
 class MemberForgotPasswordFormType extends AbstractType
 {

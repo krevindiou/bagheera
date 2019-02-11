@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Constraint;
+namespace App\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 
+/**
+ * @Annotation
+ */
 class FieldExists extends Constraint
 {
     /**
@@ -36,13 +39,5 @@ class FieldExists extends Constraint
         $this->className = $className;
         $this->field = $field;
         $this->em = $em;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function validatedBy()
-    {
-        return 'app.validator.field_exists';
     }
 }
