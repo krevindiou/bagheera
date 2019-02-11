@@ -8,7 +8,7 @@ require('../../vendor/components/mailcheck/src/mailcheck.min.js');
 
 var locale = document.getElementsByTagName("html")[0].lang;
 
-var Bagheera = {
+Bagheera = {
     baseUrl: "",
     paymentMethodOptions: [],
     categoryOptions: [],
