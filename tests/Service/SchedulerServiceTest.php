@@ -18,21 +18,21 @@ class SchedulerServiceTest extends TestCase
     public function testGetFormForNewScheduler()
     {
         $account = $this->em->find('App:Account', 1);
-        $form = $this->get('app.scheduler')->getForm(null, $account);
+        $form = $this->get('test.app.scheduler')->getForm(null, $account);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingScheduler()
     {
         $scheduler = $this->em->find('App:Scheduler', 1);
-        $form = $this->get('app.scheduler')->getForm($scheduler);
+        $form = $this->get('test.app.scheduler')->getForm($scheduler);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testSaveNewSchedulerWithNoData()
     {
         $scheduler = new Scheduler();
-        $this->assertFalse($this->get('app.scheduler')->save($scheduler));
+        $this->assertFalse($this->get('test.app.scheduler')->save($scheduler));
     }
 
     public function testSaveNewScheduler()
@@ -45,26 +45,26 @@ class SchedulerServiceTest extends TestCase
         $scheduler->setPaymentMethod($this->em->find('App:PaymentMethod', 1));
         $scheduler->setFrequencyUnit('month');
         $scheduler->setFrequencyValue(1);
-        $this->assertTrue($this->get('app.scheduler')->save($scheduler));
+        $this->assertTrue($this->get('test.app.scheduler')->save($scheduler));
     }
 
     public function testSaveExistingSchedulerWithBadData()
     {
         $scheduler = $this->em->find('App:Scheduler', 1);
         $scheduler->setThirdParty('');
-        $this->assertFalse($this->get('app.scheduler')->save($scheduler));
+        $this->assertFalse($this->get('test.app.scheduler')->save($scheduler));
     }
 
     public function testSaveExistingScheduler()
     {
         $scheduler = $this->em->find('App:Scheduler', 1);
-        $this->assertTrue($this->get('app.scheduler')->save($scheduler));
+        $this->assertTrue($this->get('test.app.scheduler')->save($scheduler));
     }
 
     public function testGetSchedulers()
     {
         $account = $this->em->find('App:Account', 1);
-        $schedulers = $this->get('app.scheduler')->getList($account);
+        $schedulers = $this->get('test.app.scheduler')->getList($account);
 
         $this->assertEquals(count($schedulers), 2);
     }
@@ -73,12 +73,12 @@ class SchedulerServiceTest extends TestCase
     {
         $account = $this->em->find('App:Account', 1);
 
-        $schedulersBeforeDelete = $this->get('app.scheduler')->getList($account);
+        $schedulersBeforeDelete = $this->get('test.app.scheduler')->getList($account);
         $countSchedulersBeforeDelete = count($schedulersBeforeDelete);
 
-        $this->get('app.scheduler')->delete($this->em->find('App:Scheduler', 2));
+        $this->get('test.app.scheduler')->delete($this->em->find('App:Scheduler', 2));
 
-        $schedulersAfterDelete = $this->get('app.scheduler')->getList($account);
+        $schedulersAfterDelete = $this->get('test.app.scheduler')->getList($account);
         $countSchedulersAfterDelete = count($schedulersAfterDelete);
 
         $this->assertEquals($countSchedulersAfterDelete, $countSchedulersBeforeDelete - 1);
@@ -95,7 +95,7 @@ class SchedulerServiceTest extends TestCase
         $operationsBefore = $query->getResult();
 
         $member = $this->em->find('App:Member', 1);
-        $this->get('app.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
+        $this->get('test.app.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql .= 'FROM App:Operation o ';
@@ -135,7 +135,7 @@ class SchedulerServiceTest extends TestCase
         $operationsBefore = $query->getResult();
 
         $member = $this->em->find('App:Member', 1);
-        $this->get('app.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
+        $this->get('test.app.scheduler')->runSchedulers($member, new \DateTime('2011-11-12'));
 
         $dql = 'SELECT o ';
         $dql .= 'FROM App:Operation o ';

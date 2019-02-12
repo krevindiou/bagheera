@@ -18,27 +18,27 @@ class BankServiceTest extends TestCase
     public function testGetFormForForeignMember()
     {
         $hsbc = $this->em->find('App:Bank', 1);
-        $form = $this->get('app.bank')->getForm($this->jane, $hsbc);
+        $form = $this->get('test.app.bank')->getForm($this->jane, $hsbc);
         $this->assertNull($form);
     }
 
     public function testGetFormForNewBank()
     {
-        $form = $this->get('app.bank')->getForm($this->john);
+        $form = $this->get('test.app.bank')->getForm($this->john);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testGetFormForExistingBank()
     {
         $hsbc = $this->em->find('App:Bank', 1);
-        $form = $this->get('app.bank')->getForm($this->john, $hsbc);
+        $form = $this->get('test.app.bank')->getForm($this->john, $hsbc);
         $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
     }
 
     public function testSaveNewBankWithNoData()
     {
         $bank = new Bank();
-        $this->assertFalse($this->get('app.bank')->save($this->john, $bank));
+        $this->assertFalse($this->get('test.app.bank')->save($this->john, $bank));
     }
 
     public function testSaveNewBankWithForeignMember()
@@ -46,7 +46,7 @@ class BankServiceTest extends TestCase
         $bank = new Bank();
         $bank->setMember($this->john);
         $bank->setName('Citigroup');
-        $this->assertFalse($this->get('app.bank')->save($this->jane, $bank));
+        $this->assertFalse($this->get('test.app.bank')->save($this->jane, $bank));
     }
 
     public function testSaveNewBank()
@@ -54,26 +54,26 @@ class BankServiceTest extends TestCase
         $bank = new Bank();
         $bank->setMember($this->john);
         $bank->setName('Citigroup');
-        $this->assertTrue($this->get('app.bank')->save($this->john, $bank));
+        $this->assertTrue($this->get('test.app.bank')->save($this->john, $bank));
     }
 
     public function testSaveExistingBankWithBadData()
     {
         $hsbc = $this->em->find('App:Bank', 1);
         $hsbc->setName('');
-        $this->assertFalse($this->get('app.bank')->save($this->john, $hsbc));
+        $this->assertFalse($this->get('test.app.bank')->save($this->john, $hsbc));
     }
 
     public function testSaveExistingBankWithForeignMember()
     {
         $hsbc = $this->em->find('App:Bank', 1);
-        $this->assertFalse($this->get('app.bank')->save($this->jane, $hsbc));
+        $this->assertFalse($this->get('test.app.bank')->save($this->jane, $hsbc));
     }
 
     public function testSaveExistingBank()
     {
         $hsbc = $this->em->find('App:Bank', 1);
-        $this->assertTrue($this->get('app.bank')->save($this->john, $hsbc));
+        $this->assertTrue($this->get('test.app.bank')->save($this->john, $hsbc));
     }
 
     public function testDelete()
@@ -81,7 +81,7 @@ class BankServiceTest extends TestCase
         $banks = $this->em->getRepository('App:Bank')->findByDeleted(true);
         $banksNb = count($banks);
 
-        $this->assertTrue($this->get('app.bank')->delete($this->john, [1]));
+        $this->assertTrue($this->get('test.app.bank')->delete($this->john, [1]));
 
         $banks = $this->em->getRepository('App:Bank')->findByDeleted(true);
         $this->assertEquals(count($banks), $banksNb + 1);
@@ -91,7 +91,7 @@ class BankServiceTest extends TestCase
     {
         $hsbc = $this->em->find('App:Bank', 1);
 
-        $balances = $this->get('app.bank')->getBalances($this->jane, $hsbc);
+        $balances = $this->get('test.app.bank')->getBalances($this->jane, $hsbc);
 
         $this->assertEquals(count($balances), 0);
     }
@@ -100,7 +100,7 @@ class BankServiceTest extends TestCase
     {
         $hsbc = $this->em->find('App:Bank', 1);
 
-        $balances = $this->get('app.bank')->getBalances($this->john, $hsbc);
+        $balances = $this->get('test.app.bank')->getBalances($this->john, $hsbc);
 
         $this->assertEquals(sprintf('%.2f', $balances['USD']), -17.10);
         $this->assertEquals(sprintf('%.2f', $balances['EUR']), 208.55);

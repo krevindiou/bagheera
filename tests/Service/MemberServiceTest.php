@@ -17,7 +17,7 @@ class MemberServiceTest extends TestCase
 
     public function testGetRegisterForm()
     {
-        $registerForm = $this->get('app.member')->getRegisterForm('en_US');
+        $registerForm = $this->get('test.app.member')->getRegisterForm('en_US');
 
         $this->assertEquals(get_class($registerForm), 'Symfony\Component\Form\Form');
     }
@@ -25,7 +25,7 @@ class MemberServiceTest extends TestCase
     public function testAddMemberWithNoData()
     {
         $member = new Member();
-        $this->assertFalse($this->get('app.member')->save($member));
+        $this->assertFalse($this->get('test.app.member')->save($member));
     }
 
     public function testAddMember()
@@ -37,14 +37,14 @@ class MemberServiceTest extends TestCase
         $member->setPassword($encoder->encodePassword($member, 'james123'));
         $member->setCountry('US');
 
-        $this->assertTrue($this->get('app.member')->save($member));
+        $this->assertTrue($this->get('test.app.member')->save($member));
     }
 
     public function testGetProfileForm()
     {
         $member = $this->em->find('App:Member', 1);
 
-        $profileForm = $this->get('app.member')->getProfileForm($member);
+        $profileForm = $this->get('test.app.member')->getProfileForm($member);
 
         $this->assertEquals(get_class($profileForm), 'Symfony\Component\Form\Form');
     }
@@ -54,26 +54,26 @@ class MemberServiceTest extends TestCase
         $member = $this->em->find('App:Member', 1);
         $member->setEmail('');
 
-        $this->assertFalse($this->get('app.member')->save($member));
+        $this->assertFalse($this->get('test.app.member')->save($member));
     }
 
     public function testUpdateMember()
     {
         $member = $this->em->find('App:Member', 1);
 
-        $this->assertTrue($this->get('app.member')->save($member));
+        $this->assertTrue($this->get('test.app.member')->save($member));
     }
 
     public function testGetForgotPasswordForm()
     {
-        $forgotPasswordForm = $this->get('app.member')->getForgotPasswordForm();
+        $forgotPasswordForm = $this->get('test.app.member')->getForgotPasswordForm();
 
         $this->assertEquals(get_class($forgotPasswordForm), 'Symfony\Component\Form\Form');
     }
 
     public function testGetChangePasswordForm()
     {
-        $changePasswordForm = $this->get('app.member')->getChangePasswordForm();
+        $changePasswordForm = $this->get('test.app.member')->getChangePasswordForm();
 
         $this->assertEquals(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
     }
@@ -82,7 +82,7 @@ class MemberServiceTest extends TestCase
     {
         $member = $this->em->find('App:Member', 1);
 
-        $ok = $this->get('app.member')->changePassword($member, 'test');
+        $ok = $this->get('test.app.member')->changePassword($member, 'test');
 
         $this->assertTrue($ok);
     }
@@ -91,7 +91,7 @@ class MemberServiceTest extends TestCase
     {
         $key = 'badkeybadkeybadkeybadkeybadkeyba';
 
-        $ok = $this->get('app.member')->activate($key);
+        $ok = $this->get('test.app.member')->activate($key);
 
         $this->assertFalse($ok);
     }
@@ -100,9 +100,9 @@ class MemberServiceTest extends TestCase
     {
         $member = $this->em->find('App:Member', 1);
 
-        $key = $this->get('app.member')->createRegisterKey($member);
+        $key = $this->get('test.app.member')->createRegisterKey($member);
 
-        $ok = $this->get('app.member')->activate($key);
+        $ok = $this->get('test.app.member')->activate($key);
 
         $this->assertTrue($ok);
     }
@@ -111,7 +111,7 @@ class MemberServiceTest extends TestCase
     {
         $member = $this->em->find('App:Member', 1);
 
-        $balances = $this->get('app.member')->getBalances($member);
+        $balances = $this->get('test.app.member')->getBalances($member);
 
         $this->assertEquals($balances['USD'], -98.82);
         $this->assertEquals($balances['EUR'], 208.55);

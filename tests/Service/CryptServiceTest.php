@@ -24,7 +24,7 @@ class CryptServiceTest extends TestCase
 
     public function testDecrypt()
     {
-        $plaintext = $this->get('app.crypt')->decrypt(
+        $plaintext = $this->get('test.app.crypt')->decrypt(
             'ycs3LmJ85/DBd0KnG3a8SjFZyvPk3TWQfY+/Q4qQ/OY=',
             'a1b45f788d830f1e2ae3a00c4d2965a8'
         );
