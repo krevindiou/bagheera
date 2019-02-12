@@ -25,6 +25,7 @@ services:
 
     App\Service\BankAccessService:
         arguments:
+            $secret: '%kernel.secret%'
             $emSecure: '@doctrine.orm.secure_entity_manager'
 
     App\Service\BankService:
