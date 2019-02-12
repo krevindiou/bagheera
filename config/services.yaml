@@ -45,3 +45,7 @@ services:
     App\Service\Provider\ProviderAdapter:
         arguments:
             $key: '%kernel.secret%'
+
+    App\EventListener\LoginListener:
+        tags:
+            - { name: 'kernel.event_listener', event: 'security.interactive_login' }

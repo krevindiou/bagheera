@@ -4,7 +4,6 @@ namespace App\Service;
 
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -18,9 +17,6 @@ use App\Form\Type\MemberForgotPasswordFormType;
 use App\Form\Type\MemberProfileFormType;
 use App\Form\Type\MemberRegisterFormType;
 
-/**
- * @DI\Tag("kernel.event_listener", attributes = {"event" = "security.interactive_login", "method" = "onLogin"})
- */
 class MemberService
 {
     private $secret;
@@ -35,7 +31,6 @@ class MemberService
     private $validator;
     private $bankService;
     private $accountService;
-    private $schedulerService;
     private $cryptService;
     private $templating;
 
@@ -52,7 +47,6 @@ class MemberService
         ValidatorInterface $validator,
         BankService $bankService,
         AccountService $accountService,
-        SchedulerService $schedulerService,
         CryptService $cryptService,
         EngineInterface $templating
     )
@@ -69,24 +63,8 @@ class MemberService
         $this->validator = $validator;
         $this->bankService = $bankService;
         $this->accountService = $accountService;
-        $this->schedulerService = $schedulerService;
         $this->cryptService = $cryptService;
         $this->templating = $templating;
-    }
-
-    public function onLogin(InteractiveLoginEvent $event)
-    {
-        $member = $event->getAuthenticationToken()->getUser();
-
-        $member->setLoggedAt(new \DateTime());
-
-        try {
-            $this->em->flush();
-        } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
-        }
-
-        $this->schedulerService->runSchedulers($member);
     }
 
     /**
