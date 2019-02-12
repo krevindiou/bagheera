@@ -1,7 +1,0 @@
-doctrine:
-    dbal:
-        connections:
-            default:
-                dbname: bagheera_test
-            secure:
-                dbname: bagheera_test
