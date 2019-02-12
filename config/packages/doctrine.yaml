@@ -1,0 +1,36 @@
+parameters:
+    env(DATABASE_URL): ''
+    env(DATABASE_SECURE_URL): ''
+
+doctrine:
+    dbal:
+        connections:
+            default:
+                driver: pdo_pgsql
+                charset: UTF8
+                url: '%env(resolve:DATABASE_URL)%'
+            secure:
+                driver: pdo_pgsql
+                charset: UTF8
+                url: '%env(resolve:DATABASE_SECURE_URL)%'
+
+    orm:
+        auto_generate_proxy_classes: true
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                mappings:
+                    App:
+                        type: annotation
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+            secure:
+                connection: secure
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                mappings:
+                    App:
+                        type: annotation
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'

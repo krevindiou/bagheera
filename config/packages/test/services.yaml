@@ -1,0 +1,44 @@
+services:
+    test.app.account_import:
+        alias: App\Service\AccountImportService
+        public: true
+
+    test.app.account:
+        alias: App\Service\AccountService
+        public: true
+
+    test.app.bank_access:
+        alias: App\Service\BankAccessService
+        public: true
+
+    test.app.bank:
+        alias: App\Service\BankService
+        public: true
+
+    test.app.category:
+        alias: App\Service\CategoryService
+        public: true
+
+    test.app.crypt:
+        alias: App\Service\CryptService
+        public: true
+
+    test.app.member:
+        alias: App\Service\MemberService
+        public: true
+
+    test.app.operation_search:
+        alias: App\Service\OperationSearchService
+        public: true
+
+    test.app.operation:
+        alias: App\Service\OperationService
+        public: true
+
+    test.app.report:
+        alias: App\Service\ReportService
+        public: true
+
+    test.app.scheduler:
+        alias: App\Service\SchedulerService
+        public: true

@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block page_title 'member.register.page_title'|trans %}
+
+{% block breadcrumb %}
+    <li class="active">{{ 'member.register.page_title'|trans }}</li>
+{% endblock %}
+
+{% block content %}
+{{ form_start(registerForm, {action: path('member_register'), attr: {novalidate: true, class: 'form-horizontal'}}) }}
+    {{ form_row(registerForm.email) }}
+    {{ form_row(registerForm.country) }}
+    {{ form_row(registerForm.plainPassword) }}
+
+    <div class="form-actions">
+        {{ form_widget(registerForm.submit) }}
+        <a href="{{ path('member_login') }}" class="btn"> {{ 'cancel_link'|trans }}</a>
+    </div>
+{{ form_end(registerForm) }}
+{% endblock %}

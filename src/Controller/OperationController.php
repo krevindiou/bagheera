@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use App\Entity\Operation;
+use App\Entity\Account;
+use App\Service\OperationService;
+use App\Service\OperationSearchService;
+use App\Service\AccountService;
+
+/**
+ * @Route("/manager")
+ */
+class OperationController extends Controller
+{
+    /**
+     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, name="operation_list")
+     *
+     * @Method("GET")
+     */
+    public function listAction(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account)
+    {
+        $member = $this->getUser();
+
+        $page = $request->query->getInt('page', 1);
+
+        $operationSearch = $operationSearchService->getSessionSearch($account);
+        $operations = $operationService->getList($member, $account, $page, $operationSearch);
+        if (null === $operations) {
+            throw $this->createNotFoundException();
+        }
+
+        $accountService = $accountService;
+
+        $balance = $accountService->getBalance($member, $account);
+        $reconciledBalance = $accountService->getBalance($member, $account, true);
+
+        return $this->render(
+            'Operation/list.html.twig',
+            [
+                'account' => $account,
+                'operations' => $operations,
+                'displaySearch' => (null !== $operationSearch),
+                'tipCreateOperation' => (null === $operationSearch && count($operations) == 0),
+                'balance' => $balance,
+                'reconciledBalance' => $reconciledBalance,
+            ]
+        );
+    }
+
+    /**
+     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"})
+     *
+     * @Method("POST")
+     */
+    public function listActionsAction(Request $request, OperationService $operationService, Account $account)
+    {
+        $operationsId = (array) $request->request->get('operationsId');
+
+        $member = $this->getUser();
+
+        if ($request->request->has('delete')) {
+            $operationService->delete($member, $operationsId);
+            $this->addFlash('success', 'operation.delete_confirmation');
+        } elseif ($request->request->has('reconcile')) {
+            $operationService->reconcile($member, $operationsId);
+            $this->addFlash('success', 'operation.reconcile_confirmation');
+        }
+
+        return $this->redirectToRoute('operation_list', ['accountId' => $account->getAccountId()]);
+    }
+
+    /**
+     * @Route("/operation-{operationId}", requirements={"operationId" = "\d+"}, defaults={"accountId" = null}, name="operation_update")
+     * @Route("/account-{accountId}/create-operation", requirements={"accountId" = "\d+"}, defaults={"operationId" = null}, name="operation_create")
+     * @ParamConverter("operation", class="App:Operation", options={"id" = "operationId"})
+     * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
+     */
+    public function formAction(Request $request, OperationService $operationService, Account $account = null, Operation $operation = null)
+    {
+        $member = $this->getUser();
+
+        $operationForm = $operationService->getForm($member, $operation, $account);
+        if (null === $operationForm) {
+            throw $this->createNotFoundException();
+        }
+
+        $operationForm->handleRequest($request);
+
+        if ($operationForm->isSubmitted()) {
+            if ($operationService->saveForm($member, $operationForm)) {
+                $this->addFlash('success', 'operation.form_confirmation');
+
+                $accountId = $operationForm->getData()->getAccount()->getAccountId();
+
+                if (isset($request->request->get('operation_form')['saveCreate'])) {
+                    return $this->redirectToRoute('operation_create', ['accountId' => $accountId]);
+                } else {
+                    return $this->redirectToRoute('operation_list', ['accountId' => $accountId]);
+                }
+            }
+        }
+
+        return $this->render(
+            'Operation/form.html.twig',
+            [
+                'account' => $account ?: $operation->getAccount(),
+                'operation' => $operationForm->getData(),
+                'operationForm' => $operationForm->createView(),
+            ]
+        );
+    }
+
+    /**
+     * @Route("/third-parties.json", name="operation_third_party_list")
+     */
+    public function thirdPartyAction(Request $request, OperationService $operationService)
+    {
+        $thirdParties = $operationService->findThirdParties(
+            $this->getUser(),
+            $request->query->get('q')
+        );
+
+        return new JsonResponse($thirdParties);
+    }
+}

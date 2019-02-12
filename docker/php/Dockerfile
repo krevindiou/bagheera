@@ -16,6 +16,10 @@ RUN yes '' | pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt
 RUN apt-get update && apt-get install -y libpq-dev
 RUN docker-php-ext-install pdo_pgsql
 
+# zip
+RUN apt-get update && apt-get install -y libzip-dev
+RUN docker-php-ext-install zip
+
 # intl
 RUN apt-get update && apt-get install -y libicu-dev
 RUN docker-php-ext-install intl
@@ -26,6 +30,9 @@ RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 
 # apc
 RUN yes '' | pecl install apcu-5.1.16 && docker-php-ext-enable apcu
+
+# opcache
+RUN docker-php-ext-install opcache
 
 # phpunit
 RUN curl -L -o /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-5.phar
@@ -38,6 +45,7 @@ RUN chmod +x /usr/local/bin/composer
 # node
 RUN apt-get update && apt-get install -y gnupg
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && apt-get install -y nodejs
+RUN curl -L -o- https://yarnpkg.com/install.sh | bash -s -- --version 1.13.0
 
 COPY docker/php/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]

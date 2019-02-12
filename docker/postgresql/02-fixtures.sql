@@ -1,1 +1,1 @@
-../../app/Resources/config/db/fixtures.sql
+../../src/Resources/config/db/fixtures.sql

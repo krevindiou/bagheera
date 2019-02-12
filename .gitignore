@@ -1,17 +1,19 @@
-!.gitkeep
-/.web-server-pid
-/app/config/parameters.yml
-/app/Resources/node_modules/*
-/build/
+/app/Resources/node_modules/
 /docker/.docker-compose.env
 /phpunit.xml
-/var/*
-/var/cache/*
-/var/logs/*
-/var/sessions/*
-!var/SymfonyRequirements.php
+/public/components/
+/public/css/
+/public/js/
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/public/bundles/
+/var/
 /vendor/
-/web/bundles/
-/web/components/
-/web/css/*
-/web/js/*
+###< symfony/framework-bundle ###
+
+###> symfony/webpack-encore-bundle ###
+/public/build/
+###< symfony/webpack-encore-bundle ###

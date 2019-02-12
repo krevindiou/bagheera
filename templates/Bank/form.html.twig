@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block page_title bankForm.provider is defined ? 'bank.create_form_page_title'|trans : 'bank.update_form_page_title'|trans %}
+
+{% block breadcrumb %}
+    <li class="active">{{ bankForm.provider is defined ? 'bank.create_form_page_title'|trans : 'bank.update_form_page_title'|trans }}</li>
+{% endblock %}
+
+{% block content %}
+{{ form_start(bankForm, {attr: {novalidate: true, class: 'form-horizontal'}}) }}
+    {{ form_errors(bankForm) }}
+
+    {% if bankForm.provider is defined %}
+        {% if bankForm.provider.vars.value is not empty %}
+            {{ form_row(bankForm.provider) }}
+        {% endif %}
+
+        {% if bankForm.bank.vars.value is not empty %}
+            {{ form_row(bankForm.bank) }}
+        {% endif %}
+
+        {{ form_row(bankForm.other) }}
+    {% else %}
+        {{ form_row(bankForm.name) }}
+    {% endif %}
+
+    <div class="form-actions">
+        {{ form_widget(bankForm.submit) }}
+        <a href="{{ path('account_list') }}" class="btn">{{ 'cancel_link'|trans }}</a>
+    </div>
+    {{ form_row(bankForm._token) }}
+</form>
+{% endblock %}
+
+{% form_theme bankForm _self %}
+
+{% block _bank_update_name_widget %}
+{% spaceless %}
+    {{ block('form_widget') }}
+    {% if attr.bankId is not null and attr.hasProvider %}
+        &nbsp;<a href="{{ path('bank_access_update', {bankId: attr.bankId}) }}">{{ 'bank_access.update_login_password'|trans }}</a>
+    {% endif %}
+{% endspaceless %}
+{% endblock %}
+
+{% block _bank_choose_provider_widget %}
+{% spaceless %}
+    {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' inline radio')|trim}) %}
+    <div {{ block('widget_container_attributes') }}>
+    {% for child in form %}
+        <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %} data-provider-id="{{ child.vars.value }}">{{ form_widget(child) }}</label>
+    {% endfor %}
+    </div>
+{% endspaceless %}
+{% endblock %}

@@ -1,0 +1,14 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+
+    session:
+        handler_id: ~
+        cookie_secure: auto
+        cookie_samesite: lax
+        name: BAGHEERA_SESS_ID
+
+    php_errors:
+        log: true
+
+    templating:
+        engines: ['twig']

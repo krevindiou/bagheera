@@ -1,0 +1,18 @@
+controllers:
+    resource: ../../src/Controller/
+    type: annotation
+    prefix: /{_locale}
+    requirements:
+        _locale: en
+
+login_check:
+    path: /login_check
+
+logout:
+    path: /logout
+
+home:
+    path: /
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: member_login

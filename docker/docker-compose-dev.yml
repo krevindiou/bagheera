@@ -9,7 +9,7 @@ services:
     restart: always
     env_file: .docker-compose.env
     environment:
-    - ENV=dev
+    - APP_ENV=dev
     volumes:
     - ..:/srv/www/bagheera
 
@@ -22,9 +22,9 @@ services:
     restart: always
     env_file: .docker-compose.env
     environment:
-    - ENV=dev
-    - SYMFONY_ENV=dev
-    - NODE_ENV=dev
+    - APP_ENV=dev
+    - NODE_ENV=${APP_ENV}
+    - TRUSTED_HOSTS=['^172.18.\d+.\d+$$']
     volumes:
     - ..:/srv/www/bagheera
     links:
@@ -38,7 +38,7 @@ services:
     image: bagheera_nginx
     restart: always
     environment:
-    - ENV=dev
+    - APP_ENV=dev
     volumes:
     - ..:/srv/www/bagheera
     links:

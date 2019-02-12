@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+    <head>
+        <title>Bagheera - {{ block('page_title') }}</title>
+        <meta name="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,800">
+        {{ encore_entry_link_tags('app') }}
+        <link rel="icon" href="{{ asset('/favicon.png') }}" type="image/png" />
+        <link rel="shortcut icon" href="{{ asset('/favicon.ico') }}" />
+    </head>
+    <body class="page-{{ app.request.get('_route')|replace({'_' : '-'}) }}">
+        <div id="wrapper">
+            <div id="topbar">
+                <div class="container">
+                    <div id="top-nav">
+                        {% if app.user is not empty %}
+                        <ul class="pull-right">
+                            <li>{{ 'connected_as'|trans({'%email%': '<strong>' ~ app.user.email ~ '</strong>'})|raw }}</li>
+                            <li><a href="{{ path('logout') }}"><i class="icon-signout"></i> {{ 'member.logout_link'|trans }}</a></li>
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div id="header">
+                <div class="container">
+                    <a href="{{ app.user is not null ? path('account_home') : path('member_login') }}" class="brand"><img class="logo" src="{{ asset('/bundles/app/img/logo.png') }}" alt="Logo" /></a>
+
+                    {% if app.user is not empty %}
+                    <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <i class="icon-reorder"></i>
+                    </a>
+                    <div class="nav-collapse">
+                        <ul id="main-nav" class="nav pull-right">
+                            <li class="nav-icon{{ 'account_home' == app.request.get('_route') ? ' active' : '' }}">
+                                <a href="{{ path('account_home') }}">
+                                    <i class="icon-home"></i>
+                                    <span>{{ 'menu.home'|trans }}</span>
+                                </a>
+                            </li>
+
+                            <li class="{{ ('operation' in app.request.get('_route') or 'scheduler' in app.request.get('_route')) ? 'active ' : '' }}dropdown">
+                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="icon-book"></i>
+                                    <span>{{ 'menu.accounts'|trans }}</span>
+                                    <b class="caret"></b>
+                                </a>
+
+                                <ul class="dropdown-menu pull-right">
+                                    {% for bank in global_banks %}
+                                        <li class="dropdown-submenu">
+                                            <a tabindex="-1" href="#">{{ bank.name }}</a>
+
+                                            <ul class="dropdown-menu">
+                                            {% if bank.accounts is not empty %}
+                                                {% for account in bank.accounts %}
+                                                    <li><a tabindex="-1" href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a></li>
+                                                {% endfor  %}
+                                            {% else %}
+                                                <li><a tabindex="-1" href="{{ path('account_create_with_bank', {'bankId': bank.bankId}) }}"><i class="icon-plus-sign"></i> {{ 'account.create_link'|trans }}</a></li>
+                                            {% endif %}
+                                            </ul>
+                                        </li>
+                                    {% endfor  %}
+                                </ul>
+                            </li>
+
+                            <li class="{{ ('account_list' == app.request.get('_route') or 'report' in app.request.get('_route') or 'member' in app.request.get('_route')) ? 'active ' : '' }}dropdown">
+                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                                    <i class="icon-cog"></i>
+                                    <span>{{ 'menu.settings'|trans }}</span>
+                                    <b class="caret"></b>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <li><a tabindex="-1" href="{{ path('account_list') }}"><i class="icon-tasks"></i> {{ 'account.list_page_title'|trans }}</a></li>
+                                    <li><a tabindex="-1" href="{{ path('report_list') }}"><i class="icon-bar-chart"></i> {{ 'report.list_page_title'|trans }}</a></li>
+                                    <li class="divider"></li>
+                                    <li><a tabindex="-1" href="{{ path('member_profile') }}"><i class="icon-user"></i> {{ 'member.profile.page_title'|trans }}</a></li>
+                                    <li><a tabindex="-1" href="{{ path('member_change_password') }}"><i class="icon-lock"></i> {{ 'member.change_password.page_title'|trans }}</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div id="masthead">
+                <div class="container">
+                    <div class="masthead-pad">
+                        <div class="masthead-text">
+                            <h2>{% block page_title %}{% endblock %}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="content">
+                <div class="container">
+                    {% for key, messages in app.session.flashbag.all() %}
+                        <div class="alert alert-{{ key }}">
+                            <a class="close" data-dismiss="alert" href="#">&times;</a>
+
+                            {% for message in messages %}
+                                {{ message|trans }}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+
+        <div id="footer">
+            <div class="container">&copy; 2011-{{ 'now'|date('Y') }} Bagheera</div>
+        </div>
+
+        <div id="modal-confirmation" class="modal hide fade" tabindex="-1">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{{ 'modal_confirmation_title'|trans }}</h3>
+            </div>
+            <div class="modal-body">
+                <p>{{ 'modal_confirmation_body'|trans }}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary">{{ 'modal_confirmation_action_ok'|trans }}</button>
+                <button class="btn" data-dismiss="modal" aria-hidden="true">{{ 'modal_confirmation_action_cancel'|trans }}</button>
+            </div>
+        </div>
+
+        {{ encore_entry_script_tags('app') }}
+        {% block javascripts %}
+        {% endblock %}
+        <script src="/{{ app.request.locale }}/translations.js"></script>
+    </body>
+</html>

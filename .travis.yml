@@ -5,7 +5,7 @@ services:
 
 before_install:
   - cp docker/.docker-compose.env.dist docker/.docker-compose.env
-  - echo 'SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> docker/.docker-compose.env
+  - echo 'APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> docker/.docker-compose.env
   - ./bin/docker-start
 
 script:
