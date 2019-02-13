@@ -1,8 +1,12 @@
-# Bagheera
-A personal finance manager
+<p align="center">
+    <img src="./assets/img/logo-dark.png" alt="Bagheera"/>
+    <p align="center">A personal finance manager</p>
+    <p align="center">
+        <a href="https://travis-ci.org/krevindiou/bagheera"><img src="https://travis-ci.org/krevindiou/bagheera.svg?branch=master" alt="Build Status"/></a>
+        <a href="https://codecov.io/gh/krevindiou/bagheera"><img src="https://codecov.io/gh/krevindiou/bagheera/branch/master/graph/badge.svg" alt="Code Coverage"/></a>
+    </p>
+</p>
 
-[![Build Status](https://travis-ci.org/krevindiou/bagheera.svg?branch=master)](https://travis-ci.org/krevindiou/bagheera)
-[![Code Coverage](https://codecov.io/gh/krevindiou/bagheera/branch/master/graph/badge.svg)](https://codecov.io/gh/krevindiou/bagheera)
 
 ## Install
 - Install Docker and Docker Compose
