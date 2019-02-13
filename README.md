@@ -7,6 +7,7 @@
     </p>
 </p>
 
+![screenshot-dashboard](/assets/img/screenshot-dashboard.png)
 
 ## Install
 - Install Docker and Docker Compose
