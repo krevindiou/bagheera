@@ -1,0 +1,27 @@
+<?php
+
+$finder = PhpCsFixer\Finder::create()
+    ->name('.php_cs.dist')
+    ->ignoreDotFiles(false)
+    ->exclude('node_modules')
+    ->exclude('var')
+    ->in(__DIR__)
+;
+
+return PhpCsFixer\Config::create()
+    ->setRiskyAllowed(true)
+    ->setRules([
+        '@PhpCsFixer' => true,
+        '@PhpCsFixer:risky' => true,
+        '@PHP71Migration' => true,
+        '@PHP71Migration:risky' => true,
+        '@PHPUnit60Migration:risky' => true,
+        'backtick_to_shell_exec' => true,
+        'heredoc_indentation' => true,
+        'linebreak_after_opening_tag' => true,
+        'native_function_invocation' => false,
+        'no_php4_constructor' => true,
+        'phpdoc_add_missing_param_annotation' => false,
+    ])
+    ->setFinder($finder)
+;
