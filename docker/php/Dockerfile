@@ -14,15 +14,15 @@ RUN yes '' | pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt
 
 # postgresql
 RUN apt-get update && apt-get install -y libpq-dev
-RUN docker-php-ext-install pdo_pgsql
+RUN docker-php-ext-install -j$(nproc) pdo_pgsql
 
 # zip
 RUN apt-get update && apt-get install -y libzip-dev
-RUN docker-php-ext-install zip
+RUN docker-php-ext-install -j$(nproc) zip
 
 # intl
 RUN apt-get update && apt-get install -y libicu-dev
-RUN docker-php-ext-install intl
+RUN docker-php-ext-install -j$(nproc) intl
 
 # xdebug
 RUN pecl install xdebug-2.7.0RC1 && docker-php-ext-enable xdebug
@@ -32,7 +32,7 @@ RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN yes '' | pecl install apcu-5.1.16 && docker-php-ext-enable apcu
 
 # opcache
-RUN docker-php-ext-install opcache
+RUN docker-php-ext-install -j$(nproc) opcache
 
 # phpunit
 RUN curl -L -o /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-5.phar
