@@ -321,7 +321,7 @@ select {
   border-radius: 5px;
 }
 .dropdown-menu li > a {
-  padding: 5px 9px;
+  padding: 5px 15px;
   margin: 0 6px;
   font-size: 12px;
   -webkit-border-radius: 4px;
@@ -348,9 +348,6 @@ select {
   color: #ffffff;
   background: #bbbbbb;
   text-shadow: none;
-}
-.dropdown-submenu > a::after {
-  margin-right: .25em;
 }
 body:not(:-moz-handler-blocked) .dropdown-submenu > a:after {
   margin-top: -14px;
