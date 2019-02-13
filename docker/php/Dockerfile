@@ -1,5 +1,7 @@
 FROM php:7.3-fpm
 
+ENV PATH="$PATH:/root/.yarn/bin"
+
 RUN usermod -u 1000 www-data
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN echo "date.timezone='UTC'" > "$PHP_INI_DIR/conf.d/timezone.ini"
