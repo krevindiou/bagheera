@@ -40,6 +40,10 @@ RUN docker-php-ext-install -j$(nproc) opcache
 RUN curl -L -o /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-5.phar
 RUN chmod +x /usr/local/bin/phpunit
 
+# php-cs-fixer
+RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.14.1/php-cs-fixer.phar
+RUN chmod +x /usr/local/bin/php-cs-fixer
+
 # composer
 RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/1.8.0/composer.phar
 RUN chmod +x /usr/local/bin/composer
