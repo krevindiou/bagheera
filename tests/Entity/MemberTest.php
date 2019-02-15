@@ -1,24 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Entity;
 
 use App\Tests\TestCase;
-use App\Entity\Member;
 
-class MemberTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class MemberTest extends TestCase
 {
-    public function testFindAll()
+    public function testFindAll(): void
     {
         $members = $this->em->getRepository('App:Member')->findAll();
 
-        $this->assertEquals(count($members), 3);
+        $this->assertSame(count($members), 3);
     }
 
-    public function testJohn()
+    public function testJohn(): void
     {
         $john = $this->em->find('App:Member', 1);
 
-        $this->assertEquals($john->getEmail(), 'john@example.net');
-        $this->assertEquals(count($john->getBanks()), 4);
+        $this->assertSame($john->getEmail(), 'john@example.net');
+        $this->assertSame(count($john->getBanks()), 4);
     }
 }

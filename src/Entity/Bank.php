@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -109,6 +111,11 @@ class Bank
         $this->accounts = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
     /**
      * Get bankId.
      *
@@ -124,7 +131,7 @@ class Bank
      *
      * @param App\Entity\Member $member
      */
-    public function setMember(Member $member)
+    public function setMember(Member $member): void
     {
         $this->member = $member;
     }
@@ -144,7 +151,7 @@ class Bank
      *
      * @param App\Entity\Provider $provider
      */
-    public function setProvider(Provider $provider = null)
+    public function setProvider(Provider $provider = null): void
     {
         $this->provider = $provider;
     }
@@ -164,7 +171,7 @@ class Bank
      *
      * @param string $name
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -184,7 +191,7 @@ class Bank
      *
      * @param int $sortOrder
      */
-    public function setSortOrder($sortOrder)
+    public function setSortOrder($sortOrder): void
     {
         $this->sortOrder = $sortOrder;
     }
@@ -204,7 +211,7 @@ class Bank
      *
      * @param bool $favorite
      */
-    public function setFavorite($favorite)
+    public function setFavorite($favorite): void
     {
         $this->favorite = (bool) $favorite;
     }
@@ -224,7 +231,7 @@ class Bank
      *
      * @param bool $closed
      */
-    public function setClosed($closed)
+    public function setClosed($closed): void
     {
         $this->closed = (bool) $closed;
     }
@@ -244,7 +251,7 @@ class Bank
      *
      * @param bool $deleted
      */
-    public function setDeleted($deleted)
+    public function setDeleted($deleted): void
     {
         $this->deleted = (bool) $deleted;
     }
@@ -297,10 +304,5 @@ class Bank
     public function isManual()
     {
         return null === $this->getProvider();
-    }
-
-    public function __toString()
-    {
-        return $this->getName();
     }
 }

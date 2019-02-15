@@ -1,18 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Symfony\Component\Form\Form;
-use Symfony\Component\Process\PhpExecutableFinder;
-use Psr\Log\LoggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Entity\Member;
 use App\Entity\Bank;
-use App\Service\AccountService;
+use App\Entity\Member;
 use App\Form\Type\BankChooseFormType;
 use App\Form\Type\BankUpdateFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankService
 {
@@ -32,8 +33,7 @@ class BankService
         AccountService $accountService,
         $projectDir,
         $environment
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
@@ -119,40 +119,10 @@ class BankService
     {
         if (null === $bank) {
             return $this->formFactory->create(BankChooseFormType::class, null, ['member' => $member]);
-        } elseif ($member === $bank->getMember()) {
+        }
+        if ($member === $bank->getMember()) {
             return $this->formFactory->create(BankUpdateFormType::class, $bank);
         }
-    }
-
-    /**
-     * Saves bank.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return bool
-     */
-    protected function doSave(Member $member, Bank $bank)
-    {
-        if ($member === $bank->getMember()) {
-            try {
-                if (null === $bank->getBankId()) {
-                    $banks = $bank->getMember()->getBanks();
-                    $order = count($banks) + 1;
-
-                    $bank->setSortOrder($order);
-                }
-
-                $this->em->persist($bank);
-                $this->em->flush();
-
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -167,7 +137,7 @@ class BankService
     {
         $errors = $this->validator->validate($bank);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             return $this->doSave($member, $bank);
         }
 
@@ -189,30 +159,30 @@ class BankService
                 $this->doSave($member, $form->getData());
 
                 return $form->getData();
-            } else {
-                $data = $form->getData();
-
-                if (null !== $data['provider']) {
-                    $bank = new Bank();
-                    $bank->setMember($member);
-                    $bank->setProvider($data['provider']);
-                    $bank->setName($data['provider']->getName());
-
-                    $this->doSave($member, $bank);
-
-                    return $bank;
-                } elseif (null === $data['bank']) {
-                    $bank = new Bank();
-                    $bank->setMember($member);
-                    $bank->setName($data['other']);
-
-                    $this->doSave($member, $bank);
-
-                    return $bank;
-                } else {
-                    return $data['bank'];
-                }
             }
+            $data = $form->getData();
+
+            if (null !== $data['provider']) {
+                $bank = new Bank();
+                $bank->setMember($member);
+                $bank->setProvider($data['provider']);
+                $bank->setName($data['provider']->getName());
+
+                $this->doSave($member, $bank);
+
+                return $bank;
+            }
+            if (null === $data['bank']) {
+                $bank = new Bank();
+                $bank->setMember($member);
+                $bank->setName($data['other']);
+
+                $this->doSave($member, $bank);
+
+                return $bank;
+            }
+
+            return $data['bank'];
         }
 
         return false;
@@ -315,7 +285,7 @@ class BankService
      *
      * @param Bank $bank Bank entity
      */
-    public function importExternalBank(Bank $bank)
+    public function importExternalBank(Bank $bank): void
     {
         if (null !== $bank->getProvider()) {
             $executableFinder = new PhpExecutableFinder();
@@ -341,5 +311,36 @@ class BankService
 
             exec($cmd);
         }
+    }
+
+    /**
+     * Saves bank.
+     *
+     * @param Member $member Member entity
+     * @param Bank   $bank   Bank entity
+     *
+     * @return bool
+     */
+    protected function doSave(Member $member, Bank $bank)
+    {
+        if ($member === $bank->getMember()) {
+            try {
+                if (null === $bank->getBankId()) {
+                    $banks = $bank->getMember()->getBanks();
+                    $order = count($banks) + 1;
+
+                    $bank->setSortOrder($order);
+                }
+
+                $this->em->persist($bank);
+                $this->em->flush();
+
+                return true;
+            } catch (\Exception $e) {
+                $this->logger->err($e->getMessage());
+            }
+        }
+
+        return false;
     }
 }

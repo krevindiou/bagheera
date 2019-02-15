@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -177,7 +179,7 @@ class OperationSearch
      *
      * @param App\Entity\Account $account
      */
-    public function setAccount(Account $account)
+    public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
@@ -197,7 +199,7 @@ class OperationSearch
      *
      * @param Doctrine\Common\Collections\Collection $categories
      */
-    public function setCategories(Collection $categories)
+    public function setCategories(Collection $categories): void
     {
         $this->categories = $categories;
     }
@@ -217,7 +219,7 @@ class OperationSearch
      *
      * @param Doctrine\Common\Collections\Collection $paymentMethods
      */
-    public function setPaymentMethods(Collection $paymentMethods)
+    public function setPaymentMethods(Collection $paymentMethods): void
     {
         $this->paymentMethods = $paymentMethods;
     }
@@ -237,7 +239,7 @@ class OperationSearch
      *
      * @param string $thirdParty
      */
-    public function setThirdParty($thirdParty)
+    public function setThirdParty($thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
@@ -257,7 +259,7 @@ class OperationSearch
      *
      * @param string $notes
      */
-    public function setNotes($notes)
+    public function setNotes($notes): void
     {
         $this->notes = $notes;
     }
@@ -277,7 +279,7 @@ class OperationSearch
      *
      * @param DateTime $valueDateStart
      */
-    public function setValueDateStart(\DateTime $valueDateStart = null)
+    public function setValueDateStart(\DateTime $valueDateStart = null): void
     {
         $this->valueDateStart = $valueDateStart;
     }
@@ -297,7 +299,7 @@ class OperationSearch
      *
      * @param DateTime $valueDateEnd
      */
-    public function setValueDateEnd(\DateTime $valueDateEnd = null)
+    public function setValueDateEnd(\DateTime $valueDateEnd = null): void
     {
         $this->valueDateEnd = $valueDateEnd;
     }
@@ -317,7 +319,7 @@ class OperationSearch
      *
      * @param bool $reconciled
      */
-    public function setReconciled($reconciled)
+    public function setReconciled($reconciled): void
     {
         if ('' === $reconciled) {
             $reconciled = null;
@@ -343,7 +345,7 @@ class OperationSearch
      *
      * @param string $type
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->type = $type;
     }
@@ -363,7 +365,7 @@ class OperationSearch
      *
      * @param decimal $amountInferiorTo
      */
-    public function setAmountInferiorTo($amountInferiorTo)
+    public function setAmountInferiorTo($amountInferiorTo): void
     {
         $this->amountInferiorTo = $amountInferiorTo;
     }
@@ -383,7 +385,7 @@ class OperationSearch
      *
      * @param decimal $amountInferiorOrEqualTo
      */
-    public function setAmountInferiorOrEqualTo($amountInferiorOrEqualTo)
+    public function setAmountInferiorOrEqualTo($amountInferiorOrEqualTo): void
     {
         $this->amountInferiorOrEqualTo = $amountInferiorOrEqualTo;
     }
@@ -403,7 +405,7 @@ class OperationSearch
      *
      * @param decimal $amountEqualTo
      */
-    public function setAmountEqualTo($amountEqualTo)
+    public function setAmountEqualTo($amountEqualTo): void
     {
         $this->amountEqualTo = $amountEqualTo;
     }
@@ -423,7 +425,7 @@ class OperationSearch
      *
      * @param decimal $amountSuperiorOrEqualTo
      */
-    public function setAmountSuperiorOrEqualTo($amountSuperiorOrEqualTo)
+    public function setAmountSuperiorOrEqualTo($amountSuperiorOrEqualTo): void
     {
         $this->amountSuperiorOrEqualTo = $amountSuperiorOrEqualTo;
     }
@@ -443,7 +445,7 @@ class OperationSearch
      *
      * @param decimal $amountSuperiorTo
      */
-    public function setAmountSuperiorTo($amountSuperiorTo)
+    public function setAmountSuperiorTo($amountSuperiorTo): void
     {
         $this->amountSuperiorTo = $amountSuperiorTo;
     }

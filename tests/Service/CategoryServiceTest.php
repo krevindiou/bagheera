@@ -1,16 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
 use App\Tests\TestCase;
 
-class CategoryServiceTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class CategoryServiceTest extends TestCase
 {
-    public function testGetList()
+    public function testGetList(): void
     {
         $list = $this->get('test.app.category')->getList();
 
-        $this->assertEquals(count($list['credit']), 2);
-        $this->assertEquals(count($list['debit']), 3);
+        $this->assertSame(count($list['credit']), 2);
+        $this->assertSame(count($list['debit']), 3);
     }
 }

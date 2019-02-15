@@ -1,29 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Entity;
 
 use App\Tests\TestCase;
-use App\Entity\Operation;
 
-class OperationTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class OperationTest extends TestCase
 {
-    public function testFindAll()
+    public function testFindAll(): void
     {
         $operations = $this->em->getRepository('App:Operation')->findAll();
 
-        $this->assertEquals(count($operations), 14);
+        $this->assertSame(count($operations), 14);
     }
 
-    public function testOperation()
+    public function testOperation(): void
     {
         $operation = $this->em->find('App:Operation', 1);
 
-        $this->assertEquals($operation->getThirdParty(), 'Third party 1');
-        $this->assertEquals($operation->getTransferOperation()->getAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
-        $this->assertEquals($operation->getTransferAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
-        $this->assertEquals($operation->getAccount()->getName(), 'John - HSBC - Checking account');
-        $this->assertEquals($operation->getCategory()->getName(), 'Cat 2');
-        $this->assertEquals($operation->getPaymentMethod()->getName(), 'transfer');
-        $this->assertEquals($operation->getScheduler()->getThirdParty(), 'Third party 1');
+        $this->assertSame($operation->getThirdParty(), 'Third party 1');
+        $this->assertSame($operation->getTransferOperation()->getAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
+        $this->assertSame($operation->getTransferAccount()->getName(), 'John - HSBC - Certificate of deposit #1');
+        $this->assertSame($operation->getAccount()->getName(), 'John - HSBC - Checking account');
+        $this->assertSame($operation->getCategory()->getName(), 'Cat 2');
+        $this->assertSame($operation->getPaymentMethod()->getName(), 'transfer');
+        $this->assertSame($operation->getScheduler()->getThirdParty(), 'Third party 1');
     }
 }

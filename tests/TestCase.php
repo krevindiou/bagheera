@@ -1,21 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 class TestCase extends WebTestCase
 {
-    protected $em;
     public static $kernel;
     public static $conn;
+    protected $em;
 
-    public function get($service)
-    {
-        return self::$kernel->getContainer()->get($service);
-    }
-
-    public function setUp()
+    protected function setUp(): void
     {
         if (!self::$kernel) {
             self::$kernel = self::createKernel(['environment' => 'test']);
@@ -36,6 +37,11 @@ class TestCase extends WebTestCase
 
         $sql = file_get_contents(__DIR__.'/../src/Resources/config/db/fixtures.sql');
         self::$conn->exec($sql);
+    }
+
+    public function get($service)
+    {
+        return self::$kernel->getContainer()->get($service);
     }
 
     public static function createAuthenticatedClient($username = 'john@example.net', $password = 'johnjohn')

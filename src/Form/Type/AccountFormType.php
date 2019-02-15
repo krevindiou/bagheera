@@ -1,20 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Type;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\CurrencyType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AccountFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add(
@@ -36,13 +38,14 @@ class AccountFormType extends AbstractType
                         'class' => 'btn btn-primary',
                     ],
                 ]
-            );
+            )
+        ;
 
         $member = $options['member'];
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function (FormEvent $event) use ($builder, $member) {
+            function (FormEvent $event) use ($builder, $member): void {
                 $form = $event->getForm();
                 $account = $event->getData();
 
@@ -62,7 +65,8 @@ class AccountFormType extends AbstractType
                                     ->andWhere('b.deleted = false')
                                     ->andWhere('b.closed = false')
                                     ->setParameter('member', $member)
-                                    ->add('orderBy', 'b.name ASC');
+                                    ->add('orderBy', 'b.name ASC')
+                                ;
                             },
                             'disabled' => $edit,
                             'attr' => [
@@ -116,7 +120,7 @@ class AccountFormType extends AbstractType
         );
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(
             [

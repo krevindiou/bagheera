@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -83,6 +85,18 @@ class Category
         $this->subCategories = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        $str = $this->getName();
+
+        $parentCategory = $this->getParentCategory();
+        if (null !== $parentCategory) {
+            $str = $parentCategory->getName().' > '.$str;
+        }
+
+        return $str;
+    }
+
     /**
      * Get categoryId.
      *
@@ -98,7 +112,7 @@ class Category
      *
      * @param string $type
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->type = $type;
     }
@@ -118,7 +132,7 @@ class Category
      *
      * @param string $name
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -138,7 +152,7 @@ class Category
      *
      * @param bool $active
      */
-    public function setActive($active)
+    public function setActive($active): void
     {
         $this->active = (bool) $active;
     }
@@ -178,7 +192,7 @@ class Category
      *
      * @param App\Entity\Category $parentCategory
      */
-    public function setParentCategory(Category $parentCategory)
+    public function setParentCategory(self $parentCategory): void
     {
         $this->parentCategory = $parentCategory;
     }
@@ -201,17 +215,5 @@ class Category
     public function getSubCategories()
     {
         return $this->subCategories;
-    }
-
-    public function __toString()
-    {
-        $str = $this->getName();
-
-        $parentCategory = $this->getParentCategory();
-        if (null !== $parentCategory) {
-            $str = $parentCategory->getName().' > '.$str;
-        }
-
-        return $str;
     }
 }

@@ -1,25 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Entity;
 
 use App\Tests\TestCase;
-use App\Entity\Bank;
 
-class BankTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class BankTest extends TestCase
 {
-    public function testFindAll()
+    public function testFindAll(): void
     {
         $banks = $this->em->getRepository('App:Bank')->findAll();
 
-        $this->assertEquals(count($banks), 5);
+        $this->assertSame(count($banks), 5);
     }
 
-    public function testHsbc()
+    public function testHsbc(): void
     {
         $hsbc = $this->em->find('App:Bank', 1);
 
-        $this->assertEquals($hsbc->getName(), 'HSBC');
-        $this->assertEquals($hsbc->getMember()->getEmail(), 'john@example.net');
-        $this->assertEquals(count($hsbc->getAccounts()), 4);
+        $this->assertSame($hsbc->getName(), 'HSBC');
+        $this->assertSame($hsbc->getMember()->getEmail(), 'john@example.net');
+        $this->assertSame(count($hsbc->getAccounts()), 4);
     }
 }

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use App\Entity\Bank;
 use App\Service\BankService;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Route("/manager")
@@ -30,19 +32,18 @@ class BankController extends Controller
 
         if ($bankForm->isSubmitted()) {
             if ($bank = $bankService->saveForm($member, $bankForm)) {
-                if ('bank_choose' == $request->get('_route')) {
+                if ('bank_choose' === $request->get('_route')) {
                     if (null !== $bank->getProvider()) {
                         $this->addFlash('success', 'bank.form_confirmation');
 
                         return $this->redirectToRoute('bank_access_update', ['bankId' => $bank->getBankId()]);
-                    } else {
-                        return $this->redirectToRoute('account_create_with_bank', ['bankId' => $bank->getBankId()]);
                     }
-                } else {
-                    $this->addFlash('success', 'bank.form_confirmation');
 
-                    return $this->redirectToRoute($request->get('_route'), ['bankId' => $bank->getBankId()]);
+                    return $this->redirectToRoute('account_create_with_bank', ['bankId' => $bank->getBankId()]);
                 }
+                $this->addFlash('success', 'bank.form_confirmation');
+
+                return $this->redirectToRoute($request->get('_route'), ['bankId' => $bank->getBankId()]);
             }
         }
 

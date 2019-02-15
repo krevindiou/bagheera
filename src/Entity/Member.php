@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 
 /**
  * @ORM\Entity
@@ -124,7 +126,7 @@ class Member implements AdvancedUserInterface
      *
      * @param string $email
      */
-    public function setEmail($email)
+    public function setEmail($email): void
     {
         $this->email = $email;
     }
@@ -144,7 +146,7 @@ class Member implements AdvancedUserInterface
      *
      * @param string $password
      */
-    public function setPassword($password)
+    public function setPassword($password): void
     {
         $this->password = $password;
     }
@@ -164,7 +166,7 @@ class Member implements AdvancedUserInterface
      *
      * @param string $plainPassword
      */
-    public function setPlainPassword($plainPassword)
+    public function setPlainPassword($plainPassword): void
     {
         $this->plainPassword = $plainPassword;
     }
@@ -184,7 +186,7 @@ class Member implements AdvancedUserInterface
      *
      * @param string $country
      */
-    public function setCountry($country)
+    public function setCountry($country): void
     {
         $this->country = $country;
     }
@@ -204,7 +206,7 @@ class Member implements AdvancedUserInterface
      *
      * @param bool $active
      */
-    public function setActive($active)
+    public function setActive($active): void
     {
         $this->active = (bool) $active;
     }
@@ -244,7 +246,7 @@ class Member implements AdvancedUserInterface
      *
      * @param DateTime $loggedAt
      */
-    public function setLoggedAt(\DateTime $loggedAt)
+    public function setLoggedAt(\DateTime $loggedAt): void
     {
         $this->loggedAt = $loggedAt;
     }
@@ -290,7 +292,7 @@ class Member implements AdvancedUserInterface
     /**
      * {@inheritdoc}
      */
-    public function getSalt()
+    public function getSalt(): void
     {
     }
 
@@ -305,7 +307,7 @@ class Member implements AdvancedUserInterface
     /**
      * {@inheritdoc}
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         $this->setPlainPassword(null);
     }

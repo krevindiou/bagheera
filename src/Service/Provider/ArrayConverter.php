@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Provider;
 
 class ArrayConverter
@@ -49,17 +51,13 @@ class ArrayConverter
 
     private static function convertFromOfx($content)
     {
-        $data = [];
-
         // @todo
-        return $data;
+        return [];
     }
 
     private static function convertFromQfx($content)
     {
-        $data = [];
-
         // @todo
-        return $data;
+        return [];
     }
 }

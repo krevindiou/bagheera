@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
-use Psr\Log\LoggerInterface;
+use App\Entity\Account;
+use App\Service\AccountImportService;
+use App\Service\AccountService;
+use App\Service\OperationService;
+use App\Service\Provider\ProviderAdapter;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use App\Entity\Account;
-use App\Service\AccountService;
-use App\Service\AccountImportService;
-use App\Service\OperationService;
-use App\Service\Provider\ProviderAdapter;
 
 class ImportExternalBankCommand extends ContainerAwareCommand
 {
@@ -32,8 +34,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
         AccountImportService $accountImportService,
         OperationService $operationService,
         ProviderAdapter $provider
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->emSecure = $emSecure;
@@ -44,7 +45,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('bagheera:import_external_bank')
@@ -53,7 +54,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $bank = $this->em->find('App:Bank', $input->getArgument('bank_id'));
 
@@ -66,7 +67,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
                 } catch (\RuntimeException $e) {
                     $this->logger->err($e->getMessage());
 
-                    return;
+                    return 1;
                 }
 
                 $accounts = $this->provider->fetchAccounts();
@@ -86,7 +87,7 @@ class ImportExternalBankCommand extends ContainerAwareCommand
                             $this->operationService->saveMulti(
                                 $account,
                                 $transactions,
-                                function (Account $account, $nb) {
+                                function (Account $account, $nb): void {
                                     $this->accountImportService->updateImport($account, $nb);
                                 }
                             );
@@ -95,7 +96,11 @@ class ImportExternalBankCommand extends ContainerAwareCommand
                         $this->accountImportService->closeImport($account);
                     }
                 }
+
+                return 0;
             }
         }
+
+        return null;
     }
 }

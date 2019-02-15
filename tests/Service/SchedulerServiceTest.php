@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
-use App\Tests\TestCase;
 use App\Entity\Scheduler;
+use App\Tests\TestCase;
 
-class SchedulerServiceTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class SchedulerServiceTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -15,27 +21,27 @@ class SchedulerServiceTest extends TestCase
         $this->jane = $this->em->find('App:Member', 2);
     }
 
-    public function testGetFormForNewScheduler()
+    public function testGetFormForNewScheduler(): void
     {
         $account = $this->em->find('App:Account', 1);
         $form = $this->get('test.app.scheduler')->getForm(null, $account);
-        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testGetFormForExistingScheduler()
+    public function testGetFormForExistingScheduler(): void
     {
         $scheduler = $this->em->find('App:Scheduler', 1);
         $form = $this->get('test.app.scheduler')->getForm($scheduler);
-        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveNewSchedulerWithNoData()
+    public function testSaveNewSchedulerWithNoData(): void
     {
         $scheduler = new Scheduler();
         $this->assertFalse($this->get('test.app.scheduler')->save($scheduler));
     }
 
-    public function testSaveNewScheduler()
+    public function testSaveNewScheduler(): void
     {
         $scheduler = new Scheduler();
         $scheduler->setAccount($this->em->find('App:Account', 1));
@@ -48,28 +54,28 @@ class SchedulerServiceTest extends TestCase
         $this->assertTrue($this->get('test.app.scheduler')->save($scheduler));
     }
 
-    public function testSaveExistingSchedulerWithBadData()
+    public function testSaveExistingSchedulerWithBadData(): void
     {
         $scheduler = $this->em->find('App:Scheduler', 1);
         $scheduler->setThirdParty('');
         $this->assertFalse($this->get('test.app.scheduler')->save($scheduler));
     }
 
-    public function testSaveExistingScheduler()
+    public function testSaveExistingScheduler(): void
     {
         $scheduler = $this->em->find('App:Scheduler', 1);
         $this->assertTrue($this->get('test.app.scheduler')->save($scheduler));
     }
 
-    public function testGetSchedulers()
+    public function testGetSchedulers(): void
     {
         $account = $this->em->find('App:Account', 1);
         $schedulers = $this->get('test.app.scheduler')->getList($account);
 
-        $this->assertEquals(count($schedulers), 2);
+        $this->assertSame(count($schedulers), 2);
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $account = $this->em->find('App:Account', 1);
 
@@ -81,10 +87,10 @@ class SchedulerServiceTest extends TestCase
         $schedulersAfterDelete = $this->get('test.app.scheduler')->getList($account);
         $countSchedulersAfterDelete = count($schedulersAfterDelete);
 
-        $this->assertEquals($countSchedulersAfterDelete, $countSchedulersBeforeDelete - 1);
+        $this->assertSame($countSchedulersAfterDelete, $countSchedulersBeforeDelete - 1);
     }
 
-    public function testRunSchedulers()
+    public function testRunSchedulers(): void
     {
         $dql = 'SELECT o ';
         $dql .= 'FROM App:Operation o ';
@@ -117,15 +123,15 @@ class SchedulerServiceTest extends TestCase
 
         $newOperations = array_diff($operationsAfterDate, $operationsBeforeDate);
 
-        $this->assertEquals(count($newOperations), 5);
-        $this->assertEquals($newOperations[1], '2011-09-15');
-        $this->assertEquals($newOperations[2], '2011-09-29');
-        $this->assertEquals($newOperations[3], '2011-10-13');
-        $this->assertEquals($newOperations[4], '2011-10-27');
-        $this->assertEquals($newOperations[5], '2011-11-10');
+        $this->assertSame(count($newOperations), 5);
+        $this->assertSame($newOperations[1], '2011-09-15');
+        $this->assertSame($newOperations[2], '2011-09-29');
+        $this->assertSame($newOperations[3], '2011-10-13');
+        $this->assertSame($newOperations[4], '2011-10-27');
+        $this->assertSame($newOperations[5], '2011-11-10');
     }
 
-    public function testRunSchedulersWithFutureValueDate()
+    public function testRunSchedulersWithFutureValueDate(): void
     {
         $dql = 'SELECT o ';
         $dql .= 'FROM App:Operation o ';
@@ -144,6 +150,6 @@ class SchedulerServiceTest extends TestCase
         $query = $this->em->createQuery($dql);
         $operationsAfter = $query->getResult();
 
-        $this->assertEquals(count($operationsBefore), count($operationsAfter));
+        $this->assertSame(count($operationsBefore), count($operationsAfter));
     }
 }

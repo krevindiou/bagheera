@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -172,7 +174,7 @@ class Scheduler
      *
      * @param string $thirdParty
      */
-    public function setThirdParty($thirdParty)
+    public function setThirdParty($thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
@@ -192,7 +194,7 @@ class Scheduler
      *
      * @param float $debit
      */
-    public function setDebit($debit = null)
+    public function setDebit($debit = null): void
     {
         $this->debit = $debit;
     }
@@ -212,7 +214,7 @@ class Scheduler
      *
      * @param float $credit
      */
-    public function setCredit($credit = null)
+    public function setCredit($credit = null): void
     {
         $this->credit = $credit;
     }
@@ -242,7 +244,7 @@ class Scheduler
      *
      * @param DateTime $valueDate
      */
-    public function setValueDate(\DateTime $valueDate = null)
+    public function setValueDate(\DateTime $valueDate = null): void
     {
         $this->valueDate = $valueDate;
     }
@@ -262,7 +264,7 @@ class Scheduler
      *
      * @param DateTime $limitDate
      */
-    public function setLimitDate(\DateTime $limitDate = null)
+    public function setLimitDate(\DateTime $limitDate = null): void
     {
         $this->limitDate = $limitDate;
     }
@@ -282,7 +284,7 @@ class Scheduler
      *
      * @param bool $reconciled
      */
-    public function setReconciled($reconciled)
+    public function setReconciled($reconciled): void
     {
         $this->reconciled = (bool) $reconciled;
     }
@@ -302,7 +304,7 @@ class Scheduler
      *
      * @param string $notes
      */
-    public function setNotes($notes)
+    public function setNotes($notes): void
     {
         $this->notes = $notes;
     }
@@ -322,7 +324,7 @@ class Scheduler
      *
      * @param string $frequencyUnit
      */
-    public function setFrequencyUnit($frequencyUnit)
+    public function setFrequencyUnit($frequencyUnit): void
     {
         $this->frequencyUnit = $frequencyUnit;
     }
@@ -342,7 +344,7 @@ class Scheduler
      *
      * @param int $frequencyValue
      */
-    public function setFrequencyValue($frequencyValue)
+    public function setFrequencyValue($frequencyValue): void
     {
         $this->frequencyValue = (int) $frequencyValue;
     }
@@ -362,7 +364,7 @@ class Scheduler
      *
      * @param bool $active
      */
-    public function setActive($active)
+    public function setActive($active): void
     {
         $this->active = (bool) $active;
     }
@@ -402,7 +404,7 @@ class Scheduler
      *
      * @param App\Entity\Account $account
      */
-    public function setAccount(Account $account)
+    public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
@@ -422,7 +424,7 @@ class Scheduler
      *
      * @param App\Entity\Account $transferAccount
      */
-    public function setTransferAccount(Account $transferAccount = null)
+    public function setTransferAccount(Account $transferAccount = null): void
     {
         $this->transferAccount = $transferAccount;
     }
@@ -442,7 +444,7 @@ class Scheduler
      *
      * @param App\Entity\Category $category
      */
-    public function setCategory(Category $category = null)
+    public function setCategory(Category $category = null): void
     {
         $this->category = $category;
     }
@@ -462,7 +464,7 @@ class Scheduler
      *
      * @param App\Entity\PaymentMethod $paymentMethod
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod = null)
+    public function setPaymentMethod(PaymentMethod $paymentMethod = null): void
     {
         $this->paymentMethod = $paymentMethod;
     }
@@ -479,6 +481,6 @@ class Scheduler
 
     public function isOwner(Member $member)
     {
-        return $this->getAccount()->getBank()->getMember()->getMemberId() == $member->getMemberId();
+        return $this->getAccount()->getBank()->getMember()->getMemberId() === $member->getMemberId();
     }
 }

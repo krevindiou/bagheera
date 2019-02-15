@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -11,15 +13,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class PaymentMethod
 {
-    const PAYMENT_METHOD_ID_INITIAL_BALANCE = 9;
-    const PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD = 1;
-    const PAYMENT_METHOD_ID_DEBIT_CHECK = 2;
-    const PAYMENT_METHOD_ID_DEBIT_CASH_WITHDRAWAL = 3;
-    const PAYMENT_METHOD_ID_DEBIT_DIRECT_DEBIT = 8;
-    const PAYMENT_METHOD_ID_DEBIT_TRANSFER = 4;
-    const PAYMENT_METHOD_ID_CREDIT_CHECK = 5;
-    const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
-    const PAYMENT_METHOD_ID_CREDIT_DEPOSIT = 7;
+    public const PAYMENT_METHOD_ID_INITIAL_BALANCE = 9;
+    public const PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD = 1;
+    public const PAYMENT_METHOD_ID_DEBIT_CHECK = 2;
+    public const PAYMENT_METHOD_ID_DEBIT_CASH_WITHDRAWAL = 3;
+    public const PAYMENT_METHOD_ID_DEBIT_DIRECT_DEBIT = 8;
+    public const PAYMENT_METHOD_ID_DEBIT_TRANSFER = 4;
+    public const PAYMENT_METHOD_ID_CREDIT_CHECK = 5;
+    public const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
+    public const PAYMENT_METHOD_ID_CREDIT_DEPOSIT = 7;
 
     /**
      * @var int
@@ -60,6 +62,11 @@ class PaymentMethod
      */
     protected $updatedAt;
 
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
     /**
      * Get paymentMethodId.
      *
@@ -75,7 +82,7 @@ class PaymentMethod
      *
      * @param string $name
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -95,7 +102,7 @@ class PaymentMethod
      *
      * @param string $type
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->type = $type;
     }
@@ -128,10 +135,5 @@ class PaymentMethod
     public function getUpdatedAt()
     {
         return $this->updatedAt;
-    }
-
-    public function __toString()
-    {
-        return $this->getName();
     }
 }

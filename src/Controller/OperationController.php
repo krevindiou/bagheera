@@ -1,18 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use App\Entity\Account;
+use App\Entity\Operation;
+use App\Service\AccountService;
+use App\Service\OperationSearchService;
+use App\Service\OperationService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use App\Entity\Operation;
-use App\Entity\Account;
-use App\Service\OperationService;
-use App\Service\OperationSearchService;
-use App\Service\AccountService;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Route("/manager")
@@ -47,7 +49,7 @@ class OperationController extends Controller
                 'account' => $account,
                 'operations' => $operations,
                 'displaySearch' => (null !== $operationSearch),
-                'tipCreateOperation' => (null === $operationSearch && count($operations) == 0),
+                'tipCreateOperation' => (null === $operationSearch && 0 === count($operations)),
                 'balance' => $balance,
                 'reconciledBalance' => $reconciledBalance,
             ]
@@ -101,9 +103,9 @@ class OperationController extends Controller
 
                 if (isset($request->request->get('operation_form')['saveCreate'])) {
                     return $this->redirectToRoute('operation_create', ['accountId' => $accountId]);
-                } else {
-                    return $this->redirectToRoute('operation_list', ['accountId' => $accountId]);
                 }
+
+                return $this->redirectToRoute('operation_list', ['accountId' => $accountId]);
             }
         }
 

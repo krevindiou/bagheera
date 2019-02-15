@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Account;
 use App\Entity\AccountImport;
+use Doctrine\ORM\EntityManagerInterface;
 
 class AccountImportService
 {
@@ -13,27 +15,6 @@ class AccountImportService
     public function __construct(EntityManagerInterface $em)
     {
         $this->em = $em;
-    }
-
-    /**
-     * Returns next import id to be used.
-     *
-     * @param Account $account Account entity
-     *
-     * @return int
-     */
-    protected function getNextImportId(Account $account)
-    {
-        $dql = 'SELECT MAX(i.importId) ';
-        $dql .= 'FROM App:AccountImport i ';
-        $dql .= 'JOIN i.account a ';
-        $dql .= 'JOIN a.bank b ';
-        $dql .= 'WHERE b.member = :member ';
-        $dql .= 'AND i.finished = true ';
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('member', $account->getBank()->getMember());
-
-        return (int) $query->getSingleScalarResult() + 1;
     }
 
     /**
@@ -59,7 +40,7 @@ class AccountImportService
      * @param Account $account Account entity
      * @param int     $total   Total
      */
-    public function initImport(Account $account)
+    public function initImport(Account $account): void
     {
         $accountImport = $this->getCurrentImport($account);
 
@@ -80,7 +61,7 @@ class AccountImportService
      * @param Account $account  Account entity
      * @param int     $progress Current progress
      */
-    public function updateImport(Account $account, $progress)
+    public function updateImport(Account $account, $progress): void
     {
         $accountImport = $this->getCurrentImport($account);
 
@@ -96,7 +77,7 @@ class AccountImportService
      *
      * @param Account $account Account entity
      */
-    public function closeImport(Account $account)
+    public function closeImport(Account $account): void
     {
         $accountImport = $this->getCurrentImport($account);
 
@@ -114,26 +95,48 @@ class AccountImportService
      * @param string  $data    Data to save
      * @param string  $type    Either original, json or json_normalized
      */
-    public function setData(Account $account, $data, $type)
+    public function setData(Account $account, $data, $type): void
     {
         $accountImport = $this->getCurrentImport($account);
 
         if (null !== $accountImport) {
             switch ($type) {
-                case 'original' :
+                case 'original':
                     $accountImport->setOriginalData($data);
-                    break;
 
-                case 'json' :
+                    break;
+                case 'json':
                     $accountImport->setJsonData($data);
-                    break;
 
-                case 'json_normalized' :
+                    break;
+                case 'json_normalized':
                     $accountImport->setJsonNormalizedData($data);
+
                     break;
             }
 
             $this->em->flush();
         }
+    }
+
+    /**
+     * Returns next import id to be used.
+     *
+     * @param Account $account Account entity
+     *
+     * @return int
+     */
+    protected function getNextImportId(Account $account)
+    {
+        $dql = 'SELECT MAX(i.importId) ';
+        $dql .= 'FROM App:AccountImport i ';
+        $dql .= 'JOIN i.account a ';
+        $dql .= 'JOIN a.bank b ';
+        $dql .= 'WHERE b.member = :member ';
+        $dql .= 'AND i.finished = true ';
+        $query = $this->em->createQuery($dql);
+        $query->setParameter('member', $account->getBank()->getMember());
+
+        return (int) $query->getSingleScalarResult() + 1;
     }
 }

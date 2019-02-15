@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -173,7 +175,7 @@ class Operation
      *
      * @param string $externalOperationId
      */
-    public function setExternalOperationId($externalOperationId)
+    public function setExternalOperationId($externalOperationId): void
     {
         $this->externalOperationId = $externalOperationId;
     }
@@ -193,7 +195,7 @@ class Operation
      *
      * @param App\Entity\Account $transferAccount
      */
-    public function setTransferAccount(Account $transferAccount = null)
+    public function setTransferAccount(Account $transferAccount = null): void
     {
         $this->transferAccount = $transferAccount;
     }
@@ -213,7 +215,7 @@ class Operation
      *
      * @param App\Entity\Operation $transferOperation
      */
-    public function setTransferOperation(Operation $transferOperation = null)
+    public function setTransferOperation(self $transferOperation = null): void
     {
         if (null !== $transferOperation) {
             if (null !== $transferOperation->getAccount()) {
@@ -241,7 +243,7 @@ class Operation
      *
      * @param string $thirdParty
      */
-    public function setThirdParty($thirdParty)
+    public function setThirdParty($thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
@@ -261,7 +263,7 @@ class Operation
      *
      * @param float $debit
      */
-    public function setDebit($debit = null)
+    public function setDebit($debit = null): void
     {
         $this->debit = $debit;
     }
@@ -281,7 +283,7 @@ class Operation
      *
      * @param float $credit
      */
-    public function setCredit($credit = null)
+    public function setCredit($credit = null): void
     {
         $this->credit = $credit;
     }
@@ -311,7 +313,7 @@ class Operation
      *
      * @param DateTime $valueDate
      */
-    public function setValueDate(\DateTime $valueDate = null)
+    public function setValueDate(\DateTime $valueDate = null): void
     {
         $this->valueDate = $valueDate;
     }
@@ -331,7 +333,7 @@ class Operation
      *
      * @param bool $reconciled
      */
-    public function setReconciled($reconciled)
+    public function setReconciled($reconciled): void
     {
         $this->reconciled = (bool) $reconciled;
     }
@@ -351,7 +353,7 @@ class Operation
      *
      * @param string $notes
      */
-    public function setNotes($notes)
+    public function setNotes($notes): void
     {
         $this->notes = $notes;
     }
@@ -391,7 +393,7 @@ class Operation
      *
      * @param App\Entity\Account $account
      */
-    public function setAccount(Account $account)
+    public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
@@ -411,7 +413,7 @@ class Operation
      *
      * @param App\Entity\Category $category
      */
-    public function setCategory(Category $category = null)
+    public function setCategory(Category $category = null): void
     {
         $this->category = $category;
     }
@@ -431,7 +433,7 @@ class Operation
      *
      * @param App\Entity\PaymentMethod $paymentMethod
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod = null)
+    public function setPaymentMethod(PaymentMethod $paymentMethod = null): void
     {
         $this->paymentMethod = $paymentMethod;
     }
@@ -451,7 +453,7 @@ class Operation
      *
      * @param App\Entity\Scheduler $scheduler
      */
-    public function setScheduler(Scheduler $scheduler = null)
+    public function setScheduler(Scheduler $scheduler = null): void
     {
         $this->scheduler = $scheduler;
     }

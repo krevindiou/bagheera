@@ -1,20 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Symfony\Component\Form\Form;
-use Psr\Log\LoggerInterface;
+use App\Entity\Account;
+use App\Entity\Bank;
+use App\Entity\Member;
+use App\Entity\Operation;
+use App\Entity\PaymentMethod;
+use App\Form\Type\AccountFormType;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use App\Entity\Member;
-use App\Entity\Bank;
-use App\Entity\Account;
-use App\Entity\Operation;
-use App\Entity\PaymentMethod;
-use App\Service\OperationService;
-use App\Form\Type\AccountFormType;
 
 class AccountService
 {
@@ -32,8 +33,7 @@ class AccountService
         ValidatorInterface $validator,
         TranslatorInterface $translator,
         OperationService $operationService
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
@@ -121,43 +121,11 @@ class AccountService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Account $account)
-    {
-        if (null !== $account->getAccountId()) {
-            $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);
-
-            if ($member !== $oldAccount['bank']->getMember()) {
-                return false;
-            }
-        }
-
-        if ($member === $account->getBank()->getMember()) {
-            try {
-                $this->em->persist($account);
-                $this->em->flush();
-
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Saves account.
-     *
-     * @param Member  $member  Member entity
-     * @param Account $account Account entity
-     *
-     * @return bool
-     */
     public function save(Member $member, Account $account)
     {
         $errors = $this->validator->validate($account);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             return $this->doSave($member, $account);
         }
 
@@ -177,7 +145,7 @@ class AccountService
         if ($form->isValid()) {
             $ok = $this->doSave($member, $form->getData());
 
-            if ($form->has('initialBalance') && $form->get('initialBalance')->getData() != 0) {
+            if ($form->has('initialBalance') && 0 != $form->get('initialBalance')->getData()) {
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
@@ -318,7 +286,7 @@ class AccountService
             }
 
             foreach ($accounts as $accountArray) {
-                if (!in_array($accountArray['external_account_id'], $currentAccountsExternalId)) {
+                if (!in_array($accountArray['external_account_id'], $currentAccountsExternalId, true)) {
                     $account = new Account();
                     $account->setBank($bank);
                     $account->setName($accountArray['name']);
@@ -327,12 +295,13 @@ class AccountService
 
                     $errors = $this->validator->validate($account);
 
-                    if (0 == count($errors)) {
+                    if (0 === count($errors)) {
                         try {
                             $this->em->persist($account);
                         } catch (\Exception $e) {
                             $this->logger->err($e->getMessage());
                             $error = true;
+
                             continue;
                         }
                     } else {
@@ -345,6 +314,7 @@ class AccountService
                         );
 
                         $error = true;
+
                         continue;
                     }
                 }
@@ -359,5 +329,37 @@ class AccountService
         }
 
         return !$error;
+    }
+
+    /**
+     * Saves account.
+     *
+     * @param Member  $member  Member entity
+     * @param Account $account Account entity
+     *
+     * @return bool
+     */
+    protected function doSave(Member $member, Account $account)
+    {
+        if (null !== $account->getAccountId()) {
+            $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);
+
+            if ($member !== $oldAccount['bank']->getMember()) {
+                return false;
+            }
+        }
+
+        if ($member === $account->getBank()->getMember()) {
+            try {
+                $this->em->persist($account);
+                $this->em->flush();
+
+                return true;
+            } catch (\Exception $e) {
+                $this->logger->err($e->getMessage());
+            }
+        }
+
+        return false;
     }
 }

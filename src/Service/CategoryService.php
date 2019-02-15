@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,11 +31,11 @@ class CategoryService
         $categories = $q->getResult();
         foreach ($categories as $category) {
             foreach ($category as $k => $v) {
-                if ('categoryId' == substr($k, -10) && '' != $v) {
+                if ('categoryId' === substr($k, -10) && null !== $v) {
                     $list[$category['c1_type']][$v] = '';
 
                     $nb = substr($k, 1, 1);
-                    for ($i = 1; $i <= $nb; $i++) {
+                    for ($i = 1; $i <= $nb; ++$i) {
                         $list[$category['c1_type']][$v] .= $category[substr($k, 0, 1).$i.'_name'].' > ';
                     }
 

@@ -1,20 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Symfony\Component\Form\Form;
-use Pagerfanta\Pagerfanta;
-use Pagerfanta\Adapter\CallbackAdapter;
-use Psr\Log\LoggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Entity\Member;
 use App\Entity\Account;
+use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\OperationSearch;
 use App\Entity\PaymentMethod;
 use App\Form\Type\OperationFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Pagerfanta\Adapter\CallbackAdapter;
+use Pagerfanta\Pagerfanta;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class OperationService
 {
@@ -30,8 +32,7 @@ class OperationService
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         $categoriesId
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
@@ -51,7 +52,7 @@ class OperationService
      */
     public function getList(Member $member, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
     {
-        if ($account->getBank()->getMember() == $member) {
+        if ($account->getBank()->getMember() === $member) {
             $params = [
                 ':account_id' => $account->getAccountId(),
             ];
@@ -87,11 +88,11 @@ class OperationService
             $sql .= 'WHERE operation.account_id = :account_id ';
 
             if (null !== $operationSearch) {
-                if ('' != $operationSearch->getThirdParty()) {
+                if ('' !== $operationSearch->getThirdParty()) {
                     $sql .= 'AND operation.third_party LIKE :third_party ';
                     $params[':third_party'] = '%'.$operationSearch->getThirdParty().'%';
                 }
-                if (0 != count($operationSearch->getCategories())) {
+                if (0 !== count($operationSearch->getCategories())) {
                     $categories = array_map(
                         function ($value) {
                             return $value->getCategoryId();
@@ -101,7 +102,7 @@ class OperationService
 
                     $sql .= 'AND operation.category_id IN ('.implode(',', $categories).') ';
                 }
-                if (0 != count($operationSearch->getPaymentMethods())) {
+                if (0 !== count($operationSearch->getPaymentMethods())) {
                     $paymentMethods = array_map(
                         function ($value) {
                             return $value->getPaymentMethodId();
@@ -139,7 +140,7 @@ class OperationService
                     $sql .= 'AND operation.value_date <= :value_date_end ';
                     $params[':value_date_end'] = $operationSearch->getValueDateEnd()->format(\DateTime::ISO8601);
                 }
-                if ('' != $operationSearch->getNotes()) {
+                if ('' !== $operationSearch->getNotes()) {
                     $sql .= 'AND operation.notes LIKE :notes ';
                     $params[':notes'] = '%'.$operationSearch->getNotes().'%';
                 }
@@ -258,122 +259,11 @@ class OperationService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Operation $operation)
-    {
-        if (null !== $operation->getOperationId()) {
-            $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
-
-            if ($member !== $oldOperation['account']->getBank()->getMember()) {
-                return false;
-            }
-        }
-
-        if ($member === $operation->getAccount()->getBank()->getMember()) {
-            if (!in_array(
-                $operation->getPaymentMethod()->getPaymentMethodId(),
-                [
-                    PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                    PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER,
-                ]
-            )) {
-                $operation->setTransferAccount(null);
-            }
-
-            $transferOperationBeforeSave = null;
-            if (null !== $operation->getOperationId()) {
-                $operationBeforeSave = $this->em->find(
-                    'App:Operation',
-                    $operation->getOperationId()
-                );
-
-                if (null !== $operationBeforeSave->getTransferOperation()) {
-                    $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
-                }
-            }
-
-            if (null !== $operation->getTransferAccount()) {
-                // update transfer => transfer
-                if (null !== $transferOperationBeforeSave) {
-                    $transferOperation = $operation->getTransferOperation();
-
-                // update check => transfer
-                } else {
-                    $transferOperation = new Operation();
-                    $transferOperation->setScheduler($operation->getScheduler());
-                    $transferOperation->setTransferOperation($operation);
-
-                    $operation->setTransferOperation($transferOperation);
-                }
-
-                if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER == $operation->getPaymentMethod()->getPaymentMethodId()) {
-                    $paymentMethod = $this->em->find(
-                        'App:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
-                    );
-                } else {
-                    $paymentMethod = $this->em->find(
-                        'App:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
-                    );
-                }
-
-                $transferOperation->setAccount($operation->getTransferAccount());
-                $transferOperation->setTransferAccount($operation->getAccount());
-                $transferOperation->setDebit($operation->getCredit());
-                $transferOperation->setCredit($operation->getDebit());
-                $transferOperation->setThirdParty($operation->getThirdParty());
-                $transferOperation->setCategory($operation->getCategory());
-                $transferOperation->setPaymentMethod($paymentMethod);
-                $transferOperation->setValueDate($operation->getValueDate());
-                $transferOperation->setNotes($operation->getNotes());
-
-                try {
-                    $this->em->persist($transferOperation);
-                } catch (\Exception $e) {
-                    $this->logger->err($e->getMessage());
-
-                    return false;
-                }
-            } else {
-                // update transfer => check
-                if (null !== $transferOperationBeforeSave) {
-                    $operation->setTransferOperation(null);
-
-                    try {
-                        $this->em->flush();
-                        $this->em->remove($transferOperationBeforeSave);
-                    } catch (\Exception $e) {
-                        $this->logger->err($e->getMessage());
-
-                        return false;
-                    }
-                }
-            }
-
-            try {
-                $this->em->persist($operation);
-                $this->em->flush();
-
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Saves operation.
-     *
-     * @param Member    $member    Member entity
-     * @param Operation $operation Operation entity
-     *
-     * @return bool
-     */
     public function save(Member $member, Operation $operation)
     {
         $errors = $this->validator->validate($operation);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             return $this->doSave($member, $operation);
         }
 
@@ -508,7 +398,7 @@ class OperationService
                 $operation->setExternalOperationId($operationArray['transaction_id']);
             }
 
-            if ('debit' == $operationArray['type']) {
+            if ('debit' === $operationArray['type']) {
                 $operation->setDebit($operationArray['amount']);
             } else {
                 $operation->setCredit($operationArray['amount']);
@@ -517,13 +407,13 @@ class OperationService
 
             $errors = $this->validator->validate($account);
 
-            if (0 == count($errors)) {
+            if (0 === count($errors)) {
                 try {
                     $this->em->persist($operation);
 
-                    $i++;
+                    ++$i;
 
-                    if ($i % 100 == 0) {
+                    if (0 === $i % 100) {
                         try {
                             $this->em->flush();
 
@@ -531,12 +421,14 @@ class OperationService
                         } catch (\Exception $e) {
                             $this->logger->err($e->getMessage());
                             $error = true;
+
                             continue;
                         }
                     }
                 } catch (\Exception $e) {
                     $this->logger->err($e->getMessage());
                     $error = true;
+
                     continue;
                 }
             } else {
@@ -548,6 +440,7 @@ class OperationService
                     )
                 );
                 $error = true;
+
                 continue;
             }
         }
@@ -628,5 +521,119 @@ class OperationService
         $query->setParameter('valueDate', $since->format(\DateTime::ISO8601));
 
         return $query->getOneOrNullResult();
+    }
+
+    /**
+     * Saves operation.
+     *
+     * @param Member    $member    Member entity
+     * @param Operation $operation Operation entity
+     *
+     * @return bool
+     */
+    protected function doSave(Member $member, Operation $operation)
+    {
+        if (null !== $operation->getOperationId()) {
+            $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
+
+            if ($member !== $oldOperation['account']->getBank()->getMember()) {
+                return false;
+            }
+        }
+
+        if ($member === $operation->getAccount()->getBank()->getMember()) {
+            if (!in_array(
+                $operation->getPaymentMethod()->getPaymentMethodId(),
+                [
+                    PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                    PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER,
+                ],
+                true
+            )) {
+                $operation->setTransferAccount(null);
+            }
+
+            $transferOperationBeforeSave = null;
+            if (null !== $operation->getOperationId()) {
+                $operationBeforeSave = $this->em->find(
+                    'App:Operation',
+                    $operation->getOperationId()
+                );
+
+                if (null !== $operationBeforeSave->getTransferOperation()) {
+                    $transferOperationBeforeSave = $operationBeforeSave->getTransferOperation();
+                }
+            }
+
+            if (null !== $operation->getTransferAccount()) {
+                // update transfer => transfer
+                if (null !== $transferOperationBeforeSave) {
+                    $transferOperation = $operation->getTransferOperation();
+
+                // update check => transfer
+                } else {
+                    $transferOperation = new Operation();
+                    $transferOperation->setScheduler($operation->getScheduler());
+                    $transferOperation->setTransferOperation($operation);
+
+                    $operation->setTransferOperation($transferOperation);
+                }
+
+                if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER === $operation->getPaymentMethod()->getPaymentMethodId()) {
+                    $paymentMethod = $this->em->find(
+                        'App:PaymentMethod',
+                        PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
+                    );
+                } else {
+                    $paymentMethod = $this->em->find(
+                        'App:PaymentMethod',
+                        PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
+                    );
+                }
+
+                $transferOperation->setAccount($operation->getTransferAccount());
+                $transferOperation->setTransferAccount($operation->getAccount());
+                $transferOperation->setDebit($operation->getCredit());
+                $transferOperation->setCredit($operation->getDebit());
+                $transferOperation->setThirdParty($operation->getThirdParty());
+                $transferOperation->setCategory($operation->getCategory());
+                $transferOperation->setPaymentMethod($paymentMethod);
+                $transferOperation->setValueDate($operation->getValueDate());
+                $transferOperation->setNotes($operation->getNotes());
+
+                try {
+                    $this->em->persist($transferOperation);
+                } catch (\Exception $e) {
+                    $this->logger->err($e->getMessage());
+
+                    return false;
+                }
+            } else {
+                // update transfer => check
+                if (null !== $transferOperationBeforeSave) {
+                    $operation->setTransferOperation(null);
+
+                    try {
+                        $this->em->flush();
+                        $this->em->remove($transferOperationBeforeSave);
+                    } catch (\Exception $e) {
+                        $this->logger->err($e->getMessage());
+
+                        return false;
+                    }
+                }
+            }
+
+            try {
+                $this->em->persist($operation);
+                $this->em->flush();
+
+                return true;
+            } catch (\Exception $e) {
+                $this->logger->err($e->getMessage());
+            }
+        }
+
+        return false;
     }
 }

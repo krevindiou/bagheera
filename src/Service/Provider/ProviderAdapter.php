@@ -1,29 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Provider;
 
-use Psr\Container\ContainerInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Account;
 use App\Entity\BankAccess;
 use App\Service\AccountImportService;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
 class ProviderAdapter
 {
+    protected $providerService;
     private $em;
     private $key;
     private $accountImportService;
     private $container;
-    protected $providerService;
 
     public function __construct(
         EntityManagerInterface $em,
         $key,
         AccountImportService $accountImportService,
         ContainerInterface $container
-    )
-    {
+    ) {
         $this->em = $em;
         $this->key = $key;
         $this->accountImportService = $accountImportService;
@@ -35,7 +36,7 @@ class ProviderAdapter
      *
      * @param BankAccess $bankAccess BankAccess entity
      */
-    public function setBankAccess(BankAccess $bankAccess)
+    public function setBankAccess(BankAccess $bankAccess): void
     {
         $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
 

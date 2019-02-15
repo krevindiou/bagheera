@@ -1,18 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
+use App\Entity\Bank;
+use App\Entity\BankAccess;
+use App\Entity\Member;
+use App\Form\Type\BankAccessFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Psr\Log\LoggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\Member;
-use App\Entity\Bank;
-use App\Entity\BankAccess;
-use App\Service\BankService;
-use App\Service\CryptService;
-use App\Form\Type\BankAccessFormType;
 
 class BankAccessService
 {
@@ -34,8 +34,7 @@ class BankAccessService
         ValidatorInterface $validator,
         BankService $bankService,
         CryptService $cryptService
-    )
-    {
+    ) {
         $this->secret = $secret;
         $this->logger = $logger;
         $this->em = $em;
@@ -74,55 +73,11 @@ class BankAccessService
      *
      * @return bool
      */
-    protected function doSave(Member $member, BankAccess $bankAccess)
-    {
-        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
-
-        if (null !== $bank && $member === $bank->getMember()) {
-            try {
-                // Delete previous access data
-                $dql = 'DELETE FROM App:BankAccess b ';
-                $dql .= 'WHERE b.bankId = :bankId ';
-
-                $this->emSecure->createQuery($dql)
-                    ->setParameter('bankId', $bankAccess->getBankId())
-                    ->execute();
-
-                $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
-                $encryptedPassword = $this->cryptService->encrypt($bankAccess->getPlainPassword(), $this->secret);
-
-                $bankAccess->setLogin($encryptedLogin);
-                $bankAccess->setPassword($encryptedPassword);
-                $bankAccess->setPlainLogin('');
-                $bankAccess->setPlainPassword('');
-
-                $this->emSecure->persist($bankAccess);
-                $this->emSecure->flush();
-
-                $this->bankService->importExternalBank($bank);
-
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Saves bank access.
-     *
-     * @param Member     $member     Member entity
-     * @param BankAccess $bankAccess BankAccess entity
-     *
-     * @return bool
-     */
     public function save(Member $member, BankAccess $bankAccess)
     {
         $errors = $this->validator->validate($bankAccess);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             return $this->save($member, $bankAccess);
         }
 
@@ -141,6 +96,51 @@ class BankAccessService
     {
         if ($form->isValid()) {
             return $this->doSave($member, $form->getData());
+        }
+
+        return false;
+    }
+
+    /**
+     * Saves bank access.
+     *
+     * @param Member     $member     Member entity
+     * @param BankAccess $bankAccess BankAccess entity
+     *
+     * @return bool
+     */
+    protected function doSave(Member $member, BankAccess $bankAccess)
+    {
+        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
+
+        if (null !== $bank && $member === $bank->getMember()) {
+            try {
+                // Delete previous access data
+                $dql = 'DELETE FROM App:BankAccess b ';
+                $dql .= 'WHERE b.bankId = :bankId ';
+
+                $this->emSecure->createQuery($dql)
+                    ->setParameter('bankId', $bankAccess->getBankId())
+                    ->execute()
+                ;
+
+                $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
+                $encryptedPassword = $this->cryptService->encrypt($bankAccess->getPlainPassword(), $this->secret);
+
+                $bankAccess->setLogin($encryptedLogin);
+                $bankAccess->setPassword($encryptedPassword);
+                $bankAccess->setPlainLogin('');
+                $bankAccess->setPlainPassword('');
+
+                $this->emSecure->persist($bankAccess);
+                $this->emSecure->flush();
+
+                $this->bankService->importExternalBank($bank);
+
+                return true;
+            } catch (\Exception $e) {
+                $this->logger->err($e->getMessage());
+            }
         }
 
         return false;

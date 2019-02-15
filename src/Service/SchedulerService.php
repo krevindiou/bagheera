@@ -1,22 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
+use App\Entity\Account;
+use App\Entity\Member;
+use App\Entity\Operation;
+use App\Entity\PaymentMethod;
+use App\Entity\Scheduler;
+use App\Form\Type\SchedulerFormType;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Form\Form;
-use Pagerfanta\Pagerfanta;
-use Pagerfanta\Adapter\CallbackAdapter;
-use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Pagerfanta\Adapter\CallbackAdapter;
+use Pagerfanta\Pagerfanta;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Entity\Member;
-use App\Entity\Account;
-use App\Entity\Operation;
-use App\Entity\Scheduler;
-use App\Entity\PaymentMethod;
-use App\Service\OperationService;
-use App\Form\Type\SchedulerFormType;
 
 class SchedulerService
 {
@@ -32,8 +33,7 @@ class SchedulerService
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         OperationService $operationService
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
@@ -189,42 +189,11 @@ class SchedulerService
      *
      * @return bool
      */
-    protected function doSave(Scheduler $scheduler)
-    {
-        if (!in_array(
-            $scheduler->getPaymentMethod()->getPaymentMethodId(),
-            [
-                PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
-                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER,
-            ]
-        )) {
-            $scheduler->setTransferAccount(null);
-        }
-
-        try {
-            $this->em->persist($scheduler);
-            $this->em->flush();
-
-            $this->runSchedulers($scheduler->getAccount()->getBank()->getMember());
-
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
-        }
-    }
-
-    /**
-     * Saves scheduler.
-     *
-     * @param Scheduler $scheduler Scheduler entity
-     *
-     * @return bool
-     */
     public function save(Scheduler $scheduler)
     {
         $errors = $this->validator->validate($scheduler);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             return $this->doSave($scheduler);
         }
 
@@ -316,7 +285,7 @@ class SchedulerService
             }
 
             $endDate = $now;
-            if ($scheduler->getLimitDate() != null && $scheduler->getLimitDate() < $endDate) {
+            if (null !== $scheduler->getLimitDate() && $scheduler->getLimitDate() < $endDate) {
                 $endDate = $scheduler->getLimitDate();
             }
 
@@ -346,6 +315,38 @@ class SchedulerService
 
                 $this->operationService->save($member, $operation);
             }
+        }
+    }
+
+    /**
+     * Saves scheduler.
+     *
+     * @param Scheduler $scheduler Scheduler entity
+     *
+     * @return bool
+     */
+    protected function doSave(Scheduler $scheduler)
+    {
+        if (!in_array(
+            $scheduler->getPaymentMethod()->getPaymentMethodId(),
+            [
+                PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER,
+                PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER,
+            ],
+            true
+        )) {
+            $scheduler->setTransferAccount(null);
+        }
+
+        try {
+            $this->em->persist($scheduler);
+            $this->em->flush();
+
+            $this->runSchedulers($scheduler->getAccount()->getBank()->getMember());
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
         }
     }
 }

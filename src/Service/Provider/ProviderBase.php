@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service\Provider;
 
-use Symfony\Bridge\Monolog\Logger;
-use App\Service\AccountImportService;
+use App\Entity\Account;
 use App\Entity\Bank;
 use App\Entity\BankAccess;
-use App\Entity\Account;
+use App\Service\AccountImportService;
+use Symfony\Bridge\Monolog\Logger;
 
 abstract class ProviderBase
 {
@@ -35,22 +37,22 @@ abstract class ProviderBase
      */
     public $accountImportService;
 
-    public function setKey($key)
+    public function setKey($key): void
     {
         $this->key = $key;
     }
 
-    public function setBank(Bank $bank)
+    public function setBank(Bank $bank): void
     {
         $this->bank = $bank;
     }
 
-    public function setBankAccess(BankAccess $bankAccess)
+    public function setBankAccess(BankAccess $bankAccess): void
     {
         $this->bankAccess = $bankAccess;
     }
 
-    public function setAccountImportService(AccountImportService $accountImportService)
+    public function setAccountImportService(AccountImportService $accountImportService): void
     {
         $this->accountImportService = $accountImportService;
     }
@@ -84,7 +86,7 @@ abstract class ProviderBase
      * @param string  $data    Data to save
      * @param string  $type    Either original, json or json_normalized
      */
-    protected function save(Account $account, $data, $type)
+    protected function save(Account $account, $data, $type): void
     {
         $this->accountImportService->setData($account, $data, $type);
     }

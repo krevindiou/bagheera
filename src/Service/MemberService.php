@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Symfony\Component\Form\Form;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Templating\EngineInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
-use Psr\Log\LoggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Member;
 use App\Form\Type\MemberChangePasswordFormType;
 use App\Form\Type\MemberForgotPasswordFormType;
 use App\Form\Type\MemberProfileFormType;
 use App\Form\Type\MemberRegisterFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Templating\EngineInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MemberService
 {
@@ -49,8 +51,7 @@ class MemberService
         AccountService $accountService,
         CryptService $cryptService,
         EngineInterface $templating
-    )
-    {
+    ) {
         $this->secret = $secret;
         $this->logger = $logger;
         $this->em = $em;
@@ -94,52 +95,6 @@ class MemberService
     }
 
     /**
-     * Adds member.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
-     */
-    protected function add(Member $member)
-    {
-        $member->setPassword($this->passwordEncoder->encodePassword($member, $member->getPlainPassword()));
-
-        try {
-            $this->em->persist($member);
-            $this->em->flush();
-        } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
-
-            return false;
-        }
-
-        // Activation link construction
-        $key = $this->createRegisterKey($member);
-        $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], true);
-
-        $body = $this->templating->render(
-            'Email/register.html.twig',
-            ['link' => $link]
-        );
-
-        $message = (new \Swift_Message())
-            ->setSubject($this->translator->trans('member.register.email_subject'))
-            ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
-            ->setTo([$member->getEmail()])
-            ->setBody($body, 'text/html');
-
-        try {
-            $this->mailer->send($message);
-        } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Creates register key.
      *
      * @param Member $member Member entity
@@ -157,45 +112,6 @@ class MemberService
     }
 
     /**
-     * Decodes register key.
-     *
-     * @param string $key Encrypted register key
-     *
-     * @return Member
-     */
-    protected function decodeRegisterKey($key)
-    {
-        $data = $this->cryptService->decrypt($key, $this->secret);
-
-        if (null !== ($data = json_decode($data, true))) {
-            if (isset($data['type'], $data['email']) && 'register' == $data['type']) {
-                return $this->em->getRepository('App:Member')
-                                ->findOneBy(['email' => $data['email']]);
-            }
-        }
-    }
-
-    /**
-     * Updates member.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
-     */
-    protected function update(Member $member)
-    {
-        try {
-            $this->em->flush();
-
-            return true;
-        } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
-        }
-
-        return false;
-    }
-
-    /**
      * Saves member.
      *
      * @param Member $member Member entity
@@ -206,12 +122,12 @@ class MemberService
     {
         $errors = $this->validator->validate($member);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             if (null !== $member->getMemberId()) {
                 return $this->update($member);
-            } else {
-                return $this->add($member);
             }
+
+            return $this->add($member);
         }
 
         return false;
@@ -229,9 +145,9 @@ class MemberService
         if ($form->isValid()) {
             if (null !== $form->getData()->getMemberId()) {
                 return $this->update($form->getData());
-            } else {
-                return $this->add($form->getData());
             }
+
+            return $this->add($form->getData());
         }
 
         return false;
@@ -257,7 +173,8 @@ class MemberService
     public function sendChangePasswordEmail($email)
     {
         $member = $this->em->getRepository('App:Member')
-                           ->findOneBy(['email' => $email]);
+            ->findOneBy(['email' => $email])
+        ;
 
         if (null !== $member) {
             // Change password link construction
@@ -273,7 +190,8 @@ class MemberService
                 ->setSubject($this->translator->trans('member.forgot_password.email_subject'))
                 ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
                 ->setTo([$member->getEmail()])
-                ->setBody($body, 'text/html');
+                ->setBody($body, 'text/html')
+            ;
 
             try {
                 $this->mailer->send($message);
@@ -351,12 +269,12 @@ class MemberService
         $data = $this->cryptService->decrypt($key, $this->secret);
 
         if (null !== ($data = json_decode($data, true))) {
-            if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' == $data['type']) {
+            if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' === $data['type']) {
                 $now = new \DateTime();
                 if ($data['expiration'] >= $now->format(\DateTime::ISO8601)) {
-
                     return $this->em->getRepository('App:Member')
-                                    ->findOneBy(['email' => $data['email']]);
+                        ->findOneBy(['email' => $data['email']])
+                    ;
                 }
             }
         }
@@ -454,6 +372,116 @@ class MemberService
     }
 
     /**
+     * Checks if new account tip is displayed.
+     *
+     * @param Member $member Member entity
+     *
+     * @return bool
+     */
+    public function hasNewAccountTip(Member $member)
+    {
+        $tipNewAccount = false;
+
+        $hasBankWithoutProvider = $this->hasBankWithoutProvider($member);
+        if ($hasBankWithoutProvider) {
+            $accounts = $this->accountService->getList($member);
+
+            if (0 === count($accounts)) {
+                $tipNewAccount = true;
+            }
+        }
+
+        return $tipNewAccount;
+    }
+
+    /**
+     * Adds member.
+     *
+     * @param Member $member Member entity
+     *
+     * @return bool
+     */
+    protected function add(Member $member)
+    {
+        $member->setPassword($this->passwordEncoder->encodePassword($member, $member->getPlainPassword()));
+
+        try {
+            $this->em->persist($member);
+            $this->em->flush();
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+
+            return false;
+        }
+
+        // Activation link construction
+        $key = $this->createRegisterKey($member);
+        $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], true);
+
+        $body = $this->templating->render(
+            'Email/register.html.twig',
+            ['link' => $link]
+        );
+
+        $message = (new \Swift_Message())
+            ->setSubject($this->translator->trans('member.register.email_subject'))
+            ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
+            ->setTo([$member->getEmail()])
+            ->setBody($body, 'text/html')
+        ;
+
+        try {
+            $this->mailer->send($message);
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Decodes register key.
+     *
+     * @param string $key Encrypted register key
+     *
+     * @return Member
+     */
+    protected function decodeRegisterKey($key)
+    {
+        $data = $this->cryptService->decrypt($key, $this->secret);
+
+        if ($data && null !== ($data = json_decode($data, true))) {
+            if (isset($data['type'], $data['email']) && 'register' === $data['type']) {
+                return $this->em->getRepository('App:Member')
+                    ->findOneBy(['email' => $data['email']])
+                ;
+            }
+        }
+    }
+
+    /**
+     * Updates member.
+     *
+     * @param Member $member Member entity
+     *
+     * @return bool
+     */
+    protected function update(Member $member)
+    {
+        try {
+            $this->em->flush();
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
      * Checks if member has one or more banks without provider.
      *
      * @param Member $member Member entity
@@ -473,28 +501,5 @@ class MemberService
         }
 
         return false;
-    }
-
-    /**
-     * Checks if new account tip is displayed.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
-     */
-    public function hasNewAccountTip(Member $member)
-    {
-        $tipNewAccount = false;
-
-        $hasBankWithoutProvider = $this->hasBankWithoutProvider($member);
-        if ($hasBankWithoutProvider) {
-            $accounts = $this->accountService->getList($member);
-
-            if (count($accounts) == 0) {
-                $tipNewAccount = true;
-            }
-        }
-
-        return $tipNewAccount;
     }
 }

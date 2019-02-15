@@ -1,16 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use Symfony\Component\Form\Form;
-use Psr\Log\LoggerInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Form\FormFactoryInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
-use App\Entity\Member;
 use App\Entity\Account;
+use App\Entity\Member;
 use App\Entity\Report;
 use App\Form\Type\ReportFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ReportService
 {
@@ -24,8 +26,7 @@ class ReportService
         EntityManagerInterface $em,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
@@ -192,35 +193,11 @@ class ReportService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Report $report)
-    {
-        if ($member === $report->getMember()) {
-            try {
-                $this->em->persist($report);
-                $this->em->flush();
-
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Saves report.
-     *
-     * @param Member $member Member entity
-     * @param Report $report Report entity
-     *
-     * @return bool
-     */
     public function save(Member $member, Report $report)
     {
         $errors = $this->validator->validate($report);
 
-        if (0 == count($errors)) {
+        if (0 === count($errors)) {
             return $this->doSave($member, $report);
         }
 
@@ -298,7 +275,7 @@ class ReportService
 
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
-            if (count($accounts) == 0) {
+            if (0 === count($accounts)) {
                 $dql = 'SELECT a FROM App:Account a ';
                 $dql .= 'JOIN a.bank b ';
                 $dql .= 'WHERE b.member = :member ';
@@ -311,13 +288,13 @@ class ReportService
                 $accounts = $query->getResult();
             }
 
-            if (in_array($report->getType(), ['sum', 'average'])) {
+            if (in_array($report->getType(), ['sum', 'average'], true)) {
                 $results = $this->getGraphValues($report, $accounts, $report->getType());
-            } elseif ('distribution' == $report->getType()) {
-                // @todo
+            } elseif ('distribution' === $report->getType()) {
+                /** @todo */
                 $results = [];
-            } elseif ('estimate' == $report->getType()) {
-                // @todo
+            } elseif ('estimate' === $report->getType()) {
+                /** @todo */
                 $results = [];
             }
 
@@ -334,19 +311,19 @@ class ReportService
             foreach ($series as $k => $serie) {
                 if (!empty($serie['points'])) {
                     switch ($report->getPeriodGrouping()) {
-                        case 'month' :
+                        case 'month':
                             $interval = 'P1M';
-                            break;
 
-                        case 'quarter' :
+                            break;
+                        case 'quarter':
                             $interval = 'P3M';
-                            break;
 
-                        case 'year' :
+                            break;
+                        case 'year':
                             $interval = 'P1Y';
-                            break;
 
-                        default :
+                            break;
+                        default:
                             $interval = 'P1Y';
                     }
 
@@ -378,10 +355,10 @@ class ReportService
         $yaxisMin = (int) (min(array_merge($series[0]['points'], $series[1]['points'])) * 0.95);
         $yaxisMax = (int) (max(array_merge($series[0]['points'], $series[1]['points'])) * 1.05);
 
-        $tmp = pow(10, (strlen($yaxisMin) - 2));
+        $tmp = 10 ** (strlen((string) $yaxisMin) - 2);
         $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
 
-        $tmp = pow(10, (strlen($yaxisMax) - 2));
+        $tmp = 10 ** (strlen((string) $yaxisMax) - 2);
         $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
 
         return [
@@ -404,24 +381,24 @@ class ReportService
     public function getGraphValues(Report $report, array $accounts, $type)
     {
         switch ($report->getPeriodGrouping()) {
-            case 'month' :
+            case 'month':
                 $groupingData = 'TO_CHAR(o.value_date, \'YYYY-MM-01\')';
-                break;
 
-            case 'quarter' :
+                break;
+            case 'quarter':
                 $groupingData = 'CONCAT(TO_CHAR(o.value_date, \'YYYY-\'), LPAD(FLOOR((TO_CHAR(o.value_date, \'MM\')::integer - 1) / 3) * 3 + 1, 2, \'0\'), \'-01\')';
-                break;
 
-            case 'year' :
+                break;
+            case 'year':
                 $groupingData = 'TO_CHAR(o.value_date, \'YYYY-01-01\')';
-                break;
 
-            default :
+                break;
+            default:
                 $groupingData = '';
         }
 
-        $sql = 'SELECT '.(('' != $groupingData) ? $groupingData.' AS grouping_data, ' : '');
-        $sql .= (('average' == $type) ? 'AVG' : 'SUM').'(o.credit) AS data_1, '.(('average' == $type) ? 'AVG' : 'SUM').'(o.debit) AS data_2 ';
+        $sql = 'SELECT '.(('' !== $groupingData) ? $groupingData.' AS grouping_data, ' : '');
+        $sql .= (('average' === $type) ? 'AVG' : 'SUM').'(o.credit) AS data_1, '.(('average' === $type) ? 'AVG' : 'SUM').'(o.debit) AS data_2 ';
         $sql .= 'FROM operation AS o ';
 
         $accountsId = [];
@@ -442,7 +419,7 @@ class ReportService
         if ($report->getReconciledOnly()) {
             $sql .= 'AND o.is_reconciled = true ';
         }
-        if ('' != $groupingData) {
+        if ('' !== $groupingData) {
             $sql .= 'GROUP BY grouping_data ';
             $sql .= 'ORDER BY grouping_data ASC ';
         }
@@ -505,10 +482,10 @@ class ReportService
             $yaxisMin = (int) (min($tmpValues) - $diff * 0.05);
             $yaxisMax = (int) (max($tmpValues) + $diff * 0.05);
 
-            $tmp = pow(10, (strlen(abs($yaxisMin)) - 2));
+            $tmp = 10 ** (strlen((string) abs($yaxisMin)) - 2);
             $yaxisMin = floor($yaxisMin / $tmp) * $tmp;
 
-            $tmp = pow(10, (strlen($yaxisMax) - 2));
+            $tmp = 10 ** (strlen((string) $yaxisMax) - 2);
             $yaxisMax = ceil($yaxisMax / $tmp) * $tmp;
 
             $graph['yaxisMin'] = $yaxisMin;
@@ -516,5 +493,29 @@ class ReportService
         }
 
         return $graph;
+    }
+
+    /**
+     * Saves report.
+     *
+     * @param Member $member Member entity
+     * @param Report $report Report entity
+     *
+     * @return bool
+     */
+    protected function doSave(Member $member, Report $report)
+    {
+        if ($member === $report->getMember()) {
+            try {
+                $this->em->persist($report);
+                $this->em->flush();
+
+                return true;
+            } catch (\Exception $e) {
+                $this->logger->err($e->getMessage());
+            }
+        }
+
+        return false;
     }
 }

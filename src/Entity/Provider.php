@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -50,6 +52,11 @@ class Provider
      */
     protected $updatedAt;
 
+    public function __toString()
+    {
+        return $this->getName();
+    }
+
     /**
      * Get providerId.
      *
@@ -65,7 +72,7 @@ class Provider
      *
      * @param string $name
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -85,7 +92,7 @@ class Provider
      *
      * @param string $country
      */
-    public function setCountry($country)
+    public function setCountry($country): void
     {
         $this->country = $country;
     }
@@ -118,10 +125,5 @@ class Provider
     public function getUpdatedAt()
     {
         return $this->updatedAt;
-    }
-
-    public function __toString()
-    {
-        return $this->getName();
     }
 }

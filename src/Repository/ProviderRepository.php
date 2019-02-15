@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
-use Doctrine\ORM\EntityRepository;
 use App\Entity\Member;
+use Doctrine\ORM\EntityRepository;
 
 class ProviderRepository extends EntityRepository
 {
@@ -21,9 +23,10 @@ class ProviderRepository extends EntityRepository
         $providers = array_map('current', $query->getScalarResult());
 
         $qb = $this->createQueryBuilder('p')
-                   ->where('p.country = :country')
-                   ->orderBy('p.name', 'ASC')
-                   ->setParameter('country', $member->getCountry());
+            ->where('p.country = :country')
+            ->orderBy('p.name', 'ASC')
+            ->setParameter('country', $member->getCountry())
+        ;
 
         if (!empty($providers)) {
             $qb->andWhere('p.providerId NOT IN ('.implode(', ', $providers).')');

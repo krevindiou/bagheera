@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -143,6 +145,11 @@ class Account
         $this->schedulers = new ArrayCollection();
     }
 
+    public function __toString()
+    {
+        return $this->getBank()->getName().' - '.$this->getName();
+    }
+
     /**
      * Get accountId.
      *
@@ -158,7 +165,7 @@ class Account
      *
      * @param string $externalAccountId
      */
-    public function setExternalAccountId($externalAccountId)
+    public function setExternalAccountId($externalAccountId): void
     {
         $this->externalAccountId = $externalAccountId;
     }
@@ -178,7 +185,7 @@ class Account
      *
      * @param string $name
      */
-    public function setName($name)
+    public function setName($name): void
     {
         $this->name = $name;
     }
@@ -198,7 +205,7 @@ class Account
      *
      * @param string $currency
      */
-    public function setCurrency($currency)
+    public function setCurrency($currency): void
     {
         $this->currency = $currency;
     }
@@ -218,7 +225,7 @@ class Account
      *
      * @param float $overdraftFacility
      */
-    public function setOverdraftFacility($overdraftFacility)
+    public function setOverdraftFacility($overdraftFacility): void
     {
         $this->overdraftFacility = (float) $overdraftFacility;
     }
@@ -238,7 +245,7 @@ class Account
      *
      * @param bool $closed
      */
-    public function setClosed($closed)
+    public function setClosed($closed): void
     {
         $this->closed = (bool) $closed;
     }
@@ -258,7 +265,7 @@ class Account
      *
      * @param bool $deleted
      */
-    public function setDeleted($deleted)
+    public function setDeleted($deleted): void
     {
         $this->deleted = (bool) $deleted;
     }
@@ -298,7 +305,7 @@ class Account
      *
      * @param App\Entity\Member $member
      */
-    public function addSharedWith(Member $member)
+    public function addSharedWith(Member $member): void
     {
         $this->sharedWith[] = $member;
     }
@@ -318,7 +325,7 @@ class Account
      *
      * @param App\Entity\Bank $bank
      */
-    public function setBank(Bank $bank)
+    public function setBank(Bank $bank): void
     {
         $this->bank = $bank;
     }
@@ -358,13 +365,8 @@ class Account
         return $this->getBank()->isManual();
     }
 
-    public function __toString()
-    {
-        return $this->getBank()->getName().' - '.$this->getName();
-    }
-
     public function isOwner(Member $member)
     {
-        return $this->getBank()->getMember()->getMemberId() == $member->getMemberId();
+        return $this->getBank()->getMember()->getMemberId() === $member->getMemberId();
     }
 }

@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
-use Doctrine\ORM\EntityRepository;
 use App\Entity\Account;
 use App\Entity\Member;
+use Doctrine\ORM\EntityRepository;
 
 class OperationRepository extends EntityRepository
 {
@@ -24,6 +26,37 @@ class OperationRepository extends EntityRepository
         } catch (\Doctrine\ORM\NoResultException $e) {
             return;
         }
+    }
+
+    /**
+     * Gets total amount by month.
+     *
+     * @param Member   $member    Member entity
+     * @param DateTime $startDate Sum calculated after this date
+     * @param DateTime $endDate   Sum calculated before this date
+     * @param Account  $account   Synthesis for specific account
+     *
+     * @return array
+     */
+    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null)
+    {
+        $data = $this->getSumsByMonth($member, $startDate, $endDate, $account);
+
+        if (!empty($data)) {
+            $previousMonthTotal = $this->getSumBefore($member, $startDate, $account);
+
+            foreach ($data as $currency => $value) {
+                foreach ($value as $month => $total) {
+                    if (isset($previousMonthTotal[$currency])) {
+                        $data[$currency][$month] += $previousMonthTotal[$currency];
+                    }
+
+                    $previousMonthTotal[$currency] = $data[$currency][$month];
+                }
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -138,37 +171,6 @@ class OperationRepository extends EntityRepository
         if (!empty($results)) {
             foreach ($results as $result) {
                 $data[$result['currency']] = $result['total'];
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Gets total amount by month.
-     *
-     * @param Member   $member    Member entity
-     * @param DateTime $startDate Sum calculated after this date
-     * @param DateTime $endDate   Sum calculated before this date
-     * @param Account  $account   Synthesis for specific account
-     *
-     * @return array
-     */
-    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null)
-    {
-        $data = $this->getSumsByMonth($member, $startDate, $endDate, $account);
-
-        if (!empty($data)) {
-            $previousMonthTotal = $this->getSumBefore($member, $startDate, $account);
-
-            foreach ($data as $currency => $value) {
-                foreach ($value as $month => $total) {
-                    if (isset($previousMonthTotal[$currency])) {
-                        $data[$currency][$month] += $previousMonthTotal[$currency];
-                    }
-
-                    $previousMonthTotal[$currency] = $data[$currency][$month];
-                }
             }
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -100,7 +102,7 @@ class AccountImport
      *
      * @param int $importId
      */
-    public function setImportId($importId)
+    public function setImportId($importId): void
     {
         $this->importId = $importId;
     }
@@ -120,7 +122,7 @@ class AccountImport
      *
      * @param App\Entity\Account $account
      */
-    public function setAccount(Account $account)
+    public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
@@ -140,7 +142,7 @@ class AccountImport
      *
      * @param int $total
      */
-    public function setTotal($total)
+    public function setTotal($total): void
     {
         $this->total = $total;
     }
@@ -160,7 +162,7 @@ class AccountImport
      *
      * @param int $progress
      */
-    public function setProgress($progress)
+    public function setProgress($progress): void
     {
         $this->progress = $progress;
     }
@@ -180,7 +182,7 @@ class AccountImport
      *
      * @param bool $finished
      */
-    public function setFinished($finished)
+    public function setFinished($finished): void
     {
         $this->finished = (bool) $finished;
     }
@@ -200,7 +202,7 @@ class AccountImport
      *
      * @param string originalData
      */
-    public function setOriginalData($originalData)
+    public function setOriginalData($originalData): void
     {
         $this->originalData = $originalData;
     }
@@ -220,7 +222,7 @@ class AccountImport
      *
      * @param string jsonData
      */
-    public function setJsonData($jsonData)
+    public function setJsonData($jsonData): void
     {
         $this->jsonData = $jsonData;
     }
@@ -240,7 +242,7 @@ class AccountImport
      *
      * @param string jsonNormalizedData
      */
-    public function setJsonNormalizedData($jsonNormalizedData)
+    public function setJsonNormalizedData($jsonNormalizedData): void
     {
         $this->jsonNormalizedData = $jsonNormalizedData;
     }

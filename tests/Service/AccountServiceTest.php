@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
-use App\Tests\TestCase;
 use App\Entity\Account;
+use App\Tests\TestCase;
 
-class AccountServiceTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class AccountServiceTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -15,35 +21,35 @@ class AccountServiceTest extends TestCase
         $this->jane = $this->em->find('App:Member', 2);
     }
 
-    public function testGetFormForForeignMember()
+    public function testGetFormForForeignMember(): void
     {
         $account = $this->em->find('App:Account', 1);
         $form = $this->get('test.app.account')->getUpdateForm($this->jane, $account);
         $this->assertNull($form);
     }
 
-    public function testGetFormForNewAccount()
+    public function testGetFormForNewAccount(): void
     {
         $hsbc = $this->em->find('App:Bank', 1);
 
         $form = $this->get('test.app.account')->getCreateForm($this->john, $hsbc);
-        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testGetFormForExistingAccount()
+    public function testGetFormForExistingAccount(): void
     {
         $account = $this->em->find('App:Account', 1);
         $form = $this->get('test.app.account')->getUpdateForm($this->john, $account);
-        $this->assertEquals(get_class($form), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($form), 'Symfony\Component\Form\Form');
     }
 
-    public function testSaveNewAccountWithNoData()
+    public function testSaveNewAccountWithNoData(): void
     {
         $account = new Account();
         $this->assertFalse($this->get('test.app.account')->save($this->john, $account));
     }
 
-    public function testSaveNewAccountWithForeignBank()
+    public function testSaveNewAccountWithForeignBank(): void
     {
         $account = new Account();
         $account->setBank($this->em->find('App:Bank', 5));
@@ -52,7 +58,7 @@ class AccountServiceTest extends TestCase
         $this->assertFalse($this->get('test.app.account')->save($this->john, $account));
     }
 
-    public function testSaveNewAccount()
+    public function testSaveNewAccount(): void
     {
         $account = new Account();
         $account->setBank($this->em->find('App:Bank', 1));
@@ -61,7 +67,7 @@ class AccountServiceTest extends TestCase
         $this->assertTrue($this->get('test.app.account')->save($this->john, $account));
     }
 
-    public function testSaveExistingAccountWithBadData()
+    public function testSaveExistingAccountWithBadData(): void
     {
         $account = $this->em->find('App:Account', 1);
         $account->setName('');
@@ -69,26 +75,26 @@ class AccountServiceTest extends TestCase
         $this->assertFalse($this->get('test.app.account')->save($this->john, $account));
     }
 
-    public function testSaveExistingAccountWithForeignBank()
+    public function testSaveExistingAccountWithForeignBank(): void
     {
         $account = $this->em->find('App:Account', 1);
         $account->setBank($this->em->find('App:Bank', 5));
         $this->assertFalse($this->get('test.app.account')->save($this->john, $account));
     }
 
-    public function testSaveExistingAccountWithForeignMember()
+    public function testSaveExistingAccountWithForeignMember(): void
     {
         $account = $this->em->find('App:Account', 1);
         $this->assertFalse($this->get('test.app.account')->save($this->jane, $account));
     }
 
-    public function testSaveExistingAccount()
+    public function testSaveExistingAccount(): void
     {
         $account = $this->em->find('App:Account', 1);
         $this->assertTrue($this->get('test.app.account')->save($this->john, $account));
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $accounts = $this->em->getRepository('App:Account')->findByDeleted(true);
         $accountsNb = count($accounts);
@@ -96,28 +102,28 @@ class AccountServiceTest extends TestCase
         $this->assertTrue($this->get('test.app.account')->delete($this->john, [1]));
 
         $accounts = $this->em->getRepository('App:Account')->findByDeleted(true);
-        $this->assertEquals(count($accounts), $accountsNb + 1);
+        $this->assertSame(count($accounts), $accountsNb + 1);
     }
 
-    public function testGetBalanceNotOk()
+    public function testGetBalanceNotOk(): void
     {
         $account = $this->em->getRepository('App:Account')->find(1);
 
         $balance = $this->get('test.app.account')->getBalance($this->jane, $account);
 
-        $this->assertEquals($balance, 0);
+        $this->assertSame($balance, '0.00');
     }
 
-    public function testGetBalanceOk()
+    public function testGetBalanceOk(): void
     {
         $account = $this->em->getRepository('App:Account')->find(1);
 
         $balance = $this->get('test.app.account')->getBalance($this->john, $account);
 
-        $this->assertEquals($balance, -21.49);
+        $this->assertSame($balance, '-21.49');
     }
 
-    public function testSynthesis()
+    public function testSynthesis(): void
     {
         $expectedData = [
             'USD' => [
@@ -156,7 +162,7 @@ class AccountServiceTest extends TestCase
             new \DateTime('2011-12-31')
         );
 
-        $this->assertEquals($data['points']['USD'], $expectedData['USD']);
-        $this->assertEquals($data['points']['EUR'], $expectedData['EUR']);
+        $this->assertSame($data['points']['USD'], $expectedData['USD']);
+        $this->assertSame($data['points']['EUR'], $expectedData['EUR']);
     }
 }

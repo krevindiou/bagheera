@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -68,7 +70,7 @@ class BankAccess
      *
      * @param int $bankId
      */
-    public function setBankId($bankId)
+    public function setBankId($bankId): void
     {
         $this->bankId = $bankId;
     }
@@ -88,7 +90,7 @@ class BankAccess
      *
      * @param string $plainLogin
      */
-    public function setPlainLogin($plainLogin)
+    public function setPlainLogin($plainLogin): void
     {
         $this->plainLogin = $plainLogin;
     }
@@ -108,7 +110,7 @@ class BankAccess
      *
      * @param string $plainPassword
      */
-    public function setPlainPassword($plainPassword)
+    public function setPlainPassword($plainPassword): void
     {
         $this->plainPassword = $plainPassword;
     }
@@ -128,7 +130,7 @@ class BankAccess
      *
      * @param string $login
      */
-    public function setLogin($login)
+    public function setLogin($login): void
     {
         $this->login = $login;
     }
@@ -148,7 +150,7 @@ class BankAccess
      *
      * @param string $password
      */
-    public function setPassword($password)
+    public function setPassword($password): void
     {
         $this->password = $password;
     }

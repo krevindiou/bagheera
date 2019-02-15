@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -230,7 +232,7 @@ class Report
      *
      * @param App\Entity\Member $member
      */
-    public function setMember(Member $member)
+    public function setMember(Member $member): void
     {
         $this->member = $member;
     }
@@ -250,7 +252,7 @@ class Report
      *
      * @param string $type
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->type = $type;
     }
@@ -270,7 +272,7 @@ class Report
      *
      * @param string $title
      */
-    public function setTitle($title)
+    public function setTitle($title): void
     {
         $this->title = $title;
     }
@@ -290,7 +292,7 @@ class Report
      *
      * @param bool $homepage
      */
-    public function setHomepage($homepage)
+    public function setHomepage($homepage): void
     {
         $this->homepage = (bool) $homepage;
     }
@@ -310,7 +312,7 @@ class Report
      *
      * @param DateTime $valueDateStart
      */
-    public function setValueDateStart(\DateTime $valueDateStart = null)
+    public function setValueDateStart(\DateTime $valueDateStart = null): void
     {
         $this->valueDateStart = $valueDateStart;
     }
@@ -330,7 +332,7 @@ class Report
      *
      * @param DateTime $valueDateEnd
      */
-    public function setValueDateEnd(\DateTime $valueDateEnd = null)
+    public function setValueDateEnd(\DateTime $valueDateEnd = null): void
     {
         $this->valueDateEnd = $valueDateEnd;
     }
@@ -350,7 +352,7 @@ class Report
      *
      * @param string $thirdParties
      */
-    public function setThirdParties($thirdParties)
+    public function setThirdParties($thirdParties): void
     {
         $this->thirdParties = $thirdParties;
     }
@@ -370,7 +372,7 @@ class Report
      *
      * @param array $categories
      */
-    public function setCategories(array $categories)
+    public function setCategories(array $categories): void
     {
         $this->categories = $categories;
     }
@@ -390,7 +392,7 @@ class Report
      *
      * @param array $paymentMethods
      */
-    public function setPaymentMethods(array $paymentMethods)
+    public function setPaymentMethods(array $paymentMethods): void
     {
         $this->paymentMethods = $paymentMethods;
     }
@@ -411,7 +413,7 @@ class Report
      * @param array                                  $accounts
      * @param Doctrine\Common\Collections\Collection $accounts
      */
-    public function setAccounts(Collection $accounts = null)
+    public function setAccounts(Collection $accounts = null): void
     {
         $this->accounts = $accounts;
     }
@@ -431,7 +433,7 @@ class Report
      *
      * @param bool $reconciledOnly
      */
-    public function setReconciledOnly($reconciledOnly)
+    public function setReconciledOnly($reconciledOnly): void
     {
         $this->reconciledOnly = $reconciledOnly;
     }
@@ -451,7 +453,7 @@ class Report
      *
      * @param string $periodGrouping
      */
-    public function setPeriodGrouping($periodGrouping)
+    public function setPeriodGrouping($periodGrouping): void
     {
         $this->periodGrouping = $periodGrouping;
     }
@@ -471,7 +473,7 @@ class Report
      *
      * @param string $dataGrouping
      */
-    public function setDataGrouping($dataGrouping)
+    public function setDataGrouping($dataGrouping): void
     {
         $this->dataGrouping = $dataGrouping;
     }
@@ -491,7 +493,7 @@ class Report
      *
      * @param int $significantResultsNumber
      */
-    public function setSignificantResultsNumber($significantResultsNumber)
+    public function setSignificantResultsNumber($significantResultsNumber): void
     {
         $this->significantResultsNumber = $significantResultsNumber;
     }
@@ -511,7 +513,7 @@ class Report
      *
      * @param int $monthExpenses
      */
-    public function setMonthExpenses($monthExpenses)
+    public function setMonthExpenses($monthExpenses): void
     {
         $this->monthExpenses = $monthExpenses;
     }
@@ -531,7 +533,7 @@ class Report
      *
      * @param int $monthIncomes
      */
-    public function setMonthIncomes($monthIncomes)
+    public function setMonthIncomes($monthIncomes): void
     {
         $this->monthIncomes = $monthIncomes;
     }
@@ -551,7 +553,7 @@ class Report
      *
      * @param int $estimateDurationValue
      */
-    public function setEstimateDurationValue($estimateDurationValue)
+    public function setEstimateDurationValue($estimateDurationValue): void
     {
         $this->estimateDurationValue = $estimateDurationValue;
     }
@@ -571,7 +573,7 @@ class Report
      *
      * @param string $estimateDurationUnit
      */
-    public function setEstimateDurationUnit($estimateDurationUnit)
+    public function setEstimateDurationUnit($estimateDurationUnit): void
     {
         $this->estimateDurationUnit = $estimateDurationUnit;
     }

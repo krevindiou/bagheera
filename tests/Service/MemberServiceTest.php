@@ -1,13 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service;
 
-use App\Tests\TestCase;
 use App\Entity\Member;
+use App\Tests\TestCase;
 
-class MemberServiceTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class MemberServiceTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -15,20 +21,20 @@ class MemberServiceTest extends TestCase
         $this->jane = $this->em->find('App:Member', 2);
     }
 
-    public function testGetRegisterForm()
+    public function testGetRegisterForm(): void
     {
         $registerForm = $this->get('test.app.member')->getRegisterForm('en_US');
 
-        $this->assertEquals(get_class($registerForm), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($registerForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testAddMemberWithNoData()
+    public function testAddMemberWithNoData(): void
     {
         $member = new Member();
         $this->assertFalse($this->get('test.app.member')->save($member));
     }
 
-    public function testAddMember()
+    public function testAddMember(): void
     {
         $encoder = $this->get('security.password_encoder');
 
@@ -40,16 +46,16 @@ class MemberServiceTest extends TestCase
         $this->assertTrue($this->get('test.app.member')->save($member));
     }
 
-    public function testGetProfileForm()
+    public function testGetProfileForm(): void
     {
         $member = $this->em->find('App:Member', 1);
 
         $profileForm = $this->get('test.app.member')->getProfileForm($member);
 
-        $this->assertEquals(get_class($profileForm), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($profileForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testUpdateMemberWithNoData()
+    public function testUpdateMemberWithNoData(): void
     {
         $member = $this->em->find('App:Member', 1);
         $member->setEmail('');
@@ -57,28 +63,28 @@ class MemberServiceTest extends TestCase
         $this->assertFalse($this->get('test.app.member')->save($member));
     }
 
-    public function testUpdateMember()
+    public function testUpdateMember(): void
     {
         $member = $this->em->find('App:Member', 1);
 
         $this->assertTrue($this->get('test.app.member')->save($member));
     }
 
-    public function testGetForgotPasswordForm()
+    public function testGetForgotPasswordForm(): void
     {
         $forgotPasswordForm = $this->get('test.app.member')->getForgotPasswordForm();
 
-        $this->assertEquals(get_class($forgotPasswordForm), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($forgotPasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testGetChangePasswordForm()
+    public function testGetChangePasswordForm(): void
     {
         $changePasswordForm = $this->get('test.app.member')->getChangePasswordForm();
 
-        $this->assertEquals(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
+        $this->assertSame(get_class($changePasswordForm), 'Symfony\Component\Form\Form');
     }
 
-    public function testChangePassword()
+    public function testChangePassword(): void
     {
         $member = $this->em->find('App:Member', 1);
 
@@ -87,7 +93,7 @@ class MemberServiceTest extends TestCase
         $this->assertTrue($ok);
     }
 
-    public function testActivateWithBadKey()
+    public function testActivateWithBadKey(): void
     {
         $key = 'badkeybadkeybadkeybadkeybadkeyba';
 
@@ -96,7 +102,7 @@ class MemberServiceTest extends TestCase
         $this->assertFalse($ok);
     }
 
-    public function testActivateOk()
+    public function testActivateOk(): void
     {
         $member = $this->em->find('App:Member', 1);
 
@@ -107,13 +113,13 @@ class MemberServiceTest extends TestCase
         $this->assertTrue($ok);
     }
 
-    public function testGetBalances()
+    public function testGetBalances(): void
     {
         $member = $this->em->find('App:Member', 1);
 
         $balances = $this->get('test.app.member')->getBalances($member);
 
-        $this->assertEquals($balances['USD'], -98.82);
-        $this->assertEquals($balances['EUR'], 208.55);
+        $this->assertSame($balances['USD'], -98.82);
+        $this->assertSame($balances['EUR'], '208.55');
     }
 }

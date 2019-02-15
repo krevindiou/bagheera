@@ -1,25 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 /**
- * AES-256 encryption (32 bytes long key).
+ * AES-256 encryption (32 bytes long key).
  */
 class CryptService
 {
-    const METHOD = 'aes-256-cbc';
-
-    /**
-     * Returns a random initialization vector.
-     *
-     * @return string
-     */
-    protected function getRandomIv()
-    {
-        $ivLength = openssl_cipher_iv_length(self::METHOD);
-
-        return openssl_random_pseudo_bytes($ivLength);
-    }
+    private const METHOD = 'aes-256-cbc';
 
     /**
      * Encrypts data.
@@ -31,7 +21,7 @@ class CryptService
      */
     public function encrypt($message, $key)
     {
-        if (mb_strlen($key, '8bit') !== 32) {
+        if (32 !== mb_strlen($key, '8bit')) {
             throw new \Exception('Key must be 256-bit long');
         }
 
@@ -58,11 +48,11 @@ class CryptService
      */
     public function decrypt($message, $key)
     {
-        if (mb_strlen($key, '8bit') !== 32) {
+        if (32 !== mb_strlen($key, '8bit')) {
             throw new \Exception('Key must be 256-bit long');
         }
 
-        if (false !== ($message = base64_decode($message))) {
+        if (false !== ($message = base64_decode($message, true))) {
             $ivLength = openssl_cipher_iv_length(self::METHOD);
             $iv = mb_substr($message, 0, $ivLength, '8bit');
             $ciphertext = mb_substr($message, $ivLength, null, '8bit');
@@ -75,5 +65,17 @@ class CryptService
                 $iv
             );
         }
+    }
+
+    /**
+     * Returns a random initialization vector.
+     *
+     * @return string
+     */
+    protected function getRandomIv()
+    {
+        $ivLength = openssl_cipher_iv_length(self::METHOD);
+
+        return openssl_random_pseudo_bytes($ivLength);
     }
 }

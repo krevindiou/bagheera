@@ -1,12 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Controller;
 
 use App\Tests\TestCase;
 
-class IndexControllerTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class IndexControllerTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -14,7 +20,7 @@ class IndexControllerTest extends TestCase
     }
 
     /** @dataProvider provideUrls */
-    public function testPageIsSuccessful($url, $redirectUrl = null)
+    public function testPageIsSuccessful($url, $redirectUrl = null): void
     {
         $this->client->request('GET', $url);
 
@@ -22,7 +28,7 @@ class IndexControllerTest extends TestCase
             $targetUrl = parse_url($this->client->getResponse()->getTargetUrl());
 
             $this->assertTrue($this->client->getResponse()->isRedirection());
-            $this->assertEquals($targetUrl['path'], $redirectUrl);
+            $this->assertSame($targetUrl['path'], $redirectUrl);
         } else {
             $this->assertTrue($this->client->getResponse()->isSuccessful());
         }

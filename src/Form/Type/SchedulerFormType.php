@@ -1,22 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Form\Type;
 
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class SchedulerFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add(
@@ -100,7 +102,7 @@ class SchedulerFormType extends AbstractType
             ->add(
                 'frequencyUnit',
                 ChoiceType::class,
-                 [
+                [
                     'label' => 'scheduler.frequency_unit',
                     'choices' => [
                         'scheduler.frequency_unit_day' => 'day',
@@ -159,11 +161,12 @@ class SchedulerFormType extends AbstractType
                         'class' => 'btn btn-primary',
                     ],
                 ]
-            );
+            )
+        ;
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function (FormEvent $event) use ($builder) {
+            function (FormEvent $event) use ($builder): void {
                 $form = $event->getForm();
                 $scheduler = $event->getData();
 
@@ -200,7 +203,8 @@ class SchedulerFormType extends AbstractType
                                     ->andWhere('a != :account')
                                     ->setParameter('member', $account->getBank()->getMember())
                                     ->setParameter('account', $account)
-                                    ->add('orderBy', 'b.name ASC, a.name ASC');
+                                    ->add('orderBy', 'b.name ASC, a.name ASC')
+                                ;
                             },
                             'attr' => [
                                 'class' => 'input-xlarge',
@@ -226,17 +230,17 @@ class SchedulerFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($builder) {
+            function (FormEvent $event) use ($builder): void {
                 $form = $event->getForm();
                 $scheduler = $event->getData();
 
                 $type = $form->get('type')->getData();
                 $amount = $form->get('amount')->getData();
 
-                if ('debit' == $type) {
+                if ('debit' === $type) {
                     $scheduler->setDebit($amount);
                     $scheduler->setCredit(0);
-                } elseif ('credit' == $type) {
+                } elseif ('credit' === $type) {
                     $scheduler->setDebit(0);
                     $scheduler->setCredit($amount);
                 }
@@ -244,7 +248,7 @@ class SchedulerFormType extends AbstractType
         );
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(
             [

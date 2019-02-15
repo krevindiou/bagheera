@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
+use App\Entity\Account;
+use App\Entity\Member;
+use App\Entity\OperationSearch;
+use App\Form\Type\OperationSearchFormType;
 use Doctrine\Common\Collections\ArrayCollection;
-use Psr\Log\LoggerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
-use App\Entity\Member;
-use App\Entity\Account;
-use App\Entity\OperationSearch;
-use App\Form\Type\OperationSearchFormType;
 
 class OperationSearchService
 {
@@ -22,8 +23,7 @@ class OperationSearchService
         EntityManagerInterface $em,
         FormFactoryInterface $formFactory,
         RequestStack $requestStack
-    )
-    {
+    ) {
         $this->em = $em;
         $this->formFactory = $formFactory;
         $this->requestStack = $requestStack;
@@ -85,47 +85,48 @@ class OperationSearchService
                 $operationSearch->setPaymentMethods(new ArrayCollection($paymentMethods));
             }
 
-            for ($i = 1; $i <= 2; $i++) {
+            for ($i = 1; $i <= 2; ++$i) {
                 switch ($sessionSearch[$account->getAccountId()]['amount_comparator_'.$i]) {
                     case 'inferiorTo':
                         $operationSearch->setAmountInferiorTo(
                             $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
-                        break;
 
+                        break;
                     case 'inferiorOrEqualTo':
                         $operationSearch->setAmountInferiorOrEqualTo(
                             $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
-                        break;
 
+                        break;
                     case 'equalTo':
                         $operationSearch->setAmountEqualTo(
                             $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
-                        break;
 
+                        break;
                     case 'superiorOrEqualTo':
                         $operationSearch->setAmountSuperiorOrEqualTo(
                             $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
-                        break;
 
+                        break;
                     case 'superiorTo':
                         $operationSearch->setAmountSuperiorTo(
                             $sessionSearch[$account->getAccountId()]['amount_'.$i]
                         );
+
                         break;
                 }
             }
 
-            if ('' != $sessionSearch[$account->getAccountId()]['valueDateStart']) {
+            if ('' !== $sessionSearch[$account->getAccountId()]['valueDateStart']) {
                 $operationSearch->setValueDateStart(
                     new \DateTime($sessionSearch[$account->getAccountId()]['valueDateStart'])
                 );
             }
 
-            if ('' != $sessionSearch[$account->getAccountId()]['valueDateEnd']) {
+            if ('' !== $sessionSearch[$account->getAccountId()]['valueDateEnd']) {
                 $operationSearch->setValueDateEnd(
                     new \DateTime($sessionSearch[$account->getAccountId()]['valueDateEnd'])
                 );
@@ -144,7 +145,7 @@ class OperationSearchService
      * @param Account $account Account entity
      * @param array   $search  Search param
      */
-    public function setSessionSearch(Account $account, array $search)
+    public function setSessionSearch(Account $account, array $search): void
     {
         $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
@@ -158,7 +159,7 @@ class OperationSearchService
      *
      * @param Account $account Account entity
      */
-    public function clearSessionSearch(Account $account)
+    public function clearSessionSearch(Account $account): void
     {
         $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
