@@ -22,4 +22,4 @@ if ! docker exec -ti bagheera_postgresql psql -U bagheera -lqt | awk '{print $1}
     docker exec -ti bagheera_postgresql createdb -U bagheera bagheera_test
 fi
 
-docker exec -ti bagheera_php phpunit -c /srv/www/bagheera "$@"
+docker exec -ti bagheera_php php bin/phpunit -c /srv/www/bagheera "$@"

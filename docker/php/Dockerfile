@@ -36,10 +36,6 @@ RUN yes '' | pecl install apcu-5.1.16 && docker-php-ext-enable apcu
 # opcache
 RUN docker-php-ext-install -j$(nproc) opcache
 
-# phpunit
-RUN curl -L -o /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-5.phar
-RUN chmod +x /usr/local/bin/phpunit
-
 # php-cs-fixer
 RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.14.1/php-cs-fixer.phar
 RUN chmod +x /usr/local/bin/php-cs-fixer
