@@ -81,7 +81,7 @@ class OperationSearch
      * @var DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
-     * @Assert\DateTime()
+     * @Assert\Type("DateTime")
      */
     protected $valueDateStart;
 
@@ -89,7 +89,7 @@ class OperationSearch
      * @var DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
-     * @Assert\DateTime()
+     * @Assert\Type("DateTime")
      */
     protected $valueDateEnd;
 

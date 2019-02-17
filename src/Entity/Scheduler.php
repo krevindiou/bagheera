@@ -92,7 +92,7 @@ class Scheduler
      *
      * @ORM\Column(name="value_date", type="date", nullable=false)
      * @Assert\NotBlank()
-     * @Assert\DateTime()
+     * @Assert\Type("DateTime")
      */
     protected $valueDate;
 
@@ -100,7 +100,7 @@ class Scheduler
      * @var DateTime
      *
      * @ORM\Column(name="limit_date", type="date", nullable=true)
-     * @Assert\DateTime()
+     * @Assert\Type("DateTime")
      */
     protected $limitDate;
 

@@ -85,7 +85,7 @@ class Member implements UserInterface
      * @var DateTime
      *
      * @ORM\Column(name="logged_at", type="datetime", nullable=true)
-     * @Assert\DateTime()
+     * @Assert\Type("DateTime")
      */
     protected $loggedAt;
 
