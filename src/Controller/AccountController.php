@@ -13,14 +13,14 @@ use App\Service\OperationService;
 use App\Service\ReportService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Route("/manager")
  */
-class AccountController extends Controller
+class AccountController extends AbstractController
 {
     /**
      * @Route("/", name="account_home")

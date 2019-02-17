@@ -7,13 +7,13 @@ namespace App\Controller;
 use App\Entity\Bank;
 use App\Service\BankService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Route("/manager")
  */
-class BankController extends Controller
+class BankController extends AbstractController
 {
     /**
      * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")

@@ -12,14 +12,14 @@ use App\Service\OperationService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Route("/manager")
  */
-class OperationController extends Controller
+class OperationController extends AbstractController
 {
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, name="operation_list")

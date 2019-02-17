@@ -7,13 +7,13 @@ namespace App\Controller;
 use App\Entity\Account;
 use App\Service\OperationSearchService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @Route("/manager")
  */
-class OperationSearchController extends Controller
+class OperationSearchController extends AbstractController
 {
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
