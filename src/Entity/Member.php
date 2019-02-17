@@ -7,7 +7,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="member")
  * @DoctrineAssert\UniqueEntity("email")
  */
-class Member implements AdvancedUserInterface
+class Member implements UserInterface
 {
     /**
      * @var int
@@ -310,37 +310,5 @@ class Member implements AdvancedUserInterface
     public function eraseCredentials(): void
     {
         $this->setPlainPassword(null);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isAccountNonExpired()
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isAccountNonLocked()
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isCredentialsNonExpired()
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function isEnabled()
-    {
-        return $this->isActive();
     }
 }
