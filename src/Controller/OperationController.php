@@ -9,12 +9,11 @@ use App\Entity\Operation;
 use App\Service\AccountService;
 use App\Service\OperationSearchService;
 use App\Service\OperationService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/manager")
@@ -22,9 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 class OperationController extends AbstractController
 {
     /**
-     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, name="operation_list")
-     *
-     * @Method("GET")
+     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, methods={"GET"}, name="operation_list")
      */
     public function listAction(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account)
     {
@@ -57,9 +54,7 @@ class OperationController extends AbstractController
     }
 
     /**
-     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"})
-     *
-     * @Method("POST")
+     * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, methods={"POST"})
      */
     public function listActionsAction(Request $request, OperationService $operationService, Account $account)
     {

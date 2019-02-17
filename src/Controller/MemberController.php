@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Service\MemberService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class MemberController extends AbstractController

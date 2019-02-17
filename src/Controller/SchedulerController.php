@@ -7,12 +7,11 @@ namespace App\Controller;
 use App\Entity\Account;
 use App\Entity\Scheduler;
 use App\Service\SchedulerService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/manager")
@@ -20,10 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 class SchedulerController extends AbstractController
 {
     /**
-     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, name="scheduler_list")
+     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, methods={"GET"}, name="scheduler_list")
      * @Security("account.isOwner(user)")
-     *
-     * @Method("GET")
      */
     public function listAction(Request $request, SchedulerService $schedulerService, Account $account)
     {
@@ -45,10 +42,8 @@ class SchedulerController extends AbstractController
     }
 
     /**
-     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"})
+     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, methods={"POST"})
      * @Security("account.isOwner(user)")
-     *
-     * @Method("POST")
      */
     public function listActionsAction(Request $request, SchedulerService $schedulerService, Account $account)
     {

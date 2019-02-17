@@ -11,11 +11,10 @@ use App\Service\BankService;
 use App\Service\MemberService;
 use App\Service\OperationService;
 use App\Service\ReportService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/manager")
@@ -47,9 +46,7 @@ class AccountController extends AbstractController
     }
 
     /**
-     * @Route("/accounts", name="account_list")
-     *
-     * @Method("GET")
+     * @Route("/accounts", methods={"GET"}, name="account_list")
      */
     public function listAction(BankService $bankService)
     {
@@ -62,9 +59,7 @@ class AccountController extends AbstractController
     }
 
     /**
-     * @Route("/accounts")
-     *
-     * @Method("POST")
+     * @Route("/accounts", methods={"POST"})
      */
     public function listActionsAction(Request $request, AccountService $accountService, BankService $bankService)
     {

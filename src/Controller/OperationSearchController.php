@@ -6,9 +6,9 @@ namespace App\Controller;
 
 use App\Entity\Account;
 use App\Service\OperationSearchService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/manager")

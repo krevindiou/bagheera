@@ -7,11 +7,10 @@ namespace App\Controller;
 use App\Entity\Account;
 use App\Entity\Report;
 use App\Service\ReportService;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 /**
  * @Route("/manager")
@@ -19,9 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 class ReportController extends AbstractController
 {
     /**
-     * @Route("/reports", name="report_list")
-     *
-     * @Method("GET")
+     * @Route("/reports", methods={"GET"}, name="report_list")
      */
     public function listAction(Request $request, ReportService $reportService)
     {
@@ -38,9 +35,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @Route("/reports")
-     *
-     * @Method("POST")
+     * @Route("/reports", methods={"POST"})
      */
     public function listActionsAction(Request $request, ReportService $reportService)
     {
