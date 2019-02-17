@@ -13,6 +13,6 @@ logout:
 
 home:
     path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction
     defaults:
-        _controller: FrameworkBundle:Redirect:redirect
         route: member_login
