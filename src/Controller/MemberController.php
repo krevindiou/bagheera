@@ -79,12 +79,10 @@ class MemberController extends AbstractController
     }
 
     /**
-     * @Route("/change-password", name="member_change_password_public", requirements={"key"})
+     * @Route("/change-password/{key}", name="member_change_password_public")
      */
-    public function changePasswordPublicAction(Request $request, MemberService $memberService)
+    public function changePasswordPublicAction(Request $request, MemberService $memberService, $key)
     {
-        $key = $request->query->get('key');
-
         if ($member = $memberService->decodeChangePasswordKey($key)) {
             $form = $memberService->getChangePasswordForm();
 
