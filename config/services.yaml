@@ -1,8 +1,8 @@
 parameters:
     locale: 'en'
     email:
-        sender_name: Bagheera
-        sender_email: contact@bagheera-manager.com
+        sender_name: '%env(SENDER_NAME)%'
+        sender_email: '%env(SENDER_EMAIL)%'
     categories_id:
         salary: 21
 
