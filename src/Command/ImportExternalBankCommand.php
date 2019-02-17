@@ -11,12 +11,12 @@ use App\Service\OperationService;
 use App\Service\Provider\ProviderAdapter;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ImportExternalBankCommand extends ContainerAwareCommand
+class ImportExternalBankCommand extends Command
 {
     private $logger;
     private $em;
