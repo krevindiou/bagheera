@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Templating\EngineInterface;
@@ -179,7 +180,7 @@ class MemberService
         if (null !== $member) {
             // Change password link construction
             $key = $this->createChangePasswordKey($member);
-            $link = $this->router->generate('member_change_password_public', ['_locale' => 'en', 'key' => $key], true);
+            $link = $this->router->generate('member_change_password_public', ['_locale' => 'en', 'key' => $key], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $body = $this->templating->render(
                 'Email/changePassword.html.twig',
@@ -416,7 +417,7 @@ class MemberService
 
         // Activation link construction
         $key = $this->createRegisterKey($member);
-        $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], true);
+        $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $body = $this->templating->render(
             'Email/register.html.twig',
