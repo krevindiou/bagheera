@@ -5,8 +5,7 @@
         "less-loader": "^4.1.0",
         "webpack-notifier": "^1.6.0"
     },
-    "license": "UNLICENSED",
-    "private": true,
+    "license": "GPL-3.0-only",
     "scripts": {
         "dev-server": "encore dev-server",
         "dev": "encore dev",

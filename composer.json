@@ -1,6 +1,6 @@
 {
     "name": "krevindiou/bagheera",
-    "license": "proprietary",
+    "license": "GPL-3.0-only",
     "type": "project",
     "description": "Bagheera, a personal finance manager",
     "autoload": {
