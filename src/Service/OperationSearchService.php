@@ -8,7 +8,6 @@ use App\Entity\Account;
 use App\Entity\Member;
 use App\Entity\OperationSearch;
 use App\Form\Type\OperationSearchFormType;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -69,21 +68,13 @@ class OperationSearchService
             $operationSearch->setThirdParty($sessionSearch[$account->getAccountId()]['thirdParty']);
 
             if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
-                $dql = 'SELECT c ';
-                $dql .= 'FROM App:Category c ';
-                $dql .= 'WHERE c.categoryId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['categories']).') ';
-                $query = $this->em->createQuery($dql);
-                $categories = $query->getResult();
-                $operationSearch->setCategories(new ArrayCollection($categories));
+                $categories = $this->em->getRepository('App:Category')->getCategories($sessionSearch[$account->getAccountId()]['categories']);
+                $operationSearch->setCategories($categories);
             }
 
             if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
-                $dql = 'SELECT p ';
-                $dql .= 'FROM App:PaymentMethod p ';
-                $dql .= 'WHERE p.paymentMethodId IN ('.implode(', ', $sessionSearch[$account->getAccountId()]['paymentMethods']).') ';
-                $query = $this->em->createQuery($dql);
-                $paymentMethods = $query->getResult();
-                $operationSearch->setPaymentMethods(new ArrayCollection($paymentMethods));
+                $paymentMethods = $this->em->getRepository('App:PaymentMethod')->getPaymentMethods($sessionSearch[$account->getAccountId()]['paymentMethods']);
+                $operationSearch->setPaymentMethods($paymentMethods);
             }
 
             for ($i = 1; $i <= 2; ++$i) {

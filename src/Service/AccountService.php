@@ -10,6 +10,7 @@ use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\PaymentMethod;
 use App\Form\Type\AccountFormType;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
@@ -51,27 +52,9 @@ class AccountService
      *
      * @return array
      */
-    public function getList(Member $member, Bank $bank = null, bool $deleted = true): array
+    public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection
     {
-        $dql = 'SELECT a FROM App:Account a ';
-        $dql .= 'JOIN a.bank b ';
-        $dql .= 'WHERE b.member = :member ';
-        if (null !== $bank) {
-            $dql .= 'AND a.bank = :bank ';
-        }
-        if (!$deleted) {
-            $dql .= 'AND b.deleted = false ';
-            $dql .= 'AND a.deleted = false ';
-        }
-        $dql .= 'ORDER BY a.name ASC';
-
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('member', $member);
-        if (null !== $bank) {
-            $query->setParameter('bank', $bank);
-        }
-
-        return $query->getResult();
+        return $this->em->getRepository('App:Account')->getList($member, $bank, $deleted);
     }
 
     /**
@@ -241,20 +224,8 @@ class AccountService
     public function getBalance(Member $member, Account $account, bool $reconciledOnly = false): string
     {
         $balance = 0;
-
         if ($member === $account->getBank()->getMember()) {
-            $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
-            $dql .= 'FROM App:Operation o ';
-            $dql .= 'WHERE o.account = :account ';
-            if ($reconciledOnly) {
-                $dql .= 'AND o.reconciled = true ';
-            }
-
-            $query = $this->em->createQuery($dql);
-            $query->setParameter('account', $account);
-            $result = $query->getSingleResult();
-
-            $balance = $result['balance'];
+            $balance = $this->em->getRepository('App:Account')->getBalance($account, $reconciledOnly);
         }
 
         return sprintf('%.2f', $balance);

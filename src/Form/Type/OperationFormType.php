@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -18,6 +19,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class OperationFormType extends AbstractType
 {
+    private $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -159,16 +167,7 @@ class OperationFormType extends AbstractType
                             'required' => false,
                             'placeholder' => 'operation.external_account',
                             'class' => 'App:Account',
-                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($account) {
-                                return $repository->createQueryBuilder('a')
-                                    ->innerJoin('a.bank', 'b')
-                                    ->where('b.member = :member')
-                                    ->andWhere('a != :account')
-                                    ->setParameter('member', $account->getBank()->getMember())
-                                    ->setParameter('account', $account)
-                                    ->add('orderBy', 'b.name ASC, a.name ASC')
-                                ;
-                            },
+                            'choices' => $this->em->getRepository('App:Account')->getTransferableAccounts($account),
                             'attr' => [
                                 'class' => 'input-xlarge',
                             ],

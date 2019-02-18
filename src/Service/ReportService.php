@@ -8,6 +8,7 @@ use App\Entity\Account;
 use App\Entity\Member;
 use App\Entity\Report;
 use App\Form\Type\ReportFormType;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
@@ -40,107 +41,9 @@ class ReportService
      *
      * @return array
      */
-    public function getList(Member $member): array
+    public function getList(Member $member): ArrayCollection
     {
-        $reports = [];
-
-        $sql = 'SELECT
-            report.report_id,
-            report.type AS report_type,
-            report.title AS report_title,
-            report.homepage AS report_homepage,
-            report.value_date_start AS report_value_date_start,
-            report.value_date_end AS report_value_date_end,
-            report.third_parties AS report_third_parties,
-            report.reconciled_only AS report_reconciled_only,
-            report.period_grouping AS report_period_grouping,
-            report.data_grouping AS report_data_grouping,
-            report.significant_results_number AS report_significant_results_number,
-            report.month_expenses AS report_month_expenses,
-            report.month_incomes AS report_month_incomes,
-            report.estimate_duration_value AS report_estimate_duration_value,
-            report.estimate_duration_unit AS report_estimate_duration_unit, ';
-        $sql .= 'array_to_json(array_agg(account)) AS accounts, ';
-        $sql .= 'array_to_json(array_agg(category)) AS categories, ';
-        $sql .= 'array_to_json(array_agg(payment_method)) AS payment_methods ';
-        $sql .= 'FROM report ';
-        $sql .= 'LEFT JOIN report_account ON report.report_id = report_account.report_id ';
-        $sql .= 'LEFT JOIN account ON report_account.account_id = account.account_id ';
-        $sql .= 'LEFT JOIN report_category ON report.report_id = report_category.report_id ';
-        $sql .= 'LEFT JOIN category ON report_category.category_id = category.category_id ';
-        $sql .= 'LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id ';
-        $sql .= 'LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
-        $sql .= 'WHERE report.member_id = :member_id ';
-        $sql .= 'GROUP BY report.report_id ';
-        $sql .= 'ORDER BY report.report_id ASC ';
-
-        $stmt = $this->em->getConnection()->prepare($sql);
-        $stmt->execute(
-            [
-                ':member_id' => $member->getMemberId(),
-            ]
-        );
-
-        foreach ($stmt->fetchAll() as $row) {
-            if (!isset($reports[$row['report_id']])) {
-                $accounts = [];
-                $tmpAccounts = (null !== $row['accounts']) ? json_decode($row['accounts'], true) : [];
-                foreach ($tmpAccounts as $tmpAccount) {
-                    if (null !== $tmpAccount['account_id']) {
-                        $accounts[$tmpAccount['account_id']] = [
-                            'accountId' => $tmpAccount['account_id'],
-                            'name' => $tmpAccount['name'],
-                        ];
-                    }
-                }
-
-                $categories = [];
-                $tmpCategories = (null !== $row['categories']) ? json_decode($row['categories'], true) : [];
-                foreach ($tmpCategories as $tmpCategory) {
-                    if (null !== $tmpCategory['category_id']) {
-                        $categories[$tmpCategory['category_id']] = [
-                            'categoryId' => $tmpCategory['category_id'],
-                            'name' => $tmpCategory['name'],
-                        ];
-                    }
-                }
-
-                $paymentMethods = [];
-                $tmpPaymentMethods = (null !== $row['payment_methods']) ? json_decode($row['payment_methods'], true) : [];
-                foreach ($tmpPaymentMethods as $tmpPaymentMethod) {
-                    if (null !== $tmpPaymentMethod['payment_method_id']) {
-                        $paymentMethods[$tmpPaymentMethod['payment_method_id']] = [
-                            'paymentMethodId' => $tmpPaymentMethod['payment_method_id'],
-                            'name' => $tmpPaymentMethod['name'],
-                        ];
-                    }
-                }
-
-                $reports[$row['report_id']] = [
-                    'reportId' => $row['report_id'],
-                    'title' => $row['report_title'],
-                    'type' => $row['report_type'],
-                    'title' => $row['report_title'],
-                    'homepage' => $row['report_homepage'],
-                    'valueDateStart' => (null !== $row['report_value_date_start']) ? new \DateTime($row['report_value_date_start']) : null,
-                    'valueDateEnd' => (null !== $row['report_value_date_end']) ? new \DateTime($row['report_value_date_end']) : null,
-                    'thirdParties' => $row['report_third_parties'],
-                    'reconciledOnly' => $row['report_reconciled_only'],
-                    'periodGrouping' => $row['report_period_grouping'],
-                    'dataGrouping' => $row['report_data_grouping'],
-                    'significantResultsNumber' => $row['report_significant_results_number'],
-                    'monthExpenses' => $row['report_month_expenses'],
-                    'monthIncomes' => $row['report_month_incomes'],
-                    'estimateDurationValue' => $row['report_estimate_duration_value'],
-                    'estimateDurationUnit' => $row['report_estimate_duration_unit'],
-                    'accounts' => $accounts,
-                    'categories' => $categories,
-                    'paymentMethods' => $paymentMethods,
-                ];
-            }
-        }
-
-        return $reports;
+        return $this->em->getRepository('App:Report')->getList($member);
     }
 
     /**
@@ -150,17 +53,9 @@ class ReportService
      *
      * @return array
      */
-    public function getHomepageList(Member $member): array
+    public function getHomepageList(Member $member): ArrayCollection
     {
-        $dql = 'SELECT r FROM App:Report r ';
-        $dql .= 'WHERE r.member = :member ';
-        $dql .= 'AND r.homepage = :homepage ';
-
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('member', $member);
-        $query->setParameter('homepage', true);
-
-        return $query->getResult();
+        return $this->em->getRepository('App:Report')->getHomepageList($member);
     }
 
     /**
@@ -280,16 +175,7 @@ class ReportService
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (0 === count($accounts)) {
-                $dql = 'SELECT a FROM App:Account a ';
-                $dql .= 'JOIN a.bank b ';
-                $dql .= 'WHERE b.member = :member ';
-                $dql .= 'AND b.deleted = false ';
-                $dql .= 'AND a.deleted = false ';
-
-                $query = $this->em->createQuery($dql);
-                $query->setParameter('member', $member);
-
-                $accounts = $query->getResult();
+                $accounts = $this->em->getRepository('App:Account')->getList($member, null, false);
             }
 
             if (in_array($report->getType(), ['sum', 'average'], true)) {
@@ -384,64 +270,7 @@ class ReportService
      */
     public function getGraphValues(Report $report, array $accounts, string $type): array
     {
-        switch ($report->getPeriodGrouping()) {
-            case 'month':
-                $groupingData = 'TO_CHAR(o.value_date, \'YYYY-MM-01\')';
-
-                break;
-            case 'quarter':
-                $groupingData = 'CONCAT(TO_CHAR(o.value_date, \'YYYY-\'), LPAD(FLOOR((TO_CHAR(o.value_date, \'MM\')::integer - 1) / 3) * 3 + 1, 2, \'0\'), \'-01\')';
-
-                break;
-            case 'year':
-                $groupingData = 'TO_CHAR(o.value_date, \'YYYY-01-01\')';
-
-                break;
-            default:
-                $groupingData = '';
-        }
-
-        $sql = 'SELECT '.(('' !== $groupingData) ? $groupingData.' AS grouping_data, ' : '');
-        $sql .= (('average' === $type) ? 'AVG' : 'SUM').'(o.credit) AS data_1, '.(('average' === $type) ? 'AVG' : 'SUM').'(o.debit) AS data_2 ';
-        $sql .= 'FROM operation AS o ';
-
-        $accountsId = [];
-        foreach ($accounts as $account) {
-            $accountsId[] = $account->getAccountId();
-        }
-
-        $sql .= 'WHERE o.account_id IN ('.implode(', ', $accountsId).') ';
-        if (null !== $report->getValueDateStart()) {
-            $sql .= 'AND o.value_date >= :value_date_start ';
-        }
-        if (null !== $report->getValueDateEnd()) {
-            $sql .= 'AND o.value_date <= :value_date_end ';
-        }
-        if (null !== $report->getThirdParties()) {
-            $sql .= 'AND o.third_party LIKE :third_parties ';
-        }
-        if ($report->getReconciledOnly()) {
-            $sql .= 'AND o.is_reconciled = true ';
-        }
-        if ('' !== $groupingData) {
-            $sql .= 'GROUP BY grouping_data ';
-            $sql .= 'ORDER BY grouping_data ASC ';
-        }
-
-        $stmt = $this->em->getConnection()->prepare($sql);
-        if (null !== $report->getValueDateStart()) {
-            $stmt->bindValue('value_date_start', $report->getValueDateStart()->format(\DateTime::ISO8601));
-        }
-        if (null !== $report->getValueDateEnd()) {
-            $stmt->bindValue('value_date_end', $report->getValueDateEnd()->format(\DateTime::ISO8601));
-        }
-        if (null !== $report->getThirdParties()) {
-            $stmt->bindValue('third_parties', '%'.$report->getThirdParties().'%');
-        }
-
-        $stmt->execute();
-
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->em->getRepository('App:Operation')->getGraphValues($report, $accounts, $type);
     }
 
     /**

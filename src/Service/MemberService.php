@@ -343,33 +343,7 @@ class MemberService
      */
     public function getImportProgress(Member $member): ?array
     {
-        // Fetch current importId
-        $dql = 'SELECT MAX(i.importId) ';
-        $dql .= 'FROM App:AccountImport i ';
-        $dql .= 'JOIN i.account a ';
-        $dql .= 'JOIN a.bank b ';
-        $dql .= 'WHERE b.member = :member ';
-        $dql .= 'AND i.finished = false ';
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('member', $member);
-
-        try {
-            $maxImportId = $query->getSingleScalarResult();
-        } catch (\Exception $e) {
-            return null;
-        }
-
-        $dql = 'SELECT i ';
-        $dql .= 'FROM App:AccountImport i INDEX BY i.accountId ';
-        $dql .= 'WHERE i.importId = :maxImportId ';
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('maxImportId', $maxImportId);
-
-        try {
-            return $query->getResult();
-        } catch (\Exception $e) {
-            return null;
-        }
+        return $this->em->getRepository('App:AccountImport')->getImportProgress($member);
     }
 
     /**

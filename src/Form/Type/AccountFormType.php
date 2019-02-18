@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CurrencyType;
@@ -16,6 +17,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AccountFormType extends AbstractType
 {
+    private $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -59,15 +67,7 @@ class AccountFormType extends AbstractType
                             'label' => 'account.bank',
                             'placeholder' => '',
                             'class' => 'App:Bank',
-                            'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
-                                return $repository->createQueryBuilder('b')
-                                    ->where('b.member = :member')
-                                    ->andWhere('b.deleted = false')
-                                    ->andWhere('b.closed = false')
-                                    ->setParameter('member', $member)
-                                    ->add('orderBy', 'b.name ASC')
-                                ;
-                            },
+                            'choices' => $this->em->getRepository('App:Bank')->getActiveBanks($member),
                             'disabled' => $edit,
                             'attr' => [
                                 'class' => 'input-xlarge',

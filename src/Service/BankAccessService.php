@@ -116,13 +116,7 @@ class BankAccessService
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                $dql = 'DELETE FROM App:BankAccess b ';
-                $dql .= 'WHERE b.bankId = :bankId ';
-
-                $this->emSecure->createQuery($dql)
-                    ->setParameter('bankId', $bankAccess->getBankId())
-                    ->execute()
-                ;
+                $this->em->getRepository('App:BankAccess', 'secure')->delete($bankAccess);
 
                 $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
                 $encryptedPassword = $this->cryptService->encrypt($bankAccess->getPlainPassword(), $this->secret);

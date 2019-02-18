@@ -128,15 +128,6 @@ class AccountImportService
      */
     protected function getNextImportId(Account $account): int
     {
-        $dql = 'SELECT MAX(i.importId) ';
-        $dql .= 'FROM App:AccountImport i ';
-        $dql .= 'JOIN i.account a ';
-        $dql .= 'JOIN a.bank b ';
-        $dql .= 'WHERE b.member = :member ';
-        $dql .= 'AND i.finished = true ';
-        $query = $this->em->createQuery($dql);
-        $query->setParameter('member', $account->getBank()->getMember());
-
-        return (int) $query->getSingleScalarResult() + 1;
+        return $this->em->getRepository('App:AccountImport')->getNextImportId($account);
     }
 }

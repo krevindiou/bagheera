@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -15,6 +16,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class BankChooseFormType extends AbstractType
 {
+    private $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $member = $options['member'];
@@ -26,9 +34,7 @@ class BankChooseFormType extends AbstractType
                 [
                     'label' => 'bank.auto',
                     'class' => 'App:Provider',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
-                        return $repository->getAvailableProvidersQueryBuilder($member);
-                    },
+                    'choices' => $this->em->getRepository('App:Provider')->getAvailableProviders($member),
                     'expanded' => true,
                 ]
             )
@@ -38,9 +44,7 @@ class BankChooseFormType extends AbstractType
                 [
                     'label' => 'bank.manual',
                     'class' => 'App:Bank',
-                    'query_builder' => function (\Doctrine\ORM\EntityRepository $repository) use ($member) {
-                        return $repository->getActiveManualBanksQueryBuilder($member);
-                    },
+                    'choices' => $this->em->getRepository('App:Bank')->getActiveManualBanks($member),
                     'expanded' => true,
                 ]
             )

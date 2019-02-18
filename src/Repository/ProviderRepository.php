@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Member;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\QueryBuilder;
 
 class ProviderRepository extends EntityRepository
 {
-    public function getAvailableProvidersQueryBuilder(Member $member): QueryBuilder
+    public function getAvailableProviders(Member $member): ArrayCollection
     {
         // Retrieve used providers
         $dql = 'SELECT p.providerId ';
@@ -33,6 +33,6 @@ class ProviderRepository extends EntityRepository
             $qb->andWhere('p.providerId NOT IN ('.implode(', ', $providers).')');
         }
 
-        return $qb;
+        return new ArrayCollection($qb->getQuery()->execute());
     }
 }

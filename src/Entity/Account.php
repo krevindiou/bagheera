@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\AccountRepository")
  * @ORM\Table(
  *  name="account",
  *  indexes={@ORM\Index(name="external_account_id_idx", columns={"external_account_id"})}

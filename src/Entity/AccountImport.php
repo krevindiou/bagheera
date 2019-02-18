@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="App\Repository\AccountImportRepository")
  * @ORM\Table(name="account_import")
  */
 class AccountImport
