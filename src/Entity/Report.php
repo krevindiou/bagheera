@@ -222,7 +222,7 @@ class Report
      *
      * @return int
      */
-    public function getReportId()
+    public function getReportId(): ?int
     {
         return $this->reportId;
     }
@@ -242,7 +242,7 @@ class Report
      *
      * @return App\Entity\Member
      */
-    public function getMember()
+    public function getMember(): ?Member
     {
         return $this->member;
     }
@@ -252,7 +252,7 @@ class Report
      *
      * @param string $type
      */
-    public function setType($type): void
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
@@ -262,7 +262,7 @@ class Report
      *
      * @return string
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -272,7 +272,7 @@ class Report
      *
      * @param string $title
      */
-    public function setTitle($title): void
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
@@ -282,7 +282,7 @@ class Report
      *
      * @return string
      */
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
@@ -292,9 +292,9 @@ class Report
      *
      * @param bool $homepage
      */
-    public function setHomepage($homepage): void
+    public function setHomepage(bool $homepage): void
     {
-        $this->homepage = (bool) $homepage;
+        $this->homepage = $homepage;
     }
 
     /**
@@ -302,7 +302,7 @@ class Report
      *
      * @return bool
      */
-    public function getHomepage()
+    public function getHomepage(): ?bool
     {
         return $this->homepage;
     }
@@ -312,7 +312,7 @@ class Report
      *
      * @param DateTime $valueDateStart
      */
-    public function setValueDateStart(\DateTime $valueDateStart = null): void
+    public function setValueDateStart(?\DateTime $valueDateStart): void
     {
         $this->valueDateStart = $valueDateStart;
     }
@@ -322,7 +322,7 @@ class Report
      *
      * @return DateTime
      */
-    public function getValueDateStart()
+    public function getValueDateStart(): ?\DateTime
     {
         return $this->valueDateStart;
     }
@@ -332,7 +332,7 @@ class Report
      *
      * @param DateTime $valueDateEnd
      */
-    public function setValueDateEnd(\DateTime $valueDateEnd = null): void
+    public function setValueDateEnd(?\DateTime $valueDateEnd): void
     {
         $this->valueDateEnd = $valueDateEnd;
     }
@@ -342,7 +342,7 @@ class Report
      *
      * @return DateTime
      */
-    public function getValueDateEnd()
+    public function getValueDateEnd(): ?\DateTime
     {
         return $this->valueDateEnd;
     }
@@ -352,7 +352,7 @@ class Report
      *
      * @param string $thirdParties
      */
-    public function setThirdParties($thirdParties): void
+    public function setThirdParties(string $thirdParties): void
     {
         $this->thirdParties = $thirdParties;
     }
@@ -362,7 +362,7 @@ class Report
      *
      * @return string
      */
-    public function getThirdParties()
+    public function getThirdParties(): ?string
     {
         return $this->thirdParties;
     }
@@ -382,7 +382,7 @@ class Report
      *
      * @return array
      */
-    public function getCategories()
+    public function getCategories(): ?array
     {
         return $this->categories;
     }
@@ -402,7 +402,7 @@ class Report
      *
      * @return array
      */
-    public function getPaymentMethods()
+    public function getPaymentMethods(): ?array
     {
         return $this->paymentMethods;
     }
@@ -413,7 +413,7 @@ class Report
      * @param array                                  $accounts
      * @param Doctrine\Common\Collections\Collection $accounts
      */
-    public function setAccounts(Collection $accounts = null): void
+    public function setAccounts(?Collection $accounts): void
     {
         $this->accounts = $accounts;
     }
@@ -423,7 +423,7 @@ class Report
      *
      * @return array
      */
-    public function getAccounts()
+    public function getAccounts(): Collection
     {
         return $this->accounts;
     }
@@ -433,7 +433,7 @@ class Report
      *
      * @param bool $reconciledOnly
      */
-    public function setReconciledOnly($reconciledOnly): void
+    public function setReconciledOnly(bool $reconciledOnly): void
     {
         $this->reconciledOnly = $reconciledOnly;
     }
@@ -443,7 +443,7 @@ class Report
      *
      * @return bool
      */
-    public function getReconciledOnly()
+    public function getReconciledOnly(): ?bool
     {
         return $this->reconciledOnly;
     }
@@ -453,7 +453,7 @@ class Report
      *
      * @param string $periodGrouping
      */
-    public function setPeriodGrouping($periodGrouping): void
+    public function setPeriodGrouping(string $periodGrouping): void
     {
         $this->periodGrouping = $periodGrouping;
     }
@@ -463,7 +463,7 @@ class Report
      *
      * @return string
      */
-    public function getPeriodGrouping()
+    public function getPeriodGrouping(): ?string
     {
         return $this->periodGrouping;
     }
@@ -473,7 +473,7 @@ class Report
      *
      * @param string $dataGrouping
      */
-    public function setDataGrouping($dataGrouping): void
+    public function setDataGrouping(string $dataGrouping): void
     {
         $this->dataGrouping = $dataGrouping;
     }
@@ -483,7 +483,7 @@ class Report
      *
      * @return string
      */
-    public function getDataGrouping()
+    public function getDataGrouping(): ?string
     {
         return $this->dataGrouping;
     }
@@ -493,7 +493,7 @@ class Report
      *
      * @param int $significantResultsNumber
      */
-    public function setSignificantResultsNumber($significantResultsNumber): void
+    public function setSignificantResultsNumber(int $significantResultsNumber): void
     {
         $this->significantResultsNumber = $significantResultsNumber;
     }
@@ -503,7 +503,7 @@ class Report
      *
      * @return int
      */
-    public function getSignificantResultsNumber()
+    public function getSignificantResultsNumber(): ?int
     {
         return $this->significantResultsNumber;
     }
@@ -513,7 +513,7 @@ class Report
      *
      * @param int $monthExpenses
      */
-    public function setMonthExpenses($monthExpenses): void
+    public function setMonthExpenses(int $monthExpenses): void
     {
         $this->monthExpenses = $monthExpenses;
     }
@@ -523,7 +523,7 @@ class Report
      *
      * @return int
      */
-    public function getMonthExpenses()
+    public function getMonthExpenses(): ?int
     {
         return $this->monthExpenses;
     }
@@ -533,7 +533,7 @@ class Report
      *
      * @param int $monthIncomes
      */
-    public function setMonthIncomes($monthIncomes): void
+    public function setMonthIncomes(int $monthIncomes): void
     {
         $this->monthIncomes = $monthIncomes;
     }
@@ -543,7 +543,7 @@ class Report
      *
      * @return int
      */
-    public function getMonthIncomes()
+    public function getMonthIncomes(): ?int
     {
         return $this->monthIncomes;
     }
@@ -553,7 +553,7 @@ class Report
      *
      * @param int $estimateDurationValue
      */
-    public function setEstimateDurationValue($estimateDurationValue): void
+    public function setEstimateDurationValue(int $estimateDurationValue): void
     {
         $this->estimateDurationValue = $estimateDurationValue;
     }
@@ -563,7 +563,7 @@ class Report
      *
      * @return int
      */
-    public function getEstimateDurationValue()
+    public function getEstimateDurationValue(): ?int
     {
         return $this->estimateDurationValue;
     }
@@ -573,7 +573,7 @@ class Report
      *
      * @param string $estimateDurationUnit
      */
-    public function setEstimateDurationUnit($estimateDurationUnit): void
+    public function setEstimateDurationUnit(int $estimateDurationUnit): void
     {
         $this->estimateDurationUnit = $estimateDurationUnit;
     }
@@ -583,7 +583,7 @@ class Report
      *
      * @return string
      */
-    public function getEstimateDurationUnit()
+    public function getEstimateDurationUnit(): ?int
     {
         return $this->estimateDurationUnit;
     }
@@ -593,7 +593,7 @@ class Report
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -603,7 +603,7 @@ class Report
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }

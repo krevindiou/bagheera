@@ -49,7 +49,7 @@ class SchedulerService
      *
      * @return Pagerfanta
      */
-    public function getList(Account $account, $currentPage = 1)
+    public function getList(Account $account, int $currentPage = 1): Pagerfanta
     {
         $params = [
             ':account_id' => $account->getAccountId(),
@@ -168,14 +168,14 @@ class SchedulerService
      *
      * @return Form
      */
-    public function getForm(Scheduler $scheduler = null, Account $account = null)
+    public function getForm(Scheduler $scheduler = null, Account $account = null): ?Form
     {
         if (null === $scheduler) {
             if (null !== $account) {
                 $scheduler = new Scheduler();
                 $scheduler->setAccount($account);
             } else {
-                return;
+                return null;
             }
         }
 
@@ -189,7 +189,7 @@ class SchedulerService
      *
      * @return bool
      */
-    public function save(Scheduler $scheduler)
+    public function save(Scheduler $scheduler): bool
     {
         $errors = $this->validator->validate($scheduler);
 
@@ -207,7 +207,7 @@ class SchedulerService
      *
      * @return bool
      */
-    public function saveForm(Form $form)
+    public function saveForm(Form $form): bool
     {
         if ($form->isValid()) {
             return $this->doSave($form->getData());
@@ -223,7 +223,7 @@ class SchedulerService
      *
      * @return bool
      */
-    public function delete(Scheduler $scheduler)
+    public function delete(Scheduler $scheduler): bool
     {
         try {
             $this->em->remove($scheduler);
@@ -245,7 +245,7 @@ class SchedulerService
      *
      * @return bool
      */
-    public function runSchedulers(Member $member, \DateTime $now = null)
+    public function runSchedulers(Member $member, \DateTime $now = null): void
     {
         if (null === $now) {
             $now = new \DateTime();
@@ -310,7 +310,7 @@ class SchedulerService
                 $operation->setCredit($scheduler->getCredit());
                 $operation->setValueDate($date);
                 $operation->setReconciled($scheduler->isReconciled());
-                $operation->setNotes($scheduler->getNotes());
+                $operation->setNotes((string) $scheduler->getNotes());
                 $operation->setTransferAccount($scheduler->getTransferAccount());
 
                 $this->operationService->save($member, $operation);
@@ -325,7 +325,7 @@ class SchedulerService
      *
      * @return bool
      */
-    protected function doSave(Scheduler $scheduler)
+    protected function doSave(Scheduler $scheduler): bool
     {
         if (!in_array(
             $scheduler->getPaymentMethod()->getPaymentMethodId(),

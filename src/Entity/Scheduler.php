@@ -164,7 +164,7 @@ class Scheduler
      *
      * @return int
      */
-    public function getSchedulerId()
+    public function getSchedulerId(): ?int
     {
         return $this->schedulerId;
     }
@@ -174,7 +174,7 @@ class Scheduler
      *
      * @param string $thirdParty
      */
-    public function setThirdParty($thirdParty): void
+    public function setThirdParty(string $thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
@@ -184,7 +184,7 @@ class Scheduler
      *
      * @return string
      */
-    public function getThirdParty()
+    public function getThirdParty(): ?string
     {
         return $this->thirdParty;
     }
@@ -244,7 +244,7 @@ class Scheduler
      *
      * @param DateTime $valueDate
      */
-    public function setValueDate(\DateTime $valueDate = null): void
+    public function setValueDate(?\DateTime $valueDate): void
     {
         $this->valueDate = $valueDate;
     }
@@ -254,7 +254,7 @@ class Scheduler
      *
      * @return DateTime
      */
-    public function getValueDate()
+    public function getValueDate(): ?\DateTime
     {
         return $this->valueDate;
     }
@@ -264,7 +264,7 @@ class Scheduler
      *
      * @param DateTime $limitDate
      */
-    public function setLimitDate(\DateTime $limitDate = null): void
+    public function setLimitDate(?\DateTime $limitDate): void
     {
         $this->limitDate = $limitDate;
     }
@@ -274,7 +274,7 @@ class Scheduler
      *
      * @return DateTime
      */
-    public function getLimitDate()
+    public function getLimitDate(): ?\DateTime
     {
         return $this->limitDate;
     }
@@ -284,9 +284,9 @@ class Scheduler
      *
      * @param bool $reconciled
      */
-    public function setReconciled($reconciled): void
+    public function setReconciled(bool $reconciled): void
     {
-        $this->reconciled = (bool) $reconciled;
+        $this->reconciled = $reconciled;
     }
 
     /**
@@ -294,7 +294,7 @@ class Scheduler
      *
      * @return bool
      */
-    public function isReconciled()
+    public function isReconciled(): ?bool
     {
         return $this->reconciled;
     }
@@ -304,7 +304,7 @@ class Scheduler
      *
      * @param string $notes
      */
-    public function setNotes($notes): void
+    public function setNotes(string $notes): void
     {
         $this->notes = $notes;
     }
@@ -314,7 +314,7 @@ class Scheduler
      *
      * @return string
      */
-    public function getNotes()
+    public function getNotes(): ?string
     {
         return $this->notes;
     }
@@ -324,7 +324,7 @@ class Scheduler
      *
      * @param string $frequencyUnit
      */
-    public function setFrequencyUnit($frequencyUnit): void
+    public function setFrequencyUnit(string $frequencyUnit): void
     {
         $this->frequencyUnit = $frequencyUnit;
     }
@@ -334,7 +334,7 @@ class Scheduler
      *
      * @return string
      */
-    public function getFrequencyUnit()
+    public function getFrequencyUnit(): ?string
     {
         return $this->frequencyUnit;
     }
@@ -344,9 +344,9 @@ class Scheduler
      *
      * @param int $frequencyValue
      */
-    public function setFrequencyValue($frequencyValue): void
+    public function setFrequencyValue(int $frequencyValue): void
     {
-        $this->frequencyValue = (int) $frequencyValue;
+        $this->frequencyValue = $frequencyValue;
     }
 
     /**
@@ -354,7 +354,7 @@ class Scheduler
      *
      * @return int
      */
-    public function getFrequencyValue()
+    public function getFrequencyValue(): ?int
     {
         return $this->frequencyValue;
     }
@@ -364,9 +364,9 @@ class Scheduler
      *
      * @param bool $active
      */
-    public function setActive($active): void
+    public function setActive(bool $active): void
     {
-        $this->active = (bool) $active;
+        $this->active = $active;
     }
 
     /**
@@ -374,7 +374,7 @@ class Scheduler
      *
      * @return bool
      */
-    public function isActive()
+    public function isActive(): ?bool
     {
         return $this->active;
     }
@@ -384,7 +384,7 @@ class Scheduler
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -394,7 +394,7 @@ class Scheduler
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -414,7 +414,7 @@ class Scheduler
      *
      * @return App\Entity\Account
      */
-    public function getAccount()
+    public function getAccount(): ?Account
     {
         return $this->account;
     }
@@ -424,7 +424,7 @@ class Scheduler
      *
      * @param App\Entity\Account $transferAccount
      */
-    public function setTransferAccount(Account $transferAccount = null): void
+    public function setTransferAccount(?Account $transferAccount): void
     {
         $this->transferAccount = $transferAccount;
     }
@@ -434,7 +434,7 @@ class Scheduler
      *
      * @return App\Entity\Account
      */
-    public function getTransferAccount()
+    public function getTransferAccount(): ?Account
     {
         return $this->transferAccount;
     }
@@ -444,7 +444,7 @@ class Scheduler
      *
      * @param App\Entity\Category $category
      */
-    public function setCategory(Category $category = null): void
+    public function setCategory(?Category $category): void
     {
         $this->category = $category;
     }
@@ -454,7 +454,7 @@ class Scheduler
      *
      * @return App\Entity\Category
      */
-    public function getCategory()
+    public function getCategory(): ?Category
     {
         return $this->category;
     }
@@ -464,7 +464,7 @@ class Scheduler
      *
      * @param App\Entity\PaymentMethod $paymentMethod
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod = null): void
+    public function setPaymentMethod(?PaymentMethod $paymentMethod): void
     {
         $this->paymentMethod = $paymentMethod;
     }
@@ -474,12 +474,12 @@ class Scheduler
      *
      * @return App\Entity\PaymentMethod
      */
-    public function getPaymentMethod()
+    public function getPaymentMethod(): ?PaymentMethod
     {
         return $this->paymentMethod;
     }
 
-    public function isOwner(Member $member)
+    public function isOwner(Member $member): bool
     {
         return $this->getAccount()->getBank()->getMember()->getMemberId() === $member->getMemberId();
     }

@@ -19,7 +19,7 @@ class CryptService
      *
      * @return string
      */
-    public function encrypt($message, $key)
+    public function encrypt(string $message, string $key): string
     {
         if (32 !== mb_strlen($key, '8bit')) {
             throw new \Exception('Key must be 256-bit long');
@@ -35,6 +35,10 @@ class CryptService
             $iv
         );
 
+        if (false === $ciphertext) {
+            throw new \Exception('Unable to encrypt string');
+        }
+
         return base64_encode($iv.$ciphertext);
     }
 
@@ -46,7 +50,7 @@ class CryptService
      *
      * @return string
      */
-    public function decrypt($message, $key)
+    public function decrypt(string $message, string $key): string
     {
         if (32 !== mb_strlen($key, '8bit')) {
             throw new \Exception('Key must be 256-bit long');
@@ -57,13 +61,19 @@ class CryptService
             $iv = mb_substr($message, 0, $ivLength, '8bit');
             $ciphertext = mb_substr($message, $ivLength, null, '8bit');
 
-            return openssl_decrypt(
+            $message = openssl_decrypt(
                 $ciphertext,
                 self::METHOD,
                 $key,
                 OPENSSL_RAW_DATA,
                 $iv
             );
+
+            if (false === $message) {
+                throw new \Exception('Unable to decrypt string');
+            }
+
+            return $message;
         }
     }
 
@@ -72,7 +82,7 @@ class CryptService
      *
      * @return string
      */
-    protected function getRandomIv()
+    protected function getRandomIv(): string
     {
         $ivLength = openssl_cipher_iv_length(self::METHOD);
 

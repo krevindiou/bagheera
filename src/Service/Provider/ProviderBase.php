@@ -37,7 +37,7 @@ abstract class ProviderBase
      */
     public $accountImportService;
 
-    public function setKey($key): void
+    public function setKey(string $key): void
     {
         $this->key = $key;
     }
@@ -66,7 +66,7 @@ abstract class ProviderBase
      *
      * @return array
      */
-    protected function convertToArray(Account $account, $data, $format)
+    protected function convertToArray(Account $account, string $data, string $format)
     {
         try {
             $data = ArrayConverter::convertFromFormat($data, $format);
@@ -86,7 +86,7 @@ abstract class ProviderBase
      * @param string  $data    Data to save
      * @param string  $type    Either original, json or json_normalized
      */
-    protected function save(Account $account, $data, $type): void
+    protected function save(Account $account, string $data, string $type): void
     {
         $this->accountImportService->setData($account, $data, $type);
     }

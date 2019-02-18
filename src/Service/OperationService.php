@@ -50,7 +50,7 @@ class OperationService
      *
      * @return Pagerfanta
      */
-    public function getList(Member $member, Account $account, $currentPage = 1, OperationSearch $operationSearch = null)
+    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): Pagerfanta
     {
         if ($account->getBank()->getMember() === $member) {
             $params = [
@@ -146,7 +146,7 @@ class OperationService
                 }
                 if (null !== $operationSearch->isReconciled()) {
                     $sql .= 'AND operation.is_reconciled = :reconciled ';
-                    $params[':reconciled'] = $operationSearch->isReconciled();
+                    $params[':reconciled'] = $operationSearch->isReconciled() ? 'true' : 'false';
                 }
             }
 
@@ -239,13 +239,13 @@ class OperationService
      *
      * @return Form
      */
-    public function getForm(Member $member, Operation $operation = null, Account $account = null)
+    public function getForm(Member $member, Operation $operation = null, Account $account = null): ?Form
     {
         if (null === $operation && null !== $account) {
             $operation = new Operation();
             $operation->setAccount($account);
         } elseif (null !== $operation && $member !== $operation->getAccount()->getBank()->getMember()) {
-            return;
+            return null;
         }
 
         return $this->formFactory->create(OperationFormType::class, $operation);
@@ -259,7 +259,7 @@ class OperationService
      *
      * @return bool
      */
-    public function save(Member $member, Operation $operation)
+    public function save(Member $member, Operation $operation): bool
     {
         $errors = $this->validator->validate($operation);
 
@@ -278,7 +278,7 @@ class OperationService
      *
      * @return bool
      */
-    public function saveForm(Member $member, Form $form)
+    public function saveForm(Member $member, Form $form): bool
     {
         if ($form->isValid()) {
             return $this->doSave($member, $form->getData());
@@ -295,7 +295,7 @@ class OperationService
      *
      * @return bool
      */
-    public function delete(Member $member, array $operationsId)
+    public function delete(Member $member, array $operationsId): bool
     {
         try {
             foreach ($operationsId as $operationId) {
@@ -326,7 +326,7 @@ class OperationService
      *
      * @return bool
      */
-    public function reconcile(Member $member, array $operationsId)
+    public function reconcile(Member $member, array $operationsId): bool
     {
         try {
             foreach ($operationsId as $operationId) {
@@ -349,7 +349,7 @@ class OperationService
         return true;
     }
 
-    public function findThirdParties(Member $member, $queryString)
+    public function findThirdParties(Member $member, string $queryString = null): array
     {
         $sql = 'SELECT o2.third_party AS "thirdParty", o2.category_id AS "categoryId" ';
         $sql .= 'FROM ( ';
@@ -381,7 +381,7 @@ class OperationService
      *
      * @return bool
      */
-    public function saveMulti(Account $account, array $operations, \Closure $func)
+    public function saveMulti(Account $account, array $operations, \Closure $func): bool
     {
         $error = false;
 
@@ -465,7 +465,7 @@ class OperationService
      *
      * @return Operation
      */
-    public function getLastSalary(Member $member)
+    public function getLastSalary(Member $member): ?Operation
     {
         $category = $this->em->find('App:Category', $this->categoriesId['salary']);
 
@@ -496,7 +496,7 @@ class OperationService
      *
      * @return Operation
      */
-    public function getLastBiggestExpense(Member $member, \DateTime $since)
+    public function getLastBiggestExpense(Member $member, \DateTime $since): ?Operation
     {
         $dql = 'SELECT o ';
         $dql .= 'FROM App:Operation o ';
@@ -531,7 +531,7 @@ class OperationService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Operation $operation)
+    protected function doSave(Member $member, Operation $operation): bool
     {
         if (null !== $operation->getOperationId()) {
             $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
@@ -599,7 +599,7 @@ class OperationService
                 $transferOperation->setCategory($operation->getCategory());
                 $transferOperation->setPaymentMethod($paymentMethod);
                 $transferOperation->setValueDate($operation->getValueDate());
-                $transferOperation->setNotes($operation->getNotes());
+                $transferOperation->setNotes((string) $operation->getNotes());
 
                 try {
                     $this->em->persist($transferOperation);

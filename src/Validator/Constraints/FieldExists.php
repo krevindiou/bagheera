@@ -36,7 +36,7 @@ class FieldExists extends Constraint
      * @param string $field
      * @param string $em
      */
-    public function __construct($className, $field, $em = null)
+    public function __construct(string $className, string $field, string $em = null)
     {
         $this->className = $className;
         $this->field = $field;

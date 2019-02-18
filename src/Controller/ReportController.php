@@ -56,7 +56,7 @@ class ReportController extends AbstractController
      * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
      * @ParamConverter("report", class="App:Report", options={"id" = "reportId"})
      */
-    public function formAction(Request $request, ReportService $reportService, Report $report = null, $type = null)
+    public function formAction(Request $request, ReportService $reportService, ?Report $report, string $type = null)
     {
         $member = $this->getUser();
 
@@ -114,7 +114,7 @@ class ReportController extends AbstractController
      * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
      * @Route("/account-{accountId}/report-synthesis.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      */
-    public function synthesisAction(ReportService $reportService, Account $account = null)
+    public function synthesisAction(ReportService $reportService, ?Account $account)
     {
         $member = $this->getUser();
 

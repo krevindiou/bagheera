@@ -70,7 +70,7 @@ class BankAccess
      *
      * @param int $bankId
      */
-    public function setBankId($bankId): void
+    public function setBankId(int $bankId): void
     {
         $this->bankId = $bankId;
     }
@@ -80,7 +80,7 @@ class BankAccess
      *
      * @return int
      */
-    public function getBankId()
+    public function getBankId(): int
     {
         return $this->bankId;
     }
@@ -90,7 +90,7 @@ class BankAccess
      *
      * @param string $plainLogin
      */
-    public function setPlainLogin($plainLogin): void
+    public function setPlainLogin(string $plainLogin): void
     {
         $this->plainLogin = $plainLogin;
     }
@@ -100,7 +100,7 @@ class BankAccess
      *
      * @return string
      */
-    public function getPlainLogin()
+    public function getPlainLogin(): string
     {
         return $this->plainLogin;
     }
@@ -110,7 +110,7 @@ class BankAccess
      *
      * @param string $plainPassword
      */
-    public function setPlainPassword($plainPassword): void
+    public function setPlainPassword(string $plainPassword): void
     {
         $this->plainPassword = $plainPassword;
     }
@@ -120,7 +120,7 @@ class BankAccess
      *
      * @return string
      */
-    public function getPlainPassword()
+    public function getPlainPassword(): string
     {
         return $this->plainPassword;
     }
@@ -130,7 +130,7 @@ class BankAccess
      *
      * @param string $login
      */
-    public function setLogin($login): void
+    public function setLogin(string $login): void
     {
         $this->login = $login;
     }
@@ -140,7 +140,7 @@ class BankAccess
      *
      * @return string
      */
-    public function getLogin()
+    public function getLogin(): string
     {
         return $this->login;
     }
@@ -150,7 +150,7 @@ class BankAccess
      *
      * @param string $password
      */
-    public function setPassword($password): void
+    public function setPassword(string $password): void
     {
         $this->password = $password;
     }
@@ -160,7 +160,7 @@ class BankAccess
      *
      * @return string
      */
-    public function getPassword()
+    public function getPassword(): string
     {
         return $this->password;
     }
@@ -170,7 +170,7 @@ class BankAccess
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
@@ -180,7 +180,7 @@ class BankAccess
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): \DateTime
     {
         return $this->updatedAt;
     }

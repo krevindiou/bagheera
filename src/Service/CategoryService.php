@@ -15,7 +15,7 @@ class CategoryService
         $this->em = $em;
     }
 
-    public function getList()
+    public function getList(): array
     {
         $list = [];
 

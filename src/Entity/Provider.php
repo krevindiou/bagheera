@@ -52,7 +52,7 @@ class Provider
      */
     protected $updatedAt;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getName();
     }
@@ -62,7 +62,7 @@ class Provider
      *
      * @return int
      */
-    public function getProviderId()
+    public function getProviderId(): ?int
     {
         return $this->providerId;
     }
@@ -72,7 +72,7 @@ class Provider
      *
      * @param string $name
      */
-    public function setName($name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -82,7 +82,7 @@ class Provider
      *
      * @return string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -92,7 +92,7 @@ class Provider
      *
      * @param string $country
      */
-    public function setCountry($country): void
+    public function setCountry(string $country): void
     {
         $this->country = $country;
     }
@@ -102,7 +102,7 @@ class Provider
      *
      * @return string
      */
-    public function getCountry()
+    public function getCountry(): ?string
     {
         return $this->country;
     }
@@ -112,7 +112,7 @@ class Provider
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -122,7 +122,7 @@ class Provider
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }

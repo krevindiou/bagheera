@@ -169,7 +169,7 @@ class OperationSearch
      *
      * @return int
      */
-    public function getOperationSearchId()
+    public function getOperationSearchId(): ?int
     {
         return $this->operationSearchId;
     }
@@ -189,7 +189,7 @@ class OperationSearch
      *
      * @return App\Entity\Account
      */
-    public function getAccount()
+    public function getAccount(): ?Account
     {
         return $this->account;
     }
@@ -209,7 +209,7 @@ class OperationSearch
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getCategories()
+    public function getCategories(): Collection
     {
         return $this->categories;
     }
@@ -229,7 +229,7 @@ class OperationSearch
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getPaymentMethods()
+    public function getPaymentMethods(): Collection
     {
         return $this->paymentMethods;
     }
@@ -239,7 +239,7 @@ class OperationSearch
      *
      * @param string $thirdParty
      */
-    public function setThirdParty($thirdParty): void
+    public function setThirdParty(?string $thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
@@ -249,7 +249,7 @@ class OperationSearch
      *
      * @return string
      */
-    public function getThirdParty()
+    public function getThirdParty(): ?string
     {
         return $this->thirdParty;
     }
@@ -259,7 +259,7 @@ class OperationSearch
      *
      * @param string $notes
      */
-    public function setNotes($notes): void
+    public function setNotes(?string $notes): void
     {
         $this->notes = $notes;
     }
@@ -269,7 +269,7 @@ class OperationSearch
      *
      * @return string
      */
-    public function getNotes()
+    public function getNotes(): ?string
     {
         return $this->notes;
     }
@@ -279,7 +279,7 @@ class OperationSearch
      *
      * @param DateTime $valueDateStart
      */
-    public function setValueDateStart(\DateTime $valueDateStart = null): void
+    public function setValueDateStart(?\DateTime $valueDateStart): void
     {
         $this->valueDateStart = $valueDateStart;
     }
@@ -289,7 +289,7 @@ class OperationSearch
      *
      * @return DateTime
      */
-    public function getValueDateStart()
+    public function getValueDateStart(): ?\DateTime
     {
         return $this->valueDateStart;
     }
@@ -299,7 +299,7 @@ class OperationSearch
      *
      * @param DateTime $valueDateEnd
      */
-    public function setValueDateEnd(\DateTime $valueDateEnd = null): void
+    public function setValueDateEnd(?\DateTime $valueDateEnd): void
     {
         $this->valueDateEnd = $valueDateEnd;
     }
@@ -309,7 +309,7 @@ class OperationSearch
      *
      * @return DateTime
      */
-    public function getValueDateEnd()
+    public function getValueDateEnd(): ?\DateTime
     {
         return $this->valueDateEnd;
     }
@@ -319,14 +319,8 @@ class OperationSearch
      *
      * @param bool $reconciled
      */
-    public function setReconciled($reconciled): void
+    public function setReconciled(?bool $reconciled): void
     {
-        if ('' === $reconciled) {
-            $reconciled = null;
-        } else {
-            $reconciled = (bool) $reconciled;
-        }
-
         $this->reconciled = $reconciled;
     }
 
@@ -335,7 +329,7 @@ class OperationSearch
      *
      * @return bool
      */
-    public function isReconciled()
+    public function isReconciled(): ?bool
     {
         return $this->reconciled;
     }
@@ -345,7 +339,7 @@ class OperationSearch
      *
      * @param string $type
      */
-    public function setType($type): void
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
@@ -355,7 +349,7 @@ class OperationSearch
      *
      * @return string
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -375,7 +369,7 @@ class OperationSearch
      *
      * @return decimal
      */
-    public function getAmountInferiorTo()
+    public function getAmountInferiorTo(): ?string
     {
         return $this->amountInferiorTo;
     }
@@ -395,7 +389,7 @@ class OperationSearch
      *
      * @return decimal
      */
-    public function getAmountInferiorOrEqualTo()
+    public function getAmountInferiorOrEqualTo(): ?string
     {
         return $this->amountInferiorOrEqualTo;
     }
@@ -415,7 +409,7 @@ class OperationSearch
      *
      * @return decimal
      */
-    public function getAmountEqualTo()
+    public function getAmountEqualTo(): ?string
     {
         return $this->amountEqualTo;
     }
@@ -435,7 +429,7 @@ class OperationSearch
      *
      * @return decimal
      */
-    public function getAmountSuperiorOrEqualTo()
+    public function getAmountSuperiorOrEqualTo(): ?string
     {
         return $this->amountSuperiorOrEqualTo;
     }
@@ -455,7 +449,7 @@ class OperationSearch
      *
      * @return decimal
      */
-    public function getAmountSuperiorTo()
+    public function getAmountSuperiorTo(): ?string
     {
         return $this->amountSuperiorTo;
     }
@@ -465,7 +459,7 @@ class OperationSearch
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -475,7 +469,7 @@ class OperationSearch
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }

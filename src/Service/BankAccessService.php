@@ -53,10 +53,10 @@ class BankAccessService
      *
      * @return Form
      */
-    public function getForm(Member $member, Bank $bank)
+    public function getForm(Member $member, Bank $bank): ?Form
     {
         if ($member !== $bank->getMember() || null === $bank->getProvider()) {
-            return;
+            return null;
         }
 
         $bankAccess = new BankAccess();
@@ -73,7 +73,7 @@ class BankAccessService
      *
      * @return bool
      */
-    public function save(Member $member, BankAccess $bankAccess)
+    public function save(Member $member, BankAccess $bankAccess): bool
     {
         $errors = $this->validator->validate($bankAccess);
 
@@ -92,7 +92,7 @@ class BankAccessService
      *
      * @return bool
      */
-    public function saveForm(Member $member, Form $form)
+    public function saveForm(Member $member, Form $form): bool
     {
         if ($form->isValid()) {
             return $this->doSave($member, $form->getData());
@@ -109,7 +109,7 @@ class BankAccessService
      *
      * @return bool
      */
-    protected function doSave(Member $member, BankAccess $bankAccess)
+    protected function doSave(Member $member, BankAccess $bankAccess): bool
     {
         $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
 

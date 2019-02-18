@@ -14,7 +14,7 @@ class ArrayConverter
      *
      * @return array
      */
-    public static function convertFromFormat($content, $format)
+    public static function convertFromFormat(string $content, string $format)
     {
         $method = 'self::convertFrom'.ucfirst(strtolower($format));
 
@@ -28,7 +28,7 @@ class ArrayConverter
         throw new \InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
     }
 
-    private static function convertFromQif($content)
+    private static function convertFromQif(string $content)
     {
         $data = [];
 
@@ -49,13 +49,13 @@ class ArrayConverter
         return $data;
     }
 
-    private static function convertFromOfx($content)
+    private static function convertFromOfx(string $content)
     {
         // @todo
         return [];
     }
 
-    private static function convertFromQfx($content)
+    private static function convertFromQfx(string $content)
     {
         // @todo
         return [];

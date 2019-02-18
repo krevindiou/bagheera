@@ -51,7 +51,7 @@ class BankService
      *
      * @return array
      */
-    public function getList(Member $member, $activeOnly = true)
+    public function getList(Member $member, bool $activeOnly = true): array
     {
         $banks = [];
 
@@ -115,7 +115,7 @@ class BankService
      *
      * @return Form
      */
-    public function getForm(Member $member, Bank $bank = null)
+    public function getForm(Member $member, Bank $bank = null): ?Form
     {
         if (null === $bank) {
             return $this->formFactory->create(BankChooseFormType::class, null, ['member' => $member]);
@@ -123,6 +123,8 @@ class BankService
         if ($member === $bank->getMember()) {
             return $this->formFactory->create(BankUpdateFormType::class, $bank);
         }
+
+        return null;
     }
 
     /**
@@ -133,7 +135,7 @@ class BankService
      *
      * @return bool
      */
-    public function save(Member $member, Bank $bank)
+    public function save(Member $member, Bank $bank): bool
     {
         $errors = $this->validator->validate($bank);
 
@@ -196,7 +198,7 @@ class BankService
      *
      * @return bool
      */
-    public function close(Member $member, array $banksId)
+    public function close(Member $member, array $banksId): bool
     {
         try {
             foreach ($banksId as $bankId) {
@@ -227,7 +229,7 @@ class BankService
      *
      * @return bool
      */
-    public function delete(Member $member, array $banksId)
+    public function delete(Member $member, array $banksId): bool
     {
         try {
             foreach ($banksId as $bankId) {
@@ -258,7 +260,7 @@ class BankService
      *
      * @return array
      */
-    public function getBalances(Member $member, Bank $bank)
+    public function getBalances(Member $member, Bank $bank): array
     {
         $balances = [];
 
@@ -321,7 +323,7 @@ class BankService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Bank $bank)
+    protected function doSave(Member $member, Bank $bank): bool
     {
         if ($member === $bank->getMember()) {
             try {

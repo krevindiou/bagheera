@@ -11,14 +11,14 @@ interface ProviderInterface
     /**
      * Connects to bank's provider.
      */
-    public function connect();
+    public function connect(): void;
 
     /**
      * Fetches accounts into an array.
      *
      * @return array
      */
-    public function fetchAccounts();
+    public function fetchAccounts(): array;
 
     /**
      * Fetches transactions into an array.
@@ -27,7 +27,7 @@ interface ProviderInterface
      *
      * @return array
      */
-    public function fetchTransactions(Account $account);
+    public function fetchTransactions(Account $account): array;
 
     /**
      * Converts transactions data to normalized format.
@@ -37,5 +37,5 @@ interface ProviderInterface
      *
      * @return array
      */
-    public function normalizeData(Account $account, array $data);
+    public function normalizeData(Account $account, array $data): array;
 }

@@ -51,7 +51,7 @@ class AccountService
      *
      * @return array
      */
-    public function getList(Member $member, Bank $bank = null, $deleted = true)
+    public function getList(Member $member, Bank $bank = null, bool $deleted = true): array
     {
         $dql = 'SELECT a FROM App:Account a ';
         $dql .= 'JOIN a.bank b ';
@@ -82,10 +82,10 @@ class AccountService
      *
      * @return Form
      */
-    public function getCreateForm(Member $member, Bank $bank = null)
+    public function getCreateForm(Member $member, Bank $bank = null): ?Form
     {
         if (null !== $bank && $member !== $bank->getMember()) {
-            return;
+            return null;
         }
 
         $account = new Account();
@@ -104,10 +104,10 @@ class AccountService
      *
      * @return Form
      */
-    public function getUpdateForm(Member $member, Account $account)
+    public function getUpdateForm(Member $member, Account $account): ?Form
     {
         if ($member !== $account->getBank()->getMember()) {
-            return;
+            return null;
         }
 
         return $this->formFactory->create(AccountFormType::class, $account, ['member' => $member]);
@@ -121,7 +121,7 @@ class AccountService
      *
      * @return bool
      */
-    public function save(Member $member, Account $account)
+    public function save(Member $member, Account $account): bool
     {
         $errors = $this->validator->validate($account);
 
@@ -140,7 +140,7 @@ class AccountService
      *
      * @return bool
      */
-    public function saveForm(Member $member, Form $form)
+    public function saveForm(Member $member, Form $form): bool
     {
         if ($form->isValid()) {
             $ok = $this->doSave($member, $form->getData());
@@ -175,7 +175,7 @@ class AccountService
      *
      * @return bool
      */
-    public function close(Member $member, array $accountsId)
+    public function close(Member $member, array $accountsId): bool
     {
         try {
             foreach ($accountsId as $accountId) {
@@ -206,7 +206,7 @@ class AccountService
      *
      * @return bool
      */
-    public function delete(Member $member, array $accountsId)
+    public function delete(Member $member, array $accountsId): bool
     {
         try {
             foreach ($accountsId as $accountId) {
@@ -238,7 +238,7 @@ class AccountService
      *
      * @return float
      */
-    public function getBalance(Member $member, Account $account, $reconciledOnly = false)
+    public function getBalance(Member $member, Account $account, bool $reconciledOnly = false): string
     {
         $balance = 0;
 
@@ -268,7 +268,7 @@ class AccountService
      *
      * @return bool
      */
-    public function saveMulti(Bank $bank, array $accounts)
+    public function saveMulti(Bank $bank, array $accounts): bool
     {
         $error = false;
 
@@ -339,7 +339,7 @@ class AccountService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Account $account)
+    protected function doSave(Member $member, Account $account): bool
     {
         if (null !== $account->getAccountId()) {
             $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);

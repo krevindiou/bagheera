@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityRepository;
 
 class OperationRepository extends EntityRepository
 {
-    public function getLastExternalOperationId(Account $account)
+    public function getLastExternalOperationId(Account $account): ?string
     {
         $dql = 'SELECT o.externalOperationId ';
         $dql .= 'FROM App:Operation o ';
@@ -24,7 +24,7 @@ class OperationRepository extends EntityRepository
         try {
             return $query->getSingleScalarResult();
         } catch (\Doctrine\ORM\NoResultException $e) {
-            return;
+            return null;
         }
     }
 
@@ -38,7 +38,7 @@ class OperationRepository extends EntityRepository
      *
      * @return array
      */
-    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null)
+    public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null): array
     {
         $data = $this->getSumsByMonth($member, $startDate, $endDate, $account);
 
@@ -69,7 +69,7 @@ class OperationRepository extends EntityRepository
      *
      * @return array
      */
-    protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null)
+    protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null): array
     {
         $data = [];
 
@@ -137,7 +137,7 @@ class OperationRepository extends EntityRepository
      *
      * @return array
      */
-    protected function getSumBefore(Member $member, \DateTime $endDate, Account $account = null)
+    protected function getSumBefore(Member $member, \DateTime $endDate, Account $account = null): array
     {
         $data = [];
 

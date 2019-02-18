@@ -62,7 +62,7 @@ class PaymentMethod
      */
     protected $updatedAt;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getName();
     }
@@ -72,7 +72,7 @@ class PaymentMethod
      *
      * @return int
      */
-    public function getPaymentMethodId()
+    public function getPaymentMethodId(): ?int
     {
         return $this->paymentMethodId;
     }
@@ -82,7 +82,7 @@ class PaymentMethod
      *
      * @param string $name
      */
-    public function setName($name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -92,7 +92,7 @@ class PaymentMethod
      *
      * @return string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -102,7 +102,7 @@ class PaymentMethod
      *
      * @param string $type
      */
-    public function setType($type): void
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
@@ -112,7 +112,7 @@ class PaymentMethod
      *
      * @return string
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -122,7 +122,7 @@ class PaymentMethod
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -132,7 +132,7 @@ class PaymentMethod
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }

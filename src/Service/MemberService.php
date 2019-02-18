@@ -73,7 +73,7 @@ class MemberService
      *
      * @return Form
      */
-    public function getRegisterForm($language)
+    public function getRegisterForm(string $language): Form
     {
         return $this->formFactory->create(
             MemberRegisterFormType::class,
@@ -89,7 +89,7 @@ class MemberService
      *
      * @return Form
      */
-    public function getProfileForm(Member $member)
+    public function getProfileForm(Member $member): Form
     {
         return $this->formFactory->create(MemberProfileFormType::class, $member);
     }
@@ -101,7 +101,7 @@ class MemberService
      *
      * @return string
      */
-    public function createRegisterKey(Member $member)
+    public function createRegisterKey(Member $member): string
     {
         $data = [
             'type' => 'register',
@@ -118,7 +118,7 @@ class MemberService
      *
      * @return bool
      */
-    public function save(Member $member)
+    public function save(Member $member): bool
     {
         $errors = $this->validator->validate($member);
 
@@ -140,7 +140,7 @@ class MemberService
      *
      * @return bool
      */
-    public function saveForm(Form $form)
+    public function saveForm(Form $form): bool
     {
         if ($form->isValid()) {
             if (null !== $form->getData()->getMemberId()) {
@@ -158,7 +158,7 @@ class MemberService
      *
      * @return Form
      */
-    public function getForgotPasswordForm()
+    public function getForgotPasswordForm(): Form
     {
         return $this->formFactory->create(MemberForgotPasswordFormType::class);
     }
@@ -170,7 +170,7 @@ class MemberService
      *
      * @return bool
      */
-    public function sendChangePasswordEmail($email)
+    public function sendChangePasswordEmail(string $email): bool
     {
         $member = $this->em->getRepository('App:Member')
             ->findOneBy(['email' => $email])
@@ -210,7 +210,7 @@ class MemberService
      *
      * @return Form
      */
-    public function getChangePasswordForm()
+    public function getChangePasswordForm(): Form
     {
         return $this->formFactory->create(MemberChangePasswordFormType::class);
     }
@@ -221,7 +221,7 @@ class MemberService
      * @param Member $member   Member entity
      * @param string $password Password to set
      */
-    public function changePassword(Member $member, $password)
+    public function changePassword(Member $member, string $password): bool
     {
         $member->setPassword($this->passwordEncoder->encodePassword($member, $password));
 
@@ -243,7 +243,7 @@ class MemberService
      *
      * @return string
      */
-    public function createChangePasswordKey(Member $member)
+    public function createChangePasswordKey(Member $member): string
     {
         $expiration = new \DateTime();
         $expiration->modify('+2 days');
@@ -264,7 +264,7 @@ class MemberService
      *
      * @return Member
      */
-    public function decodeChangePasswordKey($key)
+    public function decodeChangePasswordKey(string $key): Member
     {
         $data = $this->cryptService->decrypt($key, $this->secret);
 
@@ -285,7 +285,7 @@ class MemberService
      *
      * @return bool
      */
-    public function activate($key)
+    public function activate(string $key): bool
     {
         if (null !== $member = $this->decodeRegisterKey($key)) {
             $member->setActive(true);
@@ -309,7 +309,7 @@ class MemberService
      *
      * @return array
      */
-    public function getBalances(Member $member)
+    public function getBalances(Member $member): array
     {
         $balances = [];
 
@@ -340,7 +340,7 @@ class MemberService
      *
      * @return array
      */
-    public function getImportProgress(Member $member)
+    public function getImportProgress(Member $member): ?array
     {
         // Fetch current importId
         $dql = 'SELECT MAX(i.importId) ';
@@ -355,7 +355,7 @@ class MemberService
         try {
             $maxImportId = $query->getSingleScalarResult();
         } catch (\Exception $e) {
-            return;
+            return null;
         }
 
         $dql = 'SELECT i ';
@@ -367,7 +367,7 @@ class MemberService
         try {
             return $query->getResult();
         } catch (\Exception $e) {
-            return;
+            return null;
         }
     }
 
@@ -378,7 +378,7 @@ class MemberService
      *
      * @return bool
      */
-    public function hasNewAccountTip(Member $member)
+    public function hasNewAccountTip(Member $member): bool
     {
         $tipNewAccount = false;
 
@@ -401,7 +401,7 @@ class MemberService
      *
      * @return bool
      */
-    protected function add(Member $member)
+    protected function add(Member $member): bool
     {
         $member->setPassword($this->passwordEncoder->encodePassword($member, $member->getPlainPassword()));
 
@@ -448,7 +448,7 @@ class MemberService
      *
      * @return Member
      */
-    protected function decodeRegisterKey($key)
+    protected function decodeRegisterKey(string $key): Member
     {
         $data = $this->cryptService->decrypt($key, $this->secret);
 
@@ -468,7 +468,7 @@ class MemberService
      *
      * @return bool
      */
-    protected function update(Member $member)
+    protected function update(Member $member): bool
     {
         try {
             $this->em->flush();
@@ -488,7 +488,7 @@ class MemberService
      *
      * @return bool
      */
-    protected function hasBankWithoutProvider(Member $member)
+    protected function hasBankWithoutProvider(Member $member): bool
     {
         $banks = $member->getBanks();
 

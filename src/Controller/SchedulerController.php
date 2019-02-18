@@ -73,7 +73,7 @@ class SchedulerController extends AbstractController
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      */
-    public function formAction(Request $request, SchedulerService $schedulerService, Account $account = null, Scheduler $scheduler = null)
+    public function formAction(Request $request, SchedulerService $schedulerService, ?Account $account, ?Scheduler $scheduler)
     {
         $schedulerForm = $schedulerService->getForm($scheduler, $account);
         if (null === $schedulerForm) {

@@ -6,10 +6,11 @@ namespace App\Repository;
 
 use App\Entity\Member;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 
 class BankRepository extends EntityRepository
 {
-    public function getActiveManualBanksQueryBuilder(Member $member)
+    public function getActiveManualBanksQueryBuilder(Member $member): QueryBuilder
     {
         return $this->createQueryBuilder('b')
             ->where('b.member = :member')

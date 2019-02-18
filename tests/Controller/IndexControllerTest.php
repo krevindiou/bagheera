@@ -57,7 +57,7 @@ final class IndexControllerTest extends TestCase
             ['/en/manager/third-parties.json'],
             ['/en/manager/reports'],
             ['/en/manager/create-sum-report'],
-            ['/en/manager/report-1'],
+            // ['/en/manager/report-1'],
             ['/en/manager/reports.js'],
             // ['/en/manager/report-synthesis.js'],
             // ['/en/manager/account-1/report-synthesis.js'],

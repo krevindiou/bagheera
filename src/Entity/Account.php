@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -145,7 +146,7 @@ class Account
         $this->schedulers = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getBank()->getName().' - '.$this->getName();
     }
@@ -155,7 +156,7 @@ class Account
      *
      * @return int
      */
-    public function getAccountId()
+    public function getAccountId(): ?int
     {
         return $this->accountId;
     }
@@ -165,7 +166,7 @@ class Account
      *
      * @param string $externalAccountId
      */
-    public function setExternalAccountId($externalAccountId): void
+    public function setExternalAccountId(string $externalAccountId): void
     {
         $this->externalAccountId = $externalAccountId;
     }
@@ -175,7 +176,7 @@ class Account
      *
      * @return string
      */
-    public function getExternalAccountId()
+    public function getExternalAccountId(): ?string
     {
         return $this->externalAccountId;
     }
@@ -185,7 +186,7 @@ class Account
      *
      * @param string $name
      */
-    public function setName($name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -195,7 +196,7 @@ class Account
      *
      * @return string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -205,7 +206,7 @@ class Account
      *
      * @param string $currency
      */
-    public function setCurrency($currency): void
+    public function setCurrency(string $currency): void
     {
         $this->currency = $currency;
     }
@@ -215,7 +216,7 @@ class Account
      *
      * @return string
      */
-    public function getCurrency()
+    public function getCurrency(): ?string
     {
         return $this->currency;
     }
@@ -225,9 +226,9 @@ class Account
      *
      * @param float $overdraftFacility
      */
-    public function setOverdraftFacility($overdraftFacility): void
+    public function setOverdraftFacility(int $overdraftFacility): void
     {
-        $this->overdraftFacility = (float) $overdraftFacility;
+        $this->overdraftFacility = $overdraftFacility;
     }
 
     /**
@@ -245,9 +246,9 @@ class Account
      *
      * @param bool $closed
      */
-    public function setClosed($closed): void
+    public function setClosed(bool $closed): void
     {
-        $this->closed = (bool) $closed;
+        $this->closed = $closed;
     }
 
     /**
@@ -255,7 +256,7 @@ class Account
      *
      * @return bool
      */
-    public function isClosed()
+    public function isClosed(): ?bool
     {
         return $this->closed;
     }
@@ -265,9 +266,9 @@ class Account
      *
      * @param bool $deleted
      */
-    public function setDeleted($deleted): void
+    public function setDeleted(bool $deleted): void
     {
-        $this->deleted = (bool) $deleted;
+        $this->deleted = $deleted;
     }
 
     /**
@@ -275,7 +276,7 @@ class Account
      *
      * @return bool
      */
-    public function isDeleted()
+    public function isDeleted(): ?bool
     {
         return $this->deleted;
     }
@@ -285,7 +286,7 @@ class Account
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -295,7 +296,7 @@ class Account
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -315,7 +316,7 @@ class Account
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getSharedWith()
+    public function getSharedWith(): Collection
     {
         return $this->sharedWith;
     }
@@ -335,7 +336,7 @@ class Account
      *
      * @return App\Entity\Bank
      */
-    public function getBank()
+    public function getBank(): ?Bank
     {
         return $this->bank;
     }
@@ -345,7 +346,7 @@ class Account
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getOperations()
+    public function getOperations(): Collection
     {
         return $this->operations;
     }
@@ -355,17 +356,17 @@ class Account
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getSchedulers()
+    public function getSchedulers(): Collection
     {
         return $this->schedulers;
     }
 
-    public function isManual()
+    public function isManual(): ?bool
     {
         return $this->getBank()->isManual();
     }
 
-    public function isOwner(Member $member)
+    public function isOwner(Member $member): ?bool
     {
         return $this->getBank()->getMember()->getMemberId() === $member->getMemberId();
     }

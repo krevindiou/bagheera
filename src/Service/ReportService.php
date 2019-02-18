@@ -40,7 +40,7 @@ class ReportService
      *
      * @return array
      */
-    public function getList(Member $member)
+    public function getList(Member $member): array
     {
         $reports = [];
 
@@ -150,7 +150,7 @@ class ReportService
      *
      * @return array
      */
-    public function getHomepageList(Member $member)
+    public function getHomepageList(Member $member): array
     {
         $dql = 'SELECT r FROM App:Report r ';
         $dql .= 'WHERE r.member = :member ';
@@ -172,14 +172,18 @@ class ReportService
      *
      * @return Form
      */
-    public function getForm(Member $member, Report $report = null, $type = null)
+    public function getForm(Member $member, Report $report = null, string $type = null): ?Form
     {
+        if (null === $report && null === $type) {
+            return null;
+        }
+
         if (null === $report) {
             $report = new Report();
             $report->setMember($member);
             $report->setType($type);
         } elseif ($member !== $report->getMember()) {
-            return;
+            return null;
         }
 
         return $this->formFactory->create(ReportFormType::class, $report);
@@ -193,7 +197,7 @@ class ReportService
      *
      * @return bool
      */
-    public function save(Member $member, Report $report)
+    public function save(Member $member, Report $report): bool
     {
         $errors = $this->validator->validate($report);
 
@@ -212,7 +216,7 @@ class ReportService
      *
      * @return bool
      */
-    public function saveForm(Member $member, Form $form)
+    public function saveForm(Member $member, Form $form): bool
     {
         if ($form->isValid()) {
             return $this->doSave($member, $form->getData());
@@ -229,7 +233,7 @@ class ReportService
      *
      * @return bool
      */
-    public function delete(Member $member, array $reportsId)
+    public function delete(Member $member, array $reportsId): bool
     {
         try {
             foreach ($reportsId as $reportId) {
@@ -260,7 +264,7 @@ class ReportService
      *
      * @return array
      */
-    public function getGraphData(Member $member, Report $report)
+    public function getGraphData(Member $member, Report $report): array
     {
         $series = [
             [
@@ -378,7 +382,7 @@ class ReportService
      *
      * @return array
      */
-    public function getGraphValues(Report $report, array $accounts, $type)
+    public function getGraphValues(Report $report, array $accounts, string $type): array
     {
         switch ($report->getPeriodGrouping()) {
             case 'month':
@@ -450,7 +454,7 @@ class ReportService
      *
      * @return array
      */
-    public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null)
+    public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null): array
     {
         $graph = [];
 
@@ -503,7 +507,7 @@ class ReportService
      *
      * @return bool
      */
-    protected function doSave(Member $member, Report $report)
+    protected function doSave(Member $member, Report $report): bool
     {
         if ($member === $report->getMember()) {
             try {

@@ -6,10 +6,11 @@ namespace App\Repository;
 
 use App\Entity\Member;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 
 class ProviderRepository extends EntityRepository
 {
-    public function getAvailableProvidersQueryBuilder(Member $member)
+    public function getAvailableProvidersQueryBuilder(Member $member): QueryBuilder
     {
         // Retrieve used providers
         $dql = 'SELECT p.providerId ';

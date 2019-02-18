@@ -88,7 +88,7 @@ class AccountController extends AbstractController
      * @Route("/bank-{bankId}/create-account", requirements={"bankId" = "\d+"}, name="account_create_with_bank")
      * @Route("/create-account", defaults={"bankId" = null}, name="account_create")
      */
-    public function createAction(Request $request, AccountService $accountService, Bank $bank = null)
+    public function createAction(Request $request, AccountService $accountService, ?Bank $bank)
     {
         $member = $this->getUser();
 

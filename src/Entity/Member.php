@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -116,7 +117,7 @@ class Member implements UserInterface
      *
      * @return int
      */
-    public function getMemberId()
+    public function getMemberId(): ?int
     {
         return $this->memberId;
     }
@@ -126,7 +127,7 @@ class Member implements UserInterface
      *
      * @param string $email
      */
-    public function setEmail($email): void
+    public function setEmail(string $email): void
     {
         $this->email = $email;
     }
@@ -136,7 +137,7 @@ class Member implements UserInterface
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): ?string
     {
         return $this->email;
     }
@@ -146,7 +147,7 @@ class Member implements UserInterface
      *
      * @param string $password
      */
-    public function setPassword($password): void
+    public function setPassword(string $password): void
     {
         $this->password = $password;
     }
@@ -156,7 +157,7 @@ class Member implements UserInterface
      *
      * @return string
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -166,7 +167,7 @@ class Member implements UserInterface
      *
      * @param string $plainPassword
      */
-    public function setPlainPassword($plainPassword): void
+    public function setPlainPassword(?string $plainPassword): void
     {
         $this->plainPassword = $plainPassword;
     }
@@ -176,7 +177,7 @@ class Member implements UserInterface
      *
      * @return string
      */
-    public function getPlainPassword()
+    public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
@@ -186,7 +187,7 @@ class Member implements UserInterface
      *
      * @param string $country
      */
-    public function setCountry($country): void
+    public function setCountry(string $country): void
     {
         $this->country = $country;
     }
@@ -196,7 +197,7 @@ class Member implements UserInterface
      *
      * @return string
      */
-    public function getCountry()
+    public function getCountry(): ?string
     {
         return $this->country;
     }
@@ -206,7 +207,7 @@ class Member implements UserInterface
      *
      * @param bool $active
      */
-    public function setActive($active): void
+    public function setActive(bool $active): void
     {
         $this->active = (bool) $active;
     }
@@ -216,7 +217,7 @@ class Member implements UserInterface
      *
      * @return bool
      */
-    public function isActive()
+    public function isActive(): ?bool
     {
         return $this->active;
     }
@@ -226,7 +227,7 @@ class Member implements UserInterface
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -236,7 +237,7 @@ class Member implements UserInterface
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -256,7 +257,7 @@ class Member implements UserInterface
      *
      * @return DateTime
      */
-    public function getLoggedAt()
+    public function getLoggedAt(): ?\DateTime
     {
         return $this->loggedAt;
     }
@@ -266,7 +267,7 @@ class Member implements UserInterface
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getBanks()
+    public function getBanks(): Collection
     {
         return $this->banks;
     }
@@ -276,7 +277,7 @@ class Member implements UserInterface
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getReports()
+    public function getReports(): Collection
     {
         return $this->reports;
     }
@@ -284,7 +285,7 @@ class Member implements UserInterface
     /**
      * {@inheritdoc}
      */
-    public function getRoles()
+    public function getRoles(): array
     {
         return ['ROLE_USER'];
     }
@@ -299,7 +300,7 @@ class Member implements UserInterface
     /**
      * {@inheritdoc}
      */
-    public function getUsername()
+    public function getUsername(): ?string
     {
         return $this->getEmail();
     }

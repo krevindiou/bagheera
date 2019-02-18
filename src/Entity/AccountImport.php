@@ -102,7 +102,7 @@ class AccountImport
      *
      * @param int $importId
      */
-    public function setImportId($importId): void
+    public function setImportId(int $importId): void
     {
         $this->importId = $importId;
     }
@@ -112,7 +112,7 @@ class AccountImport
      *
      * @return int
      */
-    public function getImportId()
+    public function getImportId(): ?int
     {
         return $this->importId;
     }
@@ -132,7 +132,7 @@ class AccountImport
      *
      * @return App\Entity\Account
      */
-    public function getAccount()
+    public function getAccount(): ?Account
     {
         return $this->account;
     }
@@ -142,7 +142,7 @@ class AccountImport
      *
      * @param int $total
      */
-    public function setTotal($total): void
+    public function setTotal(int $total): void
     {
         $this->total = $total;
     }
@@ -152,7 +152,7 @@ class AccountImport
      *
      * @return int
      */
-    public function getTotal()
+    public function getTotal(): ?int
     {
         return $this->total;
     }
@@ -162,7 +162,7 @@ class AccountImport
      *
      * @param int $progress
      */
-    public function setProgress($progress): void
+    public function setProgress(int $progress): void
     {
         $this->progress = $progress;
     }
@@ -172,7 +172,7 @@ class AccountImport
      *
      * @return int
      */
-    public function getProgress()
+    public function getProgress(): ?int
     {
         return $this->progress;
     }
@@ -182,9 +182,9 @@ class AccountImport
      *
      * @param bool $finished
      */
-    public function setFinished($finished): void
+    public function setFinished(bool $finished): void
     {
-        $this->finished = (bool) $finished;
+        $this->finished = $finished;
     }
 
     /**
@@ -192,7 +192,7 @@ class AccountImport
      *
      * @return bool
      */
-    public function isFinished()
+    public function isFinished(): ?bool
     {
         return $this->finished;
     }
@@ -202,7 +202,7 @@ class AccountImport
      *
      * @param string originalData
      */
-    public function setOriginalData($originalData): void
+    public function setOriginalData(string $originalData): void
     {
         $this->originalData = $originalData;
     }
@@ -212,7 +212,7 @@ class AccountImport
      *
      * @return string
      */
-    public function getOriginalData()
+    public function getOriginalData(): ?string
     {
         return $this->originalData;
     }
@@ -222,7 +222,7 @@ class AccountImport
      *
      * @param string jsonData
      */
-    public function setJsonData($jsonData): void
+    public function setJsonData(string $jsonData): void
     {
         $this->jsonData = $jsonData;
     }
@@ -232,7 +232,7 @@ class AccountImport
      *
      * @return string
      */
-    public function getJsonData()
+    public function getJsonData(): ?string
     {
         return $this->jsonData;
     }
@@ -242,7 +242,7 @@ class AccountImport
      *
      * @param string jsonNormalizedData
      */
-    public function setJsonNormalizedData($jsonNormalizedData): void
+    public function setJsonNormalizedData(string $jsonNormalizedData): void
     {
         $this->jsonNormalizedData = $jsonNormalizedData;
     }
@@ -252,7 +252,7 @@ class AccountImport
      *
      * @return string
      */
-    public function getJsonNormalizedData()
+    public function getJsonNormalizedData(): ?string
     {
         return $this->jsonNormalizedData;
     }
@@ -262,7 +262,7 @@ class AccountImport
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -272,7 +272,7 @@ class AccountImport
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -282,7 +282,7 @@ class AccountImport
      *
      * @return int
      */
-    public function getProgressPct()
+    public function getProgressPct(): int
     {
         $pct = 0;
 

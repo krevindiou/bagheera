@@ -79,7 +79,7 @@ class OperationController extends AbstractController
      * @ParamConverter("operation", class="App:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      */
-    public function formAction(Request $request, OperationService $operationService, Account $account = null, Operation $operation = null)
+    public function formAction(Request $request, OperationService $operationService, ?Account $account, ?Operation $operation)
     {
         $member = $this->getUser();
 

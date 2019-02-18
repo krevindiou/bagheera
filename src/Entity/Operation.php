@@ -165,7 +165,7 @@ class Operation
      *
      * @return int
      */
-    public function getOperationId()
+    public function getOperationId(): ?int
     {
         return $this->operationId;
     }
@@ -175,7 +175,7 @@ class Operation
      *
      * @param string $externalOperationId
      */
-    public function setExternalOperationId($externalOperationId): void
+    public function setExternalOperationId(string $externalOperationId): void
     {
         $this->externalOperationId = $externalOperationId;
     }
@@ -185,7 +185,7 @@ class Operation
      *
      * @return string
      */
-    public function getExternalOperationId()
+    public function getExternalOperationId(): ?string
     {
         return $this->externalOperationId;
     }
@@ -195,7 +195,7 @@ class Operation
      *
      * @param App\Entity\Account $transferAccount
      */
-    public function setTransferAccount(Account $transferAccount = null): void
+    public function setTransferAccount(?Account $transferAccount): void
     {
         $this->transferAccount = $transferAccount;
     }
@@ -205,7 +205,7 @@ class Operation
      *
      * @return App\Entity\Account
      */
-    public function getTransferAccount()
+    public function getTransferAccount(): ?Account
     {
         return $this->transferAccount;
     }
@@ -215,7 +215,7 @@ class Operation
      *
      * @param App\Entity\Operation $transferOperation
      */
-    public function setTransferOperation(self $transferOperation = null): void
+    public function setTransferOperation(?self $transferOperation): void
     {
         if (null !== $transferOperation) {
             if (null !== $transferOperation->getAccount()) {
@@ -233,7 +233,7 @@ class Operation
      *
      * @return App\Entity\Operation
      */
-    public function getTransferOperation()
+    public function getTransferOperation(): ?self
     {
         return $this->transferOperation;
     }
@@ -243,7 +243,7 @@ class Operation
      *
      * @param string $thirdParty
      */
-    public function setThirdParty($thirdParty): void
+    public function setThirdParty(string $thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
@@ -253,7 +253,7 @@ class Operation
      *
      * @return string
      */
-    public function getThirdParty()
+    public function getThirdParty(): ?string
     {
         return $this->thirdParty;
     }
@@ -313,7 +313,7 @@ class Operation
      *
      * @param DateTime $valueDate
      */
-    public function setValueDate(\DateTime $valueDate = null): void
+    public function setValueDate(?\DateTime $valueDate): void
     {
         $this->valueDate = $valueDate;
     }
@@ -323,7 +323,7 @@ class Operation
      *
      * @return DateTime
      */
-    public function getValueDate()
+    public function getValueDate(): ?\DateTime
     {
         return $this->valueDate;
     }
@@ -333,9 +333,9 @@ class Operation
      *
      * @param bool $reconciled
      */
-    public function setReconciled($reconciled): void
+    public function setReconciled(bool $reconciled): void
     {
-        $this->reconciled = (bool) $reconciled;
+        $this->reconciled = $reconciled;
     }
 
     /**
@@ -343,7 +343,7 @@ class Operation
      *
      * @return bool
      */
-    public function isReconciled()
+    public function isReconciled(): ?bool
     {
         return $this->reconciled;
     }
@@ -353,7 +353,7 @@ class Operation
      *
      * @param string $notes
      */
-    public function setNotes($notes): void
+    public function setNotes(string $notes): void
     {
         $this->notes = $notes;
     }
@@ -363,7 +363,7 @@ class Operation
      *
      * @return string
      */
-    public function getNotes()
+    public function getNotes(): ?string
     {
         return $this->notes;
     }
@@ -373,7 +373,7 @@ class Operation
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -383,7 +383,7 @@ class Operation
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -403,7 +403,7 @@ class Operation
      *
      * @return App\Entity\Account
      */
-    public function getAccount()
+    public function getAccount(): ?Account
     {
         return $this->account;
     }
@@ -413,7 +413,7 @@ class Operation
      *
      * @param App\Entity\Category $category
      */
-    public function setCategory(Category $category = null): void
+    public function setCategory(?Category $category): void
     {
         $this->category = $category;
     }
@@ -423,7 +423,7 @@ class Operation
      *
      * @return App\Entity\Category
      */
-    public function getCategory()
+    public function getCategory(): ?Category
     {
         return $this->category;
     }
@@ -433,7 +433,7 @@ class Operation
      *
      * @param App\Entity\PaymentMethod $paymentMethod
      */
-    public function setPaymentMethod(PaymentMethod $paymentMethod = null): void
+    public function setPaymentMethod(?PaymentMethod $paymentMethod): void
     {
         $this->paymentMethod = $paymentMethod;
     }
@@ -443,7 +443,7 @@ class Operation
      *
      * @return App\Entity\PaymentMethod
      */
-    public function getPaymentMethod()
+    public function getPaymentMethod(): ?PaymentMethod
     {
         return $this->paymentMethod;
     }
@@ -453,7 +453,7 @@ class Operation
      *
      * @param App\Entity\Scheduler $scheduler
      */
-    public function setScheduler(Scheduler $scheduler = null): void
+    public function setScheduler(?Scheduler $scheduler): void
     {
         $this->scheduler = $scheduler;
     }
@@ -463,7 +463,7 @@ class Operation
      *
      * @return App\Entity\Scheduler
      */
-    public function getScheduler()
+    public function getScheduler(): ?Scheduler
     {
         return $this->scheduler;
     }

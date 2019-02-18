@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -111,7 +112,7 @@ class Bank
         $this->accounts = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getName();
     }
@@ -121,7 +122,7 @@ class Bank
      *
      * @return int
      */
-    public function getBankId()
+    public function getBankId(): ?int
     {
         return $this->bankId;
     }
@@ -141,7 +142,7 @@ class Bank
      *
      * @return App\Entity\Member
      */
-    public function getMember()
+    public function getMember(): ?Member
     {
         return $this->member;
     }
@@ -151,7 +152,7 @@ class Bank
      *
      * @param App\Entity\Provider $provider
      */
-    public function setProvider(Provider $provider = null): void
+    public function setProvider(?Provider $provider): void
     {
         $this->provider = $provider;
     }
@@ -161,7 +162,7 @@ class Bank
      *
      * @return Provider
      */
-    public function getProvider()
+    public function getProvider(): ?Provider
     {
         return $this->provider;
     }
@@ -171,7 +172,7 @@ class Bank
      *
      * @param string $name
      */
-    public function setName($name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -181,7 +182,7 @@ class Bank
      *
      * @return string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -191,7 +192,7 @@ class Bank
      *
      * @param int $sortOrder
      */
-    public function setSortOrder($sortOrder): void
+    public function setSortOrder(int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;
     }
@@ -201,7 +202,7 @@ class Bank
      *
      * @return int
      */
-    public function getSortOrder()
+    public function getSortOrder(): ?int
     {
         return $this->sortOrder;
     }
@@ -211,9 +212,9 @@ class Bank
      *
      * @param bool $favorite
      */
-    public function setFavorite($favorite): void
+    public function setFavorite(bool $favorite): void
     {
-        $this->favorite = (bool) $favorite;
+        $this->favorite = $favorite;
     }
 
     /**
@@ -221,7 +222,7 @@ class Bank
      *
      * @return bool
      */
-    public function isFavorite()
+    public function isFavorite(): ?bool
     {
         return $this->favorite;
     }
@@ -231,9 +232,9 @@ class Bank
      *
      * @param bool $closed
      */
-    public function setClosed($closed): void
+    public function setClosed(bool $closed): void
     {
-        $this->closed = (bool) $closed;
+        $this->closed = $closed;
     }
 
     /**
@@ -241,7 +242,7 @@ class Bank
      *
      * @return bool
      */
-    public function isClosed()
+    public function isClosed(): ?bool
     {
         return $this->closed;
     }
@@ -251,9 +252,9 @@ class Bank
      *
      * @param bool $deleted
      */
-    public function setDeleted($deleted): void
+    public function setDeleted(bool $deleted): void
     {
-        $this->deleted = (bool) $deleted;
+        $this->deleted = $deleted;
     }
 
     /**
@@ -261,12 +262,12 @@ class Bank
      *
      * @return bool
      */
-    public function isDeleted()
+    public function isDeleted(): ?bool
     {
         return $this->deleted;
     }
 
-    public function isActive()
+    public function isActive(): bool
     {
         return !$this->isDeleted() && !$this->isClosed();
     }
@@ -276,7 +277,7 @@ class Bank
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -286,7 +287,7 @@ class Bank
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -296,12 +297,12 @@ class Bank
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getAccounts()
+    public function getAccounts(): Collection
     {
         return $this->accounts;
     }
 
-    public function isManual()
+    public function isManual(): bool
     {
         return null === $this->getProvider();
     }

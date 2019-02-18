@@ -97,9 +97,8 @@ final class MemberServiceTest extends TestCase
     {
         $key = 'badkeybadkeybadkeybadkeybadkeyba';
 
-        $ok = $this->get('test.app.member')->activate($key);
-
-        $this->assertFalse($ok);
+        $this->expectException(\Exception::class);
+        $this->get('test.app.member')->activate($key);
     }
 
     public function testActivateOk(): void

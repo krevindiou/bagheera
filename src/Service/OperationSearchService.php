@@ -10,6 +10,7 @@ use App\Entity\OperationSearch;
 use App\Form\Type\OperationSearchFormType;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -38,13 +39,13 @@ class OperationSearchService
      *
      * @return Form
      */
-    public function getForm(Member $member, OperationSearch $operationSearch = null, Account $account = null)
+    public function getForm(Member $member, OperationSearch $operationSearch = null, Account $account = null): ?Form
     {
         if (null === $operationSearch && null !== $account) {
             $operationSearch = new OperationSearch();
             $operationSearch->setAccount($account);
         } elseif (null !== $operationSearch && $member !== $operationSearch->getAccount()->getBank()->getMember()) {
-            return;
+            return null;
         }
 
         return $this->formFactory->create(OperationSearchFormType::class, $operationSearch);
@@ -57,7 +58,7 @@ class OperationSearchService
      *
      * @return OperationSearch
      */
-    public function getSessionSearch(Account $account)
+    public function getSessionSearch(Account $account): ?OperationSearch
     {
         $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
@@ -133,10 +134,19 @@ class OperationSearchService
             }
 
             $operationSearch->setNotes($sessionSearch[$account->getAccountId()]['notes']);
-            $operationSearch->setReconciled($sessionSearch[$account->getAccountId()]['reconciled']);
+
+            $isReconciled = null;
+            if ('1' === $sessionSearch[$account->getAccountId()]['reconciled']) {
+                $isReconciled = true;
+            } elseif ('0' === $sessionSearch[$account->getAccountId()]['reconciled']) {
+                $isReconciled = false;
+            }
+            $operationSearch->setReconciled($isReconciled);
 
             return $operationSearch;
         }
+
+        return null;
     }
 
     /**

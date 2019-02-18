@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -85,7 +86,7 @@ class Category
         $this->subCategories = new ArrayCollection();
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $str = $this->getName();
 
@@ -102,7 +103,7 @@ class Category
      *
      * @return smallint
      */
-    public function getCategoryId()
+    public function getCategoryId(): ?int
     {
         return $this->categoryId;
     }
@@ -112,7 +113,7 @@ class Category
      *
      * @param string $type
      */
-    public function setType($type): void
+    public function setType(string $type): void
     {
         $this->type = $type;
     }
@@ -122,7 +123,7 @@ class Category
      *
      * @return string
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -132,7 +133,7 @@ class Category
      *
      * @param string $name
      */
-    public function setName($name): void
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -142,7 +143,7 @@ class Category
      *
      * @return string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -152,9 +153,9 @@ class Category
      *
      * @param bool $active
      */
-    public function setActive($active): void
+    public function setActive(bool $active): void
     {
-        $this->active = (bool) $active;
+        $this->active = $active;
     }
 
     /**
@@ -162,7 +163,7 @@ class Category
      *
      * @return bool
      */
-    public function isActive()
+    public function isActive(): ?bool
     {
         return $this->active;
     }
@@ -172,7 +173,7 @@ class Category
      *
      * @return DateTime
      */
-    public function getCreatedAt()
+    public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
@@ -182,7 +183,7 @@ class Category
      *
      * @return DateTime
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
@@ -202,7 +203,7 @@ class Category
      *
      * @return App\Entity\Category
      */
-    public function getParentCategory()
+    public function getParentCategory(): ?self
     {
         return $this->parentCategory;
     }
@@ -212,7 +213,7 @@ class Category
      *
      * @return Doctrine\Common\Collections\Collection
      */
-    public function getSubCategories()
+    public function getSubCategories(): Collection
     {
         return $this->subCategories;
     }

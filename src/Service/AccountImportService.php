@@ -24,7 +24,7 @@ class AccountImportService
      *
      * @return AccountImport
      */
-    public function getCurrentImport(Account $account)
+    public function getCurrentImport(Account $account): AccountImport
     {
         return $this->em->getRepository('App:AccountImport')->findOneBy(
             [
@@ -61,7 +61,7 @@ class AccountImportService
      * @param Account $account  Account entity
      * @param int     $progress Current progress
      */
-    public function updateImport(Account $account, $progress): void
+    public function updateImport(Account $account, int $progress): void
     {
         $accountImport = $this->getCurrentImport($account);
 
@@ -95,7 +95,7 @@ class AccountImportService
      * @param string  $data    Data to save
      * @param string  $type    Either original, json or json_normalized
      */
-    public function setData(Account $account, $data, $type): void
+    public function setData(Account $account, string $data, string $type): void
     {
         $accountImport = $this->getCurrentImport($account);
 
@@ -126,7 +126,7 @@ class AccountImportService
      *
      * @return int
      */
-    protected function getNextImportId(Account $account)
+    protected function getNextImportId(Account $account): int
     {
         $dql = 'SELECT MAX(i.importId) ';
         $dql .= 'FROM App:AccountImport i ';

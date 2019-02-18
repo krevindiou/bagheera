@@ -65,9 +65,9 @@ class ProviderAdapter
      *
      * @see ProviderInterface::connect()
      */
-    public function connect()
+    public function connect(): void
     {
-        return $this->providerService->connect();
+        $this->providerService->connect();
     }
 
     /**
@@ -75,12 +75,12 @@ class ProviderAdapter
      *
      * @see ProviderInterface::fetchAccounts()
      */
-    public function fetchAccounts()
+    public function fetchAccounts(): array
     {
         try {
             $this->connect();
         } catch (\RuntimeException $e) {
-            return;
+            return [];
         }
 
         return $this->providerService->fetchAccounts();
@@ -91,12 +91,12 @@ class ProviderAdapter
      *
      * @see ProviderInterface::fetchTransactions()
      */
-    public function fetchTransactions(Account $account)
+    public function fetchTransactions(Account $account): array
     {
         try {
             $this->connect();
         } catch (\RuntimeException $e) {
-            return;
+            return [];
         }
 
         $data = $this->providerService->fetchTransactions($account);
@@ -117,7 +117,7 @@ class ProviderAdapter
      *
      * @see ProviderInterface::normalizeData()
      */
-    protected function normalizeData(Account $account, array $data)
+    protected function normalizeData(Account $account, array $data): array
     {
         return $this->providerService->normalizeData($account, $data);
     }
