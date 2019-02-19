@@ -79,7 +79,7 @@ class MemberController extends AbstractController
     }
 
     /**
-     * @Route("/change-password/{key}", name="member_change_password_public")
+     * @Route("/change-password/{key}", name="member_change_password_public", requirements={"key" = ".+"})
      */
     public function changePasswordPublicAction(Request $request, MemberService $memberService, $key)
     {
