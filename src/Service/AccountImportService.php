@@ -19,10 +19,6 @@ class AccountImportService
 
     /**
      * Returns current import.
-     *
-     * @param Account $account Account entity
-     *
-     * @return AccountImport
      */
     public function getCurrentImport(Account $account): AccountImport
     {
@@ -36,9 +32,6 @@ class AccountImportService
 
     /**
      * Init import progress data.
-     *
-     * @param Account $account Account entity
-     * @param int     $total   Total
      */
     public function initImport(Account $account): void
     {
@@ -57,9 +50,6 @@ class AccountImportService
 
     /**
      * Updates import progress data.
-     *
-     * @param Account $account  Account entity
-     * @param int     $progress Current progress
      */
     public function updateImport(Account $account, int $progress): void
     {
@@ -74,8 +64,6 @@ class AccountImportService
 
     /**
      * Closes import progress data.
-     *
-     * @param Account $account Account entity
      */
     public function closeImport(Account $account): void
     {
@@ -121,10 +109,6 @@ class AccountImportService
 
     /**
      * Returns next import id to be used.
-     *
-     * @param Account $account Account entity
-     *
-     * @return int
      */
     protected function getNextImportId(Account $account): int
     {

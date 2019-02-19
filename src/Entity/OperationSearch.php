@@ -164,311 +164,156 @@ class OperationSearch
         $this->paymentMethods = new ArrayCollection();
     }
 
-    /**
-     * Get operationSearchId.
-     *
-     * @return int
-     */
     public function getOperationSearchId(): ?int
     {
         return $this->operationSearchId;
     }
 
-    /**
-     * Set account.
-     *
-     * @param App\Entity\Account $account
-     */
     public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
 
-    /**
-     * Get account.
-     *
-     * @return App\Entity\Account
-     */
     public function getAccount(): ?Account
     {
         return $this->account;
     }
 
-    /**
-     * Set categories.
-     *
-     * @param Doctrine\Common\Collections\Collection $categories
-     */
     public function setCategories(Collection $categories): void
     {
         $this->categories = $categories;
     }
 
-    /**
-     * Get categories.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getCategories(): Collection
     {
         return $this->categories;
     }
 
-    /**
-     * Set paymentMethods.
-     *
-     * @param Doctrine\Common\Collections\Collection $paymentMethods
-     */
     public function setPaymentMethods(Collection $paymentMethods): void
     {
         $this->paymentMethods = $paymentMethods;
     }
 
-    /**
-     * Get paymentMethods.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getPaymentMethods(): Collection
     {
         return $this->paymentMethods;
     }
 
-    /**
-     * Set thirdParty.
-     *
-     * @param string $thirdParty
-     */
     public function setThirdParty(?string $thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
 
-    /**
-     * Get thirdParty.
-     *
-     * @return string
-     */
     public function getThirdParty(): ?string
     {
         return $this->thirdParty;
     }
 
-    /**
-     * Set notes.
-     *
-     * @param string $notes
-     */
     public function setNotes(?string $notes): void
     {
         $this->notes = $notes;
     }
 
-    /**
-     * Get notes.
-     *
-     * @return string
-     */
     public function getNotes(): ?string
     {
         return $this->notes;
     }
 
-    /**
-     * Set valueDateStart.
-     *
-     * @param DateTime $valueDateStart
-     */
     public function setValueDateStart(?\DateTime $valueDateStart): void
     {
         $this->valueDateStart = $valueDateStart;
     }
 
-    /**
-     * Get valueDateStart.
-     *
-     * @return DateTime
-     */
     public function getValueDateStart(): ?\DateTime
     {
         return $this->valueDateStart;
     }
 
-    /**
-     * Set valueDateEnd.
-     *
-     * @param DateTime $valueDateEnd
-     */
     public function setValueDateEnd(?\DateTime $valueDateEnd): void
     {
         $this->valueDateEnd = $valueDateEnd;
     }
 
-    /**
-     * Get valueDateEnd.
-     *
-     * @return DateTime
-     */
     public function getValueDateEnd(): ?\DateTime
     {
         return $this->valueDateEnd;
     }
 
-    /**
-     * Set reconciled.
-     *
-     * @param bool $reconciled
-     */
     public function setReconciled(?bool $reconciled): void
     {
         $this->reconciled = $reconciled;
     }
 
-    /**
-     * Get reconciled.
-     *
-     * @return bool
-     */
     public function isReconciled(): ?bool
     {
         return $this->reconciled;
     }
 
-    /**
-     * Set type.
-     *
-     * @param string $type
-     */
     public function setType(string $type): void
     {
         $this->type = $type;
     }
 
-    /**
-     * Get type.
-     *
-     * @return string
-     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * Set amountInferiorTo.
-     *
-     * @param decimal $amountInferiorTo
-     */
     public function setAmountInferiorTo($amountInferiorTo): void
     {
         $this->amountInferiorTo = $amountInferiorTo;
     }
 
-    /**
-     * Get amountInferiorTo.
-     *
-     * @return decimal
-     */
     public function getAmountInferiorTo(): ?string
     {
         return $this->amountInferiorTo;
     }
 
-    /**
-     * Set amountInferiorOrEqualTo.
-     *
-     * @param decimal $amountInferiorOrEqualTo
-     */
     public function setAmountInferiorOrEqualTo($amountInferiorOrEqualTo): void
     {
         $this->amountInferiorOrEqualTo = $amountInferiorOrEqualTo;
     }
 
-    /**
-     * Get amountInferiorOrEqualTo.
-     *
-     * @return decimal
-     */
     public function getAmountInferiorOrEqualTo(): ?string
     {
         return $this->amountInferiorOrEqualTo;
     }
 
-    /**
-     * Set amountEqualTo.
-     *
-     * @param decimal $amountEqualTo
-     */
     public function setAmountEqualTo($amountEqualTo): void
     {
         $this->amountEqualTo = $amountEqualTo;
     }
 
-    /**
-     * Get amountEqualTo.
-     *
-     * @return decimal
-     */
     public function getAmountEqualTo(): ?string
     {
         return $this->amountEqualTo;
     }
 
-    /**
-     * Set amountSuperiorOrEqualTo.
-     *
-     * @param decimal $amountSuperiorOrEqualTo
-     */
     public function setAmountSuperiorOrEqualTo($amountSuperiorOrEqualTo): void
     {
         $this->amountSuperiorOrEqualTo = $amountSuperiorOrEqualTo;
     }
 
-    /**
-     * Get amountSuperiorOrEqualTo.
-     *
-     * @return decimal
-     */
     public function getAmountSuperiorOrEqualTo(): ?string
     {
         return $this->amountSuperiorOrEqualTo;
     }
 
-    /**
-     * Set amountSuperiorTo.
-     *
-     * @param decimal $amountSuperiorTo
-     */
     public function setAmountSuperiorTo($amountSuperiorTo): void
     {
         $this->amountSuperiorTo = $amountSuperiorTo;
     }
 
-    /**
-     * Get amountSuperiorTo.
-     *
-     * @return decimal
-     */
     public function getAmountSuperiorTo(): ?string
     {
         return $this->amountSuperiorTo;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;

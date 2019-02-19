@@ -98,121 +98,61 @@ class Category
         return $str;
     }
 
-    /**
-     * Get categoryId.
-     *
-     * @return smallint
-     */
     public function getCategoryId(): ?int
     {
         return $this->categoryId;
     }
 
-    /**
-     * Set type.
-     *
-     * @param string $type
-     */
     public function setType(string $type): void
     {
         $this->type = $type;
     }
 
-    /**
-     * Get type.
-     *
-     * @return string
-     */
     public function getType(): ?string
     {
         return $this->type;
     }
 
-    /**
-     * Set name.
-     *
-     * @param string $name
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * Get name.
-     *
-     * @return string
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Set active.
-     *
-     * @param bool $active
-     */
     public function setActive(bool $active): void
     {
         $this->active = $active;
     }
 
-    /**
-     * Get active.
-     *
-     * @return bool
-     */
     public function isActive(): ?bool
     {
         return $this->active;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Set parentCategory.
-     *
-     * @param App\Entity\Category $parentCategory
-     */
     public function setParentCategory(self $parentCategory): void
     {
         $this->parentCategory = $parentCategory;
     }
 
-    /**
-     * Get parentCategory.
-     *
-     * @return App\Entity\Category
-     */
     public function getParentCategory(): ?self
     {
         return $this->parentCategory;
     }
 
-    /**
-     * Get subCategories.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getSubCategories(): Collection
     {
         return $this->subCategories;

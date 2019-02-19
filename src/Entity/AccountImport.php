@@ -97,191 +97,96 @@ class AccountImport
      */
     protected $updatedAt;
 
-    /**
-     * Set importId.
-     *
-     * @param int $importId
-     */
     public function setImportId(int $importId): void
     {
         $this->importId = $importId;
     }
 
-    /**
-     * Get importId.
-     *
-     * @return int
-     */
     public function getImportId(): ?int
     {
         return $this->importId;
     }
 
-    /**
-     * Set account.
-     *
-     * @param App\Entity\Account $account
-     */
     public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
 
-    /**
-     * Get account.
-     *
-     * @return App\Entity\Account
-     */
     public function getAccount(): ?Account
     {
         return $this->account;
     }
 
-    /**
-     * Set total.
-     *
-     * @param int $total
-     */
     public function setTotal(int $total): void
     {
         $this->total = $total;
     }
 
-    /**
-     * Get total.
-     *
-     * @return int
-     */
     public function getTotal(): ?int
     {
         return $this->total;
     }
 
-    /**
-     * Set progress.
-     *
-     * @param int $progress
-     */
     public function setProgress(int $progress): void
     {
         $this->progress = $progress;
     }
 
-    /**
-     * Get progress.
-     *
-     * @return int
-     */
     public function getProgress(): ?int
     {
         return $this->progress;
     }
 
-    /**
-     * Set finished.
-     *
-     * @param bool $finished
-     */
     public function setFinished(bool $finished): void
     {
         $this->finished = $finished;
     }
 
-    /**
-     * Get finished.
-     *
-     * @return bool
-     */
     public function isFinished(): ?bool
     {
         return $this->finished;
     }
 
-    /**
-     * Set originalData.
-     *
-     * @param string originalData
-     */
     public function setOriginalData(string $originalData): void
     {
         $this->originalData = $originalData;
     }
 
-    /**
-     * Get originalData.
-     *
-     * @return string
-     */
     public function getOriginalData(): ?string
     {
         return $this->originalData;
     }
 
-    /**
-     * Set jsonData.
-     *
-     * @param string jsonData
-     */
     public function setJsonData(string $jsonData): void
     {
         $this->jsonData = $jsonData;
     }
 
-    /**
-     * Get jsonData.
-     *
-     * @return string
-     */
     public function getJsonData(): ?string
     {
         return $this->jsonData;
     }
 
-    /**
-     * Set jsonNormalizedData.
-     *
-     * @param string jsonNormalizedData
-     */
     public function setJsonNormalizedData(string $jsonNormalizedData): void
     {
         $this->jsonNormalizedData = $jsonNormalizedData;
     }
 
-    /**
-     * Get jsonNormalizedData.
-     *
-     * @return string
-     */
     public function getJsonNormalizedData(): ?string
     {
         return $this->jsonNormalizedData;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Returns current import progress.
-     *
-     * @return int
-     */
     public function getProgressPct(): int
     {
         $pct = 0;

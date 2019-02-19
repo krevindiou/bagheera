@@ -112,202 +112,105 @@ class Member implements UserInterface
         $this->reports = new ArrayCollection();
     }
 
-    /**
-     * Get memberId.
-     *
-     * @return int
-     */
     public function getMemberId(): ?int
     {
         return $this->memberId;
     }
 
-    /**
-     * Set email.
-     *
-     * @param string $email
-     */
     public function setEmail(string $email): void
     {
         $this->email = $email;
     }
 
-    /**
-     * Get email.
-     *
-     * @return string
-     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
-    /**
-     * Set password.
-     *
-     * @param string $password
-     */
     public function setPassword(string $password): void
     {
         $this->password = $password;
     }
 
-    /**
-     * Get password.
-     *
-     * @return string
-     */
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    /**
-     * Set plainPassword.
-     *
-     * @param string $plainPassword
-     */
     public function setPlainPassword(?string $plainPassword): void
     {
         $this->plainPassword = $plainPassword;
     }
 
-    /**
-     * Get plainPassword.
-     *
-     * @return string
-     */
     public function getPlainPassword(): ?string
     {
         return $this->plainPassword;
     }
 
-    /**
-     * Set country.
-     *
-     * @param string $country
-     */
     public function setCountry(string $country): void
     {
         $this->country = $country;
     }
 
-    /**
-     * Get country.
-     *
-     * @return string
-     */
     public function getCountry(): ?string
     {
         return $this->country;
     }
 
-    /**
-     * Set active.
-     *
-     * @param bool $active
-     */
     public function setActive(bool $active): void
     {
         $this->active = (bool) $active;
     }
 
-    /**
-     * Get active.
-     *
-     * @return bool
-     */
     public function isActive(): ?bool
     {
         return $this->active;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Set loggedAt.
-     *
-     * @param DateTime $loggedAt
-     */
     public function setLoggedAt(\DateTime $loggedAt): void
     {
         $this->loggedAt = $loggedAt;
     }
 
-    /**
-     * Get loggedAt.
-     *
-     * @return DateTime
-     */
     public function getLoggedAt(): ?\DateTime
     {
         return $this->loggedAt;
     }
 
-    /**
-     * Get member banks.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getBanks(): Collection
     {
         return $this->banks;
     }
 
-    /**
-     * Get member reports.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getReports(): Collection
     {
         return $this->reports;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getRoles(): array
     {
         return ['ROLE_USER'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSalt(): void
     {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername(): ?string
     {
         return $this->getEmail();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function eraseCredentials(): void
     {
         $this->setPlainPassword(null);

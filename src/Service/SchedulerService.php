@@ -42,11 +42,6 @@ class SchedulerService
 
     /**
      * Returns schedulers list.
-     *
-     * @param Account $account     Account entity
-     * @param int     $currentPage Page number
-     *
-     * @return Pagerfanta
      */
     public function getList(Account $account, int $currentPage = 1): Pagerfanta
     {
@@ -58,8 +53,6 @@ class SchedulerService
      *
      * @param Scheduler $scheduler Scheduler entity
      * @param Account   $account   Account entity for new scheduler
-     *
-     * @return Form
      */
     public function getForm(Scheduler $scheduler = null, Account $account = null): ?Form
     {
@@ -77,10 +70,6 @@ class SchedulerService
 
     /**
      * Saves scheduler.
-     *
-     * @param Scheduler $scheduler Scheduler entity
-     *
-     * @return bool
      */
     public function save(Scheduler $scheduler): bool
     {
@@ -95,10 +84,6 @@ class SchedulerService
 
     /**
      * Saves scheduler form.
-     *
-     * @param Form $form Scheduler form
-     *
-     * @return bool
      */
     public function saveForm(Form $form): bool
     {
@@ -111,10 +96,6 @@ class SchedulerService
 
     /**
      * Deletes scheduler.
-     *
-     * @param Scheduler $scheduler Scheduler entity
-     *
-     * @return bool
      */
     public function delete(Scheduler $scheduler): bool
     {
@@ -132,11 +113,6 @@ class SchedulerService
 
     /**
      * Executes schedulers for specified member.
-     *
-     * @param Member   $member Member entity
-     * @param DateTime $now    DateTime object
-     *
-     * @return bool
      */
     public function runSchedulers(Member $member, \DateTime $now = null): void
     {
@@ -203,10 +179,6 @@ class SchedulerService
 
     /**
      * Saves scheduler.
-     *
-     * @param Scheduler $scheduler Scheduler entity
-     *
-     * @return bool
      */
     protected function doSave(Scheduler $scheduler): bool
     {

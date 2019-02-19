@@ -35,8 +35,6 @@ class OperationSearchService
      * @param Member          $member          Member entity
      * @param OperationSearch $operationSearch OperationSearch entity
      * @param Account         $account         Account entity for new operationSearch
-     *
-     * @return Form
      */
     public function getForm(Member $member, OperationSearch $operationSearch = null, Account $account = null): ?Form
     {
@@ -52,10 +50,6 @@ class OperationSearchService
 
     /**
      * Gets operationSearch from session.
-     *
-     * @param Account $account Account entity
-     *
-     * @return OperationSearch
      */
     public function getSessionSearch(Account $account): ?OperationSearch
     {
@@ -142,9 +136,6 @@ class OperationSearchService
 
     /**
      * Sets operationSearch from session.
-     *
-     * @param Account $account Account entity
-     * @param array   $search  Search param
      */
     public function setSessionSearch(Account $account, array $search): void
     {
@@ -157,8 +148,6 @@ class OperationSearchService
 
     /**
      * Clears operationSearch from session.
-     *
-     * @param Account $account Account entity
      */
     public function clearSessionSearch(Account $account): void
     {

@@ -117,151 +117,76 @@ class Bank
         return $this->getName();
     }
 
-    /**
-     * Get bankId.
-     *
-     * @return int
-     */
     public function getBankId(): ?int
     {
         return $this->bankId;
     }
 
-    /**
-     * Set member.
-     *
-     * @param App\Entity\Member $member
-     */
     public function setMember(Member $member): void
     {
         $this->member = $member;
     }
 
-    /**
-     * Get member.
-     *
-     * @return App\Entity\Member
-     */
     public function getMember(): ?Member
     {
         return $this->member;
     }
 
-    /**
-     * Set provider.
-     *
-     * @param App\Entity\Provider $provider
-     */
     public function setProvider(?Provider $provider): void
     {
         $this->provider = $provider;
     }
 
-    /**
-     * Get provider.
-     *
-     * @return Provider
-     */
     public function getProvider(): ?Provider
     {
         return $this->provider;
     }
 
-    /**
-     * Set name.
-     *
-     * @param string $name
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * Get name.
-     *
-     * @return string
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Set sortOrder.
-     *
-     * @param int $sortOrder
-     */
     public function setSortOrder(int $sortOrder): void
     {
         $this->sortOrder = $sortOrder;
     }
 
-    /**
-     * Get sortOrder.
-     *
-     * @return int
-     */
     public function getSortOrder(): ?int
     {
         return $this->sortOrder;
     }
 
-    /**
-     * Set favorite.
-     *
-     * @param bool $favorite
-     */
     public function setFavorite(bool $favorite): void
     {
         $this->favorite = $favorite;
     }
 
-    /**
-     * Get favorite.
-     *
-     * @return bool
-     */
     public function isFavorite(): ?bool
     {
         return $this->favorite;
     }
 
-    /**
-     * Set closed.
-     *
-     * @param bool $closed
-     */
     public function setClosed(bool $closed): void
     {
         $this->closed = $closed;
     }
 
-    /**
-     * Get closed.
-     *
-     * @return bool
-     */
     public function isClosed(): ?bool
     {
         return $this->closed;
     }
 
-    /**
-     * Set deleted.
-     *
-     * @param bool $deleted
-     */
     public function setDeleted(bool $deleted): void
     {
         $this->deleted = $deleted;
     }
 
-    /**
-     * Get deleted.
-     *
-     * @return bool
-     */
     public function isDeleted(): ?bool
     {
         return $this->deleted;
@@ -272,31 +197,16 @@ class Bank
         return !$this->isDeleted() && !$this->isClosed();
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Get member accounts.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getAccounts(): Collection
     {
         return $this->accounts;

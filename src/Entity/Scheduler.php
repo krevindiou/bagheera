@@ -159,321 +159,161 @@ class Scheduler
      */
     protected $updatedAt;
 
-    /**
-     * Get schedulerId.
-     *
-     * @return int
-     */
     public function getSchedulerId(): ?int
     {
         return $this->schedulerId;
     }
 
-    /**
-     * Set thirdParty.
-     *
-     * @param string $thirdParty
-     */
     public function setThirdParty(string $thirdParty): void
     {
         $this->thirdParty = $thirdParty;
     }
 
-    /**
-     * Get thirdParty.
-     *
-     * @return string
-     */
     public function getThirdParty(): ?string
     {
         return $this->thirdParty;
     }
 
-    /**
-     * Set debit.
-     *
-     * @param float $debit
-     */
     public function setDebit($debit = null): void
     {
         $this->debit = $debit;
     }
 
-    /**
-     * Get debit.
-     *
-     * @return float
-     */
     public function getDebit()
     {
         return $this->debit;
     }
 
-    /**
-     * Set credit.
-     *
-     * @param float $credit
-     */
     public function setCredit($credit = null): void
     {
         $this->credit = $credit;
     }
 
-    /**
-     * Get credit.
-     *
-     * @return float
-     */
     public function getCredit()
     {
         return $this->credit;
     }
 
-    /**
-     * Get credit or debit.
-     *
-     * @return float
-     */
     public function getAmount()
     {
         return (0 != $this->credit) ? $this->credit : -$this->debit;
     }
 
-    /**
-     * Set valueDate.
-     *
-     * @param DateTime $valueDate
-     */
     public function setValueDate(?\DateTime $valueDate): void
     {
         $this->valueDate = $valueDate;
     }
 
-    /**
-     * Get valueDate.
-     *
-     * @return DateTime
-     */
     public function getValueDate(): ?\DateTime
     {
         return $this->valueDate;
     }
 
-    /**
-     * Set limitDate.
-     *
-     * @param DateTime $limitDate
-     */
     public function setLimitDate(?\DateTime $limitDate): void
     {
         $this->limitDate = $limitDate;
     }
 
-    /**
-     * Get limitDate.
-     *
-     * @return DateTime
-     */
     public function getLimitDate(): ?\DateTime
     {
         return $this->limitDate;
     }
 
-    /**
-     * Set reconciled.
-     *
-     * @param bool $reconciled
-     */
     public function setReconciled(bool $reconciled): void
     {
         $this->reconciled = $reconciled;
     }
 
-    /**
-     * Get reconciled.
-     *
-     * @return bool
-     */
     public function isReconciled(): ?bool
     {
         return $this->reconciled;
     }
 
-    /**
-     * Set notes.
-     *
-     * @param string $notes
-     */
     public function setNotes(string $notes): void
     {
         $this->notes = $notes;
     }
 
-    /**
-     * Get notes.
-     *
-     * @return string
-     */
     public function getNotes(): ?string
     {
         return $this->notes;
     }
 
-    /**
-     * Set frequencyUnit.
-     *
-     * @param string $frequencyUnit
-     */
     public function setFrequencyUnit(string $frequencyUnit): void
     {
         $this->frequencyUnit = $frequencyUnit;
     }
 
-    /**
-     * Get frequencyUnit.
-     *
-     * @return string
-     */
     public function getFrequencyUnit(): ?string
     {
         return $this->frequencyUnit;
     }
 
-    /**
-     * Set frequencyValue.
-     *
-     * @param int $frequencyValue
-     */
     public function setFrequencyValue(int $frequencyValue): void
     {
         $this->frequencyValue = $frequencyValue;
     }
 
-    /**
-     * Get frequencyValue.
-     *
-     * @return int
-     */
     public function getFrequencyValue(): ?int
     {
         return $this->frequencyValue;
     }
 
-    /**
-     * Set active.
-     *
-     * @param bool $active
-     */
     public function setActive(bool $active): void
     {
         $this->active = $active;
     }
 
-    /**
-     * Get active.
-     *
-     * @return bool
-     */
     public function isActive(): ?bool
     {
         return $this->active;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Set account.
-     *
-     * @param App\Entity\Account $account
-     */
     public function setAccount(Account $account): void
     {
         $this->account = $account;
     }
 
-    /**
-     * Get account.
-     *
-     * @return App\Entity\Account
-     */
     public function getAccount(): ?Account
     {
         return $this->account;
     }
 
-    /**
-     * Set transferAccount.
-     *
-     * @param App\Entity\Account $transferAccount
-     */
     public function setTransferAccount(?Account $transferAccount): void
     {
         $this->transferAccount = $transferAccount;
     }
 
-    /**
-     * Get transferAccount.
-     *
-     * @return App\Entity\Account
-     */
     public function getTransferAccount(): ?Account
     {
         return $this->transferAccount;
     }
 
-    /**
-     * Set category.
-     *
-     * @param App\Entity\Category $category
-     */
     public function setCategory(?Category $category): void
     {
         $this->category = $category;
     }
 
-    /**
-     * Get category.
-     *
-     * @return App\Entity\Category
-     */
     public function getCategory(): ?Category
     {
         return $this->category;
     }
 
-    /**
-     * Set paymentMethod.
-     *
-     * @param App\Entity\PaymentMethod $paymentMethod
-     */
     public function setPaymentMethod(?PaymentMethod $paymentMethod): void
     {
         $this->paymentMethod = $paymentMethod;
     }
 
-    /**
-     * Get paymentMethod.
-     *
-     * @return App\Entity\PaymentMethod
-     */
     public function getPaymentMethod(): ?PaymentMethod
     {
         return $this->paymentMethod;

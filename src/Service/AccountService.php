@@ -45,12 +45,6 @@ class AccountService
 
     /**
      * Returns accounts list.
-     *
-     * @param Member $member  Member entity
-     * @param Bank   $bank    Bank entity
-     * @param bool   $deleted Return deleted items
-     *
-     * @return array
      */
     public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection
     {
@@ -59,11 +53,6 @@ class AccountService
 
     /**
      * Returns account form for a new account.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return Form
      */
     public function getCreateForm(Member $member, Bank $bank = null): ?Form
     {
@@ -81,11 +70,6 @@ class AccountService
 
     /**
      * Returns account form for an existing account.
-     *
-     * @param Member  $member  Member entity
-     * @param Account $account Account entity
-     *
-     * @return Form
      */
     public function getUpdateForm(Member $member, Account $account): ?Form
     {
@@ -98,11 +82,6 @@ class AccountService
 
     /**
      * Saves account.
-     *
-     * @param Member  $member  Member entity
-     * @param Account $account Account entity
-     *
-     * @return bool
      */
     public function save(Member $member, Account $account): bool
     {
@@ -117,11 +96,6 @@ class AccountService
 
     /**
      * Saves account form.
-     *
-     * @param Member $member Member entity
-     * @param Form   $form   Account form
-     *
-     * @return bool
      */
     public function saveForm(Member $member, Form $form): bool
     {
@@ -152,11 +126,6 @@ class AccountService
 
     /**
      * Closes accounts.
-     *
-     * @param Member $member     Member entity
-     * @param array  $accountsId Accounts id to close
-     *
-     * @return bool
      */
     public function close(Member $member, array $accountsId): bool
     {
@@ -183,11 +152,6 @@ class AccountService
 
     /**
      * Deletes accounts.
-     *
-     * @param Member $member     Member entity
-     * @param array  $accountsId Accounts id to delete
-     *
-     * @return bool
      */
     public function delete(Member $member, array $accountsId): bool
     {
@@ -214,12 +178,6 @@ class AccountService
 
     /**
      * Gets account balance.
-     *
-     * @param Member  $member         Member entity
-     * @param Account $account        Account entity
-     * @param bool    $reconciledOnly Only consider reconciled operations
-     *
-     * @return float
      */
     public function getBalance(Member $member, Account $account, bool $reconciledOnly = false): string
     {
@@ -233,11 +191,6 @@ class AccountService
 
     /**
      * Saves multiple accounts.
-     *
-     * @param Bank  $bank     Bank entity
-     * @param array $accounts Accounts data
-     *
-     * @return bool
      */
     public function saveMulti(Bank $bank, array $accounts): bool
     {
@@ -304,11 +257,6 @@ class AccountService
 
     /**
      * Saves account.
-     *
-     * @param Member  $member  Member entity
-     * @param Account $account Account entity
-     *
-     * @return bool
      */
     protected function doSave(Member $member, Account $account): bool
     {

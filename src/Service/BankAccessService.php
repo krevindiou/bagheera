@@ -47,11 +47,6 @@ class BankAccessService
 
     /**
      * Returns bank access form.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return Form
      */
     public function getForm(Member $member, Bank $bank): ?Form
     {
@@ -67,11 +62,6 @@ class BankAccessService
 
     /**
      * Saves bank access.
-     *
-     * @param Member     $member     Member entity
-     * @param BankAccess $bankAccess BankAccess entity
-     *
-     * @return bool
      */
     public function save(Member $member, BankAccess $bankAccess): bool
     {
@@ -86,11 +76,6 @@ class BankAccessService
 
     /**
      * Saves bank access form.
-     *
-     * @param Member $member Member entity
-     * @param Form   $form   BankAccess form
-     *
-     * @return bool
      */
     public function saveForm(Member $member, Form $form): bool
     {
@@ -103,11 +88,6 @@ class BankAccessService
 
     /**
      * Saves bank access.
-     *
-     * @param Member     $member     Member entity
-     * @param BankAccess $bankAccess BankAccess entity
-     *
-     * @return bool
      */
     protected function doSave(Member $member, BankAccess $bankAccess): bool
     {

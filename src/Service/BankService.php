@@ -46,11 +46,6 @@ class BankService
 
     /**
      * Returns banks list.
-     *
-     * @param Member $member     Member entity
-     * @param bool   $activeOnly Return active banks only
-     *
-     * @return array
      */
     public function getList(Member $member, bool $activeOnly = true): ArrayCollection
     {
@@ -59,11 +54,6 @@ class BankService
 
     /**
      * Returns bank form.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return Form
      */
     public function getForm(Member $member, Bank $bank = null): ?Form
     {
@@ -79,11 +69,6 @@ class BankService
 
     /**
      * Saves bank.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return bool
      */
     public function save(Member $member, Bank $bank): bool
     {
@@ -98,11 +83,6 @@ class BankService
 
     /**
      * Saves bank form.
-     *
-     * @param Member $member Member entity
-     * @param Form   $form   Bank form
-     *
-     * @return Bank
      */
     public function saveForm(Member $member, Form $form)
     {
@@ -142,11 +122,6 @@ class BankService
 
     /**
      * Closes banks.
-     *
-     * @param Member $member  Member entity
-     * @param array  $banksId Banks id to close
-     *
-     * @return bool
      */
     public function close(Member $member, array $banksId): bool
     {
@@ -173,11 +148,6 @@ class BankService
 
     /**
      * Deletes banks.
-     *
-     * @param Member $member  Member entity
-     * @param array  $banksId Banks id to delete
-     *
-     * @return bool
      */
     public function delete(Member $member, array $banksId): bool
     {
@@ -204,11 +174,6 @@ class BankService
 
     /**
      * Gets bank balances.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return array
      */
     public function getBalances(Member $member, Bank $bank): array
     {
@@ -234,8 +199,6 @@ class BankService
 
     /**
      * Retrieves external bank data.
-     *
-     * @param Bank $bank Bank entity
      */
     public function importExternalBank(Bank $bank): void
     {
@@ -267,11 +230,6 @@ class BankService
 
     /**
      * Saves bank.
-     *
-     * @param Member $member Member entity
-     * @param Bank   $bank   Bank entity
-     *
-     * @return bool
      */
     protected function doSave(Member $member, Bank $bank): bool
     {

@@ -151,211 +151,106 @@ class Account
         return $this->getBank()->getName().' - '.$this->getName();
     }
 
-    /**
-     * Get accountId.
-     *
-     * @return int
-     */
     public function getAccountId(): ?int
     {
         return $this->accountId;
     }
 
-    /**
-     * Set externalAccountId.
-     *
-     * @param string $externalAccountId
-     */
     public function setExternalAccountId(string $externalAccountId): void
     {
         $this->externalAccountId = $externalAccountId;
     }
 
-    /**
-     * Get externalAccountId.
-     *
-     * @return string
-     */
     public function getExternalAccountId(): ?string
     {
         return $this->externalAccountId;
     }
 
-    /**
-     * Set name.
-     *
-     * @param string $name
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * Get name.
-     *
-     * @return string
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Set currency.
-     *
-     * @param string $currency
-     */
     public function setCurrency(string $currency): void
     {
         $this->currency = $currency;
     }
 
-    /**
-     * Get currency.
-     *
-     * @return string
-     */
     public function getCurrency(): ?string
     {
         return $this->currency;
     }
 
-    /**
-     * Set overdraftFacility.
-     *
-     * @param float $overdraftFacility
-     */
     public function setOverdraftFacility(int $overdraftFacility): void
     {
         $this->overdraftFacility = $overdraftFacility;
     }
 
-    /**
-     * Get overdraftFacility.
-     *
-     * @return float
-     */
     public function getOverdraftFacility()
     {
         return $this->overdraftFacility;
     }
 
-    /**
-     * Set closed.
-     *
-     * @param bool $closed
-     */
     public function setClosed(bool $closed): void
     {
         $this->closed = $closed;
     }
 
-    /**
-     * Get closed.
-     *
-     * @return bool
-     */
     public function isClosed(): ?bool
     {
         return $this->closed;
     }
 
-    /**
-     * Set deleted.
-     *
-     * @param bool $deleted
-     */
     public function setDeleted(bool $deleted): void
     {
         $this->deleted = $deleted;
     }
 
-    /**
-     * Get deleted.
-     *
-     * @return bool
-     */
     public function isDeleted(): ?bool
     {
         return $this->deleted;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;
     }
 
-    /**
-     * Add member.
-     *
-     * @param App\Entity\Member $member
-     */
     public function addSharedWith(Member $member): void
     {
         $this->sharedWith[] = $member;
     }
 
-    /**
-     * Get sharedWith.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getSharedWith(): Collection
     {
         return $this->sharedWith;
     }
 
-    /**
-     * Set bank.
-     *
-     * @param App\Entity\Bank $bank
-     */
     public function setBank(Bank $bank): void
     {
         $this->bank = $bank;
     }
 
-    /**
-     * Get bank.
-     *
-     * @return App\Entity\Bank
-     */
     public function getBank(): ?Bank
     {
         return $this->bank;
     }
 
-    /**
-     * Get account operations.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getOperations(): Collection
     {
         return $this->operations;
     }
 
-    /**
-     * Get account schedulers.
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
     public function getSchedulers(): Collection
     {
         return $this->schedulers;

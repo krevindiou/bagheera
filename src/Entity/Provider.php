@@ -57,71 +57,36 @@ class Provider
         return $this->getName();
     }
 
-    /**
-     * Get providerId.
-     *
-     * @return int
-     */
     public function getProviderId(): ?int
     {
         return $this->providerId;
     }
 
-    /**
-     * Set name.
-     *
-     * @param string $name
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * Get name.
-     *
-     * @return string
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * Set country.
-     *
-     * @param string $country
-     */
     public function setCountry(string $country): void
     {
         $this->country = $country;
     }
 
-    /**
-     * Get country.
-     *
-     * @return string
-     */
     public function getCountry(): ?string
     {
         return $this->country;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): ?\DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): ?\DateTime
     {
         return $this->updatedAt;

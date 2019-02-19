@@ -71,8 +71,6 @@ class MemberService
 
     /**
      * Returns register form.
-     *
-     * @return Form
      */
     public function getRegisterForm(string $language): Form
     {
@@ -85,10 +83,6 @@ class MemberService
 
     /**
      * Returns profile form.
-     *
-     * @param Member $member Member entity
-     *
-     * @return Form
      */
     public function getProfileForm(Member $member): Form
     {
@@ -97,10 +91,6 @@ class MemberService
 
     /**
      * Creates register key.
-     *
-     * @param Member $member Member entity
-     *
-     * @return string
      */
     public function createRegisterKey(Member $member): string
     {
@@ -114,10 +104,6 @@ class MemberService
 
     /**
      * Saves member.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
      */
     public function save(Member $member): bool
     {
@@ -136,10 +122,6 @@ class MemberService
 
     /**
      * Saves member form.
-     *
-     * @param Form $form Member form
-     *
-     * @return bool
      */
     public function saveForm(Form $form): bool
     {
@@ -156,8 +138,6 @@ class MemberService
 
     /**
      * Returns forgot password form.
-     *
-     * @return Form
      */
     public function getForgotPasswordForm(): Form
     {
@@ -166,10 +146,6 @@ class MemberService
 
     /**
      * Sends email with change password link.
-     *
-     * @param string $email Email to send link
-     *
-     * @return bool
      */
     public function sendChangePasswordEmail(string $email): bool
     {
@@ -208,8 +184,6 @@ class MemberService
 
     /**
      * Returns change password form.
-     *
-     * @return Form
      */
     public function getChangePasswordForm(): Form
     {
@@ -218,9 +192,6 @@ class MemberService
 
     /**
      * Updates password.
-     *
-     * @param Member $member   Member entity
-     * @param string $password Password to set
      */
     public function changePassword(Member $member, string $password): bool
     {
@@ -239,10 +210,6 @@ class MemberService
 
     /**
      * Creates change password key.
-     *
-     * @param Member $member Member entity
-     *
-     * @return string
      */
     public function createChangePasswordKey(Member $member): string
     {
@@ -260,10 +227,6 @@ class MemberService
 
     /**
      * Decodes change password key.
-     *
-     * @param string $key Encrypted change password key
-     *
-     * @return Member
      */
     public function decodeChangePasswordKey(string $key): Member
     {
@@ -283,8 +246,6 @@ class MemberService
 
     /**
      * Activates the member.
-     *
-     * @return bool
      */
     public function activate(string $key): bool
     {
@@ -305,10 +266,6 @@ class MemberService
 
     /**
      * Gets member balances.
-     *
-     * @param Member $member Member entity
-     *
-     * @return array
      */
     public function getBalances(Member $member): array
     {
@@ -336,10 +293,6 @@ class MemberService
 
     /**
      * Gets import progress data.
-     *
-     * @param Member $member Member entity
-     *
-     * @return array
      */
     public function getImportProgress(Member $member): ?array
     {
@@ -348,10 +301,6 @@ class MemberService
 
     /**
      * Checks if new account tip is displayed.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
      */
     public function hasNewAccountTip(Member $member): bool
     {
@@ -371,10 +320,6 @@ class MemberService
 
     /**
      * Adds member.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
      */
     protected function add(Member $member): bool
     {
@@ -418,10 +363,6 @@ class MemberService
 
     /**
      * Decodes register key.
-     *
-     * @param string $key Encrypted register key
-     *
-     * @return Member
      */
     protected function decodeRegisterKey(string $key): Member
     {
@@ -438,10 +379,6 @@ class MemberService
 
     /**
      * Updates member.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
      */
     protected function update(Member $member): bool
     {
@@ -458,10 +395,6 @@ class MemberService
 
     /**
      * Checks if member has one or more banks without provider.
-     *
-     * @param Member $member Member entity
-     *
-     * @return bool
      */
     protected function hasBankWithoutProvider(Member $member): bool
     {

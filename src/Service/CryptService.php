@@ -16,8 +16,6 @@ class CryptService
      *
      * @param string $message Data to encrypt
      * @param string $key     Key used to encrypt
-     *
-     * @return string
      */
     public function encrypt(string $message, string $key): string
     {
@@ -47,8 +45,6 @@ class CryptService
      *
      * @param string $message Data to decrypt
      * @param string $key     Key used to decrypt
-     *
-     * @return string
      */
     public function decrypt(string $message, string $key): string
     {
@@ -79,8 +75,6 @@ class CryptService
 
     /**
      * Returns a random initialization vector.
-     *
-     * @return string
      */
     protected function getRandomIv(): string
     {

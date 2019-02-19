@@ -65,121 +65,61 @@ class BankAccess
      */
     protected $updatedAt;
 
-    /**
-     * Set bankId.
-     *
-     * @param int $bankId
-     */
     public function setBankId(int $bankId): void
     {
         $this->bankId = $bankId;
     }
 
-    /**
-     * Get bankId.
-     *
-     * @return int
-     */
     public function getBankId(): int
     {
         return $this->bankId;
     }
 
-    /**
-     * Set plainLogin.
-     *
-     * @param string $plainLogin
-     */
     public function setPlainLogin(string $plainLogin): void
     {
         $this->plainLogin = $plainLogin;
     }
 
-    /**
-     * Get plainLogin.
-     *
-     * @return string
-     */
     public function getPlainLogin(): string
     {
         return $this->plainLogin;
     }
 
-    /**
-     * Set plainPassword.
-     *
-     * @param string $plainPassword
-     */
     public function setPlainPassword(string $plainPassword): void
     {
         $this->plainPassword = $plainPassword;
     }
 
-    /**
-     * Get plainPassword.
-     *
-     * @return string
-     */
     public function getPlainPassword(): string
     {
         return $this->plainPassword;
     }
 
-    /**
-     * Set login.
-     *
-     * @param string $login
-     */
     public function setLogin(string $login): void
     {
         $this->login = $login;
     }
 
-    /**
-     * Get login.
-     *
-     * @return string
-     */
     public function getLogin(): string
     {
         return $this->login;
     }
 
-    /**
-     * Set password.
-     *
-     * @param string $password
-     */
     public function setPassword(string $password): void
     {
         $this->password = $password;
     }
 
-    /**
-     * Get password.
-     *
-     * @return string
-     */
     public function getPassword(): string
     {
         return $this->password;
     }
 
-    /**
-     * Get createdAt.
-     *
-     * @return DateTime
-     */
     public function getCreatedAt(): \DateTime
     {
         return $this->createdAt;
     }
 
-    /**
-     * Get updatedAt.
-     *
-     * @return DateTime
-     */
     public function getUpdatedAt(): \DateTime
     {
         return $this->updatedAt;

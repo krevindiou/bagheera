@@ -46,8 +46,6 @@ class OperationService
      * @param Account         $account         Account entity
      * @param int             $currentPage     Page number
      * @param OperationSearch $operationSearch OperationSearch entity
-     *
-     * @return Pagerfanta
      */
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): ?Pagerfanta
     {
@@ -62,8 +60,6 @@ class OperationService
      * @param Member    $member    Member entity
      * @param Operation $operation Operation entity
      * @param Account   $account   Account entity for new operation
-     *
-     * @return Form
      */
     public function getForm(Member $member, Operation $operation = null, Account $account = null): ?Form
     {
@@ -79,11 +75,6 @@ class OperationService
 
     /**
      * Saves operation.
-     *
-     * @param Member    $member    Member entity
-     * @param Operation $operation Operation entity
-     *
-     * @return bool
      */
     public function save(Member $member, Operation $operation): bool
     {
@@ -98,11 +89,6 @@ class OperationService
 
     /**
      * Saves operation form.
-     *
-     * @param Member $member Member entity
-     * @param Form   $form   Operation form
-     *
-     * @return bool
      */
     public function saveForm(Member $member, Form $form): bool
     {
@@ -115,11 +101,6 @@ class OperationService
 
     /**
      * Deletes operations.
-     *
-     * @param Member $member       Member entity
-     * @param array  $operationsId Operations id to delete
-     *
-     * @return bool
      */
     public function delete(Member $member, array $operationsId): bool
     {
@@ -146,11 +127,6 @@ class OperationService
 
     /**
      * Reconciles operations.
-     *
-     * @param Member $member       Member entity
-     * @param array  $operationsId Operations id to reconcile
-     *
-     * @return bool
      */
     public function reconcile(Member $member, array $operationsId): bool
     {
@@ -268,10 +244,6 @@ class OperationService
 
     /**
      * Returns last salary operation.
-     *
-     * @param Member $member Member entity
-     *
-     * @return Operation
      */
     public function getLastSalary(Member $member): ?Operation
     {
@@ -285,11 +257,6 @@ class OperationService
 
     /**
      * Returns last biggest expense since a specified date.
-     *
-     * @param Member   $member Member entity
-     * @param DateTime $since  Biggest expense since this date
-     *
-     * @return Operation
      */
     public function getLastBiggestExpense(Member $member, \DateTime $since): ?Operation
     {
@@ -298,11 +265,6 @@ class OperationService
 
     /**
      * Saves operation.
-     *
-     * @param Member    $member    Member entity
-     * @param Operation $operation Operation entity
-     *
-     * @return bool
      */
     protected function doSave(Member $member, Operation $operation): bool
     {

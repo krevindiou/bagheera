@@ -36,10 +36,6 @@ class ReportService
 
     /**
      * Returns reports list.
-     *
-     * @param Member $member Member entity
-     *
-     * @return array
      */
     public function getList(Member $member): ArrayCollection
     {
@@ -48,10 +44,6 @@ class ReportService
 
     /**
      * Returns reports list displayed on homepage.
-     *
-     * @param Member $member Member entity
-     *
-     * @return array
      */
     public function getHomepageList(Member $member): ArrayCollection
     {
@@ -64,8 +56,6 @@ class ReportService
      * @param Member $member Member entity
      * @param Report $report Report entity
      * @param string $type   Report type (sum, average, distribution, estimate)
-     *
-     * @return Form
      */
     public function getForm(Member $member, Report $report = null, string $type = null): ?Form
     {
@@ -86,11 +76,6 @@ class ReportService
 
     /**
      * Saves report.
-     *
-     * @param Member $member Member entity
-     * @param Report $report Report entity
-     *
-     * @return bool
      */
     public function save(Member $member, Report $report): bool
     {
@@ -105,11 +90,6 @@ class ReportService
 
     /**
      * Saves report form.
-     *
-     * @param Member $member Member entity
-     * @param Form   $form   Report form
-     *
-     * @return bool
      */
     public function saveForm(Member $member, Form $form): bool
     {
@@ -122,11 +102,6 @@ class ReportService
 
     /**
      * Deletes reports.
-     *
-     * @param Member $member    Member entity
-     * @param array  $reportsId Reports id to delete
-     *
-     * @return bool
      */
     public function delete(Member $member, array $reportsId): bool
     {
@@ -153,11 +128,6 @@ class ReportService
 
     /**
      * Returns graph data.
-     *
-     * @param Member $member Member entity
-     * @param Report $report Report entity
-     *
-     * @return array
      */
     public function getGraphData(Member $member, Report $report): array
     {
@@ -265,8 +235,6 @@ class ReportService
      * @param Report $report   Report entity
      * @param array  $accounts Accounts list
      * @param string $type     sum or average
-     *
-     * @return array
      */
     public function getGraphValues(Report $report, array $accounts, string $type): array
     {
@@ -280,8 +248,6 @@ class ReportService
      * @param DateTime $startDate Data after this date
      * @param DateTime $endDate   Data before this date
      * @param Account  $account   Synthesis for specific account
-     *
-     * @return array
      */
     public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null): array
     {
@@ -330,11 +296,6 @@ class ReportService
 
     /**
      * Saves report.
-     *
-     * @param Member $member Member entity
-     * @param Report $report Report entity
-     *
-     * @return bool
      */
     protected function doSave(Member $member, Report $report): bool
     {
