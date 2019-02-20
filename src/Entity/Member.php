@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="member")
+ * @ORM\Table(name="member", uniqueConstraints={@ORM\UniqueConstraint(name="member_email_unique", columns={"email"})})
  * @DoctrineAssert\UniqueEntity("email")
  */
 class Member implements UserInterface

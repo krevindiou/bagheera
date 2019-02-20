@@ -11,7 +11,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="App\Repository\OperationRepository")
  * @ORM\Table(
  *  name="operation",
- *  indexes={@ORM\Index(name="external_operation_id_idx", columns={"external_operation_id"})}
+ *  indexes={@ORM\Index(name="external_operation_id_idx", columns={"external_operation_id"})},
+ *  uniqueConstraints={@ORM\UniqueConstraint(name="operation_transfer_operation_id_unique", columns={"transfer_operation_id"})}
  * )
  */
 class Operation

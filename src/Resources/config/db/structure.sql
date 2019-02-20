@@ -16,7 +16,7 @@ $$ language plpgsql;
 
 CREATE TABLE member (
     member_id SERIAL PRIMARY KEY,
-    email VARCHAR(128) UNIQUE NOT NULL,
+    email VARCHAR(128) CONSTRAINT member_email_unique UNIQUE NOT NULL,
     password VARCHAR(60) NOT NULL,
     country VARCHAR(2) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
@@ -222,7 +222,7 @@ CREATE TABLE operation (
     scheduler_id INT REFERENCES scheduler (scheduler_id),
     account_id INT NOT NULL REFERENCES account (account_id),
     transfer_account_id INT REFERENCES account (account_id),
-    transfer_operation_id INT UNIQUE REFERENCES operation (operation_id) ON DELETE SET NULL,
+    transfer_operation_id INT CONSTRAINT operation_transfer_operation_id_unique UNIQUE REFERENCES operation (operation_id) ON DELETE SET NULL,
     category_id INT REFERENCES category (category_id),
     payment_method_id INT NOT NULL REFERENCES payment_method (payment_method_id),
     external_operation_id VARCHAR(32),
