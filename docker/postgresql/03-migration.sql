@@ -1,0 +1,1 @@
+../../src/Resources/config/db/migration.sql
