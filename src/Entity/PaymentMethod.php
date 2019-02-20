@@ -26,7 +26,7 @@ class PaymentMethod
     /**
      * @var int
      *
-     * @ORM\Column(name="payment_method_id", type="integer", nullable=false)
+     * @ORM\Column(name="payment_method_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -35,7 +35,7 @@ class PaymentMethod
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=16, nullable=false)
+     * @ORM\Column(name="name", type="string", length=16)
      * @Assert\NotBlank()
      */
     protected $name;
@@ -51,14 +51,14 @@ class PaymentMethod
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

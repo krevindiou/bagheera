@@ -21,7 +21,7 @@ class Member implements UserInterface
     /**
      * @var int
      *
-     * @ORM\Column(name="member_id", type="integer", nullable=false)
+     * @ORM\Column(name="member_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -30,7 +30,7 @@ class Member implements UserInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=128, unique=true, nullable=false)
+     * @ORM\Column(name="email", type="string", length=128, unique=true)
      * @Assert\NotBlank()
      * @Assert\Email()
      * @Assert\Length(max = 128)
@@ -40,7 +40,7 @@ class Member implements UserInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="password", type="string", length=128, nullable=false)
+     * @ORM\Column(name="password", type="string", length=60)
      */
     protected $password;
 
@@ -55,7 +55,7 @@ class Member implements UserInterface
     /**
      * @var string
      *
-     * @ORM\Column(name="country", type="string", length=2, nullable=false)
+     * @ORM\Column(name="country", type="string", length=2)
      * @Assert\NotBlank()
      */
     protected $country;
@@ -63,7 +63,7 @@ class Member implements UserInterface
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @ORM\Column(name="is_active", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $active = false;
@@ -71,14 +71,14 @@ class Member implements UserInterface
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

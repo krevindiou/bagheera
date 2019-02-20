@@ -18,7 +18,7 @@ class Report
     /**
      * @var int
      *
-     * @ORM\Column(name="report_id", type="integer", nullable=false)
+     * @ORM\Column(name="report_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -38,7 +38,7 @@ class Report
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=16, nullable=false)
+     * @ORM\Column(name="type", type="string", length=16)
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"sum", "average", "distribution", "estimate"})
      */
@@ -47,7 +47,7 @@ class Report
     /**
      * @var string
      *
-     * @ORM\Column(name="title", type="string", length=64, nullable=false)
+     * @ORM\Column(name="title", type="string", length=64)
      * @Assert\NotBlank()
      * @Assert\Length(max = 64)
      */
@@ -56,7 +56,7 @@ class Report
     /**
      * @var bool
      *
-     * @ORM\Column(name="homepage", type="boolean", nullable=false)
+     * @ORM\Column(name="homepage", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $homepage = false;
@@ -199,14 +199,14 @@ class Report
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

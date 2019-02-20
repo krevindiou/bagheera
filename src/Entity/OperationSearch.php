@@ -18,7 +18,7 @@ class OperationSearch
     /**
      * @var int
      *
-     * @ORM\Column(name="operation_search_id", type="integer", nullable=false)
+     * @ORM\Column(name="operation_search_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -104,7 +104,7 @@ class OperationSearch
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=8, nullable=true)
+     * @ORM\Column(name="type", type="string", length=8, nullable=true, options={"default": "debit"})
      * @Assert\Choice(choices = {"debit", "credit"})
      */
     protected $type = 'debit';
@@ -147,14 +147,14 @@ class OperationSearch
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

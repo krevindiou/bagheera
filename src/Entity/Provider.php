@@ -16,7 +16,7 @@ class Provider
     /**
      * @var int
      *
-     * @ORM\Column(name="provider_id", type="smallint", nullable=false)
+     * @ORM\Column(name="provider_id", type="smallint")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -25,7 +25,7 @@ class Provider
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=64, nullable=false)
+     * @ORM\Column(name="name", type="string", length=64)
      * @Assert\NotBlank()
      */
     protected $name;
@@ -33,7 +33,7 @@ class Provider
     /**
      * @var string
      *
-     * @ORM\Column(name="country", type="string", length=2, nullable=false)
+     * @ORM\Column(name="country", type="string", length=2)
      * @Assert\NotBlank()
      */
     protected $country;
@@ -41,14 +41,14 @@ class Provider
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

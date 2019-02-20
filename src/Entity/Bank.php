@@ -18,7 +18,7 @@ class Bank
     /**
      * @var int
      *
-     * @ORM\Column(name="bank_id", type="integer", nullable=false)
+     * @ORM\Column(name="bank_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -39,7 +39,7 @@ class Bank
      * @var App\Entity\Provider
      *
      * @ORM\ManyToOne(targetEntity="Provider")
-     * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id", nullable=true)
+     * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id")
      * @Assert\Type(type="App\Entity\Provider")
      * @Assert\Valid()
      */
@@ -48,7 +48,7 @@ class Bank
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=32, nullable=false)
+     * @ORM\Column(name="name", type="string", length=32)
      * @Assert\NotBlank()
      * @Assert\Length(max = 32)
      */
@@ -57,14 +57,14 @@ class Bank
     /**
      * @var int
      *
-     * @ORM\Column(name="sort_order", type="smallint", nullable=false)
+     * @ORM\Column(name="sort_order", type="smallint")
      */
     protected $sortOrder = 0;
 
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_favorite", type="boolean", nullable=false)
+     * @ORM\Column(name="is_favorite", type="boolean", options={"default": true})
      * @Assert\Type("bool")
      */
     protected $favorite = true;
@@ -72,7 +72,7 @@ class Bank
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_closed", type="boolean", nullable=false)
+     * @ORM\Column(name="is_closed", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $closed = false;
@@ -80,7 +80,7 @@ class Bank
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
+     * @ORM\Column(name="is_deleted", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $deleted = false;
@@ -88,14 +88,14 @@ class Bank
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

@@ -21,7 +21,7 @@ class Account
     /**
      * @var int
      *
-     * @ORM\Column(name="account_id", type="integer", nullable=false)
+     * @ORM\Column(name="account_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -37,7 +37,7 @@ class Account
     /**
      * @var int
      *
-     * @ORM\Column(name="bank_id", type="integer", nullable=false)
+     * @ORM\Column(name="bank_id", type="integer")
      */
     protected $bankId;
 
@@ -55,7 +55,7 @@ class Account
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=64, nullable=false)
+     * @ORM\Column(name="name", type="string", length=64)
      * @Assert\NotBlank()
      * @Assert\Length(max = 64)
      */
@@ -64,7 +64,7 @@ class Account
     /**
      * @var string
      *
-     * @ORM\Column(name="currency", type="string", length=3, nullable=false)
+     * @ORM\Column(name="currency", type="string", length=3)
      * @Assert\NotBlank()
      * @Assert\Currency()
      */
@@ -73,22 +73,21 @@ class Account
     /**
      * @var float
      *
-     * @ORM\Column(name="overdraft_facility", type="decimal", scale=2, nullable=false)
+     * @ORM\Column(name="overdraft_facility", type="decimal", scale=2)
      */
     protected $overdraftFacility = 0;
 
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_closed", type="boolean", nullable=false)
+     * @ORM\Column(name="is_closed", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $closed = false;
-
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_deleted", type="boolean", nullable=false)
+     * @ORM\Column(name="is_deleted", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $deleted = false;
@@ -96,14 +95,14 @@ class Account
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

@@ -16,7 +16,7 @@ class Scheduler
     /**
      * @var int
      *
-     * @ORM\Column(name="scheduler_id", type="integer", nullable=false)
+     * @ORM\Column(name="scheduler_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -67,7 +67,7 @@ class Scheduler
     /**
      * @var string
      *
-     * @ORM\Column(name="third_party", type="string", length=64, nullable=false)
+     * @ORM\Column(name="third_party", type="string", length=64)
      * @Assert\NotBlank()
      * @Assert\Length(max = 64)
      */
@@ -90,7 +90,7 @@ class Scheduler
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="value_date", type="date", nullable=false)
+     * @ORM\Column(name="value_date", type="date")
      * @Assert\NotBlank()
      * @Assert\Type("DateTime")
      */
@@ -107,7 +107,7 @@ class Scheduler
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_reconciled", type="boolean", nullable=false)
+     * @ORM\Column(name="is_reconciled", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $reconciled = false;
@@ -122,7 +122,7 @@ class Scheduler
     /**
      * @var string
      *
-     * @ORM\Column(name="frequency_unit", type="string", length=16, nullable=false)
+     * @ORM\Column(name="frequency_unit", type="string", length=16, options={"default": "month"})
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"day", "week", "month", "year"})
      */
@@ -131,7 +131,7 @@ class Scheduler
     /**
      * @var int
      *
-     * @ORM\Column(name="frequency_value", type="smallint", nullable=false)
+     * @ORM\Column(name="frequency_value", type="smallint")
      * @Assert\NotBlank()
      * @Assert\Type("integer")
      */
@@ -140,7 +140,7 @@ class Scheduler
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @ORM\Column(name="is_active", type="boolean", options={"default": true})
      * @Assert\Type("bool")
      */
     protected $active = true;
@@ -148,14 +148,14 @@ class Scheduler
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

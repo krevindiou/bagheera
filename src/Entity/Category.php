@@ -18,7 +18,7 @@ class Category
     /**
      * @var int
      *
-     * @ORM\Column(name="category_id", type="integer", nullable=false)
+     * @ORM\Column(name="category_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -37,7 +37,7 @@ class Category
     /**
      * @var string
      *
-     * @ORM\Column(name="type", type="string", length=8, nullable=true)
+     * @ORM\Column(name="type", type="string", length=8)
      * @Assert\NotBlank()
      * @Assert\Choice(choices = {"debit", "credit"})
      */
@@ -46,7 +46,7 @@ class Category
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=32, nullable=false)
+     * @ORM\Column(name="name", type="string", length=32)
      * @Assert\NotBlank()
      * @Assert\Length(max = 32)
      */
@@ -55,7 +55,7 @@ class Category
     /**
      * @var bool
      *
-     * @ORM\Column(name="is_active", type="boolean", nullable=false)
+     * @ORM\Column(name="is_active", type="boolean", options={"default": true})
      * @Assert\Type("bool")
      */
     protected $active = true;
@@ -63,14 +63,14 @@ class Category
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 

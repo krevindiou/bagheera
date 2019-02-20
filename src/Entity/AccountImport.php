@@ -16,7 +16,7 @@ class AccountImport
     /**
      * @var int
      *
-     * @ORM\Column(name="import_id", type="integer", nullable=false)
+     * @ORM\Column(name="import_id", type="integer")
      * @ORM\Id
      */
     protected $importId;
@@ -24,7 +24,7 @@ class AccountImport
     /**
      * @var int
      *
-     * @ORM\Column(name="account_id", type="integer", nullable=false)
+     * @ORM\Column(name="account_id", type="integer")
      */
     protected $accountId;
 
@@ -32,7 +32,7 @@ class AccountImport
      * @var App\Entity\Account
      *
      * @ORM\ManyToOne(targetEntity="Account")
-     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
+     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * @ORM\Id
      * @Assert\NotNull()
      * @Assert\Type(type="App\Entity\Account")
@@ -57,7 +57,7 @@ class AccountImport
     /**
      * @var bool
      *
-     * @ORM\Column(name="finished", type="boolean", nullable=false)
+     * @ORM\Column(name="finished", type="boolean", options={"default": false})
      * @Assert\Type("bool")
      */
     protected $finished = false;
@@ -86,14 +86,14 @@ class AccountImport
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime", nullable=false)
+     * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
      * @var DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=false)
+     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 
