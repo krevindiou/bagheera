@@ -1,21 +1,3 @@
-INSERT INTO payment_method (payment_method_id, name, type) VALUES
-(1, 'credit_card', 'debit'),
-(2, 'check', 'debit'),
-(3, 'cash_withdrawal', 'debit'),
-(4, 'transfer', 'debit'),
-(5, 'check', 'credit'),
-(6, 'transfer', 'credit'),
-(7, 'deposit', 'credit'),
-(8, 'direct_debit', 'debit'),
-(9, 'initial_balance', null);
-
-INSERT INTO category (category_id, parent_category_id, type, name) VALUES
-(1, null, 'credit', 'Cat 1'),
-(2, 1, 'credit', 'Cat 1.1'),
-(3, null, 'debit', 'Cat 2'),
-(4, 3, 'debit', 'Cat 2.1'),
-(5, 3, 'debit', 'Cat 2.2');
-
 INSERT INTO member (member_id, email, password, country, is_active) VALUES
 (1, 'john@example.net', '$2y$13$PCfoqiVWPQy9QpXQIwXdO.miaTHkhr/Ba/eoX6S2BLlRabbv22bHC', 'US', true), -- password: johnjohn
 (2, 'jane@example.net', '$2y$13$TY8WtjG4HlelaHFTdt1WxOahe9HmQq2UgUUm/QR3z8xvzdMma/rqG', 'FR', true), -- password: janejane
@@ -59,8 +41,6 @@ INSERT INTO operation (operation_id, scheduler_id, account_id, transfer_account_
 (13, 3, 8, null, null, 4, 1, 'Third party 1', 28.19, null, '2011-09-01', true),
 (14, null, 8, null, null, 1, 5, 'Third party 2', null, 0.67, '2011-09-02', true);
 
-SELECT setval('payment_method_payment_method_id_seq', (SELECT MAX(payment_method_id) FROM payment_method));
-SELECT setval('category_category_id_seq', (SELECT MAX(category_id) FROM category));
 SELECT setval('member_member_id_seq', (SELECT MAX(member_id) FROM member));
 SELECT setval('bank_bank_id_seq', (SELECT MAX(bank_id) FROM bank));
 SELECT setval('account_account_id_seq', (SELECT MAX(account_id) FROM account));

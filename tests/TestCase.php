@@ -35,6 +35,9 @@ class TestCase extends WebTestCase
         $sql = file_get_contents(__DIR__.'/../src/Resources/config/db/structure.sql');
         self::$conn->exec($sql);
 
+        $sql = file_get_contents(__DIR__.'/../src/Resources/config/db/data.sql');
+        self::$conn->exec($sql);
+
         $sql = file_get_contents(__DIR__.'/../src/Resources/config/db/fixtures.sql');
         self::$conn->exec($sql);
     }
