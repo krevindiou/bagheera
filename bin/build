@@ -12,3 +12,5 @@ else
     composer --working-dir="$project_dir" install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
     (cd "$project_dir"; yarn install --production=true; yarn encore production)
 fi
+
+(cd "$project_dir"; php bin/console doctrine:migrations:migrate --no-interaction)
