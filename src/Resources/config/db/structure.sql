@@ -74,7 +74,7 @@ CREATE TRIGGER set_updated_at_payment_method
     EXECUTE PROCEDURE set_updated_at();
 
 CREATE TABLE provider (
-    provider_id SERIAL PRIMARY KEY,
+    provider_id SMALLSERIAL PRIMARY KEY,
     name VARCHAR(64) NOT NULL,
     country VARCHAR(2) NOT NULL,
     created_at TIMESTAMP(0) NOT NULL,
