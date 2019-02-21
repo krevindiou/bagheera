@@ -159,9 +159,9 @@ class OperationService
     /**
      * Saves multiple operations.
      *
-     * @param Account $account    Account entity
-     * @param array   $operations Operations data
-     * @param Closure $func       Regularly called function
+     * @param Account  $account    Account entity
+     * @param array    $operations Operations data
+     * @param \Closure $func       Regularly called function
      *
      * @return bool
      */

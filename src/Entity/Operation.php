@@ -34,7 +34,7 @@ class Operation
     protected $externalOperationId;
 
     /**
-     * @var App\Entity\Scheduler
+     * @var Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
@@ -44,7 +44,7 @@ class Operation
     protected $scheduler;
 
     /**
-     * @var App\Entity\Account
+     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
@@ -55,7 +55,7 @@ class Operation
     protected $account;
 
     /**
-     * @var App\Entity\Account
+     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
@@ -65,7 +65,7 @@ class Operation
     protected $transferAccount;
 
     /**
-     * @var App\Entity\Operation
+     * @var Operation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
@@ -75,7 +75,7 @@ class Operation
     protected $transferOperation;
 
     /**
-     * @var App\Entity\Category
+     * @var Category
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
@@ -85,7 +85,7 @@ class Operation
     protected $category;
 
     /**
-     * @var App\Entity\PaymentMethod
+     * @var PaymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
@@ -119,7 +119,7 @@ class Operation
     protected $credit;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="value_date", type="date")
      * @Assert\NotBlank()
@@ -143,14 +143,14 @@ class Operation
     protected $notes;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */

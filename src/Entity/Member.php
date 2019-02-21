@@ -69,21 +69,21 @@ class Member implements UserInterface
     protected $active = false;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="logged_at", type="datetime", nullable=true)
      * @Assert\Type("DateTime")
@@ -91,7 +91,7 @@ class Member implements UserInterface
     protected $loggedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\OneToMany(targetEntity="Bank", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"sortOrder" = "ASC"})
@@ -99,7 +99,7 @@ class Member implements UserInterface
     protected $banks;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\OneToMany(targetEntity="Report", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"type" = "ASC", "title" = "ASC"})

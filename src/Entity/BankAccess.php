@@ -52,14 +52,14 @@ class BankAccess
     protected $password;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */

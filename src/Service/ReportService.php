@@ -244,10 +244,10 @@ class ReportService
     /**
      * Returns synthesis graph data.
      *
-     * @param Member   $member    Member entity
-     * @param DateTime $startDate Data after this date
-     * @param DateTime $endDate   Data before this date
-     * @param Account  $account   Synthesis for specific account
+     * @param Member    $member    Member entity
+     * @param \DateTime $startDate Data after this date
+     * @param \DateTime $endDate   Data before this date
+     * @param Account   $account   Synthesis for specific account
      */
     public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null): array
     {

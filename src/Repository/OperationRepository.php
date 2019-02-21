@@ -287,10 +287,10 @@ class OperationRepository extends EntityRepository
     /**
      * Gets total amount by month.
      *
-     * @param Member   $member    Member entity
-     * @param DateTime $startDate Sum calculated after this date
-     * @param DateTime $endDate   Sum calculated before this date
-     * @param Account  $account   Synthesis for specific account
+     * @param Member    $member    Member entity
+     * @param \DateTime $startDate Sum calculated after this date
+     * @param \DateTime $endDate   Sum calculated before this date
+     * @param Account   $account   Synthesis for specific account
      *
      * @return array
      */
@@ -396,10 +396,10 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum for each month.
      *
-     * @param Member   $member    Member entity
-     * @param DateTime $startDate Sum calculated after this date
-     * @param DateTime $endDate   Sum calculated before this date
-     * @param Account  $account   Synthesis for specific account
+     * @param Member    $member    Member entity
+     * @param \DateTime $startDate Sum calculated after this date
+     * @param \DateTime $endDate   Sum calculated before this date
+     * @param Account   $account   Synthesis for specific account
      *
      * @return array
      */
@@ -466,8 +466,8 @@ class OperationRepository extends EntityRepository
     /**
      * Gets operations sum before a specified date.
      *
-     * @param Member   $member  Member entity
-     * @param DateTime $endDate Sum calculated before this date
+     * @param Member    $member  Member entity
+     * @param \DateTime $endDate Sum calculated before this date
      *
      * @return array
      */

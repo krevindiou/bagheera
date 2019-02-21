@@ -29,7 +29,7 @@ class AccountImport
     protected $accountId;
 
     /**
-     * @var App\Entity\Account
+     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
@@ -84,14 +84,14 @@ class AccountImport
     protected $jsonNormalizedData;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */

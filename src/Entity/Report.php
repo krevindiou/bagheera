@@ -25,7 +25,7 @@ class Report
     protected $reportId;
 
     /**
-     * @var App\Entity\Member
+     * @var Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="reports")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
@@ -62,7 +62,7 @@ class Report
     protected $homepage = false;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
      * @Assert\Type("DateTime")
@@ -70,7 +70,7 @@ class Report
     protected $valueDateStart;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
      * @Assert\Type("DateTime")
@@ -85,7 +85,7 @@ class Report
     protected $thirdParties;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\ManyToMany(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinTable(name="report_category",
@@ -100,7 +100,7 @@ class Report
     protected $categories;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\ManyToMany(targetEntity="PaymentMethod", fetch="EAGER")
      * @ORM\JoinTable(name="report_payment_method",
@@ -115,7 +115,7 @@ class Report
     protected $paymentMethods;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\ManyToMany(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinTable(name="report_account",
@@ -197,14 +197,14 @@ class Report
     protected $estimateDurationUnit;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */

@@ -78,7 +78,7 @@ class OperationSearch
     protected $notes;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
      * @Assert\Type("DateTime")
@@ -86,7 +86,7 @@ class OperationSearch
     protected $valueDateStart;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
      * @Assert\Type("DateTime")
@@ -145,14 +145,14 @@ class OperationSearch
     protected $amountSuperiorTo;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */

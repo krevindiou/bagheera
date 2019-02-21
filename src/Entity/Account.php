@@ -42,7 +42,7 @@ class Account
     protected $bankId;
 
     /**
-     * @var App\Entity\Bank
+     * @var Bank
      *
      * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
      * @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
@@ -93,21 +93,21 @@ class Account
     protected $deleted = false;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\ManyToMany(targetEntity="Member")
      * @ORM\JoinTable(name="shared_account",
@@ -123,7 +123,7 @@ class Account
     protected $sharedWith;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\OneToMany(targetEntity="Operation", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
@@ -131,7 +131,7 @@ class Account
     protected $operations;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})

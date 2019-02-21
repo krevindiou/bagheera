@@ -23,7 +23,7 @@ class Scheduler
     protected $schedulerId;
 
     /**
-     * @var App\Entity\Account
+     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="schedulers")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
@@ -34,7 +34,7 @@ class Scheduler
     protected $account;
 
     /**
-     * @var App\Entity\Account
+     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
@@ -44,7 +44,7 @@ class Scheduler
     protected $transferAccount;
 
     /**
-     * @var App\Entity\Category
+     * @var Category
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
@@ -54,7 +54,7 @@ class Scheduler
     protected $category;
 
     /**
-     * @var App\Entity\PaymentMethod
+     * @var PaymentMethod
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
@@ -88,7 +88,7 @@ class Scheduler
     protected $credit;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="value_date", type="date")
      * @Assert\NotBlank()
@@ -97,7 +97,7 @@ class Scheduler
     protected $valueDate;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="limit_date", type="date", nullable=true)
      * @Assert\Type("DateTime")
@@ -146,14 +146,14 @@ class Scheduler
     protected $active = true;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */

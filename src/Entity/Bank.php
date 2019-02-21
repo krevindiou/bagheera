@@ -25,7 +25,7 @@ class Bank
     protected $bankId;
 
     /**
-     * @var App\Entity\Member
+     * @var Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
@@ -36,7 +36,7 @@ class Bank
     protected $member;
 
     /**
-     * @var App\Entity\Provider
+     * @var Provider
      *
      * @ORM\ManyToOne(targetEntity="Provider")
      * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id")
@@ -86,21 +86,21 @@ class Bank
     protected $deleted = false;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})

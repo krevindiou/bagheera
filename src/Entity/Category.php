@@ -25,7 +25,7 @@ class Category
     protected $categoryId;
 
     /**
-     * @var App\Entity\Category
+     * @var Category
      *
      * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
      * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
@@ -61,21 +61,21 @@ class Category
     protected $active = true;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
      */
     protected $createdAt;
 
     /**
-     * @var DateTime
+     * @var \DateTime
      *
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     protected $updatedAt;
 
     /**
-     * @var Doctrine\Common\Collections\Collection
+     * @var Collection
      *
      * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory", fetch="EXTRA_LAZY")
      */
