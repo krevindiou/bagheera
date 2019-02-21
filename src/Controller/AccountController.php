@@ -156,11 +156,13 @@ class AccountController extends AbstractController
      */
     public function importProgressAction(MemberService $memberService)
     {
-        $progress = $memberService->getImportProgress($this->getUser());
-
         $data = [];
-        foreach ($progress as $v) {
-            $data[$v->getAccount()->getAccountId()] = $v->getProgressPct();
+
+        $progress = $memberService->getImportProgress($this->getUser());
+        if (null !== $progress) {
+            foreach ($progress as $v) {
+                $data[$v->getAccount()->getAccountId()] = $v->getProgressPct();
+            }
         }
 
         return new JsonResponse($data);
