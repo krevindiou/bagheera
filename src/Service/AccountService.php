@@ -196,60 +196,56 @@ class AccountService
     {
         $error = false;
 
-        if ($member !== $bank->getMember()) {
-            $error = true;
-        } else {
-            // Retrieve current accounts id
-            $currentAccounts = $bank->getAccounts();
-            $currentAccountsExternalId = [];
+        // Retrieve current accounts id
+        $currentAccounts = $bank->getAccounts();
+        $currentAccountsExternalId = [];
 
-            foreach ($currentAccounts as $currentAccount) {
-                if (null !== $currentAccount->getExternalAccountId()) {
-                    $currentAccountsExternalId[] = $currentAccount->getExternalAccountId();
-                }
+        foreach ($currentAccounts as $currentAccount) {
+            if (null !== $currentAccount->getExternalAccountId()) {
+                $currentAccountsExternalId[] = $currentAccount->getExternalAccountId();
             }
+        }
 
-            foreach ($accounts as $accountArray) {
-                if (!in_array($accountArray['external_account_id'], $currentAccountsExternalId, true)) {
-                    $account = new Account();
-                    $account->setBank($bank);
-                    $account->setName($accountArray['name']);
-                    $account->setExternalAccountId($accountArray['external_account_id']);
-                    $account->setCurrency($accountArray['currency']);
+        foreach ($accounts as $accountArray) {
+            if (!in_array($accountArray['external_account_id'], $currentAccountsExternalId, true)) {
+                $account = new Account();
+                $account->setBank($bank);
+                $account->setName($accountArray['name']);
+                $account->setExternalAccountId($accountArray['external_account_id']);
+                $account->setCurrency($accountArray['currency']);
 
-                    $errors = $this->validator->validate($account);
+                $errors = $this->validator->validate($account);
 
-                    if (0 === count($errors)) {
-                        try {
-                            $this->em->persist($account);
-                        } catch (\Exception $e) {
-                            $this->logger->err($e->getMessage());
-                            $error = true;
-
-                            continue;
-                        }
-                    } else {
-                        $this->logger->err(
-                            sprintf(
-                                'Errors saving account "%s" [member %d]',
-                                $accountArray['name'],
-                                $bank->getMember()->getMemberId()
-                            )
-                        );
-
+                if (0 === count($errors)) {
+                    try {
+                        $this->em->persist($account);
+                    } catch (\Exception $e) {
+                        $this->logger->err($e->getMessage());
                         $error = true;
 
                         continue;
                     }
+                } else {
+                    $this->logger->err(
+                        sprintf(
+                            'Errors saving account "%s" [member %d]',
+                            $accountArray['name'],
+                            $bank->getMember()->getMemberId()
+                        )
+                    );
+
+                    $error = true;
+
+                    continue;
                 }
             }
+        }
 
-            try {
-                $this->em->flush();
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
-                $error = true;
-            }
+        try {
+            $this->em->flush();
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
+            $error = true;
         }
 
         return !$error;
