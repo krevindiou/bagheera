@@ -57,9 +57,10 @@ class SchedulerController extends AbstractController
                 if (!$scheduler->isOwner($member)) {
                     throw $this->createAccessDeniedException();
                 }
+
+                $schedulerService->delete($scheduler);
             }
 
-            $schedulerService->delete($scheduler);
             $this->addFlash('success', 'scheduler.delete_confirmation');
         }
 
