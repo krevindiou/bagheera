@@ -72,7 +72,7 @@ class BankChooseFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($builder): void {
+            function (FormEvent $event): void {
                 $form = $event->getForm();
 
                 if (

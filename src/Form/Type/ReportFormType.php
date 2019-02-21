@@ -62,7 +62,7 @@ class ReportFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function (FormEvent $event) use ($builder): void {
+            function (FormEvent $event): void {
                 $form = $event->getForm();
                 $report = $event->getData();
 

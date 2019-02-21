@@ -173,7 +173,7 @@ class SchedulerFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function (FormEvent $event) use ($builder): void {
+            function (FormEvent $event): void {
                 $form = $event->getForm();
                 $scheduler = $event->getData();
 
@@ -228,7 +228,7 @@ class SchedulerFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($builder): void {
+            function (FormEvent $event): void {
                 $form = $event->getForm();
                 $scheduler = $event->getData();
 

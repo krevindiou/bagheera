@@ -136,7 +136,7 @@ class OperationFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function (FormEvent $event) use ($builder): void {
+            function (FormEvent $event): void {
                 $form = $event->getForm();
                 $operation = $event->getData();
 
@@ -191,7 +191,7 @@ class OperationFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SUBMIT,
-            function (FormEvent $event) use ($builder): void {
+            function (FormEvent $event): void {
                 $form = $event->getForm();
                 $operation = $event->getData();
 
