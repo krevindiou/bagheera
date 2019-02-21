@@ -41,5 +41,6 @@ class FieldExists extends Constraint
         $this->className = $className;
         $this->field = $field;
         $this->em = $em;
+        parent::__construct();
     }
 }
