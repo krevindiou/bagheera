@@ -35,7 +35,7 @@ class AccountRepository extends EntityRepository
         return new ArrayCollection($query->getResult());
     }
 
-    public function getBalance(Account $account, bool $reconciledOnly = false): string
+    public function getBalance(Account $account, bool $reconciledOnly = false): int
     {
         $dql = 'SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance ';
         $dql .= 'FROM App:Operation o ';
@@ -48,7 +48,7 @@ class AccountRepository extends EntityRepository
         $query->setParameter('account', $account);
         $result = $query->getSingleResult();
 
-        return sprintf('%.2f', $result['balance']);
+        return $result['balance'];
     }
 
     public function getTransferableAccounts(Account $account): ArrayCollection

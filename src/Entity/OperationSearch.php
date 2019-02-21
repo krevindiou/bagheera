@@ -110,37 +110,37 @@ class OperationSearch
     protected $type = 'debit';
 
     /**
-     * @var decimal
+     * @var int
      *
-     * @ORM\Column(name="amount_inferior_to", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="amount_inferior_to", type="integer", nullable=true)
      */
     protected $amountInferiorTo;
 
     /**
-     * @var decimal
+     * @var int
      *
-     * @ORM\Column(name="amount_inferior_or_equal_to", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="amount_inferior_or_equal_to", type="integer", nullable=true)
      */
     protected $amountInferiorOrEqualTo;
 
     /**
-     * @var decimal
+     * @var int
      *
-     * @ORM\Column(name="amount_equal_to", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="amount_equal_to", type="integer", nullable=true)
      */
     protected $amountEqualTo;
 
     /**
-     * @var decimal
+     * @var int
      *
-     * @ORM\Column(name="amount_superior_or_equal_to", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="amount_superior_or_equal_to", type="integer", nullable=true)
      */
     protected $amountSuperiorOrEqualTo;
 
     /**
-     * @var decimal
+     * @var int
      *
-     * @ORM\Column(name="amount_superior_to", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="amount_superior_to", type="integer", nullable=true)
      */
     protected $amountSuperiorTo;
 
@@ -259,52 +259,52 @@ class OperationSearch
         return $this->type;
     }
 
-    public function setAmountInferiorTo($amountInferiorTo): void
+    public function setAmountInferiorTo(?int $amountInferiorTo): void
     {
         $this->amountInferiorTo = $amountInferiorTo;
     }
 
-    public function getAmountInferiorTo(): ?string
+    public function getAmountInferiorTo(): ?int
     {
         return $this->amountInferiorTo;
     }
 
-    public function setAmountInferiorOrEqualTo($amountInferiorOrEqualTo): void
+    public function setAmountInferiorOrEqualTo(?int $amountInferiorOrEqualTo): void
     {
         $this->amountInferiorOrEqualTo = $amountInferiorOrEqualTo;
     }
 
-    public function getAmountInferiorOrEqualTo(): ?string
+    public function getAmountInferiorOrEqualTo(): ?int
     {
         return $this->amountInferiorOrEqualTo;
     }
 
-    public function setAmountEqualTo($amountEqualTo): void
+    public function setAmountEqualTo(?int $amountEqualTo): void
     {
         $this->amountEqualTo = $amountEqualTo;
     }
 
-    public function getAmountEqualTo(): ?string
+    public function getAmountEqualTo(): ?int
     {
         return $this->amountEqualTo;
     }
 
-    public function setAmountSuperiorOrEqualTo($amountSuperiorOrEqualTo): void
+    public function setAmountSuperiorOrEqualTo(?int $amountSuperiorOrEqualTo): void
     {
         $this->amountSuperiorOrEqualTo = $amountSuperiorOrEqualTo;
     }
 
-    public function getAmountSuperiorOrEqualTo(): ?string
+    public function getAmountSuperiorOrEqualTo(): ?int
     {
         return $this->amountSuperiorOrEqualTo;
     }
 
-    public function setAmountSuperiorTo($amountSuperiorTo): void
+    public function setAmountSuperiorTo(?int $amountSuperiorTo): void
     {
         $this->amountSuperiorTo = $amountSuperiorTo;
     }
 
-    public function getAmountSuperiorTo(): ?string
+    public function getAmountSuperiorTo(): ?int
     {
         return $this->amountSuperiorTo;
     }

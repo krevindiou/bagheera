@@ -9,7 +9,6 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -178,10 +177,10 @@ class OperationFormType extends AbstractType
                 $debit = $operation->getDebit();
                 $credit = $operation->getCredit();
 
-                if (0 != $debit) {
+                if (null !== $debit) {
                     $form->get('type')->setData('debit');
                     $form->get('amount')->setData($debit);
-                } elseif (0 != $credit) {
+                } elseif (null !== $credit) {
                     $form->get('type')->setData('credit');
                     $form->get('amount')->setData($credit);
                 } else {
@@ -201,9 +200,9 @@ class OperationFormType extends AbstractType
 
                 if ('debit' === $type) {
                     $operation->setDebit($amount);
-                    $operation->setCredit(0);
+                    $operation->setCredit(null);
                 } elseif ('credit' === $type) {
-                    $operation->setDebit(0);
+                    $operation->setDebit(null);
                     $operation->setCredit($amount);
                 }
             }

@@ -1,5 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS public;
 
+CREATE DOMAIN bagheera_money AS INT;
+
 CREATE FUNCTION set_created_at() RETURNS TRIGGER AS $$
 BEGIN
    NEW.created_at = NOW();
@@ -138,7 +140,7 @@ CREATE TABLE account (
     external_account_id VARCHAR(32),
     name VARCHAR(64) NOT NULL,
     currency VARCHAR(3) NOT NULL,
-    overdraft_facility NUMERIC(10,2) NOT NULL,
+    overdraft_facility bagheera_money NOT NULL,
     is_closed BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP(0) NOT NULL,
@@ -193,8 +195,8 @@ CREATE TABLE scheduler (
     category_id INT REFERENCES category (category_id),
     payment_method_id INT NOT NULL REFERENCES payment_method (payment_method_id),
     third_party VARCHAR(64) NOT NULL,
-    debit NUMERIC(10,2),
-    credit NUMERIC(10,2),
+    debit bagheera_money,
+    credit bagheera_money,
     value_date DATE NOT NULL,
     limit_date DATE,
     is_reconciled BOOLEAN NOT NULL DEFAULT FALSE,
@@ -227,8 +229,8 @@ CREATE TABLE operation (
     payment_method_id INT NOT NULL REFERENCES payment_method (payment_method_id),
     external_operation_id VARCHAR(32),
     third_party VARCHAR(64) NOT NULL,
-    debit NUMERIC(10,2),
-    credit NUMERIC(10,2),
+    debit bagheera_money,
+    credit bagheera_money,
     value_date DATE NOT NULL,
     is_reconciled BOOLEAN NOT NULL DEFAULT FALSE,
     notes TEXT,
@@ -257,11 +259,11 @@ CREATE TABLE operation_search (
     value_date_end DATE,
     is_reconciled BOOLEAN,
     type VARCHAR(8) DEFAULT 'debit' CHECK (type IN ('debit', 'credit')),
-    amount_inferior_to NUMERIC(10,2),
-    amount_inferior_or_equal_to NUMERIC(10,2),
-    amount_equal_to NUMERIC(10,2),
-    amount_superior_or_equal_to NUMERIC(10,2),
-    amount_superior_to NUMERIC(10,2),
+    amount_inferior_to bagheera_money,
+    amount_inferior_or_equal_to bagheera_money,
+    amount_equal_to bagheera_money,
+    amount_superior_or_equal_to bagheera_money,
+    amount_superior_to bagheera_money,
     created_at TIMESTAMP(0) NOT NULL,
     updated_at TIMESTAMP(0)
 );

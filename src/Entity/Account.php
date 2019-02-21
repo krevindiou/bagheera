@@ -71,9 +71,9 @@ class Account
     protected $currency;
 
     /**
-     * @var float
+     * @var int
      *
-     * @ORM\Column(name="overdraft_facility", type="decimal", scale=2)
+     * @ORM\Column(name="overdraft_facility", type="integer")
      */
     protected $overdraftFacility = 0;
 
@@ -190,7 +190,7 @@ class Account
         $this->overdraftFacility = $overdraftFacility;
     }
 
-    public function getOverdraftFacility()
+    public function getOverdraftFacility(): ?int
     {
         return $this->overdraftFacility;
     }

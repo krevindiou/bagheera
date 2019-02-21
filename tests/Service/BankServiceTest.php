@@ -108,7 +108,7 @@ final class BankServiceTest extends TestCase
 
         $balances = $this->get('test.app.bank')->getBalances($this->john, $hsbc);
 
-        $this->assertSame(sprintf('%.2f', $balances['USD']), '-17.10');
-        $this->assertSame(sprintf('%.2f', $balances['EUR']), '208.55');
+        $this->assertSame($balances['USD'], -171000);
+        $this->assertSame($balances['EUR'], 2085500);
     }
 }

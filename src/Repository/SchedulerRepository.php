@@ -98,7 +98,7 @@ class SchedulerRepository extends EntityRepository
                         'thirdParty' => $row['scheduler_third_party'],
                         'debit' => $row['scheduler_debit'],
                         'credit' => $row['scheduler_credit'],
-                        'amount' => (0 != $row['scheduler_credit']) ? $row['scheduler_credit'] : -$row['scheduler_debit'],
+                        'amount' => (null !== $row['scheduler_credit']) ? $row['scheduler_credit'] : -$row['scheduler_debit'],
                         'valueDate' => (null !== $row['scheduler_value_date']) ? new \DateTime($row['scheduler_value_date']) : null,
                         'limitDate' => (null !== $row['scheduler_limit_date']) ? new \DateTime($row['scheduler_limit_date']) : null,
                         'reconciled' => $row['scheduler_is_reconciled'],

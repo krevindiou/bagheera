@@ -11,7 +11,7 @@ $(document).ready(function(){
                 label: "{{ currency }}",
                 data: [
                     {% for timestamp, value in values %}
-                        [{{ timestamp }} * 1000, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
+                        [{{ timestamp }} * 1000, {{ value is null ? "null" : "%.2f"|format(value / 10000)|raw }}]{% if loop.last != 1 %},{% endif %}
 
                     {% endfor %}
                 ]
@@ -46,8 +46,8 @@ $(document).ready(function(){
                 timeformat: "%Y-%m"
             },
             yaxis:  {
-                min: {{ yaxisMin }},
-                max: {{ yaxisMax }}
+                min: {{ "%.2f"|format(yaxisMin / 10000)|raw }},
+                max: {{ "%.2f"|format(yaxisMax / 10000)|raw }},
             }
         }
     );

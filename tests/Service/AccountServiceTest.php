@@ -111,7 +111,7 @@ final class AccountServiceTest extends TestCase
 
         $balance = $this->get('test.app.account')->getBalance($this->jane, $account);
 
-        $this->assertSame($balance, '0.00');
+        $this->assertSame($balance, 0);
     }
 
     public function testGetBalanceOk(): void
@@ -120,7 +120,7 @@ final class AccountServiceTest extends TestCase
 
         $balance = $this->get('test.app.account')->getBalance($this->john, $account);
 
-        $this->assertSame($balance, '-21.49');
+        $this->assertSame($balance, -214900);
     }
 
     public function testSynthesis(): void
@@ -135,10 +135,10 @@ final class AccountServiceTest extends TestCase
                 strtotime('2011-06-01 UTC') => 0,
                 strtotime('2011-07-01 UTC') => 0,
                 strtotime('2011-08-01 UTC') => 0,
-                strtotime('2011-09-01 UTC') => -137.13,
-                strtotime('2011-10-01 UTC') => -98.82,
-                strtotime('2011-11-01 UTC') => -98.82,
-                strtotime('2011-12-01 UTC') => -98.82,
+                strtotime('2011-09-01 UTC') => -1371300,
+                strtotime('2011-10-01 UTC') => -988200,
+                strtotime('2011-11-01 UTC') => -988200,
+                strtotime('2011-12-01 UTC') => -988200,
             ],
             'EUR' => [
                 strtotime('2011-01-01 UTC') => 0,
@@ -149,10 +149,10 @@ final class AccountServiceTest extends TestCase
                 strtotime('2011-06-01 UTC') => 0,
                 strtotime('2011-07-01 UTC') => 0,
                 strtotime('2011-08-01 UTC') => 0,
-                strtotime('2011-09-01 UTC') => 208.55,
-                strtotime('2011-10-01 UTC') => 208.55,
-                strtotime('2011-11-01 UTC') => 208.55,
-                strtotime('2011-12-01 UTC') => 208.55,
+                strtotime('2011-09-01 UTC') => 2085500,
+                strtotime('2011-10-01 UTC') => 2085500,
+                strtotime('2011-11-01 UTC') => 2085500,
+                strtotime('2011-12-01 UTC') => 2085500,
             ],
         ];
 

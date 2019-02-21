@@ -174,7 +174,7 @@ class OperationRepository extends EntityRepository
                         'thirdParty' => $row['operation_third_party'],
                         'debit' => $row['operation_debit'],
                         'credit' => $row['operation_credit'],
-                        'amount' => (0 != $row['operation_credit']) ? $row['operation_credit'] : -$row['operation_debit'],
+                        'amount' => (null !== $row['operation_credit']) ? $row['operation_credit'] : -$row['operation_debit'],
                         'valueDate' => (null !== $row['operation_value_date']) ? new \DateTime($row['operation_value_date']) : null,
                         'reconciled' => $row['operation_is_reconciled'],
                         'notes' => $row['operation_notes'],

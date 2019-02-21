@@ -8,4 +8,5 @@ COMMENT ON COLUMN migration_versions.executed_at IS '(DC2Type:datetime_immutable
 INSERT INTO migration_versions (version, executed_at) VALUES
 ('20190220111002', NOW()),
 ('20190220112416', NOW()),
-('20190220112636', NOW());
+('20190220112636', NOW()),
+('20190220163935', NOW());

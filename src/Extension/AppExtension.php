@@ -7,6 +7,7 @@ namespace App\Extension;
 use App\Service\BankService;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 class AppExtension extends AbstractExtension implements \Twig_Extension_GlobalsInterface
 {
@@ -38,5 +39,20 @@ class AppExtension extends AbstractExtension implements \Twig_Extension_GlobalsI
         return [
             'global_banks' => $banks,
         ];
+    }
+
+    public function getFilters()
+    {
+        return [
+            new TwigFilter('money', [$this, 'formatMoney']),
+        ];
+    }
+
+    public function formatMoney($amount, $currency = null, $locale = null)
+    {
+        $locale = null !== $locale ? $locale : \Locale::getDefault();
+        $formatter = \NumberFormatter::create($locale, \NumberFormatter::CURRENCY);
+
+        return $formatter->formatCurrency($amount / 10000, $currency);
     }
 }

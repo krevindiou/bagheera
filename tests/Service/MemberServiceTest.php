@@ -118,7 +118,7 @@ final class MemberServiceTest extends TestCase
 
         $balances = $this->get('test.app.member')->getBalances($member);
 
-        $this->assertSame($balances['USD'], -98.82);
-        $this->assertSame($balances['EUR'], '208.55');
+        $this->assertSame($balances['USD'], -988200);
+        $this->assertSame($balances['EUR'], 2085500);
     }
 }

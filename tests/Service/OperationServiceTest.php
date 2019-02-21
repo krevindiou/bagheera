@@ -63,7 +63,7 @@ final class OperationServiceTest extends TestCase
         $operation = new Operation();
         $operation->setAccount($this->em->find('App:Account', 1));
         $operation->setThirdParty('Test');
-        $operation->setDebit(1);
+        $operation->setDebit(10000);
         $operation->setValueDate(new \DateTime());
         $operation->setPaymentMethod($this->em->find('App:PaymentMethod', 1));
         $this->assertTrue($this->get('test.app.operation')->save($this->john, $operation));

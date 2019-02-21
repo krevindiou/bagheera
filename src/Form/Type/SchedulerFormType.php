@@ -9,7 +9,6 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -215,10 +214,10 @@ class SchedulerFormType extends AbstractType
                 $debit = $scheduler->getDebit();
                 $credit = $scheduler->getCredit();
 
-                if (0 != $debit) {
+                if (null !== $debit) {
                     $form->get('type')->setData('debit');
                     $form->get('amount')->setData($debit);
-                } elseif (0 != $credit) {
+                } elseif (null !== $credit) {
                     $form->get('type')->setData('credit');
                     $form->get('amount')->setData($credit);
                 } else {
@@ -238,9 +237,9 @@ class SchedulerFormType extends AbstractType
 
                 if ('debit' === $type) {
                     $scheduler->setDebit($amount);
-                    $scheduler->setCredit(0);
+                    $scheduler->setCredit(null);
                 } elseif ('credit' === $type) {
-                    $scheduler->setDebit(0);
+                    $scheduler->setDebit(null);
                     $scheduler->setCredit($amount);
                 }
             }

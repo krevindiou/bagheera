@@ -41,7 +41,7 @@
                         {% endif %}
                     </td>
                     <td>{{ scheduler.thirdParty }}</td>
-                    <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|localizedcurrency(scheduler.account.currency) }}</td>
+                    <td class="amount {{ (scheduler.amount < 0) ? 'negative' : 'positive' }}">{{ scheduler.amount|money(scheduler.account.currency) }}</td>
                     <td class="payment-method">
                         <i class="{% spaceless %}
                         {% if scheduler.paymentMethod.name == 'initial_balance' %}

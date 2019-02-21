@@ -56,7 +56,10 @@ class OperationSearchController extends AbstractController
 
             if ($operationSearchForm->isSubmitted()) {
                 if ($operationSearchForm->isValid()) {
-                    $operationSearchService->setSessionSearch($account, $request->request->get('operation_search_form'));
+                    $data = $request->request->get('operation_search_form');
+                    $data['amount_1'] = '' !== $data['amount_1'] ? $data['amount_1'] * 10000 : '';
+                    $data['amount_2'] = '' !== $data['amount_2'] ? $data['amount_2'] * 10000 : '';
+                    $operationSearchService->setSessionSearch($account, $data);
                 }
             }
         }

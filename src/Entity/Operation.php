@@ -105,16 +105,16 @@ class Operation
     protected $thirdParty;
 
     /**
-     * @var float
+     * @var int
      *
-     * @ORM\Column(name="debit", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="debit", type="integer", nullable=true)
      */
     protected $debit;
 
     /**
-     * @var float
+     * @var int
      *
-     * @ORM\Column(name="credit", type="decimal", scale=2, nullable=true)
+     * @ORM\Column(name="credit", type="integer", nullable=true)
      */
     protected $credit;
 
@@ -214,29 +214,37 @@ class Operation
         return $this->thirdParty;
     }
 
-    public function setDebit($debit = null): void
+    public function setDebit(?int $debit): void
     {
+        if (null !== $debit) {
+            $this->credit = null;
+        }
+
         $this->debit = $debit;
     }
 
-    public function getDebit()
+    public function getDebit(): ?int
     {
         return $this->debit;
     }
 
-    public function setCredit($credit = null): void
+    public function setCredit(?int $credit): void
     {
+        if (null !== $credit) {
+            $this->debit = null;
+        }
+
         $this->credit = $credit;
     }
 
-    public function getCredit()
+    public function getCredit(): ?int
     {
         return $this->credit;
     }
 
     public function getAmount()
     {
-        return (0 != $this->credit) ? $this->credit : -$this->debit;
+        return (null !== $this->credit) ? $this->credit : -$this->debit;
     }
 
     public function setValueDate(?\DateTime $valueDate): void

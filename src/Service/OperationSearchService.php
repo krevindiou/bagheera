@@ -72,35 +72,27 @@ class OperationSearchService
             }
 
             for ($i = 1; $i <= 2; ++$i) {
+                $amount = '' !== $sessionSearch[$account->getAccountId()]['amount_'.$i] ? (int) $sessionSearch[$account->getAccountId()]['amount_'.$i] : null;
+
                 switch ($sessionSearch[$account->getAccountId()]['amount_comparator_'.$i]) {
                     case 'inferiorTo':
-                        $operationSearch->setAmountInferiorTo(
-                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
-                        );
+                        $operationSearch->setAmountInferiorTo($amount);
 
                         break;
                     case 'inferiorOrEqualTo':
-                        $operationSearch->setAmountInferiorOrEqualTo(
-                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
-                        );
+                        $operationSearch->setAmountInferiorOrEqualTo($amount);
 
                         break;
                     case 'equalTo':
-                        $operationSearch->setAmountEqualTo(
-                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
-                        );
+                        $operationSearch->setAmountEqualTo($amount);
 
                         break;
                     case 'superiorOrEqualTo':
-                        $operationSearch->setAmountSuperiorOrEqualTo(
-                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
-                        );
+                        $operationSearch->setAmountSuperiorOrEqualTo($amount);
 
                         break;
                     case 'superiorTo':
-                        $operationSearch->setAmountSuperiorTo(
-                            $sessionSearch[$account->getAccountId()]['amount_'.$i]
-                        );
+                        $operationSearch->setAmountSuperiorTo($amount);
 
                         break;
                 }

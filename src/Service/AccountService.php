@@ -102,7 +102,7 @@ class AccountService
         if ($form->isValid()) {
             $ok = $this->doSave($member, $form->getData());
 
-            if ($form->has('initialBalance') && 0 != $form->get('initialBalance')->getData()) {
+            if ($form->has('initialBalance') && null !== $form->get('initialBalance')->getData()) {
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
@@ -179,14 +179,14 @@ class AccountService
     /**
      * Gets account balance.
      */
-    public function getBalance(Member $member, Account $account, bool $reconciledOnly = false): string
+    public function getBalance(Member $member, Account $account, bool $reconciledOnly = false): int
     {
         $balance = 0;
         if ($member === $account->getBank()->getMember()) {
             $balance = $this->em->getRepository('App:Account')->getBalance($account, $reconciledOnly);
         }
 
-        return sprintf('%.2f', $balance);
+        return $balance;
     }
 
     /**

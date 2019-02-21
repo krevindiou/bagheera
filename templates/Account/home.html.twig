@@ -9,19 +9,19 @@
                 <div id="big_stats">
                     <div class="stat">
                         {% for currency, totalBalance in totalBalances %}
-                        <div class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}{{ loop.first ? '' : ' mini' }}">{{ totalBalance|localizedcurrency(currency) }}</div>
+                        <div class="{{ (totalBalance < 0 ? 'negative' : 'positive') }}{{ loop.first ? '' : ' mini' }}">{{ totalBalance|money(currency) }}</div>
                         {% endfor %}
                         <h4>{{ 'home.total_balance'|trans }}</h4>
                     </div>
                     {% if lastSalary %}
                     <div class="stat">
-                        <div class="{{ (lastSalary.amount < 0 ? 'negative' : 'positive') }}">{{ lastSalary.amount|localizedcurrency(lastSalary.account.currency) }}</div>
+                        <div class="{{ (lastSalary.amount < 0 ? 'negative' : 'positive') }}">{{ lastSalary.amount|money(lastSalary.account.currency) }}</div>
                         <h4>{{ 'home.last_salary'|trans }} / {{ lastSalary.valueDate|localizeddate('medium', 'none') }}</h4>
                     </div>
                     {% endif %}
                     {% if lastBiggestExpense %}
                     <div class="stat">
-                        <div class="{{ (lastBiggestExpense.amount < 0 ? 'negative' : 'positive') }}">{{ lastBiggestExpense.amount|localizedcurrency(lastBiggestExpense.account.currency) }}</div>
+                        <div class="{{ (lastBiggestExpense.amount < 0 ? 'negative' : 'positive') }}">{{ lastBiggestExpense.amount|money(lastBiggestExpense.account.currency) }}</div>
                         <h4>{{ 'home.last_biggest_expense'|trans }} / {{ lastBiggestExpense.valueDate|localizeddate('medium', 'none') }}</h4>
                     </div>
                     {% endif %}
@@ -57,7 +57,7 @@
                                         <a href="{{ path('operation_list', {'accountId': account.accountId}) }}">{{ account.name }}</a>
                                     </td>
                                     <td>
-                                        <span class="{{ (account.balance < 0 ? 'negative' : 'positive') }}">{{ account.balance|localizedcurrency(account.currency) }}</span>
+                                        <span class="{{ (account.balance < 0 ? 'negative' : 'positive') }}">{{ account.balance|money(account.currency) }}</span>
 
                                         <div class="progress progress-striped active{% if progress|length == 0 %} hide{% endif %}" id="progress-account-{{ account.accountId }}">
                                             <div class="bar"></div>

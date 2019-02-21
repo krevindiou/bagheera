@@ -186,9 +186,9 @@ class BankService
                     $accountBalance = $this->accountService->getBalance($member, $account);
 
                     if (isset($balances[$account->getCurrency()])) {
-                        $balances[$account->getCurrency()] += sprintf('%.2f', $accountBalance);
+                        $balances[$account->getCurrency()] += $accountBalance;
                     } else {
-                        $balances[$account->getCurrency()] = sprintf('%.2f', $accountBalance);
+                        $balances[$account->getCurrency()] = $accountBalance;
                     }
                 }
             }

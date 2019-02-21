@@ -9,7 +9,7 @@ $(document).ready(function(){
                 color: "{{ serie.color }}",
                 data: [
                     {% for timestamp, value in serie.points %}
-                    [{{ timestamp }} * 1000, {{ value is null ? "null" : value }}]{% if loop.last != 1 %},{% endif %}
+                    [{{ timestamp }} * 1000, {{ value is null ? "null" : "%.2f"|format(value / 10000)|raw }}]{% if loop.last != 1 %},{% endif %}
 
                     {% endfor %}
                 ]
@@ -43,8 +43,8 @@ $(document).ready(function(){
                 timeformat: "%Y-%m"
             },
             yaxis:  {
-                min: {{ graph.yaxisMin }},
-                max: {{ graph.yaxisMax }}
+                min: {{ "%.2f"|format(graph.yaxisMin / 10000)|raw }},
+                max: {{ "%.2f"|format(graph.yaxisMax / 10000)|raw }},
             }
         }
     );

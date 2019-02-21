@@ -7,7 +7,6 @@ namespace App\Form\Type;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -212,31 +211,31 @@ class OperationSearchFormType extends AbstractType
                 ;
 
                 $formValues = [];
-                if ('' != $operationSearch->getAmountInferiorTo()) {
+                if (null !== $operationSearch->getAmountInferiorTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'inferiorTo',
                         'amount' => $operationSearch->getAmountInferiorTo(),
                     ];
                 }
-                if ('' != $operationSearch->getAmountInferiorOrEqualTo()) {
+                if (null !== $operationSearch->getAmountInferiorOrEqualTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'inferiorOrEqualTo',
                         'amount' => $operationSearch->getAmountInferiorOrEqualTo(),
                     ];
                 }
-                if ('' != $operationSearch->getAmountEqualTo()) {
+                if (null !== $operationSearch->getAmountEqualTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'equalTo',
                         'amount' => $operationSearch->getAmountEqualTo(),
                     ];
                 }
-                if ('' != $operationSearch->getAmountSuperiorOrEqualTo()) {
+                if (null !== $operationSearch->getAmountSuperiorOrEqualTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'superiorOrEqualTo',
                         'amount' => $operationSearch->getAmountSuperiorOrEqualTo(),
                     ];
                 }
-                if ('' != $operationSearch->getAmountSuperiorTo()) {
+                if (null !== $operationSearch->getAmountSuperiorTo()) {
                     $formValues[] = [
                         'amount_comparator' => 'superiorTo',
                         'amount' => $operationSearch->getAmountSuperiorTo(),
