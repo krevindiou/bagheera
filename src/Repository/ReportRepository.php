@@ -90,7 +90,6 @@ class ReportRepository extends EntityRepository
                     'reportId' => $row['report_id'],
                     'title' => $row['report_title'],
                     'type' => $row['report_type'],
-                    'title' => $row['report_title'],
                     'homepage' => $row['report_homepage'],
                     'valueDateStart' => (null !== $row['report_value_date_start']) ? new \DateTime($row['report_value_date_start']) : null,
                     'valueDateEnd' => (null !== $row['report_value_date_end']) ? new \DateTime($row['report_value_date_end']) : null,
