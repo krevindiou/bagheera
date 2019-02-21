@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventListener;
 
+use App\Entity\Member;
 use App\Service\SchedulerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -28,6 +29,9 @@ class LoginListener
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event): void
     {
         $member = $event->getAuthenticationToken()->getUser();
+        if (null === $member || !$member instanceof Member) {
+            return;
+        }
 
         $member->setLoggedAt(new \DateTime());
 
