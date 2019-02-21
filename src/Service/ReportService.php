@@ -148,14 +148,13 @@ class ReportService
                 $accounts = $this->em->getRepository('App:Account')->getList($member, null, false);
             }
 
+            $results = [];
             if (in_array($report->getType(), ['sum', 'average'], true)) {
                 $results = $this->getGraphValues($report, $accounts, $report->getType());
             } elseif ('distribution' === $report->getType()) {
-                /** @todo */
-                $results = [];
+                // @todo
             } elseif ('estimate' === $report->getType()) {
-                /** @todo */
-                $results = [];
+                // @todo
             }
 
             foreach ($results as $result) {
