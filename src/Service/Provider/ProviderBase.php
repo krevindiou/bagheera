@@ -71,7 +71,7 @@ abstract class ProviderBase
         try {
             $data = ArrayConverter::convertFromFormat($data, $format);
 
-            $this->_save($account, json_encode($data), 'json');
+            $this->save($account, json_encode($data), 'json');
 
             return $data;
         } catch (\InvalidArgumentException $e) {
