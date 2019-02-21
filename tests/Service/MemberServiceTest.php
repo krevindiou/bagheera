@@ -13,6 +13,9 @@ use App\Tests\TestCase;
  */
 final class MemberServiceTest extends TestCase
 {
+    private $john;
+    private $jane;
+
     protected function setUp(): void
     {
         parent::setUp();

@@ -12,6 +12,8 @@ use App\Tests\TestCase;
  */
 final class IndexControllerTest extends TestCase
 {
+    private $client;
+
     protected function setUp(): void
     {
         parent::setUp();
