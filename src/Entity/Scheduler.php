@@ -237,7 +237,7 @@ class Scheduler
         return $this->reconciled;
     }
 
-    public function setNotes(string $notes): void
+    public function setNotes(?string $notes): void
     {
         $this->notes = $notes;
     }
