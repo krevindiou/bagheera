@@ -9,6 +9,7 @@ use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\OperationSearch;
+use App\Entity\Report;
 use App\Entity\Scheduler;
 use Doctrine\ORM\EntityRepository;
 use Pagerfanta\Adapter\CallbackAdapter;
