@@ -1,0 +1,13 @@
+parameters:
+    level: max
+    paths:
+        - .
+    excludes_analyse:
+        - .phpunit
+        - node_modules
+        - public
+        - src/Migrations
+        - var
+        - vendor
+    autoload_files:
+        - vendor/bin/.phpunit/phpunit-6.5/vendor/autoload.php
