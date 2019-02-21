@@ -194,7 +194,7 @@ class AccountImport
         if ($this->isFinished()) {
             $pct = 100;
         } elseif ((int) $this->getTotal() > 0) {
-            $pct = floor($this->getProgress() / $this->getTotal() * 100);
+            $pct = (int) floor($this->getProgress() / $this->getTotal() * 100);
         }
 
         return $pct;
