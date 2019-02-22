@@ -15,7 +15,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/sign-in", name="member_login")
      */
-    public function loginAction(Request $request, AuthenticationUtils $authenticationUtils)
+    public function login(Request $request, AuthenticationUtils $authenticationUtils)
     {
         return $this->render(
             'Member/login.html.twig',
@@ -29,7 +29,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/register", name="member_register")
      */
-    public function registerAction(Request $request, MemberService $memberService)
+    public function register(Request $request, MemberService $memberService)
     {
         $form = $memberService->getRegisterForm($request->getPreferredLanguage());
 
@@ -54,7 +54,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/forgot-password", name="member_forgot_password")
      */
-    public function forgotPasswordAction(Request $request, MemberService $memberService)
+    public function forgotPassword(Request $request, MemberService $memberService)
     {
         $form = $memberService->getForgotPasswordForm();
 
@@ -81,7 +81,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/change-password/{key}", name="member_change_password_public", requirements={"key" = ".+"})
      */
-    public function changePasswordPublicAction(Request $request, MemberService $memberService, $key)
+    public function changePasswordPublic(Request $request, MemberService $memberService, $key)
     {
         if ($member = $memberService->decodeChangePasswordKey($key)) {
             $form = $memberService->getChangePasswordForm();
@@ -113,7 +113,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/manager/change-password", name="member_change_password")
      */
-    public function changePasswordAction(Request $request, MemberService $memberService)
+    public function changePassword(Request $request, MemberService $memberService)
     {
         $form = $memberService->getChangePasswordForm();
 
@@ -140,7 +140,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/activate", name="member_activate")
      */
-    public function activateAction(Request $request, MemberService $memberService)
+    public function activate(Request $request, MemberService $memberService)
     {
         $key = $request->query->get('key');
 
@@ -156,7 +156,7 @@ class MemberController extends AbstractController
     /**
      * @Route("/manager/profile", name="member_profile")
      */
-    public function profileAction(Request $request, MemberService $memberService)
+    public function profile(Request $request, MemberService $memberService)
     {
         $form = $memberService->getProfileForm($this->getUser());
 

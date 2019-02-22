@@ -20,7 +20,7 @@ class ReportController extends AbstractController
     /**
      * @Route("/reports", methods={"GET"}, name="report_list")
      */
-    public function listAction(Request $request, ReportService $reportService)
+    public function list(Request $request, ReportService $reportService)
     {
         $member = $this->getUser();
 
@@ -37,7 +37,7 @@ class ReportController extends AbstractController
     /**
      * @Route("/reports", methods={"POST"})
      */
-    public function listActionsAction(Request $request, ReportService $reportService)
+    public function listActions(Request $request, ReportService $reportService)
     {
         $reportsId = (array) $request->request->get('reportsId');
 
@@ -56,7 +56,7 @@ class ReportController extends AbstractController
      * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
      * @ParamConverter("report", class="App:Report", options={"id" = "reportId"})
      */
-    public function formAction(Request $request, ReportService $reportService, ?Report $report, string $type = null)
+    public function form(Request $request, ReportService $reportService, ?Report $report, string $type = null)
     {
         $member = $this->getUser();
 
@@ -86,7 +86,7 @@ class ReportController extends AbstractController
     /**
      * @Route("/reports.js", defaults={"_format"="js"}, name="report_graph")
      */
-    public function graphAction(ReportService $reportService)
+    public function graph(ReportService $reportService)
     {
         $graphs = [];
 
@@ -114,7 +114,7 @@ class ReportController extends AbstractController
      * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
      * @Route("/account-{accountId}/report-synthesis.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      */
-    public function synthesisAction(ReportService $reportService, ?Account $account)
+    public function synthesis(ReportService $reportService, ?Account $account)
     {
         $member = $this->getUser();
 

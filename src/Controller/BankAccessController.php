@@ -18,7 +18,7 @@ class BankAccessController extends AbstractController
     /**
      * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_update")
      */
-    public function formAction(Request $request, BankAccessService $bankAccessService, Bank $bank)
+    public function form(Request $request, BankAccessService $bankAccessService, Bank $bank)
     {
         $member = $this->getUser();
 

@@ -19,7 +19,7 @@ class BankController extends AbstractController
      * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
      * @Route("/choose-bank", defaults={"bankId" = null}, name="bank_choose")
      */
-    public function formAction(Request $request, BankService $bankService, ?Bank $bank)
+    public function form(Request $request, BankService $bankService, ?Bank $bank)
     {
         $member = $this->getUser();
 
@@ -58,7 +58,7 @@ class BankController extends AbstractController
     /**
      * @Route("/bank-{bankId}/import", requirements={"bankId" = "\d+"}, name="bank_import")
      */
-    public function importAction(Bank $bank, BankService $bankService)
+    public function import(Bank $bank, BankService $bankService)
     {
         $bankService->importExternalBank($bank);
 

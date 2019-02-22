@@ -18,7 +18,7 @@ class OperationSearchController extends AbstractController
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
      */
-    public function formAction(Request $request, OperationSearchService $operationSearchService, Account $account, $display = true)
+    public function form(Request $request, OperationSearchService $operationSearchService, Account $account, $display = true)
     {
         $operationSearch = $operationSearchService->getSessionSearch($account);
 
@@ -40,7 +40,7 @@ class OperationSearchController extends AbstractController
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit", methods={"POST"})
      */
-    public function submitAction(Request $request, OperationSearchService $operationSearchService, Account $account)
+    public function submit(Request $request, OperationSearchService $operationSearchService, Account $account)
     {
         if (isset($request->request->get('operation_search_form')['clear'])) {
             $operationSearchService->clearSessionSearch($account);

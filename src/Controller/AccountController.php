@@ -24,7 +24,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/", name="account_home")
      */
-    public function homeAction(MemberService $memberService, OperationService $operationService, AccountService $accountService, ReportService $reportService)
+    public function home(MemberService $memberService, OperationService $operationService, AccountService $accountService, ReportService $reportService)
     {
         $member = $this->getUser();
 
@@ -48,7 +48,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/accounts", methods={"GET"}, name="account_list")
      */
-    public function listAction(BankService $bankService)
+    public function list(BankService $bankService)
     {
         return $this->render(
             'Account/list.html.twig',
@@ -61,7 +61,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/accounts", methods={"POST"})
      */
-    public function listActionsAction(Request $request, AccountService $accountService, BankService $bankService)
+    public function listActions(Request $request, AccountService $accountService, BankService $bankService)
     {
         $accountsId = (array) $request->request->get('accountsId');
         $banksId = (array) $request->request->get('banksId');
@@ -88,7 +88,7 @@ class AccountController extends AbstractController
      * @Route("/bank-{bankId}/create-account", requirements={"bankId" = "\d+"}, name="account_create_with_bank")
      * @Route("/create-account", defaults={"bankId" = null}, name="account_create")
      */
-    public function createAction(Request $request, AccountService $accountService, ?Bank $bank)
+    public function create(Request $request, AccountService $accountService, ?Bank $bank)
     {
         $member = $this->getUser();
 
@@ -122,7 +122,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_update")
      */
-    public function updateAction(Request $request, AccountService $accountService, Account $account)
+    public function update(Request $request, AccountService $accountService, Account $account)
     {
         $member = $this->getUser();
 
@@ -154,7 +154,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/import-progress", name="account_import_progress")
      */
-    public function importProgressAction(MemberService $memberService)
+    public function importProgress(MemberService $memberService)
     {
         $data = [];
 

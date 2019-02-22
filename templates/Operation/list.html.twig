@@ -103,7 +103,7 @@
     </form>
     {% endif %}
     <div id="operation-search" class="span5{% if not displaySearch %} hide{% endif %}">
-        {{ render(controller("App\\Controller\\OperationSearchController::formAction", {"account": account, "display": displaySearch})) }}
+        {{ render(controller("App\\Controller\\OperationSearchController::form", {"account": account, "display": displaySearch})) }}
     </div>
 </div>
 {% endblock %}

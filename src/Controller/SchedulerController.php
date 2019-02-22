@@ -22,7 +22,7 @@ class SchedulerController extends AbstractController
      * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, methods={"GET"}, name="scheduler_list")
      * @Security("account.isOwner(user)")
      */
-    public function listAction(Request $request, SchedulerService $schedulerService, Account $account)
+    public function list(Request $request, SchedulerService $schedulerService, Account $account)
     {
         $page = $request->query->getInt('page', 1);
 
@@ -45,7 +45,7 @@ class SchedulerController extends AbstractController
      * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, methods={"POST"})
      * @Security("account.isOwner(user)")
      */
-    public function listActionsAction(Request $request, SchedulerService $schedulerService, Account $account)
+    public function listActions(Request $request, SchedulerService $schedulerService, Account $account)
     {
         if ($request->request->has('delete')) {
             $schedulersId = (array) $request->request->get('schedulersId');
@@ -74,7 +74,7 @@ class SchedulerController extends AbstractController
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      */
-    public function formAction(Request $request, SchedulerService $schedulerService, ?Account $account, ?Scheduler $scheduler)
+    public function form(Request $request, SchedulerService $schedulerService, ?Account $account, ?Scheduler $scheduler)
     {
         $schedulerForm = $schedulerService->getForm($scheduler, $account);
         if (null === $schedulerForm) {

@@ -23,7 +23,7 @@ class OperationController extends AbstractController
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, methods={"GET"}, name="operation_list")
      */
-    public function listAction(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account)
+    public function list(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account)
     {
         $member = $this->getUser();
 
@@ -56,7 +56,7 @@ class OperationController extends AbstractController
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, methods={"POST"})
      */
-    public function listActionsAction(Request $request, OperationService $operationService, Account $account)
+    public function listActions(Request $request, OperationService $operationService, Account $account)
     {
         $operationsId = (array) $request->request->get('operationsId');
 
@@ -79,7 +79,7 @@ class OperationController extends AbstractController
      * @ParamConverter("operation", class="App:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      */
-    public function formAction(Request $request, OperationService $operationService, ?Account $account, ?Operation $operation)
+    public function form(Request $request, OperationService $operationService, ?Account $account, ?Operation $operation)
     {
         $member = $this->getUser();
 
@@ -117,7 +117,7 @@ class OperationController extends AbstractController
     /**
      * @Route("/third-parties.json", name="operation_third_party_list")
      */
-    public function thirdPartyAction(Request $request, OperationService $operationService)
+    public function thirdParty(Request $request, OperationService $operationService)
     {
         $thirdParties = $operationService->findThirdParties(
             $this->getUser(),

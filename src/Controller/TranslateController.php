@@ -14,7 +14,7 @@ class TranslateController extends AbstractController
     /**
      * @Route("/translations.js", defaults={"_format"="js"})
      */
-    public function listAction(TranslatorInterface $translator)
+    public function list(TranslatorInterface $translator)
     {
         $translations = [
             'payment_method_initial_balance' => $translator->trans('payment_method.initial_balance'),
