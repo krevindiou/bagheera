@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\AccountImport;
 use App\Entity\Member;
 use App\Form\Type\MemberChangePasswordFormType;
 use App\Form\Type\MemberForgotPasswordFormType;
 use App\Form\Type\MemberProfileFormType;
 use App\Form\Type\MemberRegisterFormType;
+use App\Repository\AccountImportRepository;
+use App\Repository\MemberRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
@@ -37,6 +38,8 @@ class MemberService
     private $accountService;
     private $cryptService;
     private $templating;
+    private $memberRepository;
+    private $accountImportRepository;
 
     public function __construct(
         $secret,
@@ -52,7 +55,9 @@ class MemberService
         BankService $bankService,
         AccountService $accountService,
         CryptService $cryptService,
-        EngineInterface $templating
+        EngineInterface $templating,
+        MemberRepository $memberRepository,
+        AccountImportRepository $accountImportRepository
     ) {
         $this->secret = $secret;
         $this->logger = $logger;
@@ -68,6 +73,8 @@ class MemberService
         $this->accountService = $accountService;
         $this->cryptService = $cryptService;
         $this->templating = $templating;
+        $this->memberRepository = $memberRepository;
+        $this->accountImportRepository = $accountImportRepository;
     }
 
     /**
@@ -150,7 +157,7 @@ class MemberService
      */
     public function sendChangePasswordEmail(string $email): bool
     {
-        $member = $this->em->getRepository(Member::class)
+        $member = $this->memberRepository
             ->findOneBy(['email' => $email])
         ;
 
@@ -237,7 +244,7 @@ class MemberService
             if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' === $data['type']) {
                 $now = new \DateTime();
                 if ($data['expiration'] >= $now->format(\DateTime::ISO8601)) {
-                    return $this->em->getRepository(Member::class)
+                    return $this->memberRepository
                         ->findOneBy(['email' => $data['email']])
                     ;
                 }
@@ -297,7 +304,7 @@ class MemberService
      */
     public function getImportProgress(Member $member): ?array
     {
-        return $this->em->getRepository(AccountImport::class)->getImportProgress($member);
+        return $this->accountImportRepository->getImportProgress($member);
     }
 
     /**
@@ -371,7 +378,7 @@ class MemberService
 
         if ($data && null !== ($data = json_decode($data, true))) {
             if (isset($data['type'], $data['email']) && 'register' === $data['type']) {
-                return $this->em->getRepository(Member::class)
+                return $this->memberRepository
                     ->findOneBy(['email' => $data['email']])
                 ;
             }

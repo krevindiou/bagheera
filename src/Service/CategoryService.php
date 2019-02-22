@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Category;
+use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManagerInterface;
 
 class CategoryService
 {
-    private $em;
+    private $categoryRepository;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(CategoryRepository $categoryRepository)
     {
-        $this->em = $em;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function getList(): ArrayCollection
     {
-        return $this->em->getRepository(Category::class)->getList();
+        return $this->categoryRepository->getList();
     }
 }

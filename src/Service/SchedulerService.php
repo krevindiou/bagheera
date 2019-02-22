@@ -10,6 +10,8 @@ use App\Entity\Operation;
 use App\Entity\PaymentMethod;
 use App\Entity\Scheduler;
 use App\Form\Type\SchedulerFormType;
+use App\Repository\OperationRepository;
+use App\Repository\SchedulerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Pagerfanta\Pagerfanta;
@@ -25,19 +27,25 @@ class SchedulerService
     private $formFactory;
     private $validator;
     private $operationService;
+    private $operationRepository;
+    private $schedulerRepository;
 
     public function __construct(
         LoggerInterface $logger,
         EntityManagerInterface $em,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
-        OperationService $operationService
+        OperationService $operationService,
+        OperationRepository $operationRepository,
+        SchedulerRepository $schedulerRepository
     ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->operationService = $operationService;
+        $this->operationRepository = $operationRepository;
+        $this->schedulerRepository = $schedulerRepository;
     }
 
     /**
@@ -45,7 +53,7 @@ class SchedulerService
      */
     public function getList(Account $account, int $currentPage = 1): Pagerfanta
     {
-        return $this->em->getRepository(Scheduler::class)->getList($account, $currentPage);
+        return $this->schedulerRepository->getList($account, $currentPage);
     }
 
     /**
@@ -136,7 +144,7 @@ class SchedulerService
 
         foreach ($schedulers as $scheduler) {
             $startDate = $scheduler->getValueDate();
-            $result = $this->em->getRepository(Operation::class)->getLastScheduledOperationDate($scheduler);
+            $result = $this->operationRepository->getLastScheduledOperationDate($scheduler);
 
             $lastOperationDate = null;
             if (isset($result[0]['valueDate'])) {

@@ -5,30 +5,32 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Account;
-use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\OperationSearch;
-use App\Entity\PaymentMethod;
 use App\Form\Type\OperationSearchFormType;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\CategoryRepository;
+use App\Repository\PaymentMethodRepository;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class OperationSearchService
 {
-    private $em;
     private $formFactory;
     private $requestStack;
+    private $categoryRepository;
+    private $paymentMethodRepository;
 
     public function __construct(
-        EntityManagerInterface $em,
         FormFactoryInterface $formFactory,
-        RequestStack $requestStack
+        RequestStack $requestStack,
+        CategoryRepository $categoryRepository,
+        PaymentMethodRepository $paymentMethodRepository
     ) {
-        $this->em = $em;
         $this->formFactory = $formFactory;
         $this->requestStack = $requestStack;
+        $this->categoryRepository = $categoryRepository;
+        $this->paymentMethodRepository = $paymentMethodRepository;
     }
 
     /**
@@ -64,12 +66,12 @@ class OperationSearchService
             $operationSearch->setThirdParty($sessionSearch[$account->getAccountId()]['thirdParty']);
 
             if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
-                $categories = $this->em->getRepository(Category::class)->getCategories($sessionSearch[$account->getAccountId()]['categories']);
+                $categories = $this->categoryRepository->getCategories($sessionSearch[$account->getAccountId()]['categories']);
                 $operationSearch->setCategories($categories);
             }
 
             if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
-                $paymentMethods = $this->em->getRepository(PaymentMethod::class)->getPaymentMethods($sessionSearch[$account->getAccountId()]['paymentMethods']);
+                $paymentMethods = $this->paymentMethodRepository->getPaymentMethods($sessionSearch[$account->getAccountId()]['paymentMethods']);
                 $operationSearch->setPaymentMethods($paymentMethods);
             }
 

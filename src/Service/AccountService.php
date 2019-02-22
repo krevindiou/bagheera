@@ -10,6 +10,7 @@ use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\PaymentMethod;
 use App\Form\Type\AccountFormType;
+use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -26,6 +27,7 @@ class AccountService
     private $validator;
     private $translator;
     private $operationService;
+    private $accountRepository;
 
     public function __construct(
         LoggerInterface $logger,
@@ -33,7 +35,8 @@ class AccountService
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         TranslatorInterface $translator,
-        OperationService $operationService
+        OperationService $operationService,
+        AccountRepository $accountRepository
     ) {
         $this->logger = $logger;
         $this->em = $em;
@@ -41,6 +44,7 @@ class AccountService
         $this->validator = $validator;
         $this->translator = $translator;
         $this->operationService = $operationService;
+        $this->accountRepository = $accountRepository;
     }
 
     /**
@@ -48,7 +52,7 @@ class AccountService
      */
     public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection
     {
-        return $this->em->getRepository(Account::class)->getList($member, $bank, $deleted);
+        return $this->accountRepository->getList($member, $bank, $deleted);
     }
 
     /**
@@ -183,7 +187,7 @@ class AccountService
     {
         $balance = 0;
         if ($member === $account->getBank()->getMember()) {
-            $balance = $this->em->getRepository(Account::class)->getBalance($account, $reconciledOnly);
+            $balance = $this->accountRepository->getBalance($account, $reconciledOnly);
         }
 
         return $balance;

@@ -11,12 +11,18 @@ use App\Entity\Operation;
 use App\Entity\OperationSearch;
 use App\Entity\Report;
 use App\Entity\Scheduler;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class OperationRepository extends EntityRepository
+class OperationRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, Operation::class);
+    }
+
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): Pagerfanta
     {
         $params = [

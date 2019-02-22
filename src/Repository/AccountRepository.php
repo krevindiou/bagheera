@@ -7,11 +7,17 @@ namespace App\Repository;
 use App\Entity\Account;
 use App\Entity\Bank;
 use App\Entity\Member;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class AccountRepository extends EntityRepository
+class AccountRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, Account::class);
+    }
+
     public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection
     {
         $dql = 'SELECT a FROM App:Account a ';

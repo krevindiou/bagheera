@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
-use App\Entity\Account;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\AccountRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -21,11 +20,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ReportFormType extends AbstractType
 {
-    private $em;
+    private $accountRepository;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(AccountRepository $accountRepository)
     {
-        $this->em = $em;
+        $this->accountRepository = $accountRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -144,7 +143,7 @@ class ReportFormType extends AbstractType
                             [
                                 'label' => 'report.accounts',
                                 'class' => 'App:Account',
-                                'choices' => $this->em->getRepository(Account::class)->getActiveAccounts($member),
+                                'choices' => $this->accountRepository->getActiveAccounts($member),
                                 'placeholder' => '',
                                 'required' => false,
                                 'multiple' => true,

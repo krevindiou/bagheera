@@ -6,15 +6,18 @@ namespace App\Service;
 
 use App\Entity\Account;
 use App\Entity\AccountImport;
+use App\Repository\AccountImportRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class AccountImportService
 {
     private $em;
+    private $accountImportRepository;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, AccountImportRepository $accountImportRepository)
     {
         $this->em = $em;
+        $this->accountImportRepository = $accountImportRepository;
     }
 
     /**
@@ -22,7 +25,7 @@ class AccountImportService
      */
     public function getCurrentImport(Account $account): AccountImport
     {
-        return $this->em->getRepository(AccountImport::class)->findOneBy(
+        return $this->accountImportRepository->findOneBy(
             [
                 'account' => $account->getAccountId(),
                 'finished' => 0,
@@ -112,6 +115,6 @@ class AccountImportService
      */
     protected function getNextImportId(Account $account): int
     {
-        return $this->em->getRepository(AccountImport::class)->getNextImportId($account);
+        return $this->accountImportRepository->getNextImportId($account);
     }
 }

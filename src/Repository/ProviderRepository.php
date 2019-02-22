@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Member;
+use App\Entity\Provider;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class ProviderRepository extends EntityRepository
+class ProviderRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, Provider::class);
+    }
+
     public function getAvailableProviders(Member $member): ArrayCollection
     {
         // Retrieve used providers

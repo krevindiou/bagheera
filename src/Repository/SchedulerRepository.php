@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Account;
-use Doctrine\ORM\EntityRepository;
+use App\Entity\Scheduler;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class SchedulerRepository extends EntityRepository
+class SchedulerRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, Scheduler::class);
+    }
+
     public function getList(Account $account, int $currentPage = 1): Pagerfanta
     {
         $params = [

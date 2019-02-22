@@ -8,6 +8,7 @@ use App\Entity\Bank;
 use App\Entity\Member;
 use App\Form\Type\BankChooseFormType;
 use App\Form\Type\BankUpdateFormType;
+use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -23,6 +24,7 @@ class BankService
     private $formFactory;
     private $validator;
     private $accountService;
+    private $bankRepository;
     private $projectDir;
     private $environment;
 
@@ -32,6 +34,7 @@ class BankService
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         AccountService $accountService,
+        BankRepository $bankRepository,
         $projectDir,
         $environment
     ) {
@@ -40,6 +43,7 @@ class BankService
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->accountService = $accountService;
+        $this->bankRepository = $bankRepository;
         $this->projectDir = $projectDir;
         $this->environment = $environment;
     }
@@ -49,7 +53,7 @@ class BankService
      */
     public function getList(Member $member, bool $activeOnly = true): ArrayCollection
     {
-        return $this->em->getRepository(Bank::class)->getList($member, $activeOnly);
+        return $this->bankRepository->getList($member, $activeOnly);
     }
 
     /**

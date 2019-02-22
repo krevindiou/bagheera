@@ -6,9 +6,11 @@ namespace App\Service;
 
 use App\Entity\Account;
 use App\Entity\Member;
-use App\Entity\Operation;
 use App\Entity\Report;
 use App\Form\Type\ReportFormType;
+use App\Repository\AccountRepository;
+use App\Repository\OperationRepository;
+use App\Repository\ReportRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -22,17 +24,26 @@ class ReportService
     private $em;
     private $formFactory;
     private $validator;
+    private $accountRepository;
+    private $reportRepository;
+    private $operationRepository;
 
     public function __construct(
         LoggerInterface $logger,
         EntityManagerInterface $em,
         FormFactoryInterface $formFactory,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        AccountRepository $accountRepository,
+        ReportRepository $reportRepository,
+        OperationRepository $operationRepository
     ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
+        $this->accountRepository = $accountRepository;
+        $this->reportRepository = $reportRepository;
+        $this->operationRepository = $operationRepository;
     }
 
     /**
@@ -40,7 +51,7 @@ class ReportService
      */
     public function getList(Member $member): ArrayCollection
     {
-        return $this->em->getRepository(Report::class)->getList($member);
+        return $this->reportRepository->getList($member);
     }
 
     /**
@@ -48,7 +59,7 @@ class ReportService
      */
     public function getHomepageList(Member $member): ArrayCollection
     {
-        return $this->em->getRepository(Report::class)->getHomepageList($member);
+        return $this->reportRepository->getHomepageList($member);
     }
 
     /**
@@ -146,7 +157,7 @@ class ReportService
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (0 === count($accounts)) {
-                $accounts = $this->em->getRepository(Account::class)->getList($member, null, false);
+                $accounts = $this->accountRepository->getList($member, null, false);
             }
 
             $results = [];
@@ -238,7 +249,7 @@ class ReportService
      */
     public function getGraphValues(Report $report, array $accounts, string $type): array
     {
-        return $this->em->getRepository(Operation::class)->getGraphValues($report, $accounts, $type);
+        return $this->operationRepository->getGraphValues($report, $accounts, $type);
     }
 
     /**
@@ -262,9 +273,7 @@ class ReportService
             $startDate->modify('First day of -11 months');
         }
 
-        $operationRepository = $this->em->getRepository(Operation::class);
-
-        $data = $operationRepository->getTotalByMonth($member, $startDate, $endDate, $account);
+        $data = $this->operationRepository->getTotalByMonth($member, $startDate, $endDate, $account);
 
         if (!empty($data)) {
             $tmpValues = [];

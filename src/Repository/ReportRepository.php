@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Member;
+use App\Entity\Report;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class ReportRepository extends EntityRepository
+class ReportRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, Report::class);
+    }
+
     public function getList(Member $member): ArrayCollection
     {
         $reports = [];

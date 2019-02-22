@@ -10,6 +10,7 @@ use App\Entity\Operation;
 use App\Entity\OperationSearch;
 use App\Entity\PaymentMethod;
 use App\Form\Type\OperationFormType;
+use App\Repository\OperationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
@@ -23,6 +24,7 @@ class OperationService
     private $em;
     private $formFactory;
     private $validator;
+    private $operationRepository;
     private $categoriesId;
 
     public function __construct(
@@ -30,12 +32,14 @@ class OperationService
         EntityManagerInterface $em,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
+        OperationRepository $operationRepository,
         $categoriesId
     ) {
         $this->logger = $logger;
         $this->em = $em;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
+        $this->operationRepository = $operationRepository;
         $this->categoriesId = $categoriesId;
     }
 
@@ -50,7 +54,7 @@ class OperationService
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): ?Pagerfanta
     {
         if ($account->getBank()->getMember() === $member) {
-            return $this->em->getRepository(Operation::class)->getList($member, $account, $currentPage, $operationSearch);
+            return $this->operationRepository->getList($member, $account, $currentPage, $operationSearch);
         }
     }
 
@@ -153,7 +157,7 @@ class OperationService
 
     public function findThirdParties(Member $member, string $queryString = null): array
     {
-        return $this->em->getRepository(Operation::class)->findThirdParties($member, $queryString);
+        return $this->operationRepository->findThirdParties($member, $queryString);
     }
 
     /**
@@ -252,7 +256,7 @@ class OperationService
             return null;
         }
 
-        return $this->em->getRepository(Operation::class)->getLastFromCategory($member, $category);
+        return $this->operationRepository->getLastFromCategory($member, $category);
     }
 
     /**
@@ -260,7 +264,7 @@ class OperationService
      */
     public function getLastBiggestExpense(Member $member, \DateTime $since): ?Operation
     {
-        return $this->em->getRepository(Operation::class)->getLastBiggestExpense($member, $since);
+        return $this->operationRepository->getLastBiggestExpense($member, $since);
     }
 
     /**

@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Bank;
 use App\Entity\Member;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class BankRepository extends EntityRepository
+class BankRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, Bank::class);
+    }
+
     public function getList(Member $member, bool $activeOnly = true): ArrayCollection
     {
         $banks = [];

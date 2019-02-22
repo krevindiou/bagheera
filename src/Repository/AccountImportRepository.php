@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Account;
+use App\Entity\AccountImport;
 use App\Entity\Member;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
-class AccountImportRepository extends EntityRepository
+class AccountImportRepository extends ServiceEntityRepository
 {
+    public function __construct(RegistryInterface $registry)
+    {
+        parent::__construct($registry, AccountImport::class);
+    }
+
     public function getNextImportId(Account $account): int
     {
         $dql = 'SELECT MAX(i.importId) ';
