@@ -202,8 +202,9 @@ class Member implements UserInterface
         return ['ROLE_USER'];
     }
 
-    public function getSalt(): void
+    public function getSalt(): ?string
     {
+        return null;
     }
 
     public function getUsername(): ?string
