@@ -29,7 +29,7 @@ class LoginListener
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event): void
     {
         $member = $event->getAuthenticationToken()->getUser();
-        if (null === $member || !$member instanceof Member) {
+        if (!$member instanceof Member) {
             return;
         }
 
