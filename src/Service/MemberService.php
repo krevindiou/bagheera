@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\AccountImport;
 use App\Entity\Member;
 use App\Form\Type\MemberChangePasswordFormType;
 use App\Form\Type\MemberForgotPasswordFormType;
@@ -149,7 +150,7 @@ class MemberService
      */
     public function sendChangePasswordEmail(string $email): bool
     {
-        $member = $this->em->getRepository('App:Member')
+        $member = $this->em->getRepository(Member::class)
             ->findOneBy(['email' => $email])
         ;
 
@@ -236,7 +237,7 @@ class MemberService
             if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' === $data['type']) {
                 $now = new \DateTime();
                 if ($data['expiration'] >= $now->format(\DateTime::ISO8601)) {
-                    return $this->em->getRepository('App:Member')
+                    return $this->em->getRepository(Member::class)
                         ->findOneBy(['email' => $data['email']])
                     ;
                 }
@@ -296,7 +297,7 @@ class MemberService
      */
     public function getImportProgress(Member $member): ?array
     {
-        return $this->em->getRepository('App:AccountImport')->getImportProgress($member);
+        return $this->em->getRepository(AccountImport::class)->getImportProgress($member);
     }
 
     /**
@@ -370,7 +371,7 @@ class MemberService
 
         if ($data && null !== ($data = json_decode($data, true))) {
             if (isset($data['type'], $data['email']) && 'register' === $data['type']) {
-                return $this->em->getRepository('App:Member')
+                return $this->em->getRepository(Member::class)
                     ->findOneBy(['email' => $data['email']])
                 ;
             }

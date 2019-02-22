@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Account;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -166,7 +167,7 @@ class OperationFormType extends AbstractType
                             'required' => false,
                             'placeholder' => 'operation.external_account',
                             'class' => 'App:Account',
-                            'choices' => $this->em->getRepository('App:Account')->getTransferableAccounts($account),
+                            'choices' => $this->em->getRepository(Account::class)->getTransferableAccounts($account),
                             'attr' => [
                                 'class' => 'input-xlarge',
                             ],

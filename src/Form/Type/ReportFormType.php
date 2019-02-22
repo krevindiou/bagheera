@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Account;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -143,7 +144,7 @@ class ReportFormType extends AbstractType
                             [
                                 'label' => 'report.accounts',
                                 'class' => 'App:Account',
-                                'choices' => $this->em->getRepository('App:Account')->getActiveAccounts($member),
+                                'choices' => $this->em->getRepository(Account::class)->getActiveAccounts($member),
                                 'placeholder' => '',
                                 'required' => false,
                                 'multiple' => true,

@@ -48,7 +48,7 @@ class AccountService
      */
     public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection
     {
-        return $this->em->getRepository('App:Account')->getList($member, $bank, $deleted);
+        return $this->em->getRepository(Account::class)->getList($member, $bank, $deleted);
     }
 
     /**
@@ -183,7 +183,7 @@ class AccountService
     {
         $balance = 0;
         if ($member === $account->getBank()->getMember()) {
-            $balance = $this->em->getRepository('App:Account')->getBalance($account, $reconciledOnly);
+            $balance = $this->em->getRepository(Account::class)->getBalance($account, $reconciledOnly);
         }
 
         return $balance;

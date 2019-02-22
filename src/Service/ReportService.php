@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Account;
 use App\Entity\Member;
+use App\Entity\Operation;
 use App\Entity\Report;
 use App\Form\Type\ReportFormType;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -39,7 +40,7 @@ class ReportService
      */
     public function getList(Member $member): ArrayCollection
     {
-        return $this->em->getRepository('App:Report')->getList($member);
+        return $this->em->getRepository(Report::class)->getList($member);
     }
 
     /**
@@ -47,7 +48,7 @@ class ReportService
      */
     public function getHomepageList(Member $member): ArrayCollection
     {
-        return $this->em->getRepository('App:Report')->getHomepageList($member);
+        return $this->em->getRepository(Report::class)->getHomepageList($member);
     }
 
     /**
@@ -145,7 +146,7 @@ class ReportService
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (0 === count($accounts)) {
-                $accounts = $this->em->getRepository('App:Account')->getList($member, null, false);
+                $accounts = $this->em->getRepository(Account::class)->getList($member, null, false);
             }
 
             $results = [];
@@ -237,7 +238,7 @@ class ReportService
      */
     public function getGraphValues(Report $report, array $accounts, string $type): array
     {
-        return $this->em->getRepository('App:Operation')->getGraphValues($report, $accounts, $type);
+        return $this->em->getRepository(Operation::class)->getGraphValues($report, $accounts, $type);
     }
 
     /**
@@ -261,7 +262,7 @@ class ReportService
             $startDate->modify('First day of -11 months');
         }
 
-        $operationRepository = $this->em->getRepository('App:Operation');
+        $operationRepository = $this->em->getRepository(Operation::class);
 
         $data = $operationRepository->getTotalByMonth($member, $startDate, $endDate, $account);
 

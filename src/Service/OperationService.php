@@ -50,7 +50,7 @@ class OperationService
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): ?Pagerfanta
     {
         if ($account->getBank()->getMember() === $member) {
-            return $this->em->getRepository('App:Operation')->getList($member, $account, $currentPage, $operationSearch);
+            return $this->em->getRepository(Operation::class)->getList($member, $account, $currentPage, $operationSearch);
         }
     }
 
@@ -153,7 +153,7 @@ class OperationService
 
     public function findThirdParties(Member $member, string $queryString = null): array
     {
-        return $this->em->getRepository('App:Operation')->findThirdParties($member, $queryString);
+        return $this->em->getRepository(Operation::class)->findThirdParties($member, $queryString);
     }
 
     /**
@@ -252,7 +252,7 @@ class OperationService
             return null;
         }
 
-        return $this->em->getRepository('App:Operation')->getLastFromCategory($member, $category);
+        return $this->em->getRepository(Operation::class)->getLastFromCategory($member, $category);
     }
 
     /**
@@ -260,7 +260,7 @@ class OperationService
      */
     public function getLastBiggestExpense(Member $member, \DateTime $since): ?Operation
     {
-        return $this->em->getRepository('App:Operation')->getLastBiggestExpense($member, $since);
+        return $this->em->getRepository(Operation::class)->getLastBiggestExpense($member, $since);
     }
 
     /**

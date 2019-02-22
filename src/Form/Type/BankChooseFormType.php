@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Bank;
+use App\Entity\Provider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -34,7 +36,7 @@ class BankChooseFormType extends AbstractType
                 [
                     'label' => 'bank.auto',
                     'class' => 'App:Provider',
-                    'choices' => $this->em->getRepository('App:Provider')->getAvailableProviders($member),
+                    'choices' => $this->em->getRepository(Provider::class)->getAvailableProviders($member),
                     'expanded' => true,
                 ]
             )
@@ -44,7 +46,7 @@ class BankChooseFormType extends AbstractType
                 [
                     'label' => 'bank.manual',
                     'class' => 'App:Bank',
-                    'choices' => $this->em->getRepository('App:Bank')->getActiveManualBanks($member),
+                    'choices' => $this->em->getRepository(Bank::class)->getActiveManualBanks($member),
                     'expanded' => true,
                 ]
             )

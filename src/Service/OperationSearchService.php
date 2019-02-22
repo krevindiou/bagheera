@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Account;
+use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\OperationSearch;
+use App\Entity\PaymentMethod;
 use App\Form\Type\OperationSearchFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\Form;
@@ -62,12 +64,12 @@ class OperationSearchService
             $operationSearch->setThirdParty($sessionSearch[$account->getAccountId()]['thirdParty']);
 
             if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
-                $categories = $this->em->getRepository('App:Category')->getCategories($sessionSearch[$account->getAccountId()]['categories']);
+                $categories = $this->em->getRepository(Category::class)->getCategories($sessionSearch[$account->getAccountId()]['categories']);
                 $operationSearch->setCategories($categories);
             }
 
             if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
-                $paymentMethods = $this->em->getRepository('App:PaymentMethod')->getPaymentMethods($sessionSearch[$account->getAccountId()]['paymentMethods']);
+                $paymentMethods = $this->em->getRepository(PaymentMethod::class)->getPaymentMethods($sessionSearch[$account->getAccountId()]['paymentMethods']);
                 $operationSearch->setPaymentMethods($paymentMethods);
             }
 

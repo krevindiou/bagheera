@@ -22,7 +22,7 @@ class AccountImportService
      */
     public function getCurrentImport(Account $account): AccountImport
     {
-        return $this->em->getRepository('App:AccountImport')->findOneBy(
+        return $this->em->getRepository(AccountImport::class)->findOneBy(
             [
                 'account' => $account->getAccountId(),
                 'finished' => 0,
@@ -112,6 +112,6 @@ class AccountImportService
      */
     protected function getNextImportId(Account $account): int
     {
-        return $this->em->getRepository('App:AccountImport')->getNextImportId($account);
+        return $this->em->getRepository(AccountImport::class)->getNextImportId($account);
     }
 }

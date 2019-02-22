@@ -49,7 +49,7 @@ class BankService
      */
     public function getList(Member $member, bool $activeOnly = true): ArrayCollection
     {
-        return $this->em->getRepository('App:Bank')->getList($member, $activeOnly);
+        return $this->em->getRepository(Bank::class)->getList($member, $activeOnly);
     }
 
     /**

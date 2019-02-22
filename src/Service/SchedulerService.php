@@ -45,7 +45,7 @@ class SchedulerService
      */
     public function getList(Account $account, int $currentPage = 1): Pagerfanta
     {
-        return $this->em->getRepository('App:Scheduler')->getList($account, $currentPage);
+        return $this->em->getRepository(Scheduler::class)->getList($account, $currentPage);
     }
 
     /**
@@ -136,7 +136,7 @@ class SchedulerService
 
         foreach ($schedulers as $scheduler) {
             $startDate = $scheduler->getValueDate();
-            $result = $this->em->getRepository('App:Operation')->getLastScheduledOperationDate($scheduler);
+            $result = $this->em->getRepository(Operation::class)->getLastScheduledOperationDate($scheduler);
 
             $lastOperationDate = null;
             if (isset($result[0]['valueDate'])) {
