@@ -206,8 +206,7 @@ class BankService
             $executableFinder = new PhpExecutableFinder();
 
             $phpBin = $executableFinder->find();
-
-            if (null === $phpBin) {
+            if (false === $phpBin) {
                 $this->logger->err('Unable to find php binary');
 
                 return;
