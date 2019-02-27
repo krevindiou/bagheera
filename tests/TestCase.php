@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  * @internal
  * @coversNothing
  */
-class TestCase extends WebTestCase
+abstract class TestCase extends WebTestCase
 {
     public static $kernel;
     public static $conn;
