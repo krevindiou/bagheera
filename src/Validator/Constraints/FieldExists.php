@@ -11,24 +11,16 @@ use Symfony\Component\Validator\Constraint;
  */
 class FieldExists extends Constraint
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     public $message = 'field_does_not_exist';
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $className;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $field;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $em;
 
     /**

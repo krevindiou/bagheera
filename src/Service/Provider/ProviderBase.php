@@ -17,24 +17,16 @@ abstract class ProviderBase
      */
     public $logger;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     public $key;
 
-    /**
-     * @var Bank
-     */
+    /** @var Bank */
     public $bank;
 
-    /**
-     * @var BankAccess
-     */
+    /** @var BankAccess */
     public $bankAccess;
 
-    /**
-     * @var AccountImportService
-     */
+    /** @var AccountImportService */
     public $accountImportService;
 
     public function setKey(string $key): void
