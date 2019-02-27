@@ -32,8 +32,8 @@ interface ProviderInterface
     /**
      * Converts transactions data to normalized format.
      *
-     * @param Account $account  Account entity
-     * @param array   $data     Data to normalize
+     * @param Account $account Account entity
+     * @param array   $data    Data to normalize
      *
      * @return array
      */
