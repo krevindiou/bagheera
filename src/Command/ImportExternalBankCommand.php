@@ -57,50 +57,50 @@ class ImportExternalBankCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $bank = $this->em->find('App:Bank', $input->getArgument('bank_id'));
+        if (null === $bank) {
+            return null;
+        }
 
-        if (null !== $bank) {
-            $bankAccess = $this->emSecure->find('App:BankAccess', $bank->getBankId());
+        $bankAccess = $this->emSecure->find('App:BankAccess', $bank->getBankId());
+        if (null === $bankAccess) {
+            return null;
+        }
 
-            if (null !== $bankAccess) {
-                try {
-                    $this->provider->setBankAccess($bankAccess);
-                } catch (\RuntimeException $e) {
-                    $this->logger->err($e->getMessage());
+        try {
+            $this->provider->setBankAccess($bankAccess);
+        } catch (\RuntimeException $e) {
+            $this->logger->err($e->getMessage());
 
-                    return 1;
-                }
+            return 1;
+        }
 
-                $accounts = $this->provider->fetchAccounts();
+        $accounts = $this->provider->fetchAccounts();
 
-                $this->accountService->saveMulti($bank, $accounts);
+        $this->accountService->saveMulti($bank, $accounts);
 
-                // Entity manager needs a refresh to fetch new accounts
-                $this->em->refresh($bank);
+        // Entity manager needs a refresh to fetch new accounts
+        $this->em->refresh($bank);
 
-                foreach ($bank->getAccounts() as $account) {
-                    if (null !== $account->getExternalAccountId()) {
-                        $this->accountImportService->initImport($account);
+        foreach ($bank->getAccounts() as $account) {
+            if (null !== $account->getExternalAccountId()) {
+                $this->accountImportService->initImport($account);
 
-                        $transactions = $this->provider->fetchTransactions($account);
+                $transactions = $this->provider->fetchTransactions($account);
 
-                        if (!empty($transactions)) {
-                            $this->operationService->saveMulti(
-                                $account,
-                                $transactions,
-                                function (Account $account, $nb): void {
-                                    $this->accountImportService->updateImport($account, $nb);
-                                }
-                            );
+                if (!empty($transactions)) {
+                    $this->operationService->saveMulti(
+                        $account,
+                        $transactions,
+                        function (Account $account, $nb): void {
+                            $this->accountImportService->updateImport($account, $nb);
                         }
-
-                        $this->accountImportService->closeImport($account);
-                    }
+                    );
                 }
 
-                return 0;
+                $this->accountImportService->closeImport($account);
             }
         }
 
-        return null;
+        return 0;
     }
 }
