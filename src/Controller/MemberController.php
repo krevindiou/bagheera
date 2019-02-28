@@ -83,22 +83,24 @@ class MemberController extends AbstractController
      */
     public function changePasswordPublic(Request $request, MemberService $memberService, $key)
     {
-        if ($member = $memberService->decodeChangePasswordKey($key)) {
-            $form = $memberService->getChangePasswordForm();
+        try {
+            $member = $memberService->decodeChangePasswordKey($key);
+        } catch (\Exception $e) {
+            return $this->redirectToRoute('member_login');
+        }
 
-            $form->handleRequest($request);
+        $form = $memberService->getChangePasswordForm();
 
-            if ($form->isSubmitted()) {
-                if ($form->isValid()) {
-                    if ($memberService->changePassword($member, $form->get('password')->getData())) {
-                        $this->addFlash('success', 'member.change_password.confirmation');
+        $form->handleRequest($request);
 
-                        return $this->redirectToRoute('member_login');
-                    }
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                if ($memberService->changePassword($member, $form->get('password')->getData())) {
+                    $this->addFlash('success', 'member.change_password.confirmation');
+
+                    return $this->redirectToRoute('member_login');
                 }
             }
-        } else {
-            return $this->redirectToRoute('member_login');
         }
 
         return $this->render(

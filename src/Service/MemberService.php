@@ -250,6 +250,8 @@ class MemberService
                 }
             }
         }
+
+        throw new \Exception('Cannot decode key');
     }
 
     /**
