@@ -19,10 +19,7 @@ class ArrayConverter
         $method = 'self::convertFrom'.ucfirst(strtolower($format));
 
         if (is_callable($method)) {
-            return forward_static_call_array(
-                $method,
-                ['content' => $content]
-            );
+            return forward_static_call_array($method, [$content]);
         }
 
         throw new \InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
