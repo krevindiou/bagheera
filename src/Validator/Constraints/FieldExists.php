@@ -20,7 +20,7 @@ class FieldExists extends Constraint
     /** @var string */
     public $field;
 
-    /** @var string */
+    /** @var null|string */
     public $em;
 
     /**
