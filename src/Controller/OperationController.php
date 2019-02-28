@@ -35,8 +35,6 @@ class OperationController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $accountService = $accountService;
-
         $balance = $accountService->getBalance($member, $account);
         $reconciledBalance = $accountService->getBalance($member, $account, true);
 
