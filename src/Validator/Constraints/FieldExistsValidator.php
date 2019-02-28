@@ -29,7 +29,7 @@ class FieldExistsValidator extends ConstraintValidator
             throw new UnexpectedValueException($value, 'string');
         }
 
-        if (null === $value || '' === $value) {
+        if ('' === $value) {
             return;
         }
 
