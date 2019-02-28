@@ -21,7 +21,8 @@ class ReportRepository extends ServiceEntityRepository
     {
         $reports = [];
 
-        $sql = 'SELECT
+        $sql =<<<'EOT'
+        SELECT
             report.report_id,
             report.type AS report_type,
             report.title AS report_title,
@@ -36,21 +37,21 @@ class ReportRepository extends ServiceEntityRepository
             report.month_expenses AS report_month_expenses,
             report.month_incomes AS report_month_incomes,
             report.estimate_duration_value AS report_estimate_duration_value,
-            report.estimate_duration_unit AS report_estimate_duration_unit, ';
-        $sql .= 'array_to_json(array_agg(account)) AS accounts, ';
-        $sql .= 'array_to_json(array_agg(category)) AS categories, ';
-        $sql .= 'array_to_json(array_agg(payment_method)) AS payment_methods ';
-        $sql .= 'FROM report ';
-        $sql .= 'LEFT JOIN report_account ON report.report_id = report_account.report_id ';
-        $sql .= 'LEFT JOIN account ON report_account.account_id = account.account_id ';
-        $sql .= 'LEFT JOIN report_category ON report.report_id = report_category.report_id ';
-        $sql .= 'LEFT JOIN category ON report_category.category_id = category.category_id ';
-        $sql .= 'LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id ';
-        $sql .= 'LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id ';
-        $sql .= 'WHERE report.member_id = :member_id ';
-        $sql .= 'GROUP BY report.report_id ';
-        $sql .= 'ORDER BY report.report_id ASC ';
-
+            report.estimate_duration_unit AS report_estimate_duration_unit,
+        array_to_json(array_agg(account)) AS accounts,
+        array_to_json(array_agg(category)) AS categories,
+        array_to_json(array_agg(payment_method)) AS payment_methods
+        FROM report
+        LEFT JOIN report_account ON report.report_id = report_account.report_id
+        LEFT JOIN account ON report_account.account_id = account.account_id
+        LEFT JOIN report_category ON report.report_id = report_category.report_id
+        LEFT JOIN category ON report_category.category_id = category.category_id
+        LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id
+        LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id
+        WHERE report.member_id = :member_id
+        GROUP BY report.report_id
+        ORDER BY report.report_id ASC
+EOT;
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute(
             [
@@ -121,10 +122,11 @@ class ReportRepository extends ServiceEntityRepository
 
     public function getHomepageList(Member $member): ArrayCollection
     {
-        $dql = 'SELECT r FROM App:Report r ';
-        $dql .= 'WHERE r.member = :member ';
-        $dql .= 'AND r.homepage = :homepage ';
-
+        $dql =<<<'EOT'
+        SELECT r FROM App:Report r
+        WHERE r.member = :member
+        AND r.homepage = :homepage
+EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
         $query->setParameter('homepage', true);

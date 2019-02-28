@@ -20,11 +20,13 @@ class ProviderRepository extends ServiceEntityRepository
     public function getAvailableProviders(Member $member): ArrayCollection
     {
         // Retrieve used providers
-        $dql = 'SELECT p.providerId ';
-        $dql .= 'FROM App:Bank b ';
-        $dql .= 'JOIN b.provider p ';
-        $dql .= 'WHERE b.member = :member ';
-        $dql .= 'AND b.provider IS NOT NULL ';
+        $dql =<<<'EOT'
+        SELECT p.providerId
+        FROM App:Bank b
+        JOIN b.provider p
+        WHERE b.member = :member
+        AND b.provider IS NOT NULL
+EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
 

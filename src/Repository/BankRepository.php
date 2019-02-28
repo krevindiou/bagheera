@@ -21,17 +21,19 @@ class BankRepository extends ServiceEntityRepository
     {
         $banks = [];
 
-        $sql = 'SELECT ( ';
-        $sql .= '  SELECT COALESCE(SUM(operation.credit), 0) - COALESCE(SUM(operation.debit), 0) ';
-        $sql .= '  FROM operation ';
-        $sql .= '  WHERE account.account_id = operation.account_id ';
-        $sql .= ') AS account_balance, ';
-        $sql .= 'bank.bank_id, bank.provider_id AS bank_provider_id, bank.name AS bank_name, bank.is_favorite AS bank_is_favorite, bank.is_closed AS bank_is_closed, bank.is_deleted AS bank_is_deleted, ';
-        $sql .= 'account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted ';
-        $sql .= 'FROM bank ';
-        $sql .= 'LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = false ';
-        $sql .= 'WHERE bank.member_id = :member_id ';
-        $sql .= 'AND bank.is_deleted = false ';
+        $sql =<<<'EOT'
+        SELECT (
+          SELECT COALESCE(SUM(operation.credit), 0) - COALESCE(SUM(operation.debit), 0)
+          FROM operation
+          WHERE account.account_id = operation.account_id
+        ) AS account_balance,
+        bank.bank_id, bank.provider_id AS bank_provider_id, bank.name AS bank_name, bank.is_favorite AS bank_is_favorite, bank.is_closed AS bank_is_closed, bank.is_deleted AS bank_is_deleted,
+        account.account_id, account.name AS account_name, account.currency AS account_currency, account.overdraft_facility AS account_overdraft_facility, account.is_deleted AS account_is_deleted
+        FROM bank
+        LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = false
+        WHERE bank.member_id = :member_id
+        AND bank.is_deleted = false 
+EOT;
         if ($activeOnly) {
             $sql .= 'AND bank.is_closed = false ';
         }
@@ -75,14 +77,15 @@ class BankRepository extends ServiceEntityRepository
 
     public function getActiveManualBanks(Member $member): ArrayCollection
     {
-        $dql = 'SELECT b ';
-        $dql .= 'FROM App:Bank b ';
-        $dql .= 'WHERE b.member = :member ';
-        $dql .= 'AND b.deleted = false ';
-        $dql .= 'AND b.closed = false ';
-        $dql .= 'AND b.provider IS NULL ';
-        $dql .= 'ORDER BY b.name ASC ';
-
+        $dql =<<<'EOT'
+        SELECT b
+        FROM App:Bank b
+        WHERE b.member = :member
+        AND b.deleted = false
+        AND b.closed = false
+        AND b.provider IS NULL
+        ORDER BY b.name ASC
+EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
 
@@ -91,13 +94,14 @@ class BankRepository extends ServiceEntityRepository
 
     public function getActiveBanks(Member $member): ArrayCollection
     {
-        $dql = 'SELECT b ';
-        $dql .= 'FROM App:Bank b ';
-        $dql .= 'WHERE b.member = :member ';
-        $dql .= 'AND b.deleted = false ';
-        $dql .= 'AND b.closed = false ';
-        $dql .= 'ORDER BY b.name ASC ';
-
+        $dql =<<<'EOT'
+        SELECT b
+        FROM App:Bank b
+        WHERE b.member = :member
+        AND b.deleted = false
+        AND b.closed = false
+        ORDER BY b.name ASC
+EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
 

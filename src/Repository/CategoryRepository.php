@@ -20,14 +20,16 @@ class CategoryRepository extends ServiceEntityRepository
     {
         $list = [];
 
-        $dql = 'SELECT c1.type c1_type, c1.name c1_name, c1.categoryId c1_categoryId, ';
-        $dql .= 'c2.name c2_name, c2.categoryId c2_categoryId, ';
-        $dql .= 'c3.name c3_name, c3.categoryId c3_categoryId ';
-        $dql .= 'FROM App:Category c1 ';
-        $dql .= 'LEFT JOIN c1.subCategories c2 ';
-        $dql .= 'LEFT JOIN c2.subCategories c3 ';
-        $dql .= 'WHERE c1.parentCategory IS NULL ';
-        $dql .= 'ORDER BY c1.name ASC, c2.name ASC, c3.name ASC ';
+        $dql =<<<'EOT'
+        SELECT c1.type c1_type, c1.name c1_name, c1.categoryId c1_categoryId,
+        c2.name c2_name, c2.categoryId c2_categoryId,
+        c3.name c3_name, c3.categoryId c3_categoryId
+        FROM App:Category c1
+        LEFT JOIN c1.subCategories c2
+        LEFT JOIN c2.subCategories c3
+        WHERE c1.parentCategory IS NULL
+        ORDER BY c1.name ASC, c2.name ASC, c3.name ASC
+EOT;
         $q = $this->getEntityManager()->createQuery($dql);
         $categories = $q->getResult();
         foreach ($categories as $category) {
@@ -50,10 +52,12 @@ class CategoryRepository extends ServiceEntityRepository
 
     public function getCategories(array $categoriesId): ArrayCollection
     {
-        $dql = 'SELECT c ';
-        $dql .= 'FROM App:Category c ';
-        $dql .= 'WHERE c.categoryId IN ('.implode(', ', $categoriesId).') ';
-        $query = $this->getEntityManager()->createQuery($dql);
+        $dql =<<<'EOT'
+        SELECT c
+        FROM App:Category c
+        WHERE c.categoryId IN (%s)
+EOT;
+        $query = $this->getEntityManager()->createQuery(sprintf($dql, implode(', ', $categoriesId)));
 
         return new ArrayCollection($query->getResult());
     }

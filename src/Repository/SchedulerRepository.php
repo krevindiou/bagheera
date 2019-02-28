@@ -24,7 +24,8 @@ class SchedulerRepository extends ServiceEntityRepository
             ':account_id' => $account->getAccountId(),
         ];
 
-        $sql = 'SELECT
+        $sql =<<<'EOT'
+        SELECT
             scheduler.scheduler_id AS scheduler_id,
             scheduler.third_party AS scheduler_third_party,
             scheduler.debit AS scheduler_debit,
@@ -45,15 +46,14 @@ class SchedulerRepository extends ServiceEntityRepository
             category.name AS category_name,
             payment_method.payment_method_id AS payment_method_id,
             payment_method.name AS payment_method_name
-            ';
-        $sql .= 'FROM scheduler ';
-        $sql .= 'INNER JOIN account ON scheduler.account_id = account.account_id ';
-        $sql .= 'LEFT JOIN account AS transfer_account ON scheduler.transfer_account_id = transfer_account.account_id ';
-        $sql .= 'LEFT JOIN category ON scheduler.category_id = category.category_id ';
-        $sql .= 'LEFT JOIN payment_method ON scheduler.payment_method_id = payment_method.payment_method_id ';
-        $sql .= 'WHERE scheduler.account_id = :account_id ';
-        $sql .= 'ORDER BY scheduler.created_at DESC ';
-
+        FROM scheduler
+        INNER JOIN account ON scheduler.account_id = account.account_id
+        LEFT JOIN account AS transfer_account ON scheduler.transfer_account_id = transfer_account.account_id
+        LEFT JOIN category ON scheduler.category_id = category.category_id
+        LEFT JOIN payment_method ON scheduler.payment_method_id = payment_method.payment_method_id
+        WHERE scheduler.account_id = :account_id
+        ORDER BY scheduler.created_at DESC 
+EOT;
         $conn = $this->getEntityManager()->getConnection();
 
         $getNbResultsCallback = function () use ($sql, $conn, $params) {

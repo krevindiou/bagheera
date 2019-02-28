@@ -17,9 +17,10 @@ class BankAccessRepository extends ServiceEntityRepository
 
     public function delete(BankAccess $bankAccess): void
     {
-        $dql = 'DELETE FROM App:BankAccess b ';
-        $dql .= 'WHERE b.bankId = :bankId ';
-
+        $dql =<<<'EOT'
+        DELETE FROM App:BankAccess b
+        WHERE b.bankId = :bankId
+EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('bankId', $bankAccess->getBankId());
         $query->execute();
