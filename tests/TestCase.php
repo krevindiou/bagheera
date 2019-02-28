@@ -18,7 +18,7 @@ abstract class TestCase extends WebTestCase
 
     protected function setUp(): void
     {
-        if (!self::$kernel) {
+        if (null === self::$kernel) {
             self::$kernel = self::createKernel(['environment' => 'test']);
             self::$kernel->boot();
 
