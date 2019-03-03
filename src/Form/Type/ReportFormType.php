@@ -259,7 +259,7 @@ class ReportFormType extends AbstractType
                                     'report.estimate_duration_unit_month' => 'month',
                                     'report.estimate_duration_unit_year' => 'year',
                                 ],
-                                'placeholderplaceholder' => '',
+                                'placeholder' => '',
                                 'attr' => [
                                     'class' => 'input-small',
                                 ],
