@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Account;
+use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\OperationSearch;
@@ -144,7 +145,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('App:Operation', $operationId);
+                $operation = $this->em->find(Operation::class, $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -170,7 +171,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('App:Operation', $operationId);
+                $operation = $this->em->find(Operation::class, $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -213,7 +214,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->em->find('App:PaymentMethod', $operationArray['payment_method_id'])
+                $this->em->find(PaymentMethod::class, $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {
@@ -285,7 +286,7 @@ class OperationService
      */
     public function getLastSalary(Member $member): ?Operation
     {
-        $category = $this->em->find('App:Category', $this->categoriesId['salary']);
+        $category = $this->em->find(Category::class, $this->categoriesId['salary']);
         if (!$category) {
             return null;
         }
@@ -329,7 +330,7 @@ class OperationService
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
                 $operationBeforeSave = $this->em->find(
-                    'App:Operation',
+                    Operation::class,
                     $operation->getOperationId()
                 );
 
@@ -354,12 +355,12 @@ class OperationService
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER === $operation->getPaymentMethod()->getPaymentMethodId()) {
                     $paymentMethod = $this->em->find(
-                        'App:PaymentMethod',
+                        PaymentMethod::class,
                         PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
                     $paymentMethod = $this->em->find(
-                        'App:PaymentMethod',
+                        PaymentMethod::class,
                         PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
                 }

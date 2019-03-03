@@ -119,7 +119,7 @@ class ReportService
     {
         try {
             foreach ($reportsId as $reportId) {
-                $report = $this->em->find('App:Report', $reportId);
+                $report = $this->em->find(Report::class, $reportId);
 
                 if (null !== $report) {
                     if ($member === $report->getMember()) {

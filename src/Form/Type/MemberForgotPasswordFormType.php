@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Member;
 use App\Validator\Constraints\FieldExists;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -25,7 +26,7 @@ class MemberForgotPasswordFormType extends AbstractType
                     'constraints' => [
                         new NotBlank(),
                         new Email(),
-                        new FieldExists('App:Member', 'email'),
+                        new FieldExists(Member::class, 'email'),
                     ],
                     'attr' => [
                         'class' => 'input-xlarge',

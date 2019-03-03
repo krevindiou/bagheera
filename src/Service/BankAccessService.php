@@ -91,12 +91,12 @@ class BankAccessService
      */
     protected function doSave(Member $member, BankAccess $bankAccess): bool
     {
-        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find(Bank::class, $bankAccess->getBankId());
 
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                $this->em->getRepository('App:BankAccess', 'secure')->delete($bankAccess);
+                $this->em->getRepository(BankAccess::class, 'secure')->delete($bankAccess);
 
                 $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
                 $encryptedPassword = $this->cryptService->encrypt($bankAccess->getPlainPassword(), $this->secret);

@@ -110,7 +110,7 @@ class AccountService
                 $operation = new Operation();
                 $operation->setAccount($form->getData());
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
-                $operation->setPaymentMethod($this->em->find('App:PaymentMethod', PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
+                $operation->setPaymentMethod($this->em->find(PaymentMethod::class, PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
                 if ($form->get('initialBalance')->getData() > 0) {
                     $operation->setCredit(abs($form->get('initialBalance')->getData()));
                 } else {
@@ -135,7 +135,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find('App:Account', $accountId);
+                $account = $this->em->find(Account::class, $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -161,7 +161,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find('App:Account', $accountId);
+                $account = $this->em->find(Account::class, $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {

@@ -131,7 +131,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->em->find('App:Bank', $bankId);
+                $bank = $this->em->find(Bank::class, $bankId);
 
                 if (null !== $bank) {
                     if ($member === $bank->getMember()) {
@@ -157,7 +157,7 @@ class BankService
     {
         try {
             foreach ($banksId as $bankId) {
-                $bank = $this->em->find('App:Bank', $bankId);
+                $bank = $this->em->find(Bank::class, $bankId);
 
                 if (null !== $bank) {
                     if ($member === $bank->getMember()) {

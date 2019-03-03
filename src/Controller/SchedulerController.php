@@ -52,7 +52,7 @@ class SchedulerController extends AbstractController
             $member = $this->getUser();
 
             foreach ($schedulersId as $schedulerId) {
-                $scheduler = $this->getDoctrine()->getManager()->find('App:Scheduler', $schedulerId);
+                $scheduler = $this->getDoctrine()->getManager()->find(Scheduler::class, $schedulerId);
 
                 if (!$scheduler->isOwner($member)) {
                     throw $this->createAccessDeniedException();

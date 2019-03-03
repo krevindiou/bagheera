@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Bank;
 use App\Repository\BankRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -65,7 +66,7 @@ class AccountFormType extends AbstractType
                         [
                             'label' => 'account.bank',
                             'placeholder' => '',
-                            'class' => 'App:Bank',
+                            'class' => Bank::class,
                             'choices' => $this->bankRepository->getActiveBanks($member),
                             'disabled' => $edit,
                             'attr' => [
