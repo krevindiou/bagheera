@@ -82,17 +82,13 @@ class OperationController extends AbstractController
         $member = $this->getUser();
 
         $operationForm = $operationService->getForm($member, $operation, $account);
-        if (null === $operationForm) {
-            throw $this->createNotFoundException();
-        }
-
         $operationForm->handleRequest($request);
 
         if ($operationForm->isSubmitted()) {
-            if ($operationService->saveForm($member, $operationForm)) {
+            if ($operationService->saveForm($member, $operation, $operationForm)) {
                 $this->addFlash('success', 'operation.form_confirmation');
 
-                $accountId = $operationForm->getData()->getAccount()->getAccountId();
+                $accountId = $operationForm->getData()->account->getAccountId();
 
                 if (isset($request->request->get('operation_form')['saveCreate'])) {
                     return $this->redirectToRoute('operation_create', ['accountId' => $accountId]);

@@ -18,36 +18,7 @@ class CategoryRepository extends ServiceEntityRepository
 
     public function getList(): ArrayCollection
     {
-        $list = [];
-
-        $dql =<<<'EOT'
-        SELECT c1.type c1_type, c1.name c1_name, c1.categoryId c1_categoryId,
-        c2.name c2_name, c2.categoryId c2_categoryId,
-        c3.name c3_name, c3.categoryId c3_categoryId
-        FROM App:Category c1
-        LEFT JOIN c1.subCategories c2
-        LEFT JOIN c2.subCategories c3
-        WHERE c1.parentCategory IS NULL
-        ORDER BY c1.name ASC, c2.name ASC, c3.name ASC
-EOT;
-        $q = $this->getEntityManager()->createQuery($dql);
-        $categories = $q->getResult();
-        foreach ($categories as $category) {
-            foreach ($category as $k => $v) {
-                if ('categoryId' === substr($k, -10) && null !== $v) {
-                    $list[$category['c1_type']][$v] = '';
-
-                    $nb = substr($k, 1, 1);
-                    for ($i = 1; $i <= $nb; ++$i) {
-                        $list[$category['c1_type']][$v] .= $category[substr($k, 0, 1).$i.'_name'].' > ';
-                    }
-
-                    $list[$category['c1_type']][$v] = trim($list[$category['c1_type']][$v], '> ');
-                }
-            }
-        }
-
-        return new ArrayCollection($list);
+        return new ArrayCollection($this->findAll());
     }
 
     public function getCategories(array $categoriesId): ArrayCollection

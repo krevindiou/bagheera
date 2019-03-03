@@ -161,6 +161,11 @@ class Operation
         $this->setValueDate(new \DateTime());
     }
 
+    public function setOperationId(?int $operationId): void
+    {
+        $this->operationId = $operationId;
+    }
+
     public function getOperationId(): ?int
     {
         return $this->operationId;

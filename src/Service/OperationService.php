@@ -9,6 +9,7 @@ use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\OperationSearch;
 use App\Entity\PaymentMethod;
+use App\Form\Model\OperationFormModel;
 use App\Form\Type\OperationFormType;
 use App\Repository\OperationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -67,14 +68,29 @@ class OperationService
      */
     public function getForm(Member $member, Operation $operation = null, Account $account = null): ?Form
     {
+        $formModel = new OperationFormModel();
+
         if (null === $operation && null !== $account) {
-            $operation = new Operation();
-            $operation->setAccount($account);
-        } elseif (null !== $operation && $member !== $operation->getAccount()->getBank()->getMember()) {
-            return null;
+            $formModel->account = $account;
+        } elseif (null !== $operation) {
+            if ($member !== $operation->getAccount()->getBank()->getMember()) {
+                return null;
+            }
+
+            $formModel->operationId = $operation->getOperationId();
+            $formModel->account = $operation->getAccount();
+            $formModel->type = null !== $operation->getCredit() ? 'credit' : 'debit';
+            $formModel->thirdParty = $operation->getThirdParty();
+            $formModel->category = $operation->getCategory();
+            $formModel->paymentMethod = $operation->getPaymentMethod();
+            $formModel->valueDate = $operation->getValueDate();
+            $formModel->notes = $operation->getNotes();
+            $formModel->reconciled = $operation->isReconciled();
+            $formModel->amount = null !== $operation->getCredit() ? $operation->getCredit() : $operation->getDebit();
+            $formModel->transferAccount = $operation->getTransferAccount();
         }
 
-        return $this->formFactory->create(OperationFormType::class, $operation);
+        return $this->formFactory->create(OperationFormType::class, $formModel, ['account' => $formModel->account]);
     }
 
     /**
@@ -94,10 +110,28 @@ class OperationService
     /**
      * Saves operation form.
      */
-    public function saveForm(Member $member, Form $form): bool
+    public function saveForm(Member $member, ?Operation $operation, Form $form): bool
     {
         if ($form->isValid()) {
-            return $this->doSave($member, $form->getData());
+            $formModel = $form->getData();
+
+            if (null === $operation) {
+                $operation = new Operation();
+            }
+
+            $operation->setOperationId($formModel->operationId);
+            $operation->setTransferAccount($formModel->transferAccount);
+            $operation->setThirdParty($formModel->thirdParty);
+            $operation->setDebit('debit' === $formModel->type ? $formModel->amount : null);
+            $operation->setCredit('credit' === $formModel->type ? $formModel->amount : null);
+            $operation->setValueDate($formModel->valueDate);
+            $operation->setReconciled($formModel->reconciled);
+            $operation->setNotes($formModel->notes);
+            $operation->setAccount($formModel->account);
+            $operation->setCategory($formModel->category);
+            $operation->setPaymentMethod($formModel->paymentMethod);
+
+            return $this->doSave($member, $operation);
         }
 
         return false;
