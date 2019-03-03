@@ -77,19 +77,15 @@ class SchedulerController extends AbstractController
     public function form(Request $request, SchedulerService $schedulerService, ?Account $account, ?Scheduler $scheduler)
     {
         $schedulerForm = $schedulerService->getForm($scheduler, $account);
-        if (null === $schedulerForm) {
-            throw $this->createNotFoundException();
-        }
-
         $schedulerForm->handleRequest($request);
 
         if ($schedulerForm->isSubmitted()) {
-            if ($schedulerService->saveForm($schedulerForm)) {
+            if ($schedulerService->saveForm($scheduler, $schedulerForm)) {
                 $this->addFlash('success', 'scheduler.form_confirmation');
 
                 return $this->redirectToRoute(
                     'scheduler_list',
-                    ['accountId' => $schedulerForm->getData()->getAccount()->getAccountId()]
+                    ['accountId' => $schedulerForm->getData()->account->getAccountId()]
                 );
             }
         }

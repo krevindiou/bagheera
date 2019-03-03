@@ -159,6 +159,11 @@ class Scheduler
      */
     protected $updatedAt;
 
+    public function setSchedulerId(?int $schedulerId): void
+    {
+        $this->schedulerId = $schedulerId;
+    }
+
     public function getSchedulerId(): ?int
     {
         return $this->schedulerId;

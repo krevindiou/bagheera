@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Account;
+use App\Entity\Category;
+use App\Entity\PaymentMethod;
+use App\Form\Model\SchedulerFormModel;
 use App\Repository\AccountRepository;
+use App\Repository\CategoryRepository;
+use App\Repository\PaymentMethodRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints as Assert;
 
 class SchedulerFormType extends AbstractType
 {
     private $accountRepository;
+    private $categoryRepository;
+    private $paymentMethodRepository;
 
-    public function __construct(AccountRepository $accountRepository)
-    {
+    public function __construct(
+        AccountRepository $accountRepository,
+        CategoryRepository $categoryRepository,
+        PaymentMethodRepository $paymentMethodRepository
+    ) {
         $this->accountRepository = $accountRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->paymentMethodRepository = $paymentMethodRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -33,21 +47,16 @@ class SchedulerFormType extends AbstractType
                 ChoiceType::class,
                 [
                     'label' => 'scheduler.type',
-                    'mapped' => false,
                     'expanded' => true,
-                    'required' => true,
                     'choices' => [
                         'scheduler.type_debit' => 'debit',
                         'scheduler.type_credit' => 'credit',
-                    ],
-                    'constraints' => [
-                        new Assert\NotBlank(),
                     ],
                 ]
             )
             ->add(
                 'thirdParty',
-                null,
+                TextType::class,
                 [
                     'label' => 'scheduler.third_party',
                     'attr' => [
@@ -57,13 +66,26 @@ class SchedulerFormType extends AbstractType
                 ]
             )
             ->add(
+                'amount',
+                MoneyType::class,
+                [
+                    'label' => 'scheduler.amount',
+                    'currency' => $options['account']->getCurrency(),
+                    'attr' => [
+                        'class' => 'input-small',
+                    ],
+                ]
+            )
+            ->add(
                 'category',
-                null,
+                EntityType::class,
                 [
                     'label' => 'scheduler.category',
                     'placeholder' => '',
                     'required' => false,
                     'group_by' => 'type',
+                    'class' => Category::class,
+                    'choices' => $this->categoryRepository->getList(),
                     'attr' => [
                         'class' => 'input-xlarge',
                     ],
@@ -71,13 +93,29 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'paymentMethod',
-                null,
+                EntityType::class,
                 [
                     'label' => 'scheduler.payment_method',
                     'placeholder' => '',
                     'group_by' => 'type',
+                    'class' => PaymentMethod::class,
+                    'choices' => $this->paymentMethodRepository->getList(),
                     'attr' => [
                         'class' => 'input-medium',
+                    ],
+                ]
+            )
+            ->add(
+                'transferAccount',
+                EntityType::class,
+                [
+                    'label' => 'scheduler.transfer_account',
+                    'required' => false,
+                    'placeholder' => 'scheduler.external_account',
+                    'class' => Account::class,
+                    'choices' => $this->accountRepository->getTransferableAccounts($options['account']),
+                    'attr' => [
+                        'class' => 'input-xlarge',
                     ],
                 ]
             )
@@ -98,9 +136,9 @@ class SchedulerFormType extends AbstractType
                 DateType::class,
                 [
                     'label' => 'scheduler.limit_date',
+                    'required' => false,
                     'widget' => 'single_text',
                     'format' => 'yyyy-MM-dd',
-                    'required' => false,
                     'attr' => [
                         'class' => 'input-small calendar',
                     ],
@@ -124,7 +162,7 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'frequencyValue',
-                null,
+                IntegerType::class,
                 [
                     'label' => 'scheduler.frequency_value',
                     'attr' => [
@@ -134,18 +172,19 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'notes',
-                null,
+                TextareaType::class,
                 [
                     'label' => 'scheduler.notes',
+                    'required' => false,
                     'attr' => [
-                        'rows' => 5,
                         'class' => 'input-xlarge',
+                        'rows' => 5,
                     ],
                 ]
             )
             ->add(
                 'reconciled',
-                null,
+                CheckboxType::class,
                 [
                     'label' => 'scheduler.reconciled',
                     'required' => false,
@@ -153,7 +192,7 @@ class SchedulerFormType extends AbstractType
             )
             ->add(
                 'active',
-                null,
+                CheckboxType::class,
                 [
                     'label' => 'scheduler.active',
                     'required' => false,
@@ -170,87 +209,15 @@ class SchedulerFormType extends AbstractType
                 ]
             )
         ;
-
-        $builder->addEventListener(
-            FormEvents::POST_SET_DATA,
-            function (FormEvent $event): void {
-                $form = $event->getForm();
-                $scheduler = $event->getData();
-
-                $account = $scheduler->getAccount();
-
-                $form
-                    ->add(
-                        'amount',
-                        MoneyType::class,
-                        [
-                            'label' => 'scheduler.amount',
-                            'currency' => $account->getCurrency(),
-                            'mapped' => false,
-                            'constraints' => [
-                                new Assert\NotBlank(),
-                            ],
-                            'attr' => [
-                                'class' => 'input-small',
-                            ],
-                        ]
-                    )
-                    ->add(
-                        'transferAccount',
-                        EntityType::class,
-                        [
-                            'label' => 'scheduler.transfer_account',
-                            'required' => false,
-                            'placeholder' => 'scheduler.external_account',
-                            'class' => 'App:Account',
-                            'choices' => $this->accountRepository->getTransferableAccounts($account),
-                            'attr' => [
-                                'class' => 'input-xlarge',
-                            ],
-                        ]
-                    )
-                ;
-
-                $debit = $scheduler->getDebit();
-                $credit = $scheduler->getCredit();
-
-                if (null !== $debit) {
-                    $form->get('type')->setData('debit');
-                    $form->get('amount')->setData($debit);
-                } elseif (null !== $credit) {
-                    $form->get('type')->setData('credit');
-                    $form->get('amount')->setData($credit);
-                } else {
-                    $form->get('type')->setData('debit');
-                }
-            }
-        );
-
-        $builder->addEventListener(
-            FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
-                $form = $event->getForm();
-                $scheduler = $event->getData();
-
-                $type = $form->get('type')->getData();
-                $amount = $form->get('amount')->getData();
-
-                if ('debit' === $type) {
-                    $scheduler->setDebit($amount);
-                    $scheduler->setCredit(null);
-                } elseif ('credit' === $type) {
-                    $scheduler->setDebit(null);
-                    $scheduler->setCredit($amount);
-                }
-            }
-        );
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setRequired('account');
+        $resolver->setAllowedTypes('account', Account::class);
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Scheduler',
+                'data_class' => SchedulerFormModel::class,
             ]
         );
     }
