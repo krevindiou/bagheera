@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Member;
+use App\Form\Model\MemberProfileFormModel;
+use App\Form\Model\MemberRegisterFormModel;
 use App\Form\Type\MemberChangePasswordFormType;
 use App\Form\Type\MemberForgotPasswordFormType;
 use App\Form\Type\MemberProfileFormType;
@@ -82,9 +84,11 @@ class MemberService
      */
     public function getRegisterForm(string $language): Form
     {
+        $formModel = new MemberRegisterFormModel();
+
         return $this->formFactory->create(
             MemberRegisterFormType::class,
-            new Member(),
+            $formModel,
             ['attr' => ['language' => $language]]
         );
     }
@@ -94,7 +98,10 @@ class MemberService
      */
     public function getProfileForm(Member $member): Form
     {
-        return $this->formFactory->create(MemberProfileFormType::class, $member);
+        $formModel = new MemberProfileFormModel();
+        $formModel->email = $member->getEmail();
+
+        return $this->formFactory->create(MemberProfileFormType::class, $formModel);
     }
 
     /**
@@ -110,38 +117,31 @@ class MemberService
         return $this->cryptService->encrypt(json_encode($data), $this->secret);
     }
 
-    /**
-     * Saves member.
-     */
-    public function save(Member $member): bool
+    public function saveRegisterForm(MemberRegisterFormModel $formModel): bool
     {
-        $errors = $this->validator->validate($member);
-
-        if (0 === count($errors)) {
-            if (null !== $member->getMemberId()) {
-                return $this->update($member);
-            }
-
-            return $this->add($member);
+        $errors = $this->validator->validate($formModel);
+        if (0 !== count($errors)) {
+            return false;
         }
 
-        return false;
+        $member = new Member();
+        $member->setEmail($formModel->email);
+        $member->setCountry($formModel->country);
+        $member->setPassword($formModel->plainPassword);
+
+        return $this->add($member);
     }
 
-    /**
-     * Saves member form.
-     */
-    public function saveForm(Form $form): bool
+    public function saveProfileForm(Member $member, MemberProfileFormModel $formModel): bool
     {
-        if ($form->isValid()) {
-            if (null !== $form->getData()->getMemberId()) {
-                return $this->update($form->getData());
-            }
-
-            return $this->add($form->getData());
+        $errors = $this->validator->validate($formModel);
+        if (0 !== count($errors)) {
+            return false;
         }
 
-        return false;
+        $member->setEmail($formModel->email);
+
+        return $this->update($member);
     }
 
     /**

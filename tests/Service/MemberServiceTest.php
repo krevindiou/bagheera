@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Entity\Member;
+use App\Form\Model\MemberProfileFormModel;
+use App\Form\Model\MemberRegisterFormModel;
 use App\Tests\TestCase;
 
 /**
@@ -33,20 +34,19 @@ final class MemberServiceTest extends TestCase
 
     public function testAddMemberWithNoData(): void
     {
-        $member = new Member();
-        $this->assertFalse($this->get('test.app.member')->save($member));
+        $formModel = new MemberRegisterFormModel();
+
+        $this->assertFalse($this->get('test.app.member')->saveRegisterForm($formModel));
     }
 
     public function testAddMember(): void
     {
-        $encoder = $this->get('security.password_encoder');
+        $formModel = new MemberRegisterFormModel();
+        $formModel->email = 'james@example.net';
+        $formModel->plainPassword = 'james123';
+        $formModel->country = 'US';
 
-        $member = new Member();
-        $member->setEmail('james@example.net');
-        $member->setPassword($encoder->encodePassword($member, 'james123'));
-        $member->setCountry('US');
-
-        $this->assertTrue($this->get('test.app.member')->save($member));
+        $this->assertTrue($this->get('test.app.member')->saveRegisterForm($formModel));
     }
 
     public function testGetProfileForm(): void
@@ -61,16 +61,21 @@ final class MemberServiceTest extends TestCase
     public function testUpdateMemberWithNoData(): void
     {
         $member = $this->em->find('App:Member', 1);
-        $member->setEmail('');
 
-        $this->assertFalse($this->get('test.app.member')->save($member));
+        $formModel = new MemberProfileFormModel();
+        $formModel->email = '';
+
+        $this->assertFalse($this->get('test.app.member')->saveProfileForm($member, $formModel));
     }
 
     public function testUpdateMember(): void
     {
         $member = $this->em->find('App:Member', 1);
 
-        $this->assertTrue($this->get('test.app.member')->save($member));
+        $formModel = new MemberProfileFormModel();
+        $formModel->email = 'james@example.net';
+
+        $this->assertTrue($this->get('test.app.member')->saveProfileForm($member, $formModel));
     }
 
     public function testGetForgotPasswordForm(): void

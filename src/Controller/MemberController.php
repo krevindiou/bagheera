@@ -36,7 +36,7 @@ class MemberController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($memberService->saveForm($form)) {
+            if ($memberService->saveRegisterForm($form->getData())) {
                 $this->addFlash('success', 'member.register.confirmation');
 
                 return $this->redirectToRoute('member_login');
@@ -165,7 +165,7 @@ class MemberController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($memberService->saveForm($form)) {
+            if ($memberService->saveProfileForm($this->getUser(), $form->getData())) {
                 $this->addFlash('success', 'member.profile.confirmation');
 
                 return $this->redirectToRoute('member_profile');

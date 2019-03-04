@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Form\Model\MemberRegisterFormModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -88,8 +89,7 @@ class MemberRegisterFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Member',
-                'validation_groups' => ['Default', 'password'],
+                'data_class' => MemberRegisterFormModel::class,
             ]
         );
     }

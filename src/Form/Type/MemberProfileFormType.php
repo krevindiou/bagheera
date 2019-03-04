@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Form\Model\MemberProfileFormModel;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -21,7 +22,7 @@ class MemberProfileFormType extends MemberRegisterFormType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Member',
+                'data_class' => MemberProfileFormModel::class,
             ]
         );
     }

@@ -47,7 +47,7 @@ class Member implements UserInterface
     /**
      * @var string
      *
-     * @Assert\NotBlank(groups={"password"})
+     * @Assert\NotBlank()
      * @Assert\Length(min = 8, max = 4096)
      */
     protected $plainPassword;
