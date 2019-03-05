@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Form\Model\BankUpdateFormModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -16,12 +18,12 @@ class BankUpdateFormType extends AbstractType
         $builder
             ->add(
                 'name',
-                null,
+                TextType::class,
                 [
                     'label' => 'bank.name',
                     'attr' => [
-                        'hasProvider' => (null !== $options['data']->getProvider()),
-                        'bankId' => $options['data']->getBankId(),
+                        'hasProvider' => $options['hasProvider'],
+                        'bankId' => $options['bankId'],
                         'class' => 'input-xlarge',
                     ],
                 ]
@@ -41,9 +43,12 @@ class BankUpdateFormType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setRequired(['hasProvider', 'bankId']);
+        $resolver->setAllowedTypes('hasProvider', 'bool');
+        $resolver->setAllowedTypes('bankId', 'int');
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Bank',
+                'data_class' => BankUpdateFormModel::class,
             ]
         );
     }
