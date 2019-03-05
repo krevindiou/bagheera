@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Member;
 use App\Form\Model\MemberChangePasswordFormModel;
+use App\Form\Model\MemberForgotPasswordFormModel;
 use App\Form\Model\MemberProfileFormModel;
 use App\Form\Model\MemberRegisterFormModel;
 use App\Form\Type\MemberChangePasswordFormType;
@@ -150,7 +151,9 @@ class MemberService
      */
     public function getForgotPasswordForm(): Form
     {
-        return $this->formFactory->create(MemberForgotPasswordFormType::class);
+        $formModel = new MemberForgotPasswordFormModel();
+
+        return $this->formFactory->create(MemberForgotPasswordFormType::class, $formModel);
     }
 
     /**

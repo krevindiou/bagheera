@@ -57,12 +57,11 @@ class MemberController extends AbstractController
     public function forgotPassword(Request $request, MemberService $memberService)
     {
         $form = $memberService->getForgotPasswordForm();
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                if ($memberService->sendChangePasswordEmail($form->get('email')->getData())) {
+                if ($memberService->sendChangePasswordEmail($form->getData()->email)) {
                     $this->addFlash('info', 'member.forgot_password.confirmation');
 
                     return $this->redirectToRoute('member_login');

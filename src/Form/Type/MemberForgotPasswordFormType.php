@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
-use App\Entity\Member;
-use App\Validator\Constraints\FieldExists;
+use App\Form\Model\MemberForgotPasswordFormModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints\Email;
-use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MemberForgotPasswordFormType extends AbstractType
 {
@@ -23,11 +21,6 @@ class MemberForgotPasswordFormType extends AbstractType
                 EmailType::class,
                 [
                     'label' => 'member.email',
-                    'constraints' => [
-                        new NotBlank(),
-                        new Email(),
-                        new FieldExists(Member::class, 'email'),
-                    ],
                     'attr' => [
                         'class' => 'input-xlarge',
                     ],
@@ -44,6 +37,15 @@ class MemberForgotPasswordFormType extends AbstractType
                 ]
             )
         ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults(
+            [
+                'data_class' => MemberForgotPasswordFormModel::class,
+            ]
+        );
     }
 
     public function getName()
