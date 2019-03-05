@@ -106,7 +106,6 @@ class AccountFormType extends AbstractType
                             MoneyType::class,
                             [
                                 'label' => 'account.initial_balance',
-                                'mapped' => false,
                                 'required' => false,
                                 'currency' => $account->getCurrency() ?: false,
                                 'attr' => [

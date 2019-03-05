@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Bank;
 use App\Entity\Member;
+use App\Form\Model\BankChooseFormModel;
 use App\Form\Type\BankChooseFormType;
 use App\Form\Type\BankUpdateFormType;
 use App\Repository\BankRepository;
@@ -62,7 +63,9 @@ class BankService
     public function getForm(Member $member, Bank $bank = null): ?Form
     {
         if (null === $bank) {
-            return $this->formFactory->create(BankChooseFormType::class, null, ['member' => $member]);
+            $formModel = new BankChooseFormModel();
+
+            return $this->formFactory->create(BankChooseFormType::class, $formModel, ['member' => $member]);
         }
         if ($member === $bank->getMember()) {
             return $this->formFactory->create(BankUpdateFormType::class, $bank);
@@ -88,40 +91,26 @@ class BankService
     /**
      * Saves bank form.
      */
-    public function saveForm(Member $member, Form $form)
+    public function saveForm(Member $member, BankChooseFormModel $formModel)
     {
-        if ($form->isValid()) {
-            if ($form->getData() instanceof Bank) {
-                $this->doSave($member, $form->getData());
-
-                return $form->getData();
-            }
-            $data = $form->getData();
-
-            if (null !== $data['provider']) {
-                $bank = new Bank();
-                $bank->setMember($member);
-                $bank->setProvider($data['provider']);
-                $bank->setName($data['provider']->getName());
-
-                $this->doSave($member, $bank);
-
-                return $bank;
-            }
-            if (null === $data['bank']) {
-                $bank = new Bank();
-                $bank->setMember($member);
-                $bank->setName($data['other']);
-
-                $this->doSave($member, $bank);
-
-                return $bank;
-            }
-
-            return $data['bank'];
+        $errors = $this->validator->validate($formModel);
+        if (0 !== count($errors)) {
+            return false;
         }
 
-        return false;
+        $bank = new Bank();
+        $bank->setMember($member);
+
+        if (null !== $formModel->provider) {
+            $bank->setProvider($formModel->provider);
+            $bank->setName($formModel->provider->getName());
+        } elseif (null === $formModel->bank) {
+            $bank->setName($formModel->other);
+        }
+
+        $this->doSave($member, $bank);
+
+        return $bank;
     }
 
     /**

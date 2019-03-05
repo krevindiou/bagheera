@@ -93,11 +93,6 @@ class AccountController extends AbstractController
         $member = $this->getUser();
 
         $accountForm = $accountService->getCreateForm($member, $bank);
-
-        if (null === $accountForm) {
-            throw $this->createNotFoundException();
-        }
-
         $accountForm->handleRequest($request);
 
         if ($accountForm->isSubmitted()) {
@@ -127,11 +122,6 @@ class AccountController extends AbstractController
         $member = $this->getUser();
 
         $accountForm = $accountService->getUpdateForm($member, $account);
-
-        if (null === $accountForm) {
-            throw $this->createNotFoundException();
-        }
-
         $accountForm->handleRequest($request);
 
         if ($accountForm->isSubmitted()) {
