@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\Bank;
 use App\Entity\BankAccess;
 use App\Entity\Member;
+use App\Form\Model\BankAccessFormModel;
 use App\Form\Type\BankAccessFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -54,10 +55,10 @@ class BankAccessService
             return null;
         }
 
-        $bankAccess = new BankAccess();
-        $bankAccess->setBankId($bank->getBankId());
+        $formModel = new BankAccessFormModel();
+        $formModel->bank = $bank;
 
-        return $this->formFactory->create(BankAccessFormType::class, $bankAccess);
+        return $this->formFactory->create(BankAccessFormType::class, $formModel);
     }
 
     /**

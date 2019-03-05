@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Form\Model\BankAccessFormModel;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -16,7 +19,7 @@ class BankAccessFormType extends AbstractType
         $builder
             ->add(
                 'plainLogin',
-                null,
+                TextType::class,
                 [
                     'label' => 'bank_access.login',
                     'attr' => [
@@ -26,7 +29,7 @@ class BankAccessFormType extends AbstractType
             )
             ->add(
                 'plainPassword',
-                null,
+                PasswordType::class,
                 [
                     'label' => 'bank_access.password',
                     'attr' => [
@@ -51,7 +54,7 @@ class BankAccessFormType extends AbstractType
     {
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\BankAccess',
+                'data_class' => BankAccessFormModel::class,
             ]
         );
     }

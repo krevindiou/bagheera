@@ -23,10 +23,6 @@ class BankAccessController extends AbstractController
         $member = $this->getUser();
 
         $bankAccessForm = $bankAccessService->getForm($member, $bank);
-        if (null === $bankAccessForm) {
-            throw $this->createNotFoundException();
-        }
-
         $bankAccessForm->handleRequest($request);
 
         if ($bankAccessForm->isSubmitted()) {
