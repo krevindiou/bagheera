@@ -90,12 +90,11 @@ class MemberController extends AbstractController
         }
 
         $form = $memberService->getChangePasswordForm();
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                if ($memberService->changePassword($member, $form->get('password')->getData())) {
+                if ($memberService->changePassword($member, $form->getData()->password)) {
                     $this->addFlash('success', 'member.change_password.confirmation');
 
                     return $this->redirectToRoute('member_login');
@@ -123,7 +122,7 @@ class MemberController extends AbstractController
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
-                if ($memberService->changePassword($this->getUser(), $form->get('password')->getData())) {
+                if ($memberService->changePassword($this->getUser(), $form->getData()->password)) {
                     $this->addFlash('success', 'member.change_password.confirmation');
 
                     return $this->redirectToRoute($request->get('_route'));

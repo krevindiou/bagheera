@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Member;
+use App\Form\Model\MemberChangePasswordFormModel;
 use App\Form\Model\MemberProfileFormModel;
 use App\Form\Model\MemberRegisterFormModel;
 use App\Form\Type\MemberChangePasswordFormType;
@@ -195,7 +196,9 @@ class MemberService
      */
     public function getChangePasswordForm(): Form
     {
-        return $this->formFactory->create(MemberChangePasswordFormType::class);
+        $formModel = new MemberChangePasswordFormModel();
+
+        return $this->formFactory->create(MemberChangePasswordFormType::class, $formModel);
     }
 
     /**
