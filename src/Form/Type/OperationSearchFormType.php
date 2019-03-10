@@ -4,17 +4,34 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Account;
+use App\Entity\Category;
+use App\Entity\PaymentMethod;
+use App\Form\Model\OperationSearchFormModel;
+use App\Repository\CategoryRepository;
+use App\Repository\PaymentMethodRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OperationSearchFormType extends AbstractType
 {
+    private $categoryRepository;
+    private $paymentMethodRepository;
+
+    public function __construct(
+        CategoryRepository $categoryRepository,
+        PaymentMethodRepository $paymentMethodRepository
+    ) {
+        $this->categoryRepository = $categoryRepository;
+        $this->paymentMethodRepository = $paymentMethodRepository;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -33,7 +50,7 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'thirdParty',
-                null,
+                TextType::class,
                 [
                     'label' => 'operation.third_party',
                     'attr' => [
@@ -43,11 +60,17 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'categories',
-                null,
+                ChoiceType::class,
                 [
                     'label' => 'operation.category',
                     'required' => false,
+                    'multiple' => true,
                     'group_by' => 'type',
+                    'choices' => $this->categoryRepository->getList(),
+                    'choice_label' => 'name',
+                    'choice_value' => function (Category $category = null) {
+                        return $category ? $category->getCategoryId() : '';
+                    },
                     'attr' => [
                         'class' => 'input-xlarge',
                     ],
@@ -55,11 +78,17 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'paymentMethods',
-                null,
+                ChoiceType::class,
                 [
                     'label' => 'operation.payment_method',
                     'required' => false,
+                    'multiple' => true,
                     'group_by' => 'type',
+                    'choices' => $this->paymentMethodRepository->getList(),
+                    'choice_label' => 'name',
+                    'choice_value' => function (PaymentMethod $paymentMethod = null) {
+                        return $paymentMethod ? $paymentMethod->getPaymentMethodId() : '';
+                    },
                     'attr' => [
                         'class' => 'input-medium',
                     ],
@@ -93,7 +122,7 @@ class OperationSearchFormType extends AbstractType
             )
             ->add(
                 'notes',
-                null,
+                TextareaType::class,
                 [
                     'label' => 'operation.notes',
                     'attr' => [
@@ -135,131 +164,74 @@ class OperationSearchFormType extends AbstractType
                     ],
                 ]
             )
+            ->add(
+                'amountComparator1',
+                ChoiceType::class,
+                [
+                    'required' => false,
+                    'placeholder' => '',
+                    'choices' => [
+                        '<' => 'inferiorTo',
+                        '<=' => 'inferiorOrEqualTo',
+                        '=' => 'equalTo',
+                        '>=' => 'superiorOrEqualTo',
+                        '>' => 'superiorTo',
+                    ],
+                    'attr' => [
+                        'class' => 'input-mini',
+                    ],
+                ]
+            )
+            ->add(
+                'amount1',
+                MoneyType::class,
+                [
+                    'label' => 'operation.amount',
+                    'currency' => $options['account']->getCurrency(),
+                    'attr' => [
+                        'class' => 'input-small',
+                    ],
+                ]
+            )
+            ->add(
+                'amountComparator2',
+                ChoiceType::class,
+                [
+                    'required' => false,
+                    'placeholder' => '',
+                    'choices' => [
+                        '<' => 'inferiorTo',
+                        '<=' => 'inferiorOrEqualTo',
+                        '=' => 'equalTo',
+                        '>=' => 'superiorOrEqualTo',
+                        '>' => 'superiorTo',
+                    ],
+                    'attr' => [
+                        'class' => 'input-mini',
+                    ],
+                ]
+            )
+            ->add(
+                'amount2',
+                MoneyType::class,
+                [
+                    'label' => 'operation.amount',
+                    'currency' => $options['account']->getCurrency(),
+                    'attr' => [
+                        'class' => 'input-small',
+                    ],
+                ]
+            )
         ;
-
-        $builder->addEventListener(
-            FormEvents::POST_SET_DATA,
-            function (FormEvent $event): void {
-                $form = $event->getForm();
-                $operationSearch = $event->getData();
-
-                $account = $operationSearch->getAccount();
-
-                $form
-                    ->add(
-                        'amount_comparator_1',
-                        ChoiceType::class,
-                        [
-                            'mapped' => false,
-                            'required' => false,
-                            'placeholder' => '',
-                            'choices' => [
-                                '<' => 'inferiorTo',
-                                '<=' => 'inferiorOrEqualTo',
-                                '=' => 'equalTo',
-                                '>=' => 'superiorOrEqualTo',
-                                '>' => 'superiorTo',
-                            ],
-                            'attr' => [
-                                'class' => 'input-mini',
-                            ],
-                        ]
-                    )
-                    ->add(
-                        'amount_1',
-                        MoneyType::class,
-                        [
-                            'label' => 'operation.amount',
-                            'currency' => $account->getCurrency(),
-                            'mapped' => false,
-                            'attr' => [
-                                'class' => 'input-small',
-                            ],
-                        ]
-                    )
-                    ->add(
-                        'amount_comparator_2',
-                        ChoiceType::class,
-                        [
-                            'mapped' => false,
-                            'required' => false,
-                            'placeholder' => '',
-                            'choices' => [
-                                '<' => 'inferiorTo',
-                                '<=' => 'inferiorOrEqualTo',
-                                '=' => 'equalTo',
-                                '>=' => 'superiorOrEqualTo',
-                                '>' => 'superiorTo',
-                            ],
-                            'attr' => [
-                                'class' => 'input-mini',
-                            ],
-                        ]
-                    )
-                    ->add(
-                        'amount_2',
-                        MoneyType::class,
-                        [
-                            'label' => 'operation.amount',
-                            'currency' => $account->getCurrency(),
-                            'mapped' => false,
-                            'attr' => [
-                                'class' => 'input-small',
-                            ],
-                        ]
-                    )
-                ;
-
-                $formValues = [];
-                if (null !== $operationSearch->getAmountInferiorTo()) {
-                    $formValues[] = [
-                        'amount_comparator' => 'inferiorTo',
-                        'amount' => $operationSearch->getAmountInferiorTo(),
-                    ];
-                }
-                if (null !== $operationSearch->getAmountInferiorOrEqualTo()) {
-                    $formValues[] = [
-                        'amount_comparator' => 'inferiorOrEqualTo',
-                        'amount' => $operationSearch->getAmountInferiorOrEqualTo(),
-                    ];
-                }
-                if (null !== $operationSearch->getAmountEqualTo()) {
-                    $formValues[] = [
-                        'amount_comparator' => 'equalTo',
-                        'amount' => $operationSearch->getAmountEqualTo(),
-                    ];
-                }
-                if (null !== $operationSearch->getAmountSuperiorOrEqualTo()) {
-                    $formValues[] = [
-                        'amount_comparator' => 'superiorOrEqualTo',
-                        'amount' => $operationSearch->getAmountSuperiorOrEqualTo(),
-                    ];
-                }
-                if (null !== $operationSearch->getAmountSuperiorTo()) {
-                    $formValues[] = [
-                        'amount_comparator' => 'superiorTo',
-                        'amount' => $operationSearch->getAmountSuperiorTo(),
-                    ];
-                }
-
-                if (isset($formValues[0])) {
-                    $form->get('amount_comparator_1')->setData($formValues[0]['amount_comparator']);
-                    $form->get('amount_1')->setData($formValues[0]['amount']);
-                }
-
-                if (isset($formValues[1])) {
-                    $form->get('amount_comparator_2')->setData($formValues[1]['amount_comparator']);
-                    $form->get('amount_2')->setData($formValues[1]['amount']);
-                }
-            }
-        );
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setRequired('account');
+        $resolver->setAllowedTypes('account', Account::class);
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\OperationSearch',
+                'data_class' => OperationSearchFormModel::class,
             ]
         );
     }

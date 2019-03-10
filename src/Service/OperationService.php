@@ -8,9 +8,9 @@ use App\Entity\Account;
 use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\Operation;
-use App\Entity\OperationSearch;
 use App\Entity\PaymentMethod;
 use App\Form\Model\OperationFormModel;
+use App\Form\Model\OperationSearchFormModel;
 use App\Form\Type\OperationFormType;
 use App\Repository\OperationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,15 +48,15 @@ class OperationService
     /**
      * Returns operations list.
      *
-     * @param Member          $member          Member entity
-     * @param Account         $account         Account entity
-     * @param int             $currentPage     Page number
-     * @param OperationSearch $operationSearch OperationSearch entity
+     * @param Member                   $member      Member entity
+     * @param Account                  $account     Account entity
+     * @param int                      $currentPage Page number
+     * @param OperationSearchFormModel $formModel   OperationSearch form model
      */
-    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): ?Pagerfanta
+    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): ?Pagerfanta
     {
         if ($account->getBank()->getMember() === $member) {
-            return $this->operationRepository->getList($member, $account, $currentPage, $operationSearch);
+            return $this->operationRepository->getList($member, $account, $currentPage, $formModel);
         }
     }
 

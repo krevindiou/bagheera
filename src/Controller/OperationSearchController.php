@@ -18,14 +18,11 @@ class OperationSearchController extends AbstractController
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
      */
-    public function form(Request $request, OperationSearchService $operationSearchService, Account $account, $display = true)
+    public function form(OperationSearchService $operationSearchService, Account $account, $display = true)
     {
-        $operationSearch = $operationSearchService->getSessionSearch($account);
+        $formModel = $operationSearchService->getSessionSearch($account);
 
-        $operationSearchForm = $operationSearchService->getForm($this->getUser(), $operationSearch, $account);
-        if (null === $operationSearchForm) {
-            throw $this->createNotFoundException();
-        }
+        $operationSearchForm = $operationSearchService->getForm($this->getUser(), $formModel, $account);
 
         return $this->render(
             'OperationSearch/form.html.twig',
@@ -45,21 +42,14 @@ class OperationSearchController extends AbstractController
         if (isset($request->request->get('operation_search_form')['clear'])) {
             $operationSearchService->clearSessionSearch($account);
         } else {
-            $operationSearch = $operationSearchService->getSessionSearch($account);
+            $formModel = $operationSearchService->getSessionSearch($account);
 
-            $operationSearchForm = $operationSearchService->getForm($this->getUser(), $operationSearch, $account);
-            if (null === $operationSearchForm) {
-                throw $this->createNotFoundException();
-            }
-
+            $operationSearchForm = $operationSearchService->getForm($this->getUser(), $formModel, $account);
             $operationSearchForm->handleRequest($request);
 
             if ($operationSearchForm->isSubmitted()) {
                 if ($operationSearchForm->isValid()) {
-                    $data = $request->request->get('operation_search_form');
-                    $data['amount_1'] = '' !== $data['amount_1'] ? $data['amount_1'] * 10000 : '';
-                    $data['amount_2'] = '' !== $data['amount_2'] ? $data['amount_2'] * 10000 : '';
-                    $operationSearchService->setSessionSearch($account, $data);
+                    $operationSearchService->setSessionSearch($account, $operationSearchForm->getData());
                 }
             }
         }

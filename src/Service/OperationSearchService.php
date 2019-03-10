@@ -6,7 +6,7 @@ namespace App\Service;
 
 use App\Entity\Account;
 use App\Entity\Member;
-use App\Entity\OperationSearch;
+use App\Form\Model\OperationSearchFormModel;
 use App\Form\Type\OperationSearchFormType;
 use App\Repository\CategoryRepository;
 use App\Repository\PaymentMethodRepository;
@@ -36,108 +36,41 @@ class OperationSearchService
     /**
      * Returns operationSearch form.
      *
-     * @param Member          $member          Member entity
-     * @param OperationSearch $operationSearch OperationSearch entity
-     * @param Account         $account         Account entity for new operationSearch
+     * @param Member                   $member    Member entity
+     * @param OperationSearchFormModel $formModel OperationSearch form model
+     * @param Account                  $account   Account entity for new operationSearch
      */
-    public function getForm(Member $member, OperationSearch $operationSearch = null, Account $account = null): ?Form
+    public function getForm(Member $member, ?OperationSearchFormModel $formModel, Account $account = null): ?Form
     {
-        if (null === $operationSearch && null !== $account) {
-            $operationSearch = new OperationSearch();
-            $operationSearch->setAccount($account);
-        } elseif (null !== $operationSearch && $member !== $operationSearch->getAccount()->getBank()->getMember()) {
-            return null;
+        if (null === $formModel && null !== $account) {
+            $formModel = new OperationSearchFormModel();
+            $formModel->account = $account;
         }
 
-        return $this->formFactory->create(OperationSearchFormType::class, $operationSearch);
+        return $this->formFactory->create(OperationSearchFormType::class, $formModel, ['account' => $formModel->account]);
     }
 
     /**
      * Gets operationSearch from session.
      */
-    public function getSessionSearch(Account $account): ?OperationSearch
+    public function getSessionSearch(Account $account): ?OperationSearchFormModel
     {
-        $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
-
-        if (is_array($sessionSearch) && isset($sessionSearch[$account->getAccountId()])) {
-            $operationSearch = new OperationSearch();
-            $operationSearch->setAccount($account);
-            $operationSearch->setType($sessionSearch[$account->getAccountId()]['type']);
-            $operationSearch->setThirdParty($sessionSearch[$account->getAccountId()]['thirdParty']);
-
-            if (isset($sessionSearch[$account->getAccountId()]['categories'])) {
-                $categories = $this->categoryRepository->getCategories($sessionSearch[$account->getAccountId()]['categories']);
-                $operationSearch->setCategories($categories);
-            }
-
-            if (isset($sessionSearch[$account->getAccountId()]['paymentMethods'])) {
-                $paymentMethods = $this->paymentMethodRepository->getPaymentMethods($sessionSearch[$account->getAccountId()]['paymentMethods']);
-                $operationSearch->setPaymentMethods($paymentMethods);
-            }
-
-            for ($i = 1; $i <= 2; ++$i) {
-                $amount = '' !== $sessionSearch[$account->getAccountId()]['amount_'.$i] ? (int) $sessionSearch[$account->getAccountId()]['amount_'.$i] : null;
-
-                switch ($sessionSearch[$account->getAccountId()]['amount_comparator_'.$i]) {
-                    case 'inferiorTo':
-                        $operationSearch->setAmountInferiorTo($amount);
-
-                        break;
-                    case 'inferiorOrEqualTo':
-                        $operationSearch->setAmountInferiorOrEqualTo($amount);
-
-                        break;
-                    case 'equalTo':
-                        $operationSearch->setAmountEqualTo($amount);
-
-                        break;
-                    case 'superiorOrEqualTo':
-                        $operationSearch->setAmountSuperiorOrEqualTo($amount);
-
-                        break;
-                    case 'superiorTo':
-                        $operationSearch->setAmountSuperiorTo($amount);
-
-                        break;
-                }
-            }
-
-            if ('' !== $sessionSearch[$account->getAccountId()]['valueDateStart']) {
-                $operationSearch->setValueDateStart(
-                    new \DateTime($sessionSearch[$account->getAccountId()]['valueDateStart'])
-                );
-            }
-
-            if ('' !== $sessionSearch[$account->getAccountId()]['valueDateEnd']) {
-                $operationSearch->setValueDateEnd(
-                    new \DateTime($sessionSearch[$account->getAccountId()]['valueDateEnd'])
-                );
-            }
-
-            $operationSearch->setNotes($sessionSearch[$account->getAccountId()]['notes']);
-
-            $isReconciled = null;
-            if ('1' === $sessionSearch[$account->getAccountId()]['reconciled']) {
-                $isReconciled = true;
-            } elseif ('0' === $sessionSearch[$account->getAccountId()]['reconciled']) {
-                $isReconciled = false;
-            }
-            $operationSearch->setReconciled($isReconciled);
-
-            return $operationSearch;
+        $search = $this->requestStack->getCurrentRequest()->getSession()->get('search');
+        if (!isset($search[$account->getAccountId()])) {
+            return null;
         }
 
-        return null;
+        return $search[$account->getAccountId()];
     }
 
     /**
      * Sets operationSearch from session.
      */
-    public function setSessionSearch(Account $account, array $search): void
+    public function setSessionSearch(Account $account, OperationSearchFormModel $formModel): void
     {
         $sessionSearch = $this->requestStack->getCurrentRequest()->getSession()->get('search');
 
-        $sessionSearch[$account->getAccountId()] = $search;
+        $sessionSearch[$account->getAccountId()] = $formModel;
 
         $this->requestStack->getCurrentRequest()->getSession()->set('search', $sessionSearch);
     }

@@ -8,9 +8,9 @@ use App\Entity\Account;
 use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\Operation;
-use App\Entity\OperationSearch;
 use App\Entity\Report;
 use App\Entity\Scheduler;
+use App\Form\Model\OperationSearchFormModel;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
@@ -23,7 +23,7 @@ class OperationRepository extends ServiceEntityRepository
         parent::__construct($registry, Operation::class);
     }
 
-    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): Pagerfanta
+    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): Pagerfanta
     {
         $params = [
             ':account_id' => $account->getAccountId(),
@@ -59,66 +59,77 @@ class OperationRepository extends ServiceEntityRepository
         LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id
         WHERE operation.account_id = :account_id 
 EOT;
-        if (null !== $operationSearch) {
-            if ('' !== $operationSearch->getThirdParty()) {
+        if (null !== $formModel) {
+            if ('' !== $formModel->thirdParty) {
                 $sql .= 'AND operation.third_party LIKE :third_party ';
-                $params[':third_party'] = '%'.$operationSearch->getThirdParty().'%';
+                $params[':third_party'] = '%'.$formModel->thirdParty.'%';
             }
-            if (0 !== count($operationSearch->getCategories())) {
+
+            if (null !== $formModel->categories && 0 !== count($formModel->categories)) {
                 $categories = array_map(
                     function ($value) {
                         return $value->getCategoryId();
                     },
-                    $operationSearch->getCategories()->toArray()
+                    $formModel->categories
                 );
 
                 $sql .= 'AND operation.category_id IN ('.implode(',', $categories).') ';
             }
-            if (0 !== count($operationSearch->getPaymentMethods())) {
+            if (null !== $formModel->paymentMethods && 0 !== count($formModel->paymentMethods)) {
                 $paymentMethods = array_map(
                     function ($value) {
                         return $value->getPaymentMethodId();
                     },
-                    $operationSearch->getPaymentMethods()->toArray()
+                    $formModel->paymentMethods
                 );
 
                 $sql .= 'AND operation.payment_method_id IN ('.implode(',', $paymentMethods).') ';
             }
-            if (null !== $operationSearch->getAmountInferiorTo()) {
-                $sql .= 'AND operation.'.$operationSearch->getType().' < :amount_inferior_to ';
-                $params[':amount_inferior_to'] = $operationSearch->getAmountInferiorTo();
+
+            for ($i = 1; $i <= 2; ++$i) {
+                if (null === $formModel->{'amount'.$i}) {
+                    break;
+                }
+
+                switch ($formModel->{'amountComparator'.$i}) {
+                    case 'inferiorTo':
+                        $sql .= 'AND operation.'.$formModel->type.' < :amount'.$i.' ';
+                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        break;
+                    case 'inferiorOrEqualTo':
+                        $sql .= 'AND operation.'.$formModel->type.' <= :amount'.$i.' ';
+                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        break;
+                    case 'equalTo':
+                        $sql .= 'AND operation.'.$formModel->type.' = :amount'.$i.' ';
+                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        break;
+                    case 'superiorOrEqualTo':
+                        $sql .= 'AND operation.'.$formModel->type.' >= :amount'.$i.' ';
+                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        break;
+                    case 'superiorTo':
+                        $sql .= 'AND operation.'.$formModel->type.' > :amount'.$i.' ';
+                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        break;
+                }
             }
-            if (null !== $operationSearch->getAmountInferiorOrEqualTo()) {
-                $sql .= 'AND operation.'.$operationSearch->getType().' <= :amount_inferior_or_equal_to ';
-                $params[':amount_inferior_or_equal_to'] = $operationSearch->getAmountInferiorOrEqualTo();
-            }
-            if (null !== $operationSearch->getAmountEqualTo()) {
-                $sql .= 'AND operation.'.$operationSearch->getType().' = :amount_equal_to ';
-                $params[':amount_equal_to'] = $operationSearch->getAmountEqualTo();
-            }
-            if (null !== $operationSearch->getAmountSuperiorOrEqualTo()) {
-                $sql .= 'AND operation.'.$operationSearch->getType().' >= :amount_superior_or_equal_to ';
-                $params[':amount_superior_or_equal_to'] = $operationSearch->getAmountSuperiorOrEqualTo();
-            }
-            if (null !== $operationSearch->getAmountSuperiorTo()) {
-                $sql .= 'AND operation.'.$operationSearch->getType().' > :amount_superior_to ';
-                $params[':amount_superior_to'] = $operationSearch->getAmountSuperiorTo();
-            }
-            if (null !== $operationSearch->getValueDateStart()) {
+
+            if (null !== $formModel->valueDateStart) {
                 $sql .= 'AND operation.value_date >= :value_date_start ';
-                $params[':value_date_start'] = $operationSearch->getValueDateStart()->format(\DateTime::ISO8601);
+                $params[':value_date_start'] = $formModel->valueDateStart->format(\DateTime::ISO8601);
             }
-            if (null !== $operationSearch->getValueDateEnd()) {
+            if (null !== $formModel->valueDateEnd) {
                 $sql .= 'AND operation.value_date <= :value_date_end ';
-                $params[':value_date_end'] = $operationSearch->getValueDateEnd()->format(\DateTime::ISO8601);
+                $params[':value_date_end'] = $formModel->valueDateEnd->format(\DateTime::ISO8601);
             }
-            if ('' !== $operationSearch->getNotes()) {
+            if ('' !== $formModel->notes) {
                 $sql .= 'AND operation.notes LIKE :notes ';
-                $params[':notes'] = '%'.$operationSearch->getNotes().'%';
+                $params[':notes'] = '%'.$formModel->notes.'%';
             }
-            if (null !== $operationSearch->isReconciled()) {
+            if (null !== $formModel->reconciled) {
                 $sql .= 'AND operation.is_reconciled = :reconciled ';
-                $params[':reconciled'] = $operationSearch->isReconciled() ? 'true' : 'false';
+                $params[':reconciled'] = $formModel->reconciled ? 'true' : 'false';
             }
         }
 
