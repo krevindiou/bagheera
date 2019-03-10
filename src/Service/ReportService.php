@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\Account;
 use App\Entity\Member;
 use App\Entity\Report;
+use App\Form\Model\ReportFormModel;
 use App\Form\Type\ReportFormType;
 use App\Repository\AccountRepository;
 use App\Repository\OperationRepository;
@@ -75,15 +76,30 @@ class ReportService
             return null;
         }
 
+        $formModel = new ReportFormModel();
+
         if (null === $report) {
-            $report = new Report();
-            $report->setMember($member);
-            $report->setType($type);
-        } elseif ($member !== $report->getMember()) {
-            return null;
+            $formModel->member = $member;
+            $formModel->type = $type;
+        } else {
+            $formModel->type = $report->getType();
+            $formModel->title = $report->getTitle();
+            $formModel->homepage = $report->getHomepage();
+            $formModel->valueDateStart = $report->getValueDateStart();
+            $formModel->valueDateEnd = $report->getValueDateEnd();
+            $formModel->thirdParties = $report->getThirdParties();
+            $formModel->accounts = $report->getAccounts();
+            $formModel->reconciledOnly = $report->getReconciledOnly();
+            $formModel->periodGrouping = $report->getPeriodGrouping();
+            $formModel->dataGrouping = $report->getDataGrouping();
+            $formModel->significantResultsNumber = $report->getSignificantResultsNumber();
+            $formModel->monthExpenses = $report->getMonthExpenses();
+            $formModel->monthIncomes = $report->getMonthIncomes();
+            $formModel->estimateDurationValue = $report->getEstimateDurationValue();
+            $formModel->estimateDurationUnit = $report->getEstimateDurationUnit();
         }
 
-        return $this->formFactory->create(ReportFormType::class, $report);
+        return $this->formFactory->create(ReportFormType::class, $formModel, ['member' => $member]);
     }
 
     /**
@@ -91,7 +107,7 @@ class ReportService
      */
     public function save(Member $member, Report $report): bool
     {
-        $errors = $this->validator->validate($report);
+        $errors = $this->validator->validate($report, null, ['Default', $report->getType()]);
 
         if (0 === count($errors)) {
             return $this->doSave($member, $report);
@@ -103,10 +119,34 @@ class ReportService
     /**
      * Saves report form.
      */
-    public function saveForm(Member $member, Form $form): bool
+    public function saveForm(Member $member, ?Report $report, Form $form): bool
     {
         if ($form->isValid()) {
-            return $this->doSave($member, $form->getData());
+            $formModel = $form->getData();
+
+            if (null === $report) {
+                $report = new Report();
+            }
+
+            $report->setMember($member);
+            $report->setType($formModel->type);
+            $report->setReportId($formModel->reportId);
+            $report->setTitle($formModel->title);
+            $report->setHomepage($formModel->homepage);
+            $report->setValueDateStart($formModel->valueDateStart);
+            $report->setValueDateEnd($formModel->valueDateEnd);
+            $report->setThirdParties($formModel->thirdParties);
+            $report->setAccounts($formModel->accounts);
+            $report->setReconciledOnly($formModel->reconciledOnly);
+            $report->setPeriodGrouping($formModel->periodGrouping);
+            $report->setDataGrouping($formModel->dataGrouping);
+            $report->setSignificantResultsNumber($formModel->significantResultsNumber);
+            $report->setMonthExpenses($formModel->monthExpenses);
+            $report->setMonthIncomes($formModel->monthIncomes);
+            $report->setEstimateDurationValue($formModel->estimateDurationValue);
+            $report->setEstimateDurationUnit($formModel->estimateDurationUnit);
+
+            return $this->doSave($member, $report);
         }
 
         return false;

@@ -188,7 +188,7 @@ class Report
     protected $estimateDurationValue;
 
     /**
-     * @var string
+     * @var int
      *
      * @ORM\Column(name="estimate_duration_unit", type="string", length=8, nullable=true)
      * @Assert\NotBlank(groups={"estimate"})
@@ -215,6 +215,11 @@ class Report
         $this->accounts = new ArrayCollection();
         $this->categories = new ArrayCollection();
         $this->paymentMethods = new ArrayCollection();
+    }
+
+    public function setReportId(?int $reportId): void
+    {
+        $this->reportId = $reportId;
     }
 
     public function getReportId(): ?int
@@ -282,7 +287,7 @@ class Report
         return $this->valueDateEnd;
     }
 
-    public function setThirdParties(string $thirdParties): void
+    public function setThirdParties(?string $thirdParties): void
     {
         $this->thirdParties = $thirdParties;
     }
@@ -342,7 +347,7 @@ class Report
         return $this->periodGrouping;
     }
 
-    public function setDataGrouping(string $dataGrouping): void
+    public function setDataGrouping(?string $dataGrouping): void
     {
         $this->dataGrouping = $dataGrouping;
     }
@@ -352,7 +357,7 @@ class Report
         return $this->dataGrouping;
     }
 
-    public function setSignificantResultsNumber(int $significantResultsNumber): void
+    public function setSignificantResultsNumber(?int $significantResultsNumber): void
     {
         $this->significantResultsNumber = $significantResultsNumber;
     }
@@ -362,7 +367,7 @@ class Report
         return $this->significantResultsNumber;
     }
 
-    public function setMonthExpenses(int $monthExpenses): void
+    public function setMonthExpenses(?int $monthExpenses): void
     {
         $this->monthExpenses = $monthExpenses;
     }
@@ -372,7 +377,7 @@ class Report
         return $this->monthExpenses;
     }
 
-    public function setMonthIncomes(int $monthIncomes): void
+    public function setMonthIncomes(?int $monthIncomes): void
     {
         $this->monthIncomes = $monthIncomes;
     }
@@ -382,7 +387,7 @@ class Report
         return $this->monthIncomes;
     }
 
-    public function setEstimateDurationValue(int $estimateDurationValue): void
+    public function setEstimateDurationValue(?int $estimateDurationValue): void
     {
         $this->estimateDurationValue = $estimateDurationValue;
     }
@@ -392,7 +397,7 @@ class Report
         return $this->estimateDurationValue;
     }
 
-    public function setEstimateDurationUnit(int $estimateDurationUnit): void
+    public function setEstimateDurationUnit(?int $estimateDurationUnit): void
     {
         $this->estimateDurationUnit = $estimateDurationUnit;
     }

@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Form\Type;
 
 use App\Entity\Account;
+use App\Entity\Member;
+use App\Form\Model\ReportFormModel;
 use App\Repository\AccountRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -33,7 +36,7 @@ class ReportFormType extends AbstractType
         $builder
             ->add(
                 'title',
-                null,
+                TextType::class,
                 [
                     'label' => 'report.title',
                     'attr' => [
@@ -43,7 +46,7 @@ class ReportFormType extends AbstractType
             )
             ->add(
                 'homepage',
-                null,
+                CheckboxType::class,
                 [
                     'label' => 'report.homepage',
                     'required' => false,
@@ -63,13 +66,11 @@ class ReportFormType extends AbstractType
 
         $builder->addEventListener(
             FormEvents::POST_SET_DATA,
-            function (FormEvent $event): void {
+            function (FormEvent $event) use ($options): void {
                 $form = $event->getForm();
                 $report = $event->getData();
 
-                $member = $report->getMember();
-
-                $type = $report->getType();
+                $type = $report->type;
 
                 if (in_array($type, ['sum', 'average', 'distribution'], true)) {
                     $form
@@ -113,7 +114,7 @@ class ReportFormType extends AbstractType
                         /*
                         ->add(
                             'categories',
-                            null,
+                            EntityType::class,
                             [
                                 'label' => 'report.categories',
                                 'placeholder' => '',
@@ -126,7 +127,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'paymentMethods',
-                            null,
+                            EntityType::class,
                             [
                                 'label' => 'report.payment_methods',
                                 'placeholder' => '',
@@ -144,7 +145,7 @@ class ReportFormType extends AbstractType
                             [
                                 'label' => 'report.accounts',
                                 'class' => Account::class,
-                                'choices' => $this->accountRepository->getActiveAccounts($member),
+                                'choices' => $this->accountRepository->getActiveAccounts($options['member']),
                                 'placeholder' => '',
                                 'required' => false,
                                 'multiple' => true,
@@ -206,7 +207,7 @@ class ReportFormType extends AbstractType
                         )
                         ->add(
                             'significantResultsNumber',
-                            null,
+                            IntegerType::class,
                             [
                                 'label' => 'report.significant_results_number',
                                 'attr' => [
@@ -274,11 +275,13 @@ class ReportFormType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setRequired('member');
+        $resolver->setAllowedTypes('member', Member::class);
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Report',
+                'data_class' => ReportFormModel::class,
                 'validation_groups' => function (FormInterface $form) {
-                    return ['Default', $form->getData()->getType()];
+                    return ['Default', $form->getData()->type];
                 },
             ]
         );
