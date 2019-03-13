@@ -91,20 +91,6 @@ class SchedulerService
     }
 
     /**
-     * Saves scheduler.
-     */
-    public function save(Scheduler $scheduler): bool
-    {
-        $errors = $this->validator->validate($scheduler);
-
-        if (0 === count($errors)) {
-            return $this->doSave($scheduler);
-        }
-
-        return false;
-    }
-
-    /**
      * Saves scheduler form.
      */
     public function saveForm(?Scheduler $scheduler, Form $form): bool

@@ -91,20 +91,6 @@ class AccountService
     }
 
     /**
-     * Saves account.
-     */
-    public function save(Member $member, Account $account): bool
-    {
-        $errors = $this->validator->validate($account);
-
-        if (0 === count($errors)) {
-            return $this->doSave($member, $account);
-        }
-
-        return false;
-    }
-
-    /**
      * Saves account form.
      */
     public function saveForm(Member $member, ?Account $account, Form $form): ?Account

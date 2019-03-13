@@ -103,20 +103,6 @@ class ReportService
     }
 
     /**
-     * Saves report.
-     */
-    public function save(Member $member, Report $report): bool
-    {
-        $errors = $this->validator->validate($report, null, ['Default', $report->getType()]);
-
-        if (0 === count($errors)) {
-            return $this->doSave($member, $report);
-        }
-
-        return false;
-    }
-
-    /**
      * Saves report form.
      */
     public function saveForm(Member $member, ?Report $report, Form $form): bool

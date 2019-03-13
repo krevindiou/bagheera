@@ -62,20 +62,6 @@ class BankAccessService
     }
 
     /**
-     * Saves bank access.
-     */
-    public function save(Member $member, BankAccess $bankAccess): bool
-    {
-        $errors = $this->validator->validate($bankAccess);
-
-        if (0 === count($errors)) {
-            return $this->save($member, $bankAccess);
-        }
-
-        return false;
-    }
-
-    /**
      * Saves bank access form.
      */
     public function saveForm(Member $member, Form $form): bool

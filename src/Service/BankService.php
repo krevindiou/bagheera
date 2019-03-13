@@ -86,20 +86,6 @@ class BankService
     }
 
     /**
-     * Saves bank.
-     */
-    public function save(Member $member, Bank $bank): bool
-    {
-        $errors = $this->validator->validate($bank);
-
-        if (0 === count($errors)) {
-            return $this->doSave($member, $bank);
-        }
-
-        return false;
-    }
-
-    /**
      * Saves bank form.
      */
     public function saveForm(Member $member, ?Bank $bank, $formModel)
