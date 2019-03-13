@@ -9,6 +9,7 @@ use App\Entity\Bank;
 use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\PaymentMethod;
+use App\Form\Model\AccountFormModel;
 use App\Form\Type\AccountFormType;
 use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -64,12 +65,10 @@ class AccountService
             return null;
         }
 
-        $account = new Account();
-        if (null !== $bank) {
-            $account->setBank($bank);
-        }
+        $formModel = new AccountFormModel();
+        $formModel->bank = $bank;
 
-        return $this->formFactory->create(AccountFormType::class, $account, ['member' => $member]);
+        return $this->formFactory->create(AccountFormType::class, $formModel, ['member' => $member]);
     }
 
     /**
@@ -81,7 +80,14 @@ class AccountService
             return null;
         }
 
-        return $this->formFactory->create(AccountFormType::class, $account, ['member' => $member]);
+        $formModel = new AccountFormModel();
+        $formModel->accountId = $account->getAccountId();
+        $formModel->name = $account->getName();
+        $formModel->bank = $account->getBank();
+        $formModel->currency = $account->getCurrency();
+        $formModel->overdraftFacility = $account->getOverdraftFacility();
+
+        return $this->formFactory->create(AccountFormType::class, $formModel, ['member' => $member]);
     }
 
     /**
@@ -101,20 +107,30 @@ class AccountService
     /**
      * Saves account form.
      */
-    public function saveForm(Member $member, Form $form): bool
+    public function saveForm(Member $member, ?Account $account, Form $form): ?Account
     {
         if ($form->isValid()) {
-            $ok = $this->doSave($member, $form->getData());
+            $formModel = $form->getData();
 
-            if ($form->has('initialBalance') && null !== $form->get('initialBalance')->getData()) {
+            if (null === $account) {
+                $account = new Account();
+            }
+
+            $account->setName($formModel->name);
+            $account->setBank($formModel->bank);
+            $account->setCurrency($formModel->currency);
+            $account->setOverdraftFacility($formModel->overdraftFacility);
+            $this->doSave($member, $account);
+
+            if (null !== $formModel->initialBalance) {
                 $operation = new Operation();
-                $operation->setAccount($form->getData());
+                $operation->setAccount($account);
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
                 $operation->setPaymentMethod($this->em->find(PaymentMethod::class, PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
-                if ($form->get('initialBalance')->getData() > 0) {
-                    $operation->setCredit(abs($form->get('initialBalance')->getData()));
+                if ($formModel->initialBalance > 0) {
+                    $operation->setCredit(abs($formModel->initialBalance));
                 } else {
-                    $operation->setDebit(abs($form->get('initialBalance')->getData()));
+                    $operation->setDebit(abs($formModel->initialBalance));
                 }
                 $operation->setValueDate(new \DateTime());
                 $operation->setReconciled(true);
@@ -122,10 +138,10 @@ class AccountService
                 $this->operationService->save($member, $operation);
             }
 
-            return $ok;
+            return $account;
         }
 
-        return false;
+        return null;
     }
 
     /**
