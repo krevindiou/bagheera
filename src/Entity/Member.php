@@ -47,14 +47,6 @@ class Member implements UserInterface
     /**
      * @var string
      *
-     * @Assert\NotBlank()
-     * @Assert\Length(min = 8, max = 4096)
-     */
-    protected $plainPassword;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="country", type="string", length=2)
      * @Assert\NotBlank()
      */
@@ -137,16 +129,6 @@ class Member implements UserInterface
         return $this->password;
     }
 
-    public function setPlainPassword(?string $plainPassword): void
-    {
-        $this->plainPassword = $plainPassword;
-    }
-
-    public function getPlainPassword(): ?string
-    {
-        return $this->plainPassword;
-    }
-
     public function setCountry(string $country): void
     {
         $this->country = $country;
@@ -214,6 +196,5 @@ class Member implements UserInterface
 
     public function eraseCredentials(): void
     {
-        $this->setPlainPassword(null);
     }
 }

@@ -129,7 +129,7 @@ class MemberService
         $member = new Member();
         $member->setEmail($formModel->email);
         $member->setCountry($formModel->country);
-        $member->setPassword($formModel->plainPassword);
+        $member->setPassword($this->passwordEncoder->encodePassword($member, $formModel->plainPassword));
 
         return $this->add($member);
     }
@@ -339,8 +339,6 @@ class MemberService
      */
     protected function add(Member $member): bool
     {
-        $member->setPassword($this->passwordEncoder->encodePassword($member, $member->getPlainPassword()));
-
         try {
             $this->em->persist($member);
             $this->em->flush();
