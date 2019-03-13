@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Entity\Bank;
 use App\Entity\BankAccess;
 use App\Entity\Member;
+use App\Form\Model\BankAccessFormModel;
 use App\Form\Type\BankAccessFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -54,24 +55,10 @@ class BankAccessService
             return null;
         }
 
-        $bankAccess = new BankAccess();
-        $bankAccess->setBankId($bank->getBankId());
+        $formModel = new BankAccessFormModel();
+        $formModel->bank = $bank;
 
-        return $this->formFactory->create(BankAccessFormType::class, $bankAccess);
-    }
-
-    /**
-     * Saves bank access.
-     */
-    public function save(Member $member, BankAccess $bankAccess): bool
-    {
-        $errors = $this->validator->validate($bankAccess);
-
-        if (0 === count($errors)) {
-            return $this->save($member, $bankAccess);
-        }
-
-        return false;
+        return $this->formFactory->create(BankAccessFormType::class, $formModel);
     }
 
     /**
@@ -91,12 +78,12 @@ class BankAccessService
      */
     protected function doSave(Member $member, BankAccess $bankAccess): bool
     {
-        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find(Bank::class, $bankAccess->getBankId());
 
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                $this->em->getRepository('App:BankAccess', 'secure')->delete($bankAccess);
+                $this->em->getRepository(BankAccess::class, 'secure')->delete($bankAccess);
 
                 $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
                 $encryptedPassword = $this->cryptService->encrypt($bankAccess->getPlainPassword(), $this->secret);

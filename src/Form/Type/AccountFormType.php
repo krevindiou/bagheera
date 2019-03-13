@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Bank;
+use App\Form\Model\AccountFormModel;
 use App\Repository\BankRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -56,7 +58,7 @@ class AccountFormType extends AbstractType
                 $form = $event->getForm();
                 $account = $event->getData();
 
-                $edit = (null !== $account->getAccountId());
+                $edit = (null !== $account->accountId);
 
                 $form
                     ->add(
@@ -65,7 +67,7 @@ class AccountFormType extends AbstractType
                         [
                             'label' => 'account.bank',
                             'placeholder' => '',
-                            'class' => 'App:Bank',
+                            'class' => Bank::class,
                             'choices' => $this->bankRepository->getActiveBanks($member),
                             'disabled' => $edit,
                             'attr' => [
@@ -90,7 +92,7 @@ class AccountFormType extends AbstractType
                         MoneyType::class,
                         [
                             'label' => 'account.overdraft_facility',
-                            'currency' => $account->getCurrency() ?: false,
+                            'currency' => $account->currency ?: false,
                             'attr' => [
                                 'class' => 'input-small',
                             ],
@@ -105,9 +107,7 @@ class AccountFormType extends AbstractType
                             MoneyType::class,
                             [
                                 'label' => 'account.initial_balance',
-                                'mapped' => false,
-                                'required' => false,
-                                'currency' => $account->getCurrency() ?: false,
+                                'currency' => $account->currency ?: false,
                                 'attr' => [
                                     'class' => 'input-small',
                                 ],
@@ -121,13 +121,12 @@ class AccountFormType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setRequired(['member']);
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Account',
+                'data_class' => AccountFormModel::class,
             ]
         );
-
-        $resolver->setRequired(['member']);
     }
 
     public function getName()

@@ -4,25 +4,38 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Account;
+use App\Entity\Category;
+use App\Entity\PaymentMethod;
+use App\Form\Model\OperationFormModel;
 use App\Repository\AccountRepository;
+use App\Repository\CategoryRepository;
+use App\Repository\PaymentMethodRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints as Assert;
 
 class OperationFormType extends AbstractType
 {
     private $accountRepository;
+    private $categoryRepository;
+    private $paymentMethodRepository;
 
-    public function __construct(AccountRepository $accountRepository)
-    {
+    public function __construct(
+        AccountRepository $accountRepository,
+        CategoryRepository $categoryRepository,
+        PaymentMethodRepository $paymentMethodRepository
+    ) {
         $this->accountRepository = $accountRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->paymentMethodRepository = $paymentMethodRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -33,21 +46,16 @@ class OperationFormType extends AbstractType
                 ChoiceType::class,
                 [
                     'label' => 'operation.type',
-                    'mapped' => false,
                     'expanded' => true,
-                    'required' => true,
                     'choices' => [
                         'operation.type_debit' => 'debit',
                         'operation.type_credit' => 'credit',
-                    ],
-                    'constraints' => [
-                        new Assert\NotBlank(),
                     ],
                 ]
             )
             ->add(
                 'thirdParty',
-                null,
+                TextType::class,
                 [
                     'label' => 'operation.third_party',
                     'attr' => [
@@ -57,13 +65,26 @@ class OperationFormType extends AbstractType
                 ]
             )
             ->add(
+                'amount',
+                MoneyType::class,
+                [
+                    'label' => 'operation.amount',
+                    'currency' => $options['account']->getCurrency(),
+                    'attr' => [
+                        'class' => 'input-small',
+                    ],
+                ]
+            )
+            ->add(
                 'category',
-                null,
+                EntityType::class,
                 [
                     'label' => 'operation.category',
                     'placeholder' => '',
                     'required' => false,
                     'group_by' => 'type',
+                    'class' => Category::class,
+                    'choices' => $this->categoryRepository->getList(),
                     'attr' => [
                         'class' => 'input-xlarge',
                     ],
@@ -71,13 +92,29 @@ class OperationFormType extends AbstractType
             )
             ->add(
                 'paymentMethod',
-                null,
+                EntityType::class,
                 [
                     'label' => 'operation.payment_method',
                     'placeholder' => '',
                     'group_by' => 'type',
+                    'class' => PaymentMethod::class,
+                    'choices' => $this->paymentMethodRepository->getList(),
                     'attr' => [
                         'class' => 'input-medium',
+                    ],
+                ]
+            )
+            ->add(
+                'transferAccount',
+                EntityType::class,
+                [
+                    'label' => 'operation.transfer_account',
+                    'required' => false,
+                    'placeholder' => 'operation.external_account',
+                    'class' => Account::class,
+                    'choices' => $this->accountRepository->getTransferableAccounts($options['account']),
+                    'attr' => [
+                        'class' => 'input-xlarge',
                     ],
                 ]
             )
@@ -95,9 +132,10 @@ class OperationFormType extends AbstractType
             )
             ->add(
                 'notes',
-                null,
+                TextareaType::class,
                 [
                     'label' => 'operation.notes',
+                    'required' => false,
                     'attr' => [
                         'class' => 'input-xlarge',
                         'rows' => 5,
@@ -106,7 +144,7 @@ class OperationFormType extends AbstractType
             )
             ->add(
                 'reconciled',
-                null,
+                CheckboxType::class,
                 [
                     'label' => 'operation.reconciled',
                     'required' => false,
@@ -133,87 +171,15 @@ class OperationFormType extends AbstractType
                 ]
             )
         ;
-
-        $builder->addEventListener(
-            FormEvents::POST_SET_DATA,
-            function (FormEvent $event): void {
-                $form = $event->getForm();
-                $operation = $event->getData();
-
-                $account = $operation->getAccount();
-
-                $form
-                    ->add(
-                        'amount',
-                        MoneyType::class,
-                        [
-                            'label' => 'operation.amount',
-                            'currency' => $account->getCurrency(),
-                            'mapped' => false,
-                            'constraints' => [
-                                new Assert\NotBlank(),
-                            ],
-                            'attr' => [
-                                'class' => 'input-small',
-                            ],
-                        ]
-                    )
-                    ->add(
-                        'transferAccount',
-                        EntityType::class,
-                        [
-                            'label' => 'operation.transfer_account',
-                            'required' => false,
-                            'placeholder' => 'operation.external_account',
-                            'class' => 'App:Account',
-                            'choices' => $this->accountRepository->getTransferableAccounts($account),
-                            'attr' => [
-                                'class' => 'input-xlarge',
-                            ],
-                        ]
-                    )
-                ;
-
-                $debit = $operation->getDebit();
-                $credit = $operation->getCredit();
-
-                if (null !== $debit) {
-                    $form->get('type')->setData('debit');
-                    $form->get('amount')->setData($debit);
-                } elseif (null !== $credit) {
-                    $form->get('type')->setData('credit');
-                    $form->get('amount')->setData($credit);
-                } else {
-                    $form->get('type')->setData('debit');
-                }
-            }
-        );
-
-        $builder->addEventListener(
-            FormEvents::POST_SUBMIT,
-            function (FormEvent $event): void {
-                $form = $event->getForm();
-                $operation = $event->getData();
-
-                $type = $form->get('type')->getData();
-                $amount = $form->get('amount')->getData();
-
-                if ('debit' === $type) {
-                    $operation->setDebit($amount);
-                    $operation->setCredit(null);
-                } elseif ('credit' === $type) {
-                    $operation->setDebit(null);
-                    $operation->setCredit($amount);
-                }
-            }
-        );
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
+        $resolver->setRequired('account');
+        $resolver->setAllowedTypes('account', Account::class);
         $resolver->setDefaults(
             [
-                'data_class' => 'App\Entity\Operation',
+                'data_class' => OperationFormModel::class,
             ]
         );
     }

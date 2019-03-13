@@ -36,7 +36,7 @@ class MemberController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($memberService->saveForm($form)) {
+            if ($memberService->saveRegisterForm($form->getData())) {
                 $this->addFlash('success', 'member.register.confirmation');
 
                 return $this->redirectToRoute('member_login');
@@ -57,12 +57,11 @@ class MemberController extends AbstractController
     public function forgotPassword(Request $request, MemberService $memberService)
     {
         $form = $memberService->getForgotPasswordForm();
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                if ($memberService->sendChangePasswordEmail($form->get('email')->getData())) {
+                if ($memberService->sendChangePasswordEmail($form->getData()->email)) {
                     $this->addFlash('info', 'member.forgot_password.confirmation');
 
                     return $this->redirectToRoute('member_login');
@@ -90,12 +89,11 @@ class MemberController extends AbstractController
         }
 
         $form = $memberService->getChangePasswordForm();
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
-                if ($memberService->changePassword($member, $form->get('password')->getData())) {
+                if ($memberService->changePassword($member, $form->getData()->password)) {
                     $this->addFlash('success', 'member.change_password.confirmation');
 
                     return $this->redirectToRoute('member_login');
@@ -123,7 +121,7 @@ class MemberController extends AbstractController
             $form->handleRequest($request);
 
             if ($form->isSubmitted()) {
-                if ($memberService->changePassword($this->getUser(), $form->get('password')->getData())) {
+                if ($memberService->changePassword($this->getUser(), $form->getData()->password)) {
                     $this->addFlash('success', 'member.change_password.confirmation');
 
                     return $this->redirectToRoute($request->get('_route'));
@@ -165,7 +163,7 @@ class MemberController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
-            if ($memberService->saveForm($form)) {
+            if ($memberService->saveProfileForm($this->getUser(), $form->getData())) {
                 $this->addFlash('success', 'member.profile.confirmation');
 
                 return $this->redirectToRoute('member_profile');

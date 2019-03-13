@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Account;
+use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\Operation;
-use App\Entity\OperationSearch;
 use App\Entity\PaymentMethod;
+use App\Form\Model\OperationFormModel;
+use App\Form\Model\OperationSearchFormModel;
 use App\Form\Type\OperationFormType;
 use App\Repository\OperationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,15 +48,15 @@ class OperationService
     /**
      * Returns operations list.
      *
-     * @param Member          $member          Member entity
-     * @param Account         $account         Account entity
-     * @param int             $currentPage     Page number
-     * @param OperationSearch $operationSearch OperationSearch entity
+     * @param Member                   $member      Member entity
+     * @param Account                  $account     Account entity
+     * @param int                      $currentPage Page number
+     * @param OperationSearchFormModel $formModel   OperationSearch form model
      */
-    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearch $operationSearch = null): ?Pagerfanta
+    public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): ?Pagerfanta
     {
         if ($account->getBank()->getMember() === $member) {
-            return $this->operationRepository->getList($member, $account, $currentPage, $operationSearch);
+            return $this->operationRepository->getList($member, $account, $currentPage, $formModel);
         }
     }
 
@@ -67,14 +69,29 @@ class OperationService
      */
     public function getForm(Member $member, Operation $operation = null, Account $account = null): ?Form
     {
+        $formModel = new OperationFormModel();
+
         if (null === $operation && null !== $account) {
-            $operation = new Operation();
-            $operation->setAccount($account);
-        } elseif (null !== $operation && $member !== $operation->getAccount()->getBank()->getMember()) {
-            return null;
+            $formModel->account = $account;
+        } elseif (null !== $operation) {
+            if ($member !== $operation->getAccount()->getBank()->getMember()) {
+                return null;
+            }
+
+            $formModel->operationId = $operation->getOperationId();
+            $formModel->account = $operation->getAccount();
+            $formModel->type = null !== $operation->getCredit() ? 'credit' : 'debit';
+            $formModel->thirdParty = $operation->getThirdParty();
+            $formModel->category = $operation->getCategory();
+            $formModel->paymentMethod = $operation->getPaymentMethod();
+            $formModel->valueDate = $operation->getValueDate();
+            $formModel->notes = $operation->getNotes();
+            $formModel->reconciled = $operation->isReconciled();
+            $formModel->amount = null !== $operation->getCredit() ? $operation->getCredit() : $operation->getDebit();
+            $formModel->transferAccount = $operation->getTransferAccount();
         }
 
-        return $this->formFactory->create(OperationFormType::class, $operation);
+        return $this->formFactory->create(OperationFormType::class, $formModel, ['account' => $formModel->account]);
     }
 
     /**
@@ -94,10 +111,28 @@ class OperationService
     /**
      * Saves operation form.
      */
-    public function saveForm(Member $member, Form $form): bool
+    public function saveForm(Member $member, ?Operation $operation, Form $form): bool
     {
         if ($form->isValid()) {
-            return $this->doSave($member, $form->getData());
+            $formModel = $form->getData();
+
+            if (null === $operation) {
+                $operation = new Operation();
+            }
+
+            $operation->setOperationId($formModel->operationId);
+            $operation->setTransferAccount($formModel->transferAccount);
+            $operation->setThirdParty($formModel->thirdParty);
+            $operation->setDebit('debit' === $formModel->type ? $formModel->amount : null);
+            $operation->setCredit('credit' === $formModel->type ? $formModel->amount : null);
+            $operation->setValueDate($formModel->valueDate);
+            $operation->setReconciled($formModel->reconciled);
+            $operation->setNotes($formModel->notes);
+            $operation->setAccount($formModel->account);
+            $operation->setCategory($formModel->category);
+            $operation->setPaymentMethod($formModel->paymentMethod);
+
+            return $this->doSave($member, $operation);
         }
 
         return false;
@@ -110,7 +145,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('App:Operation', $operationId);
+                $operation = $this->em->find(Operation::class, $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -136,7 +171,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find('App:Operation', $operationId);
+                $operation = $this->em->find(Operation::class, $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -179,7 +214,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->em->find('App:PaymentMethod', $operationArray['payment_method_id'])
+                $this->em->find(PaymentMethod::class, $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {
@@ -251,7 +286,7 @@ class OperationService
      */
     public function getLastSalary(Member $member): ?Operation
     {
-        $category = $this->em->find('App:Category', $this->categoriesId['salary']);
+        $category = $this->em->find(Category::class, $this->categoriesId['salary']);
         if (!$category) {
             return null;
         }
@@ -295,7 +330,7 @@ class OperationService
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
                 $operationBeforeSave = $this->em->find(
-                    'App:Operation',
+                    Operation::class,
                     $operation->getOperationId()
                 );
 
@@ -320,12 +355,12 @@ class OperationService
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER === $operation->getPaymentMethod()->getPaymentMethodId()) {
                     $paymentMethod = $this->em->find(
-                        'App:PaymentMethod',
+                        PaymentMethod::class,
                         PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
                     $paymentMethod = $this->em->find(
-                        'App:PaymentMethod',
+                        PaymentMethod::class,
                         PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
                 }

@@ -93,20 +93,15 @@ class AccountController extends AbstractController
         $member = $this->getUser();
 
         $accountForm = $accountService->getCreateForm($member, $bank);
-
-        if (null === $accountForm) {
-            throw $this->createNotFoundException();
-        }
-
         $accountForm->handleRequest($request);
 
         if ($accountForm->isSubmitted()) {
-            if ($accountService->saveForm($member, $accountForm)) {
+            if ($account = $accountService->saveForm($member, null, $accountForm)) {
                 $this->addFlash('success', 'account.form_confirmation');
 
                 return $this->redirectToRoute(
                     'operation_list',
-                    ['accountId' => $accountForm->getData()->getAccountId()]
+                    ['accountId' => $account->getAccountId()]
                 );
             }
         }
@@ -127,15 +122,10 @@ class AccountController extends AbstractController
         $member = $this->getUser();
 
         $accountForm = $accountService->getUpdateForm($member, $account);
-
-        if (null === $accountForm) {
-            throw $this->createNotFoundException();
-        }
-
         $accountForm->handleRequest($request);
 
         if ($accountForm->isSubmitted()) {
-            if ($accountService->saveForm($member, $accountForm)) {
+            if ($accountService->saveForm($member, $account, $accountForm)) {
                 $this->addFlash('success', 'account.form_confirmation');
 
                 return $this->redirectToRoute('account_list');

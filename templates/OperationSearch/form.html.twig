@@ -8,20 +8,20 @@
 
     {% spaceless %}
     <div class="control-group">
-        {{ form_label(operationSearchForm.amount_1, null, {label_attr: {class: 'control-label'}}) }}
+        {{ form_label(operationSearchForm.amount1, null, {label_attr: {class: 'control-label'}}) }}
 
         <div class="controls">
-            {{ form_errors(operationSearchForm.amount_comparator_1) }}
-            {{ form_widget(operationSearchForm.amount_comparator_1) }}&nbsp;
-            {{ form_widget(operationSearchForm.amount_1) }}
+            {{ form_errors(operationSearchForm.amountComparator1) }}
+            {{ form_widget(operationSearchForm.amountComparator1) }}&nbsp;
+            {{ form_widget(operationSearchForm.amount1) }}
         </div>
     </div>
 
     <div class="control-group">
         <div class="controls">
-            {{ form_errors(operationSearchForm.amount_comparator_2) }}
-            {{ form_widget(operationSearchForm.amount_comparator_2) }}&nbsp;
-            {{ form_widget(operationSearchForm.amount_2) }}
+            {{ form_errors(operationSearchForm.amountComparator2) }}
+            {{ form_widget(operationSearchForm.amountComparator2) }}&nbsp;
+            {{ form_widget(operationSearchForm.amount2) }}
         </div>
     </div>
     {% endspaceless %}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Provider;
 
 use App\Entity\Account;
+use App\Entity\Bank;
 use App\Entity\BankAccess;
 use App\Service\AccountImportService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,7 +39,7 @@ class ProviderAdapter
      */
     public function setBankAccess(BankAccess $bankAccess): void
     {
-        $bank = $this->em->find('App:Bank', $bankAccess->getBankId());
+        $bank = $this->em->find(Bank::class, $bankAccess->getBankId());
 
         if (null !== $bank) {
             $provider = $bank->getProvider();

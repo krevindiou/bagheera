@@ -9,6 +9,7 @@ use App\Entity\Member;
 use App\Entity\Operation;
 use App\Entity\PaymentMethod;
 use App\Entity\Scheduler;
+use App\Form\Model\SchedulerFormModel;
 use App\Form\Type\SchedulerFormType;
 use App\Repository\OperationRepository;
 use App\Repository\SchedulerRepository;
@@ -64,39 +65,60 @@ class SchedulerService
      */
     public function getForm(Scheduler $scheduler = null, Account $account = null): ?Form
     {
-        if (null === $scheduler) {
-            if (null !== $account) {
-                $scheduler = new Scheduler();
-                $scheduler->setAccount($account);
-            } else {
-                return null;
-            }
+        $formModel = new SchedulerFormModel();
+
+        if (null === $scheduler && null !== $account) {
+            $formModel->account = $account;
+        } elseif (null !== $scheduler) {
+            $formModel->operationId = $scheduler->getSchedulerId();
+            $formModel->account = $scheduler->getAccount();
+            $formModel->type = null !== $scheduler->getCredit() ? 'credit' : 'debit';
+            $formModel->thirdParty = $scheduler->getThirdParty();
+            $formModel->category = $scheduler->getCategory();
+            $formModel->paymentMethod = $scheduler->getPaymentMethod();
+            $formModel->valueDate = $scheduler->getValueDate();
+            $formModel->notes = $scheduler->getNotes();
+            $formModel->reconciled = $scheduler->isReconciled();
+            $formModel->active = $scheduler->isActive();
+            $formModel->amount = null !== $scheduler->getCredit() ? $scheduler->getCredit() : $scheduler->getDebit();
+            $formModel->limitDate = $scheduler->getLimitDate();
+            $formModel->frequencyUnit = $scheduler->getFrequencyUnit();
+            $formModel->frequencyValue = $scheduler->getFrequencyValue();
+            $formModel->transferAccount = $scheduler->getTransferAccount();
         }
 
-        return $this->formFactory->create(SchedulerFormType::class, $scheduler);
-    }
-
-    /**
-     * Saves scheduler.
-     */
-    public function save(Scheduler $scheduler): bool
-    {
-        $errors = $this->validator->validate($scheduler);
-
-        if (0 === count($errors)) {
-            return $this->doSave($scheduler);
-        }
-
-        return false;
+        return $this->formFactory->create(SchedulerFormType::class, $formModel, ['account' => $formModel->account]);
     }
 
     /**
      * Saves scheduler form.
      */
-    public function saveForm(Form $form): bool
+    public function saveForm(?Scheduler $scheduler, Form $form): bool
     {
         if ($form->isValid()) {
-            return $this->doSave($form->getData());
+            $formModel = $form->getData();
+
+            if (null === $scheduler) {
+                $scheduler = new Scheduler();
+            }
+
+            $scheduler->setSchedulerId($formModel->schedulerId);
+            $scheduler->setAccount($formModel->account);
+            $scheduler->setThirdParty($formModel->thirdParty);
+            $scheduler->setCategory($formModel->category);
+            $scheduler->setPaymentMethod($formModel->paymentMethod);
+            $scheduler->setValueDate($formModel->valueDate);
+            $scheduler->setNotes($formModel->notes);
+            $scheduler->setReconciled($formModel->reconciled);
+            $scheduler->setActive($formModel->active);
+            $scheduler->setDebit('debit' === $formModel->type ? $formModel->amount : null);
+            $scheduler->setCredit('credit' === $formModel->type ? $formModel->amount : null);
+            $scheduler->setLimitDate($formModel->limitDate);
+            $scheduler->setFrequencyUnit($formModel->frequencyUnit);
+            $scheduler->setFrequencyValue($formModel->frequencyValue);
+            $scheduler->setTransferAccount($formModel->transferAccount);
+
+            return $this->doSave($scheduler);
         }
 
         return false;

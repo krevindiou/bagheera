@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Entity\Account;
+use App\Entity\Bank;
+use App\Entity\BankAccess;
 use App\Service\AccountImportService;
 use App\Service\AccountService;
 use App\Service\OperationService;
@@ -56,12 +58,12 @@ class ImportExternalBankCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
-        $bank = $this->em->find('App:Bank', $input->getArgument('bank_id'));
+        $bank = $this->em->find(Bank::class, $input->getArgument('bank_id'));
         if (null === $bank) {
             return null;
         }
 
-        $bankAccess = $this->emSecure->find('App:BankAccess', $bank->getBankId());
+        $bankAccess = $this->emSecure->find(BankAccess::class, $bank->getBankId());
         if (null === $bankAccess) {
             return null;
         }

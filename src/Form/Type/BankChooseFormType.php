@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Form\Type;
 
+use App\Entity\Bank;
+use App\Entity\Provider;
+use App\Form\Model\BankChooseFormModel;
 use App\Repository\BankRepository;
 use App\Repository\ProviderRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
@@ -36,7 +40,7 @@ class BankChooseFormType extends AbstractType
                 EntityType::class,
                 [
                     'label' => 'bank.auto',
-                    'class' => 'App:Provider',
+                    'class' => Provider::class,
                     'choices' => $this->providerRepository->getAvailableProviders($member),
                     'expanded' => true,
                 ]
@@ -46,14 +50,14 @@ class BankChooseFormType extends AbstractType
                 EntityType::class,
                 [
                     'label' => 'bank.manual',
-                    'class' => 'App:Bank',
+                    'class' => Bank::class,
                     'choices' => $this->bankRepository->getActiveManualBanks($member),
                     'expanded' => true,
                 ]
             )
             ->add(
                 'other',
-                null,
+                TextType::class,
                 [
                     'label' => 'bank.other',
                     'attr' => [
@@ -94,6 +98,11 @@ class BankChooseFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired(['member']);
+        $resolver->setDefaults(
+            [
+                'data_class' => BankChooseFormModel::class,
+            ]
+        );
     }
 
     public function getName()

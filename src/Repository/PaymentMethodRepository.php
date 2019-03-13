@@ -16,6 +16,11 @@ class PaymentMethodRepository extends ServiceEntityRepository
         parent::__construct($registry, PaymentMethod::class);
     }
 
+    public function getList(): ArrayCollection
+    {
+        return new ArrayCollection($this->findAll());
+    }
+
     public function getPaymentMethods(array $paymentMethodsId): ArrayCollection
     {
         $dql =<<<'EOT'

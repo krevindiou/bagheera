@@ -61,14 +61,10 @@ class ReportController extends AbstractController
         $member = $this->getUser();
 
         $reportForm = $reportService->getForm($member, $report, $type);
-        if (null === $reportForm) {
-            throw $this->createNotFoundException();
-        }
-
         $reportForm->handleRequest($request);
 
         if ($reportForm->isSubmitted()) {
-            if ($reportService->saveForm($member, $reportForm)) {
+            if ($reportService->saveForm($member, $report, $reportForm)) {
                 $this->addFlash('success', 'report.form_confirmation');
 
                 return $this->redirectToRoute('report_list');

@@ -24,14 +24,10 @@ class BankController extends AbstractController
         $member = $this->getUser();
 
         $bankForm = $bankService->getForm($member, $bank);
-        if (null === $bankForm) {
-            throw $this->createNotFoundException();
-        }
-
         $bankForm->handleRequest($request);
 
         if ($bankForm->isSubmitted()) {
-            if ($bank = $bankService->saveForm($member, $bankForm)) {
+            if ($bank = $bankService->saveForm($member, $bank, $bankForm->getData())) {
                 if ('bank_choose' === $request->get('_route')) {
                     if (null !== $bank->getProvider()) {
                         $this->addFlash('success', 'bank.form_confirmation');

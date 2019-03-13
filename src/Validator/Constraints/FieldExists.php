@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
+use Symfony\Component\Validator\Exception\MissingOptionsException;
 
 /**
  * @Annotation
@@ -20,19 +21,12 @@ class FieldExists extends Constraint
     /** @var string */
     public $field;
 
-    /** @var null|string */
-    public $em;
-
-    /**
-     * @param string $className
-     * @param string $field
-     * @param string $em
-     */
-    public function __construct(string $className, string $field, string $em = null)
+    public function __construct($options = null)
     {
-        $this->className = $className;
-        $this->field = $field;
-        $this->em = $em;
-        parent::__construct();
+        parent::__construct($options);
+
+        if (null === $this->className || null === $this->field) {
+            throw new MissingOptionsException(sprintf('Option "className" and "field" must be given for constraint %s', __CLASS__), ['className', 'field']);
+        }
     }
 }
