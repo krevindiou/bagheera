@@ -32,12 +32,12 @@ class BankRepository extends ServiceEntityRepository
         FROM bank
         LEFT JOIN account ON bank.bank_id = account.bank_id AND account.is_deleted = false
         WHERE bank.member_id = :member_id
-        AND bank.is_deleted = false 
+        AND bank.is_deleted = false
 EOT;
         if ($activeOnly) {
-            $sql .= 'AND bank.is_closed = false ';
+            $sql .= ' AND bank.is_closed = false';
         }
-        $sql .= 'ORDER BY bank.sort_order ASC, account.name ASC ';
+        $sql .= ' ORDER BY bank.sort_order ASC, account.name ASC';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute(

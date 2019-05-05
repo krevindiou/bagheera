@@ -52,7 +52,7 @@ class SchedulerRepository extends ServiceEntityRepository
         LEFT JOIN category ON scheduler.category_id = category.category_id
         LEFT JOIN payment_method ON scheduler.payment_method_id = payment_method.payment_method_id
         WHERE scheduler.account_id = :account_id
-        ORDER BY scheduler.created_at DESC 
+        ORDER BY scheduler.created_at DESC
 EOT;
         $conn = $this->getEntityManager()->getConnection();
 
@@ -70,7 +70,7 @@ EOT;
         };
 
         $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
-            $sql .= 'LIMIT :length OFFSET :offset';
+            $sql .= ' LIMIT :length OFFSET :offset';
 
             $params[':length'] = $length;
             $params[':offset'] = $offset;

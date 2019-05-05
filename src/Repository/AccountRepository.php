@@ -23,16 +23,16 @@ class AccountRepository extends ServiceEntityRepository
         $dql =<<<'EOT'
         SELECT a FROM App:Account a
         JOIN a.bank b
-        WHERE b.member = :member 
+        WHERE b.member = :member
 EOT;
         if (null !== $bank) {
-            $dql .= 'AND a.bank = :bank ';
+            $dql .= ' AND a.bank = :bank';
         }
         if (!$deleted) {
-            $dql .= 'AND b.deleted = false ';
-            $dql .= 'AND a.deleted = false ';
+            $dql .= ' AND b.deleted = false';
+            $dql .= ' AND a.deleted = false';
         }
-        $dql .= 'ORDER BY a.name ASC';
+        $dql .= ' ORDER BY a.name ASC';
 
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
@@ -48,10 +48,10 @@ EOT;
         $dql =<<<'EOT'
         SELECT (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS balance
         FROM App:Operation o
-        WHERE o.account = :account 
+        WHERE o.account = :account
 EOT;
         if ($reconciledOnly) {
-            $dql .= 'AND o.reconciled = true ';
+            $dql .= ' AND o.reconciled = true';
         }
 
         $query = $this->getEntityManager()->createQuery($dql);

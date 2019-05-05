@@ -57,11 +57,11 @@ class OperationRepository extends ServiceEntityRepository
         LEFT JOIN operation AS transfer_operation ON operation.transfer_operation_id = transfer_operation.operation_id
         LEFT JOIN category ON operation.category_id = category.category_id
         LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id
-        WHERE operation.account_id = :account_id 
+        WHERE operation.account_id = :account_id
 EOT;
         if (null !== $formModel) {
             if ('' !== $formModel->thirdParty) {
-                $sql .= 'AND operation.third_party LIKE :third_party ';
+                $sql .= ' AND operation.third_party LIKE :third_party';
                 $params[':third_party'] = '%'.$formModel->thirdParty.'%';
             }
 
@@ -73,7 +73,7 @@ EOT;
                     $formModel->categories
                 );
 
-                $sql .= 'AND operation.category_id IN ('.implode(',', $categories).') ';
+                $sql .= ' AND operation.category_id IN ('.implode(',', $categories).')';
             }
             if (null !== $formModel->paymentMethods && 0 !== count($formModel->paymentMethods)) {
                 $paymentMethods = array_map(
@@ -83,7 +83,7 @@ EOT;
                     $formModel->paymentMethods
                 );
 
-                $sql .= 'AND operation.payment_method_id IN ('.implode(',', $paymentMethods).') ';
+                $sql .= ' AND operation.payment_method_id IN ('.implode(',', $paymentMethods).')';
             }
 
             for ($i = 1; $i <= 2; ++$i) {
@@ -93,47 +93,47 @@ EOT;
 
                 switch ($formModel->{'amountComparator'.$i}) {
                     case 'inferiorTo':
-                        $sql .= 'AND operation.'.$formModel->type.' < :amount'.$i.' ';
+                        $sql .= ' AND operation.'.$formModel->type.' < :amount'.$i;
                         $params[':amount'.$i] = $formModel->{'amount'.$i};
                         break;
                     case 'inferiorOrEqualTo':
-                        $sql .= 'AND operation.'.$formModel->type.' <= :amount'.$i.' ';
+                        $sql .= ' AND operation.'.$formModel->type.' <= :amount'.$i;
                         $params[':amount'.$i] = $formModel->{'amount'.$i};
                         break;
                     case 'equalTo':
-                        $sql .= 'AND operation.'.$formModel->type.' = :amount'.$i.' ';
+                        $sql .= ' AND operation.'.$formModel->type.' = :amount'.$i;
                         $params[':amount'.$i] = $formModel->{'amount'.$i};
                         break;
                     case 'superiorOrEqualTo':
-                        $sql .= 'AND operation.'.$formModel->type.' >= :amount'.$i.' ';
+                        $sql .= ' AND operation.'.$formModel->type.' >= :amount'.$i;
                         $params[':amount'.$i] = $formModel->{'amount'.$i};
                         break;
                     case 'superiorTo':
-                        $sql .= 'AND operation.'.$formModel->type.' > :amount'.$i.' ';
+                        $sql .= ' AND operation.'.$formModel->type.' > :amount'.$i;
                         $params[':amount'.$i] = $formModel->{'amount'.$i};
                         break;
                 }
             }
 
             if (null !== $formModel->valueDateStart) {
-                $sql .= 'AND operation.value_date >= :value_date_start ';
+                $sql .= ' AND operation.value_date >= :value_date_start';
                 $params[':value_date_start'] = $formModel->valueDateStart->format(\DateTime::ISO8601);
             }
             if (null !== $formModel->valueDateEnd) {
-                $sql .= 'AND operation.value_date <= :value_date_end ';
+                $sql .= ' AND operation.value_date <= :value_date_end';
                 $params[':value_date_end'] = $formModel->valueDateEnd->format(\DateTime::ISO8601);
             }
             if ('' !== $formModel->notes) {
-                $sql .= 'AND operation.notes LIKE :notes ';
+                $sql .= ' AND operation.notes LIKE :notes';
                 $params[':notes'] = '%'.$formModel->notes.'%';
             }
             if (null !== $formModel->reconciled) {
-                $sql .= 'AND operation.is_reconciled = :reconciled ';
+                $sql .= ' AND operation.is_reconciled = :reconciled';
                 $params[':reconciled'] = $formModel->reconciled ? 'true' : 'false';
             }
         }
 
-        $sql .= 'ORDER BY operation.value_date DESC ';
+        $sql .= ' ORDER BY operation.value_date DESC';
 
         $conn = $this->getEntityManager()->getConnection();
 
@@ -151,7 +151,7 @@ EOT;
         };
 
         $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
-            $sql .= 'LIMIT :length OFFSET :offset';
+            $sql .= ' LIMIT :length OFFSET :offset';
 
             $params[':length'] = $length;
             $params[':offset'] = $offset;
@@ -364,22 +364,22 @@ EOT;
             $accountsId[] = $account->getAccountId();
         }
 
-        $sql .= 'WHERE o.account_id IN ('.implode(', ', $accountsId).') ';
+        $sql .= ' WHERE o.account_id IN ('.implode(', ', $accountsId).')';
         if (null !== $report->getValueDateStart()) {
-            $sql .= 'AND o.value_date >= :value_date_start ';
+            $sql .= ' AND o.value_date >= :value_date_start';
         }
         if (null !== $report->getValueDateEnd()) {
-            $sql .= 'AND o.value_date <= :value_date_end ';
+            $sql .= ' AND o.value_date <= :value_date_end';
         }
         if (null !== $report->getThirdParties()) {
-            $sql .= 'AND o.third_party LIKE :third_parties ';
+            $sql .= ' AND o.third_party LIKE :third_parties';
         }
         if ($report->getReconciledOnly()) {
-            $sql .= 'AND o.is_reconciled = true ';
+            $sql .= ' AND o.is_reconciled = true';
         }
         if ('' !== $groupingData) {
-            $sql .= 'GROUP BY grouping_data ';
-            $sql .= 'ORDER BY grouping_data ASC ';
+            $sql .= ' GROUP BY grouping_data';
+            $sql .= ' ORDER BY grouping_data ASC';
         }
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
@@ -438,14 +438,14 @@ EOT;
         AND a.is_deleted = false
         AND b.is_deleted = false
         AND TO_CHAR(o.value_date, 'YYYY-MM-DD') >= :start_date
-        AND TO_CHAR(o.value_date, 'YYYY-MM-DD') <= :end_date 
+        AND TO_CHAR(o.value_date, 'YYYY-MM-DD') <= :end_date
 EOT;
         if (null !== $account) {
-            $sql .= 'AND a.account_id = :account_id ';
+            $sql .= ' AND a.account_id = :account_id';
         }
 
-        $sql .= 'GROUP BY a.currency, month ';
-        $sql .= 'ORDER BY month ASC ';
+        $sql .= ' GROUP BY a.currency, month';
+        $sql .= ' ORDER BY month ASC';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
@@ -506,13 +506,13 @@ EOT;
         WHERE b.member_id = :member_id
         AND a.is_deleted = false
         AND b.is_deleted = false
-        AND TO_CHAR(o.value_date, 'YYYY-MM-DD') < :end_date 
+        AND TO_CHAR(o.value_date, 'YYYY-MM-DD') < :end_date
 EOT;
         if (null !== $account) {
-            $sql .= 'AND a.account_id = :account_id ';
+            $sql .= ' AND a.account_id = :account_id';
         }
 
-        $sql .= 'GROUP BY a.currency ';
+        $sql .= ' GROUP BY a.currency';
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
