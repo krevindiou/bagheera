@@ -133,7 +133,7 @@ EOT;
             }
         }
 
-        $sql .= ' ORDER BY operation.value_date DESC';
+        $sql .= ' ORDER BY operation.value_date DESC, operation.created_at DESC';
 
         $conn = $this->getEntityManager()->getConnection();
 
