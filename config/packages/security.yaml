@@ -15,8 +15,7 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-
-        secured_area:
+        main:
             pattern: ^/
             user_checker: App\Security\UserChecker
             form_login:

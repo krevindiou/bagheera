@@ -6,8 +6,6 @@ parameters:
         - .phpunit
         - node_modules
         - public
-        - src/Migrations
+        - migrations
         - var
         - vendor
-    autoload_files:
-        - vendor/bin/.phpunit/phpunit-6.5/vendor/autoload.php

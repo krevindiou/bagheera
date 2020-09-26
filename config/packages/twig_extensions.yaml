@@ -1,6 +1,7 @@
 services:
     _defaults:
+        public: false
         autowire: true
         autoconfigure: true
 
-    Twig\Extensions\IntlExtension: ~
+    Twig\Extensions\IntlExtension: null

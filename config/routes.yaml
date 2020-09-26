@@ -1,0 +1,11 @@
+login_check:
+    path: /login_check
+
+logout:
+    path: /logout
+
+home:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController::redirectAction
+    defaults:
+        route: member_login
