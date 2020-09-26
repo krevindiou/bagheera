@@ -14,11 +14,11 @@ use App\Form\Model\OperationSearchFormModel;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 class OperationRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Operation::class);
     }

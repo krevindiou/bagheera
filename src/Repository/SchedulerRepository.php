@@ -9,11 +9,11 @@ use App\Entity\Scheduler;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 class SchedulerRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Scheduler::class);
     }
