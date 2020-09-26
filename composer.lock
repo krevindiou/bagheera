@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "23d644550bfb15138c9419e3a74b5a89",
+    "content-hash": "50a14c8d11cef02c35c5af858ee8a4f0",
     "packages": [
         {
             "name": "babdev/pagerfanta-bundle",
@@ -153,16 +153,16 @@
         },
         {
             "name": "components/font-awesome",
-            "version": "3.2.1",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/components/font-awesome.git",
-                "reference": "44e665c187000d03eb055a14eeb74f89445212e6"
+                "reference": "6eabb246e3d870bb861e7a3acbe4fa9c2741802f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/components/font-awesome/zipball/44e665c187000d03eb055a14eeb74f89445212e6",
-                "reference": "44e665c187000d03eb055a14eeb74f89445212e6",
+                "url": "https://api.github.com/repos/components/font-awesome/zipball/6eabb246e3d870bb861e7a3acbe4fa9c2741802f",
+                "reference": "6eabb246e3d870bb861e7a3acbe4fa9c2741802f",
                 "shasum": ""
             },
             "require": {
@@ -171,7 +171,7 @@
             "type": "component",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.2-dev"
+                    "dev-master": "3.1-dev"
                 },
                 "component": {
                     "styles": [
@@ -179,7 +179,7 @@
                     ],
                     "files": [
                         "css/font-awesome.min.css",
-                        "css/font-awesome-ie7.*",
+                        "css/font-awesome-ie7.min.css",
                         "font/*"
                     ]
                 }
@@ -190,33 +190,30 @@
                 "OFL-1.1"
             ],
             "description": "The iconic font designed for use with Twitter Bootstrap.",
-            "time": "2013-07-27T07:29:06+00:00"
+            "time": "2013-05-14T21:57:23+00:00"
         },
         {
             "name": "components/jquery",
-            "version": "1.12.4",
+            "version": "1.8.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/components/jquery.git",
-                "reference": "5dd7297d7603e11e53bdcca2a71074d92de37b8f"
+                "reference": "a94bf4baa9955613937d4f4c083c9d95ad0564fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/components/jquery/zipball/5dd7297d7603e11e53bdcca2a71074d92de37b8f",
-                "reference": "5dd7297d7603e11e53bdcca2a71074d92de37b8f",
+                "url": "https://api.github.com/repos/components/jquery/zipball/a94bf4baa9955613937d4f4c083c9d95ad0564fb",
+                "reference": "a94bf4baa9955613937d4f4c083c9d95ad0564fb",
                 "shasum": ""
+            },
+            "require": {
+                "robloach/component-installer": "*"
             },
             "type": "component",
             "extra": {
                 "component": {
                     "scripts": [
                         "jquery.js"
-                    ],
-                    "files": [
-                        "jquery.min.js",
-                        "jquery.min.map",
-                        "jquery-migrate.js",
-                        "jquery-migrate.min.js"
                     ]
                 }
             },
@@ -227,41 +224,41 @@
             "authors": [
                 {
                     "name": "John Resig",
-                    "email": "jeresig@gmail.com"
+                    "email": "jeresig@gmail.com",
+                    "homepage": "http://ejohn.org/"
                 }
             ],
             "description": "jQuery JavaScript Library",
             "homepage": "http://jquery.com",
-            "time": "2016-05-25T06:50:04+00:00"
+            "time": "2013-04-05T19:32:49+00:00"
         },
         {
             "name": "components/jqueryui",
-            "version": "1.12.1",
+            "version": "1.10.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/components/jqueryui.git",
-                "reference": "44ecf3794cc56b65954cc19737234a3119d036cc"
+                "reference": "b68f1ee8749c90b2dfc5f2cb33c76fd0308bd356"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/components/jqueryui/zipball/44ecf3794cc56b65954cc19737234a3119d036cc",
-                "reference": "44ecf3794cc56b65954cc19737234a3119d036cc",
+                "url": "https://api.github.com/repos/components/jqueryui/zipball/b68f1ee8749c90b2dfc5f2cb33c76fd0308bd356",
+                "reference": "b68f1ee8749c90b2dfc5f2cb33c76fd0308bd356",
                 "shasum": ""
             },
             "require": {
-                "components/jquery": ">=1.6"
+                "components/jquery": ">=1.8"
             },
             "type": "component",
             "extra": {
                 "component": {
                     "name": "jquery-ui",
                     "scripts": [
-                        "jquery-ui.js"
+                        "ui/jquery-ui.js"
                     ],
                     "files": [
                         "ui/**",
-                        "themes/**",
-                        "jquery-ui.min.js"
+                        "themes/**"
                     ],
                     "shim": {
                         "deps": [
@@ -296,6 +293,12 @@
                     "homepage": "http://krisborchers.com"
                 },
                 {
+                    "name": "Corey Frang",
+                    "email": "gnarf37@gmail.com",
+                    "homepage": "http://gnarf.net",
+                    "role": "Developer"
+                },
+                {
                     "name": "Mike Sherov",
                     "email": "mike.sherov@gmail.com",
                     "homepage": "http://mike.sherov.com"
@@ -304,20 +307,10 @@
                     "name": "TJ VanToll",
                     "email": "tj.vantoll@gmail.com",
                     "homepage": "http://tjvantoll.com"
-                },
-                {
-                    "name": "Corey Frang",
-                    "email": "gnarf37@gmail.com",
-                    "homepage": "http://gnarf.net"
-                },
-                {
-                    "name": "Felix Nagel",
-                    "email": "info@felixnagel.com",
-                    "homepage": "http://www.felixnagel.com"
                 }
             ],
             "description": "jQuery UI is a curated set of user interface interactions, effects, widgets, and themes built on top of the jQuery JavaScript Library. Whether you're building highly interactive web applications or you just need to add a date picker to a form control, jQuery UI is the perfect choice.",
-            "time": "2016-09-16T05:47:55+00:00"
+            "time": "2014-04-22T12:57:43+00:00"
         },
         {
             "name": "components/mailcheck",
@@ -1605,16 +1598,16 @@
         },
         {
             "name": "egulias/email-validator",
-            "version": "2.1.21",
+            "version": "2.1.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/egulias/EmailValidator.git",
-                "reference": "563d0cdde5d862235ffe24a158497f4d490191b5"
+                "reference": "68e418ec08fbfc6f58f6fd2eea70ca8efc8cc7d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/563d0cdde5d862235ffe24a158497f4d490191b5",
-                "reference": "563d0cdde5d862235ffe24a158497f4d490191b5",
+                "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/68e418ec08fbfc6f58f6fd2eea70ca8efc8cc7d5",
+                "reference": "68e418ec08fbfc6f58f6fd2eea70ca8efc8cc7d5",
                 "shasum": ""
             },
             "require": {
@@ -1659,7 +1652,7 @@
                 "validation",
                 "validator"
             ],
-            "time": "2020-09-19T14:37:56+00:00"
+            "time": "2020-09-26T15:48:38+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
