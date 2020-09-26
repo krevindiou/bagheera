@@ -68,7 +68,7 @@
                     <td>{{ operation.thirdParty }}</td>
                     <td class="amount {{ (operation.amount < 0) ? 'negative' : 'positive' }}">{{ operation.amount|money(operation.account.currency) }}</td>
                     <td class="payment-method">
-                        <i class="{% spaceless %}
+                        <i class="{% apply spaceless %}
                         {% if operation.paymentMethod.name == 'initial_balance' %}
                             icon-dashboard
                         {% elseif operation.paymentMethod.name == 'credit_card' %}
@@ -82,7 +82,7 @@
                         {% elseif operation.paymentMethod.name == 'deposit' %}
                             icon-money
                         {% endif %}
-                        {% endspaceless %}" title="{{ ('payment_method.' ~ operation.paymentMethod.name)|trans }}"></i>
+                        {% endapply %}" title="{{ ('payment_method.' ~ operation.paymentMethod.name)|trans }}"></i>
                     </td>
                     <td>{{ operation.category.name }}</td>
                     <td class="date">{{ operation.valueDate|localizeddate('medium', 'none') }}</td>

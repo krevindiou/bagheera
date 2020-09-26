@@ -35,21 +35,21 @@
 {% form_theme bankForm _self %}
 
 {% block _bank_update_name_widget %}
-{% spaceless %}
+{% apply spaceless %}
     {{ block('form_widget') }}
     {% if attr.bankId is not null and attr.hasProvider %}
         &nbsp;<a href="{{ path('bank_access_update', {bankId: attr.bankId}) }}">{{ 'bank_access.update_login_password'|trans }}</a>
     {% endif %}
-{% endspaceless %}
+{% endapply %}
 {% endblock %}
 
 {% block _bank_choose_provider_widget %}
-{% spaceless %}
+{% apply spaceless %}
     {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' inline radio')|trim}) %}
     <div {{ block('widget_container_attributes') }}>
     {% for child in form %}
         <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %} data-provider-id="{{ child.vars.value }}">{{ form_widget(child) }}</label>
     {% endfor %}
     </div>
-{% endspaceless %}
+{% endapply %}
 {% endblock %}

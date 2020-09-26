@@ -12,7 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Intl\Intl;
+use Symfony\Component\Intl\Countries;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class MemberRegisterFormType extends AbstractType
@@ -28,7 +28,7 @@ class MemberRegisterFormType extends AbstractType
             if (count($languageParts) > 1) {
                 $country = $languageParts[1];
 
-                $countries = Intl::getRegionBundle()->getCountryNames('en');
+                $countries = Countries::getNames('en');
                 if (isset($countries[$country])) {
                     $preferredChoice = $country;
                 }

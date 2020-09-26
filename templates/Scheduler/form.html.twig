@@ -19,7 +19,7 @@
     {{ form_row(schedulerForm.valueDate) }}
     {{ form_row(schedulerForm.limitDate) }}
 
-    {% spaceless %}
+    {% apply spaceless %}
     <div class="control-group">
         {{ form_label(schedulerForm.frequencyValue, 'scheduler.frequency'|trans, {label_attr: {class: 'control-label'}}) }}
 
@@ -31,7 +31,7 @@
             {{ form_widget(schedulerForm.frequencyUnit) }}
         </div>
     </div>
-    {% endspaceless %}
+    {% endapply %}
 
     {{ form_row(schedulerForm.notes) }}
     {{ form_row(schedulerForm.reconciled) }}

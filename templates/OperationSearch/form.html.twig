@@ -6,7 +6,7 @@
     {{ form_row(operationSearchForm.categories) }}
     {{ form_row(operationSearchForm.paymentMethods) }}
 
-    {% spaceless %}
+    {% apply spaceless %}
     <div class="control-group">
         {{ form_label(operationSearchForm.amount1, null, {label_attr: {class: 'control-label'}}) }}
 
@@ -24,7 +24,7 @@
             {{ form_widget(operationSearchForm.amount2) }}
         </div>
     </div>
-    {% endspaceless %}
+    {% endapply %}
 
     {{ form_row(operationSearchForm.valueDateStart) }}
     {{ form_row(operationSearchForm.valueDateEnd) }}

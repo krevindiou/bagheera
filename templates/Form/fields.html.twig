@@ -1,7 +1,7 @@
 {% extends 'form_div_layout.html.twig' %}
 
 {% block form_row %}
-{% spaceless %}
+{% apply spaceless %}
     <div class="control-group{{ errors|length ? ' error' : '' }}">
         {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' control-label')|trim}) %}
 
@@ -12,11 +12,11 @@
             {{ form_widget(form) }}
         </div>
     </div>
-{% endspaceless %}
+{% endapply %}
 {% endblock %}
 
 {% block form_errors %}
-{% spaceless %}
+{% apply spaceless %}
     {% if errors|length > 0 %}
     <div>
         {% for error in errors %}
@@ -24,11 +24,11 @@
         {% endfor %}
     </div>
     {% endif %}
-{% endspaceless %}
+{% endapply %}
 {% endblock %}
 
 {% block choice_widget_expanded %}
-{% spaceless %}
+{% apply spaceless %}
     {% set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' inline radio')|trim}) %}
 
     <div {{ block('widget_container_attributes') }}>
@@ -36,7 +36,7 @@
         <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>{{ form_widget(child) }} {{ child.vars.label|trans({}, translation_domain) }}</label>
     {% endfor %}
     </div>
-{% endspaceless %}
+{% endapply %}
 {% endblock %}
 
 {% block date_widget %}
