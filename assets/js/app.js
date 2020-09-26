@@ -1,5 +1,5 @@
 require('../css/app.less');
-require('../../vendor/components/jquery/jquery.js');
+require('../../vendor/components/jquery/jquery.min.js');
 require('../../vendor/components/jqueryui/ui/minified/jquery-ui.min.js');
 require('../../vendor/components/flot/jquery.flot.js');
 require('../../vendor/components/flot/jquery.flot.time.js');

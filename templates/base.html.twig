@@ -25,7 +25,7 @@
             </div>
             <div id="header">
                 <div class="container">
-                    <a href="{{ app.user is not null ? path('account_home') : path('member_login') }}" class="brand"><img class="logo" src="{{ asset('/bundles/app/img/logo.png') }}" alt="Logo" /></a>
+                    <a href="{{ app.user is not null ? path('account_home') : path('member_login') }}" class="brand"></a>
 
                     {% if app.user is not empty %}
                     <a href="javascript:;" class="btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
