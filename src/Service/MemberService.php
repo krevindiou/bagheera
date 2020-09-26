@@ -22,7 +22,6 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Templating\EngineInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -59,7 +58,7 @@ class MemberService
         BankService $bankService,
         AccountService $accountService,
         CryptService $cryptService,
-        EngineInterface $templating,
+        \Twig\Environment $templating,
         MemberRepository $memberRepository,
         AccountImportRepository $accountImportRepository
     ) {

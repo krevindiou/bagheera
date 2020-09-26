@@ -7,9 +7,10 @@ namespace App\Extension;
 use App\Service\BankService;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 
-class AppExtension extends AbstractExtension implements \Twig_Extension_GlobalsInterface
+class AppExtension extends AbstractExtension implements GlobalsInterface
 {
     private $tokenStorage;
     private $bankService;
