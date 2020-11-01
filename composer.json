@@ -17,7 +17,7 @@
         "php": "^7.2.5",
         "ext-intl": "*",
         "ext-openssl": "*",
-        "babdev/pagerfanta-bundle": "^2.5",
+        "babdev/pagerfanta-bundle": "^2.7",
         "components/bootstrap": "2.3.*",
         "components/flot": "0.8.*",
         "components/font-awesome": "3.1.*",
