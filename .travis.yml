@@ -11,8 +11,8 @@ before_install:
 
 script:
   - ./bin/docker-exec php-cs-fixer fix --dry-run --diff
-  - ./vendor/bin/phpstan analyse
   - ./bin/docker-test --coverage-clover=coverage.xml
+  - ./bin/docker-exec ./vendor/bin/phpstan analyse
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
