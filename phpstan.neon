@@ -1,5 +1,5 @@
 parameters:
-    level: max
+    level: 0
     paths:
         - .
     excludes_analyse:
@@ -9,3 +9,5 @@ parameters:
         - migrations
         - var
         - vendor
+    bootstrapFiles:
+        - bin/.phpunit/phpunit/vendor/autoload.php

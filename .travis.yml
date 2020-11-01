@@ -9,6 +9,7 @@ before_install:
   - ./bin/docker-start
 
 script:
+  - ./vendor/bin/phpstan analyse
   - ./bin/docker-test --coverage-clover=coverage.xml
 
 after_success:
