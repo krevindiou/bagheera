@@ -12,7 +12,7 @@ use App\Tests\E2eTestCase;
  */
 final class BankControllerTest extends E2eTestCase
 {
-    public function testCreateForm()
+    public function testCreateForm(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/choose-bank');
@@ -20,16 +20,16 @@ final class BankControllerTest extends E2eTestCase
         $form['bank_choose_form[other]'] = 'New bank';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/bank-6/create-account'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/bank-6/create-account'));
     }
 
-    public function testUpdateForm()
+    public function testUpdateForm(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/bank-1');
         $form = $crawler->selectButton('bank_update_form[submit]')->form();
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/bank-1'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/bank-1'));
     }
 }

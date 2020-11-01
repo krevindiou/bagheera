@@ -21,37 +21,37 @@ class ReportRepository extends ServiceEntityRepository
     {
         $reports = [];
 
-        $sql =<<<'EOT'
-        SELECT
-            report.report_id,
-            report.type AS report_type,
-            report.title AS report_title,
-            report.homepage AS report_homepage,
-            report.value_date_start AS report_value_date_start,
-            report.value_date_end AS report_value_date_end,
-            report.third_parties AS report_third_parties,
-            report.reconciled_only AS report_reconciled_only,
-            report.period_grouping AS report_period_grouping,
-            report.data_grouping AS report_data_grouping,
-            report.significant_results_number AS report_significant_results_number,
-            report.month_expenses AS report_month_expenses,
-            report.month_incomes AS report_month_incomes,
-            report.estimate_duration_value AS report_estimate_duration_value,
-            report.estimate_duration_unit AS report_estimate_duration_unit,
-        array_to_json(array_agg(account)) AS accounts,
-        array_to_json(array_agg(category)) AS categories,
-        array_to_json(array_agg(payment_method)) AS payment_methods
-        FROM report
-        LEFT JOIN report_account ON report.report_id = report_account.report_id
-        LEFT JOIN account ON report_account.account_id = account.account_id
-        LEFT JOIN report_category ON report.report_id = report_category.report_id
-        LEFT JOIN category ON report_category.category_id = category.category_id
-        LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id
-        LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id
-        WHERE report.member_id = :member_id
-        GROUP BY report.report_id
-        ORDER BY report.report_id ASC
-EOT;
+        $sql = <<<'EOT'
+                    SELECT
+                        report.report_id,
+                        report.type AS report_type,
+                        report.title AS report_title,
+                        report.homepage AS report_homepage,
+                        report.value_date_start AS report_value_date_start,
+                        report.value_date_end AS report_value_date_end,
+                        report.third_parties AS report_third_parties,
+                        report.reconciled_only AS report_reconciled_only,
+                        report.period_grouping AS report_period_grouping,
+                        report.data_grouping AS report_data_grouping,
+                        report.significant_results_number AS report_significant_results_number,
+                        report.month_expenses AS report_month_expenses,
+                        report.month_incomes AS report_month_incomes,
+                        report.estimate_duration_value AS report_estimate_duration_value,
+                        report.estimate_duration_unit AS report_estimate_duration_unit,
+                    array_to_json(array_agg(account)) AS accounts,
+                    array_to_json(array_agg(category)) AS categories,
+                    array_to_json(array_agg(payment_method)) AS payment_methods
+                    FROM report
+                    LEFT JOIN report_account ON report.report_id = report_account.report_id
+                    LEFT JOIN account ON report_account.account_id = account.account_id
+                    LEFT JOIN report_category ON report.report_id = report_category.report_id
+                    LEFT JOIN category ON report_category.category_id = category.category_id
+                    LEFT JOIN report_payment_method ON report.report_id = report_payment_method.report_id
+                    LEFT JOIN payment_method ON report_payment_method.payment_method_id = payment_method.payment_method_id
+                    WHERE report.member_id = :member_id
+                    GROUP BY report.report_id
+                    ORDER BY report.report_id ASC
+            EOT;
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->execute(
             [
@@ -122,11 +122,11 @@ EOT;
 
     public function getHomepageList(Member $member): ArrayCollection
     {
-        $dql =<<<'EOT'
-        SELECT r FROM App:Report r
-        WHERE r.member = :member
-        AND r.homepage = :homepage
-EOT;
+        $dql = <<<'EOT'
+                    SELECT r FROM App:Report r
+                    WHERE r.member = :member
+                    AND r.homepage = :homepage
+            EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
         $query->setParameter('homepage', true);

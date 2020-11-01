@@ -12,7 +12,7 @@ use App\Tests\E2eTestCase;
  */
 final class AccountControllerTest extends E2eTestCase
 {
-    public function testListAccounts()
+    public function testListAccounts(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/accounts');
@@ -20,7 +20,7 @@ final class AccountControllerTest extends E2eTestCase
         $this->assertSame(4, $crawler->filter('#content input[name="accountsId[]"]')->count());
     }
 
-    public function testHome()
+    public function testHome(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/');
@@ -28,7 +28,7 @@ final class AccountControllerTest extends E2eTestCase
         $this->assertSame(4, $crawler->filter('#content span.label')->count());
     }
 
-    public function testCreateForm()
+    public function testCreateForm(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/bank-2/create-account');
@@ -36,20 +36,20 @@ final class AccountControllerTest extends E2eTestCase
         $form['account_form[name]'] = 'New bank';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/account-9/operations'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/account-9/operations'));
     }
 
-    public function testUpdateForm()
+    public function testUpdateForm(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/account-1');
         $form = $crawler->selectButton('account_form[submit]')->form();
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/accounts'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/accounts'));
     }
 
-    public function testDeleteAccount()
+    public function testDeleteAccount(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/accounts');
@@ -57,20 +57,20 @@ final class AccountControllerTest extends E2eTestCase
         $form['accountsId'][0]->tick();
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/accounts'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/accounts'));
         $crawler = $client->followRedirect();
 
         $this->assertSame(3, $crawler->filter('#content input[name="accountsId[]"]')->count());
     }
 
-    public function testCloseAccount()
+    public function testCloseAccount(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/accounts');
         $form = $crawler->selectButton('Close')->form();
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/accounts'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/accounts'));
         $crawler = $client->followRedirect();
 
         $this->assertSame(1, $crawler->filter('#content input[name="accountsId[]"]')->count());

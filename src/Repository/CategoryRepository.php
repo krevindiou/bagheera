@@ -23,11 +23,11 @@ class CategoryRepository extends ServiceEntityRepository
 
     public function getCategories(array $categoriesId): ArrayCollection
     {
-        $dql =<<<'EOT'
-        SELECT c
-        FROM App:Category c
-        WHERE c.categoryId IN (%s)
-EOT;
+        $dql = <<<'EOT'
+                    SELECT c
+                    FROM App:Category c
+                    WHERE c.categoryId IN (%s)
+            EOT;
         $query = $this->getEntityManager()->createQuery(sprintf($dql, implode(', ', $categoriesId)));
 
         return new ArrayCollection($query->getResult());

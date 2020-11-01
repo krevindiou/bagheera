@@ -12,15 +12,15 @@ use App\Tests\E2eTestCase;
  */
 final class MemberControllerTest extends E2eTestCase
 {
-    public function testRedirectFromRoot()
+    public function testRedirectFromRoot(): void
     {
         $client = static::createClient();
         $client->request('GET', '/');
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('http://localhost/en/sign-in'));
+        $this->assertTrue($client->getResponse()->isRedirect('http://localhost/en/sign-in'));
     }
 
-    public function testLogin()
+    public function testLogin(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/en/sign-in');
@@ -29,10 +29,10 @@ final class MemberControllerTest extends E2eTestCase
         $form['_password'] = 'johnjohn';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('http://localhost/en/manager/'));
+        $this->assertTrue($client->getResponse()->isRedirect('http://localhost/en/manager/'));
     }
 
-    public function testLogout()
+    public function testLogout(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/en/sign-in');
@@ -45,10 +45,10 @@ final class MemberControllerTest extends E2eTestCase
         $link = $crawler->selectLink('Logout')->link();
         $client->click($link);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('http://localhost/'));
+        $this->assertTrue($client->getResponse()->isRedirect('http://localhost/'));
     }
 
-    public function testRegister()
+    public function testRegister(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/en/register');
@@ -59,10 +59,10 @@ final class MemberControllerTest extends E2eTestCase
         $form['member_register_form[plainPassword][second]'] = 'jamesjames';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/sign-in'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/sign-in'));
     }
 
-    public function testForgotPassword()
+    public function testForgotPassword(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/en/forgot-password');
@@ -70,24 +70,24 @@ final class MemberControllerTest extends E2eTestCase
         $form['member_forgot_password_form[email]'] = 'john@example.net';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/sign-in'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/sign-in'));
     }
 
-    public function testChangePasswordPublic()
+    public function testChangePasswordPublic(): void
     {
         $client = static::createClient();
         $key = 'SghZD4l9pAGSc7hTCgt+ESHxo9gubXvu3AzCsRMVj3hzAok71GyznJl05neeiWxwQQmlMB8vp9A1Ndo7O2r1LfGYkZHHQjgFMTEHXruVjieVQiwKAwcZkalKBFY3kB/017Vccf7jzhwri0SqN3hzyQ==';
-        $crawler = $client->request('GET', "/en/change-password/$key");
+        $crawler = $client->request('GET', "/en/change-password/${key}");
 
         $form = $crawler->selectButton('member_change_password_form[submit]')->form();
         $form['member_change_password_form[password][first]'] = 'johnjohn';
         $form['member_change_password_form[password][second]'] = 'johnjohn';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/sign-in'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/sign-in'));
     }
 
-    public function testChangePassword()
+    public function testChangePassword(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/change-password');
@@ -96,25 +96,25 @@ final class MemberControllerTest extends E2eTestCase
         $form['member_change_password_form[password][second]'] = 'johnjohn';
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/change-password'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/change-password'));
     }
 
-    public function testActivate()
+    public function testActivate(): void
     {
         $client = static::createClient();
         $key = 'yxob4g7V3GeK5pPtXgc5VQMg9IYpiCcpRvVMiX75e84qEOO7frxTpjlm3idxqIx4jrH8F4R0yJeujjqQkMuKug==';
-        $client->request('GET', "/en/activate?key=$key");
+        $client->request('GET', "/en/activate?key=${key}");
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/sign-in'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/sign-in'));
     }
 
-    public function testProfile()
+    public function testProfile(): void
     {
         $client = static::createAuthenticatedClient();
         $crawler = $client->request('GET', '/en/manager/profile');
         $form = $crawler->selectButton('member_profile_form[submit]')->form();
         $client->submit($form);
 
-        $this->assertSame(true, $client->getResponse()->isRedirect('/en/manager/profile'));
+        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/profile'));
     }
 }

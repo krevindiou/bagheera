@@ -19,14 +19,14 @@ class AccountImportRepository extends ServiceEntityRepository
 
     public function getNextImportId(Account $account): int
     {
-        $dql =<<<'EOT'
-        SELECT MAX(i.importId)
-        FROM App:AccountImport i
-        JOIN i.account a
-        JOIN a.bank b
-        WHERE b.member = :member
-        AND i.finished = true
-EOT;
+        $dql = <<<'EOT'
+                    SELECT MAX(i.importId)
+                    FROM App:AccountImport i
+                    JOIN i.account a
+                    JOIN a.bank b
+                    WHERE b.member = :member
+                    AND i.finished = true
+            EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $account->getBank()->getMember());
 
@@ -36,14 +36,14 @@ EOT;
     public function getImportProgress(Member $member): ?array
     {
         // Fetch current importId
-        $dql =<<<'EOT'
-        SELECT MAX(i.importId)
-        FROM App:AccountImport i
-        JOIN i.account a
-        JOIN a.bank b
-        WHERE b.member = :member
-        AND i.finished = false
-EOT;
+        $dql = <<<'EOT'
+                    SELECT MAX(i.importId)
+                    FROM App:AccountImport i
+                    JOIN i.account a
+                    JOIN a.bank b
+                    WHERE b.member = :member
+                    AND i.finished = false
+            EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
 
@@ -53,11 +53,11 @@ EOT;
             return null;
         }
 
-        $dql =<<<'EOT'
-        SELECT i
-        FROM App:AccountImport i INDEX BY i.accountId
-        WHERE i.importId = :maxImportId
-EOT;
+        $dql = <<<'EOT'
+                    SELECT i
+                    FROM App:AccountImport i INDEX BY i.accountId
+                    WHERE i.importId = :maxImportId
+            EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);
 
