@@ -49,6 +49,7 @@ services:
     App\Service\Provider\ProviderAdapter:
         arguments:
             $key: '%kernel.secret%'
+            $container: '@service_container'
 
     App\EventListener\LoginListener:
         tags:
