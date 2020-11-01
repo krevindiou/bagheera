@@ -233,5 +233,7 @@ class SchedulerService
         } catch (\Exception $e) {
             $this->logger->err($e->getMessage());
         }
+
+        return false;
     }
 }

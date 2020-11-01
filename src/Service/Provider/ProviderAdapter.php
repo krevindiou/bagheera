@@ -101,16 +101,17 @@ class ProviderAdapter
         }
 
         $data = $this->providerService->fetchTransactions($account);
-
-        if (null !== $data) {
-            $data = $this->normalizeData($account, $data);
-
-            $accountImport = $this->accountImportService->getCurrentImport($account);
-            $accountImport->setTotal(count($data));
-            $this->em->flush();
-
-            return $data;
+        if (null === $data) {
+            return [];
         }
+
+        $data = $this->normalizeData($account, $data);
+
+        $accountImport = $this->accountImportService->getCurrentImport($account);
+        $accountImport->setTotal(count($data));
+        $this->em->flush();
+
+        return $data;
     }
 
     /**

@@ -52,25 +52,27 @@ class CryptService
             throw new \Exception('Key must be 256-bit long');
         }
 
-        if (false !== ($message = base64_decode($message, true))) {
-            $ivLength = openssl_cipher_iv_length(self::METHOD);
-            $iv = mb_substr($message, 0, $ivLength, '8bit');
-            $ciphertext = mb_substr($message, $ivLength, null, '8bit');
-
-            $message = openssl_decrypt(
-                $ciphertext,
-                self::METHOD,
-                $key,
-                OPENSSL_RAW_DATA,
-                $iv
-            );
-
-            if (false === $message) {
-                throw new \Exception('Unable to decrypt string');
-            }
-
-            return $message;
+        if (false === ($message = base64_decode($message, true))) {
+            throw new \Exception('Cannot decode message');
         }
+
+        $ivLength = openssl_cipher_iv_length(self::METHOD);
+        $iv = mb_substr($message, 0, $ivLength, '8bit');
+        $ciphertext = mb_substr($message, $ivLength, null, '8bit');
+
+        $message = openssl_decrypt(
+            $ciphertext,
+            self::METHOD,
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
+
+        if (false === $message) {
+            throw new \Exception('Unable to decrypt string');
+        }
+
+        return $message;
     }
 
     /**

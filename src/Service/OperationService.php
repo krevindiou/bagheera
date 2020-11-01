@@ -58,6 +58,8 @@ class OperationService
         if ($account->getBank()->getMember() === $member) {
             return $this->operationRepository->getList($member, $account, $currentPage, $formModel);
         }
+
+        return null;
     }
 
     /**
