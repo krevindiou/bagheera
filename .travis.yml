@@ -10,7 +10,7 @@ before_install:
   - ./bin/docker-start
 
 script:
-  - ./bin/php-cs-fixer
+  - ./bin/docker-exec php-cs-fixer fix --dry-run --diff
   - ./vendor/bin/phpstan analyse
   - ./bin/docker-test --coverage-clover=coverage.xml
 
