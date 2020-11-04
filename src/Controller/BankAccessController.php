@@ -25,12 +25,10 @@ class BankAccessController extends AbstractController
         $bankAccessForm = $bankAccessService->getForm($member, $bank);
         $bankAccessForm->handleRequest($request);
 
-        if ($bankAccessForm->isSubmitted()) {
-            if ($bankAccessService->saveForm($member, $bankAccessForm)) {
-                $this->addFlash('success', 'bank_access.form_confirmation');
+        if ($bankAccessForm->isSubmitted() && $bankAccessService->saveForm($member, $bankAccessForm)) {
+            $this->addFlash('success', 'bank_access.form_confirmation');
 
-                return $this->redirectToRoute('account_list');
-            }
+            return $this->redirectToRoute('account_list');
         }
 
         return $this->render(

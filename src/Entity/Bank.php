@@ -107,8 +107,9 @@ class Bank
      */
     protected $accounts;
 
-    public function __construct()
+    public function __construct(Member $member)
     {
+        $this->member = $member;
         $this->accounts = new ArrayCollection();
     }
 

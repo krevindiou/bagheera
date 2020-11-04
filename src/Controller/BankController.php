@@ -16,37 +16,53 @@ use Symfony\Component\Routing\Annotation\Route;
 class BankController extends AbstractController
 {
     /**
-     * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
-     * @Route("/choose-bank", defaults={"bankId" = null}, name="bank_choose")
+     * @Route("/choose-bank", name="bank_choose")
      */
-    public function form(Request $request, BankService $bankService, ?Bank $bank)
+    public function choose(Request $request, BankService $bankService)
     {
-        $member = $this->getUser();
+        $bank = new Bank($this->getUser());
 
-        $bankForm = $bankService->getForm($member, $bank);
-        $bankForm->handleRequest($request);
+        $form = $bankService->getCreateForm($bank);
+        $form->handleRequest($request);
 
-        if ($bankForm->isSubmitted()) {
-            if ($bank = $bankService->saveForm($member, $bank, $bankForm->getData())) {
-                if ('bank_choose' === $request->get('_route')) {
-                    if (null !== $bank->getProvider()) {
-                        $this->addFlash('success', 'bank.form_confirmation');
+        if ($form->isSubmitted() && $bankService->saveForm($bank, $form->getData())) {
+            $this->addFlash('success', 'bank.form_confirmation');
 
-                        return $this->redirectToRoute('bank_access_update', ['bankId' => $bank->getBankId()]);
-                    }
-
-                    return $this->redirectToRoute('account_create_with_bank', ['bankId' => $bank->getBankId()]);
-                }
-                $this->addFlash('success', 'bank.form_confirmation');
-
-                return $this->redirectToRoute($request->get('_route'), ['bankId' => $bank->getBankId()]);
+            if (null !== $bank->getProvider()) {
+                return $this->redirectToRoute('bank_access_update', ['bankId' => $bank->getBankId()]);
             }
+
+            return $this->redirectToRoute('account_create_with_bank', ['bankId' => $bank->getBankId()]);
         }
 
         return $this->render(
             'Bank/form.html.twig',
             [
-                'bankForm' => $bankForm->createView(),
+                'bankForm' => $form->createView(),
+            ]
+        );
+    }
+
+    /**
+     * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
+     */
+    public function edit(Request $request, BankService $bankService, Bank $bank)
+    {
+        $this->denyAccessUnlessGranted('BANK_EDIT', $bank);
+
+        $form = $bankService->getEditForm($bank);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $bankService->saveForm($bank, $form->getData())) {
+            $this->addFlash('success', 'bank.form_confirmation');
+
+            return $this->redirectToRoute($request->get('_route'), ['bankId' => $bank->getBankId()]);
+        }
+
+        return $this->render(
+            'Bank/form.html.twig',
+            [
+                'bankForm' => $form->createView(),
             ]
         );
     }

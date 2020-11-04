@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Account;
 use App\Entity\Bank;
+use App\Repository\BankRepository;
 use App\Service\AccountService;
 use App\Service\BankService;
 use App\Service\MemberService;
@@ -61,20 +62,24 @@ class AccountController extends AbstractController
     /**
      * @Route("/accounts", methods={"POST"})
      */
-    public function listActions(Request $request, AccountService $accountService, BankService $bankService)
+    public function listActions(Request $request, AccountService $accountService, BankService $bankService, BankRepository $bankRepository)
     {
         $accountsId = (array) $request->request->get('accountsId');
-        $banksId = (array) $request->request->get('banksId');
+        $banks = $bankRepository->findBy(['bankId' => (array) $request->request->get('banksId')]);
 
         $member = $this->getUser();
 
         if ($request->request->has('close')) {
+            array_walk($banks, function (Bank $bank): void { $this->denyAccessUnlessGranted('BANK_CLOSE', $bank); });
+
             $accountService->close($member, $accountsId);
-            $bankService->close($member, $banksId);
+            $bankService->close($banks);
             $this->addFlash('success', 'account.close_confirmation');
         } elseif ($request->request->has('delete')) {
+            array_walk($banks, function (Bank $bank): void { $this->denyAccessUnlessGranted('BANK_DELETE', $bank); });
+
             $accountService->delete($member, $accountsId);
-            $bankService->delete($member, $banksId);
+            $bankService->delete($banks);
             $this->addFlash('success', 'account.delete_confirmation');
         } elseif ($request->request->has('share')) {
             // @todo

@@ -289,7 +289,7 @@ class MemberService
         $banks = $member->getBanks();
         foreach ($banks as $bank) {
             if (!$bank->isDeleted()) {
-                $bankBalances = $this->bankService->getBalances($member, $bank);
+                $bankBalances = $this->bankService->getBalances($bank);
 
                 foreach ($bankBalances as $currency => $bankBalance) {
                     if (isset($balances[$currency])) {

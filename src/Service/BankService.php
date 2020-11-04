@@ -59,36 +59,41 @@ class BankService
     }
 
     /**
-     * Returns bank form.
+     * Returns create bank form.
      */
-    public function getForm(Member $member, Bank $bank = null): ?Form
+    public function getCreateForm(Bank $bank): Form
     {
-        if (null === $bank) {
-            $formModel = new BankChooseFormModel();
+        $formModel = new BankChooseFormModel();
 
-            return $this->formFactory->create(BankChooseFormType::class, $formModel, ['member' => $member]);
-        }
-        if ($member === $bank->getMember()) {
-            $formModel = new BankUpdateFormModel();
-            $formModel->name = $bank->getName();
+        return $this->formFactory->create(
+            BankChooseFormType::class,
+            $formModel,
+            ['member' => $bank->getMember()]
+        );
+    }
 
-            return $this->formFactory->create(
-                BankUpdateFormType::class,
-                $formModel,
-                [
-                    'hasProvider' => null !== $bank->getProvider(),
-                    'bankId' => $bank->getBankId(),
-                ]
-            );
-        }
+    /**
+     * Returns edit bank form.
+     */
+    public function getEditForm(Bank $bank): Form
+    {
+        $formModel = new BankUpdateFormModel();
+        $formModel->name = $bank->getName();
 
-        return null;
+        return $this->formFactory->create(
+            BankUpdateFormType::class,
+            $formModel,
+            [
+                'hasProvider' => null !== $bank->getProvider(),
+                'bankId' => $bank->getBankId(),
+            ]
+        );
     }
 
     /**
      * Saves bank form.
      */
-    public function saveForm(Member $member, ?Bank $bank, $formModel)
+    public function saveForm(Bank $bank, $formModel)
     {
         $errors = $this->validator->validate($formModel);
         if (0 !== count($errors)) {
@@ -96,9 +101,6 @@ class BankService
         }
 
         if ($formModel instanceof BankChooseFormModel) {
-            $bank = new Bank();
-            $bank->setMember($member);
-
             if (null !== $formModel->provider) {
                 $bank->setProvider($formModel->provider);
                 $bank->setName($formModel->provider->getName());
@@ -109,25 +111,19 @@ class BankService
             $bank->setName($formModel->name);
         }
 
-        $this->doSave($member, $bank);
+        $this->doSave($bank);
 
-        return $bank;
+        return true;
     }
 
     /**
      * Closes banks.
      */
-    public function close(Member $member, array $banksId): bool
+    public function close(array $banks): bool
     {
         try {
-            foreach ($banksId as $bankId) {
-                $bank = $this->em->find(Bank::class, $bankId);
-
-                if (null !== $bank) {
-                    if ($member === $bank->getMember()) {
-                        $bank->setClosed(true);
-                    }
-                }
+            foreach ($banks as $bank) {
+                $bank->setClosed(true);
             }
 
             $this->em->flush();
@@ -143,17 +139,11 @@ class BankService
     /**
      * Deletes banks.
      */
-    public function delete(Member $member, array $banksId): bool
+    public function delete(array $banks): bool
     {
         try {
-            foreach ($banksId as $bankId) {
-                $bank = $this->em->find(Bank::class, $bankId);
-
-                if (null !== $bank) {
-                    if ($member === $bank->getMember()) {
-                        $bank->setDeleted(true);
-                    }
-                }
+            foreach ($banks as $bank) {
+                $bank->setDeleted(true);
             }
 
             $this->em->flush();
@@ -169,21 +159,19 @@ class BankService
     /**
      * Gets bank balances.
      */
-    public function getBalances(Member $member, Bank $bank): array
+    public function getBalances(Bank $bank): array
     {
         $balances = [];
 
-        if ($member === $bank->getMember()) {
-            $accounts = $bank->getAccounts();
-            foreach ($accounts as $account) {
-                if (!$account->isDeleted()) {
-                    $accountBalance = $this->accountService->getBalance($member, $account);
+        $accounts = $bank->getAccounts();
+        foreach ($accounts as $account) {
+            if (!$account->isDeleted()) {
+                $accountBalance = $this->accountService->getBalance($bank->getMember(), $account);
 
-                    if (isset($balances[$account->getCurrency()])) {
-                        $balances[$account->getCurrency()] += $accountBalance;
-                    } else {
-                        $balances[$account->getCurrency()] = $accountBalance;
-                    }
+                if (isset($balances[$account->getCurrency()])) {
+                    $balances[$account->getCurrency()] += $accountBalance;
+                } else {
+                    $balances[$account->getCurrency()] = $accountBalance;
                 }
             }
         }
@@ -224,24 +212,22 @@ class BankService
     /**
      * Saves bank.
      */
-    protected function doSave(Member $member, Bank $bank): bool
+    protected function doSave(Bank $bank): bool
     {
-        if ($member === $bank->getMember()) {
-            try {
-                if (null === $bank->getBankId()) {
-                    $banks = $bank->getMember()->getBanks();
-                    $order = count($banks) + 1;
+        try {
+            if (null === $bank->getBankId()) {
+                $banks = $bank->getMember()->getBanks();
+                $order = count($banks) + 1;
 
-                    $bank->setSortOrder($order);
-                }
-
-                $this->em->persist($bank);
-                $this->em->flush();
-
-                return true;
-            } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $bank->setSortOrder($order);
             }
+
+            $this->em->persist($bank);
+            $this->em->flush();
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->err($e->getMessage());
         }
 
         return false;
