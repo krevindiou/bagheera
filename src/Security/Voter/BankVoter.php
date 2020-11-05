@@ -11,12 +11,12 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class BankVoter extends Voter
 {
-    protected function supports($attribute, $subject)
+    protected function supports($attribute, $subject): bool
     {
         return in_array($attribute, ['BANK_EDIT', 'BANK_CLOSE', 'BANK_DELETE'], true) && $subject instanceof Bank;
     }
 
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         $member = $token->getUser();
         if (!$member instanceof UserInterface) {
