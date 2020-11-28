@@ -5,8 +5,8 @@ services:
 
 before_install:
   - curl -L https://cs.symfony.com/download/php-cs-fixer-v2.phar -o bin/php-cs-fixer && chmod a+x bin/php-cs-fixer
-  - cp docker/.docker-compose.env.dist docker/.docker-compose.env
-  - echo 'APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> docker/.docker-compose.env
+  - cp .docker/.docker-compose.env.dist .docker/.docker-compose.env
+  - echo 'APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> .docker/.docker-compose.env
   - ./bin/docker-start
 
 script:

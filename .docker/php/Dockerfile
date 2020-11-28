@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y gnupg
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && apt-get install -y nodejs
 RUN curl -L -o- https://yarnpkg.com/install.sh | bash -s -- --version 1.13.0
 
-COPY docker/php/docker-entrypoint.sh /
+COPY .docker/php/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 WORKDIR /srv/www/bagheera

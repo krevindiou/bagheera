@@ -4,7 +4,7 @@ services:
     container_name: bagheera_postgresql
     build:
       context: ..
-      dockerfile: docker/postgresql/Dockerfile
+      dockerfile: .docker/postgresql/Dockerfile
     image: bagheera_postgresql
     restart: always
     env_file: .docker-compose.env
@@ -17,7 +17,7 @@ services:
     container_name: bagheera_php
     build:
       context: ..
-      dockerfile: docker/php/Dockerfile
+      dockerfile: .docker/php/Dockerfile
     image: bagheera_php
     restart: always
     env_file: .docker-compose.env
@@ -34,7 +34,7 @@ services:
     container_name: bagheera_nginx
     build:
       context: ..
-      dockerfile: docker/nginx/Dockerfile
+      dockerfile: .docker/nginx/Dockerfile
     image: bagheera_nginx
     restart: always
     environment:

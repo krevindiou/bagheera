@@ -8,4 +8,4 @@ if [[ $env = 'prod' ]]; then
     suffix='prod'
 fi
 
-docker-compose -f "$project_dir/docker/docker-compose-$suffix.yml" stop "${@:2}"
+docker-compose -f "$project_dir/.docker/docker-compose-$suffix.yml" stop "${@:2}"
