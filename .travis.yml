@@ -3,16 +3,25 @@ language: minimal
 services:
   - docker
 
+env:
+  global:
+    - DOCKER_COMPOSE_VERSION=1.27.4
+    - DOCKERIZE_VERSION=0.6.1
+
 before_install:
   - curl -L https://cs.symfony.com/download/php-cs-fixer-v2.phar -o bin/php-cs-fixer && chmod a+x bin/php-cs-fixer
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
+  - sudo install --mode=775 docker-compose /usr/local/bin
   - cp .docker/.docker-compose.env.dist .docker/.docker-compose.env
   - echo 'APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> .docker/.docker-compose.env
-  - ./bin/docker-start
+  - make docker-start
+  - make docker-exec COMMAND="make build ENV=dev"
 
 script:
-  - ./bin/docker-exec php-cs-fixer fix --dry-run --diff
-  - ./bin/docker-test --coverage-clover=coverage.xml
-  - ./bin/docker-exec ./vendor/bin/phpstan analyse
+  - make docker-exec COMMAND="php-cs-fixer fix --dry-run --diff"
+  - make docker-test COMMAND="--coverage-clover=coverage.xml"
+  - make docker-exec COMMAND="./vendor/bin/phpstan analyse"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

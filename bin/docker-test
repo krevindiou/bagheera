@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-./bin/docker-exec php bin/phpunit -c /srv/www/bagheera "$@"

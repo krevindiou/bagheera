@@ -1,45 +1,12 @@
-version: "3"
+version: "3.8"
 services:
   postgresql:
-    container_name: bagheera_postgresql
-    build:
-      context: ..
-      dockerfile: .docker/postgresql/Dockerfile
-    image: bagheera_postgresql
-    restart: always
-    env_file: .docker-compose.env
     environment:
-    - APP_ENV=dev
-    volumes:
-    - ..:/srv/www/bagheera
-
+      - DOCKER_ENV=dev
   php:
-    container_name: bagheera_php
-    build:
-      context: ..
-      dockerfile: .docker/php/Dockerfile
-    image: bagheera_php
-    restart: always
-    env_file: .docker-compose.env
     environment:
-    - APP_ENV=dev
-    - NODE_ENV=${APP_ENV}
-    - TRUSTED_HOSTS=['^172.18.\d+.\d+$$']
-    volumes:
-    - ..:/srv/www/bagheera
-    links:
-    - postgresql
-
+      - DOCKER_ENV=dev
+      - NODE_ENV=dev
   nginx:
-    container_name: bagheera_nginx
-    build:
-      context: ..
-      dockerfile: .docker/nginx/Dockerfile
-    image: bagheera_nginx
-    restart: always
     environment:
-    - APP_ENV=dev
-    volumes:
-    - ..:/srv/www/bagheera
-    links:
-    - php
+      - DOCKER_ENV=dev

@@ -25,8 +25,8 @@
         <!-- ###+ doctrine/doctrine-bundle ### -->
         <!-- Format described at http://docs.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url -->
         <!-- Configure your db driver and server_version in config/packages/doctrine.yaml -->
-        <env name="DATABASE_URL" value="postgresql://bagheera:bagheera@bagheera_postgresql:5432/bagheera_test"/>
-        <env name="DATABASE_SECURE_URL" value="postgresql://bagheera:bagheera@bagheera_postgresql:5432/bagheera_test"/>
+        <env name="DATABASE_URL" value="postgresql://bagheera:bagheera@bagheera-postgresql:5432/bagheera_test"/>
+        <env name="DATABASE_SECURE_URL" value="postgresql://bagheera:bagheera@bagheera-postgresql:5432/bagheera_test"/>
         <!-- ###- doctrine/doctrine-bundle ### -->
 
         <!-- ###+ symfony/swiftmailer-bundle ### -->
