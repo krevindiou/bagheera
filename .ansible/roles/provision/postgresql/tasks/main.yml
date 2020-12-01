@@ -1,0 +1,31 @@
+- name: Install requirements
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+    state: present
+    cache_valid_time: 3600
+    update_cache: yes
+
+- name: Add PostgreSQL's official GPG key
+  apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    id: ACCC4CF8
+    state: present
+
+- name: Set up the repository
+  apt_repository:
+    repo: "deb http://apt.postgresql.org/pub/repos/apt focal-pgdg main"
+    state: present
+
+- name: Install postgresql-client
+  apt:
+    name:
+      - "postgresql-client-{{ postgresql_version }}"
+    state: present
+
+- name: Create data directory
+  file:
+    path: "{{ database_directory }}"
+    state: directory

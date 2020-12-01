@@ -1,0 +1,24 @@
+- name: Ask for target host
+  hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: target_host
+      prompt: Please enter the target host
+      private: no
+  tasks:
+    - name: Reference host
+      add_host:
+        name: "{{ target_host }}"
+
+- name: Check requirements
+  hosts: all
+  pre_tasks:
+    - name: Checking Ansible version
+      assert:
+        that: "ansible_version.full is version_compare('2.6.3', '>=')"
+    - name: Checking processor architecture
+      assert:
+        that: "ansible_architecture == 'aarch64'"
+    - name: Checking OS distribution
+      assert:
+        that: "ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'"

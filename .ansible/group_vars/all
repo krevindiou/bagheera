@@ -1,0 +1,5 @@
+project_directory: /srv/www/bagheera
+database_directory: /srv/db/bagheera
+git_repository: https://github.com/krevindiou/bagheera.git
+docker_compose_version: 1.27.4
+postgresql_version: 9.4

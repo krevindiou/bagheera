@@ -1,0 +1,14 @@
+- name: Install requirements
+  apt:
+    name:
+      - git
+    state: present
+    cache_valid_time: 3600
+    update_cache: yes
+
+- name: Clone repository
+  git:
+    repo: "{{ git_repository }}"
+    dest: /srv/www/bagheera
+    version: master
+    force: yes

@@ -1,0 +1,8 @@
+- import_playbook: prerequisites.yml
+
+- hosts: all
+  remote_user: root
+  roles:
+    - provision/source
+    - provision/postgresql
+    - provision/docker

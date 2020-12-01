@@ -1,0 +1,45 @@
+- name: Install requirements
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg-agent
+      - software-properties-common
+      - python3-pip
+      - python3-dev
+      - libffi-dev
+    state: present
+    cache_valid_time: 3600
+    update_cache: yes
+
+- name: Add Docker's official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    id: 0EBFCD88
+    state: present
+
+- name: Set up the repository
+  apt_repository:
+    repo: "deb [arch=arm64] https://download.docker.com/linux/ubuntu focal stable"
+    state: present
+
+- name: Install Docker
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+
+- name: Install docker-compose
+  pip:
+    name: "docker-compose=={{ docker_compose_version }}"
+    state: present
+
+- name: Run and enable Docker
+  service:
+    name: docker
+    state: started
+    enabled: true
+  failed_when: false
+  changed_when: false
