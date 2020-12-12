@@ -3,3 +3,9 @@ database_directory: /srv/db/bagheera
 git_repository: https://github.com/krevindiou/bagheera.git
 docker_compose_version: 1.27.4
 postgresql_version: 9.4
+postgres_host: bagheera-postgresql
+postgres_db: bagheera
+postgres_user: bagheera
+postgres_secure_host: bagheera-postgresql
+postgres_secure_db: bagheera
+postgres_secure_user: bagheera

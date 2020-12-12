@@ -1,0 +1,19 @@
+- import_playbook: prerequisites.yml
+
+- hosts: all
+  remote_user: root
+  roles:
+    - deploy/source
+    - deploy/docker
+  environment:
+    POSTGRES_HOST: '{{ postgres_host }}'
+    POSTGRES_DB: '{{ postgres_db }}'
+    POSTGRES_USER: '{{ postgres_user }}'
+    POSTGRES_PASSWORD: '{{ postgres_password }}'
+    POSTGRES_SECURE_HOST: '{{ postgres_secure_host }}'
+    POSTGRES_SECURE_DB: '{{ postgres_secure_db }}'
+    POSTGRES_SECURE_USER: '{{ postgres_secure_user }}'
+    POSTGRES_SECURE_PASSWORD: '{{ postgres_secure_password }}'
+    APP_SECRET: '{{ app_secret }}'
+    MAILER_URL: '{{ mailer_url }}'
+    SENDER_EMAIL: '{{ sender_email }}'

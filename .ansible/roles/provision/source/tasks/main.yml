@@ -9,6 +9,6 @@
 - name: Clone repository
   git:
     repo: "{{ git_repository }}"
-    dest: /srv/www/bagheera
+    dest: "{{ project_directory }}"
     version: master
     force: yes

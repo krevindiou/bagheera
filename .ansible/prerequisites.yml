@@ -1,15 +1,3 @@
-- name: Ask for target host
-  hosts: localhost
-  gather_facts: no
-  vars_prompt:
-    - name: target_host
-      prompt: Please enter the target host
-      private: no
-  tasks:
-    - name: Reference host
-      add_host:
-        name: "{{ target_host }}"
-
 - name: Check requirements
   hosts: all
   pre_tasks:

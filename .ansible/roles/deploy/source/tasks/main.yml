@@ -1,0 +1,6 @@
+- name: Update source code
+  git:
+    repo: "{{ git_repository }}"
+    dest: "{{ project_directory }}"
+    version: master
+    force: yes

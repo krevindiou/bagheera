@@ -1,12 +1,15 @@
 version: "3.8"
 services:
   postgresql:
+    env_file: .docker-compose.env
     environment:
       - DOCKER_ENV=dev
   php:
+    env_file: .docker-compose.env
     environment:
       - DOCKER_ENV=dev
       - NODE_ENV=dev
   nginx:
+    env_file: .docker-compose.env
     environment:
       - DOCKER_ENV=dev

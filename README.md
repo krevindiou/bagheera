@@ -15,6 +15,6 @@
 
 ## Install on a server
 - Install Ansible
-- Run provisioning `ansible-playbook .ansible/provision.yml`
-- Copy `.docker/.docker-compose.env.dist` to `.docker/.docker-compose.env` and edit values
-- Execute `make docker-start ENV=<env>` (ENV=dev by default)
+- Copy `.ansible/host_vars/example.yml` to `.ansible/host_vars/<your-server-host>.yml` and update values accordingly
+- Run provisioning `ansible-playbook .ansible/provision.yml -i <your-server-host>,`
+- Run deployment `ansible-playbook .ansible/deploy.yml -i <your-server-host>,`
