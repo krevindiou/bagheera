@@ -6,7 +6,6 @@ services:
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.27.4
-    - DOCKERIZE_VERSION=0.6.1
     - APP_ENV=dev
 
 before_install:
