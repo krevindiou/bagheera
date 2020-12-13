@@ -6,6 +6,7 @@
     - deploy/source
     - deploy/docker
   environment:
+    APP_ENV: prod
     POSTGRES_HOST: '{{ postgres_host }}'
     POSTGRES_DB: '{{ postgres_db }}'
     POSTGRES_USER: '{{ postgres_user }}'

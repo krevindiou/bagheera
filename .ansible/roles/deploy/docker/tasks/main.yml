@@ -1,14 +1,14 @@
 - name: Stop containers
-  command: make docker-stop ENV=prod
+  command: make docker-stop
   args:
     chdir: "{{ project_directory }}"
 
 - name: Start containers
-  command: make docker-start ENV=prod
+  command: make docker-start
   args:
     chdir: "{{ project_directory }}"
 
 - name: Build app
-  command: make docker-exec ENV=prod COMMAND="make build ENV=prod"
+  command: make docker-exec COMMAND="make build"
   args:
     chdir: "{{ project_directory }}"

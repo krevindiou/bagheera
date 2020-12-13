@@ -2,14 +2,16 @@ SHELL:=/bin/bash
 MAKEFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
 PROJECT_DIR:=$(patsubst %/,%,$(dir $(MAKEFILE_PATH)))
 PROJECT_NAME:=$(notdir $(PROJECT_DIR))
-ENV?=dev
+APP_ENV?=dev
 DOCKER_BIN=docker
 DOCKER_COMPOSE_BIN=docker-compose
 DOCKER_CONFIG_DIR=$(PROJECT_DIR)/.docker
-DOCKER_COMPOSE_CONFIG=$(DOCKER_CONFIG_DIR)/docker-compose-$(ENV).yml
+DOCKER_COMPOSE_CONFIG=$(DOCKER_CONFIG_DIR)/docker-compose-$(APP_ENV).yml
 DOCKER_COMPOSE_OPTIONS=-p $(PROJECT_NAME) -f $(DOCKER_CONFIG_DIR)/docker-compose.yml -f $(DOCKER_COMPOSE_CONFIG)
 CONTAINER?=bagheera-php
 COMMAND?=$(SHELL)
+
+export APP_ENV:=$(APP_ENV)
 
 .PHONY: help
 help:
@@ -18,7 +20,7 @@ help:
 .PHONY: build
 build: ## Build application
 	@umask 000
-ifeq ($(ENV),prod)
+ifeq ($(APP_ENV),prod)
 	@composer --working-dir="$(PROJECT_DIR)" install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
 	@yarn --cwd=$(PROJECT_DIR) install --production=true
 	@yarn --cwd=$(PROJECT_DIR) encore production

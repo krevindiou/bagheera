@@ -11,7 +11,7 @@
 
 ## Install on a local computer
 - Copy `.docker/.docker-compose.env.dist` to `.docker/.docker-compose.env` and edit values
-- Execute `make docker-start ENV=<env>` (ENV=dev by default)
+- Execute `APP_ENV=<env> make docker-start` (APP_ENV=dev by default)
 
 ## Install on a server
 - Install Ansible
