@@ -30,7 +30,9 @@ else
 	@yarn --cwd=$(PROJECT_DIR) install --production=false
 	@yarn --cwd=$(PROJECT_DIR) encore dev
 endif
-	@php $(PROJECT_DIR)/bin/console doctrine:migrations:migrate --no-interaction
+	@(php $(PROJECT_DIR)/bin/console bagheera:init-database src/Resources/config/db/structure.sql src/Resources/config/db/data.sql || php $(PROJECT_DIR)/bin/console doctrine:migrations:migrate --no-interaction) \
+		&& php $(PROJECT_DIR)/bin/console doctrine:migrations:sync-metadata-storage --no-interaction \
+		&& php $(PROJECT_DIR)/bin/console doctrine:migrations:version --no-interaction --add --all
 
 .PHONY: test
 test: ## Run tests
