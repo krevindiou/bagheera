@@ -1,4 +1,4 @@
-- name: Update source code
+- name: Get latest source code
   git:
     repo: "{{ git_repository }}"
     dest: "{{ project_directory }}"

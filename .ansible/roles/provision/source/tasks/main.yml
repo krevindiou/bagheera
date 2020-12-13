@@ -5,10 +5,3 @@
     state: present
     cache_valid_time: 3600
     update_cache: yes
-
-- name: Clone repository
-  git:
-    repo: "{{ git_repository }}"
-    dest: "{{ project_directory }}"
-    version: master
-    force: yes
