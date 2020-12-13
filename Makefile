@@ -22,8 +22,9 @@ build: ## Build application
 	@umask 000
 ifeq ($(APP_ENV),prod)
 	@composer --working-dir="$(PROJECT_DIR)" install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
-	@yarn --cwd=$(PROJECT_DIR) install --production=true
+	@yarn --cwd=$(PROJECT_DIR) install --production=false
 	@yarn --cwd=$(PROJECT_DIR) encore production
+	@yarn --cwd=$(PROJECT_DIR) install --production=true --ignore-scripts --prefer-offline
 else
 	@composer --working-dir="$(PROJECT_DIR)" install --no-ansi --no-interaction --no-progress
 	@yarn --cwd=$(PROJECT_DIR) install --production=false
