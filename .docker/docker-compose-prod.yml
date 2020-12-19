@@ -11,6 +11,7 @@ services:
   php:
     restart: always
     environment:
+      - APP_ENV=prod
       - NODE_ENV=production
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
@@ -25,3 +26,5 @@ services:
       - SENDER_EMAIL=${SENDER_EMAIL}
   nginx:
     restart: always
+    environment:
+      - APP_ENV=prod

@@ -5,6 +5,9 @@ services:
   php:
     env_file: .docker-compose.env
     environment:
-      - NODE_ENV=dev
+      - APP_ENV=dev
+      - NODE_ENV=development
   nginx:
     env_file: .docker-compose.env
+    environment:
+      - APP_ENV=dev

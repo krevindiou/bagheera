@@ -7,6 +7,7 @@ env:
   global:
     - DOCKER_COMPOSE_VERSION=1.27.4
     - APP_ENV=dev
+    - NODE_ENV=development
 
 before_install:
   - curl -L https://cs.symfony.com/download/php-cs-fixer-v2.phar -o bin/php-cs-fixer && chmod a+x bin/php-cs-fixer
