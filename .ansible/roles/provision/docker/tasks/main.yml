@@ -20,7 +20,7 @@
 
 - name: Set up the repository
   apt_repository:
-    repo: "deb [arch=arm64] https://download.docker.com/linux/ubuntu focal stable"
+    repo: "deb [arch={{ docker_architecture }}] https://download.docker.com/linux/ubuntu focal stable"
     state: present
 
 - name: Install Docker
