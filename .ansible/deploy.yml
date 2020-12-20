@@ -1,7 +1,7 @@
 - import_playbook: prerequisites.yml
 
 - hosts: all
-  remote_user: root
+  become: yes
   roles:
     - deploy/source
     - deploy/docker
