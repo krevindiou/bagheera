@@ -11,3 +11,5 @@ services:
     env_file: .docker-compose.env
     environment:
       - APP_ENV=dev
+    ports:
+      - "80:80"

@@ -1,0 +1,24 @@
+- name: Install reverse proxy
+  apt:
+    name:
+      - nginx
+    state: present
+    cache_valid_time: 3600
+    update_cache: yes
+
+- name: Remove default virtual host
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Create virtual host
+  template:
+    src: app.conf.j2
+    dest: /etc/nginx/sites-available/app.conf
+
+- name: Activate virtual host
+  file:
+    src: /etc/nginx/sites-available/app.conf
+    dest: /etc/nginx/sites-enabled/app.conf
+    state: link
+  notify: restart nginx

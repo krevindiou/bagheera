@@ -1,3 +1,4 @@
+domain:
 postgres_password:
 postgres_secure_password:
 app_secret:

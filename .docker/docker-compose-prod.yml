@@ -28,3 +28,5 @@ services:
     restart: always
     environment:
       - APP_ENV=prod
+    ports:
+      - "8080:8080"

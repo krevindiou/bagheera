@@ -30,5 +30,3 @@ services:
       dockerfile: .docker/nginx/Dockerfile
     volumes:
       - ..:/srv/www/bagheera
-    ports:
-      - "80:80"
