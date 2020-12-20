@@ -20,9 +20,7 @@ before_install:
   - make docker-exec COMMAND="make build"
 
 script:
-  - make docker-exec COMMAND="php-cs-fixer fix --dry-run --diff"
-  - make docker-test COMMAND="--coverage-clover=coverage.xml"
-  - make docker-exec COMMAND="./vendor/bin/phpstan analyse"
+  - make docker-test-ci
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
