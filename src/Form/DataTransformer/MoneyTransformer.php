@@ -14,7 +14,7 @@ class MoneyTransformer implements DataTransformerInterface
             return null;
         }
 
-        return sprintf('%.2f', $originalValue / 10000);
+        return $originalValue / 10000;
     }
 
     public function reverseTransform($transformedValue)
@@ -23,6 +23,6 @@ class MoneyTransformer implements DataTransformerInterface
             return;
         }
 
-        return (int) ($transformedValue * 10000);
+        return (int) round($transformedValue * 10000);
     }
 }
