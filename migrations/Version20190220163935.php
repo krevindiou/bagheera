@@ -18,16 +18,27 @@ final class Version20190220163935 extends AbstractMigration
     {
         $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
-        $this->addSql('UPDATE account SET overdraft_facility = overdraft_facility * 10000');
-        $this->addSql('UPDATE scheduler SET debit = debit * 10000');
-        $this->addSql('UPDATE scheduler SET credit = credit * 10000');
-        $this->addSql('UPDATE operation SET debit = debit * 10000');
-        $this->addSql('UPDATE operation SET credit = credit * 10000');
-        $this->addSql('UPDATE operation_search SET amount_inferior_to = amount_inferior_to * 10000');
-        $this->addSql('UPDATE operation_search SET amount_inferior_or_equal_to = amount_inferior_or_equal_to * 10000');
-        $this->addSql('UPDATE operation_search SET amount_equal_to = amount_equal_to * 10000');
-        $this->addSql('UPDATE operation_search SET amount_superior_or_equal_to = amount_superior_or_equal_to * 10000');
-        $this->addSql('UPDATE operation_search SET amount_superior_to = amount_superior_to * 10000');
+        $this->addSql('ALTER TABLE account ALTER overdraft_facility TYPE NUMERIC');
+        $this->addSql('ALTER TABLE scheduler ALTER debit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE scheduler ALTER credit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation ALTER debit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation ALTER credit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_inferior_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_inferior_or_equal_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_equal_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_superior_or_equal_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_superior_to TYPE NUMERIC');
+
+        $this->addSql('UPDATE account SET overdraft_facility = overdraft_facility * 10000 WHERE overdraft_facility IS NOT NULL');
+        $this->addSql('UPDATE scheduler SET debit = debit * 10000 WHERE debit IS NOT NULL');
+        $this->addSql('UPDATE scheduler SET credit = credit * 10000 WHERE credit IS NOT NULL');
+        $this->addSql('UPDATE operation SET debit = debit * 10000 WHERE debit IS NOT NULL');
+        $this->addSql('UPDATE operation SET credit = credit * 10000 WHERE credit IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_inferior_to = amount_inferior_to * 10000 WHERE amount_inferior_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_inferior_or_equal_to = amount_inferior_or_equal_to * 10000 WHERE amount_inferior_or_equal_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_equal_to = amount_equal_to * 10000 WHERE amount_equal_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_superior_or_equal_to = amount_superior_or_equal_to * 10000 WHERE amount_superior_or_equal_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_superior_to = amount_superior_to * 10000 WHERE amount_superior_to IS NOT NULL');
 
         $this->addSql('CREATE DOMAIN bagheera_money AS INT');
 
@@ -47,6 +58,30 @@ final class Version20190220163935 extends AbstractMigration
     {
         $this->abortIf('postgresql' !== $this->connection->getDatabasePlatform()->getName(), 'Migration can only be executed safely on \'postgresql\'.');
 
+        $this->addSql('ALTER TABLE account ALTER overdraft_facility TYPE NUMERIC');
+        $this->addSql('ALTER TABLE scheduler ALTER debit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE scheduler ALTER credit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation ALTER debit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation ALTER credit TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_inferior_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_inferior_or_equal_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_equal_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_superior_or_equal_to TYPE NUMERIC');
+        $this->addSql('ALTER TABLE operation_search ALTER amount_superior_to TYPE NUMERIC');
+
+        $this->addSql('DROP DOMAIN bagheera_money');
+
+        $this->addSql('UPDATE account SET overdraft_facility = overdraft_facility / 10000 WHERE overdraft_facility IS NOT NULL');
+        $this->addSql('UPDATE scheduler SET debit = debit / 10000 WHERE debit IS NOT NULL');
+        $this->addSql('UPDATE scheduler SET credit = credit / 10000 WHERE credit IS NOT NULL');
+        $this->addSql('UPDATE operation SET debit = debit / 10000 WHERE debit IS NOT NULL');
+        $this->addSql('UPDATE operation SET credit = credit / 10000 WHERE credit IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_inferior_to = amount_inferior_to / 10000 WHERE amount_inferior_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_inferior_or_equal_to = amount_inferior_or_equal_to / 10000 WHERE amount_inferior_or_equal_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_equal_to = amount_equal_to / 10000 WHERE amount_equal_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_superior_or_equal_to = amount_superior_or_equal_to / 10000 WHERE amount_superior_or_equal_to IS NOT NULL');
+        $this->addSql('UPDATE operation_search SET amount_superior_to = amount_superior_to / 10000 WHERE amount_superior_to IS NOT NULL');
+
         $this->addSql('ALTER TABLE account ALTER overdraft_facility TYPE NUMERIC(10,2)');
         $this->addSql('ALTER TABLE scheduler ALTER debit TYPE NUMERIC(10,2)');
         $this->addSql('ALTER TABLE scheduler ALTER credit TYPE NUMERIC(10,2)');
@@ -57,18 +92,5 @@ final class Version20190220163935 extends AbstractMigration
         $this->addSql('ALTER TABLE operation_search ALTER amount_equal_to TYPE NUMERIC(10,2)');
         $this->addSql('ALTER TABLE operation_search ALTER amount_superior_or_equal_to TYPE NUMERIC(10,2)');
         $this->addSql('ALTER TABLE operation_search ALTER amount_superior_to TYPE NUMERIC(10,2)');
-
-        $this->addSql('DROP DOMAIN bagheera_money');
-
-        $this->addSql('UPDATE account SET overdraft_facility = overdraft_facility / 10000');
-        $this->addSql('UPDATE scheduler SET debit = debit / 10000');
-        $this->addSql('UPDATE scheduler SET credit = credit / 10000');
-        $this->addSql('UPDATE operation SET debit = debit / 10000');
-        $this->addSql('UPDATE operation SET credit = credit / 10000');
-        $this->addSql('UPDATE operation_search SET amount_inferior_to = amount_inferior_to / 10000');
-        $this->addSql('UPDATE operation_search SET amount_inferior_or_equal_to = amount_inferior_or_equal_to / 10000');
-        $this->addSql('UPDATE operation_search SET amount_equal_to = amount_equal_to / 10000');
-        $this->addSql('UPDATE operation_search SET amount_superior_or_equal_to = amount_superior_or_equal_to / 10000');
-        $this->addSql('UPDATE operation_search SET amount_superior_to = amount_superior_to / 10000');
     }
 }
