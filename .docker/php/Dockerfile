@@ -8,7 +8,7 @@ RUN echo "date.timezone='UTC'" > "$PHP_INI_DIR/conf.d/timezone.ini"
 RUN echo 'realpath_cache_size = 5120k' > "$PHP_INI_DIR/conf.d/realpath_cache_size.ini"
 RUN echo 'expose_php = off' > "$PHP_INI_DIR/conf.d/expose_php.ini"
 RUN echo 'memory_limit = 512M' > "$PHP_INI_DIR/conf.d/memory_limit.ini"
-RUN apt-get update && apt-get install -y zip git
+RUN apt-get update && apt-get install -y zip git acl
 
 # mcrypt
 RUN apt-get update && apt-get install -y libmcrypt-dev
