@@ -1,4 +1,5 @@
 domain:
+cert_email:
 postgres_password:
 postgres_secure_password:
 app_secret:

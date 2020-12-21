@@ -2,3 +2,6 @@
   service:
     name: nginx
     state: restarted
+    enabled: true
+  failed_when: false
+  changed_when: false

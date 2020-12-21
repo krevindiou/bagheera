@@ -2,6 +2,8 @@
   apt:
     name:
       - nginx
+      - certbot
+      - python3-certbot-nginx
     state: present
     cache_valid_time: 3600
     update_cache: yes
@@ -21,4 +23,14 @@
     src: /etc/nginx/sites-available/app.conf
     dest: /etc/nginx/sites-enabled/app.conf
     state: link
+  notify: restart nginx
+
+- name: Obtain and install TLS certificate
+  command: certbot \
+    --nginx \
+    --non-interactive \
+    --agree-tos \
+    --email {{ cert_email }} \
+    --domains {{ domain }} \
+  when: domain is defined and domain != ""
   notify: restart nginx
