@@ -48,7 +48,7 @@ docker-logs: check-config ## Display containers logs
 
 .PHONY: docker-start
 docker-start: check-config ## Start containers
-	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) up -d
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) up --build -d
 
 .PHONY: docker-stop
 docker-stop: check-config ## Stop containers
