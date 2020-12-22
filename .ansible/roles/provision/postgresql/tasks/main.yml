@@ -4,6 +4,7 @@
       - apt-transport-https
       - ca-certificates
       - gnupg
+      - ssmtp
     state: present
     cache_valid_time: 3600
     update_cache: yes
@@ -46,3 +47,15 @@
       && find /var/backups/{{ postgres_db }}* -name "{{ postgres_db }}-????-??-01" -prune -o -mtime +30 -exec rm {} \;
     user: root
     cron_file: backup
+
+- name: Configure sSMTP
+  template:
+    src: ssmtp.conf.j2
+    dest: /etc/ssmtp/ssmtp.conf
+  when: cron_email is defined and cron_email != ""
+
+- name: Configure sSMTP
+  template:
+    src: revaliases.j2
+    dest: /etc/ssmtp/revaliases
+  when: cron_email is defined and cron_email != ""

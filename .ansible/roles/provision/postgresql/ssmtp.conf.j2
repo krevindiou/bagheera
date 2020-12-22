@@ -1,0 +1,5 @@
+root={{ cron_email }}
+mailhub={{ mailer_url | regex_replace('^smtp://(?P<user>.+):(?P<password>.+)@(?P<host>.+):(?P<port>.+)$', '\\g<host>') }}:{{ mailer_url | regex_replace('^smtp://(?P<user>.+):(?P<password>.+)@(?P<host>.+):(?P<port>.+)$', '\\g<port>') }}
+AuthUser={{ mailer_url | regex_replace('^smtp://(?P<user>.+):(?P<password>.+)@(?P<host>.+):(?P<port>.+)$', '\\g<user>') }}
+AuthPass={{ mailer_url | regex_replace('^smtp://(?P<user>.+):(?P<password>.+)@(?P<host>.+):(?P<port>.+)$', '\\g<password>') }}
+UseSTARTTLS=YES
