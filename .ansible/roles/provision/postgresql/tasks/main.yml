@@ -42,7 +42,7 @@
     minute: "0"
     hour: "6"
     job: >
-      pg_dump -h 127.0.0.1 -U {{ postgres_user }} {{ postgres_db }} | gzip > /var/backups/{{ postgres_db }}-$(date -u +%Y-%m-%d).dump.gz
+      pg_dump -h 127.0.0.1 -U {{ postgres_user }} {{ postgres_db }} | gzip > /var/backups/{{ postgres_db }}-$(date -u +%%Y-%%m-%%d).dump.gz
       && find /var/backups/{{ postgres_db }}* -name "{{ postgres_db }}-????-??-01" -prune -o -mtime +30 -exec rm {} \;
     user: root
     cron_file: backup
