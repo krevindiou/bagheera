@@ -1,5 +1,6 @@
 domain:
 cert_email:
+docker_architecture: arm64
 postgres_password:
 postgres_secure_password:
 app_secret:
