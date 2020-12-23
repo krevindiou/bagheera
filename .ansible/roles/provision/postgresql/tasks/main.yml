@@ -5,6 +5,7 @@
       - ca-certificates
       - gnupg
       - ssmtp
+      - mutt
     state: present
     cache_valid_time: 3600
     update_cache: yes
@@ -37,14 +38,28 @@
     dest: ~/.pgpass
     mode: 0600
 
+- name: Configure Mutt mail folder
+  lineinfile:
+    path: /etc/Muttrc
+    regexp: '^set folder='
+    line: set folder=~"
+
+- name: Tell Mutt not to store sent emails
+  lineinfile:
+    path: /etc/Muttrc
+    regexp: '^set copy='
+    line: set copy=no
+
 - name: Set up a backup task
   cron:
     name: backup
     minute: "0"
     hour: "6"
     job: >
-      pg_dump -h 127.0.0.1 -U {{ postgres_user }} {{ postgres_db }} | gzip > /var/backups/{{ postgres_db }}-$(date -u +\%Y-\%m-\%d).dump.gz
+      DUMP="/var/backups/{{ postgres_db }}-$(date -u +\%Y-\%m-\%d).dump.gz"
+      && pg_dump -h 127.0.0.1 -U {{ postgres_user }} {{ postgres_db }} | gzip > $DUMP
       && find /var/backups/{{ postgres_db }}* -name "{{ postgres_db }}-????-??-01" -prune -o -mtime +30 -exec rm {} \;
+      && echo "" | mutt -s "Backup $(basename $DUMP)" -a $DUMP -- {{ cron_email }}
     user: root
     cron_file: backup
 
