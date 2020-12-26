@@ -1,0 +1,57 @@
+- name: Install requirements
+  apt:
+    name:
+      - ssmtp
+      - mutt
+    state: present
+    cache_valid_time: 3600
+    update_cache: yes
+
+- name: Configure Mutt mail folder
+  lineinfile:
+    path: /etc/Muttrc
+    regexp: '^set folder='
+    line: set folder=~"
+
+- name: Tell Mutt not to store sent emails
+  lineinfile:
+    path: /etc/Muttrc
+    regexp: '^set copy='
+    line: set copy=no
+
+- name: Set cron shell to bash
+  cron:
+    name: SHELL
+    env: yes
+    job: /bin/bash
+    user: root
+    cron_file: backup
+
+- name: Set up a backup task
+  cron:
+    name: backup
+    minute: "0"
+    hour: "6"
+    job: >
+      dump_filename="/var/backups/{{ postgres_db }}-$(date -u +\%Y-\%m-\%d).dump.gz"
+      && hash_filename_pattern="/var/backups/{{ postgres_db }}-HASH.hash"
+      && pg_dump -h 127.0.0.1 -U {{ postgres_user }} {{ postgres_db }} | gzip > $dump_filename
+      && hash_filename=${hash_filename_pattern/HASH/$(sha512sum $dump_filename | cut -d " " -f 1)}
+      && RM_DUMP=0
+      && { { test -e $hash_filename && RM_DUMP=1; } || { echo "" | mutt -s "Backup $(basename $dump_filename)" -a $dump_filename -- {{ cron_email }} && touch $hash_filename; } }
+      && { test $RM_DUMP -eq 0 || rm $dump_filename; }
+      && find /var/backups/{{ postgres_db }}* -name "{{ postgres_db }}-????-??-01" -prune -o -mtime +30 -exec rm {} \;
+    user: root
+    cron_file: backup
+
+- name: Configure sSMTP
+  template:
+    src: ssmtp.conf.j2
+    dest: /etc/ssmtp/ssmtp.conf
+  when: cron_email is defined and cron_email != ""
+
+- name: Configure sSMTP
+  template:
+    src: revaliases.j2
+    dest: /etc/ssmtp/revaliases
+  when: cron_email is defined and cron_email != ""

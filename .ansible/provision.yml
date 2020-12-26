@@ -7,3 +7,4 @@
     - provision/postgresql
     - provision/docker
     - provision/nginx
+    - provision/backup
