@@ -7,17 +7,26 @@
     cache_valid_time: 3600
     update_cache: yes
 
-- name: Configure Mutt mail folder
+- name: Configure Mutt
   lineinfile:
     path: /etc/Muttrc
-    regexp: '^set folder='
-    line: set folder=~"
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  with_items:
+    - { regexp: '^set folder=', line: 'set folder=~' }
+    - { regexp: '^set copy=', line: 'set copy=no' }
 
-- name: Tell Mutt not to store sent emails
-  lineinfile:
-    path: /etc/Muttrc
-    regexp: '^set copy='
-    line: set copy=no
+- name: Configure sSMTP
+  template:
+    src: templates/ssmtp.conf.j2
+    dest: /etc/ssmtp/ssmtp.conf
+  when: cron_email is defined and cron_email != ""
+
+- name: Configure sSMTP
+  template:
+    src: templates/revaliases.j2
+    dest: /etc/ssmtp/revaliases
+  when: cron_email is defined and cron_email != ""
 
 - name: Set cron shell to bash
   cron:
@@ -43,15 +52,3 @@
       && find /var/backups/{{ postgres_db }}* -name "{{ postgres_db }}-????-??-01" -prune -o -mtime +30 -exec rm {} \;
     user: root
     cron_file: backup
-
-- name: Configure sSMTP
-  template:
-    src: templates/ssmtp.conf.j2
-    dest: /etc/ssmtp/ssmtp.conf
-  when: cron_email is defined and cron_email != ""
-
-- name: Configure sSMTP
-  template:
-    src: templates/revaliases.j2
-    dest: /etc/ssmtp/revaliases
-  when: cron_email is defined and cron_email != ""
