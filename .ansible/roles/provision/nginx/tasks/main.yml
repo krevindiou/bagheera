@@ -15,7 +15,7 @@
 
 - name: Create virtual host
   template:
-    src: app.conf.j2
+    src: templates/app.conf.j2
     dest: /etc/nginx/sites-available/app.conf
 
 - name: Activate virtual host

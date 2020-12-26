@@ -46,12 +46,12 @@
 
 - name: Configure sSMTP
   template:
-    src: ssmtp.conf.j2
+    src: templates/ssmtp.conf.j2
     dest: /etc/ssmtp/ssmtp.conf
   when: cron_email is defined and cron_email != ""
 
 - name: Configure sSMTP
   template:
-    src: revaliases.j2
+    src: templates/revaliases.j2
     dest: /etc/ssmtp/revaliases
   when: cron_email is defined and cron_email != ""
