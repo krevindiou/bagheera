@@ -44,7 +44,7 @@ docker-exec: check-config ## Execute program in container
 
 .PHONY: docker-logs
 docker-logs: check-config ## Display containers logs
-	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) logs -f
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) logs -t -f
 
 .PHONY: docker-start
 docker-start: check-config ## Start containers
