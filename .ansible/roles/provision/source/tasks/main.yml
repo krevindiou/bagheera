@@ -5,3 +5,23 @@
     state: present
     cache_valid_time: 3600
     update_cache: yes
+
+- name: Configure environment
+  lineinfile:
+    path: /etc/environment
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  with_items:
+    - { regexp: '^APP_ENV=', line: 'APP_ENV=prod' }
+    - { regexp: '^NODE_ENV=', line: 'NODE_ENV=production' }
+    - { regexp: '^POSTGRES_HOST=', line: 'POSTGRES_HOST="{{ postgres_host }}"' }
+    - { regexp: '^POSTGRES_DB=', line: 'POSTGRES_DB="{{ postgres_db }}"' }
+    - { regexp: '^POSTGRES_USER=', line: 'POSTGRES_USER="{{ postgres_user }}"' }
+    - { regexp: '^POSTGRES_PASSWORD=', line: 'POSTGRES_PASSWORD="{{ postgres_password }}"' }
+    - { regexp: '^POSTGRES_SECURE_HOST=', line: 'POSTGRES_SECURE_HOST="{{ postgres_secure_host }}"' }
+    - { regexp: '^POSTGRES_SECURE_DB=', line: 'POSTGRES_SECURE_DB="{{ postgres_secure_db }}"' }
+    - { regexp: '^POSTGRES_SECURE_USER=', line: 'POSTGRES_SECURE_USER="{{ postgres_secure_user }}"' }
+    - { regexp: '^POSTGRES_SECURE_PASSWORD=', line: 'POSTGRES_SECURE_PASSWORD="{{ postgres_secure_password }}"' }
+    - { regexp: '^APP_SECRET=', line: 'APP_SECRET="{{ app_secret }}"' }
+    - { regexp: '^MAILER_URL=', line: 'MAILER_URL="{{ mailer_url }}"' }
+    - { regexp: '^SENDER_EMAIL=', line: 'SENDER_EMAIL="{{ sender_email }}"' }
