@@ -166,12 +166,6 @@ class SchedulerService
 
         foreach ($schedulers as $scheduler) {
             $startDate = $scheduler->getValueDate();
-            $result = $this->operationRepository->getLastScheduledOperationDate($scheduler);
-
-            $lastOperationDate = null;
-            if (isset($result[0]['valueDate'])) {
-                $startDate = $lastOperationDate = $result[0]['valueDate'];
-            }
 
             $endDate = $now;
             if (null !== $scheduler->getLimitDate() && $scheduler->getLimitDate() < $endDate) {
@@ -186,8 +180,12 @@ class SchedulerService
                 )
             );
 
-            $periodIterator = new \DatePeriod($startDate, $periodInterval, $endDate, \DatePeriod::EXCLUDE_START_DATE);
+            $result = $this->operationRepository->getLastScheduledOperationDate($scheduler);
+            if (isset($result[0]['valueDate'])) {
+                $startDate = $result[0]['valueDate']->add($periodInterval);
+            }
 
+            $periodIterator = new \DatePeriod($startDate, $periodInterval, $endDate);
             foreach ($periodIterator as $date) {
                 $operation = new Operation();
                 $operation->setScheduler($scheduler);
