@@ -61,7 +61,7 @@ class OperationRepository extends ServiceEntityRepository
             EOT;
         if (null !== $formModel) {
             if ('' !== $formModel->thirdParty) {
-                $sql .= ' AND operation.third_party LIKE :third_party';
+                $sql .= ' AND operation.third_party ILIKE :third_party';
                 $params[':third_party'] = '%'.$formModel->thirdParty.'%';
             }
 
@@ -129,7 +129,7 @@ class OperationRepository extends ServiceEntityRepository
                 $params[':value_date_end'] = $formModel->valueDateEnd->format(\DateTime::ISO8601);
             }
             if ('' !== $formModel->notes) {
-                $sql .= ' AND operation.notes LIKE :notes';
+                $sql .= ' AND operation.notes ILIKE :notes';
                 $params[':notes'] = '%'.$formModel->notes.'%';
             }
             if (null !== $formModel->reconciled) {
@@ -377,7 +377,7 @@ class OperationRepository extends ServiceEntityRepository
             $sql .= ' AND o.value_date <= :value_date_end';
         }
         if (null !== $report->getThirdParties()) {
-            $sql .= ' AND o.third_party LIKE :third_parties';
+            $sql .= ' AND o.third_party ILIKE :third_parties';
         }
         if ($report->getReconciledOnly()) {
             $sql .= ' AND o.is_reconciled = true';
