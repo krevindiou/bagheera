@@ -183,7 +183,7 @@ class ReportService
         if ($member === $report->getMember()) {
             $accounts = $report->getAccounts()->toArray();
             if (0 === count($accounts)) {
-                $accounts = $this->accountRepository->getList($member, null, false);
+                $accounts = $this->accountRepository->getList($member, null, false)->toArray();
             }
 
             $results = [];
