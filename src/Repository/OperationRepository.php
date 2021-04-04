@@ -128,7 +128,7 @@ class OperationRepository extends ServiceEntityRepository
                 $sql .= ' AND operation.value_date <= :value_date_end';
                 $params[':value_date_end'] = $formModel->valueDateEnd->format(\DateTime::ISO8601);
             }
-            if ('' !== $formModel->notes) {
+            if (null !== $formModel->notes) {
                 $sql .= ' AND operation.notes ILIKE :notes';
                 $params[':notes'] = '%'.$formModel->notes.'%';
             }
