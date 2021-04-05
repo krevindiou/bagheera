@@ -18,6 +18,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Account
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -91,20 +93,6 @@ class Account
      * @Assert\Type("bool")
      */
     protected $deleted = false;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @var Collection
@@ -213,16 +201,6 @@ class Account
     public function isDeleted(): ?bool
     {
         return $this->deleted;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 
     public function addSharedWith(Member $member): void

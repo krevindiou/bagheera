@@ -18,6 +18,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Member implements UserInterface
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -59,20 +61,6 @@ class Member implements UserInterface
      * @Assert\Type("bool")
      */
     protected $active = false;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @var \DateTime
@@ -147,16 +135,6 @@ class Member implements UserInterface
     public function isActive(): ?bool
     {
         return $this->active;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 
     public function setLoggedAt(\DateTime $loggedAt): void

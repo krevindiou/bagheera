@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class AccountImport
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -82,20 +84,6 @@ class AccountImport
      * @ORM\Column(name="json_normalized_data", type="text", nullable=true)
      */
     protected $jsonNormalizedData;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     public function setImportId(int $importId): void
     {
@@ -175,16 +163,6 @@ class AccountImport
     public function getJsonNormalizedData(): ?string
     {
         return $this->jsonNormalizedData;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 
     public function getProgressPct(): int

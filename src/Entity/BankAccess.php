@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class BankAccess
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -50,20 +52,6 @@ class BankAccess
      * @ORM\Column(name="password", type="string", length=255)
      */
     protected $password;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     public function setBankId(int $bankId): void
     {
@@ -113,15 +101,5 @@ class BankAccess
     public function getPassword(): string
     {
         return $this->password;
-    }
-
-    public function getCreatedAt(): \DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): \DateTime
-    {
-        return $this->updatedAt;
     }
 }

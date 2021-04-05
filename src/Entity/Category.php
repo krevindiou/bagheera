@@ -15,6 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Category
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -59,20 +61,6 @@ class Category
      * @Assert\Type("bool")
      */
     protected $active = true;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @var Collection
@@ -131,16 +119,6 @@ class Category
     public function isActive(): ?bool
     {
         return $this->active;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 
     public function setParentCategory(self $parentCategory): void

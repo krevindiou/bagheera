@@ -15,6 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class OperationSearch
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -143,20 +145,6 @@ class OperationSearch
      * @ORM\Column(name="amount_superior_to", type="integer", nullable=true)
      */
     protected $amountSuperiorTo;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     public function __construct()
     {
@@ -307,15 +295,5 @@ class OperationSearch
     public function getAmountSuperiorTo(): ?int
     {
         return $this->amountSuperiorTo;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 }

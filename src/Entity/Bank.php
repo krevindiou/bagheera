@@ -15,6 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Bank
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -84,20 +86,6 @@ class Bank
      * @Assert\Type("bool")
      */
     protected $deleted = false;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     /**
      * @var Collection
@@ -196,16 +184,6 @@ class Bank
     public function isActive(): bool
     {
         return !$this->isDeleted() && !$this->isClosed();
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 
     public function getAccounts(): Collection

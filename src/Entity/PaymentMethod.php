@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class PaymentMethod
 {
+    use TimestampableTrait;
+
     public const PAYMENT_METHOD_ID_INITIAL_BALANCE = 9;
     public const PAYMENT_METHOD_ID_DEBIT_CREDIT_CARD = 1;
     public const PAYMENT_METHOD_ID_DEBIT_CHECK = 2;
@@ -48,20 +50,6 @@ class PaymentMethod
      */
     protected $type;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
-
     public function __toString(): string
     {
         return $this->getName();
@@ -90,15 +78,5 @@ class PaymentMethod
     public function getType(): ?string
     {
         return $this->type;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 }

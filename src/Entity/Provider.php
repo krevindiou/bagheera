@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Provider
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -37,20 +39,6 @@ class Provider
      * @Assert\NotBlank()
      */
     protected $country;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     public function __toString(): string
     {
@@ -80,15 +68,5 @@ class Provider
     public function getCountry(): ?string
     {
         return $this->country;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 }

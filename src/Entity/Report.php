@@ -15,6 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Report
 {
+    use TimestampableTrait;
+
     /**
      * @var int
      *
@@ -195,20 +197,6 @@ class Report
      * @Assert\Choice(choices = {"month", "year"})
      */
     protected $estimateDurationUnit;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     public function __construct()
     {
@@ -405,15 +393,5 @@ class Report
     public function getEstimateDurationUnit(): ?int
     {
         return $this->estimateDurationUnit;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 }

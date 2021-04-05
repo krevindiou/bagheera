@@ -6,6 +6,8 @@ namespace App\Entity;
 
 trait OperationTrait
 {
+    use TimestampableTrait;
+
     /**
      * @var Account
      *
@@ -94,20 +96,6 @@ trait OperationTrait
      * @ORM\Column(name="notes", type="text", nullable=true)
      */
     protected $notes;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
 
     public function setAccount(Account $account): void
     {
@@ -215,15 +203,5 @@ trait OperationTrait
     public function getNotes(): ?string
     {
         return $this->notes;
-    }
-
-    public function getCreatedAt(): ?\DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function getUpdatedAt(): ?\DateTime
-    {
-        return $this->updatedAt;
     }
 }
