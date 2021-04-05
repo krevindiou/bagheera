@@ -8,6 +8,7 @@ use App\Entity\Account;
 use App\Entity\Category;
 use App\Entity\Member;
 use App\Entity\Operation;
+use App\Entity\PaymentMethod;
 use App\Entity\Report;
 use App\Entity\Scheduler;
 use App\Form\Model\OperationSearchFormModel;
@@ -67,7 +68,7 @@ class OperationRepository extends ServiceEntityRepository
 
             if (null !== $formModel->categories && 0 !== count($formModel->categories)) {
                 $categories = array_map(
-                    function ($value) {
+                    function (Category $value) {
                         return $value->getCategoryId();
                     },
                     $formModel->categories
@@ -77,7 +78,7 @@ class OperationRepository extends ServiceEntityRepository
             }
             if (null !== $formModel->paymentMethods && 0 !== count($formModel->paymentMethods)) {
                 $paymentMethods = array_map(
-                    function ($value) {
+                    function (PaymentMethod $value) {
                         return $value->getPaymentMethodId();
                     },
                     $formModel->paymentMethods
