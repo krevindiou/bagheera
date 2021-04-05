@@ -11,3 +11,10 @@ pre_composer_script: |
   POSTGRES_SECURE_DB=bagheera
   POSTGRES_SECURE_USER=bagheera
   POSTGRES_SECURE_PASSWORD=bagheera' > .env.test
+
+global_exclude_dirs:
+  - .ansible
+  - .docker
+  - tests
+  - var
+  - vendor
