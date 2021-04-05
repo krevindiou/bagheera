@@ -18,3 +18,7 @@ global_exclude_dirs:
   - tests
   - var
   - vendor
+
+rules:
+  web.missing_robots_txt:
+    enabled: false
