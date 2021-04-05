@@ -22,3 +22,5 @@ global_exclude_dirs:
 rules:
   web.missing_robots_txt:
     enabled: false
+  web.missing_web_manifest:
+    enabled: false
