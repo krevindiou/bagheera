@@ -2,16 +2,9 @@ php_version: 7.3
 
 pre_composer_script: |
   #!/bin/bash
-  echo 'APP_ENV=dev
-  APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f
-  POSTGRES_HOST=bagheera-postgresql
-  POSTGRES_DB=bagheera
-  POSTGRES_USER=bagheera
-  POSTGRES_PASSWORD=bagheera
-  POSTGRES_SECURE_HOST=bagheera-postgresql
-  POSTGRES_SECURE_DB=bagheera
-  POSTGRES_SECURE_USER=bagheera
-  POSTGRES_SECURE_PASSWORD=bagheera' > .env.local
+  sed -i -e "s/APP_SECRET=/APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f/" .env
+  sed -i -e "s/^DATABASE_URL=.*/DATABASE_URL=null/" .env
+  sed -i -e "s/^DATABASE_SECURE_URL=.*/DATABASE_SECURE_URL=null/" .env
 
 global_exclude_dirs:
   - .ansible

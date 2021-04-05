@@ -9,10 +9,12 @@ doctrine:
                 driver: pdo_pgsql
                 charset: UTF8
                 url: '%env(resolve:DATABASE_URL)%'
+                server_version: '9.4'
             secure:
                 driver: pdo_pgsql
                 charset: UTF8
                 url: '%env(resolve:DATABASE_SECURE_URL)%'
+                server_version: '9.4'
 
     orm:
         auto_generate_proxy_classes: true
