@@ -365,11 +365,11 @@ class OperationRepository extends ServiceEntityRepository
         $sql .= 'FROM operation AS o ';
 
         $accountsId = [];
-        foreach ($accounts as $account) {
-            $accountsId[] = $account->getAccountId();
+        foreach ($accounts as $k => $account) {
+            $accountsId[':account_id_'.$k] = $account->getAccountId();
         }
 
-        $sql .= ' WHERE o.account_id IN ('.implode(', ', $accountsId).')';
+        $sql .= ' WHERE o.account_id IN ('.implode(', ', array_keys($accountsId)).')';
         if (null !== $report->getValueDateStart()) {
             $sql .= ' AND o.value_date >= :value_date_start';
         }
@@ -388,6 +388,11 @@ class OperationRepository extends ServiceEntityRepository
         }
 
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+
+        array_walk($accountsId, function ($accountId, $k) use ($stmt): void {
+            $stmt->bindValue(ltrim($k, ':'), $accountId);
+        });
+
         if (null !== $report->getValueDateStart()) {
             $stmt->bindValue('value_date_start', $report->getValueDateStart()->format(\DateTime::ISO8601));
         }
