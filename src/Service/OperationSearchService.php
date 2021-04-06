@@ -44,10 +44,9 @@ class OperationSearchService
     {
         if (null === $formModel && null !== $account) {
             $formModel = new OperationSearchFormModel();
-            $formModel->account = $account;
         }
 
-        return $this->formFactory->create(OperationSearchFormType::class, $formModel, ['account' => $formModel->account]);
+        return $this->formFactory->create(OperationSearchFormType::class, $formModel, ['account' => $account]);
     }
 
     /**

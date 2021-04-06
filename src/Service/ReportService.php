@@ -79,7 +79,6 @@ class ReportService
         $formModel = new ReportFormModel();
 
         if (null === $report) {
-            $formModel->member = $member;
             $formModel->type = $type;
         } else {
             $formModel->type = $report->getType();

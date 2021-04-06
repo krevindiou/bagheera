@@ -70,7 +70,7 @@ class SchedulerService
         if (null === $scheduler && null !== $account) {
             $formModel->account = $account;
         } elseif (null !== $scheduler) {
-            $formModel->operationId = $scheduler->getSchedulerId();
+            $formModel->schedulerId = $scheduler->getSchedulerId();
             $formModel->account = $scheduler->getAccount();
             $formModel->type = null !== $scheduler->getCredit() ? 'credit' : 'debit';
             $formModel->thirdParty = $scheduler->getThirdParty();
