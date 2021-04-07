@@ -23,7 +23,7 @@ class AccountImportService
     /**
      * Returns current import.
      */
-    public function getCurrentImport(Account $account): AccountImport
+    public function getCurrentImport(Account $account): ?AccountImport
     {
         return $this->accountImportRepository->findOneBy(
             [

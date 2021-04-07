@@ -28,10 +28,6 @@ class SchedulerController extends AbstractController
 
         $schedulers = $schedulerService->getList($account, $page);
 
-        if (null === $schedulers) {
-            throw $this->createNotFoundException();
-        }
-
         return $this->render(
             'Scheduler/list.html.twig',
             [
