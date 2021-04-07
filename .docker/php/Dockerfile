@@ -1,4 +1,4 @@
-FROM php:7.3-fpm
+FROM php:8.0-fpm
 
 ENV PATH="$PATH:/root/.yarn/bin"
 
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y zip git acl
 
 # mcrypt
 RUN apt-get update && apt-get install -y libmcrypt-dev
-RUN yes '' | pecl install mcrypt-1.0.2 && docker-php-ext-enable mcrypt
+RUN yes '' | pecl install mcrypt-1.0.4 && docker-php-ext-enable mcrypt
 
 # postgresql
 RUN apt-get update && apt-get install -y libpq-dev
@@ -27,21 +27,21 @@ RUN apt-get update && apt-get install -y libicu-dev
 RUN docker-php-ext-install -j$(nproc) intl
 
 # xdebug
-RUN pecl install xdebug-2.7.0RC1 && docker-php-ext-enable xdebug
+RUN pecl install xdebug-3.0.3 && docker-php-ext-enable xdebug
 RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 
 # apc
-RUN yes '' | pecl install apcu-5.1.16 && docker-php-ext-enable apcu
+RUN yes '' | pecl install apcu-5.1.20 && docker-php-ext-enable apcu
 
 # opcache
 RUN docker-php-ext-install -j$(nproc) opcache
 
 # php-cs-fixer
-RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.14.1/php-cs-fixer.phar
+RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.18.5/php-cs-fixer.phar
 RUN chmod +x /usr/local/bin/php-cs-fixer
 
 # composer
-RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/1.8.0/composer.phar
+RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/2.0.12/composer.phar
 RUN chmod +x /usr/local/bin/composer
 
 # node
