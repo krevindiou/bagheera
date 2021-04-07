@@ -285,22 +285,22 @@ class Report
         return $this->thirdParties;
     }
 
-    public function setCategories(array $categories): void
+    public function setCategories(Collection $categories): void
     {
         $this->categories = $categories;
     }
 
-    public function getCategories(): ?array
+    public function getCategories(): ?Collection
     {
         return $this->categories;
     }
 
-    public function setPaymentMethods(array $paymentMethods): void
+    public function setPaymentMethods(Collection $paymentMethods): void
     {
         $this->paymentMethods = $paymentMethods;
     }
 
-    public function getPaymentMethods(): ?array
+    public function getPaymentMethods(): ?Collection
     {
         return $this->paymentMethods;
     }

@@ -63,14 +63,14 @@ trait OperationTrait
     protected $thirdParty;
 
     /**
-     * @var int
+     * @var null|int
      *
      * @ORM\Column(name="debit", type="integer", nullable=true)
      */
     protected $debit;
 
     /**
-     * @var int
+     * @var null|int
      *
      * @ORM\Column(name="credit", type="integer", nullable=true)
      */
