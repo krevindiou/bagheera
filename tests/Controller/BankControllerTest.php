@@ -20,7 +20,7 @@ final class BankControllerTest extends E2eTestCase
         $form['bank_choose_form[other]'] = 'New bank';
         $client->submit($form);
 
-        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/bank-6/create-account'));
+        static::assertTrue($client->getResponse()->isRedirect('/en/manager/bank-6/create-account'));
     }
 
     public function testUpdateForm(): void
@@ -30,6 +30,6 @@ final class BankControllerTest extends E2eTestCase
         $form = $crawler->selectButton('bank_update_form[submit]')->form();
         $client->submit($form);
 
-        $this->assertTrue($client->getResponse()->isRedirect('/en/manager/bank-1'));
+        static::assertTrue($client->getResponse()->isRedirect('/en/manager/bank-1'));
     }
 }

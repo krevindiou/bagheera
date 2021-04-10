@@ -203,8 +203,6 @@ class OperationService
      * @param Account  $account    Account entity
      * @param array    $operations Operations data
      * @param \Closure $func       Regularly called function
-     *
-     * @return bool
      */
     public function saveMulti(Account $account, array $operations, \Closure $func): bool
     {

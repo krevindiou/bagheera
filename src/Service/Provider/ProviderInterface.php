@@ -15,8 +15,6 @@ interface ProviderInterface
 
     /**
      * Fetches accounts into an array.
-     *
-     * @return array
      */
     public function fetchAccounts(): array;
 
@@ -24,8 +22,6 @@ interface ProviderInterface
      * Fetches transactions into an array.
      *
      * @param Account $account Account entity
-     *
-     * @return array
      */
     public function fetchTransactions(Account $account): array;
 
@@ -34,8 +30,6 @@ interface ProviderInterface
      *
      * @param Account $account Account entity
      * @param array   $data    Data to normalize
-     *
-     * @return array
      */
     public function normalizeData(Account $account, array $data): array;
 }
