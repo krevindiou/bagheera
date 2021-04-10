@@ -17,7 +17,7 @@
         "php": "^8.0.0",
         "ext-intl": "*",
         "ext-openssl": "*",
-        "babdev/pagerfanta-bundle": "^2.7",
+        "babdev/pagerfanta-bundle": "^2.10",
         "components/bootstrap": "2.3.*",
         "components/flot": "0.8.*",
         "components/font-awesome": "3.1.*",
@@ -30,25 +30,25 @@
         "symfony/css-selector": "5.*",
         "symfony/dotenv": "5.*",
         "symfony/expression-language": "5.*",
-        "symfony/flex": "^1.9",
+        "symfony/flex": "^1.12",
         "symfony/form": "5.*",
-        "symfony/monolog-bundle": "^3.5",
-        "symfony/orm-pack": "^2.0",
+        "symfony/monolog-bundle": "^3.7",
+        "symfony/orm-pack": "^2.1",
         "symfony/process": "5.*",
         "symfony/security-bundle": "5.*",
-        "symfony/swiftmailer-bundle": "^3.4",
+        "symfony/swiftmailer-bundle": "^3.5",
         "symfony/translation": "5.*",
         "symfony/twig-bundle": "5.*",
         "symfony/validator": "5.*",
-        "symfony/webpack-encore-bundle": "^1.7",
+        "symfony/webpack-encore-bundle": "^1.11",
         "symfony/yaml": "5.*",
         "twig/extensions": "^1.5"
     },
     "require-dev": {
-        "doctrine/doctrine-fixtures-bundle": "^3.3",
-        "phpstan/extension-installer": "^1.0",
-        "phpstan/phpstan-symfony": "^0.12.11",
-        "symfony/maker-bundle": "^1.21",
+        "doctrine/doctrine-fixtures-bundle": "^3.4",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-symfony": "^0.12.22",
+        "symfony/maker-bundle": "^1.30",
         "symfony/phpunit-bridge": "5.*",
         "symfony/profiler-pack": "^1.0"
     },
@@ -74,7 +74,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "5.1.*"
+            "require": "5.2.*"
         }
     },
     "repositories": [
