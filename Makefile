@@ -58,7 +58,7 @@ docker-stop: check-config ## Stop containers
 docker-test-ci: check-config ## Run tests for CI in container
 	@make docker-exec COMMAND="php-cs-fixer fix --dry-run --diff"
 	@make docker-exec COMMAND="php bin/phpunit -c /srv/www/bagheera --coverage-clover=coverage.xml"
-	@make docker-exec COMMAND="./vendor/bin/phpstan analyse"
+	@make docker-exec COMMAND="./vendor/bin/phpstan analyse --no-progress"
 
 .PHONY: check-config
 check-config:
