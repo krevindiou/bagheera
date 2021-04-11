@@ -1,11 +1,11 @@
 {
     "devDependencies": {
-        "@symfony/webpack-encore": "^0.30.0",
-        "core-js": "^3.0.0",
-        "less": "^3.9.0",
-        "less-loader": "^4.1.0",
-        "regenerator-runtime": "^0.13.2",
-        "webpack-notifier": "^1.6.0"
+        "@symfony/webpack-encore": "^1.1.2",
+        "core-js": "^3.10.1",
+        "less": "^4.1.1",
+        "less-loader": "^8.1.0",
+        "regenerator-runtime": "^0.13.7",
+        "webpack-notifier": "^1.13.0"
     },
     "license": "GPL-3.0-only",
     "scripts": {
