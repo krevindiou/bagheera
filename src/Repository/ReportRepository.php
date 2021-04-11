@@ -38,9 +38,9 @@ class ReportRepository extends ServiceEntityRepository
                         report.month_incomes AS report_month_incomes,
                         report.estimate_duration_value AS report_estimate_duration_value,
                         report.estimate_duration_unit AS report_estimate_duration_unit,
-                    array_to_json(array_agg(account)) AS accounts,
-                    array_to_json(array_agg(category)) AS categories,
-                    array_to_json(array_agg(payment_method)) AS payment_methods
+                    array_to_json(array_remove(array_agg(account), NULL)) AS accounts,
+                    array_to_json(array_remove(array_agg(category), NULL)) AS categories,
+                    array_to_json(array_remove(array_agg(payment_method), NULL)) AS payment_methods
                     FROM report
                     LEFT JOIN report_account ON report.report_id = report_account.report_id
                     LEFT JOIN account ON report_account.account_id = account.account_id
