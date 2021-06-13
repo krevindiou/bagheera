@@ -22,12 +22,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class OperationService
 {
-    private $logger;
-    private $em;
-    private $formFactory;
-    private $validator;
-    private $operationRepository;
-    private $categoriesId;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private OperationRepository $operationRepository;
+    private array $categoriesId;
 
     public function __construct(
         LoggerInterface $logger,

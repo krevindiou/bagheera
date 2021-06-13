@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class CategoryService
 {
-    private $categoryRepository;
+    private CategoryRepository $categoryRepository;
 
     public function __construct(CategoryRepository $categoryRepository)
     {

@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitDatabaseCommand extends Command
 {
-    private $em;
+    private EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
     {

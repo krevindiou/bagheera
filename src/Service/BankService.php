@@ -21,14 +21,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankService
 {
-    private $logger;
-    private $em;
-    private $formFactory;
-    private $validator;
-    private $accountService;
-    private $bankRepository;
-    private $projectDir;
-    private $environment;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private AccountService $accountService;
+    private BankRepository $bankRepository;
+    private string $projectDir;
+    private string $environment;
 
     public function __construct(
         LoggerInterface $logger,

@@ -12,22 +12,11 @@ use Symfony\Bridge\Monolog\Logger;
 
 abstract class ProviderBase
 {
-    /**
-     * @var Logger
-     */
-    public $logger;
-
-    /** @var string */
-    public $key;
-
-    /** @var Bank */
-    public $bank;
-
-    /** @var BankAccess */
-    public $bankAccess;
-
-    /** @var AccountImportService */
-    public $accountImportService;
+    public Logger $logger;
+    public string $key;
+    public Bank $bank;
+    public BankAccess $bankAccess;
+    public AccountImportService $accountImportService;
 
     public function setKey(string $key): void
     {

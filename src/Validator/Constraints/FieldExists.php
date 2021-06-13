@@ -12,14 +12,9 @@ use Symfony\Component\Validator\Exception\MissingOptionsException;
  */
 class FieldExists extends Constraint
 {
-    /** @var string */
-    public $message = 'field_does_not_exist';
-
-    /** @var string */
-    public $className;
-
-    /** @var string */
-    public $field;
+    public string $message = 'field_does_not_exist';
+    public string $className;
+    public string $field;
 
     public function __construct($options = null)
     {

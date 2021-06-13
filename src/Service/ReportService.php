@@ -21,13 +21,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ReportService
 {
-    private $logger;
-    private $em;
-    private $formFactory;
-    private $validator;
-    private $accountRepository;
-    private $reportRepository;
-    private $operationRepository;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private AccountRepository $accountRepository;
+    private ReportRepository $reportRepository;
+    private OperationRepository $operationRepository;
 
     public function __construct(
         LoggerInterface $logger,

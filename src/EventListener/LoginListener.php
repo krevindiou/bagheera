@@ -12,9 +12,9 @@ use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class LoginListener
 {
-    private $logger;
-    private $em;
-    private $schedulerService;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private SchedulerService $schedulerService;
 
     public function __construct(
         LoggerInterface $logger,

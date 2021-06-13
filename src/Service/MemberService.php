@@ -27,22 +27,22 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class MemberService
 {
-    private $secret;
-    private $logger;
-    private $em;
-    private $mailer;
-    private $config;
-    private $translator;
-    private $router;
-    private $passwordEncoder;
-    private $formFactory;
-    private $validator;
-    private $bankService;
-    private $accountService;
-    private $cryptService;
-    private $templating;
-    private $memberRepository;
-    private $accountImportRepository;
+    private string $secret;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private \Swift_Mailer $mailer;
+    private array $config;
+    private TranslatorInterface $translator;
+    private RouterInterface $router;
+    private UserPasswordEncoderInterface $passwordEncoder;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private BankService $bankService;
+    private AccountService $accountService;
+    private CryptService $cryptService;
+    private \Twig\Environment $templating;
+    private MemberRepository $memberRepository;
+    private AccountImportRepository $accountImportRepository;
 
     public function __construct(
         $secret,

@@ -12,8 +12,8 @@ use Twig\TwigFilter;
 
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
-    private $tokenStorage;
-    private $bankService;
+    private TokenStorageInterface $tokenStorage;
+    private BankService $bankService;
 
     public function __construct(
         TokenStorageInterface $tokenStorage,

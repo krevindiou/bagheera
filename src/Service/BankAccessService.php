@@ -17,14 +17,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankAccessService
 {
-    private $secret;
-    private $logger;
-    private $em;
-    private $emSecure;
-    private $formFactory;
-    private $validator;
-    private $bankService;
-    private $cryptService;
+    private string $secret;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private EntityManagerInterface $emSecure;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private BankService $bankService;
+    private CryptService $cryptService;
 
     public function __construct(
         $secret,

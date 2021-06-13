@@ -16,10 +16,10 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class OperationSearchService
 {
-    private $formFactory;
-    private $requestStack;
-    private $categoryRepository;
-    private $paymentMethodRepository;
+    private FormFactoryInterface $formFactory;
+    private RequestStack $requestStack;
+    private CategoryRepository $categoryRepository;
+    private PaymentMethodRepository $paymentMethodRepository;
 
     public function __construct(
         FormFactoryInterface $formFactory,

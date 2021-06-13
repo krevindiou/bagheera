@@ -22,13 +22,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AccountService
 {
-    private $logger;
-    private $em;
-    private $formFactory;
-    private $validator;
-    private $translator;
-    private $operationService;
-    private $accountRepository;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private TranslatorInterface $translator;
+    private OperationService $operationService;
+    private AccountRepository $accountRepository;
 
     public function __construct(
         LoggerInterface $logger,

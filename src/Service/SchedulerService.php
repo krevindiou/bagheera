@@ -23,13 +23,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SchedulerService
 {
-    private $logger;
-    private $em;
-    private $formFactory;
-    private $validator;
-    private $operationService;
-    private $operationRepository;
-    private $schedulerRepository;
+    private LoggerInterface $logger;
+    private EntityManagerInterface $em;
+    private FormFactoryInterface $formFactory;
+    private ValidatorInterface $validator;
+    private OperationService $operationService;
+    private OperationRepository $operationRepository;
+    private SchedulerRepository $schedulerRepository;
 
     public function __construct(
         LoggerInterface $logger,

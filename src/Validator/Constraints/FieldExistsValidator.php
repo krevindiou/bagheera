@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class FieldExistsValidator extends ConstraintValidator
 {
-    private $em;
+    private EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
     {
@@ -33,7 +33,9 @@ class FieldExistsValidator extends ConstraintValidator
             return;
         }
 
-        $repository = $this->em->getRepository($constraint->className);
+        $className = $constraint->className;
+        /** @var class-string $className */
+        $repository = $this->em->getRepository($className);
         $result = $repository->findBy([$constraint->field => $value]);
         if (empty($result)) {
             $this->context->buildViolation($constraint->message)
