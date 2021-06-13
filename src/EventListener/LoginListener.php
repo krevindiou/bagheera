@@ -38,7 +38,7 @@ class LoginListener
         try {
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
         }
 
         $this->schedulerService->runSchedulers($member);

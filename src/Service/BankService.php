@@ -128,7 +128,7 @@ class BankService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -148,7 +148,7 @@ class BankService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -189,7 +189,7 @@ class BankService
 
             $phpBin = $executableFinder->find();
             if (false === $phpBin) {
-                $this->logger->err('Unable to find php binary');
+                $this->logger->error('Unable to find php binary');
 
                 return;
             }
@@ -227,7 +227,7 @@ class BankService
 
             return true;
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
         }
 
         return false;

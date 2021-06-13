@@ -186,7 +186,7 @@ class MemberService
 
                 return true;
             } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
 
@@ -215,7 +215,7 @@ class MemberService
 
             return true;
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
         }
 
         return false;
@@ -272,7 +272,7 @@ class MemberService
 
                 return true;
             } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
 
@@ -342,7 +342,7 @@ class MemberService
             $this->em->persist($member);
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -366,7 +366,7 @@ class MemberService
         try {
             $this->mailer->send($message);
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -402,7 +402,7 @@ class MemberService
 
             return true;
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
         }
 
         return false;

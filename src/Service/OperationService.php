@@ -158,7 +158,7 @@ class OperationService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -184,7 +184,7 @@ class OperationService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -242,20 +242,20 @@ class OperationService
 
                             $func($account, $i);
                         } catch (\Exception $e) {
-                            $this->logger->err($e->getMessage());
+                            $this->logger->error($e->getMessage());
                             $error = true;
 
                             continue;
                         }
                     }
                 } catch (\Exception $e) {
-                    $this->logger->err($e->getMessage());
+                    $this->logger->error($e->getMessage());
                     $error = true;
 
                     continue;
                 }
             } else {
-                $this->logger->err(
+                $this->logger->error(
                     sprintf(
                         'Errors importing transaction "%s" [member %d]',
                         $operationArray['label'],
@@ -378,7 +378,7 @@ class OperationService
                 try {
                     $this->em->persist($transferOperation);
                 } catch (\Exception $e) {
-                    $this->logger->err($e->getMessage());
+                    $this->logger->error($e->getMessage());
 
                     return false;
                 }
@@ -391,7 +391,7 @@ class OperationService
                         $this->em->flush();
                         $this->em->remove($transferOperationBeforeSave);
                     } catch (\Exception $e) {
-                        $this->logger->err($e->getMessage());
+                        $this->logger->error($e->getMessage());
 
                         return false;
                     }
@@ -404,7 +404,7 @@ class OperationService
 
                 return true;
             } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
 

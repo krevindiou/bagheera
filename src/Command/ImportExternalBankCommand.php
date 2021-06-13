@@ -71,7 +71,7 @@ class ImportExternalBankCommand extends Command
         try {
             $this->provider->setBankAccess($bankAccess);
         } catch (\RuntimeException $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return 1;
         }

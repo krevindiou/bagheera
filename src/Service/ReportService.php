@@ -155,7 +155,7 @@ class ReportService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -340,7 +340,7 @@ class ReportService
 
                 return true;
             } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
 

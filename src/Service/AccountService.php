@@ -148,7 +148,7 @@ class AccountService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -174,7 +174,7 @@ class AccountService
 
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -226,13 +226,13 @@ class AccountService
                     try {
                         $this->em->persist($account);
                     } catch (\Exception $e) {
-                        $this->logger->err($e->getMessage());
+                        $this->logger->error($e->getMessage());
                         $error = true;
 
                         continue;
                     }
                 } else {
-                    $this->logger->err(
+                    $this->logger->error(
                         sprintf(
                             'Errors saving account "%s" [member %d]',
                             $accountArray['name'],
@@ -250,7 +250,7 @@ class AccountService
         try {
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
             $error = true;
         }
 
@@ -277,7 +277,7 @@ class AccountService
 
                 return true;
             } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
 

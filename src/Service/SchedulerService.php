@@ -133,7 +133,7 @@ class SchedulerService
             $this->em->remove($scheduler);
             $this->em->flush();
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
 
             return false;
         }
@@ -229,7 +229,7 @@ class SchedulerService
 
             return true;
         } catch (\Exception $e) {
-            $this->logger->err($e->getMessage());
+            $this->logger->error($e->getMessage());
         }
 
         return false;

@@ -100,7 +100,7 @@ class BankAccessService
 
                 return true;
             } catch (\Exception $e) {
-                $this->logger->err($e->getMessage());
+                $this->logger->error($e->getMessage());
             }
         }
 
