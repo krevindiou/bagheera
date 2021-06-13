@@ -13,6 +13,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -23,7 +24,7 @@ class OperationController extends AbstractController
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, methods={"GET"}, name="operation_list")
      */
-    public function list(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account)
+    public function list(Request $request, OperationSearchService $operationSearchService, OperationService $operationService, AccountService $accountService, Account $account): Response
     {
         $member = $this->getUser();
 
@@ -54,7 +55,7 @@ class OperationController extends AbstractController
     /**
      * @Route("/account-{accountId}/operations", requirements={"accountId" = "\d+"}, methods={"POST"})
      */
-    public function listActions(Request $request, OperationService $operationService, Account $account)
+    public function listActions(Request $request, OperationService $operationService, Account $account): Response
     {
         $operationsId = (array) $request->request->get('operationsId');
 
@@ -77,7 +78,7 @@ class OperationController extends AbstractController
      * @ParamConverter("operation", class="App:Operation", options={"id" = "operationId"})
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      */
-    public function form(Request $request, OperationService $operationService, ?Account $account, ?Operation $operation)
+    public function form(Request $request, OperationService $operationService, ?Account $account, ?Operation $operation): Response
     {
         $member = $this->getUser();
 
@@ -111,7 +112,7 @@ class OperationController extends AbstractController
     /**
      * @Route("/third-parties.json", name="operation_third_party_list")
      */
-    public function thirdParty(Request $request, OperationService $operationService)
+    public function thirdParty(Request $request, OperationService $operationService): Response
     {
         $thirdParties = $operationService->findThirdParties(
             $this->getUser(),

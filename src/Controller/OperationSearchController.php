@@ -8,6 +8,7 @@ use App\Entity\Account;
 use App\Service\OperationSearchService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -18,7 +19,7 @@ class OperationSearchController extends AbstractController
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
      */
-    public function form(OperationSearchService $operationSearchService, Account $account, $display = true)
+    public function form(OperationSearchService $operationSearchService, Account $account, $display = true): Response
     {
         $formModel = $operationSearchService->getSessionSearch($account);
 
@@ -37,7 +38,7 @@ class OperationSearchController extends AbstractController
     /**
      * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit", methods={"POST"})
      */
-    public function submit(Request $request, OperationSearchService $operationSearchService, Account $account)
+    public function submit(Request $request, OperationSearchService $operationSearchService, Account $account): Response
     {
         if (isset($request->request->get('operation_search_form')['clear'])) {
             $operationSearchService->clearSessionSearch($account);

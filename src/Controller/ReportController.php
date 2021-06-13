@@ -10,6 +10,7 @@ use App\Service\ReportService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -20,7 +21,7 @@ class ReportController extends AbstractController
     /**
      * @Route("/reports", methods={"GET"}, name="report_list")
      */
-    public function list(Request $request, ReportService $reportService)
+    public function list(Request $request, ReportService $reportService): Response
     {
         $member = $this->getUser();
 
@@ -37,7 +38,7 @@ class ReportController extends AbstractController
     /**
      * @Route("/reports", methods={"POST"})
      */
-    public function listActions(Request $request, ReportService $reportService)
+    public function listActions(Request $request, ReportService $reportService): Response
     {
         $reportsId = (array) $request->request->get('reportsId');
 
@@ -56,7 +57,7 @@ class ReportController extends AbstractController
      * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
      * @ParamConverter("report", class="App:Report", options={"id" = "reportId"})
      */
-    public function form(Request $request, ReportService $reportService, ?Report $report, string $type = null)
+    public function form(Request $request, ReportService $reportService, ?Report $report, string $type = null): Response
     {
         $member = $this->getUser();
 
@@ -82,7 +83,7 @@ class ReportController extends AbstractController
     /**
      * @Route("/reports.js", defaults={"_format"="js"}, name="report_graph")
      */
-    public function graph(ReportService $reportService)
+    public function graph(ReportService $reportService): Response
     {
         $graphs = [];
 
@@ -110,7 +111,7 @@ class ReportController extends AbstractController
      * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
      * @Route("/account-{accountId}/report-synthesis.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
      */
-    public function synthesis(ReportService $reportService, ?Account $account)
+    public function synthesis(ReportService $reportService, ?Account $account): Response
     {
         $member = $this->getUser();
 

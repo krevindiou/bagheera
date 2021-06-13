@@ -8,6 +8,7 @@ use App\Entity\Bank;
 use App\Service\BankAccessService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -18,7 +19,7 @@ class BankAccessController extends AbstractController
     /**
      * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_update")
      */
-    public function form(Request $request, BankAccessService $bankAccessService, Bank $bank)
+    public function form(Request $request, BankAccessService $bankAccessService, Bank $bank): Response
     {
         $member = $this->getUser();
 

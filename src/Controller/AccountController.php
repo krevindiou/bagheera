@@ -15,6 +15,7 @@ use App\Service\ReportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -25,7 +26,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/", name="account_home")
      */
-    public function home(MemberService $memberService, OperationService $operationService, AccountService $accountService, ReportService $reportService)
+    public function home(MemberService $memberService, OperationService $operationService, AccountService $accountService, ReportService $reportService): Response
     {
         $member = $this->getUser();
 
@@ -49,7 +50,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/accounts", methods={"GET"}, name="account_list")
      */
-    public function list(BankService $bankService)
+    public function list(BankService $bankService): Response
     {
         return $this->render(
             'Account/list.html.twig',
@@ -62,7 +63,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/accounts", methods={"POST"})
      */
-    public function listActions(Request $request, AccountService $accountService, BankService $bankService, BankRepository $bankRepository)
+    public function listActions(Request $request, AccountService $accountService, BankService $bankService, BankRepository $bankRepository): Response
     {
         $accountsId = (array) $request->request->get('accountsId');
         $banks = $bankRepository->findBy(['bankId' => (array) $request->request->get('banksId')]);
@@ -93,7 +94,7 @@ class AccountController extends AbstractController
      * @Route("/bank-{bankId}/create-account", requirements={"bankId" = "\d+"}, name="account_create_with_bank")
      * @Route("/create-account", defaults={"bankId" = null}, name="account_create")
      */
-    public function create(Request $request, AccountService $accountService, ?Bank $bank)
+    public function create(Request $request, AccountService $accountService, ?Bank $bank): Response
     {
         $member = $this->getUser();
 
@@ -122,7 +123,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_update")
      */
-    public function update(Request $request, AccountService $accountService, Account $account)
+    public function update(Request $request, AccountService $accountService, Account $account): Response
     {
         $member = $this->getUser();
 
@@ -149,7 +150,7 @@ class AccountController extends AbstractController
     /**
      * @Route("/import-progress", name="account_import_progress")
      */
-    public function importProgress(MemberService $memberService)
+    public function importProgress(MemberService $memberService): Response
     {
         $data = [];
 
