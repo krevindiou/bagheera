@@ -1,0 +1,49 @@
+version: 2.1
+jobs:
+  build:
+    machine: true
+    environment:
+      - APP_ENV=dev
+      - DOCKER_COMPOSE_VERSION=1.27.4
+    steps:
+      - run:
+          name: Upgrade Docker compose
+          command: |
+            sudo rm /usr/local/bin/docker-compose
+            curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m) -o docker-compose
+            sudo install --mode=775 docker-compose /usr/local/bin
+            rm docker-compose
+      - checkout
+      - run:
+          name: Setup Docker variables
+          command: |
+            cp .docker/.docker-compose.env.dist .docker/.docker-compose.env
+            echo 'APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> .docker/.docker-compose.env
+      - run:
+          name: Start containers
+          command: make docker-start
+      - restore_cache:
+          keys:
+            - vendor-{{ checksum "composer.lock" }}
+            - vendor-
+      - restore_cache:
+          keys:
+            - node-modules-{{ checksum "package.json" }}
+            - node-modules-
+      - run:
+          name: Build application
+          command: make docker-exec COMMAND="make build"
+      - save_cache:
+          key: vendor-{{ checksum "composer.json" }}
+          paths:
+            - vendor
+      - save_cache:
+          key: node-modules-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run:
+          name: Run tests
+          command: make docker-test-ci
+      - run:
+          name: Upload code coverage
+          command: bash <(curl -s https://codecov.io/bash)

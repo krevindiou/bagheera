@@ -2,7 +2,7 @@
     <img src="./assets/img/logo-dark.png" alt="Bagheera"/>
     <p align="center">A personal finance manager</p>
     <p align="center">
-        <a href="https://travis-ci.com/krevindiou/bagheera"><img src="https://travis-ci.com/krevindiou/bagheera.svg?branch=master" alt="Build Status"/></a>
+        <a href="https://circleci.com/gh/krevindiou/bagheera"><img src="https://circleci.com/gh/krevindiou/bagheera.svg?style=shield&circle-token=ae40e8d08da059696a0daf8b6be59116d7beca4f" alt="Build Status"/></a>
         <a href="https://codecov.io/gh/krevindiou/bagheera"><img src="https://codecov.io/gh/krevindiou/bagheera/branch/master/graph/badge.svg" alt="Code Coverage"/></a>
         <a href="https://insight.symfony.com/projects/16f13cc4-0bf7-41a3-a764-47cfef31af40"><img src="https://insight.symfony.com/projects/16f13cc4-0bf7-41a3-a764-47cfef31af40/mini.svg" alt="Insight"/></a>
     </p>
