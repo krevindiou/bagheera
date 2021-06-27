@@ -20,7 +20,7 @@ class FieldExists extends Constraint
     {
         parent::__construct($options);
 
-        if (null === $this->className || null === $this->field) {
+        if ('' === $this->className || '' === $this->field) {
             throw new MissingOptionsException(sprintf('Option "className" and "field" must be given for constraint %s', __CLASS__), ['className', 'field']);
         }
     }
