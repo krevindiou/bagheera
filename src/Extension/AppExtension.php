@@ -30,6 +30,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         $token = $this->tokenStorage->getToken();
 
         if (null !== $token) {
+            /** @var \App\Entity\Member */
             $member = $token->getUser();
 
             if (is_object($member)) {
