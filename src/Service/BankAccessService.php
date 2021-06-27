@@ -83,7 +83,9 @@ class BankAccessService
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                $this->em->getRepository(BankAccess::class, 'secure')->delete($bankAccess);
+                /** @var \App\Repository\BankAccessRepository */
+                $bankAccessRepository = $this->emSecure->getRepository(BankAccess::class);
+                $bankAccessRepository->delete($bankAccess);
 
                 $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
                 $encryptedPassword = $this->cryptService->encrypt($bankAccess->getPlainPassword(), $this->secret);
