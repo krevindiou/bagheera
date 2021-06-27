@@ -17,7 +17,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -94,7 +93,7 @@ class SchedulerService
     /**
      * Saves scheduler form.
      */
-    public function saveForm(?Scheduler $scheduler, Form $form): bool
+    public function saveForm(?Scheduler $scheduler, FormInterface $form): bool
     {
         if ($form->isValid()) {
             $formModel = $form->getData();

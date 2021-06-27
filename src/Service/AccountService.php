@@ -15,7 +15,6 @@ use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -94,7 +93,7 @@ class AccountService
     /**
      * Saves account form.
      */
-    public function saveForm(Member $member, ?Account $account, Form $form): ?Account
+    public function saveForm(Member $member, ?Account $account, FormInterface $form): ?Account
     {
         if ($form->isValid()) {
             $formModel = $form->getData();

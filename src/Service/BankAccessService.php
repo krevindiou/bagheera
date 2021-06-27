@@ -11,7 +11,6 @@ use App\Form\Model\BankAccessFormModel;
 use App\Form\Type\BankAccessFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -65,7 +64,7 @@ class BankAccessService
     /**
      * Saves bank access form.
      */
-    public function saveForm(Member $member, Form $form): bool
+    public function saveForm(Member $member, FormInterface $form): bool
     {
         if ($form->isValid()) {
             return $this->doSave($member, $form->getData());

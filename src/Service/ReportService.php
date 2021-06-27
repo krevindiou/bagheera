@@ -15,7 +15,6 @@ use App\Repository\ReportRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -105,7 +104,7 @@ class ReportService
     /**
      * Saves report form.
      */
-    public function saveForm(Member $member, ?Report $report, Form $form): bool
+    public function saveForm(Member $member, ?Report $report, FormInterface $form): bool
     {
         if ($form->isValid()) {
             $formModel = $form->getData();

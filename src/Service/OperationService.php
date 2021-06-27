@@ -16,7 +16,6 @@ use App\Repository\OperationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -114,7 +113,7 @@ class OperationService
     /**
      * Saves operation form.
      */
-    public function saveForm(Member $member, ?Operation $operation, Form $form): bool
+    public function saveForm(Member $member, ?Operation $operation, FormInterface $form): bool
     {
         if ($form->isValid()) {
             $formModel = $form->getData();
