@@ -18,6 +18,7 @@ use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class OperationService
@@ -69,7 +70,7 @@ class OperationService
      * @param Operation $operation Operation entity
      * @param Account   $account   Account entity for new operation
      */
-    public function getForm(Member $member, Operation $operation = null, Account $account = null): ?Form
+    public function getForm(Member $member, Operation $operation = null, Account $account = null): ?FormInterface
     {
         $formModel = new OperationFormModel();
 

@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ReportService
@@ -70,7 +71,7 @@ class ReportService
      * @param Report $report Report entity
      * @param string $type   Report type (sum, average, distribution, estimate)
      */
-    public function getForm(Member $member, Report $report = null, string $type = null): ?Form
+    public function getForm(Member $member, Report $report = null, string $type = null): ?FormInterface
     {
         if (null === $report && null === $type) {
             return null;

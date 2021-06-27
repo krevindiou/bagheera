@@ -13,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankAccessService
@@ -49,7 +50,7 @@ class BankAccessService
     /**
      * Returns bank access form.
      */
-    public function getForm(Member $member, Bank $bank): ?Form
+    public function getForm(Member $member, Bank $bank): ?FormInterface
     {
         if ($member !== $bank->getMember() || null === $bank->getProvider()) {
             return null;

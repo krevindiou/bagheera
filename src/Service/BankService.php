@@ -14,8 +14,8 @@ use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -61,7 +61,7 @@ class BankService
     /**
      * Returns create bank form.
      */
-    public function getCreateForm(Bank $bank): Form
+    public function getCreateForm(Bank $bank): FormInterface
     {
         $formModel = new BankChooseFormModel();
 
@@ -75,7 +75,7 @@ class BankService
     /**
      * Returns edit bank form.
      */
-    public function getEditForm(Bank $bank): Form
+    public function getEditForm(Bank $bank): FormInterface
     {
         $formModel = new BankUpdateFormModel();
         $formModel->name = $bank->getName();

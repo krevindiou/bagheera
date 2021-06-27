@@ -19,6 +19,7 @@ use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SchedulerService
@@ -63,7 +64,7 @@ class SchedulerService
      * @param Scheduler $scheduler Scheduler entity
      * @param Account   $account   Account entity for new scheduler
      */
-    public function getForm(Scheduler $scheduler = null, Account $account = null): ?Form
+    public function getForm(Scheduler $scheduler = null, Account $account = null): ?FormInterface
     {
         $formModel = new SchedulerFormModel();
 

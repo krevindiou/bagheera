@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -59,7 +60,7 @@ class AccountService
     /**
      * Returns account form for a new account.
      */
-    public function getCreateForm(Member $member, Bank $bank = null): ?Form
+    public function getCreateForm(Member $member, Bank $bank = null): ?FormInterface
     {
         if (null !== $bank && $member !== $bank->getMember()) {
             return null;
@@ -74,7 +75,7 @@ class AccountService
     /**
      * Returns account form for an existing account.
      */
-    public function getUpdateForm(Member $member, Account $account): ?Form
+    public function getUpdateForm(Member $member, Account $account): ?FormInterface
     {
         if ($member !== $account->getBank()->getMember()) {
             return null;

@@ -17,8 +17,8 @@ use App\Repository\AccountImportRepository;
 use App\Repository\MemberRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -83,7 +83,7 @@ class MemberService
     /**
      * Returns register form.
      */
-    public function getRegisterForm(string $language): Form
+    public function getRegisterForm(string $language): FormInterface
     {
         $formModel = new MemberRegisterFormModel();
 
@@ -97,7 +97,7 @@ class MemberService
     /**
      * Returns profile form.
      */
-    public function getProfileForm(Member $member): Form
+    public function getProfileForm(Member $member): FormInterface
     {
         $formModel = new MemberProfileFormModel();
         $formModel->email = $member->getEmail();
@@ -148,7 +148,7 @@ class MemberService
     /**
      * Returns forgot password form.
      */
-    public function getForgotPasswordForm(): Form
+    public function getForgotPasswordForm(): FormInterface
     {
         $formModel = new MemberForgotPasswordFormModel();
 
@@ -196,7 +196,7 @@ class MemberService
     /**
      * Returns change password form.
      */
-    public function getChangePasswordForm(): Form
+    public function getChangePasswordForm(): FormInterface
     {
         $formModel = new MemberChangePasswordFormModel();
 

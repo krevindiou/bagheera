@@ -10,8 +10,8 @@ use App\Form\Model\OperationSearchFormModel;
 use App\Form\Type\OperationSearchFormType;
 use App\Repository\CategoryRepository;
 use App\Repository\PaymentMethodRepository;
-use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class OperationSearchService
@@ -40,7 +40,7 @@ class OperationSearchService
      * @param OperationSearchFormModel $formModel OperationSearch form model
      * @param Account                  $account   Account entity for new operationSearch
      */
-    public function getForm(Member $member, ?OperationSearchFormModel $formModel, Account $account = null): ?Form
+    public function getForm(Member $member, ?OperationSearchFormModel $formModel, Account $account = null): ?FormInterface
     {
         if (null === $formModel && null !== $account) {
             $formModel = new OperationSearchFormModel();
