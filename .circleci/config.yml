@@ -11,7 +11,9 @@ commands:
             rm docker-compose
 jobs:
   test:
-    machine: true
+    machine:
+      image: ubuntu-2004:202107-02
+    resource_class: medium
     environment:
       APP_ENV: dev
       DOCKER_COMPOSE_VERSION: 1.27.4
@@ -52,7 +54,9 @@ jobs:
           name: Upload code coverage
           command: bash <(curl -s https://codecov.io/bash)
   release:
-    machine: true
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
     environment:
       APP_ENV: prod
       DOCKER_COMPOSE_VERSION: 1.27.4
