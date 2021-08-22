@@ -1,6 +1,7 @@
 version: "3.8"
 services:
   postgresql:
+    image: ghcr.io/krevindiou/bagheera-postgresql:latest
     restart: always
     volumes:
       - /srv/db/bagheera:/var/lib/postgresql/data
@@ -11,6 +12,9 @@ services:
     ports:
       - "5432:5432"
   php:
+    image: ghcr.io/krevindiou/bagheera-php:latest
+    build:
+      target: prod
     restart: always
     environment:
       - APP_ENV=prod
@@ -27,8 +31,10 @@ services:
       - MAILER_URL=${MAILER_URL}
       - SENDER_EMAIL=${SENDER_EMAIL}
   nginx:
+    image: ghcr.io/krevindiou/bagheera-nginx:latest
     restart: always
     environment:
       - APP_ENV=prod
     ports:
       - "8080:8080"
+volumes:

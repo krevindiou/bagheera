@@ -20,16 +20,9 @@ help:
 .PHONY: build
 build: ## Build application
 	@umask 000
-ifeq ($(APP_ENV),prod)
-	@composer --working-dir="$(PROJECT_DIR)" install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
-	@yarn --cwd=$(PROJECT_DIR) install --production=false
-	@yarn --cwd=$(PROJECT_DIR) encore production
-	@yarn --cwd=$(PROJECT_DIR) install --production=true --ignore-scripts --prefer-offline
-else
 	@composer --working-dir="$(PROJECT_DIR)" install --no-ansi --no-interaction --no-progress
 	@yarn --cwd=$(PROJECT_DIR) install --production=false
 	@yarn --cwd=$(PROJECT_DIR) encore dev
-endif
 	@(php $(PROJECT_DIR)/bin/console bagheera:init-database src/Resources/config/db/structure.sql src/Resources/config/db/data.sql || php $(PROJECT_DIR)/bin/console doctrine:migrations:migrate --no-interaction) \
 		&& php $(PROJECT_DIR)/bin/console doctrine:migrations:sync-metadata-storage --no-interaction \
 		&& php $(PROJECT_DIR)/bin/console doctrine:migrations:version --no-interaction --add --all
@@ -38,6 +31,10 @@ endif
 test: ## Run tests
 	@php bin/phpunit -c /srv/www/bagheera
 
+.PHONY: docker-run
+docker-run: check-config ## Execute program in a new container
+	@$(DOCKER_BIN) run --rm -ti $(CONTAINER) $(COMMAND)
+
 .PHONY: docker-exec
 docker-exec: check-config ## Execute program in container
 	@$(DOCKER_BIN) exec -ti $(CONTAINER) $(COMMAND)
@@ -45,6 +42,14 @@ docker-exec: check-config ## Execute program in container
 .PHONY: docker-logs
 docker-logs: check-config ## Display containers logs
 	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) logs -t -f
+
+.PHONY: docker-build
+docker-build: check-config ## Build containers
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) build
+
+.PHONY: docker-push
+docker-push: check-config ## Push containers to registry
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) push
 
 .PHONY: docker-start
 docker-start: check-config ## Start containers

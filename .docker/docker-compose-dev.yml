@@ -1,15 +1,27 @@
 version: "3.8"
 services:
   postgresql:
+    image: bagheera-postgresql
     env_file: .docker-compose.env
   php:
+    image: bagheera-php
+    build:
+      target: dev
     env_file: .docker-compose.env
     environment:
       - APP_ENV=dev
       - NODE_ENV=development
+    volumes:
+      - ..:/srv/www/bagheera
+      - /srv/www/bagheera/node_modules/
+      - /srv/www/bagheera/public/components/
+      - /srv/www/bagheera/vendor/
   nginx:
+    image: bagheera-nginx
     env_file: .docker-compose.env
     environment:
       - APP_ENV=dev
+    volumes:
+      - ..:/srv/www/bagheera
     ports:
       - "80:80"

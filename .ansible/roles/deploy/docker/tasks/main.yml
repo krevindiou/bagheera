@@ -1,3 +1,12 @@
+- name: Pull images from registry
+  docker_image:
+    source: pull
+    name: '{{ item }}'
+  with_items:
+    - ghcr.io/krevindiou/bagheera-nginx:latest
+    - ghcr.io/krevindiou/bagheera-postgresql:latest
+    - ghcr.io/krevindiou/bagheera-php:latest
+
 - name: Stop containers
   command: make docker-stop
   args:
@@ -5,10 +14,5 @@
 
 - name: Start containers
   command: make docker-start
-  args:
-    chdir: "{{ project_directory }}"
-
-- name: Build app
-  command: make docker-exec COMMAND="make build"
   args:
     chdir: "{{ project_directory }}"

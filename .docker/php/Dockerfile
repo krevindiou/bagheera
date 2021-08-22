@@ -1,57 +1,48 @@
-FROM php:8.0-fpm
-
-ENV PATH="$PATH:/root/.yarn/bin"
-
+FROM php:8.0-fpm-buster AS base
 RUN usermod -u 1000 www-data
-RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN echo "date.timezone='UTC'" > "$PHP_INI_DIR/conf.d/timezone.ini"
 RUN echo 'realpath_cache_size = 5120k' > "$PHP_INI_DIR/conf.d/realpath_cache_size.ini"
 RUN echo 'expose_php = off' > "$PHP_INI_DIR/conf.d/expose_php.ini"
 RUN echo 'memory_limit = 512M' > "$PHP_INI_DIR/conf.d/memory_limit.ini"
 RUN apt-get update && apt-get install -y zip git acl
-
-# mcrypt
 RUN apt-get update && apt-get install -y libmcrypt-dev
 RUN yes '' | pecl install mcrypt-1.0.4 && docker-php-ext-enable mcrypt
-
-# postgresql
 RUN apt-get update && apt-get install -y libpq-dev
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql
-
-# zip
 RUN apt-get update && apt-get install -y libzip-dev
 RUN docker-php-ext-install -j$(nproc) zip
-
-# intl
 RUN apt-get update && apt-get install -y libicu-dev
 RUN docker-php-ext-install -j$(nproc) intl
-
-# xdebug
-RUN pecl install xdebug-3.0.3 && docker-php-ext-enable xdebug
-RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
-
-# apc
 RUN yes '' | pecl install apcu-5.1.20 && docker-php-ext-enable apcu
-
-# opcache
 RUN docker-php-ext-install -j$(nproc) opcache
-
-# php-cs-fixer
-RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.18.5/php-cs-fixer.phar
-RUN chmod +x /usr/local/bin/php-cs-fixer
-
-# composer
+RUN apt-get update && apt-get install -y gnupg
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+ENV PATH="$PATH:/root/.yarn/bin"
+RUN curl -L -o- https://yarnpkg.com/install.sh | bash -s -- --version 1.13.0
 RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/2.0.12/composer.phar
 RUN chmod +x /usr/local/bin/composer
-
-# node
-RUN apt-get update && apt-get install -y gnupg
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && apt-get install -y nodejs
-RUN curl -L -o- https://yarnpkg.com/install.sh | bash -s -- --version 1.13.0
-
-COPY .docker/php/docker-entrypoint.sh /
-ENTRYPOINT ["/docker-entrypoint.sh"]
-
 WORKDIR /srv/www/bagheera
-
+EXPOSE 9000
 CMD ["php-fpm"]
+
+FROM base AS dev
+RUN pecl install xdebug-3.0.3 && docker-php-ext-enable xdebug
+RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
+RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.18.5/php-cs-fixer.phar
+RUN chmod +x /usr/local/bin/php-cs-fixer
+COPY composer.json composer.lock ./
+RUN composer install --no-ansi --no-interaction --no-progress
+COPY . ./
+
+FROM base AS prod
+RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY composer.json composer.lock ./
+RUN composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
+COPY package.json yarn.lock ./
+RUN yarn install --production=false
+RUN yarn encore production
+RUN yarn install --production=true --ignore-scripts --prefer-offline
+COPY . ./
+RUN setfacl -R -m u:www-data:rwX -m u:`whoami`:rwX var
+RUN setfacl -dR -m u:www-data:rwX -m u:`whoami`:rwX var
+USER www-data
