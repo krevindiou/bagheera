@@ -18,6 +18,8 @@ services:
       - /srv/www/bagheera/vendor/
   nginx:
     image: bagheera-nginx
+    build:
+      target: dev
     env_file: .docker-compose.env
     environment:
       - APP_ENV=dev

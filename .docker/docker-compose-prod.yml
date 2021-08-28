@@ -34,6 +34,8 @@ services:
       - SENDER_EMAIL=${SENDER_EMAIL}
   nginx:
     image: ghcr.io/krevindiou/bagheera-nginx:latest
+    build:
+      target: prod
     restart: always
     volumes:
       - frontend:/srv/www/bagheera/public/build
