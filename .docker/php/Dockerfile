@@ -40,9 +40,9 @@ COPY composer.json composer.lock ./
 RUN composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
 COPY package.json yarn.lock ./
 RUN yarn install --production=false
+COPY . ./
 RUN yarn encore production
 RUN yarn install --production=true --ignore-scripts --prefer-offline
-COPY . ./
 RUN setfacl -R -m u:www-data:rwX -m u:`whoami`:rwX var
 RUN setfacl -dR -m u:www-data:rwX -m u:`whoami`:rwX var
 USER www-data
