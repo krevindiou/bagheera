@@ -1,6 +1,7 @@
 - name: Pull images from registry
   docker_image:
     source: pull
+    force_source: yes
     name: '{{ item }}'
   with_items:
     - ghcr.io/krevindiou/bagheera-nginx:latest
