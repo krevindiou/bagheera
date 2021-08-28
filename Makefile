@@ -53,7 +53,11 @@ docker-push: check-config ## Push containers to registry
 
 .PHONY: docker-start
 docker-start: check-config ## Start containers
+ifeq ("$(APP_ENV)","prod")
+	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) up -d
+else
 	@$(DOCKER_COMPOSE_BIN) $(DOCKER_COMPOSE_OPTIONS) up --build -d
+endif
 
 .PHONY: docker-stop
 docker-stop: check-config ## Stop containers
