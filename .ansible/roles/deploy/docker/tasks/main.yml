@@ -16,3 +16,8 @@
   command: make docker-start
   args:
     chdir: "{{ project_directory }}"
+
+- name: Clean images
+  command: docker image prune -a -f
+  args:
+    chdir: "{{ project_directory }}"
