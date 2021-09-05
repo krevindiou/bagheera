@@ -103,6 +103,7 @@ jobs:
             EOF
       - run:
           name: Deploy
+          no_output_timeout: 30m
           command: ansible-playbook .ansible/deploy.yml -i ${DEPLOY_HOSTNAME}, --user=${DEPLOY_USER}
 workflows:
   version: 2
