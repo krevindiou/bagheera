@@ -169,7 +169,7 @@
         "version": "0.12.53"
     },
     "phpstan/phpstan-symfony": {
-        "version": "0.12.36"
+        "version": "0.12.42"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -182,6 +182,9 @@
     },
     "psr/log": {
         "version": "1.1.0"
+    },
+    "rector/rector": {
+        "version": "0.11.52"
     },
     "robloach/component-installer": {
         "version": "0.2.3"
