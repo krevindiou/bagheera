@@ -10,4 +10,4 @@ parameters:
         - var
         - vendor
     bootstrapFiles:
-        - bin/.phpunit/phpunit/vendor/autoload.php
+        - vendor/bin/.phpunit/phpunit/vendor/autoload.php
