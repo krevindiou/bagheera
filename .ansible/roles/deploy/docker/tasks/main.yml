@@ -4,9 +4,9 @@
     force_source: yes
     name: '{{ item }}'
   with_items:
+    - ghcr.io/krevindiou/bagheera-php:latest
     - ghcr.io/krevindiou/bagheera-nginx:latest
     - ghcr.io/krevindiou/bagheera-postgresql:latest
-    - ghcr.io/krevindiou/bagheera-php:latest
 
 - name: Stop containers
   command: make docker-stop
