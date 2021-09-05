@@ -8,6 +8,11 @@ commands:
             sudo rm /usr/local/bin/docker-compose
             pip3 install docker-compose==${DOCKER_COMPOSE_VERSION}
             sudo ln -s /opt/circleci/.pyenv/shims/docker-compose /usr/local/bin
+  install-ansible:
+    steps:
+      - run:
+          name: Install Ansible
+          command: pip3 install ansible==${ANSIBLE_VERSION}
 jobs:
   test:
     machine:
@@ -70,14 +75,49 @@ jobs:
           command: |
             echo $GITHUB_TOKEN | docker login ghcr.io --username krevindiou --password-stdin
             make docker-push
+  deploy:
+    machine:
+      image: ubuntu-2004:202107-02
+    resource_class: medium
+    environment:
+      ANSIBLE_VERSION: 2.10.7
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "MD5:95:64:47:b0:c6:39:b7:0c:aa:31:5e:d1:8f:9c:9e:23"
+      - checkout
+      - install-ansible
+      - run:
+          name: Configure deployment
+          command: |
+            cat \<< EOF > .ansible/host_vars/${DEPLOY_HOSTNAME}.yml
+            domain: ${DEPLOY_HOSTNAME}
+            cert_email: ${CERT_EMAIL}
+            cron_email: ${CRON_EMAIL}
+            docker_architecture: arm64
+            postgres_password: ${POSTGRES_PASSWORD}
+            postgres_secure_password: ${POSTGRES_SECURE_PASSWORD}
+            app_secret: ${APP_SECRET}
+            mailer_url: ${MAILER_URL}
+            sender_email: ${SENDER_EMAIL}
+            EOF
+      - run:
+          name: Deploy
+          command: ansible-playbook .ansible/deploy.yml -i ${DEPLOY_HOSTNAME}, --user=${DEPLOY_USER}
 workflows:
   version: 2
-  test-and-release:
+  test-release-and-deploy:
     jobs:
       - test
       - release:
           requires:
             - test
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - release
           filters:
             branches:
               only: master
