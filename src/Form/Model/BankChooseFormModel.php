@@ -8,18 +8,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class BankChooseFormModel
 {
-    /**
-     * @Assert\Type(type="App\Entity\Provider")
-     */
+    #[Assert\Type(type: 'App\Entity\Provider')]
     public $provider;
 
-    /**
-     * @Assert\Type(type="App\Entity\Bank")
-     */
+    #[Assert\Type(type: 'App\Entity\Bank')]
     public $bank;
 
-    /**
-     * @Assert\Length(max = 32)
-     */
+    #[Assert\Length(max: 32)]
     public $other;
 }

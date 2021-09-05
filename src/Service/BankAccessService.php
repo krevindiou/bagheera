@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Repository\BankAccessRepository;
 use App\Entity\Bank;
 use App\Entity\BankAccess;
 use App\Entity\Member;
@@ -83,7 +84,7 @@ class BankAccessService
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
-                /** @var \App\Repository\BankAccessRepository */
+                /** @var BankAccessRepository */
                 $bankAccessRepository = $this->emSecure->getRepository(BankAccess::class);
                 $bankAccessRepository->delete($bankAccess);
 

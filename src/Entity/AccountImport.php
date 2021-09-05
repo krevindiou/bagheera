@@ -16,74 +16,60 @@ class AccountImport
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="import_id", type="integer")
      * @ORM\Id
      */
-    protected $importId;
+    protected ?int $importId = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="account_id", type="integer")
      */
-    protected $accountId;
+    protected int $accountId;
 
     /**
-     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
      * @ORM\Id
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\Account")
-     * @Assert\Valid()
      */
-    protected $account;
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Valid]
+    protected ?Account $account = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="total", type="integer", nullable=true)
      */
-    protected $total = 0;
+    protected ?int $total = 0;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="progress", type="integer", nullable=true)
      */
-    protected $progress = 0;
+    protected ?int $progress = 0;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="finished", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $finished = false;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="original_data", type="text", nullable=true)
      */
-    protected $originalData;
+    protected ?string $originalData = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="json_data", type="text", nullable=true)
      */
-    protected $jsonData;
+    protected ?string $jsonData = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="json_normalized_data", type="text", nullable=true)
      */
-    protected $jsonNormalizedData;
+    protected ?string $jsonNormalizedData = null;
 
     public function setImportId(int $importId): void
     {

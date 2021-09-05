@@ -16,46 +16,41 @@ class Scheduler
     use OperationTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="scheduler_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $schedulerId;
+    protected ?int $schedulerId = null;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="limit_date", type="date", nullable=true)
-     * @Assert\Type("DateTime")
      */
+    #[Assert\Type(type: 'DateTime')]
     protected $limitDate;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="frequency_unit", type="string", length=16, options={"default": "month"})
-     * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"day", "week", "month", "year"})
      */
-    protected $frequencyUnit = 'month';
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['day', 'week', 'month', 'year'])]
+    protected ?string $frequencyUnit = 'month';
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="frequency_value", type="smallint")
-     * @Assert\NotBlank()
-     * @Assert\Type("integer")
      */
-    protected $frequencyValue;
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'integer')]
+    protected ?int $frequencyValue = null;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean", options={"default": true})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $active = true;
 
     public function setSchedulerId(?int $schedulerId): void

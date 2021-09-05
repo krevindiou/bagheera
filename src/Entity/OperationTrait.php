@@ -16,10 +16,10 @@ trait OperationTrait
      *
      * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\Account")
-     * @Assert\Valid()
      */
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Valid]
     protected $account;
 
     /**
@@ -27,9 +27,9 @@ trait OperationTrait
      *
      * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
-     * @Assert\Type(type="App\Entity\Account")
-     * @Assert\Valid()
      */
+    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Valid]
     protected $transferAccount;
 
     /**
@@ -37,9 +37,9 @@ trait OperationTrait
      *
      * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
      * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     * @Assert\Type(type="App\Entity\Category")
-     * @Assert\Valid()
      */
+    #[Assert\Type(type: 'App\Entity\Category')]
+    #[Assert\Valid]
     protected $category;
 
     /**
@@ -47,19 +47,19 @@ trait OperationTrait
      *
      * @ORM\ManyToOne(targetEntity="PaymentMethod")
      * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\PaymentMethod")
-     * @Assert\Valid()
      */
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\PaymentMethod')]
+    #[Assert\Valid]
     protected $paymentMethod;
 
     /**
      * @var string
      *
      * @ORM\Column(name="third_party", type="string", length=64)
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 64)
      */
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 64)]
     protected $thirdParty;
 
     /**
@@ -80,17 +80,17 @@ trait OperationTrait
      * @var \DateTime
      *
      * @ORM\Column(name="value_date", type="date")
-     * @Assert\NotBlank()
-     * @Assert\Type("DateTime")
      */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'DateTime')]
     protected $valueDate;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_reconciled", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $reconciled = false;
 
     /**

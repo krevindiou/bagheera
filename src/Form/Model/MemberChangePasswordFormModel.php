@@ -8,9 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class MemberChangePasswordFormModel
 {
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Length(min = 8, max = 4096)
-     */
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 8, max: 4096)]
     public $password;
 }

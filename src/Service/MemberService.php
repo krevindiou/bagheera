@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use Twig\Environment;
 use App\Entity\Member;
 use App\Form\Model\MemberChangePasswordFormModel;
 use App\Form\Model\MemberForgotPasswordFormModel;
@@ -40,7 +41,7 @@ class MemberService
     private BankService $bankService;
     private AccountService $accountService;
     private CryptService $cryptService;
-    private \Twig\Environment $templating;
+    private Environment $templating;
     private MemberRepository $memberRepository;
     private AccountImportRepository $accountImportRepository;
 
@@ -58,7 +59,7 @@ class MemberService
         BankService $bankService,
         AccountService $accountService,
         CryptService $cryptService,
-        \Twig\Environment $templating,
+        Environment $templating,
         MemberRepository $memberRepository,
         AccountImportRepository $accountImportRepository
     ) {

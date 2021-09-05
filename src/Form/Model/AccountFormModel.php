@@ -10,35 +10,25 @@ class AccountFormModel
 {
     public $accountId;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 64)
-     */
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 64)]
     public $name;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type(type="App\Entity\Bank")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'App\Entity\Bank')]
     public $bank;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Currency()
-     */
+    #[Assert\NotBlank]
+    #[Assert\Currency]
     public $currency;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type("int")
-     */
-    public $overdraftFacility;
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'int')]
+    public int $overdraftFacility;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type("int")
-     */
-    public $initialBalance;
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'int')]
+    public int $initialBalance;
 
     public function __construct()
     {

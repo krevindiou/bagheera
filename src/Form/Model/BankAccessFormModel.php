@@ -8,18 +8,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class BankAccessFormModel
 {
-    /**
-     * @Assert\Type(type="App\Entity\Bank")
-     */
+    #[Assert\Type(type: 'App\Entity\Bank')]
     public $bank;
 
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     public $plainLogin;
 
-    /**
-     * @Assert\NotBlank()
-     */
+    #[Assert\NotBlank]
     public $plainPassword;
 }

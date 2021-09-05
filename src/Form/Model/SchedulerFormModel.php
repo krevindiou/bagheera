@@ -10,79 +10,53 @@ class SchedulerFormModel
 {
     public $schedulerId;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type(type="App\Entity\Account")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'App\Entity\Account')]
     public $account;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Choice({"debit", "credit"})
-     */
-    public $type;
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['debit', 'credit'])]
+    public string $type;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 64)
-     */
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 64)]
     public $thirdParty;
 
-    /**
-     * @Assert\Type(type="App\Entity\Category")
-     */
+    #[Assert\Type(type: 'App\Entity\Category')]
     public $category;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type(type="App\Entity\PaymentMethod")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'App\Entity\PaymentMethod')]
     public $paymentMethod;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type("DateTime")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'DateTime')]
     public $valueDate;
 
     public $notes;
 
-    /**
-     * @Assert\Type("bool")
-     */
-    public $reconciled;
+    #[Assert\Type(type: 'bool')]
+    public bool $reconciled;
 
-    /**
-     * @Assert\Type("bool")
-     */
-    public $active;
+    #[Assert\Type(type: 'bool')]
+    public bool $active;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type("int")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'int')]
     public $amount;
 
-    /**
-     * @Assert\Type("DateTime")
-     */
+    #[Assert\Type(type: 'DateTime')]
     public $limitDate;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"day", "week", "month", "year"})
-     */
-    public $frequencyUnit;
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['day', 'week', 'month', 'year'])]
+    public string $frequencyUnit;
 
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Type("integer")
-     */
+    #[Assert\NotBlank]
+    #[Assert\Type(type: 'integer')]
     public $frequencyValue;
 
-    /**
-     * @Assert\Type(type="App\Entity\Account")
-     */
+    #[Assert\Type(type: 'App\Entity\Account')]
     public $transferAccount;
 
     public function __construct()

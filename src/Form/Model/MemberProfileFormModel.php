@@ -8,10 +8,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class MemberProfileFormModel
 {
-    /**
-     * @Assert\NotBlank()
-     * @Assert\Email()
-     * @Assert\Length(max = 128)
-     */
+    #[Assert\NotBlank]
+    #[Assert\Email]
+    #[Assert\Length(max: 128)]
     public $email;
 }
