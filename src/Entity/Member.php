@@ -21,53 +21,46 @@ class Member implements UserInterface
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="member_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $memberId;
+    protected ?int $memberId = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="email", type="string", length=128, unique=true)
-     * @Assert\NotBlank()
-     * @Assert\Email()
-     * @Assert\Length(max = 128)
      */
-    protected $email;
+    #[Assert\NotBlank]
+    #[Assert\Email]
+    #[Assert\Length(max: 128)]
+    protected ?string $email = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="password", type="string", length=60)
      */
-    protected $password;
+    protected ?string $password = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="country", type="string", length=2)
-     * @Assert\NotBlank()
      */
-    protected $country;
+    #[Assert\NotBlank]
+    protected ?string $country = null;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $active = false;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="logged_at", type="datetime", nullable=true)
-     * @Assert\Type("DateTime")
      */
+    #[Assert\Type(type: 'DateTime')]
     protected $loggedAt;
 
     /**
@@ -76,7 +69,7 @@ class Member implements UserInterface
      * @ORM\OneToMany(targetEntity="Bank", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"sortOrder" = "ASC"})
      */
-    protected $banks;
+    protected array|Collection|ArrayCollection $banks;
 
     /**
      * @var Collection
@@ -84,7 +77,7 @@ class Member implements UserInterface
      * @ORM\OneToMany(targetEntity="Report", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"type" = "ASC", "title" = "ASC"})
      */
-    protected $reports;
+    protected array|Collection|ArrayCollection $reports;
 
     public function __construct()
     {

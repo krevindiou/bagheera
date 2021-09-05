@@ -13,18 +13,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/manager")
- */
+#[Route(path: '/manager')]
 class ReportController extends AbstractController
 {
-    /**
-     * @Route("/reports", methods={"GET"}, name="report_list")
-     */
+    #[Route(path: '/reports', methods: ['GET'], name: 'report_list')]
     public function list(Request $request, ReportService $reportService): Response
     {
         $member = $this->getUser();
-
         $reports = $reportService->getList($member);
 
         return $this->render(
@@ -35,15 +30,11 @@ class ReportController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/reports", methods={"POST"})
-     */
+    #[Route(path: '/reports', methods: ['POST'])]
     public function listActions(Request $request, ReportService $reportService): Response
     {
         $reportsId = (array) $request->request->get('reportsId');
-
         $member = $this->getUser();
-
         if ($request->request->has('delete')) {
             $reportService->delete($member, $reportsId);
             $this->addFlash('success', 'report.delete_confirmation');
@@ -53,17 +44,15 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @Route("/report-{reportId}", requirements={"reportId" = "\d+"}, name="report_update")
-     * @Route("/create-{type}-report", requirements={"type" = "sum|average|distribution|estimate"}, defaults={"reportId" = null}, name="report_create")
      * @ParamConverter("report", class="App:Report", options={"id" = "reportId"})
      */
+    #[Route(path: '/report-{reportId}', requirements: ['reportId' => '\d+'], name: 'report_update')]
+    #[Route(path: '/create-{type}-report', requirements: ['type' => 'sum|average|distribution|estimate'], defaults: ['reportId' => null], name: 'report_create')]
     public function form(Request $request, ReportService $reportService, ?Report $report, string $type = null): Response
     {
         $member = $this->getUser();
-
         $reportForm = $reportService->getForm($member, $report, $type);
         $reportForm->handleRequest($request);
-
         if ($reportForm->isSubmitted()) {
             if ($reportService->saveForm($member, $report, $reportForm)) {
                 $this->addFlash('success', 'report.form_confirmation');
@@ -80,17 +69,12 @@ class ReportController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/reports.js", defaults={"_format"="js"}, name="report_graph")
-     */
+    #[Route(path: '/reports.js', defaults: ['_format' => 'js'], name: 'report_graph')]
     public function graph(ReportService $reportService): Response
     {
         $graphs = [];
-
         $member = $this->getUser();
-
         $reports = $reportService->getHomepageList($member);
-
         foreach ($reports as $report) {
             $graph = $reportService->getGraphData($member, $report);
 
@@ -107,16 +91,12 @@ class ReportController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/report-synthesis.js", defaults={"_format"="js", "accountId"=null}, name="report_synthesis")
-     * @Route("/account-{accountId}/report-synthesis.js", requirements={"accountId" = "\d+"}, defaults={"_format"="js"}, name="report_synthesis_account")
-     */
+    #[Route(path: '/report-synthesis.js', defaults: ['_format' => 'js', 'accountId' => null], name: 'report_synthesis')]
+    #[Route(path: '/account-{accountId}/report-synthesis.js', requirements: ['accountId' => '\d+'], defaults: ['_format' => 'js'], name: 'report_synthesis_account')]
     public function synthesis(ReportService $reportService, ?Account $account): Response
     {
         $member = $this->getUser();
-
         $graph = $reportService->getSynthesis($member, null, null, $account);
-
         if (!empty($graph)) {
             return $this->render('Report/synthesis.js.twig', $graph);
         }

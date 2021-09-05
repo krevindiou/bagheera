@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Extension;
 
+use App\Entity\Member;
 use App\Service\BankService;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Twig\Extension\AbstractExtension;
@@ -30,7 +31,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         $token = $this->tokenStorage->getToken();
 
         if (null !== $token) {
-            /** @var \App\Entity\Member */
+            /** @var Member */
             $member = $token->getUser();
 
             if (is_object($member)) {

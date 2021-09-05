@@ -21,77 +21,65 @@ class Account
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="account_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $accountId;
+    protected ?int $accountId = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="external_account_id", type="string", length=32, nullable=true)
      */
-    protected $externalAccountId;
+    protected ?string $externalAccountId = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="bank_id", type="integer")
      */
-    protected $bankId;
+    protected int $bankId;
 
     /**
-     * @var Bank
      *
      * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
      * @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\Bank")
-     * @Assert\Valid()
      */
-    protected $bank;
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\Bank')]
+    #[Assert\Valid]
+    protected ?Bank $bank = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="name", type="string", length=64)
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 64)
      */
-    protected $name;
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 64)]
+    protected ?string $name = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="currency", type="string", length=3)
-     * @Assert\NotBlank()
-     * @Assert\Currency()
      */
-    protected $currency;
+    #[Assert\NotBlank]
+    #[Assert\Currency]
+    protected ?string $currency = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="overdraft_facility", type="integer")
      */
-    protected $overdraftFacility = 0;
+    protected ?int $overdraftFacility = 0;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_closed", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $closed = false;
     /**
      * @var bool
      *
      * @ORM\Column(name="is_deleted", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $deleted = false;
 
     /**
@@ -108,7 +96,7 @@ class Account
      * )
      * @ORM\OrderBy({"email" = "ASC"})
      */
-    protected $sharedWith;
+    protected array|Collection|ArrayCollection $sharedWith;
 
     /**
      * @var Collection
@@ -116,7 +104,7 @@ class Account
      * @ORM\OneToMany(targetEntity="Operation", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
      */
-    protected $operations;
+    protected array|Collection|ArrayCollection $operations;
 
     /**
      * @var Collection
@@ -124,7 +112,7 @@ class Account
      * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"valueDate" = "DESC"})
      */
-    protected $schedulers;
+    protected array|Collection|ArrayCollection $schedulers;
 
     public function __construct()
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use Doctrine\ORM\NoResultException;
 use App\Entity\Account;
 use App\Entity\Category;
 use App\Entity\Member;
@@ -306,7 +307,7 @@ class OperationRepository extends ServiceEntityRepository
 
         try {
             return $query->getSingleScalarResult();
-        } catch (\Doctrine\ORM\NoResultException $e) {
+        } catch (NoResultException $e) {
             return null;
         }
     }

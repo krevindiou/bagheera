@@ -18,73 +18,66 @@ class Bank
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="bank_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $bankId;
+    protected ?int $bankId = null;
 
     /**
-     * @var Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\Member")
-     * @Assert\Valid()
      */
-    protected $member;
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\Member')]
+    #[Assert\Valid]
+    protected ?Member $member;
 
     /**
-     * @var Provider
      *
      * @ORM\ManyToOne(targetEntity="Provider")
      * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id")
-     * @Assert\Type(type="App\Entity\Provider")
-     * @Assert\Valid()
      */
-    protected $provider;
+    #[Assert\Type(type: 'App\Entity\Provider')]
+    #[Assert\Valid]
+    protected ?Provider $provider = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="name", type="string", length=32)
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 32)
      */
-    protected $name;
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 32)]
+    protected ?string $name = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="sort_order", type="smallint")
      */
-    protected $sortOrder = 0;
+    protected ?int $sortOrder = 0;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_favorite", type="boolean", options={"default": true})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $favorite = true;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_closed", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $closed = false;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_deleted", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $deleted = false;
 
     /**
@@ -93,7 +86,7 @@ class Bank
      * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="EXTRA_LAZY")
      * @ORM\OrderBy({"name" = "ASC"})
      */
-    protected $accounts;
+    protected array|Collection|ArrayCollection $accounts;
 
     public function __construct(Member $member)
     {

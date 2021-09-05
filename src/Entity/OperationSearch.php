@@ -18,24 +18,22 @@ class OperationSearch
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="operation_search_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $operationSearchId;
+    protected ?int $operationSearchId = null;
 
     /**
-     * @var Account
      *
      * @ORM\ManyToOne(targetEntity="Account", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\Account")
-     * @Assert\Valid()
      */
-    protected $account;
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Valid]
+    protected ?Account $account = null;
 
     /**
      * @ORM\ManyToMany(targetEntity="Category", cascade={"all"}, fetch="EAGER")
@@ -48,7 +46,7 @@ class OperationSearch
      *   }
      * )
      */
-    protected $categories;
+    protected array|Collection|ArrayCollection $categories;
 
     /**
      * @ORM\ManyToMany(targetEntity="PaymentMethod", cascade={"all"}, fetch="EAGER")
@@ -61,90 +59,74 @@ class OperationSearch
      *   }
      * )
      */
-    protected $paymentMethods;
+    protected array|Collection|ArrayCollection $paymentMethods;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="third_party", type="string", length=64, nullable=true)
-     * @Assert\Length(max = 64)
      */
-    protected $thirdParty;
+    #[Assert\Length(max: 64)]
+    protected ?string $thirdParty = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="notes", type="string", length=128, nullable=true)
-     * @Assert\Length(max = 128)
      */
-    protected $notes;
+    #[Assert\Length(max: 128)]
+    protected ?string $notes = null;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
-     * @Assert\Type("DateTime")
      */
+    #[Assert\Type(type: 'DateTime')]
     protected $valueDateStart;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
-     * @Assert\Type("DateTime")
      */
+    #[Assert\Type(type: 'DateTime')]
     protected $valueDateEnd;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_reconciled", type="boolean", nullable=true)
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $reconciled;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="type", type="string", length=8, nullable=true, options={"default": "debit"})
-     * @Assert\Choice(choices = {"debit", "credit"})
      */
-    protected $type = 'debit';
+    #[Assert\Choice(choices: ['debit', 'credit'])]
+    protected ?string $type = 'debit';
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="amount_inferior_to", type="integer", nullable=true)
      */
-    protected $amountInferiorTo;
+    protected ?int $amountInferiorTo = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="amount_inferior_or_equal_to", type="integer", nullable=true)
      */
-    protected $amountInferiorOrEqualTo;
+    protected ?int $amountInferiorOrEqualTo = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="amount_equal_to", type="integer", nullable=true)
      */
-    protected $amountEqualTo;
+    protected ?int $amountEqualTo = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="amount_superior_or_equal_to", type="integer", nullable=true)
      */
-    protected $amountSuperiorOrEqualTo;
+    protected ?int $amountSuperiorOrEqualTo = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="amount_superior_to", type="integer", nullable=true)
      */
-    protected $amountSuperiorTo;
+    protected ?int $amountSuperiorTo = null;
 
     public function __construct()
     {

@@ -11,21 +11,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/manager")
- */
+#[Route(path: '/manager')]
 class BankController extends AbstractController
 {
-    /**
-     * @Route("/choose-bank", name="bank_choose")
-     */
+    #[Route(path: '/choose-bank', name: 'bank_choose')]
     public function choose(Request $request, BankService $bankService): Response
     {
         $bank = new Bank($this->getUser());
-
         $form = $bankService->getCreateForm($bank);
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $bankService->saveForm($bank, $form->getData())) {
             $this->addFlash('success', 'bank.form_confirmation');
 
@@ -44,16 +38,12 @@ class BankController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/bank-{bankId}", requirements={"bankId" = "\d+"}, name="bank_update")
-     */
+    #[Route(path: '/bank-{bankId}', requirements: ['bankId' => '\d+'], name: 'bank_update')]
     public function edit(Request $request, BankService $bankService, Bank $bank): Response
     {
         $this->denyAccessUnlessGranted('BANK_EDIT', $bank);
-
         $form = $bankService->getEditForm($bank);
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $bankService->saveForm($bank, $form->getData())) {
             $this->addFlash('success', 'bank.form_confirmation');
 
@@ -68,9 +58,7 @@ class BankController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/bank-{bankId}/import", requirements={"bankId" = "\d+"}, name="bank_import")
-     */
+    #[Route(path: '/bank-{bankId}/import', requirements: ['bankId' => '\d+'], name: 'bank_import')]
     public function import(Bank $bank, BankService $bankService): Response
     {
         $bankService->importExternalBank($bank);

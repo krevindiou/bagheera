@@ -11,9 +11,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TranslateController extends AbstractController
 {
-    /**
-     * @Route("/translations.js", defaults={"_format"="js"})
-     */
+    #[Route(path: '/translations.js', defaults: ['_format' => 'js'])]
     public function list(TranslatorInterface $translator): Response
     {
         $translations = [
@@ -27,7 +25,6 @@ class TranslateController extends AbstractController
             'report_period_grouping_all' => $translator->trans('report.period_grouping_all'),
             'email_domain_suggest' => $translator->trans('email_domain_suggest'),
         ];
-
         $js = 'Bagheera.translations = '.json_encode($translations);
 
         return new Response($js);

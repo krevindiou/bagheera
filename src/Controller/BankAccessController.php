@@ -11,21 +11,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/manager")
- */
+#[Route(path: '/manager')]
 class BankAccessController extends AbstractController
 {
-    /**
-     * @Route("/bank-{bankId}/access", requirements={"bankId" = "\d+"}, name="bank_access_update")
-     */
+    #[Route(path: '/bank-{bankId}/access', requirements: ['bankId' => '\d+'], name: 'bank_access_update')]
     public function form(Request $request, BankAccessService $bankAccessService, Bank $bank): Response
     {
         $member = $this->getUser();
-
         $bankAccessForm = $bankAccessService->getForm($member, $bank);
         $bankAccessForm->handleRequest($request);
-
         if ($bankAccessForm->isSubmitted() && $bankAccessService->saveForm($member, $bankAccessForm)) {
             $this->addFlash('success', 'bank_access.form_confirmation');
 

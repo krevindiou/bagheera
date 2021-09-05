@@ -20,39 +20,35 @@ class Operation
     use OperationTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="operation_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $operationId;
+    protected ?int $operationId = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="external_operation_id", type="string", length=32, nullable=true)
      */
-    protected $externalOperationId;
+    protected ?string $externalOperationId = null;
 
     /**
-     * @var Scheduler
      *
      * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
      * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
-     * @Assert\Type(type="App\Entity\Scheduler")
-     * @Assert\Valid()
      */
-    protected $scheduler;
+    #[Assert\Type(type: 'App\Entity\Scheduler')]
+    #[Assert\Valid]
+    protected ?Scheduler $scheduler = null;
 
     /**
      * @var Operation
      *
      * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
      * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
-     * @Assert\Type(type="App\Entity\Operation")
-     * @Assert\Valid()
      */
+    #[Assert\Type(type: 'App\Entity\Operation')]
+    #[Assert\Valid]
     protected $transferOperation;
 
     public function __construct()

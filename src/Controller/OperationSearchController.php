@@ -11,18 +11,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/manager")
- */
+#[Route(path: '/manager')]
 class OperationSearchController extends AbstractController
 {
-    /**
-     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_form", methods={"GET"})
-     */
+    #[Route(path: '/account-{accountId}/search-operation', requirements: ['accountId' => '\d+'], name: 'operation_search_form', methods: ['GET'])]
     public function form(OperationSearchService $operationSearchService, Account $account, $display = true): Response
     {
         $formModel = $operationSearchService->getSessionSearch($account);
-
         $operationSearchForm = $operationSearchService->getForm($this->getUser(), $formModel, $account);
 
         return $this->render(
@@ -35,9 +30,7 @@ class OperationSearchController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/account-{accountId}/search-operation", requirements={"accountId" = "\d+"}, name="operation_search_submit", methods={"POST"})
-     */
+    #[Route(path: '/account-{accountId}/search-operation', requirements: ['accountId' => '\d+'], name: 'operation_search_submit', methods: ['POST'])]
     public function submit(Request $request, OperationSearchService $operationSearchService, Account $account): Response
     {
         if (isset($request->request->get('operation_search_form')['clear'])) {

@@ -18,14 +18,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/manager")
- */
+#[Route(path: '/manager')]
 class AccountController extends AbstractController
 {
-    /**
-     * @Route("/", name="account_home")
-     */
+    #[Route(path: '/', name: 'account_home')]
     public function home(MemberService $memberService, OperationService $operationService, AccountService $accountService, ReportService $reportService): Response
     {
         $member = $this->getUser();
@@ -47,9 +43,7 @@ class AccountController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/accounts", methods={"GET"}, name="account_list")
-     */
+    #[Route(path: '/accounts', methods: ['GET'], name: 'account_list')]
     public function list(BankService $bankService): Response
     {
         return $this->render(
@@ -60,16 +54,12 @@ class AccountController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/accounts", methods={"POST"})
-     */
+    #[Route(path: '/accounts', methods: ['POST'])]
     public function listActions(Request $request, AccountService $accountService, BankService $bankService, BankRepository $bankRepository): Response
     {
         $accountsId = (array) $request->request->get('accountsId');
         $banks = $bankRepository->findBy(['bankId' => (array) $request->request->get('banksId')]);
-
         $member = $this->getUser();
-
         if ($request->request->has('close')) {
             array_walk($banks, function (Bank $bank): void { $this->denyAccessUnlessGranted('BANK_CLOSE', $bank); });
 
@@ -90,17 +80,13 @@ class AccountController extends AbstractController
         return $this->redirectToRoute('account_list');
     }
 
-    /**
-     * @Route("/bank-{bankId}/create-account", requirements={"bankId" = "\d+"}, name="account_create_with_bank")
-     * @Route("/create-account", defaults={"bankId" = null}, name="account_create")
-     */
+    #[Route(path: '/bank-{bankId}/create-account', requirements: ['bankId' => '\d+'], name: 'account_create_with_bank')]
+    #[Route(path: '/create-account', defaults: ['bankId' => null], name: 'account_create')]
     public function create(Request $request, AccountService $accountService, ?Bank $bank): Response
     {
         $member = $this->getUser();
-
         $accountForm = $accountService->getCreateForm($member, $bank);
         $accountForm->handleRequest($request);
-
         if ($accountForm->isSubmitted()) {
             if ($account = $accountService->saveForm($member, null, $accountForm)) {
                 $this->addFlash('success', 'account.form_confirmation');
@@ -120,16 +106,12 @@ class AccountController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/account-{accountId}", requirements={"accountId" = "\d+"}, name="account_update")
-     */
+    #[Route(path: '/account-{accountId}', requirements: ['accountId' => '\d+'], name: 'account_update')]
     public function update(Request $request, AccountService $accountService, Account $account): Response
     {
         $member = $this->getUser();
-
         $accountForm = $accountService->getUpdateForm($member, $account);
         $accountForm->handleRequest($request);
-
         if ($accountForm->isSubmitted()) {
             if ($accountService->saveForm($member, $account, $accountForm)) {
                 $this->addFlash('success', 'account.form_confirmation');
@@ -147,13 +129,10 @@ class AccountController extends AbstractController
         );
     }
 
-    /**
-     * @Route("/import-progress", name="account_import_progress")
-     */
+    #[Route(path: '/import-progress', name: 'account_import_progress')]
     public function importProgress(MemberService $memberService): Response
     {
         $data = [];
-
         $progress = $memberService->getImportProgress($this->getUser());
         if (null !== $progress) {
             foreach ($progress as $v) {

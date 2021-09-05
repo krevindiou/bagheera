@@ -16,29 +16,24 @@ class Provider
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="provider_id", type="smallint")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $providerId;
+    protected ?int $providerId = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="name", type="string", length=64)
-     * @Assert\NotBlank()
      */
-    protected $name;
+    #[Assert\NotBlank]
+    protected ?string $name = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="country", type="string", length=2)
-     * @Assert\NotBlank()
      */
-    protected $country;
+    #[Assert\NotBlank]
+    protected ?string $country = null;
 
     public function __toString(): string
     {

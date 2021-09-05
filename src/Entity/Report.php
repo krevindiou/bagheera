@@ -18,73 +18,65 @@ class Report
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="report_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $reportId;
+    protected ?int $reportId = null;
 
     /**
-     * @var Member
      *
      * @ORM\ManyToOne(targetEntity="Member", inversedBy="reports")
      * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
-     * @Assert\NotNull()
-     * @Assert\Type(type="App\Entity\Member")
-     * @Assert\Valid()
      */
-    protected $member;
+    #[Assert\NotNull]
+    #[Assert\Type(type: 'App\Entity\Member')]
+    #[Assert\Valid]
+    protected ?Member $member = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="type", type="string", length=16)
-     * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"sum", "average", "distribution", "estimate"})
      */
-    protected $type;
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['sum', 'average', 'distribution', 'estimate'])]
+    protected ?string $type = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="title", type="string", length=64)
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 64)
      */
-    protected $title;
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 64)]
+    protected ?string $title = null;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="homepage", type="boolean", options={"default": false})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $homepage = false;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="value_date_start", type="date", nullable=true)
-     * @Assert\Type("DateTime")
      */
+    #[Assert\Type(type: 'DateTime')]
     protected $valueDateStart;
 
     /**
      * @var \DateTime
      *
      * @ORM\Column(name="value_date_end", type="date", nullable=true)
-     * @Assert\Type("DateTime")
      */
+    #[Assert\Type(type: 'DateTime')]
     protected $valueDateEnd;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="third_parties", type="string", length=255, nullable=true)
      */
-    protected $thirdParties;
+    protected ?string $thirdParties = null;
 
     /**
      * @var Collection
@@ -99,7 +91,7 @@ class Report
      *   }
      * )
      */
-    protected $categories;
+    protected Collection $categories = null;
 
     /**
      * @var Collection
@@ -114,7 +106,7 @@ class Report
      *   }
      * )
      */
-    protected $paymentMethods;
+    protected Collection $paymentMethods = null;
 
     /**
      * @var Collection
@@ -129,73 +121,61 @@ class Report
      *   }
      * )
      */
-    protected $accounts;
+    protected Collection $accounts = null;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="reconciled_only", type="boolean", nullable=true)
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $reconciledOnly;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="period_grouping", type="string", length=8, nullable=true)
-     * @Assert\NotBlank(groups={"sum", "average"})
-     * @Assert\Choice(choices = {"month", "quarter", "year", "all"})
      */
-    protected $periodGrouping;
+    #[Assert\NotBlank(groups: ['sum', 'average'])]
+    #[Assert\Choice(choices: ['month', 'quarter', 'year', 'all'])]
+    protected ?string $periodGrouping = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="data_grouping", type="string", length=16, nullable=true)
-     * @Assert\NotBlank(groups={"distribution"})
-     * @Assert\Choice(choices = {"category", "third_party", "payment_method"})
      */
-    protected $dataGrouping;
+    #[Assert\NotBlank(groups: ['distribution'])]
+    #[Assert\Choice(choices: ['category', 'third_party', 'payment_method'])]
+    protected ?string $dataGrouping = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="significant_results_number", type="smallint", nullable=true)
-     * @Assert\NotBlank(groups={"distribution"})
      */
-    protected $significantResultsNumber;
+    #[Assert\NotBlank(groups: ['distribution'])]
+    protected ?int $significantResultsNumber = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="month_expenses", type="integer", nullable=true)
-     * @Assert\NotBlank(groups={"estimate"})
      */
-    protected $monthExpenses;
+    #[Assert\NotBlank(groups: ['estimate'])]
+    protected ?int $monthExpenses = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="month_incomes", type="integer", nullable=true)
-     * @Assert\NotBlank(groups={"estimate"})
      */
-    protected $monthIncomes;
+    #[Assert\NotBlank(groups: ['estimate'])]
+    protected ?int $monthIncomes = null;
 
     /**
-     * @var int
-     *
      * @ORM\Column(name="estimate_duration_value", type="smallint", nullable=true)
-     * @Assert\NotBlank(groups={"estimate"})
      */
-    protected $estimateDurationValue;
+    #[Assert\NotBlank(groups: ['estimate'])]
+    protected ?int $estimateDurationValue = null;
 
     /**
      * @var int
      *
      * @ORM\Column(name="estimate_duration_unit", type="string", length=8, nullable=true)
-     * @Assert\NotBlank(groups={"estimate"})
-     * @Assert\Choice(choices = {"month", "year"})
      */
+    #[Assert\NotBlank(groups: ['estimate'])]
+    #[Assert\Choice(choices: ['month', 'year'])]
     protected $estimateDurationUnit;
 
     public function __construct()

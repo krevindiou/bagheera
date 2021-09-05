@@ -18,48 +18,43 @@ class Category
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="category_id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    protected $categoryId;
+    protected ?int $categoryId = null;
 
     /**
      * @var Category
      *
      * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
      * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
-     * @Assert\Type(type="App\Entity\Category")
-     * @Assert\Valid()
      */
+    #[Assert\Type(type: 'App\Entity\Category')]
+    #[Assert\Valid]
     protected $parentCategory;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="type", type="string", length=8)
-     * @Assert\NotBlank()
-     * @Assert\Choice(choices = {"debit", "credit"})
      */
-    protected $type;
+    #[Assert\NotBlank]
+    #[Assert\Choice(choices: ['debit', 'credit'])]
+    protected ?string $type = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="name", type="string", length=32)
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 32)
      */
-    protected $name;
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 32)]
+    protected ?string $name = null;
 
     /**
      * @var bool
      *
      * @ORM\Column(name="is_active", type="boolean", options={"default": true})
-     * @Assert\Type("bool")
      */
+    #[Assert\Type(type: 'bool')]
     protected $active = true;
 
     /**
@@ -67,7 +62,7 @@ class Category
      *
      * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory", fetch="EXTRA_LAZY")
      */
-    protected $subCategories;
+    protected array|Collection|ArrayCollection $subCategories;
 
     public function __construct()
     {

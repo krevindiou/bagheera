@@ -14,19 +14,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/manager")
- */
+#[Route(path: '/manager')]
 class SchedulerController extends AbstractController
 {
     /**
-     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, methods={"GET"}, name="scheduler_list")
      * @Security("account.isOwner(user)")
      */
+    #[Route(path: '/account-{accountId}/schedulers', requirements: ['accountId' => '\d+'], methods: ['GET'], name: 'scheduler_list')]
     public function list(Request $request, SchedulerService $schedulerService, Account $account): Response
     {
         $page = $request->query->getInt('page', 1);
-
         $schedulers = $schedulerService->getList($account, $page);
 
         return $this->render(
@@ -39,9 +36,9 @@ class SchedulerController extends AbstractController
     }
 
     /**
-     * @Route("/account-{accountId}/schedulers", requirements={"accountId" = "\d+"}, methods={"POST"})
      * @Security("account.isOwner(user)")
      */
+    #[Route(path: '/account-{accountId}/schedulers', requirements: ['accountId' => '\d+'], methods: ['POST'])]
     public function listActions(Request $request, SchedulerService $schedulerService, Account $account): Response
     {
         if ($request->request->has('delete')) {
@@ -65,17 +62,16 @@ class SchedulerController extends AbstractController
     }
 
     /**
-     * @Route("/scheduler-{schedulerId}", requirements={"schedulerId" = "\d+"}, defaults={"accountId" = null}, name="scheduler_update")
-     * @Route("/account-{accountId}/create-scheduler", requirements={"accountId" = "\d+"}, defaults={"schedulerId" = null}, name="scheduler_create")
      * @ParamConverter("scheduler", class="App:Scheduler", options={"id" = "schedulerId"})
      * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      */
+    #[Route(path: '/scheduler-{schedulerId}', requirements: ['schedulerId' => '\d+'], defaults: ['accountId' => null], name: 'scheduler_update')]
+    #[Route(path: '/account-{accountId}/create-scheduler', requirements: ['accountId' => '\d+'], defaults: ['schedulerId' => null], name: 'scheduler_create')]
     public function form(Request $request, SchedulerService $schedulerService, ?Account $account, ?Scheduler $scheduler): Response
     {
         $schedulerForm = $schedulerService->getForm($scheduler, $account);
         $schedulerForm->handleRequest($request);
-
         if ($schedulerForm->isSubmitted()) {
             if ($schedulerService->saveForm($scheduler, $schedulerForm)) {
                 $this->addFlash('success', 'scheduler.form_confirmation');

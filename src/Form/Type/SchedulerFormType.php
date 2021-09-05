@@ -25,9 +25,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SchedulerFormType extends AbstractType
 {
-    private $accountRepository;
-    private $categoryRepository;
-    private $paymentMethodRepository;
+    private AccountRepository $accountRepository;
+    private CategoryRepository $categoryRepository;
+    private PaymentMethodRepository $paymentMethodRepository;
 
     public function __construct(
         AccountRepository $accountRepository,

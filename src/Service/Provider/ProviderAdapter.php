@@ -15,10 +15,10 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 class ProviderAdapter
 {
     protected $providerService;
-    private $em;
+    private EntityManagerInterface $em;
     private $key;
-    private $accountImportService;
-    private $container;
+    private AccountImportService $accountImportService;
+    private ContainerInterface $container;
 
     public function __construct(
         EntityManagerInterface $em,

@@ -16,42 +16,29 @@ class BankAccess
     use TimestampableTrait;
 
     /**
-     * @var int
      *
      * @ORM\Column(name="bank_id", type="integer")
      * @ORM\Id
      */
-    protected $bankId;
+    protected ?int $bankId = null;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    protected ?string $plainLogin = null;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    protected ?string $plainPassword = null;
 
     /**
-     * @var string
-     *
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 255)
-     */
-    protected $plainLogin;
-
-    /**
-     * @var string
-     *
-     * @Assert\NotBlank()
-     * @Assert\Length(max = 255)
-     */
-    protected $plainPassword;
-
-    /**
-     * @var string
-     *
      * @ORM\Column(name="login", type="string", length=255)
      */
-    protected $login;
+    protected ?string $login = null;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="password", type="string", length=255)
      */
-    protected $password;
+    protected ?string $password = null;
 
     public function setBankId(int $bankId): void
     {
