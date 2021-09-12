@@ -24,17 +24,21 @@
         "components/jquery": "1.8.*",
         "components/jqueryui": "1.10.*",
         "components/mailcheck": "1.0.*",
+        "composer/package-versions-deprecated": "1.11.99.3",
+        "doctrine/doctrine-bundle": "^2.3",
+        "doctrine/doctrine-migrations-bundle": "^3.1",
+        "doctrine/orm": "^2.8",
         "sensio/framework-extra-bundle": "^5.6",
         "symfony/asset": "5.*",
         "symfony/browser-kit": "5.*",
         "symfony/css-selector": "5.*",
         "symfony/dotenv": "5.*",
         "symfony/expression-language": "5.*",
-        "symfony/flex": "^1.12",
+        "symfony/flex": "^1.15",
         "symfony/form": "5.*",
         "symfony/monolog-bundle": "^3.7",
-        "symfony/orm-pack": "^2.1",
         "symfony/process": "5.*",
+        "symfony/proxy-manager-bridge": "5.2.*",
         "symfony/security-bundle": "5.*",
         "symfony/swiftmailer-bundle": "^3.5",
         "symfony/translation": "5.*",
@@ -51,7 +55,8 @@
         "rector/rector": "^0.11.52",
         "symfony/maker-bundle": "^1.30",
         "symfony/phpunit-bridge": "5.*",
-        "symfony/profiler-pack": "^1.0"
+        "symfony/stopwatch": "^5.2",
+        "symfony/web-profiler-bundle": "^5.2"
     },
     "conflict": {
         "symfony/symfony": "*"
