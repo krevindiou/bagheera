@@ -108,7 +108,7 @@ class SchedulerService
             $scheduler->setCategory($formModel->category);
             $scheduler->setPaymentMethod($formModel->paymentMethod);
             $scheduler->setValueDate($formModel->valueDate);
-            $scheduler->setNotes($formModel->notes);
+            $scheduler->setNotes($formModel->notes ?? '');
             $scheduler->setReconciled($formModel->reconciled);
             $scheduler->setActive($formModel->active);
             $scheduler->setDebit('debit' === $formModel->type ? $formModel->amount : null);
@@ -197,7 +197,7 @@ class SchedulerService
                 $operation->setCredit($scheduler->getCredit());
                 $operation->setValueDate($date);
                 $operation->setReconciled($scheduler->isReconciled());
-                $operation->setNotes((string) $scheduler->getNotes());
+                $operation->setNotes($scheduler->getNotes() ?? '');
                 $operation->setTransferAccount($scheduler->getTransferAccount());
 
                 $this->operationService->save($member, $operation);

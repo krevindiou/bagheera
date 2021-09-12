@@ -129,7 +129,7 @@ class OperationService
             $operation->setCredit('credit' === $formModel->type ? $formModel->amount : null);
             $operation->setValueDate($formModel->valueDate);
             $operation->setReconciled($formModel->reconciled);
-            $operation->setNotes($formModel->notes);
+            $operation->setNotes($formModel->notes ?? '');
             $operation->setAccount($formModel->account);
             $operation->setCategory($formModel->category);
             $operation->setPaymentMethod($formModel->paymentMethod);
@@ -374,7 +374,7 @@ class OperationService
                 $transferOperation->setCategory($operation->getCategory());
                 $transferOperation->setPaymentMethod($paymentMethod);
                 $transferOperation->setValueDate($operation->getValueDate());
-                $transferOperation->setNotes((string) $operation->getNotes());
+                $transferOperation->setNotes($operation->getNotes() ?? '');
 
                 try {
                     $this->em->persist($transferOperation);
