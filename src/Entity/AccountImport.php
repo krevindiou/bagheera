@@ -4,71 +4,51 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\AccountImportRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\AccountImportRepository")
- * @ORM\Table(name="account_import")
- */
+#[Entity(repositoryClass: AccountImportRepository::class)]
+#[Table(name: 'account_import')]
 class AccountImport
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="import_id", type="integer")
-     * @ORM\Id
-     */
+    #[Id, Column(name: 'import_id', type: 'integer')]
     protected ?int $importId = null;
 
-    /**
-     * @ORM\Column(name="account_id", type="integer")
-     */
+    #[Column(name: 'account_id', type: 'integer')]
     protected int $accountId;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Account")
-     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
-     * @ORM\Id
-     */
     #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: Account::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Account::class)]
+    #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
     protected ?Account $account = null;
 
-    /**
-     * @ORM\Column(name="total", type="integer", nullable=true)
-     */
+    #[Column(name: 'total', type: 'integer', nullable: true)]
     protected ?int $total = 0;
 
-    /**
-     * @ORM\Column(name="progress", type="integer", nullable=true)
-     */
+    #[Column(name: 'progress', type: 'integer', nullable: true)]
     protected ?int $progress = 0;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="finished", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $finished = false;
+    #[Column(name: 'finished', type: 'boolean', options: ['default' => false])]
+    protected ?bool $finished = false;
 
-    /**
-     * @ORM\Column(name="original_data", type="text", nullable=true)
-     */
+    #[Column(name: 'original_data', type: 'text', nullable: true)]
     protected ?string $originalData = null;
 
-    /**
-     * @ORM\Column(name="json_data", type="text", nullable=true)
-     */
+    #[Column(name: 'json_data', type: 'text', nullable: true)]
     protected ?string $jsonData = null;
 
-    /**
-     * @ORM\Column(name="json_normalized_data", type="text", nullable=true)
-     */
+    #[Column(name: 'json_normalized_data', type: 'text', nullable: true)]
     protected ?string $jsonNormalizedData = null;
 
     public function setImportId(int $importId): void

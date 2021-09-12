@@ -4,64 +4,50 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\CategoryRepository")
- * @ORM\Table(name="category")
- */
+#[Entity(repositoryClass: CategoryRepository::class)]
+#[Table(name: 'category')]
 class Category
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="category_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'category_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $categoryId = null;
 
-    /**
-     * @var Category
-     *
-     * @ORM\ManyToOne(targetEntity="Category", inversedBy="subCategories")
-     * @ORM\JoinColumn(name="parent_category_id", referencedColumnName="category_id")
-     */
-    #[Assert\Type(type: 'App\Entity\Category')]
+    #[Assert\Type(type: self::class)]
     #[Assert\Valid]
-    protected $parentCategory;
+    #[ManyToOne(targetEntity: self::class, inversedBy: 'subCategories')]
+    #[JoinColumn(name: 'parent_category_id', referencedColumnName: 'category_id')]
+    protected ?Category $parentCategory;
 
-    /**
-     * @ORM\Column(name="type", type="string", length=8)
-     */
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['debit', 'credit'])]
+    #[Column(name: 'type', type: 'string', length: 8)]
     protected ?string $type = null;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=32)
-     */
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
+    #[Column(name: 'name', type: 'string', length: 32)]
     protected ?string $name = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_active", type="boolean", options={"default": true})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $active = true;
+    #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
+    protected ?bool $active = true;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity="Category", mappedBy="parentCategory", fetch="EXTRA_LAZY")
-     */
+    #[OneToMany(targetEntity: self::class, mappedBy: 'parentCategory', fetch: 'EXTRA_LAZY')]
     protected array|Collection|ArrayCollection $subCategories;
 
     public function __construct()

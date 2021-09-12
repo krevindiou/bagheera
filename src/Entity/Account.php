@@ -4,114 +4,82 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Index;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OrderBy;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\AccountRepository")
- * @ORM\Table(
- *  name="account",
- *  indexes={@ORM\Index(name="external_account_id_idx", columns={"external_account_id"})}
- * )
- */
+#[Entity(repositoryClass: AccountRepository::class)]
+#[Table(name: 'account')]
+#[Index(name: 'external_account_id_idx', columns: ['external_account_id'])]
 class Account
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="account_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'account_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $accountId = null;
 
-    /**
-     * @ORM\Column(name="external_account_id", type="string", length=32, nullable=true)
-     */
+    #[Column(name: 'external_account_id', type: 'string', length: 32, nullable: true)]
     protected ?string $externalAccountId = null;
 
-    /**
-     * @ORM\Column(name="bank_id", type="integer")
-     */
+    #[Column(name: 'bank_id', type: 'integer')]
     protected int $bankId;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Bank", inversedBy="accounts")
-     * @ORM\JoinColumn(name="bank_id", referencedColumnName="bank_id")
-     */
     #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\Bank')]
+    #[Assert\Type(type: Bank::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Bank::class, inversedBy: 'accounts')]
+    #[JoinColumn(name: 'bank_id', referencedColumnName: 'bank_id')]
     protected ?Bank $bank = null;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=64)
-     */
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
+    #[Column(name: 'name', type: 'string', length: 64)]
     protected ?string $name = null;
 
-    /**
-     * @ORM\Column(name="currency", type="string", length=3)
-     */
     #[Assert\NotBlank]
     #[Assert\Currency]
+    #[Column(name: 'currency', type: 'string', length: 3)]
     protected ?string $currency = null;
 
-    /**
-     * @ORM\Column(name="overdraft_facility", type="integer")
-     */
+    #[Column(name: 'overdraft_facility', type: 'integer')]
     protected ?int $overdraftFacility = 0;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_closed", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $closed = false;
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_deleted", type="boolean", options={"default": false})
-     */
-    #[Assert\Type(type: 'bool')]
-    protected $deleted = false;
+    #[Column(name: 'is_closed', type: 'boolean', options: ['default' => false])]
+    protected ?bool $closed = false;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Member")
-     * @ORM\JoinTable(name="shared_account",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="member_id", referencedColumnName="member_id")
-     *   }
-     * )
-     * @ORM\OrderBy({"email" = "ASC"})
-     */
+    #[Assert\Type(type: 'bool')]
+    #[Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
+    protected ?bool $deleted = false;
+
+    #[ManyToMany(targetEntity: Member::class)]
+    #[JoinTable(name: 'shared_account')]
+    #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
+    #[InverseJoinColumn(name: 'member_id', referencedColumnName: 'member_id')]
+    #[OrderBy(value: ['email' => 'ASC'])]
     protected array|Collection|ArrayCollection $sharedWith;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity="Operation", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"valueDate" = "DESC"})
-     */
+    #[OneToMany(targetEntity: Operation::class, mappedBy: 'account', cascade: ['all'], fetch: 'EXTRA_LAZY')]
+    #[OrderBy(value: ['valueDate' => 'DESC'])]
     protected array|Collection|ArrayCollection $operations;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity="Scheduler", mappedBy="account", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"valueDate" = "DESC"})
-     */
+    #[OneToMany(targetEntity: Scheduler::class, mappedBy: 'account', cascade: ['all'], fetch: 'EXTRA_LAZY')]
+    #[OrderBy(value: ['valueDate' => 'DESC'])]
     protected array|Collection|ArrayCollection $schedulers;
 
     public function __construct()

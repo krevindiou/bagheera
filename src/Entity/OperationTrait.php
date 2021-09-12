@@ -4,101 +4,56 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Symfony\Component\Validator\Constraints as Assert;
 
 trait OperationTrait
 {
     use TimestampableTrait;
 
-    /**
-     * @var Account
-     *
-     * @ORM\ManyToOne(targetEntity="Account", inversedBy="operations")
-     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
-     */
+    #[Assert\Type(type: Account::class)]
+    #[Assert\Valid]
+    #[ManyToOne(targetEntity: Account::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'transfer_account_id', referencedColumnName: 'account_id')]
+    protected ?Account $transferAccount;
+
+    #[Assert\Type(type: Category::class)]
+    #[Assert\Valid]
+    #[ManyToOne(targetEntity: Category::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
+    protected ?Category $category;
+
     #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: PaymentMethod::class)]
     #[Assert\Valid]
-    protected $account;
+    #[ManyToOne(targetEntity: PaymentMethod::class)]
+    #[JoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id', nullable: false)]
+    protected PaymentMethod $paymentMethod;
 
-    /**
-     * @var Account
-     *
-     * @ORM\ManyToOne(targetEntity="Account", fetch="EAGER")
-     * @ORM\JoinColumn(name="transfer_account_id", referencedColumnName="account_id")
-     */
-    #[Assert\Type(type: 'App\Entity\Account')]
-    #[Assert\Valid]
-    protected $transferAccount;
-
-    /**
-     * @var Category
-     *
-     * @ORM\ManyToOne(targetEntity="Category", fetch="EAGER")
-     * @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     */
-    #[Assert\Type(type: 'App\Entity\Category')]
-    #[Assert\Valid]
-    protected $category;
-
-    /**
-     * @var PaymentMethod
-     *
-     * @ORM\ManyToOne(targetEntity="PaymentMethod")
-     * @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id", nullable=false)
-     */
-    #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\PaymentMethod')]
-    #[Assert\Valid]
-    protected $paymentMethod;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="third_party", type="string", length=64)
-     */
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
-    protected $thirdParty;
+    #[Column(name: 'third_party', type: 'string', length: 64)]
+    protected string $thirdParty;
 
-    /**
-     * @var null|int
-     *
-     * @ORM\Column(name="debit", type="integer", nullable=true)
-     */
-    protected $debit;
+    #[Column(name: 'debit', type: 'integer', nullable: true)]
+    protected null|int $debit;
 
-    /**
-     * @var null|int
-     *
-     * @ORM\Column(name="credit", type="integer", nullable=true)
-     */
-    protected $credit;
+    #[Column(name: 'credit', type: 'integer', nullable: true)]
+    protected null|int $credit;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="value_date", type="date")
-     */
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'DateTime')]
-    protected $valueDate;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'value_date', type: 'date')]
+    protected \DateTime $valueDate;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_reconciled", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $reconciled = false;
+    #[Column(name: 'is_reconciled', type: 'boolean', options: ['default' => false])]
+    protected bool $reconciled = false;
 
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="notes", type="text", nullable=true)
-     */
-    protected $notes;
+    #[Column(name: 'notes', type: 'text')]
+    protected string $notes;
 
     public function setAccount(Account $account): void
     {
@@ -107,7 +62,7 @@ trait OperationTrait
 
     public function getAccount(): ?Account
     {
-        return $this->account;
+        return $this->account ?? null;
     }
 
     public function setTransferAccount(?Account $transferAccount): void
@@ -198,13 +153,13 @@ trait OperationTrait
         return $this->reconciled;
     }
 
-    public function setNotes(?string $notes): void
+    public function setNotes(string $notes): void
     {
         $this->notes = $notes;
     }
 
-    public function getNotes(): ?string
+    public function getNotes(): string
     {
-        return $this->notes;
+        return $this->notes ?? '';
     }
 }

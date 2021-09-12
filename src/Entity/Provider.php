@@ -4,35 +4,30 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ProviderRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ProviderRepository")
- * @ORM\Table(name="provider")
- */
+#[Entity(repositoryClass: ProviderRepository::class)]
+#[Table(name: 'provider')]
 class Provider
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="provider_id", type="smallint")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'provider_id', type: 'smallint')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $providerId = null;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=64)
-     */
     #[Assert\NotBlank]
+    #[Column(name: 'name', type: 'string', length: 64)]
     protected ?string $name = null;
 
-    /**
-     * @ORM\Column(name="country", type="string", length=2)
-     */
     #[Assert\NotBlank]
+    #[Column(name: 'country', type: 'string', length: 2)]
     protected ?string $country = null;
 
     public function __toString(): string

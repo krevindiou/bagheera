@@ -6,126 +6,84 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="operation_search")
- */
+#[Entity]
+#[Table(name: 'operation_search')]
 class OperationSearch
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="operation_search_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'operation_search_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $operationSearchId = null;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Account", cascade={"all"}, fetch="EAGER")
-     * @ORM\JoinColumn(name="account_id", referencedColumnName="account_id", nullable=false)
-     */
     #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: Account::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Account::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
     protected ?Account $account = null;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="Category", cascade={"all"}, fetch="EAGER")
-     * @ORM\JoinTable(name="operation_search_category",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="operation_search_id", referencedColumnName="operation_search_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     *   }
-     * )
-     */
+    #[ManyToMany(targetEntity: Category::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinTable(name: 'operation_search_category')]
+    #[JoinColumn(name: 'operation_search_id', referencedColumnName: 'operation_search_id')]
+    #[InverseJoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
     protected array|Collection|ArrayCollection $categories;
 
-    /**
-     * @ORM\ManyToMany(targetEntity="PaymentMethod", cascade={"all"}, fetch="EAGER")
-     * @ORM\JoinTable(name="operation_search_payment_method",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="operation_search_id", referencedColumnName="operation_search_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
-     *   }
-     * )
-     */
+    #[ManyToMany(targetEntity: PaymentMethod::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinTable(name: 'operation_search_payment_method')]
+    #[JoinColumn(name: 'operation_search_id', referencedColumnName: 'operation_search_id')]
+    #[InverseJoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id')]
     protected array|Collection|ArrayCollection $paymentMethods;
 
-    /**
-     * @ORM\Column(name="third_party", type="string", length=64, nullable=true)
-     */
     #[Assert\Length(max: 64)]
+    #[Column(name: 'third_party', type: 'string', length: 64, nullable: true)]
     protected ?string $thirdParty = null;
 
-    /**
-     * @ORM\Column(name="notes", type="string", length=128, nullable=true)
-     */
     #[Assert\Length(max: 128)]
+    #[Column(name: 'notes', type: 'string', length: 128, nullable: true)]
     protected ?string $notes = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="value_date_start", type="date", nullable=true)
-     */
-    #[Assert\Type(type: 'DateTime')]
-    protected $valueDateStart;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'value_date_start', type: 'date', nullable: true)]
+    protected ?\DateTime $valueDateStart = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="value_date_end", type="date", nullable=true)
-     */
-    #[Assert\Type(type: 'DateTime')]
-    protected $valueDateEnd;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'value_date_end', type: 'date', nullable: true)]
+    protected ?\DateTime $valueDateEnd = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_reconciled", type="boolean", nullable=true)
-     */
     #[Assert\Type(type: 'bool')]
-    protected $reconciled;
+    #[Column(name: 'is_reconciled', type: 'boolean', nullable: true)]
+    protected ?bool $reconciled = null;
 
-    /**
-     * @ORM\Column(name="type", type="string", length=8, nullable=true, options={"default": "debit"})
-     */
     #[Assert\Choice(choices: ['debit', 'credit'])]
+    #[Column(name: 'type', type: 'string', length: 8, nullable: true, options: ['default' => 'debit'])]
     protected ?string $type = 'debit';
 
-    /**
-     * @ORM\Column(name="amount_inferior_to", type="integer", nullable=true)
-     */
+    #[Column(name: 'amount_inferior_to', type: 'integer', nullable: true)]
     protected ?int $amountInferiorTo = null;
 
-    /**
-     * @ORM\Column(name="amount_inferior_or_equal_to", type="integer", nullable=true)
-     */
+    #[Column(name: 'amount_inferior_or_equal_to', type: 'integer', nullable: true)]
     protected ?int $amountInferiorOrEqualTo = null;
 
-    /**
-     * @ORM\Column(name="amount_equal_to", type="integer", nullable=true)
-     */
+    #[Column(name: 'amount_equal_to', type: 'integer', nullable: true)]
     protected ?int $amountEqualTo = null;
 
-    /**
-     * @ORM\Column(name="amount_superior_or_equal_to", type="integer", nullable=true)
-     */
+    #[Column(name: 'amount_superior_or_equal_to', type: 'integer', nullable: true)]
     protected ?int $amountSuperiorOrEqualTo = null;
 
-    /**
-     * @ORM\Column(name="amount_superior_to", type="integer", nullable=true)
-     */
+    #[Column(name: 'amount_superior_to', type: 'integer', nullable: true)]
     protected ?int $amountSuperiorTo = null;
 
     public function __construct()

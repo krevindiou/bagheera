@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Model;
 
+use App\Entity\Bank;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class AccountFormModel
@@ -15,7 +16,7 @@ class AccountFormModel
     public $name;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'App\Entity\Bank')]
+    #[Assert\Type(type: Bank::class)]
     public $bank;
 
     #[Assert\NotBlank]
