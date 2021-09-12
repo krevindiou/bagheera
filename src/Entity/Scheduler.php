@@ -4,54 +4,50 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\SchedulerRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\SchedulerRepository")
- * @ORM\Table(name="scheduler")
- */
+#[Entity(repositoryClass: SchedulerRepository::class)]
+#[Table(name: 'scheduler')]
 class Scheduler
 {
     use OperationTrait;
 
-    /**
-     *
-     * @ORM\Column(name="scheduler_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Assert\NotNull]
+    #[Assert\Type(type: Account::class)]
+    #[Assert\Valid]
+    #[ManyToOne(targetEntity: Account::class, inversedBy: 'schedulers')]
+    #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
+    protected Account $account;
+
+    #[Id, Column(name: 'scheduler_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $schedulerId = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="limit_date", type="date", nullable=true)
-     */
-    #[Assert\Type(type: 'DateTime')]
-    protected $limitDate;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'limit_date', type: 'date', nullable: true)]
+    protected ?\DateTime $limitDate = null;
 
-    /**
-     * @ORM\Column(name="frequency_unit", type="string", length=16, options={"default": "month"})
-     */
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['day', 'week', 'month', 'year'])]
+    #[Column(name: 'frequency_unit', type: 'string', length: 16, options: ['default' => 'month'])]
     protected ?string $frequencyUnit = 'month';
 
-    /**
-     * @ORM\Column(name="frequency_value", type="smallint")
-     */
     #[Assert\NotBlank]
     #[Assert\Type(type: 'integer')]
+    #[Column(name: 'frequency_value', type: 'smallint')]
     protected ?int $frequencyValue = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_active", type="boolean", options={"default": true})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $active = true;
+    #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
+    protected ?bool $active = true;
 
     public function setSchedulerId(?int $schedulerId): void
     {

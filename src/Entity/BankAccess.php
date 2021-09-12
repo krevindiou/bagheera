@@ -4,22 +4,19 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="bank_access")
- */
+#[Entity]
+#[Table(name: 'bank_access')]
 class BankAccess
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="bank_id", type="integer")
-     * @ORM\Id
-     */
+    #[Id, Column(name: 'bank_id', type: 'integer')]
     protected ?int $bankId = null;
 
     #[Assert\NotBlank]
@@ -30,14 +27,10 @@ class BankAccess
     #[Assert\Length(max: 255)]
     protected ?string $plainPassword = null;
 
-    /**
-     * @ORM\Column(name="login", type="string", length=255)
-     */
+    #[Column(name: 'login', type: 'string', length: 255)]
     protected ?string $login = null;
 
-    /**
-     * @ORM\Column(name="password", type="string", length=255)
-     */
+    #[Column(name: 'password', type: 'string', length: 255)]
     protected ?string $password = null;
 
     public function setBankId(int $bankId): void

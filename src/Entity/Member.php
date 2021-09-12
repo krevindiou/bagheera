@@ -4,79 +4,62 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\MemberRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OrderBy;
+use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\MemberRepository")
- * @ORM\Table(name="member", uniqueConstraints={@ORM\UniqueConstraint(name="member_email_unique", columns={"email"})})
  * @DoctrineAssert\UniqueEntity("email")
  */
+#[Entity(repositoryClass: MemberRepository::class)]
+#[Table(name: 'member')]
+#[UniqueConstraint(name: 'member_email_unique', columns: ['email'])]
 class Member implements UserInterface
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="member_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'member_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $memberId = null;
 
-    /**
-     * @ORM\Column(name="email", type="string", length=128, unique=true)
-     */
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Length(max: 128)]
+    #[Column(name: 'email', type: 'string', length: 128, unique: true)]
     protected ?string $email = null;
 
-    /**
-     * @ORM\Column(name="password", type="string", length=60)
-     */
+    #[Column(name: 'password', type: 'string', length: 60)]
     protected ?string $password = null;
 
-    /**
-     * @ORM\Column(name="country", type="string", length=2)
-     */
     #[Assert\NotBlank]
+    #[Column(name: 'country', type: 'string', length: 2)]
     protected ?string $country = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_active", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $active = false;
+    #[Column(name: 'is_active', type: 'boolean', options: ['default' => false])]
+    protected ?bool $active = false;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="logged_at", type="datetime", nullable=true)
-     */
-    #[Assert\Type(type: 'DateTime')]
-    protected $loggedAt;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'logged_at', type: 'datetime', nullable: true)]
+    protected ?\DateTime $loggedAt = null;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity="Bank", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"sortOrder" = "ASC"})
-     */
+    #[OneToMany(targetEntity: Bank::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]
+    #[OrderBy(value: ['sortOrder' => 'ASC'])]
     protected array|Collection|ArrayCollection $banks;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity="Report", mappedBy="member", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"type" = "ASC", "title" = "ASC"})
-     */
+    #[OneToMany(targetEntity: Report::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]
+    #[OrderBy(value: ['type' => 'ASC', 'title' => 'ASC'])]
     protected array|Collection|ArrayCollection $reports;
 
     public function __construct()

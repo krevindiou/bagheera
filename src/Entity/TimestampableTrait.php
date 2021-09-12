@@ -4,23 +4,15 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
 
 trait TimestampableTrait
 {
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    protected $createdAt;
+    #[Column(name: 'created_at', type: 'datetime')]
+    protected \DateTime $createdAt;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime", nullable=true)
-     */
-    protected $updatedAt;
+    #[Column(name: 'updated_at', type: 'datetime', nullable: true)]
+    protected \DateTime $updatedAt;
 
     public function getCreatedAt(): ?\DateTime
     {

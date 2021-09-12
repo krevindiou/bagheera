@@ -21,10 +21,10 @@ class ReportFormModel
     #[Assert\Type(type: 'bool')]
     public bool $homepage;
 
-    #[Assert\Type(type: 'DateTime')]
+    #[Assert\Type(type: \DateTime::class)]
     public $valueDateStart;
 
-    #[Assert\Type(type: 'DateTime')]
+    #[Assert\Type(type: \DateTime::class)]
     public $valueDateEnd;
 
     public $thirdParties;

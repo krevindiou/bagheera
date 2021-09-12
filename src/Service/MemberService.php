@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use Twig\Environment;
 use App\Entity\Member;
 use App\Form\Model\MemberChangePasswordFormModel;
 use App\Form\Model\MemberForgotPasswordFormModel;
@@ -25,6 +24,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 class MemberService
 {

@@ -4,179 +4,115 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\ReportRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\InverseJoinColumn;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\ReportRepository")
- * @ORM\Table(name="report")
- */
+#[Entity(repositoryClass: ReportRepository::class)]
+#[Table(name: 'report')]
 class Report
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="report_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'report_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $reportId = null;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Member", inversedBy="reports")
-     * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
-     */
     #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\Member')]
+    #[Assert\Type(type: Member::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Member::class, inversedBy: 'reports')]
+    #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
     protected ?Member $member = null;
 
-    /**
-     * @ORM\Column(name="type", type="string", length=16)
-     */
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['sum', 'average', 'distribution', 'estimate'])]
+    #[Column(name: 'type', type: 'string', length: 16)]
     protected ?string $type = null;
 
-    /**
-     * @ORM\Column(name="title", type="string", length=64)
-     */
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
+    #[Column(name: 'title', type: 'string', length: 64)]
     protected ?string $title = null;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="homepage", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $homepage = false;
+    #[Column(name: 'homepage', type: 'boolean', options: ['default' => false])]
+    protected ?bool $homepage = false;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="value_date_start", type="date", nullable=true)
-     */
-    #[Assert\Type(type: 'DateTime')]
-    protected $valueDateStart;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'value_date_start', type: 'date', nullable: true)]
+    protected ?\DateTime $valueDateStart = null;
 
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="value_date_end", type="date", nullable=true)
-     */
-    #[Assert\Type(type: 'DateTime')]
-    protected $valueDateEnd;
+    #[Assert\Type(type: \DateTime::class)]
+    #[Column(name: 'value_date_end', type: 'date', nullable: true)]
+    protected ?\DateTime $valueDateEnd = null;
 
-    /**
-     * @ORM\Column(name="third_parties", type="string", length=255, nullable=true)
-     */
+    #[Column(name: 'third_parties', type: 'string', length: 255, nullable: true)]
     protected ?string $thirdParties = null;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Category", fetch="EAGER")
-     * @ORM\JoinTable(name="report_category",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="report_id", referencedColumnName="report_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="category_id", referencedColumnName="category_id")
-     *   }
-     * )
-     */
-    protected Collection $categories = null;
+    #[ManyToMany(targetEntity: Category::class, fetch: 'EAGER')]
+    #[JoinTable(name: 'report_category')]
+    #[JoinColumn(name: 'report_id', referencedColumnName: 'report_id')]
+    #[InverseJoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
+    protected Collection $categories;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\ManyToMany(targetEntity="PaymentMethod", fetch="EAGER")
-     * @ORM\JoinTable(name="report_payment_method",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="report_id", referencedColumnName="report_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="payment_method_id", referencedColumnName="payment_method_id")
-     *   }
-     * )
-     */
-    protected Collection $paymentMethods = null;
+    #[ManyToMany(targetEntity: PaymentMethod::class, fetch: 'EAGER')]
+    #[JoinTable(name: 'report_payment_method')]
+    #[JoinColumn(name: 'report_id', referencedColumnName: 'report_id')]
+    #[InverseJoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id')]
+    protected Collection $paymentMethods;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\ManyToMany(targetEntity="Account", fetch="EAGER")
-     * @ORM\JoinTable(name="report_account",
-     *   joinColumns={
-     *     @ORM\JoinColumn(name="report_id", referencedColumnName="report_id")
-     *   },
-     *   inverseJoinColumns={
-     *     @ORM\JoinColumn(name="account_id", referencedColumnName="account_id")
-     *   }
-     * )
-     */
-    protected Collection $accounts = null;
+    #[ManyToMany(targetEntity: Account::class, fetch: 'EAGER')]
+    #[JoinTable(name: 'report_account')]
+    #[JoinColumn(name: 'report_id', referencedColumnName: 'report_id')]
+    #[InverseJoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
+    protected Collection $accounts;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="reconciled_only", type="boolean", nullable=true)
-     */
     #[Assert\Type(type: 'bool')]
-    protected $reconciledOnly;
+    #[Column(name: 'reconciled_only', type: 'boolean', nullable: true)]
+    protected ?bool $reconciledOnly = null;
 
-    /**
-     * @ORM\Column(name="period_grouping", type="string", length=8, nullable=true)
-     */
     #[Assert\NotBlank(groups: ['sum', 'average'])]
     #[Assert\Choice(choices: ['month', 'quarter', 'year', 'all'])]
+    #[Column(name: 'period_grouping', type: 'string', length: 8, nullable: true)]
     protected ?string $periodGrouping = null;
 
-    /**
-     * @ORM\Column(name="data_grouping", type="string", length=16, nullable=true)
-     */
     #[Assert\NotBlank(groups: ['distribution'])]
     #[Assert\Choice(choices: ['category', 'third_party', 'payment_method'])]
+    #[Column(name: 'data_grouping', type: 'string', length: 16, nullable: true)]
     protected ?string $dataGrouping = null;
 
-    /**
-     * @ORM\Column(name="significant_results_number", type="smallint", nullable=true)
-     */
     #[Assert\NotBlank(groups: ['distribution'])]
+    #[Column(name: 'significant_results_number', type: 'smallint', nullable: true)]
     protected ?int $significantResultsNumber = null;
 
-    /**
-     * @ORM\Column(name="month_expenses", type="integer", nullable=true)
-     */
     #[Assert\NotBlank(groups: ['estimate'])]
+    #[Column(name: 'month_expenses', type: 'integer', nullable: true)]
     protected ?int $monthExpenses = null;
 
-    /**
-     * @ORM\Column(name="month_incomes", type="integer", nullable=true)
-     */
     #[Assert\NotBlank(groups: ['estimate'])]
+    #[Column(name: 'month_incomes', type: 'integer', nullable: true)]
     protected ?int $monthIncomes = null;
 
-    /**
-     * @ORM\Column(name="estimate_duration_value", type="smallint", nullable=true)
-     */
     #[Assert\NotBlank(groups: ['estimate'])]
+    #[Column(name: 'estimate_duration_value', type: 'smallint', nullable: true)]
     protected ?int $estimateDurationValue = null;
 
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="estimate_duration_unit", type="string", length=8, nullable=true)
-     */
     #[Assert\NotBlank(groups: ['estimate'])]
     #[Assert\Choice(choices: ['month', 'year'])]
-    protected $estimateDurationUnit;
+    #[Column(name: 'estimate_duration_unit', type: 'string', length: 8, nullable: true)]
+    protected ?int $estimateDurationUnit = null;
 
     public function __construct()
     {

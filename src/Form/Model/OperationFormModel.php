@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Form\Model;
 
+use App\Entity\Account;
+use App\Entity\Category;
+use App\Entity\PaymentMethod;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class OperationFormModel
@@ -11,7 +14,7 @@ class OperationFormModel
     public $operationId;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: Account::class)]
     public $account;
 
     #[Assert\NotBlank]
@@ -22,15 +25,15 @@ class OperationFormModel
     #[Assert\Length(max: 64)]
     public $thirdParty;
 
-    #[Assert\Type(type: 'App\Entity\Category')]
+    #[Assert\Type(type: Category::class)]
     public $category;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'App\Entity\PaymentMethod')]
+    #[Assert\Type(type: PaymentMethod::class)]
     public $paymentMethod;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'DateTime')]
+    #[Assert\Type(type: \DateTime::class)]
     public \DateTime $valueDate;
 
     public $notes;
@@ -42,7 +45,7 @@ class OperationFormModel
     #[Assert\Type(type: 'int')]
     public $amount;
 
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: Account::class)]
     public $transferAccount;
 
     public function __construct()

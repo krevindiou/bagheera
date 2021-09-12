@@ -4,52 +4,52 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\OperationRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Index;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToOne;
+use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\OperationRepository")
- * @ORM\Table(
- *  name="operation",
- *  indexes={@ORM\Index(name="external_operation_id_idx", columns={"external_operation_id"})},
- *  uniqueConstraints={@ORM\UniqueConstraint(name="operation_transfer_operation_id_unique", columns={"transfer_operation_id"})}
- * )
- */
+#[Entity(repositoryClass: OperationRepository::class)]
+#[Table(name: 'operation')]
+#[Index(name: 'external_operation_id_idx', columns: ['external_operation_id'])]
+#[UniqueConstraint(name: 'operation_transfer_operation_id_unique', columns: ['transfer_operation_id'])]
 class Operation
 {
     use OperationTrait;
 
-    /**
-     *
-     * @ORM\Column(name="operation_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Assert\NotNull]
+    #[Assert\Type(type: Account::class)]
+    #[Assert\Valid]
+    #[ManyToOne(targetEntity: Account::class, inversedBy: 'operations')]
+    #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
+    protected Account $account;
+
+    #[Id, Column(name: 'operation_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $operationId = null;
 
-    /**
-     * @ORM\Column(name="external_operation_id", type="string", length=32, nullable=true)
-     */
+    #[Column(name: 'external_operation_id', type: 'string', length: 32, nullable: true)]
     protected ?string $externalOperationId = null;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Scheduler", fetch="EAGER")
-     * @ORM\JoinColumn(name="scheduler_id", referencedColumnName="scheduler_id")
-     */
-    #[Assert\Type(type: 'App\Entity\Scheduler')]
+    #[Assert\Type(type: Scheduler::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Scheduler::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'scheduler_id', referencedColumnName: 'scheduler_id')]
     protected ?Scheduler $scheduler = null;
 
-    /**
-     * @var Operation
-     *
-     * @ORM\OneToOne(targetEntity="Operation", cascade={"all"}, fetch="EAGER")
-     * @ORM\JoinColumn(name="transfer_operation_id", referencedColumnName="operation_id", onDelete="SET NULL")
-     */
-    #[Assert\Type(type: 'App\Entity\Operation')]
+    #[Assert\Type(type: self::class)]
     #[Assert\Valid]
-    protected $transferOperation;
+    #[OneToOne(targetEntity: self::class, cascade: ['all'], fetch: 'EAGER')]
+    #[JoinColumn(name: 'transfer_operation_id', referencedColumnName: 'operation_id', onDelete: 'SET NULL')]
+    protected ?Operation $transferOperation;
 
     public function __construct()
     {

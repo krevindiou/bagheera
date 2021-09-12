@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
+use App\Repository\PaymentMethodRepository;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\PaymentMethodRepository")
- * @ORM\Table(name="payment_method")
- */
+#[Entity(repositoryClass: PaymentMethodRepository::class)]
+#[Table(name: 'payment_method')]
 class PaymentMethod
 {
     use TimestampableTrait;
@@ -25,24 +28,16 @@ class PaymentMethod
     public const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
     public const PAYMENT_METHOD_ID_CREDIT_DEPOSIT = 7;
 
-    /**
-     *
-     * @ORM\Column(name="payment_method_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'payment_method_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $paymentMethodId = null;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=16)
-     */
     #[Assert\NotBlank]
+    #[Column(name: 'name', type: 'string', length: 16)]
     protected ?string $name = null;
 
-    /**
-     * @ORM\Column(name="type", type="string", length=8, nullable=true)
-     */
     #[Assert\Choice(choices: ['debit', 'credit'])]
+    #[Column(name: 'type', type: 'string', length: 8, nullable: true)]
     protected ?string $type = null;
 
     public function __toString(): string

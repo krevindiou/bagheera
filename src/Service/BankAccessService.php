@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Repository\BankAccessRepository;
 use App\Entity\Bank;
 use App\Entity\BankAccess;
 use App\Entity\Member;
 use App\Form\Model\BankAccessFormModel;
 use App\Form\Type\BankAccessFormType;
+use App\Repository\BankAccessRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\FormFactoryInterface;

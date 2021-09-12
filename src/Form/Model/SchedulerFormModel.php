@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Form\Model;
 
+use App\Entity\Account;
+use App\Entity\Category;
+use App\Entity\PaymentMethod;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class SchedulerFormModel
@@ -11,7 +14,7 @@ class SchedulerFormModel
     public $schedulerId;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: Account::class)]
     public $account;
 
     #[Assert\NotBlank]
@@ -22,15 +25,15 @@ class SchedulerFormModel
     #[Assert\Length(max: 64)]
     public $thirdParty;
 
-    #[Assert\Type(type: 'App\Entity\Category')]
+    #[Assert\Type(type: Category::class)]
     public $category;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'App\Entity\PaymentMethod')]
+    #[Assert\Type(type: PaymentMethod::class)]
     public $paymentMethod;
 
     #[Assert\NotBlank]
-    #[Assert\Type(type: 'DateTime')]
+    #[Assert\Type(type: \DateTime::class)]
     public $valueDate;
 
     public $notes;
@@ -45,7 +48,7 @@ class SchedulerFormModel
     #[Assert\Type(type: 'int')]
     public $amount;
 
-    #[Assert\Type(type: 'DateTime')]
+    #[Assert\Type(type: \DateTime::class)]
     public $limitDate;
 
     #[Assert\NotBlank]
@@ -56,7 +59,7 @@ class SchedulerFormModel
     #[Assert\Type(type: 'integer')]
     public $frequencyValue;
 
-    #[Assert\Type(type: 'App\Entity\Account')]
+    #[Assert\Type(type: Account::class)]
     public $transferAccount;
 
     public function __construct()

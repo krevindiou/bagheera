@@ -4,88 +4,65 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Repository\BankRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OrderBy;
+use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass="App\Repository\BankRepository")
- * @ORM\Table(name="bank")
- */
+#[Entity(repositoryClass: BankRepository::class)]
+#[Table(name: 'bank')]
 class Bank
 {
     use TimestampableTrait;
 
-    /**
-     *
-     * @ORM\Column(name="bank_id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
+    #[Id, Column(name: 'bank_id', type: 'integer')]
+    #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $bankId = null;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Member", inversedBy="banks")
-     * @ORM\JoinColumn(name="member_id", referencedColumnName="member_id", nullable=false)
-     */
     #[Assert\NotNull]
-    #[Assert\Type(type: 'App\Entity\Member')]
+    #[Assert\Type(type: Member::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Member::class, inversedBy: 'banks')]
+    #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
     protected ?Member $member;
 
-    /**
-     *
-     * @ORM\ManyToOne(targetEntity="Provider")
-     * @ORM\JoinColumn(name="provider_id", referencedColumnName="provider_id")
-     */
-    #[Assert\Type(type: 'App\Entity\Provider')]
+    #[Assert\Type(type: Provider::class)]
     #[Assert\Valid]
+    #[ManyToOne(targetEntity: Provider::class)]
+    #[JoinColumn(name: 'provider_id', referencedColumnName: 'provider_id')]
     protected ?Provider $provider = null;
 
-    /**
-     * @ORM\Column(name="name", type="string", length=32)
-     */
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
+    #[Column(name: 'name', type: 'string', length: 32)]
     protected ?string $name = null;
 
-    /**
-     * @ORM\Column(name="sort_order", type="smallint")
-     */
+    #[Column(name: 'sort_order', type: 'smallint')]
     protected ?int $sortOrder = 0;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_favorite", type="boolean", options={"default": true})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $favorite = true;
+    #[Column(name: 'is_favorite', type: 'boolean', options: ['default' => true])]
+    protected ?bool $favorite = true;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_closed", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $closed = false;
+    #[Column(name: 'is_closed', type: 'boolean', options: ['default' => false])]
+    protected ?bool $closed = false;
 
-    /**
-     * @var bool
-     *
-     * @ORM\Column(name="is_deleted", type="boolean", options={"default": false})
-     */
     #[Assert\Type(type: 'bool')]
-    protected $deleted = false;
+    #[Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
+    protected ?bool $deleted = false;
 
-    /**
-     * @var Collection
-     *
-     * @ORM\OneToMany(targetEntity="Account", mappedBy="bank", cascade={"all"}, fetch="EXTRA_LAZY")
-     * @ORM\OrderBy({"name" = "ASC"})
-     */
+    #[OneToMany(targetEntity: Account::class, mappedBy: 'bank', cascade: ['all'], fetch: 'EXTRA_LAZY')]
+    #[OrderBy(value: ['name' => 'ASC'])]
     protected array|Collection|ArrayCollection $accounts;
 
     public function __construct(Member $member)
