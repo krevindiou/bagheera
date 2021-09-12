@@ -28,7 +28,7 @@ CMD ["php-fpm"]
 FROM base AS dev
 RUN pecl install xdebug-3.0.3 && docker-php-ext-enable xdebug
 RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
-RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.18.5/php-cs-fixer.phar
+RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.19.2/php-cs-fixer.phar
 RUN chmod +x /usr/local/bin/php-cs-fixer
 COPY composer.json composer.lock ./
 RUN composer install --no-ansi --no-interaction --no-progress
