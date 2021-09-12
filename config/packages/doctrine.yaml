@@ -10,13 +10,11 @@ doctrine:
                 charset: UTF8
                 url: '%env(resolve:DATABASE_URL)%'
                 server_version: '9.4'
-                override_url: true
             secure:
                 driver: pdo_pgsql
                 charset: UTF8
                 url: '%env(resolve:DATABASE_SECURE_URL)%'
                 server_version: '9.4'
-                override_url: true
 
     orm:
         auto_generate_proxy_classes: true
@@ -27,7 +25,7 @@ doctrine:
                 naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
                 mappings:
                     App:
-                        type: annotation
+                        type: attribute
                         dir: '%kernel.project_dir%/src/Entity'
                         prefix: 'App\Entity'
             secure:
@@ -35,6 +33,6 @@ doctrine:
                 naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
                 mappings:
                     App:
-                        type: annotation
+                        type: attribute
                         dir: '%kernel.project_dir%/src/Entity'
                         prefix: 'App\Entity'
