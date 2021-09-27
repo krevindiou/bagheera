@@ -31,16 +31,18 @@ RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.19.2/php-cs-fixer.phar
 RUN chmod +x /usr/local/bin/php-cs-fixer
 COPY composer.json composer.lock ./
-RUN composer install --no-ansi --no-interaction --no-progress
+RUN composer install --no-ansi --no-interaction --no-progress --no-scripts
 COPY . ./
+RUN composer run-script --no-ansi --no-interaction post-install-cmd
 
 FROM base AS prod
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY composer.json composer.lock ./
-RUN composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader
+RUN composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader --no-scripts
 COPY package.json yarn.lock ./
 RUN yarn install --production=false
 COPY . ./
+RUN composer run-script --no-ansi --no-interaction post-install-cmd
 RUN yarn encore production
 RUN yarn install --production=true --ignore-scripts --prefer-offline
 RUN setfacl -R -m u:www-data:rwX -m u:`whoami`:rwX var
