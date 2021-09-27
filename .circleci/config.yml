@@ -28,6 +28,9 @@ jobs:
           name: Set up Docker variables
           command: |
             cp .docker/.docker-compose.env.dist .docker/.docker-compose.env
+            echo 'POSTGRES_DB=bagheera' >> .docker/.docker-compose.env
+            echo 'POSTGRES_USER=bagheera' >> .docker/.docker-compose.env
+            echo 'POSTGRES_PASSWORD=bagheera' >> .docker/.docker-compose.env
             echo 'APP_SECRET=4d60fc8c3bdfdcb343c262a660db520f' >> .docker/.docker-compose.env
       - run:
           name: Start containers
