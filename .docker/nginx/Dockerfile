@@ -8,7 +8,9 @@ WORKDIR /srv/www/bagheera
 CMD ["nginx", "-g", "daemon off;"]
 
 FROM base AS dev
+ENV APP_ENV=dev
 COPY .docker/nginx/bagheera.dev.conf /etc/nginx/conf.d/default.conf
 
 FROM base AS prod
+ENV APP_ENV=prod
 COPY .docker/nginx/bagheera.prod.conf /etc/nginx/conf.d/default.conf
