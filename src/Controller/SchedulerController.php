@@ -62,12 +62,12 @@ class SchedulerController extends AbstractController
     }
 
     /**
-     * @ParamConverter("scheduler", class="App:Scheduler", options={"id" = "schedulerId"})
-     * @ParamConverter("account", class="App:Account", options={"id" = "accountId"})
      * @Security("(account !== null and account.isOwner(user)) or (scheduler !== null and scheduler.isOwner(user))")
      */
     #[Route(path: '/scheduler-{schedulerId}', requirements: ['schedulerId' => '\d+'], defaults: ['accountId' => null], name: 'scheduler_update')]
     #[Route(path: '/account-{accountId}/create-scheduler', requirements: ['accountId' => '\d+'], defaults: ['schedulerId' => null], name: 'scheduler_create')]
+    #[ParamConverter('scheduler', class: 'App:Scheduler', options: ['id' => 'schedulerId'])]
+    #[ParamConverter('account', class: 'App:Account', options: ['id' => 'accountId'])]
     public function form(Request $request, SchedulerService $schedulerService, ?Account $account, ?Scheduler $scheduler): Response
     {
         $schedulerForm = $schedulerService->getForm($scheduler, $account);
