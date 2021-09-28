@@ -238,8 +238,6 @@ class OperationService
 
                     if (0 === $i % 100) {
                         try {
-                            $this->em->flush();
-
                             $func($account, $i);
                         } catch (\Exception $e) {
                             $this->logger->error($e->getMessage());
