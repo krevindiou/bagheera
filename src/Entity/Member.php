@@ -15,15 +15,13 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
-use Symfony\Bridge\Doctrine\Validator\Constraints as DoctrineAssert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @DoctrineAssert\UniqueEntity("email")
- */
 #[Entity(repositoryClass: MemberRepository::class)]
 #[Table(name: 'member')]
+#[UniqueEntity('email')]
 #[UniqueConstraint(name: 'member_email_unique', columns: ['email'])]
 class Member implements UserInterface
 {
