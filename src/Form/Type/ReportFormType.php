@@ -280,9 +280,7 @@ class ReportFormType extends AbstractType
         $resolver->setDefaults(
             [
                 'data_class' => ReportFormModel::class,
-                'validation_groups' => function (FormInterface $form) {
-                    return ['Default', $form->getData()->type];
-                },
+                'validation_groups' => fn (FormInterface $form) => ['Default', $form->getData()->type],
             ]
         );
     }

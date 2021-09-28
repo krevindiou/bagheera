@@ -68,9 +68,7 @@ class OperationSearchFormType extends AbstractType
                     'group_by' => 'type',
                     'choices' => $this->categoryRepository->getList(),
                     'choice_label' => 'name',
-                    'choice_value' => function (Category $category = null) {
-                        return $category ? $category->getCategoryId() : '';
-                    },
+                    'choice_value' => fn (Category $category = null) => $category ? $category->getCategoryId() : '',
                     'attr' => [
                         'class' => 'input-xlarge',
                     ],
@@ -86,9 +84,7 @@ class OperationSearchFormType extends AbstractType
                     'group_by' => 'type',
                     'choices' => $this->paymentMethodRepository->getList(),
                     'choice_label' => 'name',
-                    'choice_value' => function (PaymentMethod $paymentMethod = null) {
-                        return $paymentMethod ? $paymentMethod->getPaymentMethodId() : '';
-                    },
+                    'choice_value' => fn (PaymentMethod $paymentMethod = null) => $paymentMethod ? $paymentMethod->getPaymentMethodId() : '',
                     'attr' => [
                         'class' => 'input-medium',
                     ],

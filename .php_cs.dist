@@ -16,8 +16,8 @@ return PhpCsFixer\Config::create()
     ->setRules([
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
-        '@PHP71Migration' => true,
-        '@PHP71Migration:risky' => true,
+        '@PHP80Migration' => true,
+        '@PHP80Migration:risky' => true,
         '@PHPUnit60Migration:risky' => true,
         'backtick_to_shell_exec' => true,
         'blank_line_before_statement' => true,
