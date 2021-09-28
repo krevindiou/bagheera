@@ -40,14 +40,8 @@ abstract class ProviderBase
 
     /**
      * Converts transactions data to an array.
-     *
-     * @param Account $account Account entity
-     * @param string  $data    Data to convert
-     * @param string  $format  Either QIF, OFX or QFX
-     *
-     * @return array
      */
-    protected function convertToArray(Account $account, string $data, string $format)
+    protected function convertToArray(Account $account, string $data, string $format): array
     {
         try {
             $data = ArrayConverter::convertFromFormat($data, $format);
@@ -62,10 +56,6 @@ abstract class ProviderBase
 
     /**
      * Saves transactions data depending on type.
-     *
-     * @param Account $account Account entity
-     * @param string  $data    Data to save
-     * @param string  $type    Either original, json or json_normalized
      */
     protected function save(Account $account, string $data, string $type): void
     {

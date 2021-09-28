@@ -65,10 +65,6 @@ class ReportService
 
     /**
      * Returns report form.
-     *
-     * @param Member $member Member entity
-     * @param Report $report Report entity
-     * @param string $type   Report type (sum, average, distribution, estimate)
      */
     public function getForm(Member $member, Report $report = null, string $type = null): ?FormInterface
     {
@@ -267,10 +263,6 @@ class ReportService
 
     /**
      * Returns graph data.
-     *
-     * @param Report $report   Report entity
-     * @param array  $accounts Accounts list
-     * @param string $type     sum or average
      */
     public function getGraphValues(Report $report, array $accounts, string $type): array
     {
@@ -279,11 +271,6 @@ class ReportService
 
     /**
      * Returns synthesis graph data.
-     *
-     * @param Member    $member    Member entity
-     * @param \DateTime $startDate Data after this date
-     * @param \DateTime $endDate   Data before this date
-     * @param Account   $account   Synthesis for specific account
      */
     public function getSynthesis(Member $member, \DateTime $startDate = null, \DateTime $endDate = null, Account $account = null): array
     {

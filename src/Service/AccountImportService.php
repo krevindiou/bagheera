@@ -81,10 +81,6 @@ class AccountImportService
 
     /**
      * Saves transactions data depending on type.
-     *
-     * @param Account $account Account entity
-     * @param string  $data    Data to save
-     * @param string  $type    Either original, json or json_normalized
      */
     public function setData(Account $account, string $data, string $type): void
     {

@@ -20,16 +20,11 @@ interface ProviderInterface
 
     /**
      * Fetches transactions into an array.
-     *
-     * @param Account $account Account entity
      */
     public function fetchTransactions(Account $account): array;
 
     /**
      * Converts transactions data to normalized format.
-     *
-     * @param Account $account Account entity
-     * @param array   $data    Data to normalize
      */
     public function normalizeData(Account $account, array $data): array;
 }

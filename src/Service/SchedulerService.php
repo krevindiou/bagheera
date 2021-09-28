@@ -59,9 +59,6 @@ class SchedulerService
 
     /**
      * Returns scheduler form.
-     *
-     * @param Scheduler $scheduler Scheduler entity
-     * @param Account   $account   Account entity for new scheduler
      */
     public function getForm(Scheduler $scheduler = null, Account $account = null): ?FormInterface
     {

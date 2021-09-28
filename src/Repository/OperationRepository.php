@@ -314,11 +314,6 @@ class OperationRepository extends ServiceEntityRepository
 
     /**
      * Gets total amount by month.
-     *
-     * @param Member    $member    Member entity
-     * @param \DateTime $startDate Sum calculated after this date
-     * @param \DateTime $endDate   Sum calculated before this date
-     * @param Account   $account   Synthesis for specific account
      */
     public function getTotalByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null): array
     {
@@ -427,11 +422,6 @@ class OperationRepository extends ServiceEntityRepository
 
     /**
      * Gets operations sum for each month.
-     *
-     * @param Member    $member    Member entity
-     * @param \DateTime $startDate Sum calculated after this date
-     * @param \DateTime $endDate   Sum calculated before this date
-     * @param Account   $account   Synthesis for specific account
      */
     protected function getSumsByMonth(Member $member, \DateTime $startDate, \DateTime $endDate, Account $account = null): array
     {
@@ -496,9 +486,6 @@ class OperationRepository extends ServiceEntityRepository
 
     /**
      * Gets operations sum before a specified date.
-     *
-     * @param Member    $member  Member entity
-     * @param \DateTime $endDate Sum calculated before this date
      */
     protected function getSumBefore(Member $member, \DateTime $endDate, Account $account = null): array
     {

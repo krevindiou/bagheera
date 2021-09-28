@@ -34,8 +34,6 @@ class ProviderAdapter
 
     /**
      * Defines BankAccess entity (used to retrieve bank's specific service).
-     *
-     * @param BankAccess $bankAccess BankAccess entity
      */
     public function setBankAccess(BankAccess $bankAccess): void
     {
