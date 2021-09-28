@@ -69,9 +69,7 @@ class OperationRepository extends ServiceEntityRepository
 
             if (null !== $formModel->categories && 0 !== count($formModel->categories)) {
                 $categories = array_map(
-                    function (Category $value) {
-                        return $value->getCategoryId();
-                    },
+                    fn (Category $value) => $value->getCategoryId(),
                     $formModel->categories
                 );
 
@@ -79,9 +77,7 @@ class OperationRepository extends ServiceEntityRepository
             }
             if (null !== $formModel->paymentMethods && 0 !== count($formModel->paymentMethods)) {
                 $paymentMethods = array_map(
-                    function (PaymentMethod $value) {
-                        return $value->getPaymentMethodId();
-                    },
+                    fn (PaymentMethod $value) => $value->getPaymentMethodId(),
                     $formModel->paymentMethods
                 );
 
