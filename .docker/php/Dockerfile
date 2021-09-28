@@ -26,6 +26,8 @@ EXPOSE 9000
 CMD ["php-fpm"]
 
 FROM base AS dev
+ENV APP_ENV=dev
+ENV NODE_ENV=development
 RUN pecl install xdebug-3.0.3 && docker-php-ext-enable xdebug
 RUN echo 'xdebug.max_nesting_level=512' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v2.19.2/php-cs-fixer.phar
@@ -36,6 +38,8 @@ COPY . ./
 RUN composer run-script --no-ansi --no-interaction post-install-cmd
 
 FROM base AS prod
+ENV APP_ENV=prod
+ENV NODE_ENV=production
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY composer.json composer.lock ./
 RUN composer install --no-ansi --no-interaction --no-progress --no-dev --optimize-autoloader --no-scripts

@@ -19,8 +19,6 @@ services:
     volumes:
       - frontend:/srv/www/bagheera/public/build
     environment:
-      - APP_ENV=prod
-      - NODE_ENV=production
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -39,8 +37,6 @@ services:
     restart: always
     volumes:
       - frontend:/srv/www/bagheera/public/build
-    environment:
-      - APP_ENV=prod
     ports:
       - "8080:8080"
 volumes:
