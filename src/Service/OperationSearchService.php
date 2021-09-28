@@ -35,10 +35,6 @@ class OperationSearchService
 
     /**
      * Returns operationSearch form.
-     *
-     * @param Member                   $member    Member entity
-     * @param OperationSearchFormModel $formModel OperationSearch form model
-     * @param Account                  $account   Account entity for new operationSearch
      */
     public function getForm(Member $member, ?OperationSearchFormModel $formModel, Account $account = null): ?FormInterface
     {

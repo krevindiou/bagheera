@@ -8,13 +8,8 @@ class ArrayConverter
 {
     /**
      * Converts string data to an array.
-     *
-     * @param string $content Data to convert
-     * @param string $format  Either QIF, OFX or QFX
-     *
-     * @return array
      */
-    public static function convertFromFormat(string $content, string $format)
+    public static function convertFromFormat(string $content, string $format): array
     {
         $method = 'self::convertFrom'.ucfirst(strtolower($format));
 
@@ -25,7 +20,7 @@ class ArrayConverter
         throw new \InvalidArgumentException(sprintf('Invalid format argument "%s"', $format));
     }
 
-    private static function convertFromQif(string $content)
+    private static function convertFromQif(string $content): array
     {
         $data = [];
 
@@ -46,13 +41,13 @@ class ArrayConverter
         return $data;
     }
 
-    private static function convertFromOfx(string $content)
+    private static function convertFromOfx(string $content): array
     {
         // @todo
         return [];
     }
 
-    private static function convertFromQfx(string $content)
+    private static function convertFromQfx(string $content): array
     {
         // @todo
         return [];

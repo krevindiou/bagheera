@@ -13,9 +13,6 @@ class CryptService
 
     /**
      * Encrypts data.
-     *
-     * @param string $message Data to encrypt
-     * @param string $key     Key used to encrypt
      */
     public function encrypt(string $message, string $key): string
     {
@@ -42,9 +39,6 @@ class CryptService
 
     /**
      * Decrypts data.
-     *
-     * @param string $message Data to decrypt
-     * @param string $key     Key used to decrypt
      */
     public function decrypt(string $message, string $key): string
     {

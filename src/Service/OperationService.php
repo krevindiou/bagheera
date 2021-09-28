@@ -47,11 +47,6 @@ class OperationService
 
     /**
      * Returns operations list.
-     *
-     * @param Member                   $member      Member entity
-     * @param Account                  $account     Account entity
-     * @param int                      $currentPage Page number
-     * @param OperationSearchFormModel $formModel   OperationSearch form model
      */
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): ?Pagerfanta
     {
@@ -64,10 +59,6 @@ class OperationService
 
     /**
      * Returns operation form.
-     *
-     * @param Member    $member    Member entity
-     * @param Operation $operation Operation entity
-     * @param Account   $account   Account entity for new operation
      */
     public function getForm(Member $member, Operation $operation = null, Account $account = null): ?FormInterface
     {
@@ -199,10 +190,6 @@ class OperationService
 
     /**
      * Saves multiple operations.
-     *
-     * @param Account  $account    Account entity
-     * @param array    $operations Operations data
-     * @param \Closure $func       Regularly called function
      */
     public function saveMulti(Account $account, array $operations, \Closure $func): bool
     {
