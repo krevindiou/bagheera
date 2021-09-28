@@ -28,7 +28,7 @@
         "doctrine/doctrine-bundle": "^2.4",
         "doctrine/doctrine-migrations-bundle": "^3.1",
         "doctrine/orm": "^2.9",
-        "sensio/framework-extra-bundle": "^5.6",
+        "sensio/framework-extra-bundle": "^6.2",
         "symfony/asset": "5.*",
         "symfony/browser-kit": "5.*",
         "symfony/css-selector": "5.*",
