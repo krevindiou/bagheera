@@ -10,9 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class MemberForgotPasswordFormModel
 {
-    /**
-     * @FieldExists(className = Member::class, field = "email")
-     */
+    #[FieldExists(options: ['className' => Member::class, 'field' => 'email'])]
     #[Assert\NotBlank]
     #[Assert\Email]
     public $email;

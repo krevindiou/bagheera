@@ -130,6 +130,10 @@ class MemberService
         $member->setEmail($formModel->email);
         $member->setCountry($formModel->country);
         $member->setPassword($this->passwordEncoder->encodePassword($member, $formModel->plainPassword));
+        $errors = $this->validator->validate($member);
+        if (0 !== count($errors)) {
+            return false;
+        }
 
         return $this->add($member);
     }
