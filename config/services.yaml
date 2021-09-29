@@ -25,12 +25,12 @@ services:
 
     App\Command\ImportExternalBankCommand:
         arguments:
-            $emSecure: '@doctrine.orm.secure_entity_manager'
+            $secureEntityManager: '@doctrine.orm.secure_entity_manager'
 
     App\Service\BankAccessService:
         arguments:
             $secret: '%kernel.secret%'
-            $emSecure: '@doctrine.orm.secure_entity_manager'
+            $secureEntityManager: '@doctrine.orm.secure_entity_manager'
 
     App\Service\BankService:
         arguments:

@@ -11,12 +11,12 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class AccountImportService
 {
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private AccountImportRepository $accountImportRepository;
 
-    public function __construct(EntityManagerInterface $em, AccountImportRepository $accountImportRepository)
+    public function __construct(EntityManagerInterface $entityManager, AccountImportRepository $accountImportRepository)
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->accountImportRepository = $accountImportRepository;
     }
 
@@ -41,8 +41,8 @@ class AccountImportService
             $accountImport = new AccountImport();
             $accountImport->setImportId($importId);
             $accountImport->setAccount($account);
-            $this->em->persist($accountImport);
-            $this->em->flush();
+            $this->entityManager->persist($accountImport);
+            $this->entityManager->flush();
         }
     }
 
@@ -56,7 +56,7 @@ class AccountImportService
         if (null !== $accountImport) {
             $accountImport->setProgress($progress);
 
-            $this->em->flush();
+            $this->entityManager->flush();
         }
     }
 
@@ -70,7 +70,7 @@ class AccountImportService
         if (null !== $accountImport) {
             $accountImport->setFinished(true);
 
-            $this->em->flush();
+            $this->entityManager->flush();
         }
     }
 
@@ -97,7 +97,7 @@ class AccountImportService
                     break;
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         }
     }
 

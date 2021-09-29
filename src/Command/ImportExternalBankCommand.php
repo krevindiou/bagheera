@@ -21,8 +21,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ImportExternalBankCommand extends Command
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
-    private EntityManagerInterface $emSecure;
+    private EntityManagerInterface $entityManager;
+    private EntityManagerInterface $secureEntityManager;
     private AccountService $accountService;
     private AccountImportService $accountImportService;
     private OperationService $operationService;
@@ -30,16 +30,16 @@ class ImportExternalBankCommand extends Command
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
-        EntityManagerInterface $emSecure,
+        EntityManagerInterface $entityManager,
+        EntityManagerInterface $secureEntityManager,
         AccountService $accountService,
         AccountImportService $accountImportService,
         OperationService $operationService,
         ProviderAdapter $provider
     ) {
         $this->logger = $logger;
-        $this->em = $em;
-        $this->emSecure = $emSecure;
+        $this->entityManager = $entityManager;
+        $this->secureEntityManager = $secureEntityManager;
         $this->accountService = $accountService;
         $this->accountImportService = $accountImportService;
         $this->operationService = $operationService;
@@ -58,12 +58,12 @@ class ImportExternalBankCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
-        $bank = $this->em->find(Bank::class, $input->getArgument('bank_id'));
+        $bank = $this->entityManager->find(Bank::class, $input->getArgument('bank_id'));
         if (null === $bank) {
             return null;
         }
 
-        $bankAccess = $this->emSecure->find(BankAccess::class, $bank->getBankId());
+        $bankAccess = $this->secureEntityManager->find(BankAccess::class, $bank->getBankId());
         if (null === $bankAccess) {
             return null;
         }
@@ -81,7 +81,7 @@ class ImportExternalBankCommand extends Command
         $this->accountService->saveMulti($bank, $accounts);
 
         // Entity manager needs a refresh to fetch new accounts
-        $this->em->refresh($bank);
+        $this->entityManager->refresh($bank);
 
         foreach ($bank->getAccounts() as $account) {
             if (null !== $account->getExternalAccountId()) {

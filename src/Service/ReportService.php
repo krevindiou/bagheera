@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class ReportService
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private FormFactoryInterface $formFactory;
     private ValidatorInterface $validator;
     private AccountRepository $accountRepository;
@@ -31,7 +31,7 @@ class ReportService
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         AccountRepository $accountRepository,
@@ -39,7 +39,7 @@ class ReportService
         OperationRepository $operationRepository
     ) {
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->accountRepository = $accountRepository;
@@ -140,16 +140,16 @@ class ReportService
     {
         try {
             foreach ($reportsId as $reportId) {
-                $report = $this->em->find(Report::class, $reportId);
+                $report = $this->entityManager->find(Report::class, $reportId);
 
                 if (null !== $report) {
                     if ($member === $report->getMember()) {
-                        $this->em->remove($report);
+                        $this->entityManager->remove($report);
                     }
                 }
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -322,8 +322,8 @@ class ReportService
     {
         if ($member === $report->getMember()) {
             try {
-                $this->em->persist($report);
-                $this->em->flush();
+                $this->entityManager->persist($report);
+                $this->entityManager->flush();
 
                 return true;
             } catch (\Exception $e) {

@@ -23,7 +23,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class AccountService
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private FormFactoryInterface $formFactory;
     private ValidatorInterface $validator;
     private TranslatorInterface $translator;
@@ -32,7 +32,7 @@ class AccountService
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         TranslatorInterface $translator,
@@ -40,7 +40,7 @@ class AccountService
         AccountRepository $accountRepository
     ) {
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->translator = $translator;
@@ -112,7 +112,7 @@ class AccountService
                 $operation = new Operation();
                 $operation->setAccount($account);
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
-                $operation->setPaymentMethod($this->em->find(PaymentMethod::class, PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
+                $operation->setPaymentMethod($this->entityManager->find(PaymentMethod::class, PaymentMethod::PAYMENT_METHOD_ID_INITIAL_BALANCE));
                 if ($formModel->initialBalance > 0) {
                     $operation->setCredit(abs($formModel->initialBalance));
                 } else {
@@ -137,7 +137,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find(Account::class, $accountId);
+                $account = $this->entityManager->find(Account::class, $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -146,7 +146,7 @@ class AccountService
                 }
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -163,7 +163,7 @@ class AccountService
     {
         try {
             foreach ($accountsId as $accountId) {
-                $account = $this->em->find(Account::class, $accountId);
+                $account = $this->entityManager->find(Account::class, $accountId);
 
                 if (null !== $account) {
                     if ($member === $account->getBank()->getMember()) {
@@ -172,7 +172,7 @@ class AccountService
                 }
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -224,7 +224,7 @@ class AccountService
 
                 if (0 === count($errors)) {
                     try {
-                        $this->em->persist($account);
+                        $this->entityManager->persist($account);
                     } catch (\Exception $e) {
                         $this->logger->error($e->getMessage());
                         $error = true;
@@ -248,7 +248,7 @@ class AccountService
         }
 
         try {
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             $error = true;
@@ -264,7 +264,7 @@ class AccountService
     {
         if (null !== $account->getAccountId()) {
             /** @var Account */
-            $oldAccount = $this->em->getUnitOfWork()->getOriginalEntityData($account);
+            $oldAccount = $this->entityManager->getUnitOfWork()->getOriginalEntityData($account);
 
             if ($member !== $oldAccount['bank']->getMember()) {
                 return false;
@@ -273,8 +273,8 @@ class AccountService
 
         if ($member === $account->getBank()->getMember()) {
             try {
-                $this->em->persist($account);
-                $this->em->flush();
+                $this->entityManager->persist($account);
+                $this->entityManager->flush();
 
                 return true;
             } catch (\Exception $e) {

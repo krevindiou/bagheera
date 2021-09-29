@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class BankService
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private FormFactoryInterface $formFactory;
     private ValidatorInterface $validator;
     private AccountService $accountService;
@@ -32,7 +32,7 @@ class BankService
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         AccountService $accountService,
@@ -41,7 +41,7 @@ class BankService
         $environment
     ) {
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->accountService = $accountService;
@@ -126,7 +126,7 @@ class BankService
                 $bank->setClosed(true);
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -146,7 +146,7 @@ class BankService
                 $bank->setDeleted(true);
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -222,8 +222,8 @@ class BankService
                 $bank->setSortOrder($order);
             }
 
-            $this->em->persist($bank);
-            $this->em->flush();
+            $this->entityManager->persist($bank);
+            $this->entityManager->flush();
 
             return true;
         } catch (\Exception $e) {

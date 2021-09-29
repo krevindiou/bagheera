@@ -12,11 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitDatabaseCommand extends Command
 {
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         parent::__construct();
     }
 
@@ -42,16 +42,16 @@ class InitDatabaseCommand extends Command
         }
 
         foreach ($input->getArgument('files') as $file) {
-            $this->em->getConnection()->exec(file_get_contents($file));
+            $this->entityManager->getConnection()->exec(file_get_contents($file));
         }
 
-        $this->em->flush();
+        $this->entityManager->flush();
 
         return 0;
     }
 
     private function isDatabaseEmpty(): bool
     {
-        return 0 === count($this->em->getConnection()->getSchemaManager()->listTables());
+        return 0 === count($this->entityManager->getConnection()->getSchemaManager()->listTables());
     }
 }

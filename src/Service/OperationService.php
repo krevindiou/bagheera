@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class OperationService
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private FormFactoryInterface $formFactory;
     private ValidatorInterface $validator;
     private OperationRepository $operationRepository;
@@ -31,14 +31,14 @@ class OperationService
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         OperationRepository $operationRepository,
         $categoriesId
     ) {
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->operationRepository = $operationRepository;
@@ -138,16 +138,16 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find(Operation::class, $operationId);
+                $operation = $this->entityManager->find(Operation::class, $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
-                        $this->em->remove($operation);
+                        $this->entityManager->remove($operation);
                     }
                 }
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -164,7 +164,7 @@ class OperationService
     {
         try {
             foreach ($operationsId as $operationId) {
-                $operation = $this->em->find(Operation::class, $operationId);
+                $operation = $this->entityManager->find(Operation::class, $operationId);
 
                 if (null !== $operation) {
                     if ($member === $operation->getAccount()->getBank()->getMember()) {
@@ -173,7 +173,7 @@ class OperationService
                 }
             }
 
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -201,7 +201,7 @@ class OperationService
             $operation->setAccount($account);
             $operation->setThirdParty($operationArray['label']);
             $operation->setPaymentMethod(
-                $this->em->find(PaymentMethod::class, $operationArray['payment_method_id'])
+                $this->entityManager->find(PaymentMethod::class, $operationArray['payment_method_id'])
             );
 
             if (isset($operationArray['transaction_id'])) {
@@ -219,7 +219,7 @@ class OperationService
 
             if (0 === count($errors)) {
                 try {
-                    $this->em->persist($operation);
+                    $this->entityManager->persist($operation);
 
                     ++$i;
 
@@ -255,7 +255,7 @@ class OperationService
 
         if ($i > 0) {
             try {
-                $this->em->flush();
+                $this->entityManager->flush();
             } catch (\Exception $e) {
                 $error = true;
             }
@@ -271,7 +271,7 @@ class OperationService
      */
     public function getLastSalary(Member $member): ?Operation
     {
-        $category = $this->em->find(Category::class, $this->categoriesId['salary']);
+        $category = $this->entityManager->find(Category::class, $this->categoriesId['salary']);
         if (!$category) {
             return null;
         }
@@ -294,7 +294,7 @@ class OperationService
     {
         if (null !== $operation->getOperationId()) {
             /** @var Operation */
-            $oldOperation = $this->em->getUnitOfWork()->getOriginalEntityData($operation);
+            $oldOperation = $this->entityManager->getUnitOfWork()->getOriginalEntityData($operation);
 
             if ($member !== $oldOperation['account']->getBank()->getMember()) {
                 return false;
@@ -315,7 +315,7 @@ class OperationService
 
             $transferOperationBeforeSave = null;
             if (null !== $operation->getOperationId()) {
-                $operationBeforeSave = $this->em->find(
+                $operationBeforeSave = $this->entityManager->find(
                     Operation::class,
                     $operation->getOperationId()
                 );
@@ -340,12 +340,12 @@ class OperationService
                 }
 
                 if (PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER === $operation->getPaymentMethod()->getPaymentMethodId()) {
-                    $paymentMethod = $this->em->find(
+                    $paymentMethod = $this->entityManager->find(
                         PaymentMethod::class,
                         PaymentMethod::PAYMENT_METHOD_ID_CREDIT_TRANSFER
                     );
                 } else {
-                    $paymentMethod = $this->em->find(
+                    $paymentMethod = $this->entityManager->find(
                         PaymentMethod::class,
                         PaymentMethod::PAYMENT_METHOD_ID_DEBIT_TRANSFER
                     );
@@ -362,7 +362,7 @@ class OperationService
                 $transferOperation->setNotes($operation->getNotes() ?? '');
 
                 try {
-                    $this->em->persist($transferOperation);
+                    $this->entityManager->persist($transferOperation);
                 } catch (\Exception $e) {
                     $this->logger->error($e->getMessage());
 
@@ -374,8 +374,8 @@ class OperationService
                     $operation->setTransferOperation(null);
 
                     try {
-                        $this->em->flush();
-                        $this->em->remove($transferOperationBeforeSave);
+                        $this->entityManager->flush();
+                        $this->entityManager->remove($transferOperationBeforeSave);
                     } catch (\Exception $e) {
                         $this->logger->error($e->getMessage());
 
@@ -385,8 +385,8 @@ class OperationService
             }
 
             try {
-                $this->em->persist($operation);
-                $this->em->flush();
+                $this->entityManager->persist($operation);
+                $this->entityManager->flush();
 
                 return true;
             } catch (\Exception $e) {
