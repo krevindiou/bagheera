@@ -13,8 +13,6 @@ use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
 class FieldExistsValidator extends ConstraintValidator
 {
-    private EntityManagerInterface $entityManager;
-
     /**
      * @template T
      *
@@ -22,9 +20,8 @@ class FieldExistsValidator extends ConstraintValidator
      */
     private EntityRepository $repository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function validate($value, Constraint $constraint): void

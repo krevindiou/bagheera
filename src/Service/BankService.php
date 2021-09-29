@@ -21,33 +21,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankService
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private AccountService $accountService;
-    private BankRepository $bankRepository;
-    private string $projectDir;
-    private string $environment;
-
-    public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        AccountService $accountService,
-        BankRepository $bankRepository,
-        $projectDir,
-        $environment
-    ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->accountService = $accountService;
-        $this->bankRepository = $bankRepository;
-        $this->projectDir = $projectDir;
-        $this->environment = $environment;
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private AccountService $accountService, private BankRepository $bankRepository, private string $projectDir, private string $environment)
+    {
     }
 
     /**

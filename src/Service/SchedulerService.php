@@ -23,30 +23,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SchedulerService
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private OperationService $operationService;
-    private OperationRepository $operationRepository;
-    private SchedulerRepository $schedulerRepository;
-
-    public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        OperationService $operationService,
-        OperationRepository $operationRepository,
-        SchedulerRepository $schedulerRepository
-    ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->operationService = $operationService;
-        $this->operationRepository = $operationRepository;
-        $this->schedulerRepository = $schedulerRepository;
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private OperationService $operationService, private OperationRepository $operationRepository, private SchedulerRepository $schedulerRepository)
+    {
     }
 
     /**

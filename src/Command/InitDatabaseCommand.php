@@ -12,11 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitDatabaseCommand extends Command
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
         parent::__construct();
     }
 

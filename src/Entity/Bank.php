@@ -27,12 +27,6 @@ class Bank
     #[GeneratedValue(strategy: 'IDENTITY')]
     protected ?int $bankId = null;
 
-    #[Assert\NotNull]
-    #[Assert\Type(type: Member::class)]
-    #[ManyToOne(targetEntity: Member::class, inversedBy: 'banks')]
-    #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
-    protected ?Member $member;
-
     #[Assert\Type(type: Provider::class)]
     #[ManyToOne(targetEntity: Provider::class)]
     #[JoinColumn(name: 'provider_id', referencedColumnName: 'provider_id')]
@@ -62,9 +56,13 @@ class Bank
     #[OrderBy(value: ['name' => 'ASC'])]
     protected array|Collection|ArrayCollection $accounts;
 
-    public function __construct(Member $member)
-    {
-        $this->member = $member;
+    public function __construct(
+        #[Assert\NotNull]
+        #[Assert\Type(type: Member::class)]
+        #[ManyToOne(targetEntity: Member::class, inversedBy: 'banks')]
+        #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
+        protected ?Member $member
+    ) {
         $this->accounts = new ArrayCollection();
     }
 

@@ -13,15 +13,8 @@ use Twig\TwigFilter;
 
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
-    private TokenStorageInterface $tokenStorage;
-    private BankService $bankService;
-
-    public function __construct(
-        TokenStorageInterface $tokenStorage,
-        BankService $bankService
-    ) {
-        $this->tokenStorage = $tokenStorage;
-        $this->bankService = $bankService;
+    public function __construct(private TokenStorageInterface $tokenStorage, private BankService $bankService)
+    {
     }
 
     public function getGlobals()

@@ -12,18 +12,8 @@ use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class LoginListener
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private SchedulerService $schedulerService;
-
-    public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        SchedulerService $schedulerService
-    ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->schedulerService = $schedulerService;
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private SchedulerService $schedulerService)
+    {
     }
 
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event): void

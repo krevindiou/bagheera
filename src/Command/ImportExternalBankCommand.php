@@ -20,30 +20,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ImportExternalBankCommand extends Command
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private EntityManagerInterface $secureEntityManager;
-    private AccountService $accountService;
-    private AccountImportService $accountImportService;
-    private OperationService $operationService;
-    private ProviderAdapter $provider;
-
     public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        EntityManagerInterface $secureEntityManager,
-        AccountService $accountService,
-        AccountImportService $accountImportService,
-        OperationService $operationService,
-        ProviderAdapter $provider
+        private LoggerInterface $logger,
+        private EntityManagerInterface $entityManager,
+        private EntityManagerInterface $secureEntityManager,
+        private AccountService $accountService,
+        private AccountImportService $accountImportService,
+        private OperationService $operationService,
+        private ProviderAdapter $provider
     ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->secureEntityManager = $secureEntityManager;
-        $this->accountService = $accountService;
-        $this->accountImportService = $accountImportService;
-        $this->operationService = $operationService;
-        $this->provider = $provider;
         parent::__construct();
     }
 

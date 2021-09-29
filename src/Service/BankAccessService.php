@@ -18,33 +18,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankAccessService
 {
-    private string $secret;
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private EntityManagerInterface $secureEntityManager;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private BankService $bankService;
-    private CryptService $cryptService;
-
-    public function __construct(
-        $secret,
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        EntityManagerInterface $secureEntityManager,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        BankService $bankService,
-        CryptService $cryptService
-    ) {
-        $this->secret = $secret;
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->secureEntityManager = $secureEntityManager;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->bankService = $bankService;
-        $this->cryptService = $cryptService;
+    public function __construct(private string $secret, private LoggerInterface $logger, private EntityManagerInterface $entityManager, private EntityManagerInterface $secureEntityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private BankService $bankService, private CryptService $cryptService)
+    {
     }
 
     /**

@@ -22,30 +22,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class AccountService
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private TranslatorInterface $translator;
-    private OperationService $operationService;
-    private AccountRepository $accountRepository;
-
-    public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        TranslatorInterface $translator,
-        OperationService $operationService,
-        AccountRepository $accountRepository
-    ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->translator = $translator;
-        $this->operationService = $operationService;
-        $this->accountRepository = $accountRepository;
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private TranslatorInterface $translator, private OperationService $operationService, private AccountRepository $accountRepository)
+    {
     }
 
     /**

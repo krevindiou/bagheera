@@ -12,11 +12,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class AccountRepository
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection

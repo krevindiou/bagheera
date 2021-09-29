@@ -21,15 +21,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OperationSearchFormType extends AbstractType
 {
-    private CategoryRepository $categoryRepository;
-    private PaymentMethodRepository $paymentMethodRepository;
-
-    public function __construct(
-        CategoryRepository $categoryRepository,
-        PaymentMethodRepository $paymentMethodRepository
-    ) {
-        $this->categoryRepository = $categoryRepository;
-        $this->paymentMethodRepository = $paymentMethodRepository;
+    public function __construct(private CategoryRepository $categoryRepository, private PaymentMethodRepository $paymentMethodRepository)
+    {
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

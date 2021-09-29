@@ -9,11 +9,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 class CategoryService
 {
-    private CategoryRepository $categoryRepository;
-
-    public function __construct(CategoryRepository $categoryRepository)
+    public function __construct(private CategoryRepository $categoryRepository)
     {
-        $this->categoryRepository = $categoryRepository;
     }
 
     public function getList(): ArrayCollection

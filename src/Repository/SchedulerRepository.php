@@ -11,11 +11,8 @@ use Pagerfanta\Pagerfanta;
 
 class SchedulerRepository
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function getList(Account $account, int $currentPage = 1): Pagerfanta

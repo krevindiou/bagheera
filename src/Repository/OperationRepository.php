@@ -19,11 +19,8 @@ use Pagerfanta\Pagerfanta;
 
 class OperationRepository
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): Pagerfanta
