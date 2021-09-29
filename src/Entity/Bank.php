@@ -30,13 +30,11 @@ class Bank
 
     #[Assert\NotNull]
     #[Assert\Type(type: Member::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Member::class, inversedBy: 'banks')]
     #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
     protected ?Member $member;
 
     #[Assert\Type(type: Provider::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Provider::class)]
     #[JoinColumn(name: 'provider_id', referencedColumnName: 'provider_id')]
     protected ?Provider $provider = null;

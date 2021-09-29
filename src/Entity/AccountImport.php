@@ -27,7 +27,6 @@ class AccountImport
 
     #[Assert\NotNull]
     #[Assert\Type(type: Account::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Account::class)]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
     protected ?Account $account = null;

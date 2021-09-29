@@ -14,20 +14,17 @@ trait OperationTrait
     use TimestampableTrait;
 
     #[Assert\Type(type: Account::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Account::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'transfer_account_id', referencedColumnName: 'account_id')]
     protected ?Account $transferAccount;
 
     #[Assert\Type(type: Category::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Category::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
     protected ?Category $category;
 
     #[Assert\NotNull]
     #[Assert\Type(type: PaymentMethod::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: PaymentMethod::class)]
     #[JoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id', nullable: false)]
     protected PaymentMethod $paymentMethod;

@@ -31,7 +31,6 @@ class Report
 
     #[Assert\NotNull]
     #[Assert\Type(type: Member::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Member::class, inversedBy: 'reports')]
     #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
     protected ?Member $member = null;

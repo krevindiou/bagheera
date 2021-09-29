@@ -22,7 +22,6 @@ class Scheduler
 
     #[Assert\NotNull]
     #[Assert\Type(type: Account::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Account::class, inversedBy: 'schedulers')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
     protected Account $account;
