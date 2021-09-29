@@ -46,7 +46,7 @@ class Category
     protected ?bool $active = true;
 
     #[OneToMany(targetEntity: self::class, mappedBy: 'parentCategory', fetch: 'EXTRA_LAZY')]
-    protected array|Collection|ArrayCollection $subCategories;
+    protected Collection $subCategories;
 
     public function __construct()
     {
