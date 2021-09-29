@@ -21,13 +21,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class BankChooseFormType extends AbstractType
 {
-    private BankRepository $bankRepository;
-    private ProviderRepository $providerRepository;
-
-    public function __construct(BankRepository $bankRepository, ProviderRepository $providerRepository)
+    public function __construct(private BankRepository $bankRepository, private ProviderRepository $providerRepository)
     {
-        $this->bankRepository = $bankRepository;
-        $this->providerRepository = $providerRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

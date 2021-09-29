@@ -15,21 +15,9 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 class ProviderAdapter
 {
     protected $providerService;
-    private EntityManagerInterface $entityManager;
-    private $key;
-    private AccountImportService $accountImportService;
-    private ContainerInterface $container;
 
-    public function __construct(
-        EntityManagerInterface $entityManager,
-        $key,
-        AccountImportService $accountImportService,
-        ContainerInterface $container
-    ) {
-        $this->entityManager = $entityManager;
-        $this->key = $key;
-        $this->accountImportService = $accountImportService;
-        $this->container = $container;
+    public function __construct(private EntityManagerInterface $entityManager, private string $key, private AccountImportService $accountImportService, private ContainerInterface $container)
+    {
     }
 
     /**

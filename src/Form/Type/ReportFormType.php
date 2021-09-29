@@ -24,11 +24,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ReportFormType extends AbstractType
 {
-    private AccountRepository $accountRepository;
-
-    public function __construct(AccountRepository $accountRepository)
+    public function __construct(private AccountRepository $accountRepository)
     {
-        $this->accountRepository = $accountRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

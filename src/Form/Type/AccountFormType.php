@@ -18,11 +18,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class AccountFormType extends AbstractType
 {
-    private BankRepository $bankRepository;
-
-    public function __construct(BankRepository $bankRepository)
+    public function __construct(private BankRepository $bankRepository)
     {
-        $this->bankRepository = $bankRepository;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void

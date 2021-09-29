@@ -11,13 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class AccountImportService
 {
-    private EntityManagerInterface $entityManager;
-    private AccountImportRepository $accountImportRepository;
-
-    public function __construct(EntityManagerInterface $entityManager, AccountImportRepository $accountImportRepository)
+    public function __construct(private EntityManagerInterface $entityManager, private AccountImportRepository $accountImportRepository)
     {
-        $this->entityManager = $entityManager;
-        $this->accountImportRepository = $accountImportRepository;
     }
 
     /**

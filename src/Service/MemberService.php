@@ -28,57 +28,8 @@ use Twig\Environment;
 
 class MemberService
 {
-    private string $secret;
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private \Swift_Mailer $mailer;
-    private array $config;
-    private TranslatorInterface $translator;
-    private RouterInterface $router;
-    private UserPasswordEncoderInterface $passwordEncoder;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private BankService $bankService;
-    private AccountService $accountService;
-    private CryptService $cryptService;
-    private Environment $templating;
-    private MemberRepository $memberRepository;
-    private AccountImportRepository $accountImportRepository;
-
-    public function __construct(
-        $secret,
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        \Swift_Mailer $mailer,
-        $config,
-        TranslatorInterface $translator,
-        RouterInterface $router,
-        UserPasswordEncoderInterface $passwordEncoder,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        BankService $bankService,
-        AccountService $accountService,
-        CryptService $cryptService,
-        Environment $templating,
-        MemberRepository $memberRepository,
-        AccountImportRepository $accountImportRepository
-    ) {
-        $this->secret = $secret;
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->mailer = $mailer;
-        $this->config = $config;
-        $this->translator = $translator;
-        $this->router = $router;
-        $this->passwordEncoder = $passwordEncoder;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->bankService = $bankService;
-        $this->accountService = $accountService;
-        $this->cryptService = $cryptService;
-        $this->templating = $templating;
-        $this->memberRepository = $memberRepository;
-        $this->accountImportRepository = $accountImportRepository;
+    public function __construct(private string $secret, private LoggerInterface $logger, private EntityManagerInterface $entityManager, private \Swift_Mailer $mailer, private array $config, private TranslatorInterface $translator, private RouterInterface $router, private UserPasswordEncoderInterface $passwordEncoder, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private BankService $bankService, private AccountService $accountService, private CryptService $cryptService, private Environment $templating, private MemberRepository $memberRepository, private AccountImportRepository $accountImportRepository)
+    {
     }
 
     /**

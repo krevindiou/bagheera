@@ -9,11 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class BankAccessRepository
 {
-    private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
     }
 
     public function delete(BankAccess $bankAccess): void

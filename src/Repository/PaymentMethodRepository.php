@@ -11,16 +11,13 @@ use Doctrine\ORM\EntityRepository;
 
 class PaymentMethodRepository
 {
-    private EntityManagerInterface $entityManager;
-
     /**
      * @var EntityRepository<PaymentMethod>
      */
     private EntityRepository $repository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(private EntityManagerInterface $entityManager)
     {
-        $this->entityManager = $entityManager;
         $this->repository = $entityManager->getRepository(PaymentMethod::class);
     }
 

@@ -21,30 +21,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ReportService
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private AccountRepository $accountRepository;
-    private ReportRepository $reportRepository;
-    private OperationRepository $operationRepository;
-
-    public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        AccountRepository $accountRepository,
-        ReportRepository $reportRepository,
-        OperationRepository $operationRepository
-    ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->accountRepository = $accountRepository;
-        $this->reportRepository = $reportRepository;
-        $this->operationRepository = $operationRepository;
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private AccountRepository $accountRepository, private ReportRepository $reportRepository, private OperationRepository $operationRepository)
+    {
     }
 
     /**

@@ -16,21 +16,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class OperationSearchService
 {
-    private FormFactoryInterface $formFactory;
-    private RequestStack $requestStack;
-    private CategoryRepository $categoryRepository;
-    private PaymentMethodRepository $paymentMethodRepository;
-
-    public function __construct(
-        FormFactoryInterface $formFactory,
-        RequestStack $requestStack,
-        CategoryRepository $categoryRepository,
-        PaymentMethodRepository $paymentMethodRepository
-    ) {
-        $this->formFactory = $formFactory;
-        $this->requestStack = $requestStack;
-        $this->categoryRepository = $categoryRepository;
-        $this->paymentMethodRepository = $paymentMethodRepository;
+    public function __construct(private FormFactoryInterface $formFactory, private RequestStack $requestStack, private CategoryRepository $categoryRepository, private PaymentMethodRepository $paymentMethodRepository)
+    {
     }
 
     /**

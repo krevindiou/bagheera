@@ -22,27 +22,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class OperationService
 {
-    private LoggerInterface $logger;
-    private EntityManagerInterface $entityManager;
-    private FormFactoryInterface $formFactory;
-    private ValidatorInterface $validator;
-    private OperationRepository $operationRepository;
-    private array $categoriesId;
-
-    public function __construct(
-        LoggerInterface $logger,
-        EntityManagerInterface $entityManager,
-        FormFactoryInterface $formFactory,
-        ValidatorInterface $validator,
-        OperationRepository $operationRepository,
-        $categoriesId
-    ) {
-        $this->logger = $logger;
-        $this->entityManager = $entityManager;
-        $this->formFactory = $formFactory;
-        $this->validator = $validator;
-        $this->operationRepository = $operationRepository;
-        $this->categoriesId = $categoriesId;
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private OperationRepository $operationRepository, private array $categoriesId)
+    {
     }
 
     /**
