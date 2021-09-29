@@ -17,11 +17,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ReportService
 {
-    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private AccountRepository $accountRepository, private ReportRepository $reportRepository, private OperationRepository $operationRepository)
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private AccountRepository $accountRepository, private ReportRepository $reportRepository, private OperationRepository $operationRepository)
     {
     }
 

@@ -395,7 +395,7 @@ class OperationRepository
 
         $stmt->execute();
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAllAssociative();
     }
 
     public function getLastScheduledOperationDate(Scheduler $scheduler): array
@@ -451,12 +451,10 @@ class OperationRepository
 
         $stmt->execute();
 
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAllAssociative();
 
-        if (!empty($results)) {
-            foreach ($results as $result) {
-                $data[$result['currency']][$result['month']] = $result['total'];
-            }
+        foreach ($results as $result) {
+            $data[$result['currency']][$result['month']] = $result['total'];
         }
 
         $periodInterval = new \DateInterval('P1M');
@@ -512,12 +510,10 @@ class OperationRepository
 
         $stmt->execute();
 
-        $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAllAssociative();
 
-        if (!empty($results)) {
-            foreach ($results as $result) {
-                $data[$result['currency']] = $result['total'];
-            }
+        foreach ($results as $result) {
+            $data[$result['currency']] = $result['total'];
         }
 
         return $data;

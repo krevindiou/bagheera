@@ -102,7 +102,7 @@ class Member implements UserInterface
 
     public function setActive(bool $active): void
     {
-        $this->active = (bool) $active;
+        $this->active = $active;
     }
 
     public function isActive(): ?bool

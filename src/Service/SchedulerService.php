@@ -19,11 +19,10 @@ use Pagerfanta\Pagerfanta;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SchedulerService
 {
-    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private OperationService $operationService, private OperationRepository $operationRepository, private SchedulerRepository $schedulerRepository)
+    public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private FormFactoryInterface $formFactory, private OperationService $operationService, private OperationRepository $operationRepository, private SchedulerRepository $schedulerRepository)
     {
     }
 

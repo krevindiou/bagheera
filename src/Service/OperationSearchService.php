@@ -8,15 +8,13 @@ use App\Entity\Account;
 use App\Entity\Member;
 use App\Form\Model\OperationSearchFormModel;
 use App\Form\Type\OperationSearchFormType;
-use App\Repository\CategoryRepository;
-use App\Repository\PaymentMethodRepository;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class OperationSearchService
 {
-    public function __construct(private FormFactoryInterface $formFactory, private RequestStack $requestStack, private CategoryRepository $categoryRepository, private PaymentMethodRepository $paymentMethodRepository)
+    public function __construct(private FormFactoryInterface $formFactory, private RequestStack $requestStack)
     {
     }
 

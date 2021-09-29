@@ -14,11 +14,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BankAccessService
 {
-    public function __construct(private string $secret, private LoggerInterface $logger, private EntityManagerInterface $entityManager, private EntityManagerInterface $secureEntityManager, private FormFactoryInterface $formFactory, private ValidatorInterface $validator, private BankService $bankService, private CryptService $cryptService)
+    public function __construct(private string $secret, private LoggerInterface $logger, private EntityManagerInterface $entityManager, private EntityManagerInterface $secureEntityManager, private FormFactoryInterface $formFactory, private BankService $bankService, private CryptService $cryptService)
     {
     }
 
@@ -58,8 +57,7 @@ class BankAccessService
 
         if (null !== $bank && $member === $bank->getMember()) {
             try {
-                // Delete previous access data
-                /** @var BankAccessRepository */
+                /** @var BankAccessRepository $bankAccessRepository */
                 $bankAccessRepository = $this->secureEntityManager->getRepository(BankAccess::class);
                 $bankAccessRepository->delete($bankAccess);
 
