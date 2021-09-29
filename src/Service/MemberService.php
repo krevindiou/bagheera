@@ -30,7 +30,7 @@ class MemberService
 {
     private string $secret;
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private \Swift_Mailer $mailer;
     private array $config;
     private TranslatorInterface $translator;
@@ -48,7 +48,7 @@ class MemberService
     public function __construct(
         $secret,
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         \Swift_Mailer $mailer,
         $config,
         TranslatorInterface $translator,
@@ -65,7 +65,7 @@ class MemberService
     ) {
         $this->secret = $secret;
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->mailer = $mailer;
         $this->config = $config;
         $this->translator = $translator;
@@ -213,7 +213,7 @@ class MemberService
         $member->setPassword($this->passwordEncoder->encodePassword($member, $password));
 
         try {
-            $this->em->flush();
+            $this->entityManager->flush();
 
             return true;
         } catch (\Exception $e) {
@@ -268,7 +268,7 @@ class MemberService
             $member->setActive(true);
 
             try {
-                $this->em->flush();
+                $this->entityManager->flush();
 
                 return true;
             } catch (\Exception $e) {
@@ -339,8 +339,8 @@ class MemberService
     protected function add(Member $member): bool
     {
         try {
-            $this->em->persist($member);
-            $this->em->flush();
+            $this->entityManager->persist($member);
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -396,7 +396,7 @@ class MemberService
     protected function update(Member $member): bool
     {
         try {
-            $this->em->flush();
+            $this->entityManager->flush();
 
             return true;
         } catch (\Exception $e) {

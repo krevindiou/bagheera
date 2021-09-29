@@ -20,8 +20,8 @@ class BankAccessService
 {
     private string $secret;
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
-    private EntityManagerInterface $emSecure;
+    private EntityManagerInterface $entityManager;
+    private EntityManagerInterface $secureEntityManager;
     private FormFactoryInterface $formFactory;
     private ValidatorInterface $validator;
     private BankService $bankService;
@@ -30,8 +30,8 @@ class BankAccessService
     public function __construct(
         $secret,
         LoggerInterface $logger,
-        EntityManagerInterface $em,
-        EntityManagerInterface $emSecure,
+        EntityManagerInterface $entityManager,
+        EntityManagerInterface $secureEntityManager,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         BankService $bankService,
@@ -39,8 +39,8 @@ class BankAccessService
     ) {
         $this->secret = $secret;
         $this->logger = $logger;
-        $this->em = $em;
-        $this->emSecure = $emSecure;
+        $this->entityManager = $entityManager;
+        $this->secureEntityManager = $secureEntityManager;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->bankService = $bankService;
@@ -79,13 +79,13 @@ class BankAccessService
      */
     protected function doSave(Member $member, BankAccess $bankAccess): bool
     {
-        $bank = $this->em->find(Bank::class, $bankAccess->getBankId());
+        $bank = $this->entityManager->find(Bank::class, $bankAccess->getBankId());
 
         if (null !== $bank && $member === $bank->getMember()) {
             try {
                 // Delete previous access data
                 /** @var BankAccessRepository */
-                $bankAccessRepository = $this->emSecure->getRepository(BankAccess::class);
+                $bankAccessRepository = $this->secureEntityManager->getRepository(BankAccess::class);
                 $bankAccessRepository->delete($bankAccess);
 
                 $encryptedLogin = $this->cryptService->encrypt($bankAccess->getPlainLogin(), $this->secret);
@@ -96,8 +96,8 @@ class BankAccessService
                 $bankAccess->setPlainLogin('');
                 $bankAccess->setPlainPassword('');
 
-                $this->emSecure->persist($bankAccess);
-                $this->emSecure->flush();
+                $this->secureEntityManager->persist($bankAccess);
+                $this->secureEntityManager->flush();
 
                 $this->bankService->importExternalBank($bank);
 

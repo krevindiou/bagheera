@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class SchedulerService
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private FormFactoryInterface $formFactory;
     private ValidatorInterface $validator;
     private OperationService $operationService;
@@ -33,7 +33,7 @@ class SchedulerService
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         FormFactoryInterface $formFactory,
         ValidatorInterface $validator,
         OperationService $operationService,
@@ -41,7 +41,7 @@ class SchedulerService
         SchedulerRepository $schedulerRepository
     ) {
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->formFactory = $formFactory;
         $this->validator = $validator;
         $this->operationService = $operationService;
@@ -127,8 +127,8 @@ class SchedulerService
     public function delete(Scheduler $scheduler): bool
     {
         try {
-            $this->em->remove($scheduler);
-            $this->em->flush();
+            $this->entityManager->remove($scheduler);
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
@@ -219,8 +219,8 @@ class SchedulerService
         }
 
         try {
-            $this->em->persist($scheduler);
-            $this->em->flush();
+            $this->entityManager->persist($scheduler);
+            $this->entityManager->flush();
 
             $this->runSchedulers($scheduler->getAccount()->getBank()->getMember());
 

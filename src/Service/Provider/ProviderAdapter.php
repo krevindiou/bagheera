@@ -15,18 +15,18 @@ use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 class ProviderAdapter
 {
     protected $providerService;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private $key;
     private AccountImportService $accountImportService;
     private ContainerInterface $container;
 
     public function __construct(
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         $key,
         AccountImportService $accountImportService,
         ContainerInterface $container
     ) {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->key = $key;
         $this->accountImportService = $accountImportService;
         $this->container = $container;
@@ -37,7 +37,7 @@ class ProviderAdapter
      */
     public function setBankAccess(BankAccess $bankAccess): void
     {
-        $bank = $this->em->find(Bank::class, $bankAccess->getBankId());
+        $bank = $this->entityManager->find(Bank::class, $bankAccess->getBankId());
 
         if (null !== $bank) {
             $provider = $bank->getProvider();
@@ -107,7 +107,7 @@ class ProviderAdapter
 
         $accountImport = $this->accountImportService->getCurrentImport($account);
         $accountImport->setTotal(count($data));
-        $this->em->flush();
+        $this->entityManager->flush();
 
         return $data;
     }

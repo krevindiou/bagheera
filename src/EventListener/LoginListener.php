@@ -13,16 +13,16 @@ use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 class LoginListener
 {
     private LoggerInterface $logger;
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
     private SchedulerService $schedulerService;
 
     public function __construct(
         LoggerInterface $logger,
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         SchedulerService $schedulerService
     ) {
         $this->logger = $logger;
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->schedulerService = $schedulerService;
     }
 
@@ -36,7 +36,7 @@ class LoginListener
         $member->setLoggedAt(new \DateTime());
 
         try {
-            $this->em->flush();
+            $this->entityManager->flush();
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
         }
