@@ -54,7 +54,7 @@ class BankRepository
             ]
         );
 
-        foreach ($stmt->fetchAll() as $row) {
+        foreach ($stmt->fetchAllAssociative() as $row) {
             if (!isset($banks[$row['bank_id']])) {
                 $banks[$row['bank_id']] = [
                     'bankId' => $row['bank_id'],

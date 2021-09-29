@@ -166,7 +166,7 @@ class OperationRepository
 
             $operations = [];
 
-            foreach ($stmt->fetchAll() as $row) {
+            foreach ($stmt->fetchAllAssociative() as $row) {
                 if (!isset($operations[$row['operation_id']])) {
                     $operations[$row['operation_id']] = [
                         'operationId' => $row['operation_id'],
@@ -238,7 +238,7 @@ class OperationRepository
         $stmt->bindValue('third_party', '%'.$queryString.'%');
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAllAssociative();
     }
 
     public function getLastFromCategory(Member $member, Category $category): ?Operation

@@ -80,7 +80,7 @@ class SchedulerRepository
 
             $schedulers = [];
 
-            foreach ($stmt->fetchAll() as $row) {
+            foreach ($stmt->fetchAllAssociative() as $row) {
                 if (!isset($schedulers[$row['scheduler_id']])) {
                     $schedulers[$row['scheduler_id']] = [
                         'schedulerId' => $row['scheduler_id'],
