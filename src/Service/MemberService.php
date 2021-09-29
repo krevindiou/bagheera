@@ -364,11 +364,9 @@ class MemberService
     {
         $banks = $member->getBanks();
 
-        if (count($banks) > 0) {
-            foreach ($banks as $bank) {
-                if (null === $bank->getProvider()) {
-                    return true;
-                }
+        foreach ($banks as $bank) {
+            if (null === $bank->getProvider()) {
+                return true;
             }
         }
 

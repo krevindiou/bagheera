@@ -274,7 +274,7 @@ class OperationService
     protected function doSave(Member $member, Operation $operation): bool
     {
         if (null !== $operation->getOperationId()) {
-            /** @var Operation */
+            /** @var Operation $oldOperation */
             $oldOperation = $this->entityManager->getUnitOfWork()->getOriginalEntityData($operation);
 
             if ($member !== $oldOperation['account']->getBank()->getMember()) {

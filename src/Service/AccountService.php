@@ -241,7 +241,7 @@ class AccountService
     protected function doSave(Member $member, Account $account): bool
     {
         if (null !== $account->getAccountId()) {
-            /** @var Account */
+            /** @var Account $oldAccount */
             $oldAccount = $this->entityManager->getUnitOfWork()->getOriginalEntityData($account);
 
             if ($member !== $oldAccount['bank']->getMember()) {
