@@ -11,14 +11,15 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
 ;
 
-return PhpCsFixer\Config::create()
+$config = new PhpCsFixer\Config();
+$config
     ->setRiskyAllowed(true)
     ->setRules([
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
         '@PHP80Migration' => true,
         '@PHP80Migration:risky' => true,
-        '@PHPUnit60Migration:risky' => true,
+        '@PHPUnit84Migration:risky' => true,
         'backtick_to_shell_exec' => true,
         'blank_line_before_statement' => true,
         'heredoc_indentation' => true,
@@ -29,3 +30,5 @@ return PhpCsFixer\Config::create()
     ])
     ->setFinder($finder)
 ;
+
+return $config;
