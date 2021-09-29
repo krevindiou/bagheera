@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\AccountRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -22,7 +21,7 @@ use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[Entity(repositoryClass: AccountRepository::class)]
+#[Entity]
 #[Table(name: 'account')]
 #[Index(name: 'external_account_id_idx', columns: ['external_account_id'])]
 class Account

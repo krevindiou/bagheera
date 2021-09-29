@@ -7,15 +7,16 @@ namespace App\Repository;
 use App\Entity\Account;
 use App\Entity\Bank;
 use App\Entity\Member;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
-class AccountRepository extends ServiceEntityRepository
+class AccountRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Account::class);
+        $this->entityManager = $entityManager;
     }
 
     public function getList(Member $member, Bank $bank = null, bool $deleted = true): ArrayCollection
@@ -34,7 +35,7 @@ class AccountRepository extends ServiceEntityRepository
         }
         $dql .= ' ORDER BY a.name ASC';
 
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
         if (null !== $bank) {
             $query->setParameter('bank', $bank);
@@ -54,7 +55,7 @@ class AccountRepository extends ServiceEntityRepository
             $dql .= ' AND o.reconciled = true';
         }
 
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('account', $account);
         $result = $query->getSingleResult();
 
@@ -71,7 +72,7 @@ class AccountRepository extends ServiceEntityRepository
             AND a != :account
             ORDER BY b.name ASC, a.name ASC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $account->getBank()->getMember());
         $query->setParameter('account', $account);
 
@@ -90,7 +91,7 @@ class AccountRepository extends ServiceEntityRepository
             AND a.deleted = false
             ORDER BY b.name ASC, a.name ASC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
 
         return new ArrayCollection($query->getResult());

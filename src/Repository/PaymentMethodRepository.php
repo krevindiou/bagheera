@@ -5,20 +5,28 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\PaymentMethod;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
-class PaymentMethodRepository extends ServiceEntityRepository
+class PaymentMethodRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var EntityRepository<PaymentMethod>
+     */
+    private EntityRepository $repository;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, PaymentMethod::class);
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(PaymentMethod::class);
     }
 
     public function getList(): ArrayCollection
     {
-        return new ArrayCollection($this->findAll());
+        return new ArrayCollection($this->repository->findAll());
     }
 
     public function getPaymentMethods(array $paymentMethodsId): ArrayCollection
@@ -28,7 +36,7 @@ class PaymentMethodRepository extends ServiceEntityRepository
             FROM App:PaymentMethod p
             WHERE p.paymentMethodId IN (%s)
             EOT;
-        $query = $this->getEntityManager()->createQuery(sprintf($dql, implode(', ', $paymentMethodsId)));
+        $query = $this->entityManager->createQuery(sprintf($dql, implode(', ', $paymentMethodsId)));
 
         return new ArrayCollection($query->getResult());
     }

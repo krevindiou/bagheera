@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Account;
-use App\Entity\Scheduler;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
 
-class SchedulerRepository extends ServiceEntityRepository
+class SchedulerRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Scheduler::class);
+        $this->entityManager = $entityManager;
     }
 
     public function getList(Account $account, int $currentPage = 1): Pagerfanta
@@ -54,7 +54,7 @@ class SchedulerRepository extends ServiceEntityRepository
             WHERE scheduler.account_id = :account_id
             ORDER BY scheduler.created_at DESC
             EOT;
-        $conn = $this->getEntityManager()->getConnection();
+        $conn = $this->entityManager->getConnection();
 
         $getNbResultsCallback = function () use ($sql, $conn, $params) {
             $start = strpos($sql, 'FROM ');

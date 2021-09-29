@@ -12,17 +12,18 @@ use App\Entity\PaymentMethod;
 use App\Entity\Report;
 use App\Entity\Scheduler;
 use App\Form\Model\OperationSearchFormModel;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
-use Doctrine\Persistence\ManagerRegistry;
 use Pagerfanta\Adapter\CallbackAdapter;
 use Pagerfanta\Pagerfanta;
 
-class OperationRepository extends ServiceEntityRepository
+class OperationRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Operation::class);
+        $this->entityManager = $entityManager;
     }
 
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): Pagerfanta
@@ -139,7 +140,7 @@ class OperationRepository extends ServiceEntityRepository
 
         $sql .= ' ORDER BY operation.value_date DESC, operation.created_at DESC';
 
-        $conn = $this->getEntityManager()->getConnection();
+        $conn = $this->entityManager->getConnection();
 
         $getNbResultsCallback = function () use ($sql, $conn, $params) {
             $start = strpos($sql, 'FROM ');
@@ -232,7 +233,7 @@ class OperationRepository extends ServiceEntityRepository
             INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date
             GROUP BY o2.third_party, o2.category_id
             EOT;
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('third_party', '%'.$queryString.'%');
         $stmt->execute();
@@ -255,7 +256,7 @@ class OperationRepository extends ServiceEntityRepository
             AND a.closed = false
             ORDER BY o.valueDate DESC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql)->setMaxResults(1);
+        $query = $this->entityManager->createQuery($dql)->setMaxResults(1);
         $query->setParameter('member', $member);
         $query->setParameter('category', $category);
 
@@ -282,7 +283,7 @@ class OperationRepository extends ServiceEntityRepository
                 AND a.closed = false
             )
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setMaxResults(1);
         $query->setParameter('member', $member);
         $query->setParameter('valueDate', $since->format(\DateTime::ISO8601));
@@ -298,7 +299,7 @@ class OperationRepository extends ServiceEntityRepository
             WHERE o.account = :account
             ORDER BY o.externalOperationId DESC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('account', $account);
         $query->setMaxResults(1);
 
@@ -379,7 +380,7 @@ class OperationRepository extends ServiceEntityRepository
             $sql .= ' ORDER BY grouping_data ASC';
         }
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
 
         array_walk($accountsId, function ($accountId, $k) use ($stmt): void {
             $stmt->bindValue(ltrim($k, ':'), $accountId);
@@ -409,7 +410,7 @@ class OperationRepository extends ServiceEntityRepository
             AND o.valueDate >= :valueDate
             ORDER BY o.valueDate DESC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setMaxResults(1);
         $query->setParameter('scheduler', $scheduler);
         $query->setParameter('valueDate', $scheduler->getValueDate()->format(\DateTime::ISO8601));
@@ -442,7 +443,7 @@ class OperationRepository extends ServiceEntityRepository
         $sql .= ' GROUP BY a.currency, month';
         $sql .= ' ORDER BY month ASC';
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
         $stmt->bindValue('end_date', $endDate->format('Y-m-d'));
@@ -504,7 +505,7 @@ class OperationRepository extends ServiceEntityRepository
 
         $sql .= ' GROUP BY a.currency';
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
         $stmt->bindValue('end_date', $endDate->format('Y-m-d'));
 

@@ -25,12 +25,7 @@ class AccountImportService
      */
     public function getCurrentImport(Account $account): ?AccountImport
     {
-        return $this->accountImportRepository->findOneBy(
-            [
-                'account' => $account->getAccountId(),
-                'finished' => 0,
-            ]
-        );
+        return $this->accountImportRepository->findOneByAccount($account);
     }
 
     /**
