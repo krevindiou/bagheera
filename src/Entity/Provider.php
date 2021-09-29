@@ -19,15 +19,15 @@ class Provider
 
     #[Id, Column(name: 'provider_id', type: 'smallint')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $providerId = null;
+    private ?int $providerId = null;
 
     #[Assert\NotBlank]
     #[Column(name: 'name', type: 'string', length: 64)]
-    protected ?string $name = null;
+    private ?string $name = null;
 
     #[Assert\NotBlank]
     #[Column(name: 'country', type: 'string', length: 2)]
-    protected ?string $country = null;
+    private ?string $country = null;
 
     public function __toString(): string
     {

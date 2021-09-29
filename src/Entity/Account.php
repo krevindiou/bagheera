@@ -30,56 +30,56 @@ class Account
 
     #[Id, Column(name: 'account_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $accountId = null;
+    private ?int $accountId = null;
 
     #[Column(name: 'external_account_id', type: 'string', length: 32, nullable: true)]
-    protected ?string $externalAccountId = null;
+    private ?string $externalAccountId = null;
 
     #[Column(name: 'bank_id', type: 'integer')]
-    protected int $bankId;
+    private int $bankId;
 
     #[Assert\NotNull]
     #[Assert\Type(type: Bank::class)]
     #[Assert\Valid]
     #[ManyToOne(targetEntity: Bank::class, inversedBy: 'accounts')]
     #[JoinColumn(name: 'bank_id', referencedColumnName: 'bank_id')]
-    protected ?Bank $bank = null;
+    private ?Bank $bank = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
     #[Column(name: 'name', type: 'string', length: 64)]
-    protected ?string $name = null;
+    private ?string $name = null;
 
     #[Assert\NotBlank]
     #[Assert\Currency]
     #[Column(name: 'currency', type: 'string', length: 3)]
-    protected ?string $currency = null;
+    private ?string $currency = null;
 
     #[Column(name: 'overdraft_facility', type: 'integer')]
-    protected ?int $overdraftFacility = 0;
+    private ?int $overdraftFacility = 0;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_closed', type: 'boolean', options: ['default' => false])]
-    protected ?bool $closed = false;
+    private ?bool $closed = false;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
-    protected ?bool $deleted = false;
+    private ?bool $deleted = false;
 
     #[ManyToMany(targetEntity: Member::class)]
     #[JoinTable(name: 'shared_account')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
     #[InverseJoinColumn(name: 'member_id', referencedColumnName: 'member_id')]
     #[OrderBy(value: ['email' => 'ASC'])]
-    protected Collection $sharedWith;
+    private Collection $sharedWith;
 
     #[OneToMany(targetEntity: Operation::class, mappedBy: 'account', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['valueDate' => 'DESC'])]
-    protected Collection $operations;
+    private Collection $operations;
 
     #[OneToMany(targetEntity: Scheduler::class, mappedBy: 'account', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['valueDate' => 'DESC'])]
-    protected Collection $schedulers;
+    private Collection $schedulers;
 
     public function __construct()
     {

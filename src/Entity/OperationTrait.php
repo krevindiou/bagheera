@@ -16,41 +16,41 @@ trait OperationTrait
     #[Assert\Type(type: Account::class)]
     #[ManyToOne(targetEntity: Account::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'transfer_account_id', referencedColumnName: 'account_id')]
-    protected ?Account $transferAccount;
+    private ?Account $transferAccount;
 
     #[Assert\Type(type: Category::class)]
     #[ManyToOne(targetEntity: Category::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
-    protected ?Category $category;
+    private ?Category $category;
 
     #[Assert\NotNull]
     #[Assert\Type(type: PaymentMethod::class)]
     #[ManyToOne(targetEntity: PaymentMethod::class)]
     #[JoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id', nullable: false)]
-    protected PaymentMethod $paymentMethod;
+    private PaymentMethod $paymentMethod;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
     #[Column(name: 'third_party', type: 'string', length: 64)]
-    protected string $thirdParty;
+    private string $thirdParty;
 
     #[Column(name: 'debit', type: 'integer', nullable: true)]
-    protected null|int $debit;
+    private null|int $debit;
 
     #[Column(name: 'credit', type: 'integer', nullable: true)]
-    protected null|int $credit;
+    private null|int $credit;
 
     #[Assert\NotBlank]
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'value_date', type: 'date')]
-    protected \DateTime $valueDate;
+    private \DateTime $valueDate;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_reconciled', type: 'boolean', options: ['default' => false])]
-    protected bool $reconciled = false;
+    private bool $reconciled = false;
 
     #[Column(name: 'notes', type: 'text')]
-    protected string $notes;
+    private string $notes;
 
     public function setAccount(Account $account): void
     {

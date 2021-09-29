@@ -17,21 +17,21 @@ class BankAccess
     use TimestampableTrait;
 
     #[Id, Column(name: 'bank_id', type: 'integer')]
-    protected ?int $bankId = null;
+    private ?int $bankId = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    protected ?string $plainLogin = null;
+    private ?string $plainLogin = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    protected ?string $plainPassword = null;
+    private ?string $plainPassword = null;
 
     #[Column(name: 'login', type: 'string', length: 255)]
-    protected ?string $login = null;
+    private ?string $login = null;
 
     #[Column(name: 'password', type: 'string', length: 255)]
-    protected ?string $password = null;
+    private ?string $password = null;
 
     public function setBankId(int $bankId): void
     {

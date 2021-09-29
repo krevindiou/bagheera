@@ -19,35 +19,35 @@ class AccountImport
     use TimestampableTrait;
 
     #[Id, Column(name: 'import_id', type: 'integer')]
-    protected ?int $importId = null;
+    private ?int $importId = null;
 
     #[Column(name: 'account_id', type: 'integer')]
-    protected int $accountId;
+    private int $accountId;
 
     #[Assert\NotNull]
     #[Assert\Type(type: Account::class)]
     #[ManyToOne(targetEntity: Account::class)]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
-    protected ?Account $account = null;
+    private ?Account $account = null;
 
     #[Column(name: 'total', type: 'integer', nullable: true)]
-    protected ?int $total = 0;
+    private ?int $total = 0;
 
     #[Column(name: 'progress', type: 'integer', nullable: true)]
-    protected ?int $progress = 0;
+    private ?int $progress = 0;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'finished', type: 'boolean', options: ['default' => false])]
-    protected ?bool $finished = false;
+    private ?bool $finished = false;
 
     #[Column(name: 'original_data', type: 'text', nullable: true)]
-    protected ?string $originalData = null;
+    private ?string $originalData = null;
 
     #[Column(name: 'json_data', type: 'text', nullable: true)]
-    protected ?string $jsonData = null;
+    private ?string $jsonData = null;
 
     #[Column(name: 'json_normalized_data', type: 'text', nullable: true)]
-    protected ?string $jsonNormalizedData = null;
+    private ?string $jsonNormalizedData = null;
 
     public function setImportId(int $importId): void
     {

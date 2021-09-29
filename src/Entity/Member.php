@@ -28,36 +28,36 @@ class Member implements UserInterface
 
     #[Id, Column(name: 'member_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $memberId = null;
+    private ?int $memberId = null;
 
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Length(max: 128)]
     #[Column(name: 'email', type: 'string', length: 128, unique: true)]
-    protected ?string $email = null;
+    private ?string $email = null;
 
     #[Column(name: 'password', type: 'string', length: 60)]
-    protected ?string $password = null;
+    private ?string $password = null;
 
     #[Assert\NotBlank]
     #[Column(name: 'country', type: 'string', length: 2)]
-    protected ?string $country = null;
+    private ?string $country = null;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_active', type: 'boolean', options: ['default' => false])]
-    protected ?bool $active = false;
+    private ?bool $active = false;
 
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'logged_at', type: 'datetime', nullable: true)]
-    protected ?\DateTime $loggedAt = null;
+    private ?\DateTime $loggedAt = null;
 
     #[OneToMany(targetEntity: Bank::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['sortOrder' => 'ASC'])]
-    protected Collection $banks;
+    private Collection $banks;
 
     #[OneToMany(targetEntity: Report::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['type' => 'ASC', 'title' => 'ASC'])]
-    protected Collection $reports;
+    private Collection $reports;
 
     public function __construct()
     {
