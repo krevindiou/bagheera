@@ -24,29 +24,29 @@ class Category
 
     #[Id, Column(name: 'category_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $categoryId = null;
+    private ?int $categoryId = null;
 
     #[Assert\Type(type: self::class)]
     #[ManyToOne(targetEntity: self::class, inversedBy: 'subCategories')]
     #[JoinColumn(name: 'parent_category_id', referencedColumnName: 'category_id')]
-    protected ?Category $parentCategory;
+    private ?Category $parentCategory;
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['debit', 'credit'])]
     #[Column(name: 'type', type: 'string', length: 8)]
-    protected ?string $type = null;
+    private ?string $type = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
     #[Column(name: 'name', type: 'string', length: 32)]
-    protected ?string $name = null;
+    private ?string $name = null;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
-    protected ?bool $active = true;
+    private ?bool $active = true;
 
     #[OneToMany(targetEntity: self::class, mappedBy: 'parentCategory', fetch: 'EXTRA_LAZY')]
-    protected Collection $subCategories;
+    private Collection $subCategories;
 
     public function __construct()
     {

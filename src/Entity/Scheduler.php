@@ -23,29 +23,29 @@ class Scheduler
     #[Assert\Type(type: Account::class)]
     #[ManyToOne(targetEntity: Account::class, inversedBy: 'schedulers')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
-    protected Account $account;
+    private Account $account;
 
     #[Id, Column(name: 'scheduler_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $schedulerId = null;
+    private ?int $schedulerId = null;
 
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'limit_date', type: 'date', nullable: true)]
-    protected ?\DateTime $limitDate = null;
+    private ?\DateTime $limitDate = null;
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['day', 'week', 'month', 'year'])]
     #[Column(name: 'frequency_unit', type: 'string', length: 16, options: ['default' => 'month'])]
-    protected ?string $frequencyUnit = 'month';
+    private ?string $frequencyUnit = 'month';
 
     #[Assert\NotBlank]
     #[Assert\Type(type: 'integer')]
     #[Column(name: 'frequency_value', type: 'smallint')]
-    protected ?int $frequencyValue = null;
+    private ?int $frequencyValue = null;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
-    protected ?bool $active = true;
+    private ?bool $active = true;
 
     public function setSchedulerId(?int $schedulerId): void
     {

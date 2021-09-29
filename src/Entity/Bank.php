@@ -25,43 +25,43 @@ class Bank
 
     #[Id, Column(name: 'bank_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $bankId = null;
+    private ?int $bankId = null;
 
     #[Assert\Type(type: Provider::class)]
     #[ManyToOne(targetEntity: Provider::class)]
     #[JoinColumn(name: 'provider_id', referencedColumnName: 'provider_id')]
-    protected ?Provider $provider = null;
+    private ?Provider $provider = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
     #[Column(name: 'name', type: 'string', length: 32)]
-    protected ?string $name = null;
+    private ?string $name = null;
 
     #[Column(name: 'sort_order', type: 'smallint')]
-    protected ?int $sortOrder = 0;
+    private ?int $sortOrder = 0;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_favorite', type: 'boolean', options: ['default' => true])]
-    protected ?bool $favorite = true;
+    private ?bool $favorite = true;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_closed', type: 'boolean', options: ['default' => false])]
-    protected ?bool $closed = false;
+    private ?bool $closed = false;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
-    protected ?bool $deleted = false;
+    private ?bool $deleted = false;
 
     #[OneToMany(targetEntity: Account::class, mappedBy: 'bank', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['name' => 'ASC'])]
-    protected Collection $accounts;
+    private Collection $accounts;
 
     public function __construct(
         #[Assert\NotNull]
         #[Assert\Type(type: Member::class)]
         #[ManyToOne(targetEntity: Member::class, inversedBy: 'banks')]
         #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
-        protected ?Member $member
+        private ?Member $member
     ) {
         $this->accounts = new ArrayCollection();
     }

@@ -26,91 +26,91 @@ class Report
 
     #[Id, Column(name: 'report_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $reportId = null;
+    private ?int $reportId = null;
 
     #[Assert\NotNull]
     #[Assert\Type(type: Member::class)]
     #[ManyToOne(targetEntity: Member::class, inversedBy: 'reports')]
     #[JoinColumn(name: 'member_id', referencedColumnName: 'member_id', nullable: false)]
-    protected ?Member $member = null;
+    private ?Member $member = null;
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['sum', 'average', 'distribution', 'estimate'])]
     #[Column(name: 'type', type: 'string', length: 16)]
-    protected ?string $type = null;
+    private ?string $type = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
     #[Column(name: 'title', type: 'string', length: 64)]
-    protected ?string $title = null;
+    private ?string $title = null;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'homepage', type: 'boolean', options: ['default' => false])]
-    protected ?bool $homepage = false;
+    private ?bool $homepage = false;
 
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'value_date_start', type: 'date', nullable: true)]
-    protected ?\DateTime $valueDateStart = null;
+    private ?\DateTime $valueDateStart = null;
 
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'value_date_end', type: 'date', nullable: true)]
-    protected ?\DateTime $valueDateEnd = null;
+    private ?\DateTime $valueDateEnd = null;
 
     #[Column(name: 'third_parties', type: 'string', length: 255, nullable: true)]
-    protected ?string $thirdParties = null;
+    private ?string $thirdParties = null;
 
     #[ManyToMany(targetEntity: Category::class, fetch: 'EAGER')]
     #[JoinTable(name: 'report_category')]
     #[JoinColumn(name: 'report_id', referencedColumnName: 'report_id')]
     #[InverseJoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
-    protected Collection $categories;
+    private Collection $categories;
 
     #[ManyToMany(targetEntity: PaymentMethod::class, fetch: 'EAGER')]
     #[JoinTable(name: 'report_payment_method')]
     #[JoinColumn(name: 'report_id', referencedColumnName: 'report_id')]
     #[InverseJoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id')]
-    protected Collection $paymentMethods;
+    private Collection $paymentMethods;
 
     #[ManyToMany(targetEntity: Account::class, fetch: 'EAGER')]
     #[JoinTable(name: 'report_account')]
     #[JoinColumn(name: 'report_id', referencedColumnName: 'report_id')]
     #[InverseJoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
-    protected Collection $accounts;
+    private Collection $accounts;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'reconciled_only', type: 'boolean', nullable: true)]
-    protected ?bool $reconciledOnly = null;
+    private ?bool $reconciledOnly = null;
 
     #[Assert\NotBlank(groups: ['sum', 'average'])]
     #[Assert\Choice(choices: ['month', 'quarter', 'year', 'all'])]
     #[Column(name: 'period_grouping', type: 'string', length: 8, nullable: true)]
-    protected ?string $periodGrouping = null;
+    private ?string $periodGrouping = null;
 
     #[Assert\NotBlank(groups: ['distribution'])]
     #[Assert\Choice(choices: ['category', 'third_party', 'payment_method'])]
     #[Column(name: 'data_grouping', type: 'string', length: 16, nullable: true)]
-    protected ?string $dataGrouping = null;
+    private ?string $dataGrouping = null;
 
     #[Assert\NotBlank(groups: ['distribution'])]
     #[Column(name: 'significant_results_number', type: 'smallint', nullable: true)]
-    protected ?int $significantResultsNumber = null;
+    private ?int $significantResultsNumber = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
     #[Column(name: 'month_expenses', type: 'integer', nullable: true)]
-    protected ?int $monthExpenses = null;
+    private ?int $monthExpenses = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
     #[Column(name: 'month_incomes', type: 'integer', nullable: true)]
-    protected ?int $monthIncomes = null;
+    private ?int $monthIncomes = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
     #[Column(name: 'estimate_duration_value', type: 'smallint', nullable: true)]
-    protected ?int $estimateDurationValue = null;
+    private ?int $estimateDurationValue = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
     #[Assert\Choice(choices: ['month', 'year'])]
     #[Column(name: 'estimate_duration_unit', type: 'string', length: 8, nullable: true)]
-    protected ?int $estimateDurationUnit = null;
+    private ?int $estimateDurationUnit = null;
 
     public function __construct()
     {

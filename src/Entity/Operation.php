@@ -28,25 +28,25 @@ class Operation
     #[Assert\Type(type: Account::class)]
     #[ManyToOne(targetEntity: Account::class, inversedBy: 'operations')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
-    protected Account $account;
+    private Account $account;
 
     #[Id, Column(name: 'operation_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $operationId = null;
+    private ?int $operationId = null;
 
     #[Column(name: 'external_operation_id', type: 'string', length: 32, nullable: true)]
-    protected ?string $externalOperationId = null;
+    private ?string $externalOperationId = null;
 
     #[Assert\Type(type: Scheduler::class)]
     #[ManyToOne(targetEntity: Scheduler::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'scheduler_id', referencedColumnName: 'scheduler_id')]
-    protected ?Scheduler $scheduler = null;
+    private ?Scheduler $scheduler = null;
 
     #[Assert\Type(type: self::class)]
     #[Assert\Valid]
     #[OneToOne(targetEntity: self::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinColumn(name: 'transfer_operation_id', referencedColumnName: 'operation_id', onDelete: 'SET NULL')]
-    protected ?Operation $transferOperation;
+    private ?Operation $transferOperation;
 
     public function __construct()
     {

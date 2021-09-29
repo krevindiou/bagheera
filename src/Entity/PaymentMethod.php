@@ -29,15 +29,15 @@ class PaymentMethod
 
     #[Id, Column(name: 'payment_method_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $paymentMethodId = null;
+    private ?int $paymentMethodId = null;
 
     #[Assert\NotBlank]
     #[Column(name: 'name', type: 'string', length: 16)]
-    protected ?string $name = null;
+    private ?string $name = null;
 
     #[Assert\Choice(choices: ['debit', 'credit'])]
     #[Column(name: 'type', type: 'string', length: 8, nullable: true)]
-    protected ?string $type = null;
+    private ?string $type = null;
 
     public function __toString(): string
     {

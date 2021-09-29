@@ -26,64 +26,64 @@ class OperationSearch
 
     #[Id, Column(name: 'operation_search_id', type: 'integer')]
     #[GeneratedValue(strategy: 'IDENTITY')]
-    protected ?int $operationSearchId = null;
+    private ?int $operationSearchId = null;
 
     #[Assert\NotNull]
     #[Assert\Type(type: Account::class)]
     #[ManyToOne(targetEntity: Account::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
-    protected ?Account $account = null;
+    private ?Account $account = null;
 
     #[ManyToMany(targetEntity: Category::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'operation_search_category')]
     #[JoinColumn(name: 'operation_search_id', referencedColumnName: 'operation_search_id')]
     #[InverseJoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
-    protected Collection $categories;
+    private Collection $categories;
 
     #[ManyToMany(targetEntity: PaymentMethod::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'operation_search_payment_method')]
     #[JoinColumn(name: 'operation_search_id', referencedColumnName: 'operation_search_id')]
     #[InverseJoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id')]
-    protected Collection $paymentMethods;
+    private Collection $paymentMethods;
 
     #[Assert\Length(max: 64)]
     #[Column(name: 'third_party', type: 'string', length: 64, nullable: true)]
-    protected ?string $thirdParty = null;
+    private ?string $thirdParty = null;
 
     #[Assert\Length(max: 128)]
     #[Column(name: 'notes', type: 'string', length: 128, nullable: true)]
-    protected ?string $notes = null;
+    private ?string $notes = null;
 
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'value_date_start', type: 'date', nullable: true)]
-    protected ?\DateTime $valueDateStart = null;
+    private ?\DateTime $valueDateStart = null;
 
     #[Assert\Type(type: \DateTime::class)]
     #[Column(name: 'value_date_end', type: 'date', nullable: true)]
-    protected ?\DateTime $valueDateEnd = null;
+    private ?\DateTime $valueDateEnd = null;
 
     #[Assert\Type(type: 'bool')]
     #[Column(name: 'is_reconciled', type: 'boolean', nullable: true)]
-    protected ?bool $reconciled = null;
+    private ?bool $reconciled = null;
 
     #[Assert\Choice(choices: ['debit', 'credit'])]
     #[Column(name: 'type', type: 'string', length: 8, nullable: true, options: ['default' => 'debit'])]
-    protected ?string $type = 'debit';
+    private ?string $type = 'debit';
 
     #[Column(name: 'amount_inferior_to', type: 'integer', nullable: true)]
-    protected ?int $amountInferiorTo = null;
+    private ?int $amountInferiorTo = null;
 
     #[Column(name: 'amount_inferior_or_equal_to', type: 'integer', nullable: true)]
-    protected ?int $amountInferiorOrEqualTo = null;
+    private ?int $amountInferiorOrEqualTo = null;
 
     #[Column(name: 'amount_equal_to', type: 'integer', nullable: true)]
-    protected ?int $amountEqualTo = null;
+    private ?int $amountEqualTo = null;
 
     #[Column(name: 'amount_superior_or_equal_to', type: 'integer', nullable: true)]
-    protected ?int $amountSuperiorOrEqualTo = null;
+    private ?int $amountSuperiorOrEqualTo = null;
 
     #[Column(name: 'amount_superior_to', type: 'integer', nullable: true)]
-    protected ?int $amountSuperiorTo = null;
+    private ?int $amountSuperiorTo = null;
 
     public function __construct()
     {

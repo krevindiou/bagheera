@@ -9,10 +9,10 @@ use Doctrine\ORM\Mapping\Column;
 trait TimestampableTrait
 {
     #[Column(name: 'created_at', type: 'datetime')]
-    protected \DateTime $createdAt;
+    private \DateTime $createdAt;
 
     #[Column(name: 'updated_at', type: 'datetime', nullable: true)]
-    protected \DateTime $updatedAt;
+    private \DateTime $updatedAt;
 
     public function getCreatedAt(): ?\DateTime
     {
