@@ -38,13 +38,13 @@ class OperationSearch
     #[JoinTable(name: 'operation_search_category')]
     #[JoinColumn(name: 'operation_search_id', referencedColumnName: 'operation_search_id')]
     #[InverseJoinColumn(name: 'category_id', referencedColumnName: 'category_id')]
-    protected array|Collection|ArrayCollection $categories;
+    protected Collection $categories;
 
     #[ManyToMany(targetEntity: PaymentMethod::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinTable(name: 'operation_search_payment_method')]
     #[JoinColumn(name: 'operation_search_id', referencedColumnName: 'operation_search_id')]
     #[InverseJoinColumn(name: 'payment_method_id', referencedColumnName: 'payment_method_id')]
-    protected array|Collection|ArrayCollection $paymentMethods;
+    protected Collection $paymentMethods;
 
     #[Assert\Length(max: 64)]
     #[Column(name: 'third_party', type: 'string', length: 64, nullable: true)]

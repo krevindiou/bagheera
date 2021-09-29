@@ -53,11 +53,11 @@ class Member implements UserInterface
 
     #[OneToMany(targetEntity: Bank::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['sortOrder' => 'ASC'])]
-    protected array|Collection|ArrayCollection $banks;
+    protected Collection $banks;
 
     #[OneToMany(targetEntity: Report::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['type' => 'ASC', 'title' => 'ASC'])]
-    protected array|Collection|ArrayCollection $reports;
+    protected Collection $reports;
 
     public function __construct()
     {

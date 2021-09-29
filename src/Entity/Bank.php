@@ -54,7 +54,7 @@ class Bank
 
     #[OneToMany(targetEntity: Account::class, mappedBy: 'bank', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['name' => 'ASC'])]
-    protected array|Collection|ArrayCollection $accounts;
+    protected Collection $accounts;
 
     public function __construct(
         #[Assert\NotNull]

@@ -71,15 +71,15 @@ class Account
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
     #[InverseJoinColumn(name: 'member_id', referencedColumnName: 'member_id')]
     #[OrderBy(value: ['email' => 'ASC'])]
-    protected array|Collection|ArrayCollection $sharedWith;
+    protected Collection $sharedWith;
 
     #[OneToMany(targetEntity: Operation::class, mappedBy: 'account', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['valueDate' => 'DESC'])]
-    protected array|Collection|ArrayCollection $operations;
+    protected Collection $operations;
 
     #[OneToMany(targetEntity: Scheduler::class, mappedBy: 'account', cascade: ['all'], fetch: 'EXTRA_LAZY')]
     #[OrderBy(value: ['valueDate' => 'DESC'])]
-    protected array|Collection|ArrayCollection $schedulers;
+    protected Collection $schedulers;
 
     public function __construct()
     {
