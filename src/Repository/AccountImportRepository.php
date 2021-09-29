@@ -20,12 +20,12 @@ class AccountImportRepository extends ServiceEntityRepository
     public function getNextImportId(Account $account): int
     {
         $dql = <<<'EOT'
-                    SELECT MAX(i.importId)
-                    FROM App:AccountImport i
-                    JOIN i.account a
-                    JOIN a.bank b
-                    WHERE b.member = :member
-                    AND i.finished = true
+            SELECT MAX(i.importId)
+            FROM App:AccountImport i
+            JOIN i.account a
+            JOIN a.bank b
+            WHERE b.member = :member
+            AND i.finished = true
             EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $account->getBank()->getMember());
@@ -37,12 +37,12 @@ class AccountImportRepository extends ServiceEntityRepository
     {
         // Fetch current importId
         $dql = <<<'EOT'
-                    SELECT MAX(i.importId)
-                    FROM App:AccountImport i
-                    JOIN i.account a
-                    JOIN a.bank b
-                    WHERE b.member = :member
-                    AND i.finished = false
+            SELECT MAX(i.importId)
+            FROM App:AccountImport i
+            JOIN i.account a
+            JOIN a.bank b
+            WHERE b.member = :member
+            AND i.finished = false
             EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('member', $member);
@@ -54,9 +54,9 @@ class AccountImportRepository extends ServiceEntityRepository
         }
 
         $dql = <<<'EOT'
-                    SELECT i
-                    FROM App:AccountImport i INDEX BY i.accountId
-                    WHERE i.importId = :maxImportId
+            SELECT i
+            FROM App:AccountImport i INDEX BY i.accountId
+            WHERE i.importId = :maxImportId
             EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);

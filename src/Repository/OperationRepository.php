@@ -32,35 +32,36 @@ class OperationRepository extends ServiceEntityRepository
         ];
 
         $sql = <<<'EOT'
-                    SELECT
-                        operation.operation_id,
-                        operation.external_operation_id AS external_operation_id,
-                        operation.third_party AS operation_third_party,
-                        operation.debit AS operation_debit,
-                        operation.credit AS operation_credit,
-                        operation.value_date AS operation_value_date,
-                        operation.is_reconciled AS operation_is_reconciled,
-                        operation.notes AS operation_notes,
-                        scheduler.scheduler_id AS scheduler_id,
-                        account.account_id AS account_id,
-                        account.name AS account_name,
-                        account.currency AS account_currency,
-                        transfer_account.account_id AS transfer_account_id,
-                        transfer_account.name AS transfer_account_name,
-                        transfer_operation.operation_id AS transfer_operation_id,
-                        category.category_id AS category_id,
-                        category.name AS category_name,
-                        payment_method.payment_method_id AS payment_method_id,
-                        payment_method.name AS payment_method_name
-                    FROM operation
-                    INNER JOIN account ON operation.account_id = account.account_id
-                    LEFT JOIN scheduler ON operation.scheduler_id = scheduler.scheduler_id
-                    LEFT JOIN account AS transfer_account ON operation.transfer_account_id = transfer_account.account_id
-                    LEFT JOIN operation AS transfer_operation ON operation.transfer_operation_id = transfer_operation.operation_id
-                    LEFT JOIN category ON operation.category_id = category.category_id
-                    LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id
-                    WHERE operation.account_id = :account_id
+            SELECT
+                operation.operation_id,
+                operation.external_operation_id AS external_operation_id,
+                operation.third_party AS operation_third_party,
+                operation.debit AS operation_debit,
+                operation.credit AS operation_credit,
+                operation.value_date AS operation_value_date,
+                operation.is_reconciled AS operation_is_reconciled,
+                operation.notes AS operation_notes,
+                scheduler.scheduler_id AS scheduler_id,
+                account.account_id AS account_id,
+                account.name AS account_name,
+                account.currency AS account_currency,
+                transfer_account.account_id AS transfer_account_id,
+                transfer_account.name AS transfer_account_name,
+                transfer_operation.operation_id AS transfer_operation_id,
+                category.category_id AS category_id,
+                category.name AS category_name,
+                payment_method.payment_method_id AS payment_method_id,
+                payment_method.name AS payment_method_name
+            FROM operation
+            INNER JOIN account ON operation.account_id = account.account_id
+            LEFT JOIN scheduler ON operation.scheduler_id = scheduler.scheduler_id
+            LEFT JOIN account AS transfer_account ON operation.transfer_account_id = transfer_account.account_id
+            LEFT JOIN operation AS transfer_operation ON operation.transfer_operation_id = transfer_operation.operation_id
+            LEFT JOIN category ON operation.category_id = category.category_id
+            LEFT JOIN payment_method ON operation.payment_method_id = payment_method.payment_method_id
+            WHERE operation.account_id = :account_id
             EOT;
+
         if (null !== $formModel) {
             if ('' !== $formModel->thirdParty) {
                 $sql .= ' AND operation.third_party ILIKE :third_party';
@@ -141,8 +142,8 @@ class OperationRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
 
         $getNbResultsCallback = function () use ($sql, $conn, $params) {
-            $start = strpos($sql, ' FROM ');
-            $length = strpos($sql, ' ORDER BY ') - $start;
+            $start = strpos($sql, 'FROM ');
+            $length = strpos($sql, 'ORDER BY ') - $start;
 
             $sqlCount = 'SELECT COUNT(*) AS total ';
             $sqlCount .= substr($sql, $start, $length);
@@ -218,18 +219,18 @@ class OperationRepository extends ServiceEntityRepository
     public function findThirdParties(Member $member, string $queryString = null): array
     {
         $sql = <<<'EOT'
-                    SELECT o2.third_party AS "thirdParty", o2.category_id AS "categoryId"
-                    FROM (
-                        SELECT o.third_party, MAX(o.value_date) AS max_value_date
-                        FROM operation o
-                        INNER JOIN account a ON o.account_id = a.account_id
-                        INNER JOIN bank b ON a.bank_id = b.bank_id
-                        WHERE b.member_id = :member_id
-                        AND o.third_party ILIKE :third_party
-                        GROUP BY o.third_party
-                    ) AS tmp
-                    INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date
-                    GROUP BY o2.third_party, o2.category_id
+            SELECT o2.third_party AS "thirdParty", o2.category_id AS "categoryId"
+            FROM (
+                SELECT o.third_party, MAX(o.value_date) AS max_value_date
+                FROM operation o
+                INNER JOIN account a ON o.account_id = a.account_id
+                INNER JOIN bank b ON a.bank_id = b.bank_id
+                WHERE b.member_id = :member_id
+                AND o.third_party ILIKE :third_party
+                GROUP BY o.third_party
+            ) AS tmp
+            INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date
+            GROUP BY o2.third_party, o2.category_id
             EOT;
         $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
         $stmt->bindValue('member_id', $member->getMemberId());
@@ -242,17 +243,17 @@ class OperationRepository extends ServiceEntityRepository
     public function getLastFromCategory(Member $member, Category $category): ?Operation
     {
         $dql = <<<'EOT'
-                    SELECT o
-                    FROM App:Operation o
-                    JOIN o.account a
-                    JOIN a.bank b
-                    WHERE b.member = :member
-                    AND o.category = :category
-                    AND b.deleted = false
-                    AND b.closed = false
-                    AND a.deleted = false
-                    AND a.closed = false
-                    ORDER BY o.valueDate DESC
+            SELECT o
+            FROM App:Operation o
+            JOIN o.account a
+            JOIN a.bank b
+            WHERE b.member = :member
+            AND o.category = :category
+            AND b.deleted = false
+            AND b.closed = false
+            AND a.deleted = false
+            AND a.closed = false
+            ORDER BY o.valueDate DESC
             EOT;
         $query = $this->getEntityManager()->createQuery($dql)->setMaxResults(1);
         $query->setParameter('member', $member);
@@ -264,22 +265,22 @@ class OperationRepository extends ServiceEntityRepository
     public function getLastBiggestExpense(Member $member, \DateTime $since): ?Operation
     {
         $dql = <<<'EOT'
-                    SELECT o
-                    FROM App:Operation o
-                    WHERE o.debit = (
-                      SELECT MAX(o2.debit)
-                      FROM App:Operation o2
-                      JOIN o2.account a
-                      JOIN a.bank b
-                      WHERE b.member = :member
-                      AND o2.debit > 0
-                      AND o2.scheduler IS NULL
-                      AND o2.valueDate >= :valueDate
-                      AND b.deleted = false
-                      AND b.closed = false
-                      AND a.deleted = false
-                      AND a.closed = false
-                    )
+            SELECT o
+            FROM App:Operation o
+            WHERE o.debit = (
+                SELECT MAX(o2.debit)
+                FROM App:Operation o2
+                JOIN o2.account a
+                JOIN a.bank b
+                WHERE b.member = :member
+                AND o2.debit > 0
+                AND o2.scheduler IS NULL
+                AND o2.valueDate >= :valueDate
+                AND b.deleted = false
+                AND b.closed = false
+                AND a.deleted = false
+                AND a.closed = false
+            )
             EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setMaxResults(1);
@@ -292,10 +293,10 @@ class OperationRepository extends ServiceEntityRepository
     public function getLastExternalOperationId(Account $account): ?string
     {
         $dql = <<<'EOT'
-                    SELECT o.externalOperationId
-                    FROM App:Operation o
-                    WHERE o.account = :account
-                    ORDER BY o.externalOperationId DESC
+            SELECT o.externalOperationId
+            FROM App:Operation o
+            WHERE o.account = :account
+            ORDER BY o.externalOperationId DESC
             EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setParameter('account', $account);
@@ -402,11 +403,11 @@ class OperationRepository extends ServiceEntityRepository
     public function getLastScheduledOperationDate(Scheduler $scheduler): array
     {
         $dql = <<<'EOT'
-                    SELECT o.valueDate
-                    FROM App:Operation o
-                    WHERE o.scheduler = :scheduler
-                    AND o.valueDate >= :valueDate
-                    ORDER BY o.valueDate DESC
+            SELECT o.valueDate
+            FROM App:Operation o
+            WHERE o.scheduler = :scheduler
+            AND o.valueDate >= :valueDate
+            ORDER BY o.valueDate DESC
             EOT;
         $query = $this->getEntityManager()->createQuery($dql);
         $query->setMaxResults(1);
@@ -424,15 +425,15 @@ class OperationRepository extends ServiceEntityRepository
         $data = [];
 
         $sql = <<<'EOT'
-                    SELECT a.currency, TO_CHAR(o.value_date, 'YYYY-MM') AS month, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total
-                    FROM account a
-                    LEFT JOIN operation o ON o.account_id = a.account_id
-                    LEFT JOIN bank b ON b.bank_id = a.bank_id
-                    WHERE b.member_id = :member_id
-                    AND a.is_deleted = false
-                    AND b.is_deleted = false
-                    AND TO_CHAR(o.value_date, 'YYYY-MM-DD') >= :start_date
-                    AND TO_CHAR(o.value_date, 'YYYY-MM-DD') <= :end_date
+            SELECT a.currency, TO_CHAR(o.value_date, 'YYYY-MM') AS month, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total
+            FROM account a
+            LEFT JOIN operation o ON o.account_id = a.account_id
+            LEFT JOIN bank b ON b.bank_id = a.bank_id
+            WHERE b.member_id = :member_id
+            AND a.is_deleted = false
+            AND b.is_deleted = false
+            AND TO_CHAR(o.value_date, 'YYYY-MM-DD') >= :start_date
+            AND TO_CHAR(o.value_date, 'YYYY-MM-DD') <= :end_date
             EOT;
         if (null !== $account) {
             $sql .= ' AND a.account_id = :account_id';
@@ -488,14 +489,14 @@ class OperationRepository extends ServiceEntityRepository
         $data = [];
 
         $sql = <<<'EOT'
-                    SELECT a.currency, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total
-                    FROM account a
-                    LEFT JOIN operation o ON o.account_id = a.account_id
-                    LEFT JOIN bank b ON b.bank_id = a.bank_id
-                    WHERE b.member_id = :member_id
-                    AND a.is_deleted = false
-                    AND b.is_deleted = false
-                    AND TO_CHAR(o.value_date, 'YYYY-MM-DD') < :end_date
+            SELECT a.currency, (COALESCE(SUM(o.credit), 0) - COALESCE(SUM(o.debit), 0)) AS total
+            FROM account a
+            LEFT JOIN operation o ON o.account_id = a.account_id
+            LEFT JOIN bank b ON b.bank_id = a.bank_id
+            WHERE b.member_id = :member_id
+            AND a.is_deleted = false
+            AND b.is_deleted = false
+            AND TO_CHAR(o.value_date, 'YYYY-MM-DD') < :end_date
             EOT;
         if (null !== $account) {
             $sql .= ' AND a.account_id = :account_id';

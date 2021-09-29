@@ -24,9 +24,9 @@ class PaymentMethodRepository extends ServiceEntityRepository
     public function getPaymentMethods(array $paymentMethodsId): ArrayCollection
     {
         $dql = <<<'EOT'
-                    SELECT p
-                    FROM App:PaymentMethod p
-                    WHERE p.paymentMethodId IN (%s)
+            SELECT p
+            FROM App:PaymentMethod p
+            WHERE p.paymentMethodId IN (%s)
             EOT;
         $query = $this->getEntityManager()->createQuery(sprintf($dql, implode(', ', $paymentMethodsId)));
 
