@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Rector\Core\Configuration\Option;
-use Rector\Doctrine\Rector\Class_\MoveRepositoryFromParentToConstructorRector;
-use Rector\Doctrine\Rector\MethodCall\ReplaceParentRepositoryCallsByRepositoryPropertyRector;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\Php74\Rector\Property\TypedPropertyRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
@@ -13,11 +11,12 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(SymfonySetList::SYMFONY_52);
+    $containerConfigurator->import(SymfonySetList::SYMFONY_CODE_QUALITY);
     $containerConfigurator->import(DoctrineSetList::DOCTRINE_ORM_29);
+    $containerConfigurator->import(DoctrineSetList::DOCTRINE_CODE_QUALITY);
+    $containerConfigurator->import(DoctrineSetList::DOCTRINE_REPOSITORY_AS_SERVICE);
     $services = $containerConfigurator->services();
     $services->set(TypedPropertyRector::class);
-    $services->set(ReplaceParentRepositoryCallsByRepositoryPropertyRector::class);
-    $services->set(MoveRepositoryFromParentToConstructorRector::class);
     $services->set(ClassPropertyAssignToConstructorPromotionRector::class);
 
     $parameters = $containerConfigurator->parameters();

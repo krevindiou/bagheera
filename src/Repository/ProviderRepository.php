@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Member;
 use App\Entity\Provider;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 
@@ -39,7 +40,7 @@ class ProviderRepository
 
         $qb = $this->repository->createQueryBuilder('p')
             ->where('p.country = :country')
-            ->orderBy('p.name', 'ASC')
+            ->orderBy('p.name', Criteria::ASC)
             ->setParameter('country', $member->getCountry())
         ;
 
