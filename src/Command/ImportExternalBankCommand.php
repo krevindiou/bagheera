@@ -20,6 +20,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ImportExternalBankCommand extends Command
 {
+    protected static $defaultName = 'bagheera:import_external_bank';
+
     public function __construct(
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
@@ -34,9 +36,7 @@ class ImportExternalBankCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->setName('bagheera:import_external_bank')
-            ->setDescription('Imports bank data from online bank')
+        $this->setDescription('Imports bank data from online bank')
             ->addArgument('bank_id', InputArgument::REQUIRED, 'Bank id to import')
         ;
     }

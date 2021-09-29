@@ -8,9 +8,10 @@ use App\Entity\Member;
 use App\Service\SchedulerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
-class LoginListener
+class LoginListener implements EventSubscriberInterface
 {
     public function __construct(private LoggerInterface $logger, private EntityManagerInterface $entityManager, private SchedulerService $schedulerService)
     {
@@ -32,5 +33,13 @@ class LoginListener
         }
 
         $this->schedulerService->runSchedulers($member);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return ['security.interactive_login' => ''];
     }
 }

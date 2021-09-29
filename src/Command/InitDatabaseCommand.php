@@ -12,6 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitDatabaseCommand extends Command
 {
+    protected static $defaultName = 'bagheera:init-database';
+
     public function __construct(private EntityManagerInterface $entityManager)
     {
         parent::__construct();
@@ -19,9 +21,7 @@ class InitDatabaseCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->setName('bagheera:init-database')
-            ->setDescription('Imports SQL files into an empty database')
+        $this->setDescription('Imports SQL files into an empty database')
             ->addArgument('files', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Files to import')
         ;
     }
