@@ -59,7 +59,7 @@ class ReportRepository
             ]
         );
 
-        foreach ($stmt->fetchAll() as $row) {
+        foreach ($stmt->fetchAllAssociative() as $row) {
             if (!isset($reports[$row['report_id']])) {
                 $accounts = [];
                 $tmpAccounts = (null !== $row['accounts']) ? json_decode($row['accounts'], true) : [];
