@@ -45,7 +45,7 @@ class ReportController extends AbstractController
 
     #[Route(path: '/report-{reportId}', requirements: ['reportId' => '\d+'], name: 'report_update')]
     #[Route(path: '/create-{type}-report', requirements: ['type' => 'sum|average|distribution|estimate'], defaults: ['reportId' => null], name: 'report_create')]
-    #[ParamConverter('report', class: 'App:Report', options: ['id' => 'reportId'])]
+    #[ParamConverter('report', class: Report::class, options: ['id' => 'reportId'])]
     public function form(Request $request, ReportService $reportService, ?Report $report, string $type = null): Response
     {
         $member = $this->getUser();

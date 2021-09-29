@@ -63,8 +63,8 @@ class OperationController extends AbstractController
 
     #[Route(path: '/operation-{operationId}', requirements: ['operationId' => '\d+'], defaults: ['accountId' => null], name: 'operation_update')]
     #[Route(path: '/account-{accountId}/create-operation', requirements: ['accountId' => '\d+'], defaults: ['operationId' => null], name: 'operation_create')]
-    #[ParamConverter('operation', class: 'App:Operation', options: ['id' => 'operationId'])]
-    #[ParamConverter('account', class: 'App:Account', options: ['id' => 'accountId'])]
+    #[ParamConverter('operation', class: Operation::class, options: ['id' => 'operationId'])]
+    #[ParamConverter('account', class: Account::class, options: ['id' => 'accountId'])]
     public function form(Request $request, OperationService $operationService, ?Account $account, ?Operation $operation): Response
     {
         $member = $this->getUser();
