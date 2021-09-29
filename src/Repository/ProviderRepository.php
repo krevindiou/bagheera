@@ -6,15 +6,23 @@ namespace App\Repository;
 
 use App\Entity\Member;
 use App\Entity\Provider;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
-class ProviderRepository extends ServiceEntityRepository
+class ProviderRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var EntityRepository<Provider>
+     */
+    private EntityRepository $repository;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Provider::class);
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Provider::class);
     }
 
     public function getAvailableProviders(Member $member): ArrayCollection
@@ -27,12 +35,12 @@ class ProviderRepository extends ServiceEntityRepository
             WHERE b.member = :member
             AND b.provider IS NOT NULL
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
 
         $providers = array_map('current', $query->getScalarResult());
 
-        $qb = $this->createQueryBuilder('p')
+        $qb = $this->repository->createQueryBuilder('p')
             ->where('p.country = :country')
             ->orderBy('p.name', 'ASC')
             ->setParameter('country', $member->getCountry())

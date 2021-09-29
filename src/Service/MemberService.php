@@ -165,10 +165,7 @@ class MemberService
      */
     public function sendChangePasswordEmail(string $email): bool
     {
-        $member = $this->memberRepository
-            ->findOneBy(['email' => $email])
-        ;
-
+        $member = $this->memberRepository->findOneByEmail($email);
         if (null !== $member) {
             // Change password link construction
             $key = $this->createChangePasswordKey($member);
@@ -254,9 +251,7 @@ class MemberService
             if (isset($data['type'], $data['email'], $data['expiration']) && 'change_password' === $data['type']) {
                 $now = new \DateTime();
                 if ($data['expiration'] >= $now->format(\DateTime::ISO8601)) {
-                    return $this->memberRepository
-                        ->findOneBy(['email' => $data['email']])
-                    ;
+                    return $this->memberRepository->findOneByEmail($data['email']);
                 }
             }
         }
@@ -388,9 +383,7 @@ class MemberService
 
         if ($data && null !== ($data = json_decode($data, true))) {
             if (isset($data['type'], $data['email']) && 'register' === $data['type']) {
-                return $this->memberRepository
-                    ->findOneBy(['email' => $data['email']])
-                ;
+                return $this->memberRepository->findOneByEmail($data['email']);
             }
         }
 

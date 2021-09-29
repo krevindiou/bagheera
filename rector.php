@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Rector\Core\Configuration\Option;
+use Rector\Doctrine\Rector\Class_\MoveRepositoryFromParentToConstructorRector;
+use Rector\Doctrine\Rector\MethodCall\ReplaceParentRepositoryCallsByRepositoryPropertyRector;
 use Rector\Doctrine\Set\DoctrineSetList;
 use Rector\Php74\Rector\Property\TypedPropertyRector;
 use Rector\Symfony\Set\SymfonySetList;
@@ -13,6 +15,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $containerConfigurator->import(DoctrineSetList::DOCTRINE_ORM_29);
     $services = $containerConfigurator->services();
     $services->set(TypedPropertyRector::class);
+    $services->set(ReplaceParentRepositoryCallsByRepositoryPropertyRector::class);
+    $services->set(MoveRepositoryFromParentToConstructorRector::class);
 
     $parameters = $containerConfigurator->parameters();
     $parameters->set(

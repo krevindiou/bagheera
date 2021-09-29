@@ -5,20 +5,28 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Category;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
-class CategoryRepository extends ServiceEntityRepository
+class CategoryRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var EntityRepository<Category>
+     */
+    private EntityRepository $repository;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Category::class);
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Category::class);
     }
 
     public function getList(): ArrayCollection
     {
-        return new ArrayCollection($this->findAll());
+        return new ArrayCollection($this->repository->findAll());
     }
 
     public function getCategories(array $categoriesId): ArrayCollection
@@ -28,7 +36,7 @@ class CategoryRepository extends ServiceEntityRepository
             FROM App:Category c
             WHERE c.categoryId IN (%s)
             EOT;
-        $query = $this->getEntityManager()->createQuery(sprintf($dql, implode(', ', $categoriesId)));
+        $query = $this->entityManager->createQuery(sprintf($dql, implode(', ', $categoriesId)));
 
         return new ArrayCollection($query->getResult());
     }

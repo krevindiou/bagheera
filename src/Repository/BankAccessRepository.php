@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\BankAccess;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
-class BankAccessRepository extends ServiceEntityRepository
+class BankAccessRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, BankAccess::class);
+        $this->entityManager = $entityManager;
     }
 
     public function delete(BankAccess $bankAccess): void
@@ -21,7 +22,7 @@ class BankAccessRepository extends ServiceEntityRepository
             DELETE FROM App:BankAccess b
             WHERE b.bankId = :bankId
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('bankId', $bankAccess->getBankId());
         $query->execute();
     }

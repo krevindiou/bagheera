@@ -7,14 +7,22 @@ namespace App\Repository;
 use App\Entity\Account;
 use App\Entity\AccountImport;
 use App\Entity\Member;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
-class AccountImportRepository extends ServiceEntityRepository
+class AccountImportRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var EntityRepository<AccountImport>
+     */
+    private EntityRepository $repository;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, AccountImport::class);
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(AccountImport::class);
     }
 
     public function getNextImportId(Account $account): int
@@ -27,7 +35,7 @@ class AccountImportRepository extends ServiceEntityRepository
             WHERE b.member = :member
             AND i.finished = true
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $account->getBank()->getMember());
 
         return (int) $query->getSingleScalarResult() + 1;
@@ -44,7 +52,7 @@ class AccountImportRepository extends ServiceEntityRepository
             WHERE b.member = :member
             AND i.finished = false
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
 
         try {
@@ -58,7 +66,7 @@ class AccountImportRepository extends ServiceEntityRepository
             FROM App:AccountImport i INDEX BY i.accountId
             WHERE i.importId = :maxImportId
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('maxImportId', $maxImportId);
 
         try {
@@ -66,5 +74,15 @@ class AccountImportRepository extends ServiceEntityRepository
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    public function findOneByAccount(Account $account): AccountImport
+    {
+        return $this->repository->findOneBy(
+            [
+                'account' => $account->getAccountId(),
+                'finished' => 0,
+            ]
+        );
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\OperationRepository;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -17,7 +16,7 @@ use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use Symfony\Component\Validator\Constraints as Assert;
 
-#[Entity(repositoryClass: OperationRepository::class)]
+#[Entity]
 #[Table(name: 'operation')]
 #[Index(name: 'external_operation_id_idx', columns: ['external_operation_id'])]
 #[UniqueConstraint(name: 'operation_transfer_operation_id_unique', columns: ['transfer_operation_id'])]

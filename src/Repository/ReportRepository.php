@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Member;
-use App\Entity\Report;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 
-class ReportRepository extends ServiceEntityRepository
+class ReportRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Report::class);
+        $this->entityManager = $entityManager;
     }
 
     public function getList(Member $member): ArrayCollection
@@ -52,7 +52,7 @@ class ReportRepository extends ServiceEntityRepository
             GROUP BY report.report_id
             ORDER BY report.report_id ASC
             EOT;
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->execute(
             [
                 ':member_id' => $member->getMemberId(),
@@ -127,7 +127,7 @@ class ReportRepository extends ServiceEntityRepository
             WHERE r.member = :member
             AND r.homepage = :homepage
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
         $query->setParameter('homepage', true);
 

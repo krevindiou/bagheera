@@ -6,15 +6,23 @@ namespace App\Repository;
 
 use App\Entity\Bank;
 use App\Entity\Member;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 
-class BankRepository extends ServiceEntityRepository
+class BankRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $entityManager;
+
+    /**
+     * @var EntityRepository<Bank>
+     */
+    private EntityRepository $repository;
+
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        parent::__construct($registry, Bank::class);
+        $this->entityManager = $entityManager;
+        $this->repository = $entityManager->getRepository(Bank::class);
     }
 
     public function getList(Member $member, bool $activeOnly = true): ArrayCollection
@@ -39,7 +47,7 @@ class BankRepository extends ServiceEntityRepository
         }
         $sql .= ' ORDER BY bank.sort_order ASC, account.name ASC';
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
+        $stmt = $this->entityManager->getConnection()->prepare($sql);
         $stmt->execute(
             [
                 ':member_id' => $member->getMemberId(),
@@ -86,7 +94,7 @@ class BankRepository extends ServiceEntityRepository
             AND b.provider IS NULL
             ORDER BY b.name ASC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
 
         return new ArrayCollection($query->getResult());
@@ -102,9 +110,14 @@ class BankRepository extends ServiceEntityRepository
             AND b.closed = false
             ORDER BY b.name ASC
             EOT;
-        $query = $this->getEntityManager()->createQuery($dql);
+        $query = $this->entityManager->createQuery($dql);
         $query->setParameter('member', $member);
 
         return new ArrayCollection($query->getResult());
+    }
+
+    public function findByIds(array $bankIds): array
+    {
+        return $this->repository->findBy(['bankId' => $bankIds]);
     }
 }

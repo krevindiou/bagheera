@@ -58,7 +58,7 @@ class AccountController extends AbstractController
     public function listActions(Request $request, AccountService $accountService, BankService $bankService, BankRepository $bankRepository): Response
     {
         $accountsId = (array) $request->request->get('accountsId');
-        $banks = $bankRepository->findBy(['bankId' => (array) $request->request->get('banksId')]);
+        $banks = $bankRepository->findByIds((array) $request->request->get('banksId'));
         $member = $this->getUser();
         if ($request->request->has('close')) {
             array_walk($banks, function (Bank $bank): void { $this->denyAccessUnlessGranted('BANK_CLOSE', $bank); });
