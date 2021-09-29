@@ -152,7 +152,7 @@ class OperationRepository
             $stmt = $conn->prepare($sqlCount);
             $stmt->execute($params);
 
-            return $stmt->fetchColumn();
+            return $stmt->fetchOne();
         };
 
         $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
