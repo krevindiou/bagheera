@@ -28,7 +28,6 @@ class Category
     protected ?int $categoryId = null;
 
     #[Assert\Type(type: self::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: self::class, inversedBy: 'subCategories')]
     #[JoinColumn(name: 'parent_category_id', referencedColumnName: 'category_id')]
     protected ?Category $parentCategory;

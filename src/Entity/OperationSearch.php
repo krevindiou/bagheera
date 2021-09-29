@@ -30,7 +30,6 @@ class OperationSearch
 
     #[Assert\NotNull]
     #[Assert\Type(type: Account::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Account::class, cascade: ['all'], fetch: 'EAGER')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
     protected ?Account $account = null;

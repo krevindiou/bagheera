@@ -27,7 +27,6 @@ class Operation
 
     #[Assert\NotNull]
     #[Assert\Type(type: Account::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Account::class, inversedBy: 'operations')]
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
     protected Account $account;
@@ -40,7 +39,6 @@ class Operation
     protected ?string $externalOperationId = null;
 
     #[Assert\Type(type: Scheduler::class)]
-    #[Assert\Valid]
     #[ManyToOne(targetEntity: Scheduler::class, fetch: 'EAGER')]
     #[JoinColumn(name: 'scheduler_id', referencedColumnName: 'scheduler_id')]
     protected ?Scheduler $scheduler = null;
