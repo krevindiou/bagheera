@@ -101,6 +101,7 @@ jobs:
             postgres_password: ${POSTGRES_PASSWORD}
             postgres_secure_password: ${POSTGRES_SECURE_PASSWORD}
             app_secret: ${APP_SECRET}
+            jwt_secret_key: ${JWT_SECRET_KEY}
             mailer_url: ${MAILER_URL}
             sender_email: ${SENDER_EMAIL}
             sentry_dsn: ${SENTRY_DSN}
