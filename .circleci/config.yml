@@ -106,7 +106,10 @@ jobs:
             EOF
       - run:
           name: Deploy
-          no_output_timeout: 30m
+          no_output_timeout: 20m
+          command: (timeout 20m ansible-playbook .ansible/deploy.yml -i ${DEPLOY_HOSTNAME}, --user=${DEPLOY_USER}; exit 0)
+      - run:
+          name: Deploy (retry)
           command: ansible-playbook .ansible/deploy.yml -i ${DEPLOY_HOSTNAME}, --user=${DEPLOY_USER}
 workflows:
   version: 2
