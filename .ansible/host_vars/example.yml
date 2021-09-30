@@ -5,5 +5,6 @@ docker_architecture: arm64
 postgres_password:
 postgres_secure_password:
 app_secret:
+jwt_secret_key:
 mailer_url: null://localhost
 sender_email:
