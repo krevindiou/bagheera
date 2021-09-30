@@ -1,7 +1,13 @@
 api_platform:
+    title: 'Bagheera API'
+    formats:
+        jsonapi: ['application/vnd.api+json']
+        html: ['text/html']
+    error_formats:
+        jsonapi: ['application/vnd.api+json']
     mapping:
         paths: ['%kernel.project_dir%/src/Entity']
-    patch_formats:
-        json: ['application/merge-patch+json']
     swagger:
         versions: [3]
+    enable_re_doc: false
+    show_webby: false
