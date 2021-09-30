@@ -7,7 +7,11 @@ api_platform:
         jsonapi: ['application/vnd.api+json']
     mapping:
         paths: ['%kernel.project_dir%/src/Entity']
-    swagger:
-        versions: [3]
     enable_re_doc: false
     show_webby: false
+    swagger:
+        versions: [3]
+        api_keys:
+            apiKey:
+                name: Authorization
+                type: header
