@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Controller;
 
-use App\Tests\E2eTestCase;
-
 /**
  * @internal
  * @coversNothing
