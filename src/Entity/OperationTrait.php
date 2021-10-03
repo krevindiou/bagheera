@@ -49,7 +49,7 @@ trait OperationTrait
     #[Column(name: 'is_reconciled', type: 'boolean', options: ['default' => false])]
     private bool $reconciled = false;
 
-    #[Column(name: 'notes', type: 'text')]
+    #[Column(name: 'notes', type: 'text', options: ['default' => ''])]
     private string $notes;
 
     public function setAccount(Account $account): void

@@ -100,7 +100,7 @@ class Category
         return $this->active;
     }
 
-    public function setParentCategory(self $parentCategory): void
+    public function setParentCategory(?self $parentCategory): void
     {
         $this->parentCategory = $parentCategory;
     }

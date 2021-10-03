@@ -1,0 +1,183 @@
+App\Entity\Operation:
+    operation_1:
+      scheduler: '@scheduler_1'
+      account: '@account_1'
+      transferAccount: '@account_2'
+      transferOperation: '@operation_5'
+      category: '@category_3'
+      paymentMethod: '@payment_method_4'
+      thirdParty: Third party 1
+      debit: 291600
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: false
+      notes: ''
+    operation_2:
+      scheduler: null
+      account: '@account_1'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_4'
+      paymentMethod: '@payment_method_1'
+      thirdParty: Third party 2
+      debit: 486900
+      credit: null
+      valueDate: <date_create('2011-09-02')>
+      reconciled: false
+      notes: ''
+    operation_3:
+      scheduler: null
+      account: '@account_1'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_1'
+      paymentMethod: '@payment_method_5'
+      thirdParty: Third party 3
+      debit: null
+      credit: 180500
+      valueDate: <date_create('2011-09-02')>
+      reconciled: true
+      notes: ''
+    operation_4:
+      scheduler: null
+      account: '@account_1'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_2'
+      paymentMethod: '@payment_method_7'
+      thirdParty: Third party 4
+      debit: null
+      credit: 383100
+      valueDate: <date_create('2011-10-14')>
+      reconciled: true
+      notes: ''
+    operation_5:
+      scheduler: null
+      account: '@account_2'
+      transferAccount: '@account_1'
+      transferOperation: '@operation_1'
+      category: '@category_1'
+      paymentMethod: '@payment_method_6'
+      thirdParty: Third party 1
+      debit: null
+      credit: 291600
+      valueDate: <date_create('2011-09-02')>
+      reconciled: false
+      notes: ''
+    operation_6:
+      scheduler: null
+      account: '@account_2'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_4'
+      paymentMethod: '@payment_method_1'
+      thirdParty: Third party 2
+      debit: 247700
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_7:
+      scheduler: null
+      account: '@account_3'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_1'
+      paymentMethod: '@payment_method_6'
+      thirdParty: Third party 1
+      debit: null
+      credit: 2085500
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_8:
+      scheduler: null
+      account: '@account_4'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_3'
+      paymentMethod: '@payment_method_4'
+      thirdParty: Third party 1
+      debit: 1294300
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_9:
+      scheduler: null
+      account: '@account_5'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_4'
+      paymentMethod: '@payment_method_1'
+      thirdParty: Third party 1
+      debit: 664200
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_10:
+      scheduler: null
+      account: '@account_5'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_1'
+      paymentMethod: '@payment_method_5'
+      thirdParty: Third party 2
+      debit: null
+      credit: 718800
+      valueDate: <date_create('2011-09-02')>
+      reconciled: true
+      notes: ''
+    operation_11:
+      scheduler: null
+      account: '@account_6'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_3'
+      paymentMethod: '@payment_method_4'
+      thirdParty: Third party 1
+      debit: 871800
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_12:
+      scheduler: null
+      account: '@account_7'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_3'
+      paymentMethod: '@payment_method_4'
+      thirdParty: Third party 1
+      debit: 610400
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_13:
+      scheduler: '@scheduler_3'
+      account: '@account_8'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_4'
+      paymentMethod: '@payment_method_1'
+      thirdParty: Third party 1
+      debit: 281900
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      reconciled: true
+      notes: ''
+    operation_14:
+      scheduler: null
+      account: '@account_8'
+      transferAccount: null
+      transferOperation: null
+      category: '@category_1'
+      paymentMethod: '@payment_method_5'
+      thirdParty: Third party 2
+      debit: null
+      credit: 6700
+      valueDate: <date_create('2011-09-02')>
+      reconciled: true
+      notes: ''

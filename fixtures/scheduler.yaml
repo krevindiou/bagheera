@@ -1,0 +1,37 @@
+App\Entity\Scheduler:
+    scheduler_1:
+      account: '@account_1'
+      transferAccount: '@account_2'
+      category: '@category_3'
+      paymentMethod: '@payment_method_4'
+      thirdParty: Third party 1
+      debit: 291600
+      credit: null
+      valueDate: <date_create('2011-08-04')>
+      frequencyUnit: week
+      frequencyValue: 2
+      notes: ''
+    scheduler_2:
+      account: '@account_1'
+      transferAccount: '@account_2'
+      category: '@category_3'
+      paymentMethod: '@payment_method_4'
+      thirdParty: Third party future scheduler
+      debit: 10000
+      credit: null
+      valueDate: <date_create('next year')>
+      frequencyUnit: week
+      frequencyValue: 2
+      notes: ''
+    scheduler_3:
+      account: '@account_8'
+      transferAccount: null
+      category: '@category_4'
+      paymentMethod: '@payment_method_1'
+      thirdParty: Third party 1
+      debit: 281900
+      credit: null
+      valueDate: <date_create('2011-09-01')>
+      frequencyUnit: month
+      frequencyValue: 1
+      notes: ''
