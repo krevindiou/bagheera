@@ -68,6 +68,11 @@ class Member implements UserInterface
         $this->reports = new ArrayCollection();
     }
 
+    public function setMemberId(int $memberId): void
+    {
+        $this->memberId = $memberId;
+    }
+
     public function getMemberId(): ?int
     {
         return $this->memberId;

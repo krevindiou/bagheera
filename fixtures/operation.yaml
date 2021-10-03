@@ -1,5 +1,6 @@
 App\Entity\Operation:
     operation_1:
+      operationId: 1
       scheduler: '@scheduler_1'
       account: '@account_1'
       transferAccount: '@account_2'
@@ -13,6 +14,7 @@ App\Entity\Operation:
       reconciled: false
       notes: ''
     operation_2:
+      operationId: 2
       scheduler: null
       account: '@account_1'
       transferAccount: null
@@ -26,6 +28,7 @@ App\Entity\Operation:
       reconciled: false
       notes: ''
     operation_3:
+      operationId: 3
       scheduler: null
       account: '@account_1'
       transferAccount: null
@@ -39,6 +42,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_4:
+      operationId: 4
       scheduler: null
       account: '@account_1'
       transferAccount: null
@@ -52,6 +56,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_5:
+      operationId: 5
       scheduler: null
       account: '@account_2'
       transferAccount: '@account_1'
@@ -65,6 +70,7 @@ App\Entity\Operation:
       reconciled: false
       notes: ''
     operation_6:
+      operationId: 6
       scheduler: null
       account: '@account_2'
       transferAccount: null
@@ -78,6 +84,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_7:
+      operationId: 7
       scheduler: null
       account: '@account_3'
       transferAccount: null
@@ -91,6 +98,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_8:
+      operationId: 8
       scheduler: null
       account: '@account_4'
       transferAccount: null
@@ -104,6 +112,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_9:
+      operationId: 9
       scheduler: null
       account: '@account_5'
       transferAccount: null
@@ -117,6 +126,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_10:
+      operationId: 10
       scheduler: null
       account: '@account_5'
       transferAccount: null
@@ -130,6 +140,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_11:
+      operationId: 11
       scheduler: null
       account: '@account_6'
       transferAccount: null
@@ -143,6 +154,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_12:
+      operationId: 12
       scheduler: null
       account: '@account_7'
       transferAccount: null
@@ -156,6 +168,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_13:
+      operationId: 13
       scheduler: '@scheduler_3'
       account: '@account_8'
       transferAccount: null
@@ -169,6 +182,7 @@ App\Entity\Operation:
       reconciled: true
       notes: ''
     operation_14:
+      operationId: 14
       scheduler: null
       account: '@account_8'
       transferAccount: null

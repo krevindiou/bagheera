@@ -1,15 +1,18 @@
 App\Entity\Member:
     member_1:
+      memberId: 1
       email: john@example.net
       password: \$2y\$13\$PCfoqiVWPQy9QpXQIwXdO.miaTHkhr/Ba/eoX6S2BLlRabbv22bHC # johnjohn
       country: US
       active: true
     member_2:
+      memberId: 2
       email: jane@example.net
       password: \$2y\$13\$TY8WtjG4HlelaHFTdt1WxOahe9HmQq2UgUUm/QR3z8xvzdMma/rqG # janejane
       country: FR
       active: true
     member_3:
+      memberId: 3
       email: jack@example.net
       password: \$2y\$13\$XaTlNmAoSKYrthKC/83/E.zrUEDQ/7bfq9sOWCYMepQ3gC2dHnD2m # jackjack
       country: US

@@ -1,47 +1,55 @@
 App\Entity\Account:
     account_1:
+      accountId: 1
       bank: '@bank_1'
       name: John - HSBC - Checking account
       currency: USD
       overdraftFacility: 1000000
       deleted: false
     account_2:
+      accountId: 2
       bank: '@bank_1'
       name: 'John - HSBC - Certificate of deposit #1'
       currency: USD
       overdraftFacility: 0
       deleted: false
     account_3:
+      accountId: 3
       bank: '@bank_1'
       name: 'John - HSBC - Certificate of deposit #2'
       currency: EUR
       overdraftFacility: 0
       deleted: false
     account_4:
+      accountId: 4
       bank: '@bank_1'
       name: 'John - HSBC - Certificate of deposit #3'
       currency: USD
       overdraftFacility: 0
       deleted: true
     account_5:
+      accountId: 5
       bank: '@bank_2'
       name: John - Bank of America - Checking account
       currency: USD
       overdraftFacility: 0
       deleted: false
     account_6:
+      accountId: 6
       bank: '@bank_3'
       name: John - Wells Fargo - Checking account
       currency: USD
       overdraftFacility: 0
       deleted: false
     account_7:
+      accountId: 7
       bank: '@bank_4'
       name: John - Santander - Checking account
       currency: USD
       overdraftFacility: 0
       deleted: false
     account_8:
+      accountId: 8
       bank: '@bank_5'
       name: Jane - BNP Paribas - Checking account
       currency: EUR
