@@ -1,0 +1,41 @@
+App\Entity\Bank:
+    bank_1:
+      __construct: false
+      member: '@member_1'
+      name: HSBC
+      sortOrder: 1
+      favorite: false
+      closed: false
+      deleted: false
+    bank_2:
+      __construct: false
+      member: '@member_1'
+      name: Bank of America
+      sortOrder: 2
+      favorite: true
+      closed: false
+      deleted: false
+    bank_3:
+      __construct: false
+      member: '@member_1'
+      name: Wells Fargo
+      sortOrder: 3
+      favorite: false
+      closed: true
+      deleted: false
+    bank_4:
+      __construct: false
+      member: '@member_1'
+      name: Santander
+      sortOrder: 4
+      favorite: false
+      closed: false
+      deleted: true
+    bank_5:
+      __construct: false
+      member: '@member_2'
+      name: BNP Paribas
+      sortOrder: 1
+      favorite: false
+      closed: false
+      deleted: false

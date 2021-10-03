@@ -59,7 +59,7 @@ class PaymentMethod
         return $this->name;
     }
 
-    public function setType(string $type): void
+    public function setType(?string $type): void
     {
         $this->type = $type;
     }

@@ -26,9 +26,6 @@ abstract class E2eTestCase extends WebTestCase
 
         $sql = file_get_contents(__DIR__.'/../src/Resources/config/db/data.sql');
         $conn->exec($sql);
-
-        $sql = file_get_contents(__DIR__.'/../src/Resources/config/db/fixtures.sql');
-        $conn->exec($sql);
     }
 
     protected static function createAuthenticatedClient($username = 'john@example.net', $password = 'johnjohn')
