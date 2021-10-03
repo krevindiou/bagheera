@@ -65,6 +65,11 @@ class Category
         return $str;
     }
 
+    public function setCategoryId(int $categoryId): void
+    {
+        $this->categoryId = $categoryId;
+    }
+
     public function getCategoryId(): ?int
     {
         return $this->categoryId;

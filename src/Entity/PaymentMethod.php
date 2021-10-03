@@ -44,6 +44,11 @@ class PaymentMethod
         return $this->getName();
     }
 
+    public function setPaymentMethodId(int $paymentMethodId): void
+    {
+        $this->paymentMethodId = $paymentMethodId;
+    }
+
     public function getPaymentMethodId(): ?int
     {
         return $this->paymentMethodId;

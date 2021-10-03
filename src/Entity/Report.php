@@ -119,7 +119,7 @@ class Report
         $this->paymentMethods = new ArrayCollection();
     }
 
-    public function setReportId(?int $reportId): void
+    public function setReportId(int $reportId): void
     {
         $this->reportId = $reportId;
     }

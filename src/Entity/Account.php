@@ -93,6 +93,11 @@ class Account
         return $this->getBank()->getName().' - '.$this->getName();
     }
 
+    public function setAccountId(int $accountId): void
+    {
+        $this->accountId = $accountId;
+    }
+
     public function getAccountId(): ?int
     {
         return $this->accountId;

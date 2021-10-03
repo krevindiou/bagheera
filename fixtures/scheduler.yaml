@@ -1,5 +1,6 @@
 App\Entity\Scheduler:
     scheduler_1:
+      schedulerId: 1
       account: '@account_1'
       transferAccount: '@account_2'
       category: '@category_3'
@@ -12,6 +13,7 @@ App\Entity\Scheduler:
       frequencyValue: 2
       notes: ''
     scheduler_2:
+      schedulerId: 2
       account: '@account_1'
       transferAccount: '@account_2'
       category: '@category_3'
@@ -24,6 +26,7 @@ App\Entity\Scheduler:
       frequencyValue: 2
       notes: ''
     scheduler_3:
+      schedulerId: 3
       account: '@account_8'
       transferAccount: null
       category: '@category_4'

@@ -71,6 +71,11 @@ class Bank
         return $this->getName();
     }
 
+    public function setBankId(int $bankId): void
+    {
+        $this->bankId = $bankId;
+    }
+
     public function getBankId(): ?int
     {
         return $this->bankId;

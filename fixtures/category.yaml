@@ -1,21 +1,26 @@
 App\Entity\Category:
     category_1:
+      categoryId: 1
       parentCategory: null
       type: credit
       name: Cat 1
     category_2:
+      categoryId: 2
       parentCategory: '@category_1'
       type: credit
       name: Cat 1.1
     category_3:
+      categoryId: 3
       parentCategory: null
       type: debit
       name: Cat 2
     category_4:
+      categoryId: 4
       parentCategory: '@category_3'
       type: debit
       name: Cat 2.1
     category_5:
+      categoryId: 5
       parentCategory: '@category_3'
       type: debit
       name: Cat 2.2

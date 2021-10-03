@@ -1,28 +1,37 @@
 App\Entity\PaymentMethod:
     payment_method_1:
+      paymentMethodId: 1
       name: credit_card
       type: debit
     payment_method_2:
+      paymentMethodId: 2
       name: check
       type: debit
     payment_method_3:
+      paymentMethodId: 3
       name: cash_withdrawal
       type: debit
     payment_method_4:
+      paymentMethodId: 4
       name: transfer
       type: debit
     payment_method_5:
+      paymentMethodId: 5
       name: check
       type: credit
     payment_method_6:
+      paymentMethodId: 6
       name: transfer
       type: credit
     payment_method_7:
+      paymentMethodId: 7
       name: deposit
       type: credit
     payment_method_8:
+      paymentMethodId: 8
       name: direct_debit
       type: debit
     payment_method_9:
+      paymentMethodId: 9
       name: initial_balance
       type: null

@@ -47,7 +47,7 @@ class Scheduler
     #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
     private ?bool $active = true;
 
-    public function setSchedulerId(?int $schedulerId): void
+    public function setSchedulerId(int $schedulerId): void
     {
         $this->schedulerId = $schedulerId;
     }
