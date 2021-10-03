@@ -54,3 +54,5 @@ services:
         arguments:
             $key: '%kernel.secret%'
             $container: '@service_container'
+
+    App\DataTransformer\MemberOutputDataTransformer: ~

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
+use App\Dto\MemberOutput;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -22,6 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[Table(name: 'member')]
 #[UniqueEntity('email')]
 #[UniqueConstraint(name: 'member_email_unique', columns: ['email'])]
+#[ApiResource(output: MemberOutput::class, itemOperations: ['get' => ['security' => 'is_granted("MEMBER_VIEW", object)']], collectionOperations: [])]
 class Member implements UserInterface
 {
     use TimestampableTrait;

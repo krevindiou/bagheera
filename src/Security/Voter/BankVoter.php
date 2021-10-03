@@ -18,12 +18,12 @@ class BankVoter extends Voter
 
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
-        $member = $token->getUser();
-        if (!$member instanceof UserInterface) {
+        $connectedMember = $token->getUser();
+        if (!$connectedMember instanceof UserInterface) {
             return false;
         }
 
-        if ($subject->getMember() !== $member) {
+        if ($subject->getMember() !== $connectedMember) {
             return false;
         }
 
