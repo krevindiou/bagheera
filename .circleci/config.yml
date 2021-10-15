@@ -103,6 +103,7 @@ jobs:
             app_secret: ${APP_SECRET}
             mailer_url: ${MAILER_URL}
             sender_email: ${SENDER_EMAIL}
+            sentry_dsn: ${SENTRY_DSN}
             EOF
       - run:
           name: Deploy

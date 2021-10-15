@@ -30,6 +30,7 @@ services:
       - APP_SECRET=${APP_SECRET}
       - MAILER_URL=${MAILER_URL}
       - SENDER_EMAIL=${SENDER_EMAIL}
+      - SENTRY_DSN=${SENTRY_DSN}
   nginx:
     image: ghcr.io/krevindiou/bagheera-nginx:latest
     build:

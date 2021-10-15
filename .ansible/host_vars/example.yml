@@ -7,3 +7,4 @@ postgres_secure_password:
 app_secret:
 mailer_url: null://localhost
 sender_email:
+sentry_dsn:

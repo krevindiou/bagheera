@@ -25,3 +25,4 @@
     - { regexp: '^APP_SECRET=', line: 'APP_SECRET="{{ app_secret }}"' }
     - { regexp: '^MAILER_URL=', line: 'MAILER_URL="{{ mailer_url }}"' }
     - { regexp: '^SENDER_EMAIL=', line: 'SENDER_EMAIL="{{ sender_email }}"' }
+    - { regexp: '^SENTRY_DSN=', line: 'SENTRY_DSN="{{ sentry_dsn }}"' }
