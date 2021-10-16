@@ -169,11 +169,11 @@ class ReportService
 
             foreach ($results as $result) {
                 if (isset($result['grouping_data'])) {
-                    $series[0]['points'][strtotime($result['grouping_data'].' UTC')] = round($result['data_1'], 2);
-                    $series[1]['points'][strtotime($result['grouping_data'].' UTC')] = round($result['data_2'], 2);
+                    $series[0]['points'][strtotime($result['grouping_data'].' UTC')] = round((float) $result['data_1'], 2);
+                    $series[1]['points'][strtotime($result['grouping_data'].' UTC')] = round((float) $result['data_2'], 2);
                 } else {
-                    $series[0]['points'][strtotime(date('Y-01-01').' UTC')] = round($result['data_1'], 2);
-                    $series[1]['points'][strtotime(date('Y-01-01').' UTC')] = round($result['data_2'], 2);
+                    $series[0]['points'][strtotime(date('Y-01-01').' UTC')] = round((float) $result['data_1'], 2);
+                    $series[1]['points'][strtotime(date('Y-01-01').' UTC')] = round((float) $result['data_2'], 2);
                 }
             }
 
