@@ -47,8 +47,6 @@ COPY package.json yarn.lock ./
 RUN yarn install --production=false
 COPY . ./
 RUN composer run-script --no-ansi --no-interaction post-install-cmd
-RUN setfacl -dR -m u:www-data:rwX -m u:`whoami`:rwX var
-RUN setfacl -R -m u:www-data:rwX -m u:`whoami`:rwX var
 RUN yarn encore production
 RUN yarn install --production=true --ignore-scripts --prefer-offline
 
@@ -59,6 +57,7 @@ RUN apk add --no-cache shadow \
     && usermod -u 1000 www-data \
     && apk del shadow
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-COPY --from=build-prod /srv/www/bagheera/ /srv/www/bagheera/
 WORKDIR /srv/www/bagheera
+COPY --from=build-prod /srv/www/bagheera/ .
+RUN chown -R www-data:www-data var
 USER www-data
