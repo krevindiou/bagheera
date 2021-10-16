@@ -1,31 +1,31 @@
 FROM php:8.0-fpm-alpine3.13 AS base
-RUN apk add shadow \
+RUN apk add --no-cache shadow \
     && usermod -u 1000 www-data \
     && apk del shadow
 RUN echo "date.timezone='UTC'" > "$PHP_INI_DIR/conf.d/timezone.ini"
 RUN echo 'realpath_cache_size = 5120k' > "$PHP_INI_DIR/conf.d/realpath_cache_size.ini"
 RUN echo 'expose_php = off' > "$PHP_INI_DIR/conf.d/expose_php.ini"
 RUN echo 'memory_limit = 512M' > "$PHP_INI_DIR/conf.d/memory_limit.ini"
-RUN apk add icu-dev icu-libs \
+RUN apk add --no-cache icu-dev icu-libs \
     && docker-php-ext-install -j$(nproc) intl \
     && apk del icu-dev
-RUN apk add postgresql-dev libpq \
+RUN apk add --no-cache postgresql-dev libpq \
     && docker-php-ext-install -j$(nproc) pdo_pgsql \
     && apk del postgresql-dev
-RUN apk add libzip \
+RUN apk add --no-cache libzip \
     && docker-php-ext-install -j$(nproc) opcache \
     && apk del libzip
 WORKDIR /srv/www/bagheera
 
 FROM base AS build-base
-RUN apk add bash git acl nodejs yarn make
+RUN apk add --no-cache bash git acl nodejs yarn make
 RUN curl -L -o /usr/local/bin/composer https://github.com/composer/composer/releases/download/2.0.12/composer.phar
 RUN chmod +x /usr/local/bin/composer
 
 FROM build-base AS dev
 ENV APP_ENV=dev
 ENV NODE_ENV=development
-RUN apk add php8-pecl-xdebug
+RUN apk add --no-cache php8-pecl-xdebug
 RUN echo 'zend_extension=/usr/lib/php8/modules/xdebug.so' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN echo 'xdebug.max_nesting_level=512' >> "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN echo 'max_execution_time = 60' > "$PHP_INI_DIR/conf.d/max_execution_time.ini"
@@ -55,7 +55,7 @@ RUN yarn install --production=true --ignore-scripts --prefer-offline
 FROM base AS prod
 ENV APP_ENV=prod
 ENV NODE_ENV=production
-RUN apk add shadow \
+RUN apk add --no-cache shadow \
     && usermod -u 1000 www-data \
     && apk del shadow
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
