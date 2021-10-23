@@ -86,7 +86,7 @@ class AccountService
             $account->setOverdraftFacility($formModel->overdraftFacility);
             $this->doSave($member, $account);
 
-            if (null !== $formModel->initialBalance) {
+            if (0 !== $formModel->initialBalance) {
                 $operation = new Operation();
                 $operation->setAccount($account);
                 $operation->setThirdParty($this->translator->trans('account.initial_balance'));
