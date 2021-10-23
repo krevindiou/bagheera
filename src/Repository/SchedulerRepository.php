@@ -18,7 +18,7 @@ class SchedulerRepository
     public function getList(Account $account, int $currentPage = 1): Pagerfanta
     {
         $params = [
-            ':account_id' => $account->getAccountId(),
+            'account_id' => $account->getAccountId(),
         ];
 
         $sql = <<<'EOT'
@@ -60,24 +60,20 @@ class SchedulerRepository
             $sqlCount = 'SELECT COUNT(*) AS total ';
             $sqlCount .= substr($sql, $start, $length);
 
-            $stmt = $conn->prepare($sqlCount);
-            $stmt->execute($params);
-
-            return $stmt->fetchOne();
+            return $conn->executeQuery($sqlCount, $params)->fetchOne();
         };
 
         $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
             $sql .= ' LIMIT :length OFFSET :offset';
 
-            $params[':length'] = $length;
-            $params[':offset'] = $offset;
-
-            $stmt = $conn->prepare($sql);
-            $stmt->execute($params);
+            $params['length'] = $length;
+            $params['offset'] = $offset;
 
             $schedulers = [];
 
-            foreach ($stmt->fetchAllAssociative() as $row) {
+            $rows = $conn->executeQuery($sql, $params)->fetchAllAssociative();
+
+            foreach ($rows as $row) {
                 if (!isset($schedulers[$row['scheduler_id']])) {
                     $schedulers[$row['scheduler_id']] = [
                         'schedulerId' => $row['scheduler_id'],

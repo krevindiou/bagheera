@@ -44,14 +44,11 @@ class BankRepository
         }
         $sql .= ' ORDER BY bank.sort_order ASC, account.name ASC';
 
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
-        $stmt->execute(
-            [
-                ':member_id' => $member->getMemberId(),
-            ]
-        );
+        $rows = $this->entityManager->getConnection()->executeQuery($sql, [
+            'member_id' => $member->getMemberId(),
+        ])->fetchAllAssociative();
 
-        foreach ($stmt->fetchAllAssociative() as $row) {
+        foreach ($rows as $row) {
             if (!isset($banks[$row['bank_id']])) {
                 $banks[$row['bank_id']] = [
                     'bankId' => $row['bank_id'],

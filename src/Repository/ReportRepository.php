@@ -49,14 +49,12 @@ class ReportRepository
             GROUP BY report.report_id
             ORDER BY report.report_id ASC
             EOT;
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
-        $stmt->execute(
-            [
-                ':member_id' => $member->getMemberId(),
-            ]
-        );
 
-        foreach ($stmt->fetchAllAssociative() as $row) {
+        $rows = $this->entityManager->getConnection()->executeQuery($sql, [
+            'member_id' => $member->getMemberId(),
+        ])->fetchAllAssociative();
+
+        foreach ($rows as $row) {
             if (!isset($reports[$row['report_id']])) {
                 $accounts = [];
                 $tmpAccounts = (null !== $row['accounts']) ? json_decode($row['accounts'], true) : [];

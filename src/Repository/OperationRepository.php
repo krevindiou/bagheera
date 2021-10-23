@@ -26,7 +26,7 @@ class OperationRepository
     public function getList(Member $member, Account $account, int $currentPage = 1, OperationSearchFormModel $formModel = null): Pagerfanta
     {
         $params = [
-            ':account_id' => $account->getAccountId(),
+            'account_id' => $account->getAccountId(),
         ];
 
         $sql = <<<'EOT'
@@ -63,7 +63,7 @@ class OperationRepository
         if (null !== $formModel) {
             if ('' !== $formModel->thirdParty) {
                 $sql .= ' AND operation.third_party ILIKE :third_party';
-                $params[':third_party'] = '%'.$formModel->thirdParty.'%';
+                $params['third_party'] = '%'.$formModel->thirdParty.'%';
             }
 
             if (null !== $formModel->categories && 0 !== count($formModel->categories)) {
@@ -91,27 +91,27 @@ class OperationRepository
                 switch ($formModel->{'amountComparator'.$i}) {
                     case 'inferiorTo':
                         $sql .= ' AND operation.'.$formModel->type.' < :amount'.$i;
-                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        $params['amount'.$i] = $formModel->{'amount'.$i};
 
                         break;
                     case 'inferiorOrEqualTo':
                         $sql .= ' AND operation.'.$formModel->type.' <= :amount'.$i;
-                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        $params['amount'.$i] = $formModel->{'amount'.$i};
 
                         break;
                     case 'equalTo':
                         $sql .= ' AND operation.'.$formModel->type.' = :amount'.$i;
-                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        $params['amount'.$i] = $formModel->{'amount'.$i};
 
                         break;
                     case 'superiorOrEqualTo':
                         $sql .= ' AND operation.'.$formModel->type.' >= :amount'.$i;
-                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        $params['amount'.$i] = $formModel->{'amount'.$i};
 
                         break;
                     case 'superiorTo':
                         $sql .= ' AND operation.'.$formModel->type.' > :amount'.$i;
-                        $params[':amount'.$i] = $formModel->{'amount'.$i};
+                        $params['amount'.$i] = $formModel->{'amount'.$i};
 
                         break;
                 }
@@ -119,19 +119,19 @@ class OperationRepository
 
             if (null !== $formModel->valueDateStart) {
                 $sql .= ' AND operation.value_date >= :value_date_start';
-                $params[':value_date_start'] = $formModel->valueDateStart->format(\DateTime::ISO8601);
+                $params['value_date_start'] = $formModel->valueDateStart->format(\DateTime::ISO8601);
             }
             if (null !== $formModel->valueDateEnd) {
                 $sql .= ' AND operation.value_date <= :value_date_end';
-                $params[':value_date_end'] = $formModel->valueDateEnd->format(\DateTime::ISO8601);
+                $params['value_date_end'] = $formModel->valueDateEnd->format(\DateTime::ISO8601);
             }
             if (null !== $formModel->notes) {
                 $sql .= ' AND operation.notes ILIKE :notes';
-                $params[':notes'] = '%'.$formModel->notes.'%';
+                $params['notes'] = '%'.$formModel->notes.'%';
             }
             if (null !== $formModel->reconciled) {
                 $sql .= ' AND operation.is_reconciled = :reconciled';
-                $params[':reconciled'] = $formModel->reconciled ? 'true' : 'false';
+                $params['reconciled'] = $formModel->reconciled ? 'true' : 'false';
             }
         }
 
@@ -146,24 +146,20 @@ class OperationRepository
             $sqlCount = 'SELECT COUNT(*) AS total ';
             $sqlCount .= substr($sql, $start, $length);
 
-            $stmt = $conn->prepare($sqlCount);
-            $stmt->execute($params);
-
-            return $stmt->fetchOne();
+            return $conn->executeQuery($sqlCount, $params)->fetchOne();
         };
 
         $getSliceCallback = function ($offset, $length) use ($sql, $conn, $params) {
             $sql .= ' LIMIT :length OFFSET :offset';
 
-            $params[':length'] = $length;
-            $params[':offset'] = $offset;
+            $params['length'] = $length;
+            $params['offset'] = $offset;
 
-            $stmt = $conn->prepare($sql);
-            $stmt->execute($params);
+            $rows = $conn->executeQuery($sql, $params)->fetchAllAssociative();
 
             $operations = [];
 
-            foreach ($stmt->fetchAllAssociative() as $row) {
+            foreach ($rows as $row) {
                 if (!isset($operations[$row['operation_id']])) {
                     $operations[$row['operation_id']] = [
                         'operationId' => $row['operation_id'],
@@ -230,12 +226,11 @@ class OperationRepository
             INNER JOIN operation o2 ON o2.third_party = tmp.third_party AND o2.value_date = tmp.max_value_date
             GROUP BY o2.third_party, o2.category_id
             EOT;
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
-        $stmt->bindValue('member_id', $member->getMemberId());
-        $stmt->bindValue('third_party', '%'.$queryString.'%');
-        $stmt->execute();
 
-        return $stmt->fetchAllAssociative();
+        return $this->entityManager->getConnection()->executeQuery($sql, [
+            'member_id' => $member->getMemberId(),
+            'third_party' => '%'.$queryString.'%',
+        ])->fetchAllAssociative();
     }
 
     public function getLastFromCategory(Member $member, Category $category): ?Operation
@@ -377,25 +372,23 @@ class OperationRepository
             $sql .= ' ORDER BY grouping_data ASC';
         }
 
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
+        $params = [];
 
-        array_walk($accountsId, function ($accountId, $k) use ($stmt): void {
-            $stmt->bindValue(ltrim($k, ':'), $accountId);
+        array_walk($accountsId, function ($accountId, $k): void {
+            $params[ltrim($k, ':')] = $accountId;
         });
 
         if (null !== $report->getValueDateStart()) {
-            $stmt->bindValue('value_date_start', $report->getValueDateStart()->format(\DateTime::ISO8601));
+            $params['value_date_start'] = $report->getValueDateStart()->format(\DateTime::ISO8601);
         }
         if (null !== $report->getValueDateEnd()) {
-            $stmt->bindValue('value_date_end', $report->getValueDateEnd()->format(\DateTime::ISO8601));
+            $params['value_date_end'] = $report->getValueDateEnd()->format(\DateTime::ISO8601);
         }
         if (null !== $report->getThirdParties()) {
-            $stmt->bindValue('third_parties', '%'.$report->getThirdParties().'%');
+            $params['third_parties'] = '%'.$report->getThirdParties().'%';
         }
 
-        $stmt->execute();
-
-        return $stmt->fetchAllAssociative();
+        return $this->entityManager->getConnection()->executeQuery($sql, $params)->fetchAllAssociative();
     }
 
     public function getLastScheduledOperationDate(Scheduler $scheduler): array
@@ -440,18 +433,17 @@ class OperationRepository
         $sql .= ' GROUP BY a.currency, month';
         $sql .= ' ORDER BY month ASC';
 
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
-        $stmt->bindValue('member_id', $member->getMemberId());
-        $stmt->bindValue('start_date', $startDate->format('Y-m-d'));
-        $stmt->bindValue('end_date', $endDate->format('Y-m-d'));
+        $params = [
+            'member_id' => $member->getMemberId(),
+            'start_date' => $startDate->format('Y-m-d'),
+            'end_date' => $endDate->format('Y-m-d'),
+        ];
 
         if (null !== $account) {
-            $stmt->bindValue('account_id', $account->getAccountId());
+            $params['account_id'] = $account->getAccountId();
         }
 
-        $stmt->execute();
-
-        $results = $stmt->fetchAllAssociative();
+        $results = $this->entityManager->getConnection()->executeQuery($sql, $params)->fetchAllAssociative();
 
         foreach ($results as $result) {
             $data[$result['currency']][$result['month']] = $result['total'];
@@ -500,17 +492,16 @@ class OperationRepository
 
         $sql .= ' GROUP BY a.currency';
 
-        $stmt = $this->entityManager->getConnection()->prepare($sql);
-        $stmt->bindValue('member_id', $member->getMemberId());
-        $stmt->bindValue('end_date', $endDate->format('Y-m-d'));
+        $params = [
+            'member_id' => $member->getMemberId(),
+            'end_date' => $endDate->format('Y-m-d'),
+        ];
 
         if (null !== $account) {
-            $stmt->bindValue('account_id', $account->getAccountId());
+            $params['account_id'] = $account->getAccountId();
         }
 
-        $stmt->execute();
-
-        $results = $stmt->fetchAllAssociative();
+        $results = $this->entityManager->getConnection()->executeQuery($sql, $params)->fetchAllAssociative();
 
         foreach ($results as $result) {
             $data[$result['currency']] = $result['total'];
