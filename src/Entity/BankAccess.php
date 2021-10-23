@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
@@ -16,7 +17,7 @@ class BankAccess
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'bank_id', type: 'integer')]
+    #[Id, Column(name: 'bank_id', type: Types::INTEGER)]
     private ?int $bankId = null;
 
     #[Assert\NotBlank]
@@ -27,10 +28,10 @@ class BankAccess
     #[Assert\Length(max: 255)]
     private ?string $plainPassword = null;
 
-    #[Column(name: 'login', type: 'string', length: 255)]
+    #[Column(name: 'login', type: Types::STRING, length: 255)]
     private ?string $login = null;
 
-    #[Column(name: 'password', type: 'string', length: 255)]
+    #[Column(name: 'password', type: Types::STRING, length: 255)]
     private ?string $password = null;
 
     public function setBankId(int $bankId): void

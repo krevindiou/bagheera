@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -23,7 +24,7 @@ class Bank
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'bank_id', type: 'integer')]
+    #[Id, Column(name: 'bank_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $bankId = null;
 
@@ -34,22 +35,22 @@ class Bank
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
-    #[Column(name: 'name', type: 'string', length: 32)]
+    #[Column(name: 'name', type: Types::STRING, length: 32)]
     private ?string $name = null;
 
-    #[Column(name: 'sort_order', type: 'smallint')]
+    #[Column(name: 'sort_order', type: Types::SMALLINT)]
     private ?int $sortOrder = 0;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_favorite', type: 'boolean', options: ['default' => true])]
+    #[Column(name: 'is_favorite', type: Types::BOOLEAN, options: ['default' => true])]
     private ?bool $favorite = true;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_closed', type: 'boolean', options: ['default' => false])]
+    #[Column(name: 'is_closed', type: Types::BOOLEAN, options: ['default' => false])]
     private ?bool $closed = false;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
+    #[Column(name: 'is_deleted', type: Types::BOOLEAN, options: ['default' => false])]
     private ?bool $deleted = false;
 
     #[OneToMany(targetEntity: Account::class, mappedBy: 'bank', cascade: ['all'], fetch: 'EXTRA_LAZY')]

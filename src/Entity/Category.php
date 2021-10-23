@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -22,7 +23,7 @@ class Category
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'category_id', type: 'integer')]
+    #[Id, Column(name: 'category_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $categoryId = null;
 
@@ -33,16 +34,16 @@ class Category
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['debit', 'credit'])]
-    #[Column(name: 'type', type: 'string', length: 8)]
+    #[Column(name: 'type', type: Types::STRING, length: 8)]
     private ?string $type = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 32)]
-    #[Column(name: 'name', type: 'string', length: 32)]
+    #[Column(name: 'name', type: Types::STRING, length: 32)]
     private ?string $name = null;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
+    #[Column(name: 'is_active', type: Types::BOOLEAN, options: ['default' => true])]
     private ?bool $active = true;
 
     #[OneToMany(targetEntity: self::class, mappedBy: 'parentCategory', fetch: 'EXTRA_LAZY')]

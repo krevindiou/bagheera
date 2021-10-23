@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
@@ -18,10 +19,10 @@ class AccountImport
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'import_id', type: 'integer')]
+    #[Id, Column(name: 'import_id', type: Types::INTEGER)]
     private ?int $importId = null;
 
-    #[Column(name: 'account_id', type: 'integer')]
+    #[Column(name: 'account_id', type: Types::INTEGER)]
     private int $accountId;
 
     #[Assert\NotNull]
@@ -30,23 +31,23 @@ class AccountImport
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id')]
     private ?Account $account = null;
 
-    #[Column(name: 'total', type: 'integer', nullable: true)]
+    #[Column(name: 'total', type: Types::INTEGER, nullable: true)]
     private ?int $total = 0;
 
-    #[Column(name: 'progress', type: 'integer', nullable: true)]
+    #[Column(name: 'progress', type: Types::INTEGER, nullable: true)]
     private ?int $progress = 0;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'finished', type: 'boolean', options: ['default' => false])]
+    #[Column(name: 'finished', type: Types::BOOLEAN, options: ['default' => false])]
     private ?bool $finished = false;
 
-    #[Column(name: 'original_data', type: 'text', nullable: true)]
+    #[Column(name: 'original_data', type: Types::TEXT, nullable: true)]
     private ?string $originalData = null;
 
-    #[Column(name: 'json_data', type: 'text', nullable: true)]
+    #[Column(name: 'json_data', type: Types::TEXT, nullable: true)]
     private ?string $jsonData = null;
 
-    #[Column(name: 'json_normalized_data', type: 'text', nullable: true)]
+    #[Column(name: 'json_normalized_data', type: Types::TEXT, nullable: true)]
     private ?string $jsonNormalizedData = null;
 
     public function setImportId(int $importId): void

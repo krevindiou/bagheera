@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Dto\MemberOutput;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -29,29 +30,29 @@ class Member implements UserInterface
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'member_id', type: 'integer')]
+    #[Id, Column(name: 'member_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $memberId = null;
 
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Length(max: 128)]
-    #[Column(name: 'email', type: 'string', length: 128, unique: true)]
+    #[Column(name: 'email', type: Types::STRING, length: 128, unique: true)]
     private ?string $email = null;
 
-    #[Column(name: 'password', type: 'string', length: 60)]
+    #[Column(name: 'password', type: Types::STRING, length: 60)]
     private ?string $password = null;
 
     #[Assert\NotBlank]
-    #[Column(name: 'country', type: 'string', length: 2)]
+    #[Column(name: 'country', type: Types::STRING, length: 2)]
     private ?string $country = null;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_active', type: 'boolean', options: ['default' => false])]
+    #[Column(name: 'is_active', type: Types::BOOLEAN, options: ['default' => false])]
     private ?bool $active = false;
 
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'logged_at', type: 'datetime', nullable: true)]
+    #[Column(name: 'logged_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTime $loggedAt = null;
 
     #[OneToMany(targetEntity: Bank::class, mappedBy: 'member', cascade: ['all'], fetch: 'EXTRA_LAZY')]

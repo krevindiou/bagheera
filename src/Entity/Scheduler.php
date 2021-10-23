@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -25,26 +26,26 @@ class Scheduler
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
     private Account $account;
 
-    #[Id, Column(name: 'scheduler_id', type: 'integer')]
+    #[Id, Column(name: 'scheduler_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $schedulerId = null;
 
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'limit_date', type: 'date', nullable: true)]
+    #[Column(name: 'limit_date', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $limitDate = null;
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['day', 'week', 'month', 'year'])]
-    #[Column(name: 'frequency_unit', type: 'string', length: 16, options: ['default' => 'month'])]
+    #[Column(name: 'frequency_unit', type: Types::STRING, length: 16, options: ['default' => 'month'])]
     private ?string $frequencyUnit = 'month';
 
     #[Assert\NotBlank]
     #[Assert\Type(type: 'integer')]
-    #[Column(name: 'frequency_value', type: 'smallint')]
+    #[Column(name: 'frequency_value', type: Types::SMALLINT)]
     private ?int $frequencyValue = null;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_active', type: 'boolean', options: ['default' => true])]
+    #[Column(name: 'is_active', type: Types::BOOLEAN, options: ['default' => true])]
     private ?bool $active = true;
 
     public function setSchedulerId(int $schedulerId): void

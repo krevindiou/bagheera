@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -30,11 +31,11 @@ class Operation
     #[JoinColumn(name: 'account_id', referencedColumnName: 'account_id', nullable: false)]
     private Account $account;
 
-    #[Id, Column(name: 'operation_id', type: 'integer')]
+    #[Id, Column(name: 'operation_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $operationId = null;
 
-    #[Column(name: 'external_operation_id', type: 'string', length: 32, nullable: true)]
+    #[Column(name: 'external_operation_id', type: Types::STRING, length: 32, nullable: true)]
     private ?string $externalOperationId = null;
 
     #[Assert\Type(type: Scheduler::class)]

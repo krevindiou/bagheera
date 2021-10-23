@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -24,7 +25,7 @@ class Report
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'report_id', type: 'integer')]
+    #[Id, Column(name: 'report_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $reportId = null;
 
@@ -36,27 +37,27 @@ class Report
 
     #[Assert\NotBlank]
     #[Assert\Choice(choices: ['sum', 'average', 'distribution', 'estimate'])]
-    #[Column(name: 'type', type: 'string', length: 16)]
+    #[Column(name: 'type', type: Types::STRING, length: 16)]
     private ?string $type = null;
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
-    #[Column(name: 'title', type: 'string', length: 64)]
+    #[Column(name: 'title', type: Types::STRING, length: 64)]
     private ?string $title = null;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'homepage', type: 'boolean', options: ['default' => false])]
+    #[Column(name: 'homepage', type: Types::BOOLEAN, options: ['default' => false])]
     private ?bool $homepage = false;
 
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'value_date_start', type: 'date', nullable: true)]
+    #[Column(name: 'value_date_start', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $valueDateStart = null;
 
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'value_date_end', type: 'date', nullable: true)]
+    #[Column(name: 'value_date_end', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $valueDateEnd = null;
 
-    #[Column(name: 'third_parties', type: 'string', length: 255, nullable: true)]
+    #[Column(name: 'third_parties', type: Types::STRING, length: 255, nullable: true)]
     private ?string $thirdParties = null;
 
     #[ManyToMany(targetEntity: Category::class, fetch: 'EAGER')]
@@ -78,38 +79,38 @@ class Report
     private Collection $accounts;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'reconciled_only', type: 'boolean', nullable: true)]
+    #[Column(name: 'reconciled_only', type: Types::BOOLEAN, nullable: true)]
     private ?bool $reconciledOnly = null;
 
     #[Assert\NotBlank(groups: ['sum', 'average'])]
     #[Assert\Choice(choices: ['month', 'quarter', 'year', 'all'])]
-    #[Column(name: 'period_grouping', type: 'string', length: 8, nullable: true)]
+    #[Column(name: 'period_grouping', type: Types::STRING, length: 8, nullable: true)]
     private ?string $periodGrouping = null;
 
     #[Assert\NotBlank(groups: ['distribution'])]
     #[Assert\Choice(choices: ['category', 'third_party', 'payment_method'])]
-    #[Column(name: 'data_grouping', type: 'string', length: 16, nullable: true)]
+    #[Column(name: 'data_grouping', type: Types::STRING, length: 16, nullable: true)]
     private ?string $dataGrouping = null;
 
     #[Assert\NotBlank(groups: ['distribution'])]
-    #[Column(name: 'significant_results_number', type: 'smallint', nullable: true)]
+    #[Column(name: 'significant_results_number', type: Types::SMALLINT, nullable: true)]
     private ?int $significantResultsNumber = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
-    #[Column(name: 'month_expenses', type: 'integer', nullable: true)]
+    #[Column(name: 'month_expenses', type: Types::INTEGER, nullable: true)]
     private ?int $monthExpenses = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
-    #[Column(name: 'month_incomes', type: 'integer', nullable: true)]
+    #[Column(name: 'month_incomes', type: Types::INTEGER, nullable: true)]
     private ?int $monthIncomes = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
-    #[Column(name: 'estimate_duration_value', type: 'smallint', nullable: true)]
+    #[Column(name: 'estimate_duration_value', type: Types::SMALLINT, nullable: true)]
     private ?int $estimateDurationValue = null;
 
     #[Assert\NotBlank(groups: ['estimate'])]
     #[Assert\Choice(choices: ['month', 'year'])]
-    #[Column(name: 'estimate_duration_unit', type: 'string', length: 8, nullable: true)]
+    #[Column(name: 'estimate_duration_unit', type: Types::STRING, length: 8, nullable: true)]
     private ?int $estimateDurationUnit = null;
 
     public function __construct()
@@ -119,7 +120,7 @@ class Report
         $this->paymentMethods = new ArrayCollection();
     }
 
-    public function setReportId(int $reportId): void
+    public function setReportId(?int $reportId): void
     {
         $this->reportId = $reportId;
     }

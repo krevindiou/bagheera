@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -17,16 +18,16 @@ class Provider
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'provider_id', type: 'smallint')]
+    #[Id, Column(name: 'provider_id', type: Types::SMALLINT)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $providerId = null;
 
     #[Assert\NotBlank]
-    #[Column(name: 'name', type: 'string', length: 64)]
+    #[Column(name: 'name', type: Types::STRING, length: 64)]
     private ?string $name = null;
 
     #[Assert\NotBlank]
-    #[Column(name: 'country', type: 'string', length: 2)]
+    #[Column(name: 'country', type: Types::STRING, length: 2)]
     private ?string $country = null;
 
     public function __toString(): string

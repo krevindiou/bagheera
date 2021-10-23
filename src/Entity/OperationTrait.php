@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
@@ -31,25 +32,25 @@ trait OperationTrait
 
     #[Assert\NotBlank]
     #[Assert\Length(max: 64)]
-    #[Column(name: 'third_party', type: 'string', length: 64)]
+    #[Column(name: 'third_party', type: Types::STRING, length: 64)]
     private string $thirdParty;
 
-    #[Column(name: 'debit', type: 'integer', nullable: true)]
+    #[Column(name: 'debit', type: Types::INTEGER, nullable: true)]
     private null|int $debit;
 
-    #[Column(name: 'credit', type: 'integer', nullable: true)]
+    #[Column(name: 'credit', type: Types::INTEGER, nullable: true)]
     private null|int $credit;
 
     #[Assert\NotBlank]
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'value_date', type: 'date')]
+    #[Column(name: 'value_date', type: Types::DATE_MUTABLE)]
     private \DateTime $valueDate;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_reconciled', type: 'boolean', options: ['default' => false])]
+    #[Column(name: 'is_reconciled', type: Types::BOOLEAN, options: ['default' => false])]
     private bool $reconciled = false;
 
-    #[Column(name: 'notes', type: 'text', options: ['default' => ''])]
+    #[Column(name: 'notes', type: Types::TEXT, options: ['default' => ''])]
     private string $notes;
 
     public function setAccount(Account $account): void

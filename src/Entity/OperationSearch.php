@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -24,7 +25,7 @@ class OperationSearch
 {
     use TimestampableTrait;
 
-    #[Id, Column(name: 'operation_search_id', type: 'integer')]
+    #[Id, Column(name: 'operation_search_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $operationSearchId = null;
 
@@ -47,42 +48,42 @@ class OperationSearch
     private Collection $paymentMethods;
 
     #[Assert\Length(max: 64)]
-    #[Column(name: 'third_party', type: 'string', length: 64, nullable: true)]
+    #[Column(name: 'third_party', type: Types::STRING, length: 64, nullable: true)]
     private ?string $thirdParty = null;
 
     #[Assert\Length(max: 128)]
-    #[Column(name: 'notes', type: 'string', length: 128, nullable: true)]
+    #[Column(name: 'notes', type: Types::STRING, length: 128, nullable: true)]
     private ?string $notes = null;
 
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'value_date_start', type: 'date', nullable: true)]
+    #[Column(name: 'value_date_start', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $valueDateStart = null;
 
     #[Assert\Type(type: \DateTime::class)]
-    #[Column(name: 'value_date_end', type: 'date', nullable: true)]
+    #[Column(name: 'value_date_end', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $valueDateEnd = null;
 
     #[Assert\Type(type: 'bool')]
-    #[Column(name: 'is_reconciled', type: 'boolean', nullable: true)]
+    #[Column(name: 'is_reconciled', type: Types::BOOLEAN, nullable: true)]
     private ?bool $reconciled = null;
 
     #[Assert\Choice(choices: ['debit', 'credit'])]
-    #[Column(name: 'type', type: 'string', length: 8, nullable: true, options: ['default' => 'debit'])]
+    #[Column(name: 'type', type: Types::STRING, length: 8, nullable: true, options: ['default' => 'debit'])]
     private ?string $type = 'debit';
 
-    #[Column(name: 'amount_inferior_to', type: 'integer', nullable: true)]
+    #[Column(name: 'amount_inferior_to', type: Types::INTEGER, nullable: true)]
     private ?int $amountInferiorTo = null;
 
-    #[Column(name: 'amount_inferior_or_equal_to', type: 'integer', nullable: true)]
+    #[Column(name: 'amount_inferior_or_equal_to', type: Types::INTEGER, nullable: true)]
     private ?int $amountInferiorOrEqualTo = null;
 
-    #[Column(name: 'amount_equal_to', type: 'integer', nullable: true)]
+    #[Column(name: 'amount_equal_to', type: Types::INTEGER, nullable: true)]
     private ?int $amountEqualTo = null;
 
-    #[Column(name: 'amount_superior_or_equal_to', type: 'integer', nullable: true)]
+    #[Column(name: 'amount_superior_or_equal_to', type: Types::INTEGER, nullable: true)]
     private ?int $amountSuperiorOrEqualTo = null;
 
-    #[Column(name: 'amount_superior_to', type: 'integer', nullable: true)]
+    #[Column(name: 'amount_superior_to', type: Types::INTEGER, nullable: true)]
     private ?int $amountSuperiorTo = null;
 
     public function __construct()

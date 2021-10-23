@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -27,16 +28,16 @@ class PaymentMethod
     public const PAYMENT_METHOD_ID_CREDIT_TRANSFER = 6;
     public const PAYMENT_METHOD_ID_CREDIT_DEPOSIT = 7;
 
-    #[Id, Column(name: 'payment_method_id', type: 'integer')]
+    #[Id, Column(name: 'payment_method_id', type: Types::INTEGER)]
     #[GeneratedValue(strategy: 'IDENTITY')]
     private ?int $paymentMethodId = null;
 
     #[Assert\NotBlank]
-    #[Column(name: 'name', type: 'string', length: 16)]
+    #[Column(name: 'name', type: Types::STRING, length: 16)]
     private ?string $name = null;
 
     #[Assert\Choice(choices: ['debit', 'credit'])]
-    #[Column(name: 'type', type: 'string', length: 8, nullable: true)]
+    #[Column(name: 'type', type: Types::STRING, length: 8, nullable: true)]
     private ?string $type = null;
 
     public function __toString(): string
