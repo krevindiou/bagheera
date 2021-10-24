@@ -26,7 +26,7 @@ FROM build-base AS dev
 ENV APP_ENV=dev
 ENV NODE_ENV=development
 RUN apk add --no-cache php8-pecl-xdebug
-RUN echo 'zend_extension=/usr/lib/php8/modules/xdebug.so' > "$PHP_INI_DIR/conf.d/xdebug.ini"
+RUN echo '# zend_extension=/usr/lib/php8/modules/xdebug.so' > "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN echo 'xdebug.max_nesting_level=512' >> "$PHP_INI_DIR/conf.d/xdebug.ini"
 RUN echo 'max_execution_time = 60' > "$PHP_INI_DIR/conf.d/max_execution_time.ini"
 RUN curl -L -o /usr/local/bin/php-cs-fixer https://github.com/FriendsOfPHP/PHP-CS-Fixer/releases/download/v3.1.0/php-cs-fixer.phar
