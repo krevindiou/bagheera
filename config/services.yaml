@@ -55,4 +55,16 @@ services:
             $key: '%kernel.secret%'
             $container: '@service_container'
 
+    App\DataTransformer\MemberInputDataTransformer:
+
     App\DataTransformer\MemberOutputDataTransformer: ~
+
+    App\EventListener\MemberListener:
+        arguments:
+            $secret: '%kernel.secret%'
+            $config: '%email%'
+        tags:
+            -
+                name: 'doctrine.orm.entity_listener'
+                event: 'postPersist'
+                entity: 'App\Entity\Member'

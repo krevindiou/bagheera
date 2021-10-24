@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Event\Subscriber;
+namespace App\EventSubscriber;
 
 use App\Entity\Member;
 use App\Service\SchedulerService;

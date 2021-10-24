@@ -12,7 +12,7 @@ final class MemberTest extends AbstractTest
 {
     public function testGetMember(): void
     {
-        $response = $this->createClientWithCredentials()->request('GET', '/api/members/1');
+        $this->createClientWithCredentials()->request('GET', '/api/members/1');
         $this->assertResponseIsSuccessful();
         $this->assertJsonContains([
             'data' => [
@@ -29,13 +29,29 @@ final class MemberTest extends AbstractTest
 
     public function testGetMemberDenied(): void
     {
-        $response = $this->createClientWithCredentials()->request('GET', '/api/members/2');
+        $this->createClientWithCredentials()->request('GET', '/api/members/2');
         $this->assertResponseStatusCodeSame(403);
     }
 
     public function testGetMemberNotFound(): void
     {
-        $response = $this->createClientWithCredentials()->request('GET', '/api/members/4');
+        $this->createClientWithCredentials()->request('GET', '/api/members/4');
         $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testCreateMember(): void
+    {
+        $response = $this->createAnonymousClient()->request('POST', '/api/members', [
+            'json' => [
+                'email' => 'roberto@example.net',
+                'country' => 'IT',
+                'plainPassword' => 'password',
+            ],
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        static::assertSame('Member', $response->toArray()['data']['type']);
+        static::assertSame('roberto@example.net', $response->toArray()['data']['attributes']['email']);
+        static::assertSame('IT', $response->toArray()['data']['attributes']['country']);
     }
 }

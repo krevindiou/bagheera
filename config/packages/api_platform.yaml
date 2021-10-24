@@ -1,6 +1,7 @@
 api_platform:
     title: 'Bagheera API'
     formats:
+        json: ['application/json']
         jsonapi: ['application/vnd.api+json']
         html: ['text/html']
     error_formats:

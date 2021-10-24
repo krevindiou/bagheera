@@ -10,7 +10,7 @@ use App\Entity\Member;
 
 final class MemberOutputDataTransformer implements DataTransformerInterface
 {
-    public function transform($data, string $to, array $context = [])
+    public function transform($data, string $to, array $context = []): MemberOutput
     {
         $output = new MemberOutput();
         $output->memberId = $data->getMemberId();

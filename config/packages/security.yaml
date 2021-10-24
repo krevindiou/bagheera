@@ -45,5 +45,6 @@ security:
     access_control:
         - { path: ^/docs, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/tokens, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/members, methods: [POST], roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
         - { path: "^/[a-z]{2}/manager", roles: ROLE_USER }

@@ -57,19 +57,6 @@ class MemberService
         return $this->formFactory->create(MemberProfileFormType::class, $formModel);
     }
 
-    /**
-     * Creates register key.
-     */
-    public function createRegisterKey(Member $member): string
-    {
-        $data = [
-            'type' => 'register',
-            'email' => $member->getEmail(),
-        ];
-
-        return $this->cryptService->encrypt(json_encode($data), $this->secret);
-    }
-
     public function saveRegisterForm(MemberRegisterFormModel $formModel): bool
     {
         $errors = $this->validator->validate($formModel);
@@ -292,30 +279,6 @@ class MemberService
         try {
             $this->entityManager->persist($member);
             $this->entityManager->flush();
-        } catch (\Exception $e) {
-            $this->logger->error($e->getMessage());
-
-            return false;
-        }
-
-        // Activation link construction
-        $key = $this->createRegisterKey($member);
-        $link = $this->router->generate('member_activate', ['_locale' => 'en', 'key' => $key], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        $body = $this->templating->render(
-            'Email/register.html.twig',
-            ['link' => $link]
-        );
-
-        $message = (new \Swift_Message())
-            ->setSubject($this->translator->trans('member.register.email_subject'))
-            ->setFrom([$this->config['sender_email'] => $this->config['sender_name']])
-            ->setTo([$member->getEmail()])
-            ->setBody($body, 'text/html')
-        ;
-
-        try {
-            $this->mailer->send($message);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
