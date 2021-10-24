@@ -13,6 +13,7 @@ services:
       - /srv/www/bagheera/node_modules/
       - /srv/www/bagheera/public/components/
       - /srv/www/bagheera/vendor/
+      - /srv/www/bagheera/var/
   nginx:
     image: bagheera-nginx
     build:
