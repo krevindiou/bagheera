@@ -16,7 +16,7 @@ commands:
 jobs:
   test:
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2204:2023.10.1
     resource_class: medium
     environment:
       APP_ENV: dev
@@ -62,7 +62,7 @@ jobs:
           command: bash <(curl -s https://codecov.io/bash)
   release:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:2023.10.1
     resource_class: arm.medium
     environment:
       APP_ENV: prod
@@ -80,7 +80,7 @@ jobs:
             make docker-push
   deploy:
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2204:2023.10.1
     resource_class: medium
     environment:
       ANSIBLE_VERSION: 2.10.7
