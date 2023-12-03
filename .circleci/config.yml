@@ -1,13 +1,5 @@
 version: 2.1
 commands:
-  upgrade-docker:
-    steps:
-      - run:
-          name: Upgrade Docker Compose
-          command: |
-            sudo rm /usr/local/bin/docker-compose
-            pip3 install docker-compose==${DOCKER_COMPOSE_VERSION}
-            sudo ln -s /opt/circleci/.pyenv/shims/docker-compose /usr/local/bin
   install-ansible:
     steps:
       - run:
@@ -20,10 +12,8 @@ jobs:
     resource_class: medium
     environment:
       APP_ENV: dev
-      DOCKER_COMPOSE_VERSION: 1.27.4
     steps:
       - checkout
-      - upgrade-docker
       - run:
           name: Set up Docker variables
           command: |
@@ -66,10 +56,8 @@ jobs:
     resource_class: arm.medium
     environment:
       APP_ENV: prod
-      DOCKER_COMPOSE_VERSION: 1.27.4
     steps:
       - checkout
-      - upgrade-docker
       - run:
           name: Build containers
           command: make docker-build
