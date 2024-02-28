@@ -15,6 +15,7 @@
         "symfony/yaml": "7.0.*"
     },
     "require-dev": {
+        "symplify/easy-coding-standard": "^12.1"
     },
     "config": {
         "allow-plugins": {
@@ -54,7 +55,9 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "check-cs": "vendor/bin/ecs check --ansi",
+        "fix-cs": "vendor/bin/ecs check --fix --ansi"
     },
     "conflict": {
         "symfony/symfony": "*"
