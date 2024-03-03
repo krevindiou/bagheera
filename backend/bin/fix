@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
+set -e
 composer fix-cs
+composer fix-rector

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -e
 composer check-cs
+composer check-rector
 composer check-phpstan

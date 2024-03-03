@@ -4,7 +4,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "doctrine/dbal": "^3",
@@ -24,6 +24,7 @@
         "phpstan/extension-installer": "^1.3",
         "phpstan/phpstan": "^1.10",
         "phpstan/phpstan-symfony": "^1.3",
+        "rector/rector": "^1.0",
         "symfony/maker-bundle": "^1.55",
         "symplify/easy-coding-standard": "^12.1"
     },
@@ -69,7 +70,9 @@
         ],
         "check-cs": "vendor/bin/ecs check --ansi",
         "fix-cs": "vendor/bin/ecs check --fix --ansi",
-        "check-phpstan": "vendor/bin/phpstan analyse --ansi"
+        "check-phpstan": "vendor/bin/phpstan analyse --ansi",
+        "check-rector": "vendor/bin/rector process --dry-run --ansi",
+        "fix-rector": "vendor/bin/rector process --ansi"
     },
     "conflict": {
         "symfony/symfony": "*"
