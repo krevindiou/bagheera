@@ -135,7 +135,7 @@ class OperationRepository
             }
         }
 
-        $sql .= ' ORDER BY operation.value_date DESC, operation.created_at DESC';
+        $sql .= ' ORDER BY operation.value_date DESC, operation.created_at DESC, operation.operation_id DESC';
 
         $conn = $this->entityManager->getConnection();
 
