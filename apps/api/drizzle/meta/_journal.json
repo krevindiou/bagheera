@@ -43,6 +43,13 @@
       "when": 1786653098794,
       "tag": "0005_report",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786653207546,
+      "tag": "0006_security_event",
+      "breakpoints": true
     }
   ]
 }

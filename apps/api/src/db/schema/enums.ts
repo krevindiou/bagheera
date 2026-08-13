@@ -20,3 +20,17 @@ export const periodGroupingEnum = pgEnum('period_grouping', [
   'year',
   'all',
 ]);
+
+// SecurityEvent kinds, wired into auth/member modules later. New values can
+// be appended by later migrations as more call sites land.
+export const securityEventTypeEnum = pgEnum('security_event_type', [
+  'sign_in_success',
+  'sign_in_failure',
+  'sign_in_throttled',
+  'password_recovery_requested',
+  'password_recovery_completed',
+  'password_changed',
+  'email_changed',
+  'activation_issued',
+  'activation_used',
+]);

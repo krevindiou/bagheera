@@ -7,3 +7,4 @@ export * from './account';
 export * from './scheduler';
 export * from './operation';
 export * from './report';
+export * from './security-event';
