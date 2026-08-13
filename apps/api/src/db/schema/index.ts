@@ -6,3 +6,4 @@ export * from './bank';
 export * from './account';
 export * from './scheduler';
 export * from './operation';
+export * from './report';

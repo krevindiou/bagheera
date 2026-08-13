@@ -11,3 +11,12 @@ export const frequencyUnitEnum = pgEnum('frequency_unit', [
   'month',
   'year',
 ]);
+
+// Report aggregation kind and chart period grouping.
+export const reportTypeEnum = pgEnum('report_type', ['sum', 'average']);
+export const periodGroupingEnum = pgEnum('period_grouping', [
+  'month',
+  'quarter',
+  'year',
+  'all',
+]);
