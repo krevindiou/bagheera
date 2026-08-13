@@ -7,11 +7,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bagheera}
       POSTGRES_DB: ${POSTGRES_DB:-bagheera}
     ports:
-      - '${POSTGRES_PORT:-5432}:5432'
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-bagheera} -d ${POSTGRES_DB:-bagheera}']
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bagheera} -d ${POSTGRES_DB:-bagheera}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,11 +20,11 @@ services:
     image: valkey/valkey:8-alpine
     restart: unless-stopped
     ports:
-      - '${VALKEY_PORT:-6379}:6379'
+      - "${VALKEY_PORT:-6379}:6379"
     volumes:
       - valkey_data:/data
     healthcheck:
-      test: ['CMD', 'valkey-cli', 'ping']
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
