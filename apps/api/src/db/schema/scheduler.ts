@@ -1,6 +1,5 @@
 import { sql } from 'drizzle-orm';
 import {
-  AnyPgColumn,
   bigint,
   boolean,
   check,
@@ -8,32 +7,25 @@ import {
   integer,
   pgTable,
   serial,
+  smallint,
   text,
   timestamp,
-  uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { account } from './account';
 import { category } from './category';
+import { frequencyUnitEnum } from './enums';
 import { paymentMethod } from './payment-method';
-import { scheduler } from './scheduler';
 
-// Money columns are integers scaled by 10,000 (four decimal places).
-export const operation = pgTable(
-  'operation',
+// Same operation-like fields (value date = first occurrence) plus recurrence
+// config. Mirrors Operation's debit/credit exclusivity CHECK.
+export const scheduler = pgTable(
+  'scheduler',
   {
     id: serial('id').primaryKey(),
     accountId: integer('account_id')
       .notNull()
       .references(() => account.id),
-    // Set on generated occurrences; added alongside the Scheduler table
-    // itself in this same migration.
-    schedulerId: integer('scheduler_id').references(() => scheduler.id),
-    // Mirror of a transfer pair; nullable + unique so at most one operation
-    // points back to any given counterpart.
-    transferOperationId: integer('transfer_operation_id').references(
-      (): AnyPgColumn => operation.id,
-    ),
     transferAccountId: integer('transfer_account_id').references(
       () => account.id,
     ),
@@ -44,9 +36,15 @@ export const operation = pgTable(
     thirdParty: varchar('third_party', { length: 64 }).notNull(),
     debit: bigint('debit', { mode: 'number' }),
     credit: bigint('credit', { mode: 'number' }),
-    valueDate: date('value_date').notNull().defaultNow(),
+    valueDate: date('value_date').notNull(),
     reconciled: boolean('reconciled').notNull().default(false),
     notes: text('notes').notNull().default(''),
+    limitDate: date('limit_date'),
+    frequencyUnit: frequencyUnitEnum('frequency_unit')
+      .notNull()
+      .default('month'),
+    frequencyValue: smallint('frequency_value').notNull(),
+    active: boolean('active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -56,11 +54,8 @@ export const operation = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    uniqueIndex('operation_transfer_operation_id_unique').on(
-      table.transferOperationId,
-    ),
     check(
-      'operation_debit_credit_exclusive',
+      'scheduler_debit_credit_exclusive',
       sql`(${table.debit} is null) <> (${table.credit} is null)`,
     ),
   ],
