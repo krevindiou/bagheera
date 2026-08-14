@@ -6,3 +6,8 @@ export const MONEY_SCALE = 10000;
 export function toMinorUnits(value: number): number {
   return Math.round(value * MONEY_SCALE);
 }
+
+// Inverse conversion, rounded to two decimal places (currency units).
+export function toMajorUnits(value: number): number {
+  return Math.round((value / MONEY_SCALE) * 100) / 100;
+}

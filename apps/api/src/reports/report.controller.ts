@@ -11,17 +11,26 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ReportChartService } from './chart.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { ReportService } from './report.service';
 
 @Controller('reports')
 export class ReportController {
-  constructor(private readonly reports: ReportService) {}
+  constructor(
+    private readonly reports: ReportService,
+    private readonly charts: ReportChartService,
+  ) {}
 
   @Get()
   list(@Req() req: Request) {
     return this.reports.list(req);
+  }
+
+  @Get(':id/chart')
+  chart(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    return this.charts.getChart(req, id);
   }
 
   @Post()
