@@ -411,4 +411,72 @@ describe('accounts (integration)', () => {
       .set('X-Forwarded-Proto', 'https');
     expect(res.status).toBe(404);
   });
+
+  it('reports empty chart points for an account with no operations', async () => {
+    const owner = await createMember('acc9@example.com', 'password1');
+    const [ownerBank] = await ctx.db
+      .insert(bank)
+      .values({ memberId: owner.id, name: 'Bank Nine' })
+      .returning();
+    const [acc] = await ctx.db
+      .insert(account)
+      .values({ bankId: ownerBank.id, name: 'Empty', currency: 'USD' })
+      .returning();
+    const { cookies } = await authedRequest('acc9@example.com', 'password1');
+
+    const res = await request(app.getHttpServer())
+      .get(`/accounts/${acc.id}/chart`)
+      .set('Cookie', cookies)
+      .set('X-Forwarded-Proto', 'https');
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      currency: 'USD',
+      axisBounds: null,
+      points: [],
+    });
+  });
+
+  it('aggregates the monthly net sum for an account with operations', async () => {
+    const owner = await createMember('acc10@example.com', 'password1');
+    const [ownerBank] = await ctx.db
+      .insert(bank)
+      .values({ memberId: owner.id, name: 'Bank Ten' })
+      .returning();
+    const [acc] = await ctx.db
+      .insert(account)
+      .values({ bankId: ownerBank.id, name: 'Checking', currency: 'USD' })
+      .returning();
+    await ctx.db.insert(operation).values([
+      {
+        accountId: acc.id,
+        paymentMethodId: 1,
+        thirdParty: 'Shop',
+        debit: 50000,
+        valueDate: '2026-01-15',
+      },
+      {
+        accountId: acc.id,
+        paymentMethodId: 7,
+        thirdParty: 'Employer',
+        credit: 200000,
+        valueDate: '2026-03-10',
+      },
+    ]);
+    const { cookies } = await authedRequest('acc10@example.com', 'password1');
+
+    const res = await request(app.getHttpServer())
+      .get(`/accounts/${acc.id}/chart`)
+      .set('Cookie', cookies)
+      .set('X-Forwarded-Proto', 'https');
+
+    expect(res.status).toBe(200);
+    const body = res.body as { currency: string; points: unknown[] };
+    expect(body.currency).toBe('USD');
+    expect(body.points).toEqual([
+      { period: '2026-01-01', value: -5 },
+      { period: '2026-02-01', value: 0 },
+      { period: '2026-03-01', value: 20 },
+    ]);
+  });
 });

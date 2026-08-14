@@ -9,13 +9,26 @@ import {
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
-import { toMinorUnits } from '../common/money';
+import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
+import { toMajorUnits, toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
+import { fillPeriodGaps, periodStart } from '../reports/chart/period';
 import '../session/session-data';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+
+export interface AccountChartPoint {
+  period: string;
+  value: number;
+}
+
+export interface AccountChart {
+  currency: string;
+  axisBounds: AxisBounds | null;
+  points: AccountChartPoint[];
+}
 
 // Payment method id 9, "Initial balance", reserved for the
 // system-generated opening operation.
@@ -109,6 +122,53 @@ export class AccountService {
     }
 
     return created;
+  }
+
+  // Monthly net (credit − debit) sum, in major units, per period —
+  // powers the account's synthesis chart. Empty (no operations) is
+  // signalled by an empty `points` array; the chart component hides
+  // itself in that case.
+  async chart(req: Request, id: number): Promise<AccountChart> {
+    const memberId = this.requireMemberId(req);
+    const { account: acc } = await this.findOwned(id, memberId);
+
+    const rows = await this.db
+      .select({
+        debit: operation.debit,
+        credit: operation.credit,
+        valueDate: operation.valueDate,
+      })
+      .from(operation)
+      .where(eq(operation.accountId, id));
+
+    if (rows.length === 0) {
+      return { currency: acc.currency, axisBounds: null, points: [] };
+    }
+
+    const byPeriod = new Map<string, number>();
+    for (const row of rows) {
+      const key = periodStart(row.valueDate, 'month');
+      const net = (row.credit ?? 0) - (row.debit ?? 0);
+      byPeriod.set(key, (byPeriod.get(key) ?? 0) + net);
+    }
+
+    const keys = [...byPeriod.keys()].sort();
+    const periods = fillPeriodGaps(keys[0], keys.at(-1)!, 'month');
+
+    let dataMin = Infinity;
+    let dataMax = -Infinity;
+    const points = periods.map((period) => {
+      const value = toMajorUnits(byPeriod.get(period) ?? 0);
+      dataMin = Math.min(dataMin, value);
+      dataMax = Math.max(dataMax, value);
+      return { period, value };
+    });
+
+    return {
+      currency: acc.currency,
+      axisBounds: computeAxisBounds(dataMin, dataMax),
+      points,
+    };
   }
 
   async update(req: Request, id: number, dto: UpdateAccountDto): Promise<void> {

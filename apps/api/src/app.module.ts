@@ -11,6 +11,7 @@ import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
 import { MembersModule } from './members/members.module';
 import { OperationsModule } from './operations/operations.module';
+import { ReferenceDataModule } from './reference-data/reference-data.module';
 import { ReportsModule } from './reports/reports.module';
 import { SchedulersModule } from './schedulers/schedulers.module';
 import { SecurityModule } from './security/security.module';
@@ -29,6 +30,7 @@ import { SessionModule } from './session/session.module';
     BanksModule,
     AccountsModule,
     OperationsModule,
+    ReferenceDataModule,
     SchedulersModule,
     ReportsModule,
     DashboardModule,

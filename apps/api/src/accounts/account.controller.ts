@@ -25,6 +25,11 @@ export class AccountController {
     return this.accounts.list(req, bankId ? Number(bankId) : undefined);
   }
 
+  @Get(':id/chart')
+  chart(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    return this.accounts.chart(req, id);
+  }
+
   @Post()
   @HttpCode(200)
   async create(

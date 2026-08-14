@@ -247,7 +247,9 @@ function errorMessage(error: unknown): string | undefined {
             </form>
           </template>
           <template v-else>
-            <span>{{ account.name }} ({{ account.currency }})</span>
+            <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
+              {{ account.name }} ({{ account.currency }})
+            </router-link>
             <span v-if="account.closed" class="badge text-bg-secondary">
               {{ $t("accounts.closed") }}
             </span>
