@@ -7,9 +7,8 @@ import { member } from '../db/schema';
 import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import { EmailQueueService } from '../email/email-queue.service';
-import { registrationEmail } from '../email/templates/registration.template';
-import { buildActivationToken } from './activation-token';
 import { RegisterDto } from './dto/register.dto';
+import { sendActivationEmail } from './send-activation-email';
 
 // Postgres unique_violation — guards the email-uniqueness race between the
 // pre-check below and the insert (see member schema's case-insensitive
@@ -64,13 +63,10 @@ export class RegistrationService {
       throw err;
     }
 
-    await this.sendActivationEmail(dto.email, inserted.activationTokenVersion);
-  }
-
-  async sendActivationEmail(email: string, version: number): Promise<void> {
-    const token = buildActivationToken(this.crypto, email, version);
-    const appUrl = this.config.getOrThrow<string>('APP_URL');
-    const activationLink = `${appUrl}/en/activation?key=${encodeURIComponent(token)}`;
-    await this.emailQueue.enqueue(registrationEmail(email, activationLink));
+    await sendActivationEmail(
+      { crypto: this.crypto, emailQueue: this.emailQueue, config: this.config },
+      dto.email,
+      inserted.activationTokenVersion,
+    );
   }
 }
