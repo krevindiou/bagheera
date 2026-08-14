@@ -14,8 +14,14 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { IsEmail } from 'class-validator';
 import request from 'supertest';
 import type { App } from 'supertest/types';
+import * as Sentry from '@sentry/node';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import type { ErrorResponseBody } from './error-response';
+
+jest.mock('@sentry/node', () => ({
+  captureException: jest.fn(),
+  init: jest.fn(),
+}));
 
 class SignInDto {
   @IsEmail()
@@ -135,6 +141,14 @@ describe('GlobalExceptionFilter', () => {
       category: 'error',
       message: 'Internal server error',
     });
+  });
+
+  it('reports unhandled errors to Sentry', async () => {
+    await request(app.getHttpServer()).get('/__test-errors/boom').expect(500);
+
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'unexpected wiring failure' }),
+    );
   });
 
   it('exposes OpenAPI docs at /api/docs-json and /api/docs', async () => {

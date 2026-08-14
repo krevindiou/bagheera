@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { Sentry } from '../../logging/sentry';
 import { categorize, ErrorResponseBody } from './error-response';
 
 /**
@@ -35,6 +36,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       this.logger.error(
         exception instanceof Error ? exception.stack : exception,
       );
+      Sentry.captureException(exception);
     }
 
     const body: ErrorResponseBody = {

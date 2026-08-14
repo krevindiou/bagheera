@@ -94,6 +94,8 @@ jobs:
       CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
       EMAIL_SMTP_URL: ${{ secrets.EMAIL_SMTP_URL }}
       EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+      VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1

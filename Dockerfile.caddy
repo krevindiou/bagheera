@@ -18,6 +18,9 @@ RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
 COPY . .
+# Vite bakes VITE_* vars in at build time, so this has to be a build arg —
+# a runtime env var on the container would be too late.
+ARG VITE_SENTRY_DSN
 RUN pnpm --filter web build
 
 FROM caddy:2-alpine

@@ -7,8 +7,12 @@ import App from "./App.vue";
 import { router } from "./router";
 import { i18n } from "./i18n";
 import { queryClient } from "./api/query-client";
+import { initSentry } from "./sentry";
 
-createApp(App)
+const app = createApp(App);
+initSentry(app);
+
+app
   .use(createPinia())
   .use(router)
   .use(i18n)

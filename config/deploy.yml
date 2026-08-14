@@ -18,6 +18,9 @@
 # Required as plain env (export before running kamal):
 #   DEPLOY_HOST, APP_DOMAIN, KAMAL_REGISTRY_SERVER, KAMAL_REGISTRY_USERNAME,
 #   API_IMAGE (registry/bagheera-api:<tag> pushed ahead of time)
+# Optional (Sentry error reporting, off when unset):
+#   SENTRY_DSN (api accessory, via .kamal/secrets), VITE_SENTRY_DSN (baked
+#   into the edge image's web build)
 
 service: bagheera-web
 
@@ -46,6 +49,8 @@ builder:
   arch: amd64
   dockerfile: Dockerfile.caddy
   context: "."
+  args:
+    VITE_SENTRY_DSN: <%= ENV.fetch("VITE_SENTRY_DSN", "") %>
 
 env:
   clear:
@@ -89,3 +94,4 @@ accessories:
         - CSRF_SECRET
         - EMAIL_SMTP_URL
         - EMAIL_FROM
+        - SENTRY_DSN
