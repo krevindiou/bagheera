@@ -42,7 +42,11 @@ describe("ResetPasswordPage", () => {
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/auth/password-recovery/reset", {
-      body: { key: "valid-token", password: "correct-horse", passwordConfirmation: "correct-horse" },
+      body: {
+        key: "valid-token",
+        password: "correct-horse",
+        passwordConfirmation: "correct-horse",
+      },
     });
     expect(wrapper.text()).toContain("Your password has been updated.");
   });

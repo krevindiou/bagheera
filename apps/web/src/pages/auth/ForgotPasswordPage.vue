@@ -33,7 +33,9 @@ const onSubmit = handleSubmit(async (values) => {
 
     <form v-else novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="forgot-password-email">{{ $t("auth.forgotPassword.email") }}</label>
+        <label class="form-label" for="forgot-password-email">{{
+          $t("auth.forgotPassword.email")
+        }}</label>
         <input
           id="forgot-password-email"
           v-model="email"
@@ -51,7 +53,9 @@ const onSubmit = handleSubmit(async (values) => {
     </form>
 
     <div class="mt-3">
-      <router-link :to="{ name: 'sign-in' }">{{ $t("auth.forgotPassword.signInLink") }}</router-link>
+      <router-link :to="{ name: 'sign-in' }">{{
+        $t("auth.forgotPassword.signInLink")
+      }}</router-link>
     </div>
   </div>
 </template>

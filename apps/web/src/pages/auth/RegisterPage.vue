@@ -73,7 +73,9 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.country }"
         />
-        <div v-if="errors.country" class="invalid-feedback">{{ $t("auth.validation.country") }}</div>
+        <div v-if="errors.country" class="invalid-feedback">
+          {{ $t("auth.validation.country") }}
+        </div>
       </div>
 
       <div class="mb-3">
@@ -86,7 +88,9 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
-        <div v-if="errors.password" class="invalid-feedback">{{ $t("auth.validation.passwordLength") }}</div>
+        <div v-if="errors.password" class="invalid-feedback">
+          {{ $t("auth.validation.passwordLength") }}
+        </div>
       </div>
 
       <div class="mb-3">

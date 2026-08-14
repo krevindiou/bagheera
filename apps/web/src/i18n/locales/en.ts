@@ -27,7 +27,8 @@ export default {
       password: "Password",
       passwordConfirmation: "Confirm password",
       submit: "Register",
-      success: "You are now registered. You will receive an email with a link to activate your account.",
+      success:
+        "You are now registered. You will receive an email with a link to activate your account.",
       emailTaken: "Email is already registered.",
       signInLink: "Already have an account? Sign in",
     },
@@ -65,5 +66,26 @@ export default {
   home: {
     signedInAs: "Signed in as {email}.",
     signOut: "Sign out",
+    profileLink: "Profile settings",
+    passwordLink: "Change password",
+  },
+  settings: {
+    profile: {
+      title: "Profile",
+      email: "Email address",
+      currentPassword: "Current password",
+      submit: "Save changes",
+      success: "Your profile has been updated.",
+      genericError: "Something went wrong. Please try again.",
+    },
+    password: {
+      title: "Change password",
+      currentPassword: "Current password",
+      newPassword: "New password",
+      newPasswordConfirmation: "Confirm new password",
+      submit: "Update password",
+      success: "Your password has been updated.",
+      genericError: "Something went wrong. Please try again.",
+    },
   },
 };

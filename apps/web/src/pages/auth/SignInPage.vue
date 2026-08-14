@@ -7,7 +7,10 @@ import { useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
 import { useSessionStore } from "../../stores/session.store";
 import { useToast } from "../../composables/useToast";
-import { readLastAttemptedEmail, rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
+import {
+  readLastAttemptedEmail,
+  rememberAttemptedEmail,
+} from "../../composables/useLastAttemptedEmail";
 import { signInSchema, type SignInForm } from "./auth.schemas";
 
 const router = useRouter();
@@ -108,7 +111,9 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
-        <div v-if="errors.password" class="invalid-feedback">{{ $t("auth.validation.required") }}</div>
+        <div v-if="errors.password" class="invalid-feedback">
+          {{ $t("auth.validation.required") }}
+        </div>
       </div>
 
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
@@ -117,7 +122,9 @@ const onSubmit = handleSubmit(async (values) => {
     </form>
 
     <div class="d-flex justify-content-between mt-3">
-      <router-link :to="{ name: 'forgot-password' }">{{ $t("auth.signIn.forgotPasswordLink") }}</router-link>
+      <router-link :to="{ name: 'forgot-password' }">{{
+        $t("auth.signIn.forgotPasswordLink")
+      }}</router-link>
       <router-link :to="{ name: 'register' }">{{ $t("auth.signIn.registerLink") }}</router-link>
     </div>
   </div>

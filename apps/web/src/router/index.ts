@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
+import { useSessionStore } from "../stores/session.store";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", redirect: "/en/sign-in" },
@@ -34,6 +35,19 @@ const routes: RouteRecordRaw[] = [
         path: "home",
         name: "home",
         component: () => import("../pages/HomePage.vue"),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "settings/profile",
+        name: "settings-profile",
+        component: () => import("../pages/settings/ProfilePage.vue"),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: "settings/password",
+        name: "settings-password",
+        component: () => import("../pages/settings/PasswordPage.vue"),
+        meta: { requiresAuth: true },
       },
     ],
   },
@@ -43,4 +57,19 @@ const routes: RouteRecordRaw[] = [
 export const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to) => {
+  if (!to.meta.requiresAuth) {
+    return true;
+  }
+  // No active Pinia (e.g. a bare navigation in a test) is treated the
+  // same as "not signed in" — the safe default is to bounce to sign-in.
+  let authenticated = false;
+  try {
+    authenticated = useSessionStore().isAuthenticated;
+  } catch {
+    authenticated = false;
+  }
+  return authenticated ? true : { name: "sign-in" };
 });

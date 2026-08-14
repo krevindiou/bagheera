@@ -53,7 +53,9 @@ const onSubmit = handleSubmit(async (values) => {
 
     <form v-if="!submitted" novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="reset-password-password">{{ $t("auth.resetPassword.password") }}</label>
+        <label class="form-label" for="reset-password-password">{{
+          $t("auth.resetPassword.password")
+        }}</label>
         <input
           id="reset-password-password"
           v-model="password"
@@ -62,7 +64,9 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
-        <div v-if="errors.password" class="invalid-feedback">{{ $t("auth.validation.passwordLength") }}</div>
+        <div v-if="errors.password" class="invalid-feedback">
+          {{ $t("auth.validation.passwordLength") }}
+        </div>
       </div>
 
       <div class="mb-3">
