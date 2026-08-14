@@ -68,3 +68,24 @@ export const PAYMENT_METHODS: { id: number; name: string; type: "debit" | "credi
 // Payment method ids 4 (debit) and 6 (credit) — the only two that can carry
 // a transfer pairing (apps/api/src/operations/transfer.service.ts).
 export const TRANSFER_PAYMENT_METHOD_IDS: readonly number[] = [4, 6];
+
+export type AmountComparatorOperator = "gt" | "gte" | "lt" | "lte" | "eq";
+
+export interface AmountComparator {
+  operator: AmountComparatorOperator;
+  value: number;
+}
+
+// Mirrors apps/api/src/operations/dto/search-operations.dto.ts, minus
+// accountId (that's the recall key's scope, carried separately).
+export interface SearchCriteria {
+  type?: "debit" | "credit";
+  thirdParty?: string;
+  categoryIds?: number[];
+  paymentMethodIds?: number[];
+  amountComparators?: AmountComparator[];
+  dateFrom?: string;
+  dateTo?: string;
+  notes?: string;
+  reconciled?: boolean;
+}

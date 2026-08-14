@@ -129,6 +129,35 @@ export default {
     validation: {
       amount: "Enter an amount greater than zero.",
     },
+    batch: {
+      delete: "Delete selected",
+      reconcile: "Reconcile selected",
+      deleteConfirm: "Delete {count} selected operation(s)?",
+      reconcileConfirm: "Reconcile {count} selected operation(s)?",
+      deleted: "Selected operations deleted.",
+      reconciled: "Selected operations reconciled.",
+    },
+    search: {
+      title: "Search operations",
+      show: "Search",
+      hide: "Hide search",
+      any: "Any",
+      yes: "Yes",
+      no: "No",
+      type: "Type",
+      amount: "Amount",
+      dateFrom: "From date",
+      dateTo: "To date",
+      submit: "Search",
+      clear: "Clear search",
+      operators: {
+        gt: "Greater than",
+        gte: "At least",
+        lt: "Less than",
+        lte: "At most",
+        eq: "Equal to",
+      },
+    },
   },
   settings: {
     profile: {

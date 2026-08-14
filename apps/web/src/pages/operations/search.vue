@@ -1,0 +1,175 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { PAYMENT_METHODS } from "./operations.types";
+import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
+
+const props = defineProps<{ categories: Category[] }>();
+const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
+
+const type = ref<"" | "debit" | "credit">("");
+const thirdParty = ref("");
+const categoryIds = ref<number[]>([]);
+const paymentMethodIds = ref<number[]>([]);
+const amountOperator1 = ref<"" | AmountComparatorOperator>("");
+const amountValue1 = ref<number | undefined>(undefined);
+const amountOperator2 = ref<"" | AmountComparatorOperator>("");
+const amountValue2 = ref<number | undefined>(undefined);
+const dateFrom = ref("");
+const dateTo = ref("");
+const notes = ref("");
+const reconciled = ref<"" | "true" | "false">("");
+
+const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", "eq"];
+
+function buildCriteria(): SearchCriteria {
+  const amountComparators: SearchCriteria["amountComparators"] = [];
+  if (amountOperator1.value && amountValue1.value !== undefined) {
+    amountComparators.push({ operator: amountOperator1.value, value: amountValue1.value });
+  }
+  if (amountOperator2.value && amountValue2.value !== undefined) {
+    amountComparators.push({ operator: amountOperator2.value, value: amountValue2.value });
+  }
+  return {
+    type: type.value || undefined,
+    thirdParty: thirdParty.value.trim() || undefined,
+    categoryIds: categoryIds.value.length ? categoryIds.value : undefined,
+    paymentMethodIds: paymentMethodIds.value.length ? paymentMethodIds.value : undefined,
+    amountComparators: amountComparators.length ? amountComparators : undefined,
+    dateFrom: dateFrom.value || undefined,
+    dateTo: dateTo.value || undefined,
+    notes: notes.value.trim() || undefined,
+    reconciled: reconciled.value === "" ? undefined : reconciled.value === "true",
+  };
+}
+
+function onSubmit() {
+  emit("submit", buildCriteria());
+}
+
+function reset() {
+  type.value = "";
+  thirdParty.value = "";
+  categoryIds.value = [];
+  paymentMethodIds.value = [];
+  amountOperator1.value = "";
+  amountValue1.value = undefined;
+  amountOperator2.value = "";
+  amountValue2.value = undefined;
+  dateFrom.value = "";
+  dateTo.value = "";
+  notes.value = "";
+  reconciled.value = "";
+}
+
+function onClear() {
+  reset();
+  emit("clear");
+}
+</script>
+
+<template>
+  <form data-testid="search-form" class="border rounded p-3 mb-3" @submit.prevent="onSubmit">
+    <h2 class="h6">{{ $t("operations.search.title") }}</h2>
+
+    <div class="mb-3">
+      <label class="form-label" for="search-type">{{ $t("operations.search.type") }}</label>
+      <select id="search-type" v-model="type" class="form-select">
+        <option value="">{{ $t("operations.search.any") }}</option>
+        <option value="debit">{{ $t("operations.debit") }}</option>
+        <option value="credit">{{ $t("operations.credit") }}</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="search-third-party">{{ $t("operations.thirdParty") }}</label>
+      <input id="search-third-party" v-model="thirdParty" type="text" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="search-categories">{{ $t("operations.category") }}</label>
+      <select id="search-categories" v-model="categoryIds" multiple class="form-select">
+        <option v-for="c in props.categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="search-payment-methods">{{ $t("operations.paymentMethod") }}</label>
+      <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
+        <option v-for="pm in PAYMENT_METHODS" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+      </select>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <label class="form-label" for="search-amount-operator-1">{{ $t("operations.search.amount") }}</label>
+        <select id="search-amount-operator-1" v-model="amountOperator1" class="form-select">
+          <option value="">{{ $t("operations.search.any") }}</option>
+          <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
+            {{ $t(`operations.search.operators.${op}`) }}
+          </option>
+        </select>
+      </div>
+      <div class="col">
+        <input
+          v-model.number="amountValue1"
+          type="number"
+          step="0.01"
+          class="form-control"
+          :aria-label="$t('operations.search.amount')"
+        />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <select id="search-amount-operator-2" v-model="amountOperator2" class="form-select">
+          <option value="">{{ $t("operations.search.any") }}</option>
+          <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
+            {{ $t(`operations.search.operators.${op}`) }}
+          </option>
+        </select>
+      </div>
+      <div class="col">
+        <input
+          v-model.number="amountValue2"
+          type="number"
+          step="0.01"
+          class="form-control"
+          :aria-label="$t('operations.search.amount')"
+        />
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <label class="form-label" for="search-date-from">{{ $t("operations.search.dateFrom") }}</label>
+        <input id="search-date-from" v-model="dateFrom" type="date" class="form-control" />
+      </div>
+      <div class="col">
+        <label class="form-label" for="search-date-to">{{ $t("operations.search.dateTo") }}</label>
+        <input id="search-date-to" v-model="dateTo" type="date" class="form-control" />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="search-notes">{{ $t("operations.notes") }}</label>
+      <input id="search-notes" v-model="notes" type="text" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="search-reconciled">{{ $t("operations.reconciled") }}</label>
+      <select id="search-reconciled" v-model="reconciled" class="form-select">
+        <option value="">{{ $t("operations.search.any") }}</option>
+        <option value="true">{{ $t("operations.search.yes") }}</option>
+        <option value="false">{{ $t("operations.search.no") }}</option>
+      </select>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">{{ $t("operations.search.submit") }}</button>
+      <button type="button" class="btn btn-outline-secondary" @click="onClear">
+        {{ $t("operations.search.clear") }}
+      </button>
+    </div>
+  </form>
+</template>

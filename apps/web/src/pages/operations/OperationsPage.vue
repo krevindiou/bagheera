@@ -6,8 +6,10 @@ import SynthesisChart, { type SynthesisChartSeries } from "../../components/Synt
 import type { Account } from "../accounts/accounts.types";
 import { toDisplayAmount } from "./money";
 import { PAYMENT_METHOD_NAMES } from "./operations.types";
-import type { Category, Operation, OperationList } from "./operations.types";
+import type { Category, Operation, OperationList, SearchCriteria } from "./operations.types";
 import OperationForm from "./OperationForm.vue";
+import BatchActions from "./batch.vue";
+import SearchPanel from "./search.vue";
 
 const route = useRoute();
 const accountId = computed(() => Number(route.params.accountId));
@@ -21,9 +23,11 @@ const chartAxisBounds = ref<{ min: number; max: number } | null>(null);
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
+const showSearch = ref(false);
 
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
 const categoryNames = computed(() => new Map(categories.value.map((c) => [c.id, c.name])));
+const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 async function loadAccounts() {
   const { data } = await apiClient.GET("/accounts");
@@ -36,12 +40,29 @@ async function loadCategories() {
   categories.value = (data as Category[] | undefined) ?? [];
 }
 
+// Re-runs the search remembered for this member+account (empty criteria —
+// i.e. the full list — when nothing was ever searched), so a search stays
+// applied across pagination and page reloads within the session.
 async function loadOperations(page = 1) {
-  const { data } = await apiClient.GET("/operations", {
+  const { data } = await apiClient.GET("/operations/search", {
     params: { query: { accountId: accountId.value, page: String(page) } },
   });
   list.value = (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
   selectedIds.value = new Set();
+}
+
+async function runSearch(criteria: SearchCriteria) {
+  const { data } = await apiClient.POST("/operations/search", {
+    params: { query: { page: "1" } },
+    body: { accountId: accountId.value, ...criteria },
+  });
+  list.value = (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+  selectedIds.value = new Set();
+}
+
+async function clearSearch() {
+  await apiClient.DELETE("/operations/search", { params: { query: { accountId: accountId.value } } });
+  await loadOperations(1);
 }
 
 async function loadChart() {
@@ -117,6 +138,23 @@ function isEditable(operation: Operation): boolean {
     <h1>{{ $t("operations.title") }}<span v-if="account"> — {{ account.name }}</span></h1>
 
     <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
+
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-secondary mb-3"
+      data-testid="toggle-search"
+      @click="showSearch = !showSearch"
+    >
+      {{ showSearch ? $t("operations.search.hide") : $t("operations.search.show") }}
+    </button>
+    <SearchPanel
+      v-if="showSearch"
+      :categories="categories"
+      @submit="runSearch"
+      @clear="clearSearch"
+    />
+
+    <BatchActions :selected-ids="selectedIdList" @done="loadOperations(list.page)" />
 
     <p v-if="list.items.length === 0" class="text-muted">{{ $t("operations.empty") }}</p>
 
