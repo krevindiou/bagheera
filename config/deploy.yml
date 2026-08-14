@@ -57,10 +57,19 @@ env:
     CADDY_SITE_ADDRESS: "http://:80"
 
 accessories:
+  # Container name Kamal gives this is "bagheera-web-postgres" — that's
+  # what scripts/backup.sh's POSTGRES_CONTAINER should be set to. Its
+  # "wal-archive" directory lands under Kamal's own host-side accessory
+  # directory (`kamal accessory details postgres` shows the exact mounted
+  # path) — set scripts/backup.sh's WAL_ARCHIVE_DIR to that.
   postgres:
     image: postgres:16-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "5432"
+    cmd: >-
+      postgres -c archive_mode=on
+      -c archive_command="test ! -f /wal-archive/%f && cp %p /wal-archive/%f"
+      -c wal_level=replica
     env:
       clear:
         POSTGRES_USER: bagheera
@@ -69,6 +78,7 @@ accessories:
         - POSTGRES_PASSWORD
     directories:
       - data:/var/lib/postgresql/data
+      - wal-archive:/wal-archive
 
   valkey:
     image: valkey/valkey:8-alpine

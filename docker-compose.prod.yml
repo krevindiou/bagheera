@@ -6,8 +6,22 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-bagheera}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bagheera}
       POSTGRES_DB: ${POSTGRES_DB:-bagheera}
+    # WAL archiving for scripts/backup.sh: archived segments land in
+    # wal_archive, a host-visible volume the backup script also reads.
+    command:
+      - postgres
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=test ! -f /wal-archive/%f && cp %p /wal-archive/%f
+      - -c
+      - wal_level=replica
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Bind mount (not a named volume) so scripts/backup.sh, running
+      # directly on the host, can read the archived segments straight off
+      # disk. Matches WAL_ARCHIVE_DIR's default there.
+      - ${WAL_ARCHIVE_DIR:-/var/lib/bagheera/wal-archive}:/wal-archive
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bagheera} -d ${POSTGRES_DB:-bagheera}"]
       interval: 5s

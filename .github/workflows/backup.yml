@@ -1,0 +1,30 @@
+name: Backup
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Nightly database backup
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.KAMAL_SSH_PRIVATE_KEY }}
+      - run: mkdir -p ~/.ssh && ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+      - name: Run scripts/backup.sh on the deploy host
+        run: |
+          ssh root@"$DEPLOY_HOST" \
+            "RESTIC_REPOSITORY='${{ secrets.RESTIC_REPOSITORY }}' \
+             RESTIC_PASSWORD='${{ secrets.RESTIC_PASSWORD }}' \
+             AWS_ACCESS_KEY_ID='${{ secrets.RESTIC_AWS_ACCESS_KEY_ID }}' \
+             AWS_SECRET_ACCESS_KEY='${{ secrets.RESTIC_AWS_SECRET_ACCESS_KEY }}' \
+             POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
+             POSTGRES_CONTAINER='${{ vars.BACKUP_POSTGRES_CONTAINER }}' \
+             WAL_ARCHIVE_DIR='${{ vars.WAL_ARCHIVE_DIR }}' \
+             bash -s" < scripts/backup.sh
