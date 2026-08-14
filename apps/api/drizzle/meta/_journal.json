@@ -57,6 +57,13 @@
       "when": 1786708258756,
       "tag": "0007_operation_batch_event_types",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786713956763,
+      "tag": "0008_scheduler_batch_event_type",
+      "breakpoints": true
     }
   ]
 }
