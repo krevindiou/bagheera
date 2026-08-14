@@ -50,6 +50,13 @@
       "when": 1786653207546,
       "tag": "0006_security_event",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786708258756,
+      "tag": "0007_operation_batch_event_types",
+      "breakpoints": true
     }
   ]
 }

@@ -33,4 +33,6 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'email_changed',
   'activation_issued',
   'activation_used',
+  'operation_batch_deleted',
+  'operation_batch_reconciled',
 ]);

@@ -12,7 +12,9 @@ export type SecurityEventType =
   | 'password_changed'
   | 'email_changed'
   | 'activation_issued'
-  | 'activation_used';
+  | 'activation_used'
+  | 'operation_batch_deleted'
+  | 'operation_batch_reconciled';
 
 /**
  * Writes to the security event log — the audit trail behind incident
