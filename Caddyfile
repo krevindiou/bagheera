@@ -1,0 +1,18 @@
+# Production edge: serves the built SPA and reverse-proxies API routes to
+# the api container, same-origin. Domain and TLS come from $CADDY_DOMAIN;
+# defaults to a locally-trusted cert for `localhost`.
+
+{$CADDY_DOMAIN:localhost} {
+	tls internal
+
+	encode gzip
+
+	@api path /health /api* /auth* /members* /banks* /accounts* /operations* /schedulers* /reports* /dashboard* /reference-data*
+	reverse_proxy @api api:3000 {
+		header_up X-Forwarded-Proto https
+	}
+
+	root * /srv
+	try_files {path} /index.html
+	file_server
+}
