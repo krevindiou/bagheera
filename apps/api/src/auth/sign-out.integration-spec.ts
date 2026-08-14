@@ -6,6 +6,7 @@ import type { Request } from 'express';
 import request from 'supertest';
 import { createClient, type RedisClientType } from 'redis';
 import { DbModule } from '../db/db.module';
+import { EmailModule } from '../email/email.module';
 import { SecurityModule } from '../security/security.module';
 import { SessionModule } from '../session/session.module';
 import { SessionTerminationService } from '../session/session-termination.service';
@@ -49,6 +50,7 @@ describe('sign-out (integration)', () => {
         DbModule,
         SecurityModule,
         SessionModule,
+        EmailModule,
         AuthModule,
       ],
       controllers: [TestCsrfController],

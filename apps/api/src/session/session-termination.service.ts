@@ -23,11 +23,20 @@ export class SessionTerminationService {
    * change/recovery) that must terminate a member's other active sessions
    * while leaving the current one intact.
    */
+  /**
+   * Deletes every stored session belonging to `memberId` — used by the
+   * unauthenticated password-recovery flow, which has no "current
+   * session" to except.
+   */
+  async terminateAllSessions(memberId: number): Promise<void> {
+    await this.terminateOtherSessions(memberId, null);
+  }
+
   async terminateOtherSessions(
     memberId: number,
-    exceptSessionId: string,
+    exceptSessionId: string | null,
   ): Promise<void> {
-    const exceptKey = `sess:${exceptSessionId}`;
+    const exceptKey = exceptSessionId ? `sess:${exceptSessionId}` : null;
     for await (const batch of this.valkeyClient.scanIterator({
       MATCH: 'sess:*',
     })) {
