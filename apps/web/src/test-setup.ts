@@ -1,0 +1,27 @@
+// jsdom doesn't implement canvas rendering; Chart.js only needs a context
+// object it can call no-op methods on to mount without throwing in tests.
+HTMLCanvasElement.prototype.getContext = (() => ({
+  fillRect: () => {},
+  clearRect: () => {},
+  getImageData: () => ({ data: [] }),
+  putImageData: () => {},
+  createImageData: () => [],
+  setTransform: () => {},
+  drawImage: () => {},
+  save: () => {},
+  restore: () => {},
+  translate: () => {},
+  scale: () => {},
+  rotate: () => {},
+  measureText: () => ({ width: 0 }),
+  transform: () => {},
+  beginPath: () => {},
+  closePath: () => {},
+  moveTo: () => {},
+  lineTo: () => {},
+  arc: () => {},
+  fill: () => {},
+  stroke: () => {},
+  clip: () => {},
+  createLinearGradient: () => ({ addColorStop: () => {} }),
+})) as unknown as typeof HTMLCanvasElement.prototype.getContext;
