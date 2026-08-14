@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { BanksModule } from './banks/banks.module';
 import { DbModule } from './db/db.module';
 import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
@@ -20,6 +21,7 @@ import { SessionModule } from './session/session.module';
     EmailModule,
     MembersModule,
     AuthModule,
+    BanksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
