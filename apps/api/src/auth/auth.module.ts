@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SessionModule } from '../session/session.module';
+import { ChangePasswordController } from './change-password.controller';
+import { ChangePasswordService } from './change-password.service';
 import { PasswordRecoveryController } from './password-recovery.controller';
 import { PasswordRecoveryService } from './password-recovery.service';
 import { SchedulerCatchUpService } from './scheduler-catch-up.service';
@@ -14,12 +16,14 @@ import { SignOutService } from './sign-out.service';
     SignInController,
     SignOutController,
     PasswordRecoveryController,
+    ChangePasswordController,
   ],
   providers: [
     SignInService,
     SchedulerCatchUpService,
     SignOutService,
     PasswordRecoveryService,
+    ChangePasswordService,
   ],
   exports: [SchedulerCatchUpService],
 })
