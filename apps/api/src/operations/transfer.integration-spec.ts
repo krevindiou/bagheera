@@ -176,7 +176,7 @@ describe('transfer pairing (integration)', () => {
       .insert(bank)
       .values({ memberId: owner.id, name: `Bank ${email}` })
       .returning();
-    const rows = [];
+    const rows: (typeof account.$inferSelect)[] = [];
     for (const spec of accounts) {
       const [row] = await ctx.db
         .insert(account)
@@ -206,7 +206,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Savings' },
     ]);
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t1@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't1@example.com',
+      'password1',
+    );
 
     const res = await request(app.getHttpServer())
       .post('/operations')
@@ -250,7 +253,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'EUR Checking', currency: 'EUR' },
     ]);
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t2@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't2@example.com',
+      'password1',
+    );
 
     const res = await request(app.getHttpServer())
       .post('/operations')
@@ -275,7 +281,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Closed', closed: true },
     ]);
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t3@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't3@example.com',
+      'password1',
+    );
 
     const res = await request(app.getHttpServer())
       .post('/operations')
@@ -299,7 +308,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Checking' },
     ]);
     const [source] = accounts;
-    const { token, cookies } = await authedRequest('t4@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't4@example.com',
+      'password1',
+    );
 
     const res = await request(app.getHttpServer())
       .post('/operations')
@@ -327,7 +339,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Savings' },
     ]);
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t5@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't5@example.com',
+      'password1',
+    );
 
     const createRes = await request(app.getHttpServer())
       .post('/operations')
@@ -387,7 +402,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Savings B' },
     ]);
     const [source, targetA, targetB] = accounts;
-    const { token, cookies } = await authedRequest('t6@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't6@example.com',
+      'password1',
+    );
 
     const createRes = await request(app.getHttpServer())
       .post('/operations')
@@ -440,7 +458,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Savings' },
     ]);
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t7@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't7@example.com',
+      'password1',
+    );
 
     const createRes = await request(app.getHttpServer())
       .post('/operations')
@@ -489,7 +510,10 @@ describe('transfer pairing (integration)', () => {
       { name: 'Savings' },
     ]);
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t8@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't8@example.com',
+      'password1',
+    );
 
     const createRes = await request(app.getHttpServer())
       .post('/operations')
@@ -526,13 +550,16 @@ describe('transfer pairing (integration)', () => {
     expect(deleted).toBeUndefined();
   });
 
-  it('converts other accounts\' transfer references to External when an account is deleted', async () => {
+  it("converts other accounts' transfer references to External when an account is deleted", async () => {
     const { accounts, owner } = await createOwnerWithAccounts(
       't9@example.com',
       [{ name: 'Checking' }, { name: 'Savings' }],
     );
     const [source, target] = accounts;
-    const { token, cookies } = await authedRequest('t9@example.com', 'password1');
+    const { token, cookies } = await authedRequest(
+      't9@example.com',
+      'password1',
+    );
 
     const createRes = await request(app.getHttpServer())
       .post('/operations')
