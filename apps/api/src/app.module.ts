@@ -10,6 +10,7 @@ import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
 import { MembersModule } from './members/members.module';
 import { OperationsModule } from './operations/operations.module';
+import { ReportsModule } from './reports/reports.module';
 import { SchedulersModule } from './schedulers/schedulers.module';
 import { SecurityModule } from './security/security.module';
 import { SessionModule } from './session/session.module';
@@ -28,6 +29,7 @@ import { SessionModule } from './session/session.module';
     AccountsModule,
     OperationsModule,
     SchedulersModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
