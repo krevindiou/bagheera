@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SessionModule } from '../session/session.module';
+import { OperationAutocompleteController } from './autocomplete.controller';
+import { OperationAutocompleteService } from './autocomplete.service';
 import { OperationBatchController } from './batch.controller';
 import { OperationBatchService } from './batch.service';
 import { OperationController } from './operation.controller';
@@ -14,17 +16,20 @@ import { TransferService } from './transfer.service';
     OperationController,
     OperationBatchController,
     OperationSearchController,
+    OperationAutocompleteController,
   ],
   providers: [
     OperationService,
     OperationBatchService,
     OperationSearchService,
+    OperationAutocompleteService,
     TransferService,
   ],
   exports: [
     OperationService,
     OperationBatchService,
     OperationSearchService,
+    OperationAutocompleteService,
     TransferService,
   ],
 })
