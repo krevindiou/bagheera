@@ -1,12 +1,13 @@
 import { defineStore } from "pinia";
 
 export interface SessionMember {
-  id: string;
+  // The API doesn't return the member's id/profile on sign-in (session-only
+  // response) — the store only knows the email address the member signed
+  // in with, which is enough to greet them until a "current member" read
+  // endpoint exists.
   email: string;
 }
 
-// Skeleton only: populated by the sign-in/sign-out flows added in
-// later steps. Nothing calls the actions yet.
 export const useSessionStore = defineStore("session", {
   state: () => ({
     member: null as SessionMember | null,
