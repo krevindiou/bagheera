@@ -49,7 +49,7 @@ export class PasswordRecoveryService {
       row.passwordResetTokenVersion,
     );
     const appUrl = this.config.getOrThrow<string>('APP_URL');
-    const changePasswordLink = `${appUrl}/en/change-password?key=${encodeURIComponent(token)}`;
+    const changePasswordLink = `${appUrl}/en/reset-password?key=${encodeURIComponent(token)}`;
     await this.emailQueue.enqueue(
       passwordRecoveryEmail(row.email, changePasswordLink),
     );

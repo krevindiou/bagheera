@@ -12,6 +12,7 @@ const apiRoutePrefixes = [
   "/health",
   "/members",
   "/operations",
+  "/reference-data",
   "/reports",
   "/schedulers",
 ];
@@ -23,7 +24,16 @@ export default defineConfig({
     proxy: Object.fromEntries(
       apiRoutePrefixes.map((prefix) => [
         prefix,
-        { target: "http://localhost:3000", changeOrigin: true },
+        {
+          target: "http://localhost:3000",
+          changeOrigin: true,
+          // The API's session/CSRF cookies are Secure-only and only get
+          // set when the request looks like it arrived over HTTPS (it
+          // trusts this header from its immediate proxy — Caddy in
+          // production, this dev proxy locally). Without it, sign-in
+          // silently never persists a session outside of production.
+          headers: { "X-Forwarded-Proto": "https" },
+        },
       ]),
     ),
   },
@@ -31,5 +41,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/test-setup.ts"],
+    // e2e/ holds Playwright specs (run via `pnpm e2e`), not Vitest ones.
+    exclude: ["**/node_modules/**", "e2e/**"],
   },
 });

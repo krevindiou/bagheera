@@ -1,5 +1,9 @@
 import path from 'node:path';
-import { GenericContainer, Wait, type StartedTestContainer } from 'testcontainers';
+import {
+  GenericContainer,
+  Wait,
+  type StartedTestContainer,
+} from 'testcontainers';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
@@ -44,7 +48,9 @@ export async function startIntegrationInfra(): Promise<void> {
 
   const pool = new Pool({ connectionString: databaseUrl });
   const db = drizzle(pool);
-  await migrate(db, { migrationsFolder: path.join(__dirname, '..', 'drizzle') });
+  await migrate(db, {
+    migrationsFolder: path.join(__dirname, '..', 'drizzle'),
+  });
   await seedDatabase(db);
   await pool.end();
 }

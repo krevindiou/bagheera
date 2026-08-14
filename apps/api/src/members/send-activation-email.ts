@@ -16,6 +16,6 @@ export async function sendActivationEmail(
 ): Promise<void> {
   const token = buildActivationToken(deps.crypto, email, version);
   const appUrl = deps.config.getOrThrow<string>('APP_URL');
-  const activationLink = `${appUrl}/en/activation?key=${encodeURIComponent(token)}`;
+  const activationLink = `${appUrl}/en/activate?key=${encodeURIComponent(token)}`;
   await deps.emailQueue.enqueue(registrationEmail(email, activationLink));
 }

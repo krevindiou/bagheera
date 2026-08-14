@@ -12,6 +12,7 @@ import session from 'express-session';
 import type { RedisClientType } from 'redis';
 import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { buildCsrf } from './csrf';
+import { CsrfTokenController } from './csrf-token.controller';
 import { SessionRotationService } from './session-rotation.service';
 import { SessionTerminationService } from './session-termination.service';
 import {
@@ -23,6 +24,7 @@ import { valkeyClientProvider } from './valkey-client.provider';
 
 @Module({
   imports: [ConfigModule],
+  controllers: [CsrfTokenController],
   providers: [
     valkeyClientProvider,
     SessionRotationService,

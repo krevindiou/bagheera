@@ -6,5 +6,8 @@ import 'express-session';
 declare module 'express-session' {
   interface SessionData {
     memberId?: number;
+    // Written by CsrfTokenController to force session persistence — see
+    // that controller for why.
+    csrfIssued?: boolean;
   }
 }
