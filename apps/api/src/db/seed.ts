@@ -7,29 +7,14 @@ import { categorySeeds, paymentMethodSeeds, CategorySeed } from './seed-data';
 
 type Db = ReturnType<typeof drizzle>;
 
-async function seed(): Promise<void> {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is not set');
-  }
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const db = drizzle(pool);
-
-  try {
-    await db
-      .insert(paymentMethod)
-      .values(paymentMethodSeeds)
-      .onConflictDoNothing();
-
-    await insertCategories(db, categorySeeds, null);
-
-    console.log('Seed complete.');
-  } finally {
-    await pool.end();
-  }
-}
-
 // Idempotent: re-running the seed leaves existing rows (matched by
 // name + parent) untouched instead of duplicating them.
+export async function seedDatabase(db: Db): Promise<void> {
+  await db.insert(paymentMethod).values(paymentMethodSeeds).onConflictDoNothing();
+
+  await insertCategories(db, categorySeeds, null);
+}
+
 async function insertCategories(
   db: Db,
   seeds: CategorySeed[],
@@ -69,7 +54,24 @@ async function insertCategories(
   }
 }
 
-seed().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
-});
+async function main(): Promise<void> {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is not set');
+  }
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const db = drizzle(pool);
+
+  try {
+    await seedDatabase(db);
+    console.log('Seed complete.');
+  } finally {
+    await pool.end();
+  }
+}
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  });
+}

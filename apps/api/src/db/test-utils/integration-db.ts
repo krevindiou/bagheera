@@ -2,9 +2,11 @@ import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from '../schema';
 
-// Shared helper for `*.integration-spec.ts` tests, which run against the
-// docker-compose Postgres instance (see `pnpm test:integration`). Not part
-// of the unit CI stage — a real-Postgres CI stage lands later.
+// Shared helper for `*.integration-spec.ts` tests. `pnpm test:integration`
+// provisions Postgres/Valkey via Testcontainers (see
+// `test/integration-global-setup.ts`) and sets DATABASE_URL/VALKEY_URL
+// before any spec file runs; a manually started `docker compose` Postgres
+// also works for local one-off runs since this helper only reads env vars.
 export interface IntegrationDb {
   db: NodePgDatabase<typeof schema>;
   pool: Pool;
