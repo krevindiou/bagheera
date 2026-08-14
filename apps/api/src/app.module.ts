@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { DbModule } from './db/db.module';
 import { HealthModule } from './health/health.module';
 import { SecurityModule } from './security/security.module';
+import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { SecurityModule } from './security/security.module';
     DbModule,
     HealthModule,
     SecurityModule,
+    SessionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
