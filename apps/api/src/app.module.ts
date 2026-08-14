@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
 import { BanksModule } from './banks/banks.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { DbModule } from './db/db.module';
 import { EmailModule } from './email/email.module';
 import { HealthModule } from './health/health.module';
@@ -30,6 +31,7 @@ import { SessionModule } from './session/session.module';
     OperationsModule,
     SchedulersModule,
     ReportsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

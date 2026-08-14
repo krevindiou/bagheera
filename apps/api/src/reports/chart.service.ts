@@ -114,7 +114,17 @@ export class ReportChartService {
   async getChart(req: Request, id: number): Promise<ReportChart> {
     const memberId = this.requireMemberId(req);
     const rpt = await this.findOwnedReport(id, memberId);
-    const accounts = await this.effectiveAccounts(id, memberId);
+    return this.computeChart(rpt, memberId);
+  }
+
+  // Split out from `getChart` so the dashboard's homepage-report section
+  // (step 37) can reuse the aggregation for reports it already fetched and
+  // owns, without a second ownership round-trip.
+  async computeChart(
+    rpt: typeof report.$inferSelect,
+    memberId: number,
+  ): Promise<ReportChart> {
+    const accounts = await this.effectiveAccounts(rpt.id, memberId);
     if (accounts.length === 0) {
       return { hidden: true, axisBounds: null, series: [] };
     }
