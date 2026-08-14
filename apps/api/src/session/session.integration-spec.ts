@@ -14,7 +14,7 @@ import { SessionModule } from './session.module';
 
 declare module 'express-session' {
   interface SessionData {
-    marker?: string;
+    sessionMarker?: string;
     csrfIssued?: boolean;
   }
 }
@@ -38,7 +38,7 @@ class TestSessionController {
   @Post('touch')
   @HttpCode(200)
   touch(@Req() req: Request) {
-    req.session.marker = 'set';
+    req.session.sessionMarker = 'set';
     return { id: req.session.id };
   }
 
@@ -47,7 +47,11 @@ class TestSessionController {
   async rotate(@Req() req: Request) {
     const previousId = req.session.id;
     await this.rotation.rotate(req);
-    return { previousId, newId: req.session.id, marker: req.session.marker };
+    return {
+      previousId,
+      newId: req.session.id,
+      sessionMarker: req.session.sessionMarker,
+    };
   }
 }
 
@@ -170,11 +174,11 @@ describe('session infrastructure + CSRF (integration)', () => {
     const body = rotated.body as {
       previousId: string;
       newId: string;
-      marker: string;
+      sessionMarker: string;
     };
 
     expect(body.previousId).toBe(firstId);
     expect(body.newId).not.toBe(firstId);
-    expect(body.marker).toBe('set');
+    expect(body.sessionMarker).toBe('set');
   });
 });

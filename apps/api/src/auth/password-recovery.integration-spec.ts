@@ -112,7 +112,7 @@ describe('password recovery (integration)', () => {
     return row;
   }
 
-  async function postWithCsrf(path: string, body: unknown) {
+  async function postWithCsrf(path: string, body: object) {
     const tokenRes = await request(app.getHttpServer())
       .get('/__test-csrf/token')
       .set('X-Forwarded-Proto', 'https')

@@ -119,7 +119,7 @@ describe('security event audit logging (integration)', () => {
 
   async function postWithCsrf(
     path: string,
-    body: unknown,
+    body: object,
     existingCookies: string[] = [],
   ) {
     const { token, cookies } = await getCsrfTokenAndCookies(existingCookies);
