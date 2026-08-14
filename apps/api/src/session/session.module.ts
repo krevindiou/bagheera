@@ -13,6 +13,7 @@ import type { RedisClientType } from 'redis';
 import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { buildCsrf } from './csrf';
 import { SessionRotationService } from './session-rotation.service';
+import { SessionTerminationService } from './session-termination.service';
 import {
   SESSION_COOKIE_NAME,
   SESSION_IDLE_TTL_SECONDS,
@@ -22,8 +23,12 @@ import { valkeyClientProvider } from './valkey-client.provider';
 
 @Module({
   imports: [ConfigModule],
-  providers: [valkeyClientProvider, SessionRotationService],
-  exports: [SessionRotationService, VALKEY_CLIENT],
+  providers: [
+    valkeyClientProvider,
+    SessionRotationService,
+    SessionTerminationService,
+  ],
+  exports: [SessionRotationService, SessionTerminationService, VALKEY_CLIENT],
 })
 export class SessionModule implements NestModule, OnModuleDestroy {
   constructor(
