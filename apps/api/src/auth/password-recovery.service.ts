@@ -7,6 +7,7 @@ import { member } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
 import { passwordChangedEmail } from '../email/templates/password-changed.template';
 import { passwordRecoveryEmail } from '../email/templates/password-recovery.template';
+import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import { SessionTerminationService } from '../session/session-termination.service';
@@ -25,6 +26,7 @@ export class PasswordRecoveryService {
     private readonly emailQueue: EmailQueueService,
     private readonly config: ConfigService,
     private readonly sessionTermination: SessionTerminationService,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -32,7 +34,7 @@ export class PasswordRecoveryService {
    * member (no account enumeration); the email itself is sent
    * only when a match exists.
    */
-  async requestReset(email: string): Promise<void> {
+  async requestReset(email: string, sourceAddress = 'unknown'): Promise<void> {
     const [row] = await this.db
       .select()
       .from(member)
@@ -51,12 +53,18 @@ export class PasswordRecoveryService {
     await this.emailQueue.enqueue(
       passwordRecoveryEmail(row.email, changePasswordLink),
     );
+    await this.audit.record(
+      'password_recovery_requested',
+      row.id,
+      sourceAddress,
+    );
   }
 
   async resetPassword(
     key: string,
     password: string,
     passwordConfirmation: string,
+    sourceAddress = 'unknown',
   ): Promise<void> {
     if (password !== passwordConfirmation) {
       throw new BadRequestException("Passwords don't match.");
@@ -87,5 +95,10 @@ export class PasswordRecoveryService {
 
     await this.sessionTermination.terminateAllSessions(row.id);
     await this.emailQueue.enqueue(passwordChangedEmail(row.email));
+    await this.audit.record(
+      'password_recovery_completed',
+      row.id,
+      sourceAddress,
+    );
   }
 }

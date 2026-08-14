@@ -11,6 +11,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
 import { emailChangedEmail } from '../email/templates/email-changed.template';
+import { AuditService } from '../security/audit.service';
 import { HashService } from '../security/hash.service';
 import '../session/session-data';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -21,6 +22,7 @@ export class ProfileService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly hash: HashService,
     private readonly emailQueue: EmailQueueService,
+    private readonly audit: AuditService,
   ) {}
 
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
@@ -61,5 +63,6 @@ export class ProfileService {
       .where(eq(member.id, row.id));
 
     await this.emailQueue.enqueue(emailChangedEmail(previousEmail, dto.email));
+    await this.audit.record('email_changed', row.id, req.ip ?? 'unknown');
   }
 }

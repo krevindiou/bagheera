@@ -196,7 +196,11 @@ describe('sign-in (integration)', () => {
       .send({ email: 'nobody@example.com', password: 'whatever123' });
 
     expect(wrongPassword.status).toBe(unknownEmail.status);
-    expect(wrongPassword.body).toEqual(unknownEmail.body);
+    // Compare everything except `timestamp`, which legitimately differs
+    // between two sequential requests.
+    expect(omitTimestamp(wrongPassword.body)).toEqual(
+      omitTimestamp(unknownEmail.body),
+    );
   });
 
   it('throttles repeated attempts for the same email', async () => {
@@ -221,3 +225,9 @@ describe('sign-in (integration)', () => {
     expect(lastStatus).toBe(429);
   });
 });
+
+function omitTimestamp(body: unknown): unknown {
+  const { timestamp, ...rest } = body as { timestamp: string };
+  void timestamp;
+  return rest;
+}

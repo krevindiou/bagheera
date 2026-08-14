@@ -1,4 +1,5 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ActivationService } from './activation.service';
 import { ActivateDto } from './dto/activate.dto';
 
@@ -8,8 +9,11 @@ export class ActivationController {
 
   @Post('activate')
   @HttpCode(200)
-  async activate(@Body() dto: ActivateDto): Promise<{ message: string }> {
-    await this.activation.activate(dto.key);
+  async activate(
+    @Req() req: Request,
+    @Body() dto: ActivateDto,
+  ): Promise<{ message: string }> {
+    await this.activation.activate(dto.key, req.ip ?? 'unknown');
     return { message: 'Account activated. You can now sign in.' };
   }
 }

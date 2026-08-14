@@ -11,6 +11,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
 import { passwordChangedEmail } from '../email/templates/password-changed.template';
+import { AuditService } from '../security/audit.service';
 import { HashService } from '../security/hash.service';
 import { SessionTerminationService } from '../session/session-termination.service';
 import '../session/session-data';
@@ -23,6 +24,7 @@ export class ChangePasswordService {
     private readonly hash: HashService,
     private readonly emailQueue: EmailQueueService,
     private readonly sessionTermination: SessionTerminationService,
+    private readonly audit: AuditService,
   ) {}
 
   async changePassword(req: Request, dto: ChangePasswordDto): Promise<void> {
@@ -65,5 +67,6 @@ export class ChangePasswordService {
       req.session.id,
     );
     await this.emailQueue.enqueue(passwordChangedEmail(row.email));
+    await this.audit.record('password_changed', row.id, req.ip ?? 'unknown');
   }
 }

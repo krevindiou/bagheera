@@ -1,4 +1,5 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { RegisterDto } from './dto/register.dto';
 import { RegistrationService } from './registration.service';
 
@@ -8,8 +9,11 @@ export class RegistrationController {
 
   @Post('register')
   @HttpCode(201)
-  async register(@Body() dto: RegisterDto): Promise<{ message: string }> {
-    await this.registration.register(dto);
+  async register(
+    @Req() req: Request,
+    @Body() dto: RegisterDto,
+  ): Promise<{ message: string }> {
+    await this.registration.register(dto, req.ip ?? 'unknown');
     return {
       message:
         'You are now registered. You will receive an email with a link to activate your account.',

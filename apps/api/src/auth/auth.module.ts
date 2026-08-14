@@ -7,6 +7,7 @@ import { PasswordRecoveryService } from './password-recovery.service';
 import { SchedulerCatchUpService } from './scheduler-catch-up.service';
 import { SignInController } from './sign-in.controller';
 import { SignInService } from './sign-in.service';
+import { SignInThrottleAuditFilter } from './sign-in-throttle-audit.filter';
 import { SignOutController } from './sign-out.controller';
 import { SignOutService } from './sign-out.service';
 
@@ -24,6 +25,7 @@ import { SignOutService } from './sign-out.service';
     SignOutService,
     PasswordRecoveryService,
     ChangePasswordService,
+    SignInThrottleAuditFilter,
   ],
   exports: [SchedulerCatchUpService],
 })

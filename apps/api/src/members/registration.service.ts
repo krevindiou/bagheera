@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
+import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import { EmailQueueService } from '../email/email-queue.service';
@@ -23,9 +24,10 @@ export class RegistrationService {
     private readonly crypto: CryptoService,
     private readonly emailQueue: EmailQueueService,
     private readonly config: ConfigService,
+    private readonly audit: AuditService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<void> {
+  async register(dto: RegisterDto, sourceAddress = 'unknown'): Promise<void> {
     if (dto.password !== dto.passwordConfirmation) {
       throw new BadRequestException("Passwords don't match.");
     }
@@ -68,5 +70,6 @@ export class RegistrationService {
       dto.email,
       inserted.activationTokenVersion,
     );
+    await this.audit.record('activation_issued', inserted.id, sourceAddress);
   }
 }

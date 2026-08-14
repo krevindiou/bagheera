@@ -4,6 +4,7 @@ import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
+import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { EmailQueueService } from '../email/email-queue.service';
 import { parseActivationToken } from './activation-token';
@@ -20,9 +21,10 @@ export class ActivationService {
     private readonly crypto: CryptoService,
     private readonly emailQueue: EmailQueueService,
     private readonly config: ConfigService,
+    private readonly audit: AuditService,
   ) {}
 
-  async activate(key: string): Promise<void> {
+  async activate(key: string, sourceAddress = 'unknown'): Promise<void> {
     const payload = parseActivationToken(this.crypto, key);
     if (!payload) {
       throw new BadRequestException(ACTIVATION_ERROR);
@@ -41,6 +43,7 @@ export class ActivationService {
       .update(member)
       .set({ active: true })
       .where(eq(member.id, row.id));
+    await this.audit.record('activation_used', row.id, sourceAddress);
   }
 
   /**
@@ -52,7 +55,7 @@ export class ActivationService {
    * unknown or already-active member, so it never itself becomes an
    * enumeration oracle.
    */
-  async reissue(email: string): Promise<void> {
+  async reissue(email: string, sourceAddress = 'unknown'): Promise<void> {
     const [row] = await this.db
       .select()
       .from(member)
@@ -73,5 +76,6 @@ export class ActivationService {
       row.email,
       nextVersion,
     );
+    await this.audit.record('activation_issued', row.id, sourceAddress);
   }
 }
