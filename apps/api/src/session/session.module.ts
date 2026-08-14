@@ -32,7 +32,9 @@ export class SessionModule implements NestModule, OnModuleDestroy {
   ) {}
 
   async onModuleDestroy(): Promise<void> {
-    await this.valkeyClient.quit();
+    if (this.valkeyClient.isOpen) {
+      await this.valkeyClient.quit();
+    }
   }
 
   configure(consumer: MiddlewareConsumer): void {
