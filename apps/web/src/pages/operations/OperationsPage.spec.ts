@@ -9,7 +9,10 @@ vi.mock("../../api/client", () => ({
   apiClient: { GET: vi.fn(), POST: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() },
 }));
 
-const routes = [{ path: "/operations/:accountId", name: "operations", component: OperationsPage }];
+const routes = [
+  { path: "/operations/:accountId", name: "operations", component: OperationsPage },
+  { path: "/schedulers/:accountId", name: "schedulers", component: { template: "<div />" } },
+];
 
 async function mountPage() {
   const router = createRouter({ history: createMemoryHistory(), routes });

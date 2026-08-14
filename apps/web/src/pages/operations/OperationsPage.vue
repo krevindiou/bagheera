@@ -137,6 +137,10 @@ function isEditable(operation: Operation): boolean {
   <div class="container py-5">
     <h1>{{ $t("operations.title") }}<span v-if="account"> — {{ account.name }}</span></h1>
 
+    <router-link :to="{ name: 'schedulers', params: { accountId } }" class="btn btn-sm btn-outline-secondary mb-3">
+      {{ $t("operations.schedulersLink") }}
+    </router-link>
+
     <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
 
     <button
