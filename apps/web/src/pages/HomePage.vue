@@ -19,6 +19,9 @@ async function signOut() {
   <div class="container py-5">
     <p>{{ $t("home.signedInAs", { email: session.member?.email ?? "" }) }}</p>
     <div class="d-flex gap-2">
+      <router-link :to="{ name: 'accounts' }" class="btn btn-outline-secondary">
+        {{ $t("home.accountsLink") }}
+      </router-link>
       <router-link :to="{ name: 'settings-profile' }" class="btn btn-outline-secondary">
         {{ $t("home.profileLink") }}
       </router-link>
