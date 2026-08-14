@@ -219,6 +219,20 @@ export default {
     empty: "No reports yet.",
     deleteConfirm: "Delete the report \"{title}\"?",
   },
+  dashboard: {
+    title: "Dashboard",
+    reportsLink: "Reports",
+    onboardingNoBank: "You haven't added a bank yet.",
+    onboardingNoAccount: "You haven't added an account yet.",
+    onboardingCta: "Get started",
+    totalBalances: "Total balance",
+    noBalances: "No accounts yet.",
+    lastSalary: "Last salary",
+    lastBiggestExpense: "Biggest expense last month",
+    accountsOverview: "Accounts",
+    noAccounts: "No active accounts.",
+    reportCharts: "Reports",
+  },
   settings: {
     profile: {
       title: "Profile",
