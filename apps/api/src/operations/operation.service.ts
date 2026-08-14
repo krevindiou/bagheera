@@ -21,18 +21,23 @@ import {
 import '../session/session-data';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
+import {
+  TRANSFER_PAYMENT_METHOD_IDS,
+  TransferService,
+} from './transfer.service';
 
 // Payment method id 9, "Initial balance", reserved for the
 // system-generated opening operation — non-editable.
 const OPENING_BALANCE_PAYMENT_METHOD_ID = 9;
-// Ids 4 (debit) and 6 (credit) are the transfer payment methods.
-const TRANSFER_PAYMENT_METHOD_IDS = [4, 6];
 
 const PAGE_SIZE = 20;
 
 @Injectable()
 export class OperationService {
-  constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly transfers: TransferService,
+  ) {}
 
   private requireMemberId(req: Request): number {
     const memberId = req.session.memberId;
@@ -166,27 +171,60 @@ export class OperationService {
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
     const { debit, credit } = this.amountFields(dto.type, dto.amount);
+    const transferAccountId = this.transferAccountId(
+      dto.paymentMethodId,
+      dto.transferAccountId,
+    );
 
-    const [created] = await this.db
-      .insert(operation)
-      .values({
-        accountId: dto.accountId,
-        thirdParty: dto.thirdParty,
-        debit,
-        credit,
-        categoryId: dto.categoryId,
-        paymentMethodId: dto.paymentMethodId,
-        transferAccountId: this.transferAccountId(
-          dto.paymentMethodId,
-          dto.transferAccountId,
-        ),
-        ...(dto.valueDate ? { valueDate: dto.valueDate } : {}),
-        ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
-        ...(dto.reconciled !== undefined ? { reconciled: dto.reconciled } : {}),
-      })
-      .returning();
+    return this.db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(operation)
+        .values({
+          accountId: dto.accountId,
+          thirdParty: dto.thirdParty,
+          debit,
+          credit,
+          categoryId: dto.categoryId,
+          paymentMethodId: dto.paymentMethodId,
+          transferAccountId,
+          ...(dto.valueDate ? { valueDate: dto.valueDate } : {}),
+          ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+          ...(dto.reconciled !== undefined
+            ? { reconciled: dto.reconciled }
+            : {}),
+        })
+        .returning();
 
-    return created;
+      // A transfer target was chosen: pair the operation with a mirror in
+      // the target account (see transfer.service.ts for the rules).
+      if (transferAccountId !== null) {
+        const transferOperationId = await this.transfers.sync(tx, {
+          sourceId: created.id,
+          sourceAccountId: created.accountId,
+          sourceCurrency: acc.currency,
+          memberId,
+          previousTransferAccountId: null,
+          previousTransferOperationId: null,
+          desiredTransferAccountId: transferAccountId,
+          paymentMethodId: created.paymentMethodId,
+          debit: created.debit,
+          credit: created.credit,
+          thirdParty: created.thirdParty,
+          valueDate: created.valueDate,
+          notes: created.notes,
+          schedulerId: created.schedulerId,
+        });
+        if (transferOperationId !== null) {
+          await tx
+            .update(operation)
+            .set({ transferOperationId })
+            .where(eq(operation.id, created.id));
+          created.transferOperationId = transferOperationId;
+        }
+      }
+
+      return created;
+    });
   }
 
   async update(
@@ -211,23 +249,49 @@ export class OperationService {
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
     const { debit, credit } = this.amountFields(dto.type, dto.amount);
+    const desiredTransferAccountId = this.transferAccountId(
+      dto.paymentMethodId,
+      dto.transferAccountId,
+    );
+    const notes = dto.notes ?? '';
+    const reconciled = dto.reconciled ?? false;
 
-    await this.db
-      .update(operation)
-      .set({
-        thirdParty: dto.thirdParty,
+    await this.db.transaction(async (tx) => {
+      // Resolved from the pairing state stored before this save — creates,
+      // updates, retargets or removes the mirror as needed (see
+      // transfer.service.ts).
+      const transferOperationId = await this.transfers.sync(tx, {
+        sourceId: id,
+        sourceAccountId: row.accountId,
+        sourceCurrency: acc.currency,
+        memberId,
+        previousTransferAccountId: row.transferAccountId,
+        previousTransferOperationId: row.transferOperationId,
+        desiredTransferAccountId,
+        paymentMethodId: dto.paymentMethodId,
         debit,
         credit,
-        categoryId: dto.categoryId ?? null,
-        paymentMethodId: dto.paymentMethodId,
-        transferAccountId: this.transferAccountId(
-          dto.paymentMethodId,
-          dto.transferAccountId,
-        ),
+        thirdParty: dto.thirdParty,
         valueDate: dto.valueDate,
-        notes: dto.notes ?? '',
-        reconciled: dto.reconciled ?? false,
-      })
-      .where(eq(operation.id, id));
+        notes,
+        schedulerId: row.schedulerId,
+      });
+
+      await tx
+        .update(operation)
+        .set({
+          thirdParty: dto.thirdParty,
+          debit,
+          credit,
+          categoryId: dto.categoryId ?? null,
+          paymentMethodId: dto.paymentMethodId,
+          transferAccountId: desiredTransferAccountId,
+          transferOperationId,
+          valueDate: dto.valueDate,
+          notes,
+          reconciled,
+        })
+        .where(eq(operation.id, id));
+    });
   }
 }

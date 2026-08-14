@@ -6,6 +6,7 @@ import { OperationController } from './operation.controller';
 import { OperationService } from './operation.service';
 import { OperationSearchController } from './search.controller';
 import { OperationSearchService } from './search.service';
+import { TransferService } from './transfer.service';
 
 @Module({
   imports: [SessionModule],
@@ -14,7 +15,17 @@ import { OperationSearchService } from './search.service';
     OperationBatchController,
     OperationSearchController,
   ],
-  providers: [OperationService, OperationBatchService, OperationSearchService],
-  exports: [OperationService, OperationBatchService, OperationSearchService],
+  providers: [
+    OperationService,
+    OperationBatchService,
+    OperationSearchService,
+    TransferService,
+  ],
+  exports: [
+    OperationService,
+    OperationBatchService,
+    OperationSearchService,
+    TransferService,
+  ],
 })
 export class OperationsModule {}

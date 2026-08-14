@@ -12,6 +12,7 @@ import type { Request } from 'express';
 import { toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
+import { TransferService } from '../operations/transfer.service';
 import '../session/session-data';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -22,7 +23,10 @@ const INITIAL_BALANCE_PAYMENT_METHOD_ID = 9;
 
 @Injectable()
 export class AccountService {
-  constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly transfers: TransferService,
+  ) {}
 
   private requireMemberId(req: Request): number {
     const memberId = req.session.memberId;
@@ -140,11 +144,11 @@ export class AccountService {
     if (row.deleted) {
       throw new UnprocessableEntityException('Account is already deleted.');
     }
-    // Real transfer-reference conversion to "External account" lands with
-    // transfers later; this is a plain soft-delete for now.
-    await this.db
-      .update(account)
-      .set({ deleted: true })
-      .where(eq(account.id, id));
+    await this.db.transaction(async (tx) => {
+      await tx.update(account).set({ deleted: true }).where(eq(account.id, id));
+      // Other accounts' transfer references pointing at this one convert
+      // to the External placeholder, irreversibly, at deletion time.
+      await this.transfers.convertAccountReferencesToExternal(tx, id);
+    });
   }
 }

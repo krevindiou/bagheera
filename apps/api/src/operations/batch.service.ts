@@ -6,6 +6,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import '../session/session-data';
+import { TransferService } from './transfer.service';
 
 /**
  * Batch delete/reconcile. Ownership is resolved per id via the same
@@ -19,6 +20,7 @@ export class OperationBatchService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly audit: AuditService,
+    private readonly transfers: TransferService,
   ) {}
 
   private requireMemberId(req: Request): number {
@@ -59,7 +61,12 @@ export class OperationBatchService {
     const memberId = this.requireMemberId(req);
     const owned = await this.ownedIds(ids, memberId);
     if (owned.length > 0) {
-      await this.db.delete(operation).where(inArray(operation.id, owned));
+      await this.db.transaction(async (tx) => {
+        // A deleted operation's paired counterpart survives, converted to
+        // an External transfer — must run before the rows themselves go.
+        await this.transfers.convertSurvivorsOfDeleted(tx, owned);
+        await tx.delete(operation).where(inArray(operation.id, owned));
+      });
     }
     await this.audit.record(
       'operation_batch_deleted',

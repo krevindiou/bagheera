@@ -11,6 +11,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { bank } from '../db/schema';
+import { TransferService } from '../operations/transfer.service';
 import '../session/session-data';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
@@ -23,7 +24,10 @@ export interface ChooseBankResult {
 
 @Injectable()
 export class BankService {
-  constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly transfers: TransferService,
+  ) {}
 
   private requireMemberId(req: Request): number {
     const memberId = req.session.memberId;
@@ -102,9 +106,11 @@ export class BankService {
     if (row.deleted) {
       throw new UnprocessableEntityException('Bank is already deleted.');
     }
-    // Real transfer-reference conversion to "External account" for the
-    // bank's accounts lands with transfers later; this is a plain
-    // soft-delete for now.
-    await this.db.update(bank).set({ deleted: true }).where(eq(bank.id, id));
+    await this.db.transaction(async (tx) => {
+      await tx.update(bank).set({ deleted: true }).where(eq(bank.id, id));
+      // Other accounts' transfer references pointing at any of this bank's
+      // accounts convert to the External placeholder, irreversibly.
+      await this.transfers.convertBankReferencesToExternal(tx, id);
+    });
   }
 }
