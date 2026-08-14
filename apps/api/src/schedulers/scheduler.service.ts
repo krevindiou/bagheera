@@ -23,12 +23,16 @@ import { TRANSFER_PAYMENT_METHOD_IDS } from '../operations/transfer.service';
 import '../session/session-data';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
+import { SchedulerGenerationService } from './generation.service';
 
 const PAGE_SIZE = 20;
 
 @Injectable()
 export class SchedulerService {
-  constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly generation: SchedulerGenerationService,
+  ) {}
 
   private requireMemberId(req: Request): number {
     const memberId = req.session.memberId;
@@ -191,6 +195,16 @@ export class SchedulerService {
       })
       .returning();
 
+    // A newly-created scheduler may already be due — e.g. a value date of
+    // today, or in the past. Generation runs immediately after every save.
+    await this.generation.generateForScheduler(
+      this.db,
+      memberId,
+      created,
+      owned.account,
+      owned.bank,
+    );
+
     return created;
   }
 
@@ -213,7 +227,7 @@ export class SchedulerService {
       dto.transferAccountId,
     );
 
-    await this.db
+    const [updated] = await this.db
       .update(scheduler)
       .set({
         thirdParty: dto.thirdParty,
@@ -230,7 +244,19 @@ export class SchedulerService {
         frequencyValue: dto.frequencyValue,
         active: dto.active ?? true,
       })
-      .where(eq(scheduler.id, id));
+      .where(eq(scheduler.id, id))
+      .returning();
+
+    // Editing a scheduler (e.g. changing its value date, interval, or
+    // flipping it active) can bring new occurrences into range; generation
+    // runs immediately after every save.
+    await this.generation.generateForScheduler(
+      this.db,
+      memberId,
+      updated,
+      owned.account,
+      owned.bank,
+    );
   }
 
   async remove(req: Request, id: number): Promise<void> {

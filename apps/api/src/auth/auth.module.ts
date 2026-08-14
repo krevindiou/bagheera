@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { SchedulersModule } from '../schedulers/schedulers.module';
 import { SessionModule } from '../session/session.module';
 import { ChangePasswordController } from './change-password.controller';
 import { ChangePasswordService } from './change-password.service';
@@ -12,7 +13,7 @@ import { SignOutController } from './sign-out.controller';
 import { SignOutService } from './sign-out.service';
 
 @Module({
-  imports: [SessionModule],
+  imports: [SessionModule, SchedulersModule],
   controllers: [
     SignInController,
     SignOutController,

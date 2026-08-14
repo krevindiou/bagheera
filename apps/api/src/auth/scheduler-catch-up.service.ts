@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { SchedulerGenerationService } from '../schedulers/generation.service';
 
 /**
  * Runs a member's schedulers forward to catch up on any recurring
  * operations due since their last visit, on each successful
- * interactive sign-in. No-op stub until schedulers exist — a later step
- * swaps this implementation for the real generation engine without touching
- * sign-in's code, since it's only ever consumed through this interface.
+ * interactive sign-in. Delegates to the real generation engine — kept as
+ * its own injectable so sign-in's code never had to change across the
+ * stub-to-real swap.
  */
 @Injectable()
 export class SchedulerCatchUpService {
+  constructor(private readonly generation: SchedulerGenerationService) {}
+
   catchUp(memberId: number): Promise<void> {
-    // Intentionally empty — see class doc.
-    void memberId;
-    return Promise.resolve();
+    return this.generation.catchUpMember(memberId);
   }
 }
