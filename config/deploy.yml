@@ -1,0 +1,91 @@
+# Kamal deploys the public edge container (Dockerfile.caddy — the built SPA
+# served by Caddy, which reverse-proxies API routes to the "api" accessory
+# below so cookies stay same-origin). Kamal's own proxy terminates TLS and
+# does the health-checked, zero-downtime container swap in front of it; the
+# Caddyfile is told (via CADDY_SITE_ADDRESS below) not to also manage TLS.
+#
+# postgres/valkey/api run as accessories: fixed, Kamal-managed containers
+# reachable by the edge container at their accessory name (e.g. "api:3000"),
+# stable across every edge deploy. Kamal only builds/pushes/rolls the
+# primary service (the edge image); the api accessory's image has to be
+# built and pushed to the registry separately before `kamal accessory boot
+# api` (see the deploy CI stage for the exact commands).
+#
+# Required at deploy time (see .kamal/secrets):
+#   KAMAL_REGISTRY_PASSWORD, POSTGRES_PASSWORD, DATABASE_URL, VALKEY_URL,
+#   CRYPTO_KEYS, CRYPTO_ACTIVE_KEY_ID, SESSION_SECRET, CSRF_SECRET,
+#   EMAIL_SMTP_URL, EMAIL_FROM
+# Required as plain env (export before running kamal):
+#   DEPLOY_HOST, APP_DOMAIN, KAMAL_REGISTRY_SERVER, KAMAL_REGISTRY_USERNAME,
+#   API_IMAGE (registry/bagheera-api:<tag> pushed ahead of time)
+
+service: bagheera-web
+
+image: <%= ENV.fetch("KAMAL_REGISTRY_USERNAME") %>/bagheera-web
+
+servers:
+  web:
+    hosts:
+      - <%= ENV.fetch("DEPLOY_HOST") %>
+
+proxy:
+  ssl: true
+  host: <%= ENV.fetch("APP_DOMAIN") %>
+  healthcheck:
+    path: /health
+    interval: 3
+    timeout: 5
+
+registry:
+  server: <%= ENV.fetch("KAMAL_REGISTRY_SERVER", "docker.io") %>
+  username: <%= ENV.fetch("KAMAL_REGISTRY_USERNAME") %>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  dockerfile: Dockerfile.caddy
+  context: "."
+
+env:
+  clear:
+    CADDY_SITE_ADDRESS: "http://:80"
+
+accessories:
+  postgres:
+    image: postgres:16-alpine
+    host: <%= ENV.fetch("DEPLOY_HOST") %>
+    port: "5432"
+    env:
+      clear:
+        POSTGRES_USER: bagheera
+        POSTGRES_DB: bagheera
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    host: <%= ENV.fetch("DEPLOY_HOST") %>
+    port: "6379"
+    directories:
+      - data:/data
+
+  api:
+    image: <%= ENV.fetch("API_IMAGE") %>
+    host: <%= ENV.fetch("DEPLOY_HOST") %>
+    port: "3000"
+    env:
+      clear:
+        PORT: "3000"
+        APP_URL: https://<%= ENV.fetch("APP_DOMAIN") %>
+      secret:
+        - DATABASE_URL
+        - VALKEY_URL
+        - CRYPTO_KEYS
+        - CRYPTO_ACTIVE_KEY_ID
+        - SESSION_SECRET
+        - CSRF_SECRET
+        - EMAIL_SMTP_URL
+        - EMAIL_FROM

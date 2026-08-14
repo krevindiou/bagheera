@@ -1,10 +1,11 @@
 # Production edge: serves the built SPA and reverse-proxies API routes to
-# the api container, same-origin. Domain and TLS come from $CADDY_DOMAIN;
-# defaults to a locally-trusted cert for `localhost`.
+# the api container, same-origin. $CADDY_SITE_ADDRESS sets the whole site
+# address: default "localhost" gets a locally-trusted cert; a real hostname
+# (e.g. app.example.com) gets one via public ACME; "http://:80" serves plain
+# HTTP with no TLS of its own, for when something in front of this container
+# already terminates it (Kamal's own proxy does).
 
-{$CADDY_DOMAIN:localhost} {
-	tls internal
-
+{$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
 
 	@api path /health /api* /auth* /members* /banks* /accounts* /operations* /schedulers* /reports* /dashboard* /reference-data*
