@@ -1,10 +1,7 @@
 <script setup lang="ts">
-// Placeholder root component. Routing, i18n, Pinia, and the API client
-// are wired in step 39.
+import BaseLayout from "./layouts/BaseLayout.vue";
 </script>
 
 <template>
-  <div id="app-root">
-    <h1>Bagheera</h1>
-  </div>
+  <BaseLayout />
 </template>
