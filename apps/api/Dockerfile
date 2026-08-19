@@ -11,9 +11,18 @@ FROM base AS deps
 RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json apps/api/package.json
-COPY apps/web/package.json apps/web/package.json
 COPY packages ./packages
-RUN pnpm install --frozen-lockfile
+# --filter api... : api's deps + any workspace packages/* it depends on.
+RUN pnpm install --frozen-lockfile --filter api...
+
+FROM deps AS dev
+# Dev image: node_modules baked in from the deps layer above, source comes
+# in via bind mount (see docker-compose.yml) so nest --watch picks up edits
+# without a rebuild. node_modules paths are covered by named volumes there
+# so the bind mount doesn't shadow them.
+ENV NODE_ENV=development
+EXPOSE 3000
+CMD ["pnpm", "--filter", "api", "start:dev"]
 
 FROM deps AS build
 COPY . .

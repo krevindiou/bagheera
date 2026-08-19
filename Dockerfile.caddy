@@ -7,14 +7,11 @@
 FROM node:20-alpine AS deps
 RUN corepack enable
 WORKDIR /app
-# Workspace install resolves apps/api's deps too; argon2 compiles a native
-# addon on install.
-RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages ./packages
-RUN pnpm install --frozen-lockfile
+# --filter web... : web's deps + any workspace packages/* it depends on.
+RUN pnpm install --frozen-lockfile --filter web...
 
 FROM deps AS build
 COPY . .

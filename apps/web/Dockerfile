@@ -1,26 +1,25 @@
 # syntax=docker/dockerfile:1
-# Build context is the repo root (pnpm workspace), e.g.:
-#   docker build -f apps/web/Dockerfile -t bagheera-web .
-# The resulting image holds nothing but the built static assets under /assets,
-# ready to be copied into the Caddy image that serves them.
+# Dev-only image for the web app's Vite dev server (HMR, proxying to the
+# api service). Production instead builds static assets via Dockerfile.caddy
+# at the repo root, served by Caddy — no runtime Node needed in prod.
+#   docker build -f apps/web/Dockerfile --target dev -t bagheera-web-dev .
+# Build context is the repo root (pnpm workspace).
 
 FROM node:20-alpine AS base
 RUN corepack enable
 WORKDIR /app
 
 FROM base AS deps
-# Workspace install resolves apps/api's deps too; argon2 compiles a native
-# addon on install.
-RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/package.json
 COPY apps/web/package.json apps/web/package.json
 COPY packages ./packages
-RUN pnpm install --frozen-lockfile
+# --filter web... : web's deps + any workspace packages/* it depends on.
+RUN pnpm install --frozen-lockfile --filter web...
 
-FROM deps AS build
-COPY . .
-RUN pnpm --filter web build
-
-FROM scratch AS runtime
-COPY --from=build /app/apps/web/dist /assets
+FROM deps AS dev
+# Source comes in via bind mount (see docker-compose.yml); node_modules
+# paths are covered by named volumes there so the bind mount doesn't
+# shadow the deps layer's install.
+ENV NODE_ENV=development
+EXPOSE 5173
+CMD ["pnpm", "--filter", "web", "dev", "--", "--host", "0.0.0.0"]

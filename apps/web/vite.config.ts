@@ -2,8 +2,13 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
+// Target for the API dev-server proxy below. Defaults to localhost for
+// native (non-Docker) dev; docker-compose.yml overrides it to the api
+// service's container-network address ("http://api:3000").
+const apiProxyTarget = process.env.API_PROXY_TARGET ?? "http://localhost:3000";
+
 // API route prefixes, proxied to the API dev server so cookies stay
-// same-origin during local (non-Docker) development.
+// same-origin during local development.
 const apiRoutePrefixes = [
   "/accounts",
   "/auth",
@@ -21,11 +26,12 @@ const apiRoutePrefixes = [
 export default defineConfig({
   plugins: [vue()],
   server: {
+    host: true,
     proxy: Object.fromEntries(
       apiRoutePrefixes.map((prefix) => [
         prefix,
         {
-          target: "http://localhost:3000",
+          target: apiProxyTarget,
           changeOrigin: true,
           // The API's session/CSRF cookies are Secure-only and only get
           // set when the request looks like it arrived over HTTPS (it
