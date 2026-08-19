@@ -18,7 +18,9 @@ async function fillValidForm(wrapper: ReturnType<typeof mountPage>) {
   await wrapper.find("#register-email").setValue("new@example.com");
   await wrapper.find("#register-country").setValue("FR");
   await wrapper.find("#register-password").setValue("correct-horse");
-  await wrapper.find("#register-password-confirmation").setValue("correct-horse");
+  await wrapper
+    .find("#register-password-confirmation")
+    .setValue("correct-horse");
 }
 
 describe("RegisterPage", () => {
@@ -26,28 +28,42 @@ describe("RegisterPage", () => {
     vi.mocked(apiClient.POST).mockReset();
   });
 
-  it("rejects an invalid email, a bad country code, a short password, and a mismatched confirmation", async () => {
+  it("rejects an invalid email, a short password, and a mismatched confirmation", async () => {
     const wrapper = mountPage();
 
     await wrapper.find("#register-email").setValue("not-an-email");
-    await wrapper.find("#register-country").setValue("France");
     await wrapper.find("#register-password").setValue("short");
     await wrapper.find("#register-password-confirmation").setValue("different");
     await submitAndSettle(wrapper);
 
-    const messages = wrapper.findAll(".invalid-feedback").map((el) => el.text());
-    expect(messages).toHaveLength(4);
+    const messages = wrapper
+      .findAll(".invalid-feedback")
+      .map((el) => el.text());
+    expect(messages).toHaveLength(3);
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
-  it("submits an uppercased country and shows the success message", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({ response: { ok: true, status: 201 } } as never);
+  it("renders the country field as a dropdown of ISO codes, defaulting to the US", () => {
+    const wrapper = mountPage();
+
+    const select = wrapper.find("#register-country");
+    expect(select.element.tagName).toBe("SELECT");
+    expect((select.element as HTMLSelectElement).value).toBe("US");
+    expect(select.findAll("option").length).toBeGreaterThan(100);
+  });
+
+  it("submits the selected country and shows the success message", async () => {
+    vi.mocked(apiClient.POST).mockResolvedValue({
+      response: { ok: true, status: 201 },
+    } as never);
     const wrapper = mountPage();
 
     await wrapper.find("#register-email").setValue("new@example.com");
-    await wrapper.find("#register-country").setValue("fr");
+    await wrapper.find("#register-country").setValue("FR");
     await wrapper.find("#register-password").setValue("correct-horse");
-    await wrapper.find("#register-password-confirmation").setValue("correct-horse");
+    await wrapper
+      .find("#register-password-confirmation")
+      .setValue("correct-horse");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/members/register", {
@@ -62,7 +78,9 @@ describe("RegisterPage", () => {
   });
 
   it("shows the email-taken banner on a rejected submission", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({ response: { ok: false, status: 400 } } as never);
+    vi.mocked(apiClient.POST).mockResolvedValue({
+      response: { ok: false, status: 400 },
+    } as never);
     const wrapper = mountPage();
     await fillValidForm(wrapper);
     await submitAndSettle(wrapper);
