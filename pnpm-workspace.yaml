@@ -2,7 +2,22 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
+  '@scarf/scarf': false # telemetry postinstall, not needed
   argon2: true
+  cpu-features: true # native ssh2 perf opt, used by testcontainers
   esbuild: true
+  msgpackr-extract: true # native perf opt, has JS fallback either way
+  protobufjs: false # codegen only, not needed at runtime
+  ssh2: true # testcontainers' docker exec/tunnel transport
   unrs-resolver: true
   vue-demi: true
+minimumReleaseAgeExclude:
+  - '@vitest/coverage-v8@4.1.11'
+  - '@vitest/expect@4.1.11'
+  - '@vitest/mocker@4.1.11'
+  - '@vitest/pretty-format@4.1.11'
+  - '@vitest/runner@4.1.11'
+  - '@vitest/snapshot@4.1.11'
+  - '@vitest/spy@4.1.11'
+  - '@vitest/utils@4.1.11'
+  - vitest@4.1.11

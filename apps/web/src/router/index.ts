@@ -89,7 +89,7 @@ router.beforeEach((to) => {
   }
   // No active Pinia (e.g. a bare navigation in a test) is treated the
   // same as "not signed in" — the safe default is to bounce to sign-in.
-  let authenticated = false;
+  let authenticated: boolean;
   try {
     authenticated = useSessionStore().isAuthenticated;
   } catch {

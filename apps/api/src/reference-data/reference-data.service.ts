@@ -25,9 +25,6 @@ export class ReferenceDataService {
 
   paymentMethods(req: Request) {
     this.requireMemberId(req);
-    return this.db
-      .select()
-      .from(paymentMethod)
-      .orderBy(asc(paymentMethod.id));
+    return this.db.select().from(paymentMethod).orderBy(asc(paymentMethod.id));
   }
 }

@@ -2,7 +2,7 @@
 # Build context is the repo root (pnpm workspace), e.g.:
 #   docker build -f apps/api/Dockerfile -t bagheera-api .
 
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 RUN corepack enable
 WORKDIR /app
 

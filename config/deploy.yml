@@ -63,7 +63,7 @@ accessories:
   # directory (`kamal accessory details postgres` shows the exact mounted
   # path) — set scripts/backup.sh's WAL_ARCHIVE_DIR to that.
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "5432"
     cmd: >-
@@ -77,11 +77,14 @@ accessories:
       secret:
         - POSTGRES_PASSWORD
     directories:
-      - data:/var/lib/postgresql/data
+      # postgres 18+ images expect the mount at /var/lib/postgresql itself
+      # (not .../data) — they lay out a version-named subdir underneath so
+      # pg_upgrade --link works across major versions later.
+      - data:/var/lib/postgresql
       - wal-archive:/wal-archive
 
   valkey:
-    image: valkey/valkey:8-alpine
+    image: valkey/valkey:9-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "6379"
     directories:

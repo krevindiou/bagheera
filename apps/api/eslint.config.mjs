@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['eslint.config.mjs', 'dist/**'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -19,7 +19,12 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        projectService: {
+          // Files outside src/ (excluded from tsconfig.json's "include" so
+          // `nest build` doesn't try to emit them under rootDir) still need
+          // a project to type-check against for lint.
+          allowDefaultProject: ['drizzle.config.ts', 'test/*.ts'],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },

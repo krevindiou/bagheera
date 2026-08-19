@@ -5,7 +5,7 @@
 #   docker build -f apps/web/Dockerfile --target dev -t bagheera-web-dev .
 # Build context is the repo root (pnpm workspace).
 
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 RUN corepack enable
 WORKDIR /app
 

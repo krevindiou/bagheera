@@ -13,13 +13,20 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "rootDir": "./src",
     "incremental": true,
+    // Keep the incremental cache inside outDir so nest-cli's deleteOutDir
+    // wipes both together on every start — otherwise a stale cache outside
+    // dist/ can convince tsc the (deleted) output is still up to date and
+    // skip re-emitting, leaving dist/ empty. https://github.com/nestjs/nest-cli/issues/1794
+    "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo",
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*"]
 }

@@ -4,7 +4,7 @@
 #   docker build -f Dockerfile.caddy -t bagheera-caddy .
 # Build context is the repo root (pnpm workspace).
 
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./

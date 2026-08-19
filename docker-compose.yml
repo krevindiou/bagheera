@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-bagheera}
@@ -9,7 +9,10 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # postgres 18+ images expect the mount at /var/lib/postgresql itself
+      # (not .../data) — they lay out a version-named subdir underneath so
+      # pg_upgrade --link works across major versions later.
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bagheera} -d ${POSTGRES_DB:-bagheera}"]
       interval: 5s
@@ -17,7 +20,7 @@ services:
       retries: 10
 
   valkey:
-    image: valkey/valkey:8-alpine
+    image: valkey/valkey:9-alpine
     restart: unless-stopped
     ports:
       - "${VALKEY_PORT:-6379}:6379"

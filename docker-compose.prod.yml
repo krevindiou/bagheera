@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-bagheera}
@@ -17,7 +17,10 @@ services:
       - -c
       - wal_level=replica
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # postgres 18+ images expect the mount at /var/lib/postgresql itself
+      # (not .../data) — they lay out a version-named subdir underneath so
+      # pg_upgrade --link works across major versions later.
+      - postgres_data:/var/lib/postgresql
       # Bind mount (not a named volume) so scripts/backup.sh, running
       # directly on the host, can read the archived segments straight off
       # disk. Matches WAL_ARCHIVE_DIR's default there.
@@ -29,7 +32,7 @@ services:
       retries: 10
 
   valkey:
-    image: valkey/valkey:8-alpine
+    image: valkey/valkey:9-alpine
     restart: unless-stopped
     volumes:
       - valkey_data:/data
