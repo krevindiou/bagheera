@@ -113,4 +113,6 @@ jobs:
           docker push "$API_IMAGE"
       - name: Boot or reboot the api accessory on a new image
         run: kamal accessory details api >/dev/null 2>&1 && kamal accessory reboot api || kamal accessory boot api
+      - name: Run database migrations
+        run: kamal accessory exec api "pnpm run db:migrate" --reuse
       - run: kamal deploy
