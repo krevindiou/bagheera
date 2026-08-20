@@ -5,6 +5,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { useRoute } from "vue-router";
 import { apiClient } from "../../api/client";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
+import PasswordInput from "../../components/PasswordInput.vue";
 import { resetPasswordSchema, type ResetPasswordForm } from "./auth.schemas";
 
 const route = useRoute();
@@ -60,12 +61,10 @@ const onSubmit = handleSubmit(async (values) => {
         <label class="form-label" for="reset-password-password">{{
           $t("auth.resetPassword.password")
         }}</label>
-        <input
+        <PasswordInput
           id="reset-password-password"
           v-model="password"
           v-bind="passwordAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
         <PasswordStrengthMeter :password="password ?? ''" />
@@ -78,12 +77,10 @@ const onSubmit = handleSubmit(async (values) => {
         <label class="form-label" for="reset-password-password-confirmation">
           {{ $t("auth.resetPassword.passwordConfirmation") }}
         </label>
-        <input
+        <PasswordInput
           id="reset-password-password-confirmation"
           v-model="passwordConfirmation"
           v-bind="passwordConfirmationAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.passwordConfirmation }"
         />
         <div v-if="errors.passwordConfirmation" class="invalid-feedback">

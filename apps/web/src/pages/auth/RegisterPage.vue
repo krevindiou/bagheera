@@ -9,6 +9,7 @@ import {
   getDefaultCountry,
 } from "../../composables/useCountryOptions";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
+import PasswordInput from "../../components/PasswordInput.vue";
 import { registerSchema, type RegisterForm } from "./auth.schemas";
 
 const countryOptions = getCountryOptions();
@@ -111,12 +112,10 @@ const onSubmit = handleSubmit(async (values) => {
         <label class="form-label" for="register-password">{{
           $t("auth.register.password")
         }}</label>
-        <input
+        <PasswordInput
           id="register-password"
           v-model="password"
           v-bind="passwordAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
         <PasswordStrengthMeter :password="password ?? ''" />
@@ -129,12 +128,10 @@ const onSubmit = handleSubmit(async (values) => {
         <label class="form-label" for="register-password-confirmation">
           {{ $t("auth.register.passwordConfirmation") }}
         </label>
-        <input
+        <PasswordInput
           id="register-password-confirmation"
           v-model="passwordConfirmation"
           v-bind="passwordConfirmationAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.passwordConfirmation }"
         />
         <div v-if="errors.passwordConfirmation" class="invalid-feedback">

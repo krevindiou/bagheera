@@ -7,6 +7,8 @@ export default {
     cancel: "Cancel",
   },
   password: {
+    show: "Show password",
+    hide: "Hide password",
     strength: {
       weak: "Weak",
       fair: "Fair",

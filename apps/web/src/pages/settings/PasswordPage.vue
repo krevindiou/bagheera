@@ -5,6 +5,7 @@ import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
+import PasswordInput from "../../components/PasswordInput.vue";
 import {
   changePasswordSchema,
   type ChangePasswordForm,
@@ -61,12 +62,10 @@ function errorMessage(error: unknown): string | undefined {
         <label class="form-label" for="password-current">{{
           $t("settings.password.currentPassword")
         }}</label>
-        <input
+        <PasswordInput
           id="password-current"
           v-model="currentPassword"
           v-bind="currentPasswordAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.currentPassword }"
         />
         <div v-if="errors.currentPassword" class="invalid-feedback">
@@ -78,12 +77,10 @@ function errorMessage(error: unknown): string | undefined {
         <label class="form-label" for="password-new">{{
           $t("settings.password.newPassword")
         }}</label>
-        <input
+        <PasswordInput
           id="password-new"
           v-model="newPassword"
           v-bind="newPasswordAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.newPassword }"
         />
         <PasswordStrengthMeter :password="newPassword ?? ''" />
@@ -96,12 +93,10 @@ function errorMessage(error: unknown): string | undefined {
         <label class="form-label" for="password-new-confirmation">
           {{ $t("settings.password.newPasswordConfirmation") }}
         </label>
-        <input
+        <PasswordInput
           id="password-new-confirmation"
           v-model="newPasswordConfirmation"
           v-bind="newPasswordConfirmationAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.newPasswordConfirmation }"
         />
         <div v-if="errors.newPasswordConfirmation" class="invalid-feedback">

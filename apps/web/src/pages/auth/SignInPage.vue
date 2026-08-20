@@ -11,6 +11,7 @@ import {
   readLastAttemptedEmail,
   rememberAttemptedEmail,
 } from "../../composables/useLastAttemptedEmail";
+import PasswordInput from "../../components/PasswordInput.vue";
 import { signInSchema, type SignInForm } from "./auth.schemas";
 
 const router = useRouter();
@@ -123,12 +124,10 @@ const onSubmit = handleSubmit(async (values) => {
         <label class="form-label" for="sign-in-password">{{
           $t("auth.signIn.password")
         }}</label>
-        <input
+        <PasswordInput
           id="sign-in-password"
           v-model="password"
           v-bind="passwordAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
         <div v-if="errors.password" class="invalid-feedback">

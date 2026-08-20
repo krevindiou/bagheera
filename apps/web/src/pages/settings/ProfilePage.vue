@@ -5,6 +5,7 @@ import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useSessionStore } from "../../stores/session.store";
 import { useToast } from "../../composables/useToast";
+import PasswordInput from "../../components/PasswordInput.vue";
 import { profileSchema, type ProfileForm } from "./settings.schemas";
 
 const session = useSessionStore();
@@ -72,12 +73,10 @@ function errorMessage(error: unknown): string | undefined {
         <label class="form-label" for="profile-current-password">
           {{ $t("settings.profile.currentPassword") }}
         </label>
-        <input
+        <PasswordInput
           id="profile-current-password"
           v-model="currentPassword"
           v-bind="currentPasswordAttrs"
-          type="password"
-          class="form-control"
           :class="{ 'is-invalid': errors.currentPassword }"
         />
         <div v-if="errors.currentPassword" class="invalid-feedback">
