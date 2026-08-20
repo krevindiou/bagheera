@@ -91,6 +91,7 @@ export default {
     newBankName: "Or create a new bank",
     accountName: "Account name",
     currency: "Currency",
+    chooseCurrency: "Choose a currency…",
     initialBalance: "Initial balance",
     submit: "Save",
     edit: "Edit",

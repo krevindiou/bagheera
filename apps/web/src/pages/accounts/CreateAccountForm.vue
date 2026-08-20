@@ -4,7 +4,14 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
-import { createAccountSchema, type CreateAccountForm } from "./accounts.schemas";
+import {
+  getCurrencyOptions,
+  getGuessedCurrency,
+} from "../../composables/useCurrencyOptions";
+import {
+  createAccountSchema,
+  type CreateAccountForm,
+} from "./accounts.schemas";
 import type { Bank } from "./accounts.types";
 
 const props = defineProps<{ banks: Bank[] }>();
@@ -12,11 +19,18 @@ const emit = defineEmits<{ created: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
+const currencyOptions = getCurrencyOptions();
 
-const { defineField, handleSubmit, errors, isSubmitting } = useForm<CreateAccountForm>({
-  validationSchema: toTypedSchema(createAccountSchema),
-  initialValues: { bankId: "", bankName: "", name: "", currency: "" },
-});
+const { defineField, handleSubmit, errors, isSubmitting } =
+  useForm<CreateAccountForm>({
+    validationSchema: toTypedSchema(createAccountSchema),
+    initialValues: {
+      bankId: "",
+      bankName: "",
+      name: "",
+      currency: getGuessedCurrency(currencyOptions),
+    },
+  });
 const [bankId, bankIdAttrs] = defineField("bankId");
 const [bankName, bankNameAttrs] = defineField("bankName");
 const [name, nameAttrs] = defineField("name");
@@ -70,7 +84,9 @@ function errorMessage(error: unknown): string | undefined {
     <h2 class="h5">{{ $t("accounts.addAccount") }}</h2>
 
     <div class="mb-3">
-      <label class="form-label" for="account-bank-id">{{ $t("accounts.existingBank") }}</label>
+      <label class="form-label" for="account-bank-id">{{
+        $t("accounts.existingBank")
+      }}</label>
       <select
         id="account-bank-id"
         v-model="bankId"
@@ -86,7 +102,9 @@ function errorMessage(error: unknown): string | undefined {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="account-bank-name">{{ $t("accounts.newBankName") }}</label>
+      <label class="form-label" for="account-bank-name">{{
+        $t("accounts.newBankName")
+      }}</label>
       <input
         id="account-bank-name"
         v-model="bankName"
@@ -101,7 +119,9 @@ function errorMessage(error: unknown): string | undefined {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="account-name">{{ $t("accounts.accountName") }}</label>
+      <label class="form-label" for="account-name">{{
+        $t("accounts.accountName")
+      }}</label>
       <input
         id="account-name"
         v-model="name"
@@ -116,16 +136,25 @@ function errorMessage(error: unknown): string | undefined {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="account-currency">{{ $t("accounts.currency") }}</label>
-      <input
+      <label class="form-label" for="account-currency">{{
+        $t("accounts.currency")
+      }}</label>
+      <select
         id="account-currency"
         v-model="currency"
         v-bind="currencyAttrs"
-        type="text"
-        maxlength="3"
-        class="form-control"
+        class="form-select"
         :class="{ 'is-invalid': errors.currency }"
-      />
+      >
+        <option value="">{{ $t("accounts.chooseCurrency") }}</option>
+        <option
+          v-for="option in currencyOptions"
+          :key="option.code"
+          :value="option.code"
+        >
+          {{ option.code }} — {{ option.name }}
+        </option>
+      </select>
       <div v-if="errors.currency" class="invalid-feedback">
         {{ $t("accounts.validation.currency") }}
       </div>
@@ -149,7 +178,11 @@ function errorMessage(error: unknown): string | undefined {
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
         {{ $t("accounts.submit") }}
       </button>
-      <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        @click="emit('cancel')"
+      >
         {{ $t("common.cancel") }}
       </button>
     </div>
