@@ -11,15 +11,18 @@ const session = useSessionStore();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetField } = useForm<ProfileForm>({
-  validationSchema: toTypedSchema(profileSchema),
-  initialValues: { email: session.member?.email ?? "", currentPassword: "" },
-});
+const { defineField, handleSubmit, errors, isSubmitting, resetField } =
+  useForm<ProfileForm>({
+    validationSchema: toTypedSchema(profileSchema),
+    initialValues: { email: session.member?.email ?? "", currentPassword: "" },
+  });
 const [email, emailAttrs] = defineField("email");
 const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
 
 const onSubmit = handleSubmit(async (values) => {
-  const { error, response } = await apiClient.POST("/members/profile", { body: values });
+  const { error, response } = await apiClient.POST("/members/profile", {
+    body: values,
+  });
 
   if (!response.ok) {
     const message = errorMessage(error) ?? t("settings.profile.genericError");
@@ -47,16 +50,22 @@ function errorMessage(error: unknown): string | undefined {
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="profile-email">{{ $t("settings.profile.email") }}</label>
+        <label class="form-label" for="profile-email">{{
+          $t("settings.profile.email")
+        }}</label>
         <input
           id="profile-email"
           v-model="email"
           v-bind="emailAttrs"
           type="email"
+          inputmode="email"
+          autocomplete="email"
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />
-        <div v-if="errors.email" class="invalid-feedback">{{ $t("auth.validation.email") }}</div>
+        <div v-if="errors.email" class="invalid-feedback">
+          {{ $t("auth.validation.email") }}
+        </div>
       </div>
 
       <div class="mb-3">
@@ -76,7 +85,11 @@ function errorMessage(error: unknown): string | undefined {
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+        :disabled="isSubmitting"
+      >
         {{ $t("settings.profile.submit") }}
       </button>
     </form>

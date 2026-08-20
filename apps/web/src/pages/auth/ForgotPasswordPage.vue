@@ -6,10 +6,11 @@ import { apiClient } from "../../api/client";
 import { rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
 import { forgotPasswordSchema, type ForgotPasswordForm } from "./auth.schemas";
 
-const { defineField, handleSubmit, errors, isSubmitting } = useForm<ForgotPasswordForm>({
-  validationSchema: toTypedSchema(forgotPasswordSchema),
-  initialValues: { email: "" },
-});
+const { defineField, handleSubmit, errors, isSubmitting } =
+  useForm<ForgotPasswordForm>({
+    validationSchema: toTypedSchema(forgotPasswordSchema),
+    initialValues: { email: "" },
+  });
 const [email, emailAttrs] = defineField("email");
 
 const submitted = ref(false);
@@ -41,13 +42,21 @@ const onSubmit = handleSubmit(async (values) => {
           v-model="email"
           v-bind="emailAttrs"
           type="email"
+          inputmode="email"
+          autocomplete="email"
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />
-        <div v-if="errors.email" class="invalid-feedback">{{ $t("auth.validation.email") }}</div>
+        <div v-if="errors.email" class="invalid-feedback">
+          {{ $t("auth.validation.email") }}
+        </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+        :disabled="isSubmitting"
+      >
         {{ $t("auth.forgotPassword.submit") }}
       </button>
     </form>

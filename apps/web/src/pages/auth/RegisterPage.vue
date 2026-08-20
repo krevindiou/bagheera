@@ -72,6 +72,8 @@ const onSubmit = handleSubmit(async (values) => {
           v-model="email"
           v-bind="emailAttrs"
           type="email"
+          inputmode="email"
+          autocomplete="email"
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />
