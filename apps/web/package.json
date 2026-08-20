@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "e2e": "playwright test --config e2e/playwright.config.ts",
-    "generate:api-client": "openapi-typescript http://localhost:3000/api/docs-json -o src/api/schema.d.ts"
+    "generate:api-client": "openapi-typescript http://localhost:3000/api/docs-json -o src/api/schema.d.ts",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@sentry/vue": "^10.70.0",
