@@ -113,6 +113,7 @@ function onClear() {
         <input
           v-model.number="amountValue1"
           type="number"
+          inputmode="decimal"
           step="0.01"
           class="form-control"
           :aria-label="$t('operations.search.amount')"
@@ -133,6 +134,7 @@ function onClear() {
         <input
           v-model.number="amountValue2"
           type="number"
+          inputmode="decimal"
           step="0.01"
           class="form-control"
           :aria-label="$t('operations.search.amount')"

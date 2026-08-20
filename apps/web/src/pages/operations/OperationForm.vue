@@ -206,6 +206,7 @@ function errorMessage(error: unknown): string | undefined {
         v-model="amount"
         v-bind="amountAttrs"
         type="number"
+        inputmode="decimal"
         step="0.01"
         class="form-control"
         :class="{ 'is-invalid': errors.amount }"

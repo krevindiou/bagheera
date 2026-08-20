@@ -169,6 +169,7 @@ function errorMessage(error: unknown): string | undefined {
         v-model="initialBalance"
         v-bind="initialBalanceAttrs"
         type="number"
+        inputmode="decimal"
         step="0.01"
         class="form-control"
       />
