@@ -8,6 +8,7 @@ import {
   getCountryOptions,
   getDefaultCountry,
 } from "../../composables/useCountryOptions";
+import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import { registerSchema, type RegisterForm } from "./auth.schemas";
 
 const countryOptions = getCountryOptions();
@@ -118,6 +119,7 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.password }"
         />
+        <PasswordStrengthMeter :password="password ?? ''" />
         <div v-if="errors.password" class="invalid-feedback">
           {{ $t("auth.validation.passwordLength") }}
         </div>
