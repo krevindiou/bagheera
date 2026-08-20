@@ -46,15 +46,15 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.api
       target: dev
     restart: unless-stopped
     # Migrate then start so `docker compose up` alone is enough — no
     # separate `db:migrate` step needed on a fresh checkout.
     command: sh -c "pnpm --filter api db:migrate && pnpm --filter api start:dev"
     env_file:
-      - apps/api/.env
+      - ../apps/api/.env
     environment:
       PORT: 3000
       DATABASE_URL: postgres://${POSTGRES_USER:-bagheera}:${POSTGRES_PASSWORD:-bagheera}@postgres:5432/${POSTGRES_DB:-bagheera}
@@ -63,8 +63,8 @@ services:
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:
-      - ./apps/api:/app/apps/api
-      - ./packages:/app/packages
+      - ../apps/api:/app/apps/api
+      - ../packages:/app/packages
       - api_root_node_modules:/app/node_modules
       - api_node_modules:/app/apps/api/node_modules
     healthcheck:
@@ -88,8 +88,8 @@ services:
 
   web:
     build:
-      context: .
-      dockerfile: apps/web/Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile.web
       target: dev
     restart: unless-stopped
     environment:
@@ -99,7 +99,7 @@ services:
     ports:
       - "${WEB_PORT:-5173}:5173"
     volumes:
-      - ./apps/web:/app/apps/web
+      - ../apps/web:/app/apps/web
       - web_root_node_modules:/app/node_modules
       - web_node_modules:/app/apps/web/node_modules
     depends_on:

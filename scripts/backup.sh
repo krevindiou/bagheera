@@ -10,7 +10,7 @@
 #     target; any restic-supported backend works (S3-compatible via
 #     AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY, etc — see restic's own docs).
 #   POSTGRES_PASSWORD — password for POSTGRES_USER inside the container.
-# Optional env (defaults match docker-compose.prod.yml):
+# Optional env (defaults match docker/compose.prod.yml):
 #   POSTGRES_CONTAINER (default: postgres)
 #   POSTGRES_USER (default: bagheera)
 #   POSTGRES_DB (default: bagheera)

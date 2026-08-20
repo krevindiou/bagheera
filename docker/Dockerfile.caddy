@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Builds the production edge image: the web app's static assets served by
 # Caddy, which also reverse-proxies API routes to the api container.
-#   docker build -f Dockerfile.caddy -t bagheera-caddy .
+#   docker build -f docker/Dockerfile.caddy -t bagheera-caddy .
 # Build context is the repo root (pnpm workspace).
 
 FROM node:24-alpine AS deps
@@ -22,4 +22,4 @@ RUN pnpm --filter web build
 
 FROM caddy:2-alpine
 COPY --from=build /app/apps/web/dist /srv
-COPY Caddyfile /etc/caddy/Caddyfile
+COPY docker/Caddyfile /etc/caddy/Caddyfile

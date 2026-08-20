@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Build context is the repo root (pnpm workspace), e.g.:
-#   docker build -f apps/api/Dockerfile -t bagheera-api .
+#   docker build -f docker/Dockerfile.api -t bagheera-api .
 
 FROM node:24-alpine AS base
 RUN corepack enable
@@ -17,7 +17,7 @@ RUN pnpm install --frozen-lockfile --filter api...
 
 FROM deps AS dev
 # Dev image: node_modules baked in from the deps layer above, source comes
-# in via bind mount (see docker-compose.yml) so nest --watch picks up edits
+# in via bind mount (see docker/compose.yml) so nest --watch picks up edits
 # without a rebuild. node_modules paths are covered by named volumes there
 # so the bind mount doesn't shadow them.
 ENV NODE_ENV=development

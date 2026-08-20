@@ -109,7 +109,7 @@ jobs:
       - name: Build and push the api accessory image
         run: |
           echo "$KAMAL_REGISTRY_PASSWORD" | docker login "$KAMAL_REGISTRY_SERVER" -u "$KAMAL_REGISTRY_USERNAME" --password-stdin
-          docker build -f apps/api/Dockerfile -t "$API_IMAGE" .
+          docker build -f docker/Dockerfile.api -t "$API_IMAGE" .
           docker push "$API_IMAGE"
       - name: Boot or reboot the api accessory on a new image
         run: kamal accessory details api >/dev/null 2>&1 && kamal accessory reboot api || kamal accessory boot api

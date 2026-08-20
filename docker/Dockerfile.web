@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1
 # Dev-only image for the web app's Vite dev server (HMR, proxying to the
-# api service). Production instead builds static assets via Dockerfile.caddy
-# at the repo root, served by Caddy — no runtime Node needed in prod.
-#   docker build -f apps/web/Dockerfile --target dev -t bagheera-web-dev .
+# api service). Production instead builds static assets via docker/Dockerfile.caddy,
+# served by Caddy — no runtime Node needed in prod.
+#   docker build -f docker/Dockerfile.web --target dev -t bagheera-web-dev .
 # Build context is the repo root (pnpm workspace).
 
 FROM node:24-alpine AS base
@@ -17,7 +17,7 @@ COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter web...
 
 FROM deps AS dev
-# Source comes in via bind mount (see docker-compose.yml); node_modules
+# Source comes in via bind mount (see docker/compose.yml); node_modules
 # paths are covered by named volumes there so the bind mount doesn't
 # shadow the deps layer's install.
 ENV NODE_ENV=development

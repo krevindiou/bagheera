@@ -1,4 +1,4 @@
-# Kamal deploys the public edge container (Dockerfile.caddy — the built SPA
+# Kamal deploys the public edge container (docker/Dockerfile.caddy — the built SPA
 # served by Caddy, which reverse-proxies API routes to the "api" accessory
 # below so cookies stay same-origin). Kamal's own proxy terminates TLS and
 # does the health-checked, zero-downtime container swap in front of it; the
@@ -47,7 +47,7 @@ registry:
 
 builder:
   arch: amd64
-  dockerfile: Dockerfile.caddy
+  dockerfile: docker/Dockerfile.caddy
   context: "."
   args:
     VITE_SENTRY_DSN: <%= ENV.fetch("VITE_SENTRY_DSN", "") %>
