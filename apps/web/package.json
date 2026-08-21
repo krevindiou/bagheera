@@ -10,7 +10,7 @@
     "test": "vitest run",
     "e2e": "playwright test --config e2e/playwright.config.ts",
     "generate:api-client": "openapi-typescript http://localhost:3000/api/docs-json -o src/api/schema.d.ts",
-    "lint": "eslint ."
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "@sentry/vue": "^10.70.0",
@@ -33,6 +33,8 @@
     "@vitest/coverage-v8": "^4.1.11",
     "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.9.1",
+    "eslint-plugin-vue": "^10.10.0",
+    "globals": "^17.11.0",
     "jsdom": "^30.0.1",
     "openapi-fetch": "^0.17.0",
     "openapi-typescript": "^7.13.0",

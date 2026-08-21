@@ -46,7 +46,7 @@ function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
 </script>
 
 <template>
-  <div class="container py-5" v-if="dashboard">
+  <div v-if="dashboard" class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="mb-0">{{ $t("dashboard.title") }}</h1>
       <div class="d-flex gap-2">
