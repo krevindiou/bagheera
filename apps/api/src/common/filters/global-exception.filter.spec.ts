@@ -15,6 +15,7 @@ import { IsEmail } from 'class-validator';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import * as Sentry from '@sentry/node';
+import { Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import type { ErrorResponseBody } from './error-response';
 
@@ -60,8 +61,16 @@ class TestErrorsController {
 
 describe('GlobalExceptionFilter', () => {
   let app: INestApplication<App>;
+  let loggerErrorSpy: jest.SpyInstance;
 
   beforeAll(async () => {
+    // The "boom" case below deliberately triggers a 500, which the filter
+    // logs via Nest's Logger — silence it so a passing suite doesn't print
+    // a scary-looking stack trace to the console.
+    loggerErrorSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+
     const moduleRef = await Test.createTestingModule({
       controllers: [TestErrorsController],
     }).compile();
@@ -83,6 +92,7 @@ describe('GlobalExceptionFilter', () => {
 
   afterAll(async () => {
     await app.close();
+    loggerErrorSpy.mockRestore();
   });
 
   it('shapes a 404 as "not_found"', async () => {
