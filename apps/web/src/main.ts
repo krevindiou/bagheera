@@ -12,9 +12,4 @@ import { initSentry } from "./sentry";
 const app = createApp(App);
 initSentry(app);
 
-app
-  .use(createPinia())
-  .use(router)
-  .use(i18n)
-  .use(VueQueryPlugin, { queryClient })
-  .mount("#app");
+app.use(createPinia()).use(router).use(i18n).use(VueQueryPlugin, { queryClient }).mount("#app");

@@ -20,16 +20,24 @@ describe("BatchActions", () => {
   });
 
   it("disables both actions when nothing is selected", () => {
-    const wrapper = mount(BatchActions, { props: { selectedIds: [] }, global: { plugins: [i18n] } });
+    const wrapper = mount(BatchActions, {
+      props: { selectedIds: [] },
+      global: { plugins: [i18n] },
+    });
     expect(wrapper.get('[data-testid="batch-delete"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-testid="batch-reconcile"]').attributes("disabled")).toBeDefined();
   });
 
   it("only calls batch delete once the confirmation modal is accepted", async () => {
-    vi.mocked(apiClient.POST).mockReturnValue(jsonResponse({ message: "Operations deleted", deletedCount: 2 }));
+    vi.mocked(apiClient.POST).mockReturnValue(
+      jsonResponse({ message: "Operations deleted", deletedCount: 2 }),
+    );
 
     const wrapper = mount(
-      { components: { BatchActions, ConfirmModal }, template: `<div><BatchActions :selected-ids="[1, 2]" @done="$emit('done')" /><ConfirmModal /></div>` },
+      {
+        components: { BatchActions, ConfirmModal },
+        template: `<div><BatchActions :selected-ids="[1, 2]" @done="$emit('done')" /><ConfirmModal /></div>`,
+      },
       { global: { plugins: [i18n] } },
     );
 
@@ -40,12 +48,17 @@ describe("BatchActions", () => {
     await wrapper.get(".btn-primary").trigger("click");
     await flushPromises();
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/operations/batch/delete", { body: { ids: [1, 2] } });
+    expect(apiClient.POST).toHaveBeenCalledWith("/operations/batch/delete", {
+      body: { ids: [1, 2] },
+    });
   });
 
   it("skips the reconcile call when the confirmation is cancelled", async () => {
     const wrapper = mount(
-      { components: { BatchActions, ConfirmModal }, template: `<div><BatchActions :selected-ids="[1]" /><ConfirmModal /></div>` },
+      {
+        components: { BatchActions, ConfirmModal },
+        template: `<div><BatchActions :selected-ids="[1]" /><ConfirmModal /></div>`,
+      },
       { global: { plugins: [i18n] } },
     );
 

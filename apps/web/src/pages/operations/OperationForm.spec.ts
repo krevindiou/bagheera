@@ -16,7 +16,13 @@ const categories: Category[] = [
 
 function mountForm() {
   return mount(OperationForm, {
-    props: { accountId: 1, categories, accounts: [{ id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false }] },
+    props: {
+      accountId: 1,
+      categories,
+      accounts: [
+        { id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false },
+      ],
+    },
     global: { plugins: [i18n] },
   });
 }
@@ -38,7 +44,9 @@ describe("OperationForm", () => {
     await wrapper.find("#operation-type-credit").setValue(true);
     await wrapper.vm.$nextTick();
 
-    const categoryOptionsCredit = wrapper.findAll("#operation-category option").map((o) => o.text());
+    const categoryOptionsCredit = wrapper
+      .findAll("#operation-category option")
+      .map((o) => o.text());
     expect(categoryOptionsCredit).toContain("Salary");
     expect(categoryOptionsCredit).not.toContain("Food");
   });

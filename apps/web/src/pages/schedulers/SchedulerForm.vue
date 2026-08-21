@@ -7,7 +7,11 @@ import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { Account } from "../accounts/accounts.types";
 import { toDisplayAmount } from "../operations/money";
-import { PAYMENT_METHODS, TRANSFER_PAYMENT_METHOD_IDS, type Category } from "../operations/operations.types";
+import {
+  PAYMENT_METHODS,
+  TRANSFER_PAYMENT_METHOD_IDS,
+  type Category,
+} from "../operations/operations.types";
 import { schedulerSchema, type SchedulerForm } from "./schedulers.schemas";
 import type { Scheduler } from "./schedulers.types";
 
@@ -83,7 +87,9 @@ const [active, activeAttrs] = defineField("active");
 // Same field logic as the operation form: category/payment-method choices
 // only ever show options matching the selected debit/credit type.
 const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
-const filteredPaymentMethods = computed(() => PAYMENT_METHODS.filter((pm) => pm.type === type.value));
+const filteredPaymentMethods = computed(() =>
+  PAYMENT_METHODS.filter((pm) => pm.type === type.value),
+);
 const transferTargets = computed(() => props.accounts.filter((a) => a.id !== props.accountId));
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
@@ -141,7 +147,9 @@ function errorMessage(error: unknown): string | undefined {
 
 <template>
   <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
-    <h2 class="h5">{{ $t(props.scheduler ? "schedulers.editTitle" : "schedulers.createTitle") }}</h2>
+    <h2 class="h5">
+      {{ $t(props.scheduler ? "schedulers.editTitle" : "schedulers.createTitle") }}
+    </h2>
 
     <div class="mb-3">
       <div class="form-check form-check-inline">
@@ -153,7 +161,9 @@ function errorMessage(error: unknown): string | undefined {
           type="radio"
           value="debit"
         />
-        <label class="form-check-label" for="scheduler-type-debit">{{ $t("operations.debit") }}</label>
+        <label class="form-check-label" for="scheduler-type-debit">{{
+          $t("operations.debit")
+        }}</label>
       </div>
       <div class="form-check form-check-inline">
         <input
@@ -164,12 +174,16 @@ function errorMessage(error: unknown): string | undefined {
           type="radio"
           value="credit"
         />
-        <label class="form-check-label" for="scheduler-type-credit">{{ $t("operations.credit") }}</label>
+        <label class="form-check-label" for="scheduler-type-credit">{{
+          $t("operations.credit")
+        }}</label>
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-third-party">{{ $t("operations.thirdParty") }}</label>
+      <label class="form-label" for="scheduler-third-party">{{
+        $t("operations.thirdParty")
+      }}</label>
       <input
         id="scheduler-third-party"
         v-model="thirdParty"
@@ -178,7 +192,9 @@ function errorMessage(error: unknown): string | undefined {
         class="form-control"
         :class="{ 'is-invalid': errors.thirdParty }"
       />
-      <div v-if="errors.thirdParty" class="invalid-feedback">{{ $t("auth.validation.required") }}</div>
+      <div v-if="errors.thirdParty" class="invalid-feedback">
+        {{ $t("auth.validation.required") }}
+      </div>
     </div>
 
     <div class="mb-3">
@@ -193,19 +209,28 @@ function errorMessage(error: unknown): string | undefined {
         class="form-control"
         :class="{ 'is-invalid': errors.amount }"
       />
-      <div v-if="errors.amount" class="invalid-feedback">{{ $t("operations.validation.amount") }}</div>
+      <div v-if="errors.amount" class="invalid-feedback">
+        {{ $t("operations.validation.amount") }}
+      </div>
     </div>
 
     <div class="mb-3">
       <label class="form-label" for="scheduler-category">{{ $t("operations.category") }}</label>
-      <select id="scheduler-category" v-model="categoryId" v-bind="categoryIdAttrs" class="form-select">
+      <select
+        id="scheduler-category"
+        v-model="categoryId"
+        v-bind="categoryIdAttrs"
+        class="form-select"
+      >
         <option value="">{{ $t("operations.noCategory") }}</option>
         <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-payment-method">{{ $t("operations.paymentMethod") }}</label>
+      <label class="form-label" for="scheduler-payment-method">{{
+        $t("operations.paymentMethod")
+      }}</label>
       <select
         id="scheduler-payment-method"
         v-model="paymentMethodId"
@@ -214,7 +239,9 @@ function errorMessage(error: unknown): string | undefined {
         :class="{ 'is-invalid': errors.paymentMethodId }"
       >
         <option value="">{{ $t("operations.choosePaymentMethod") }}</option>
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
+          {{ pm.name }}
+        </option>
       </select>
       <div v-if="errors.paymentMethodId" class="invalid-feedback">
         {{ $t("auth.validation.required") }}
@@ -241,7 +268,9 @@ function errorMessage(error: unknown): string | undefined {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-value-date">{{ $t("schedulers.firstOccurrence") }}</label>
+      <label class="form-label" for="scheduler-value-date">{{
+        $t("schedulers.firstOccurrence")
+      }}</label>
       <input
         id="scheduler-value-date"
         v-model="valueDate"
@@ -253,7 +282,9 @@ function errorMessage(error: unknown): string | undefined {
 
     <div class="row mb-3">
       <div class="col">
-        <label class="form-label" for="scheduler-frequency-value">{{ $t("schedulers.every") }}</label>
+        <label class="form-label" for="scheduler-frequency-value">{{
+          $t("schedulers.every")
+        }}</label>
         <input
           id="scheduler-frequency-value"
           v-model="frequencyValue"
@@ -269,7 +300,9 @@ function errorMessage(error: unknown): string | undefined {
         </div>
       </div>
       <div class="col">
-        <label class="form-label" for="scheduler-frequency-unit">{{ $t("schedulers.frequencyUnit") }}</label>
+        <label class="form-label" for="scheduler-frequency-unit">{{
+          $t("schedulers.frequencyUnit")
+        }}</label>
         <select
           id="scheduler-frequency-unit"
           v-model="frequencyUnit"
@@ -297,7 +330,12 @@ function errorMessage(error: unknown): string | undefined {
 
     <div class="mb-3">
       <label class="form-label" for="scheduler-notes">{{ $t("operations.notes") }}</label>
-      <textarea id="scheduler-notes" v-model="notes" v-bind="notesAttrs" class="form-control"></textarea>
+      <textarea
+        id="scheduler-notes"
+        v-model="notes"
+        v-bind="notesAttrs"
+        class="form-control"
+      ></textarea>
     </div>
 
     <div class="mb-3 form-check">
@@ -308,7 +346,9 @@ function errorMessage(error: unknown): string | undefined {
         type="checkbox"
         class="form-check-input"
       />
-      <label class="form-check-label" for="scheduler-reconciled">{{ $t("operations.reconciled") }}</label>
+      <label class="form-check-label" for="scheduler-reconciled">{{
+        $t("operations.reconciled")
+      }}</label>
     </div>
 
     <div class="mb-3 form-check">

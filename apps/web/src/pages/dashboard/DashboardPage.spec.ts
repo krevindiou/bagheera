@@ -47,7 +47,9 @@ describe("DashboardPage", () => {
   });
 
   it("shows the no-bank onboarding tip", async () => {
-    vi.mocked(apiClient.GET).mockReturnValue(jsonResponse({ ...emptyDashboard, onboarding: "no-bank" }));
+    vi.mocked(apiClient.GET).mockReturnValue(
+      jsonResponse({ ...emptyDashboard, onboarding: "no-bank" }),
+    );
 
     const wrapper = await mountPage();
     await flushPromises();
@@ -56,7 +58,9 @@ describe("DashboardPage", () => {
   });
 
   it("shows the no-account onboarding tip", async () => {
-    vi.mocked(apiClient.GET).mockReturnValue(jsonResponse({ ...emptyDashboard, onboarding: "no-account" }));
+    vi.mocked(apiClient.GET).mockReturnValue(
+      jsonResponse({ ...emptyDashboard, onboarding: "no-account" }),
+    );
 
     const wrapper = await mountPage();
     await flushPromises();

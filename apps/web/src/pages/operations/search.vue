@@ -93,7 +93,9 @@ function onClear() {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="search-payment-methods">{{ $t("operations.paymentMethod") }}</label>
+      <label class="form-label" for="search-payment-methods">{{
+        $t("operations.paymentMethod")
+      }}</label>
       <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
         <option v-for="pm in PAYMENT_METHODS" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
       </select>
@@ -101,7 +103,9 @@ function onClear() {
 
     <div class="row mb-3">
       <div class="col">
-        <label class="form-label" for="search-amount-operator-1">{{ $t("operations.search.amount") }}</label>
+        <label class="form-label" for="search-amount-operator-1">{{
+          $t("operations.search.amount")
+        }}</label>
         <select id="search-amount-operator-1" v-model="amountOperator1" class="form-select">
           <option value="">{{ $t("operations.search.any") }}</option>
           <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
@@ -144,7 +148,9 @@ function onClear() {
 
     <div class="row mb-3">
       <div class="col">
-        <label class="form-label" for="search-date-from">{{ $t("operations.search.dateFrom") }}</label>
+        <label class="form-label" for="search-date-from">{{
+          $t("operations.search.dateFrom")
+        }}</label>
         <input id="search-date-from" v-model="dateFrom" type="date" class="form-control" />
       </div>
       <div class="col">

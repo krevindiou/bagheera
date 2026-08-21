@@ -10,17 +10,11 @@ export interface PasswordStrength {
   label: PasswordStrengthLabel;
 }
 
-const LABELS: PasswordStrengthLabel[] = [
-  "weak",
-  "weak",
-  "fair",
-  "good",
-  "strong",
-];
+const LABELS: PasswordStrengthLabel[] = ["weak", "weak", "fair", "good", "strong"];
 
 export function getPasswordStrength(password: string): PasswordStrength {
-  const varietyCount = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(
-    (pattern) => pattern.test(password),
+  const varietyCount = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter((pattern) =>
+    pattern.test(password),
   ).length;
 
   let score: 0 | 1 | 2 | 3 | 4 = 0;

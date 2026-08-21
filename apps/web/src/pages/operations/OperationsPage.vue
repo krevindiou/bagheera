@@ -47,7 +47,12 @@ async function loadOperations(page = 1) {
   const { data } = await apiClient.GET("/operations/search", {
     params: { query: { accountId: accountId.value, page: String(page) } },
   });
-  list.value = (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+  list.value = (data as OperationList | undefined) ?? {
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+  };
   selectedIds.value = new Set();
 }
 
@@ -56,12 +61,19 @@ async function runSearch(criteria: SearchCriteria) {
     params: { query: { page: "1" } },
     body: { accountId: accountId.value, ...criteria },
   });
-  list.value = (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+  list.value = (data as OperationList | undefined) ?? {
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+  };
   selectedIds.value = new Set();
 }
 
 async function clearSearch() {
-  await apiClient.DELETE("/operations/search", { params: { query: { accountId: accountId.value } } });
+  await apiClient.DELETE("/operations/search", {
+    params: { query: { accountId: accountId.value } },
+  });
   await loadOperations(1);
 }
 
@@ -69,7 +81,13 @@ async function loadChart() {
   const { data } = await apiClient.GET("/accounts/{id}/chart", {
     params: { path: { id: accountId.value } },
   });
-  const chart = data as { currency: string; axisBounds: { min: number; max: number } | null; points: { period: string; value: number }[] } | undefined;
+  const chart = data as
+    | {
+        currency: string;
+        axisBounds: { min: number; max: number } | null;
+        points: { period: string; value: number }[];
+      }
+    | undefined;
   if (!chart || chart.points.length === 0) {
     chartSeries.value = [];
     chartAxisBounds.value = null;
@@ -135,9 +153,14 @@ function isEditable(operation: Operation): boolean {
 
 <template>
   <div class="container py-5">
-    <h1>{{ $t("operations.title") }}<span v-if="account"> — {{ account.name }}</span></h1>
+    <h1>
+      {{ $t("operations.title") }}<span v-if="account"> — {{ account.name }}</span>
+    </h1>
 
-    <router-link :to="{ name: 'schedulers', params: { accountId } }" class="btn btn-sm btn-outline-secondary mb-3">
+    <router-link
+      :to="{ name: 'schedulers', params: { accountId } }"
+      class="btn btn-sm btn-outline-secondary mb-3"
+    >
       {{ $t("operations.schedulersLink") }}
     </router-link>
 

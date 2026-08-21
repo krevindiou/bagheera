@@ -19,20 +19,9 @@ const barClass = computed(
 
 <template>
   <div v-if="password.length > 0" class="mt-1">
-    <div
-      class="progress"
-      style="height: 4px"
-      role="progressbar"
-      :aria-valuenow="widthPercent"
-    >
-      <div
-        class="progress-bar"
-        :class="barClass"
-        :style="{ width: `${widthPercent}%` }"
-      ></div>
+    <div class="progress" style="height: 4px" role="progressbar" :aria-valuenow="widthPercent">
+      <div class="progress-bar" :class="barClass" :style="{ width: `${widthPercent}%` }"></div>
     </div>
-    <small class="form-text">{{
-      $t(`password.strength.${strength.label}`)
-    }}</small>
+    <small class="form-text">{{ $t(`password.strength.${strength.label}`) }}</small>
   </div>
 </template>

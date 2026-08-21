@@ -25,8 +25,7 @@ export default {
       invalidCredentials: "Invalid email or password.",
       inactiveAccount: "Your account is not activated yet.",
       resendActivation: "Resend the activation email",
-      resendSent:
-        "A fresh activation link has been sent to your email address.",
+      resendSent: "A fresh activation link has been sent to your email address.",
       forgotPasswordLink: "Forgot your password?",
       registerLink: "Create an account",
       success: "Signed in.",
@@ -54,8 +53,7 @@ export default {
       title: "Forgot your password?",
       email: "Email address",
       submit: "Send reset link",
-      requestSent:
-        "If an account exists for this address, a password reset link has been sent.",
+      requestSent: "If an account exists for this address, a password reset link has been sent.",
       signInLink: "Back to sign in",
     },
     resetPassword: {
@@ -108,8 +106,7 @@ export default {
     accountUpdated: "Account updated.",
     genericError: "Something went wrong. Please try again.",
     validation: {
-      bankChoiceRequired:
-        "Choose an existing bank or type a new bank name, not both.",
+      bankChoiceRequired: "Choose an existing bank or type a new bank name, not both.",
       currency: "Enter a 3-letter currency code.",
     },
   },

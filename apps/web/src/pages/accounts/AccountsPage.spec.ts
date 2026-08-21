@@ -94,7 +94,10 @@ describe("AccountsPage", () => {
     vi.mocked(apiClient.GET).mockResolvedValue({ data: [], response: { ok: true } } as never);
     vi.mocked(apiClient.POST).mockImplementation((path: string) => {
       if (path === "/banks/choice") {
-        return Promise.resolve({ data: { id: 5, name: "New Bank", created: true }, response: { ok: true } }) as never;
+        return Promise.resolve({
+          data: { id: 5, name: "New Bank", created: true },
+          response: { ok: true },
+        }) as never;
       }
       return Promise.resolve({ data: { id: 20 }, response: { ok: true } }) as never;
     });

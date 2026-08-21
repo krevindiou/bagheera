@@ -10,15 +10,12 @@ import { resetPasswordSchema, type ResetPasswordForm } from "./auth.schemas";
 
 const route = useRoute();
 
-const { defineField, handleSubmit, errors, isSubmitting } =
-  useForm<ResetPasswordForm>({
-    validationSchema: toTypedSchema(resetPasswordSchema),
-    initialValues: { password: "", passwordConfirmation: "" },
-  });
+const { defineField, handleSubmit, errors, isSubmitting } = useForm<ResetPasswordForm>({
+  validationSchema: toTypedSchema(resetPasswordSchema),
+  initialValues: { password: "", passwordConfirmation: "" },
+});
 const [password, passwordAttrs] = defineField("password");
-const [passwordConfirmation, passwordConfirmationAttrs] = defineField(
-  "passwordConfirmation",
-);
+const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
 const submitted = ref(false);
 const invalidKey = ref(false);
@@ -88,19 +85,13 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
       </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary w-100"
-        :disabled="isSubmitting"
-      >
+      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t("auth.resetPassword.submit") }}
       </button>
     </form>
 
     <div class="mt-3">
-      <router-link :to="{ name: 'sign-in' }">{{
-        $t("auth.resetPassword.signInLink")
-      }}</router-link>
+      <router-link :to="{ name: 'sign-in' }">{{ $t("auth.resetPassword.signInLink") }}</router-link>
     </div>
   </div>
 </template>

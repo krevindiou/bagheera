@@ -33,20 +33,37 @@ describe("OperationsPage", () => {
   it("highlights selected rows via batch-selection checkboxes", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/operations/search") {
         return jsonResponse({
           items: [
-            { id: 10, accountId: 1, schedulerId: null, transferOperationId: null, transferAccountId: null, categoryId: null, paymentMethodId: 1, thirdParty: "Shop", debit: 50000, credit: null, valueDate: "2026-01-05", reconciled: false, notes: "" },
+            {
+              id: 10,
+              accountId: 1,
+              schedulerId: null,
+              transferOperationId: null,
+              transferAccountId: null,
+              categoryId: null,
+              paymentMethodId: 1,
+              thirdParty: "Shop",
+              debit: 50000,
+              credit: null,
+              valueDate: "2026-01-05",
+              reconciled: false,
+              notes: "",
+            },
           ],
           total: 1,
           page: 1,
           pageSize: 20,
         });
       }
-      if (path === "/accounts/{id}/chart") return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
+      if (path === "/accounts/{id}/chart")
+        return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
       return jsonResponse(undefined);
     });
 
@@ -64,11 +81,15 @@ describe("OperationsPage", () => {
   it("hides the synthesis chart when the account has no operations", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
-      if (path === "/operations") return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
-      if (path === "/accounts/{id}/chart") return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
+      if (path === "/operations")
+        return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
+      if (path === "/accounts/{id}/chart")
+        return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
       return jsonResponse(undefined);
     });
 
@@ -81,10 +102,13 @@ describe("OperationsPage", () => {
   it("shows the synthesis chart when the account has operations", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
-      if (path === "/operations") return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
+      if (path === "/operations")
+        return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
       if (path === "/accounts/{id}/chart") {
         return jsonResponse({
           currency: "USD",
@@ -104,18 +128,36 @@ describe("OperationsPage", () => {
   it("runs a search and displays the filtered results", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
-      if (path === "/operations/search") return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
-      if (path === "/accounts/{id}/chart") return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
+      if (path === "/operations/search")
+        return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
+      if (path === "/accounts/{id}/chart")
+        return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
       return jsonResponse(undefined);
     });
     vi.mocked(apiClient.POST).mockImplementation((path: string) => {
       if (path === "/operations/search") {
         return jsonResponse({
           items: [
-            { id: 11, accountId: 1, schedulerId: null, transferOperationId: null, transferAccountId: null, categoryId: null, paymentMethodId: 1, thirdParty: "Coffee", debit: 5000, credit: null, valueDate: "2026-01-06", reconciled: false, notes: "" },
+            {
+              id: 11,
+              accountId: 1,
+              schedulerId: null,
+              transferOperationId: null,
+              transferAccountId: null,
+              categoryId: null,
+              paymentMethodId: 1,
+              thirdParty: "Coffee",
+              debit: 5000,
+              credit: null,
+              valueDate: "2026-01-06",
+              reconciled: false,
+              notes: "",
+            },
           ],
           total: 1,
           page: 1,
@@ -144,23 +186,42 @@ describe("OperationsPage", () => {
   it("gates batch delete behind the confirmation modal", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/operations/search") {
         return jsonResponse({
           items: [
-            { id: 10, accountId: 1, schedulerId: null, transferOperationId: null, transferAccountId: null, categoryId: null, paymentMethodId: 1, thirdParty: "Shop", debit: 50000, credit: null, valueDate: "2026-01-05", reconciled: false, notes: "" },
+            {
+              id: 10,
+              accountId: 1,
+              schedulerId: null,
+              transferOperationId: null,
+              transferAccountId: null,
+              categoryId: null,
+              paymentMethodId: 1,
+              thirdParty: "Shop",
+              debit: 50000,
+              credit: null,
+              valueDate: "2026-01-05",
+              reconciled: false,
+              notes: "",
+            },
           ],
           total: 1,
           page: 1,
           pageSize: 20,
         });
       }
-      if (path === "/accounts/{id}/chart") return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
+      if (path === "/accounts/{id}/chart")
+        return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
       return jsonResponse(undefined);
     });
-    vi.mocked(apiClient.POST).mockImplementation(() => jsonResponse({ message: "Operations deleted", deletedCount: 1 }));
+    vi.mocked(apiClient.POST).mockImplementation(() =>
+      jsonResponse({ message: "Operations deleted", deletedCount: 1 }),
+    );
 
     const wrapper = await mountPage();
     await flushPromises();

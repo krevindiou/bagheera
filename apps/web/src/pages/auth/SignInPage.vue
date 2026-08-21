@@ -19,12 +19,10 @@ const session = useSessionStore();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting } = useForm<SignInForm>(
-  {
-    validationSchema: toTypedSchema(signInSchema),
-    initialValues: { email: readLastAttemptedEmail(), password: "" },
-  },
-);
+const { defineField, handleSubmit, errors, isSubmitting } = useForm<SignInForm>({
+  validationSchema: toTypedSchema(signInSchema),
+  initialValues: { email: readLastAttemptedEmail(), password: "" },
+});
 const [email, emailAttrs] = defineField("email");
 const [password, passwordAttrs] = defineField("password");
 
@@ -73,18 +71,10 @@ const onSubmit = handleSubmit(async (values) => {
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.signIn.title") }}</h1>
 
-    <div
-      v-if="banner === 'invalid-credentials'"
-      class="alert alert-danger"
-      role="alert"
-    >
+    <div v-if="banner === 'invalid-credentials'" class="alert alert-danger" role="alert">
       {{ $t("auth.signIn.invalidCredentials") }}
     </div>
-    <div
-      v-else-if="banner === 'inactive'"
-      class="alert alert-warning"
-      role="alert"
-    >
+    <div v-else-if="banner === 'inactive'" class="alert alert-warning" role="alert">
       <p class="mb-2">{{ $t("auth.signIn.inactiveAccount") }}</p>
       <p v-if="resendSent" class="mb-0 text-success">
         {{ $t("auth.signIn.resendSent") }}
@@ -102,9 +92,7 @@ const onSubmit = handleSubmit(async (values) => {
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="sign-in-email">{{
-          $t("auth.signIn.email")
-        }}</label>
+        <label class="form-label" for="sign-in-email">{{ $t("auth.signIn.email") }}</label>
         <input
           id="sign-in-email"
           v-model="email"
@@ -121,9 +109,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="sign-in-password">{{
-          $t("auth.signIn.password")
-        }}</label>
+        <label class="form-label" for="sign-in-password">{{ $t("auth.signIn.password") }}</label>
         <PasswordInput
           id="sign-in-password"
           v-model="password"
@@ -135,11 +121,7 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
       </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary w-100"
-        :disabled="isSubmitting"
-      >
+      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t("auth.signIn.submit") }}
       </button>
     </form>
@@ -148,9 +130,7 @@ const onSubmit = handleSubmit(async (values) => {
       <router-link :to="{ name: 'forgot-password' }">{{
         $t("auth.signIn.forgotPasswordLink")
       }}</router-link>
-      <router-link :to="{ name: 'register' }">{{
-        $t("auth.signIn.registerLink")
-      }}</router-link>
+      <router-link :to="{ name: 'register' }">{{ $t("auth.signIn.registerLink") }}</router-link>
     </div>
   </div>
 </template>

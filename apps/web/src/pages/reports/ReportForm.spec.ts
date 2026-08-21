@@ -70,8 +70,8 @@ describe("ReportForm", () => {
       global: { plugins: [i18n] },
     });
 
-    expect((wrapper.get<HTMLInputElement>("#report-title").element).value).toBe("Existing");
-    expect((wrapper.get<HTMLInputElement>("#report-type-average").element).checked).toBe(true);
-    expect((wrapper.get<HTMLSelectElement>("#report-reconciled").element).value).toBe("true");
+    expect(wrapper.get<HTMLInputElement>("#report-title").element.value).toBe("Existing");
+    expect(wrapper.get<HTMLInputElement>("#report-type-average").element.checked).toBe(true);
+    expect(wrapper.get<HTMLSelectElement>("#report-reconciled").element.value).toBe("true");
   });
 });

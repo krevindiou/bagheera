@@ -6,28 +6,23 @@ import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import PasswordInput from "../../components/PasswordInput.vue";
-import {
-  changePasswordSchema,
-  type ChangePasswordForm,
-} from "./settings.schemas";
+import { changePasswordSchema, type ChangePasswordForm } from "./settings.schemas";
 
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetForm } =
-  useForm<ChangePasswordForm>({
-    validationSchema: toTypedSchema(changePasswordSchema),
-    initialValues: {
-      currentPassword: "",
-      newPassword: "",
-      newPasswordConfirmation: "",
-    },
-  });
+const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<ChangePasswordForm>({
+  validationSchema: toTypedSchema(changePasswordSchema),
+  initialValues: {
+    currentPassword: "",
+    newPassword: "",
+    newPasswordConfirmation: "",
+  },
+});
 const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
 const [newPassword, newPasswordAttrs] = defineField("newPassword");
-const [newPasswordConfirmation, newPasswordConfirmationAttrs] = defineField(
-  "newPasswordConfirmation",
-);
+const [newPasswordConfirmation, newPasswordConfirmationAttrs] =
+  defineField("newPasswordConfirmation");
 
 const onSubmit = handleSubmit(async (values) => {
   const { error, response } = await apiClient.POST("/auth/change-password", {
@@ -104,11 +99,7 @@ function errorMessage(error: unknown): string | undefined {
         </div>
       </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary w-100"
-        :disabled="isSubmitting"
-      >
+      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t("settings.password.submit") }}
       </button>
     </form>

@@ -30,7 +30,9 @@ describe("SchedulersPage", () => {
   it("lists scheduled operations and highlights selected rows", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/schedulers") {
@@ -76,10 +78,13 @@ describe("SchedulersPage", () => {
   it("shows the empty state when there are no scheduled operations", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
-        return jsonResponse([{ id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false }]);
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
-      if (path === "/schedulers") return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
+      if (path === "/schedulers")
+        return jsonResponse({ items: [], total: 0, page: 1, pageSize: 20 });
       return jsonResponse(undefined);
     });
 

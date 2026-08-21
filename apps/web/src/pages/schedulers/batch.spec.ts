@@ -19,15 +19,25 @@ describe("SchedulerBatchActions", () => {
   });
 
   it("disables the delete action when nothing is selected", () => {
-    const wrapper = mount(BatchActions, { props: { selectedIds: [] }, global: { plugins: [i18n] } });
-    expect(wrapper.get('[data-testid="scheduler-batch-delete"]').attributes("disabled")).toBeDefined();
+    const wrapper = mount(BatchActions, {
+      props: { selectedIds: [] },
+      global: { plugins: [i18n] },
+    });
+    expect(
+      wrapper.get('[data-testid="scheduler-batch-delete"]').attributes("disabled"),
+    ).toBeDefined();
   });
 
   it("only calls batch delete once the confirmation modal is accepted", async () => {
-    vi.mocked(apiClient.POST).mockReturnValue(jsonResponse({ message: "Schedulers deleted", deletedCount: 1 }));
+    vi.mocked(apiClient.POST).mockReturnValue(
+      jsonResponse({ message: "Schedulers deleted", deletedCount: 1 }),
+    );
 
     const wrapper = mount(
-      { components: { BatchActions, ConfirmModal }, template: `<div><BatchActions :selected-ids="[3]" /><ConfirmModal /></div>` },
+      {
+        components: { BatchActions, ConfirmModal },
+        template: `<div><BatchActions :selected-ids="[3]" /><ConfirmModal /></div>`,
+      },
       { global: { plugins: [i18n] } },
     );
 

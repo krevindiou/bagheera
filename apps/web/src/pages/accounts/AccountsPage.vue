@@ -69,7 +69,9 @@ const submitEditBank = handleBankSubmit(async (values) => {
 
 async function closeBank(bank: Bank) {
   if (!(await confirm(t("accounts.closeBankConfirm", { name: bank.name })))) return;
-  const { response } = await apiClient.POST("/banks/{id}/close", { params: { path: { id: bank.id } } });
+  const { response } = await apiClient.POST("/banks/{id}/close", {
+    params: { path: { id: bank.id } },
+  });
   if (!response.ok) {
     toast(t("accounts.genericError"), "error");
     return;
@@ -165,7 +167,11 @@ function errorMessage(error: unknown): string | undefined {
     <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
       <div class="d-flex align-items-center gap-2">
         <template v-if="editingBankId === bank.id">
-          <form novalidate class="d-flex align-items-center gap-2 flex-grow-1" @submit="submitEditBank">
+          <form
+            novalidate
+            class="d-flex align-items-center gap-2 flex-grow-1"
+            @submit="submitEditBank"
+          >
             <input
               v-model="editBankName"
               v-bind="editBankNameAttrs"
@@ -173,7 +179,9 @@ function errorMessage(error: unknown): string | undefined {
               class="form-control form-control-sm w-auto"
               :class="{ 'is-invalid': bankErrors.name }"
             />
-            <button type="submit" class="btn btn-sm btn-primary">{{ $t("accounts.submit") }}</button>
+            <button type="submit" class="btn btn-sm btn-primary">
+              {{ $t("accounts.submit") }}
+            </button>
             <button
               type="button"
               class="btn btn-sm btn-outline-secondary"
@@ -185,7 +193,9 @@ function errorMessage(error: unknown): string | undefined {
         </template>
         <template v-else>
           <h2 class="h5 mb-0">{{ bank.name }}</h2>
-          <span v-if="bank.closed" class="badge text-bg-secondary">{{ $t("accounts.closed") }}</span>
+          <span v-if="bank.closed" class="badge text-bg-secondary">{{
+            $t("accounts.closed")
+          }}</span>
           <span v-if="bank.deleted" class="badge text-bg-danger">{{ $t("accounts.deleted") }}</span>
           <div class="ms-auto d-flex gap-2">
             <button
@@ -236,7 +246,9 @@ function errorMessage(error: unknown): string | undefined {
                 class="form-control form-control-sm w-auto"
                 :class="{ 'is-invalid': accountErrors.name }"
               />
-              <button type="submit" class="btn btn-sm btn-primary">{{ $t("accounts.submit") }}</button>
+              <button type="submit" class="btn btn-sm btn-primary">
+                {{ $t("accounts.submit") }}
+              </button>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
@@ -287,7 +299,12 @@ function errorMessage(error: unknown): string | undefined {
       </ul>
     </section>
 
-    <CreateAccountForm v-if="showCreateForm" :banks="activeBanks" @created="onAccountCreated" @cancel="showCreateForm = false" />
+    <CreateAccountForm
+      v-if="showCreateForm"
+      :banks="activeBanks"
+      @created="onAccountCreated"
+      @cancel="showCreateForm = false"
+    />
     <button v-else type="button" class="btn btn-primary" @click="showCreateForm = true">
       {{ $t("accounts.addAccount") }}
     </button>

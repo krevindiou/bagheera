@@ -8,7 +8,12 @@ import { useToast } from "../../composables/useToast";
 import type { Account } from "../accounts/accounts.types";
 import { toDisplayAmount } from "./money";
 import { operationSchema, type OperationForm } from "./operations.schemas";
-import { PAYMENT_METHODS, TRANSFER_PAYMENT_METHOD_IDS, type Category, type Operation } from "./operations.types";
+import {
+  PAYMENT_METHODS,
+  TRANSFER_PAYMENT_METHOD_IDS,
+  type Category,
+  type Operation,
+} from "./operations.types";
 
 const props = defineProps<{
   accountId: number;
@@ -70,7 +75,9 @@ const [reconciled, reconciledAttrs] = defineField("reconciled");
 // Type-driven filtering: category and payment-method choices only ever
 // show options matching the selected debit/credit type.
 const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
-const filteredPaymentMethods = computed(() => PAYMENT_METHODS.filter((pm) => pm.type === type.value));
+const filteredPaymentMethods = computed(() =>
+  PAYMENT_METHODS.filter((pm) => pm.type === type.value),
+);
 const transferTargets = computed(() => props.accounts.filter((a) => a.id !== props.accountId));
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
@@ -102,9 +109,7 @@ watch(thirdParty, (value) => {
       params: { query: { q: query, type: type.value } },
     });
     suggestions.value = (data as ThirdPartySuggestion[] | undefined) ?? [];
-    const exact = suggestions.value.find(
-      (s) => s.thirdParty.toLowerCase() === query.toLowerCase(),
-    );
+    const exact = suggestions.value.find((s) => s.thirdParty.toLowerCase() === query.toLowerCase());
     if (exact?.categoryId) {
       categoryId.value = exact.categoryId;
     }
@@ -154,7 +159,9 @@ function errorMessage(error: unknown): string | undefined {
 
 <template>
   <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
-    <h2 class="h5">{{ $t(props.operation ? "operations.editTitle" : "operations.createTitle") }}</h2>
+    <h2 class="h5">
+      {{ $t(props.operation ? "operations.editTitle" : "operations.createTitle") }}
+    </h2>
 
     <div class="mb-3">
       <div class="form-check form-check-inline">
@@ -166,7 +173,9 @@ function errorMessage(error: unknown): string | undefined {
           type="radio"
           value="debit"
         />
-        <label class="form-check-label" for="operation-type-debit">{{ $t("operations.debit") }}</label>
+        <label class="form-check-label" for="operation-type-debit">{{
+          $t("operations.debit")
+        }}</label>
       </div>
       <div class="form-check form-check-inline">
         <input
@@ -177,12 +186,16 @@ function errorMessage(error: unknown): string | undefined {
           type="radio"
           value="credit"
         />
-        <label class="form-check-label" for="operation-type-credit">{{ $t("operations.credit") }}</label>
+        <label class="form-check-label" for="operation-type-credit">{{
+          $t("operations.credit")
+        }}</label>
       </div>
     </div>
 
     <div class="mb-3 position-relative">
-      <label class="form-label" for="operation-third-party">{{ $t("operations.thirdParty") }}</label>
+      <label class="form-label" for="operation-third-party">{{
+        $t("operations.thirdParty")
+      }}</label>
       <input
         id="operation-third-party"
         v-model="thirdParty"
@@ -196,7 +209,9 @@ function errorMessage(error: unknown): string | undefined {
       <datalist id="operation-third-party-suggestions">
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
       </datalist>
-      <div v-if="errors.thirdParty" class="invalid-feedback">{{ $t("auth.validation.required") }}</div>
+      <div v-if="errors.thirdParty" class="invalid-feedback">
+        {{ $t("auth.validation.required") }}
+      </div>
     </div>
 
     <div class="mb-3">
@@ -211,19 +226,28 @@ function errorMessage(error: unknown): string | undefined {
         class="form-control"
         :class="{ 'is-invalid': errors.amount }"
       />
-      <div v-if="errors.amount" class="invalid-feedback">{{ $t("operations.validation.amount") }}</div>
+      <div v-if="errors.amount" class="invalid-feedback">
+        {{ $t("operations.validation.amount") }}
+      </div>
     </div>
 
     <div class="mb-3">
       <label class="form-label" for="operation-category">{{ $t("operations.category") }}</label>
-      <select id="operation-category" v-model="categoryId" v-bind="categoryIdAttrs" class="form-select">
+      <select
+        id="operation-category"
+        v-model="categoryId"
+        v-bind="categoryIdAttrs"
+        class="form-select"
+      >
         <option value="">{{ $t("operations.noCategory") }}</option>
         <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="operation-payment-method">{{ $t("operations.paymentMethod") }}</label>
+      <label class="form-label" for="operation-payment-method">{{
+        $t("operations.paymentMethod")
+      }}</label>
       <select
         id="operation-payment-method"
         v-model="paymentMethodId"
@@ -232,7 +256,9 @@ function errorMessage(error: unknown): string | undefined {
         :class="{ 'is-invalid': errors.paymentMethodId }"
       >
         <option value="">{{ $t("operations.choosePaymentMethod") }}</option>
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
+          {{ pm.name }}
+        </option>
       </select>
       <div v-if="errors.paymentMethodId" class="invalid-feedback">
         {{ $t("auth.validation.required") }}
@@ -271,7 +297,12 @@ function errorMessage(error: unknown): string | undefined {
 
     <div class="mb-3">
       <label class="form-label" for="operation-notes">{{ $t("operations.notes") }}</label>
-      <textarea id="operation-notes" v-model="notes" v-bind="notesAttrs" class="form-control"></textarea>
+      <textarea
+        id="operation-notes"
+        v-model="notes"
+        v-bind="notesAttrs"
+        class="form-control"
+      ></textarea>
     </div>
 
     <div class="mb-3 form-check">
@@ -282,7 +313,9 @@ function errorMessage(error: unknown): string | undefined {
         type="checkbox"
         class="form-check-input"
       />
-      <label class="form-check-label" for="operation-reconciled">{{ $t("operations.reconciled") }}</label>
+      <label class="form-check-label" for="operation-reconciled">{{
+        $t("operations.reconciled")
+      }}</label>
     </div>
 
     <div class="d-flex gap-2">

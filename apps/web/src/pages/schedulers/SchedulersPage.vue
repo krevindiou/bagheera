@@ -40,7 +40,12 @@ async function loadSchedulers(page = 1) {
   const { data } = await apiClient.GET("/schedulers", {
     params: { query: { accountId: accountId.value, page: String(page) } },
   });
-  list.value = (data as SchedulerList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+  list.value = (data as SchedulerList | undefined) ?? {
+    items: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+  };
   selectedIds.value = new Set();
 }
 
@@ -94,7 +99,9 @@ function goToPage(page: number) {
 
 <template>
   <div class="container py-5">
-    <h1>{{ $t("schedulers.title") }}<span v-if="account"> — {{ account.name }}</span></h1>
+    <h1>
+      {{ $t("schedulers.title") }}<span v-if="account"> — {{ account.name }}</span>
+    </h1>
 
     <BatchActions :selected-ids="selectedIdList" @done="loadSchedulers(list.page)" />
 
@@ -133,12 +140,21 @@ function goToPage(page: number) {
             <td>{{ scheduler.thirdParty }}</td>
             <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : "" }}</td>
             <td>{{ paymentMethodName(scheduler.paymentMethodId) }}</td>
-            <td>{{ $t("schedulers.everyN", { count: scheduler.frequencyValue, unit: $t(`schedulers.units.${scheduler.frequencyUnit}`) }) }}</td>
+            <td>
+              {{
+                $t("schedulers.everyN", {
+                  count: scheduler.frequencyValue,
+                  unit: $t(`schedulers.units.${scheduler.frequencyUnit}`),
+                })
+              }}
+            </td>
             <td class="text-end" :class="scheduler.debit ? 'text-danger' : 'text-success'">
               {{ scheduler.debit ? "-" : "+" }}{{ amountLabel(scheduler) }}
             </td>
             <td>
-              <span v-if="scheduler.active" class="badge text-bg-success">{{ $t("schedulers.active") }}</span>
+              <span v-if="scheduler.active" class="badge text-bg-success">{{
+                $t("schedulers.active")
+              }}</span>
               <span v-else class="badge text-bg-secondary">{{ $t("schedulers.paused") }}</span>
             </td>
             <td>

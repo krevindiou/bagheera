@@ -18,9 +18,7 @@ async function fillValidForm(wrapper: ReturnType<typeof mountPage>) {
   await wrapper.find("#register-email").setValue("new@example.com");
   await wrapper.find("#register-country").setValue("FR");
   await wrapper.find("#register-password").setValue("correct-horse");
-  await wrapper
-    .find("#register-password-confirmation")
-    .setValue("correct-horse");
+  await wrapper.find("#register-password-confirmation").setValue("correct-horse");
 }
 
 describe("RegisterPage", () => {
@@ -36,9 +34,7 @@ describe("RegisterPage", () => {
     await wrapper.find("#register-password-confirmation").setValue("different");
     await submitAndSettle(wrapper);
 
-    const messages = wrapper
-      .findAll(".invalid-feedback")
-      .map((el) => el.text());
+    const messages = wrapper.findAll(".invalid-feedback").map((el) => el.text());
     expect(messages).toHaveLength(3);
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
@@ -61,9 +57,7 @@ describe("RegisterPage", () => {
     await wrapper.find("#register-email").setValue("new@example.com");
     await wrapper.find("#register-country").setValue("FR");
     await wrapper.find("#register-password").setValue("correct-horse");
-    await wrapper
-      .find("#register-password-confirmation")
-      .setValue("correct-horse");
+    await wrapper.find("#register-password-confirmation").setValue("correct-horse");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/members/register", {

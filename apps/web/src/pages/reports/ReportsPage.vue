@@ -55,7 +55,9 @@ async function onSaved() {
 
 async function deleteReport(report: Report) {
   if (!(await confirm(t("reports.deleteConfirm", { title: report.title })))) return;
-  const { response } = await apiClient.DELETE("/reports/{id}", { params: { path: { id: report.id } } });
+  const { response } = await apiClient.DELETE("/reports/{id}", {
+    params: { path: { id: report.id } },
+  });
   if (!response.ok) {
     toast(t("reports.genericError"), "error");
     return;
@@ -71,10 +73,18 @@ function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
   const series: SynthesisChartSeries[] = [];
   for (const s of chart.series) {
     if (s.debit.length > 0) {
-      series.push({ label: `${s.currency} ${t("operations.debit")}`, color: CHART_COLORS.debit, points: s.debit });
+      series.push({
+        label: `${s.currency} ${t("operations.debit")}`,
+        color: CHART_COLORS.debit,
+        points: s.debit,
+      });
     }
     if (s.credit.length > 0) {
-      series.push({ label: `${s.currency} ${t("operations.credit")}`, color: CHART_COLORS.credit, points: s.credit });
+      series.push({
+        label: `${s.currency} ${t("operations.credit")}`,
+        color: CHART_COLORS.credit,
+        points: s.credit,
+      });
     }
   }
   return series;
@@ -85,7 +95,9 @@ async function toggleView(report: Report) {
     viewingReportId.value = null;
     return;
   }
-  const { data } = await apiClient.GET("/reports/{id}/chart", { params: { path: { id: report.id } } });
+  const { data } = await apiClient.GET("/reports/{id}/chart", {
+    params: { path: { id: report.id } },
+  });
   const chart = data as ReportChart | undefined;
   if (!chart || chart.hidden) {
     chartSeries.value = [];
@@ -105,19 +117,40 @@ async function toggleView(report: Report) {
     <p v-if="reports.length === 0" class="text-muted">{{ $t("reports.empty") }}</p>
 
     <ul v-else class="list-unstyled">
-      <li v-for="report in reports" :key="report.id" class="border rounded p-3 mb-3" data-testid="report-row">
+      <li
+        v-for="report in reports"
+        :key="report.id"
+        class="border rounded p-3 mb-3"
+        data-testid="report-row"
+      >
         <div class="d-flex align-items-center gap-2">
           <h2 class="h6 mb-0">{{ report.title }}</h2>
           <span class="badge text-bg-secondary">{{ $t(`reports.${report.type}`) }}</span>
-          <span v-if="report.homepage" class="badge text-bg-info">{{ $t("reports.homepage") }}</span>
+          <span v-if="report.homepage" class="badge text-bg-info">{{
+            $t("reports.homepage")
+          }}</span>
           <div class="ms-auto d-flex gap-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleView(report)">
-              {{ viewingReportId === report.id ? $t("reports.hideChart") : $t("reports.viewChart") }}
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              @click="toggleView(report)"
+            >
+              {{
+                viewingReportId === report.id ? $t("reports.hideChart") : $t("reports.viewChart")
+              }}
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" @click="startEdit(report)">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              @click="startEdit(report)"
+            >
               {{ $t("operations.edit") }}
             </button>
-            <button type="button" class="btn btn-sm btn-outline-danger" @click="deleteReport(report)">
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              @click="deleteReport(report)"
+            >
               {{ $t("accounts.delete") }}
             </button>
           </div>

@@ -13,7 +13,8 @@ const { t } = useI18n();
 
 async function batchDelete() {
   if (props.selectedIds.length === 0) return;
-  if (!(await confirm(t("schedulers.batch.deleteConfirm", { count: props.selectedIds.length })))) return;
+  if (!(await confirm(t("schedulers.batch.deleteConfirm", { count: props.selectedIds.length }))))
+    return;
 
   const { response } = await apiClient.POST("/schedulers/batch/delete", {
     body: { ids: props.selectedIds },

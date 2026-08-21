@@ -63,7 +63,11 @@ const [periodGrouping, periodGroupingAttrs] = defineField("periodGrouping");
 // string select since the form's boolean|undefined can't drive a
 // checkbox's two states.
 const reconciledOnly = ref<"" | "true" | "false">(
-  props.report?.reconciledOnly === true ? "true" : props.report?.reconciledOnly === false ? "false" : "",
+  props.report?.reconciledOnly === true
+    ? "true"
+    : props.report?.reconciledOnly === false
+      ? "false"
+      : "",
 );
 
 const onSubmit = handleSubmit(async (submitted) => {
@@ -107,7 +111,11 @@ watch(
   () => props.report,
   () => {
     reconciledOnly.value =
-      props.report?.reconciledOnly === true ? "true" : props.report?.reconciledOnly === false ? "false" : "";
+      props.report?.reconciledOnly === true
+        ? "true"
+        : props.report?.reconciledOnly === false
+          ? "false"
+          : "";
   },
 );
 </script>
@@ -137,7 +145,9 @@ watch(
           type="radio"
           value="average"
         />
-        <label class="form-check-label" for="report-type-average">{{ $t("reports.average") }}</label>
+        <label class="form-check-label" for="report-type-average">{{
+          $t("reports.average")
+        }}</label>
       </div>
     </div>
 
@@ -201,7 +211,13 @@ watch(
 
     <div class="mb-3">
       <label class="form-label" for="report-accounts">{{ $t("reports.accounts") }}</label>
-      <select id="report-accounts" v-model="accountIds" v-bind="accountIdsAttrs" multiple class="form-select">
+      <select
+        id="report-accounts"
+        v-model="accountIds"
+        v-bind="accountIdsAttrs"
+        multiple
+        class="form-select"
+      >
         <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
       <div class="form-text">{{ $t("reports.accountsHint") }}</div>
@@ -217,7 +233,9 @@ watch(
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="report-period-grouping">{{ $t("reports.periodGrouping") }}</label>
+      <label class="form-label" for="report-period-grouping">{{
+        $t("reports.periodGrouping")
+      }}</label>
       <select
         id="report-period-grouping"
         v-model="periodGrouping"

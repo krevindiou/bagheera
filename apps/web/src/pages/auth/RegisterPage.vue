@@ -4,32 +4,26 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { apiClient } from "../../api/client";
 import { rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
-import {
-  getCountryOptions,
-  getDefaultCountry,
-} from "../../composables/useCountryOptions";
+import { getCountryOptions, getDefaultCountry } from "../../composables/useCountryOptions";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { registerSchema, type RegisterForm } from "./auth.schemas";
 
 const countryOptions = getCountryOptions();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetForm } =
-  useForm<RegisterForm>({
-    validationSchema: toTypedSchema(registerSchema),
-    initialValues: {
-      email: "",
-      country: getDefaultCountry(countryOptions),
-      password: "",
-      passwordConfirmation: "",
-    },
-  });
+const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<RegisterForm>({
+  validationSchema: toTypedSchema(registerSchema),
+  initialValues: {
+    email: "",
+    country: getDefaultCountry(countryOptions),
+    password: "",
+    passwordConfirmation: "",
+  },
+});
 const [email, emailAttrs] = defineField("email");
 const [country, countryAttrs] = defineField("country");
 const [password, passwordAttrs] = defineField("password");
-const [passwordConfirmation, passwordConfirmationAttrs] = defineField(
-  "passwordConfirmation",
-);
+const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
 const submitted = ref(false);
 const emailTaken = ref(false);
@@ -66,9 +60,7 @@ const onSubmit = handleSubmit(async (values) => {
 
     <form v-if="!submitted" novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="register-email">{{
-          $t("auth.register.email")
-        }}</label>
+        <label class="form-label" for="register-email">{{ $t("auth.register.email") }}</label>
         <input
           id="register-email"
           v-model="email"
@@ -85,9 +77,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="register-country">{{
-          $t("auth.register.country")
-        }}</label>
+        <label class="form-label" for="register-country">{{ $t("auth.register.country") }}</label>
         <select
           id="register-country"
           v-model="country"
@@ -95,11 +85,7 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-select"
           :class="{ 'is-invalid': errors.country }"
         >
-          <option
-            v-for="option in countryOptions"
-            :key="option.code"
-            :value="option.code"
-          >
+          <option v-for="option in countryOptions" :key="option.code" :value="option.code">
             {{ option.name }}
           </option>
         </select>
@@ -109,9 +95,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="register-password">{{
-          $t("auth.register.password")
-        }}</label>
+        <label class="form-label" for="register-password">{{ $t("auth.register.password") }}</label>
         <PasswordInput
           id="register-password"
           v-model="password"
@@ -139,19 +123,13 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
       </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary w-100"
-        :disabled="isSubmitting"
-      >
+      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t("auth.register.submit") }}
       </button>
     </form>
 
     <div class="mt-3">
-      <router-link :to="{ name: 'sign-in' }">{{
-        $t("auth.register.signInLink")
-      }}</router-link>
+      <router-link :to="{ name: 'sign-in' }">{{ $t("auth.register.signInLink") }}</router-link>
     </div>
   </div>
 </template>

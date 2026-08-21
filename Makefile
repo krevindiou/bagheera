@@ -6,7 +6,7 @@ else
 COMPOSE := docker compose -f docker/compose.yml
 endif
 
-.PHONY: help build up down ps shell-api shell-web migrate test lint
+.PHONY: help build up down ps shell-api shell-web migrate test lint format
 
 help: ## Show this help (ENV=prod for prod stack, default dev)
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -40,3 +40,7 @@ test: ## Run api + web tests
 lint: ## Lint whole repo
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm lint
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm lint
+
+format: ## Format whole repo
+	$(COMPOSE) exec --workdir /app/apps/api api pnpm format
+	$(COMPOSE) exec --workdir /app/apps/web web pnpm format

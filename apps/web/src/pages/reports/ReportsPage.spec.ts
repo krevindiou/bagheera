@@ -37,7 +37,8 @@ describe("ReportsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/reports") return jsonResponse(reports);
       if (path === "/accounts") return jsonResponse([]);
-      if (path === "/reports/{id}/chart") return jsonResponse({ hidden: true, axisBounds: null, series: [] });
+      if (path === "/reports/{id}/chart")
+        return jsonResponse({ hidden: true, axisBounds: null, series: [] });
       return jsonResponse(undefined);
     });
 

@@ -61,9 +61,12 @@ const PAYMENT_METHOD_TYPES: Record<number, "debit" | "credit"> = {
   8: "debit",
 };
 
-export const PAYMENT_METHODS: { id: number; name: string; type: "debit" | "credit" }[] = Object.entries(
-  PAYMENT_METHOD_TYPES,
-).map(([id, type]) => ({ id: Number(id), name: PAYMENT_METHOD_NAMES[Number(id)], type }));
+export const PAYMENT_METHODS: { id: number; name: string; type: "debit" | "credit" }[] =
+  Object.entries(PAYMENT_METHOD_TYPES).map(([id, type]) => ({
+    id: Number(id),
+    name: PAYMENT_METHOD_NAMES[Number(id)],
+    type,
+  }));
 
 // Payment method ids 4 (debit) and 6 (credit) — the only two that can carry
 // a transfer pairing (apps/api/src/operations/transfer.service.ts).

@@ -12,11 +12,10 @@ const session = useSessionStore();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetField } =
-  useForm<ProfileForm>({
-    validationSchema: toTypedSchema(profileSchema),
-    initialValues: { email: session.member?.email ?? "", currentPassword: "" },
-  });
+const { defineField, handleSubmit, errors, isSubmitting, resetField } = useForm<ProfileForm>({
+  validationSchema: toTypedSchema(profileSchema),
+  initialValues: { email: session.member?.email ?? "", currentPassword: "" },
+});
 const [email, emailAttrs] = defineField("email");
 const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
 
@@ -51,9 +50,7 @@ function errorMessage(error: unknown): string | undefined {
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="profile-email">{{
-          $t("settings.profile.email")
-        }}</label>
+        <label class="form-label" for="profile-email">{{ $t("settings.profile.email") }}</label>
         <input
           id="profile-email"
           v-model="email"
@@ -84,11 +81,7 @@ function errorMessage(error: unknown): string | undefined {
         </div>
       </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary w-100"
-        :disabled="isSubmitting"
-      >
+      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t("settings.profile.submit") }}
       </button>
     </form>

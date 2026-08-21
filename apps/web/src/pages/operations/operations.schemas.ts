@@ -12,12 +12,14 @@ export const operationSchema = z
     type: z.enum(["debit", "credit"]),
     thirdParty: z.string().trim().min(1).max(64),
     amount: z.preprocess(
-      (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
+      (value) =>
+        value === "" || value === undefined || value === null ? undefined : Number(value),
       z.number().positive(),
     ),
     categoryId: optionalId,
     paymentMethodId: z.preprocess(
-      (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
+      (value) =>
+        value === "" || value === undefined || value === null ? undefined : Number(value),
       z.number().int().positive(),
     ),
     transferAccountId: optionalId,
@@ -26,7 +28,9 @@ export const operationSchema = z
     reconciled: z.boolean().optional(),
   })
   .refine(
-    (form) => !TRANSFER_PAYMENT_METHOD_IDS.includes(form.paymentMethodId) || Boolean(form.transferAccountId),
+    (form) =>
+      !TRANSFER_PAYMENT_METHOD_IDS.includes(form.paymentMethodId) ||
+      Boolean(form.transferAccountId),
     { message: "transferAccountRequired", path: ["transferAccountId"] },
   );
 export type OperationForm = z.infer<typeof operationSchema>;
