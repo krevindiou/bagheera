@@ -20,6 +20,8 @@ FROM deps AS dev
 # Source comes in via bind mount (see docker/compose.yml); node_modules
 # paths are covered by named volumes there so the bind mount doesn't
 # shadow the deps layer's install.
+RUN chown -R node:node /app
 ENV NODE_ENV=development
+USER node
 EXPOSE 5173
 CMD ["pnpm", "--filter", "web", "dev", "--", "--host", "0.0.0.0"]

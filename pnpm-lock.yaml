@@ -262,6 +262,9 @@ importers:
       openapi-typescript:
         specifier: ^7.13.0
         version: 7.13.0(typescript@6.0.3)
+      prettier:
+        specifier: ^3.9.6
+        version: 3.9.6
       testcontainers:
         specifier: ^12.1.0
         version: 12.1.0(supports-color@10.2.2)
