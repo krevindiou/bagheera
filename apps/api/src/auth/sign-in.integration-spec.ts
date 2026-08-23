@@ -203,26 +203,39 @@ describe('sign-in (integration)', () => {
     );
   });
 
-  it('throttles repeated attempts for the same email', async () => {
+  it('throttles repeated attempts for the same email, indistinguishably from an ordinary wrong-password failure', async () => {
     await createMember({
       email: 'throttled@example.com',
       password: 'correct-horse',
       active: true,
     });
 
-    let lastStatus = 0;
+    let lastResponse: request.Response | undefined;
     for (let i = 0; i < 6; i++) {
       const { token, cookies } = await getCsrfTokenAndCookies();
-      const res = await request(app.getHttpServer())
+      lastResponse = await request(app.getHttpServer())
         .post('/auth/sign-in')
         .set('Cookie', cookies)
         .set('x-csrf-token', token)
         .set('X-Forwarded-Proto', 'https')
         .send({ email: 'throttled@example.com', password: 'wrong-password' });
-      lastStatus = res.status;
     }
 
-    expect(lastStatus).toBe(429);
+    // The throttled attempt must be indistinguishable from an ordinary
+    // wrong-password failure — no 429, no distinct message (spec 7: no
+    // enumeration signal from throttling).
+    const { token, cookies } = await getCsrfTokenAndCookies();
+    const ordinaryFailure = await request(app.getHttpServer())
+      .post('/auth/sign-in')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ email: 'nobody-else@example.com', password: 'whatever123' });
+
+    expect(lastResponse!.status).toBe(401);
+    expect(omitTimestamp(lastResponse!.body)).toEqual(
+      omitTimestamp(ordinaryFailure.body),
+    );
   });
 });
 

@@ -13,7 +13,9 @@ import { TransferService } from './transfer.service';
  * bank/account chain as the single-operation endpoints: an id belonging to
  * another member, or reachable only through a deleted bank/account, is
  * dropped rather than rejected — the caller never learns which of its ids
- * were foreign vs. simply didn't exist.
+ * were foreign vs. simply didn't exist. Ids on a closed bank/account are
+ * dropped too: existing operations on closed accounts are listable only, so
+ * batch delete/reconcile must reject them like any other edit attempt.
  */
 @Injectable()
 export class OperationBatchService {
@@ -41,6 +43,8 @@ export class OperationBatchService {
         memberId: bank.memberId,
         bankDeleted: bank.deleted,
         accountDeleted: account.deleted,
+        bankClosed: bank.closed,
+        accountClosed: account.closed,
       })
       .from(operation)
       .innerJoin(account, eq(operation.accountId, account.id))
@@ -49,7 +53,11 @@ export class OperationBatchService {
     return rows
       .filter(
         (row) =>
-          row.memberId === memberId && !row.bankDeleted && !row.accountDeleted,
+          row.memberId === memberId &&
+          !row.bankDeleted &&
+          !row.accountDeleted &&
+          !row.bankClosed &&
+          !row.accountClosed,
       )
       .map((row) => row.id);
   }

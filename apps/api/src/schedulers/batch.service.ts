@@ -12,7 +12,9 @@ import '../session/session-data';
  * chain as the single-scheduler endpoints: an id belonging to another
  * member, or reachable only through a deleted bank/account, is dropped
  * rather than rejected — the caller never learns which of its ids were
- * foreign vs. simply didn't exist.
+ * foreign vs. simply didn't exist. Ids on a closed bank/account are dropped
+ * too: existing schedulers on closed accounts are listable only, so batch
+ * delete must reject them the same way the single-scheduler `remove()` does.
  */
 @Injectable()
 export class SchedulerBatchService {
@@ -39,6 +41,8 @@ export class SchedulerBatchService {
         memberId: bank.memberId,
         bankDeleted: bank.deleted,
         accountDeleted: account.deleted,
+        bankClosed: bank.closed,
+        accountClosed: account.closed,
       })
       .from(scheduler)
       .innerJoin(account, eq(scheduler.accountId, account.id))
@@ -47,7 +51,11 @@ export class SchedulerBatchService {
     return rows
       .filter(
         (row) =>
-          row.memberId === memberId && !row.bankDeleted && !row.accountDeleted,
+          row.memberId === memberId &&
+          !row.bankDeleted &&
+          !row.accountDeleted &&
+          !row.bankClosed &&
+          !row.accountClosed,
       )
       .map((row) => row.id);
   }

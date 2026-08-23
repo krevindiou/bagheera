@@ -199,7 +199,10 @@ describe('security event audit logging (integration)', () => {
       });
       lastStatus = res.status;
     }
-    expect(lastStatus).toBe(429);
+    // Throttled attempts are rewritten to the same generic 401 an ordinary
+    // wrong-password failure returns (no enumeration signal), but the
+    // throttle is still audited server-side.
+    expect(lastStatus).toBe(401);
 
     const events = await eventsFor('sign_in_throttled');
     expect(events.length).toBeGreaterThanOrEqual(1);
