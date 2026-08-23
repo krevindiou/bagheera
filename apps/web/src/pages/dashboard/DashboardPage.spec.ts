@@ -37,6 +37,7 @@ const emptyDashboard = {
   totalBalances: [],
   lastSalary: null,
   lastBiggestExpense: null,
+  synthesisChart: { hidden: true, axisBounds: null, series: [] },
   accountsOverview: [],
   homepageReports: [],
 };
@@ -94,5 +95,32 @@ describe("DashboardPage", () => {
     const balances = wrapper.findAll('[data-testid="total-balance"]');
     expect(balances[0].classes()).toContain("text-success");
     expect(balances[1].classes()).toContain("text-danger");
+  });
+
+  it("hides the synthesis chart section when the chart has no data", async () => {
+    vi.mocked(apiClient.GET).mockReturnValue(jsonResponse(emptyDashboard));
+
+    const wrapper = await mountPage();
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(false);
+  });
+
+  it("shows the synthesis chart section when the chart has data", async () => {
+    vi.mocked(apiClient.GET).mockReturnValue(
+      jsonResponse({
+        ...emptyDashboard,
+        synthesisChart: {
+          hidden: false,
+          axisBounds: { min: -1, max: 1 },
+          series: [{ currency: "USD", points: [{ period: "2026-08-01", value: 10 }] }],
+        },
+      }),
+    );
+
+    const wrapper = await mountPage();
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(true);
   });
 });

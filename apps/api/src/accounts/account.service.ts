@@ -9,12 +9,12 @@ import {
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
-import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
-import { toMajorUnits, toMinorUnits } from '../common/money';
+import { AxisBounds } from '../common/chart-axis';
+import { toMinorUnits } from '../common/money';
+import { computeSynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
-import { fillPeriodGaps, periodStart } from '../reports/chart/period';
 import '../session/session-data';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -124,8 +124,9 @@ export class AccountService {
     return created;
   }
 
-  // Monthly net (credit − debit) sum, in major units, per period —
-  // powers the account's synthesis chart. Empty (no operations) is
+  // Cumulative end-of-month balance for the last 12 months — the same
+  // synthesis chart shown on the dashboard, scoped to this one account (and
+  // therefore its one currency). Empty (no operations at all, ever) is
   // signalled by an empty `points` array; the chart component hides
   // itself in that case.
   async chart(req: Request, id: number): Promise<AccountChart> {
@@ -145,29 +146,16 @@ export class AccountService {
       return { currency: acc.currency, axisBounds: null, points: [] };
     }
 
-    const byPeriod = new Map<string, number>();
-    for (const row of rows) {
-      const key = periodStart(row.valueDate, 'month');
-      const net = (row.credit ?? 0) - (row.debit ?? 0);
-      byPeriod.set(key, (byPeriod.get(key) ?? 0) + net);
-    }
-
-    const keys = [...byPeriod.keys()].sort();
-    const periods = fillPeriodGaps(keys[0], keys.at(-1)!, 'month');
-
-    let dataMin = Infinity;
-    let dataMax = -Infinity;
-    const points = periods.map((period) => {
-      const value = toMajorUnits(byPeriod.get(period) ?? 0);
-      dataMin = Math.min(dataMin, value);
-      dataMax = Math.max(dataMax, value);
-      return { period, value };
-    });
+    const synthesis = computeSynthesisChart(
+      rows.map((row) => ({ ...row, currency: acc.currency })),
+    );
+    // Exactly one currency in scope, so exactly one series.
+    const series = synthesis.series[0];
 
     return {
       currency: acc.currency,
-      axisBounds: computeAxisBounds(dataMin, dataMax),
-      points,
+      axisBounds: synthesis.axisBounds,
+      points: series.points,
     };
   }
 

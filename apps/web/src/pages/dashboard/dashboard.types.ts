@@ -35,11 +35,28 @@ export interface HomepageReportChart {
   chart: ReportChart;
 }
 
+export interface SynthesisChartPoint {
+  period: string;
+  value: number;
+}
+
+export interface SynthesisChartSeries {
+  currency: string;
+  points: SynthesisChartPoint[];
+}
+
+export interface DashboardSynthesisChart {
+  hidden: boolean;
+  axisBounds: { min: number; max: number } | null;
+  series: SynthesisChartSeries[];
+}
+
 export interface DashboardResponse {
   onboarding: OnboardingTip;
   totalBalances: TotalBalance[];
   lastSalary: DashboardIndicator | null;
   lastBiggestExpense: DashboardIndicator | null;
+  synthesisChart: DashboardSynthesisChart;
   accountsOverview: AccountsOverviewBank[];
   homepageReports: HomepageReportChart[];
 }

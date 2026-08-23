@@ -240,6 +240,7 @@ export default {
     noBalances: "No accounts yet.",
     lastSalary: "Last salary",
     lastBiggestExpense: "Biggest expense last month",
+    synthesisChart: "Balance trend",
     accountsOverview: "Accounts",
     noAccounts: "No active accounts.",
     reportCharts: "Reports",

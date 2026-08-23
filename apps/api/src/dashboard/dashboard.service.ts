@@ -3,6 +3,10 @@ import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMajorUnits } from '../common/money';
+import {
+  computeSynthesisChart,
+  SynthesisChart,
+} from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
 import { ReportChart, ReportChartService } from '../reports/chart.service';
@@ -37,9 +41,16 @@ export interface DashboardResponse {
   totalBalances: TotalBalance[];
   lastSalary: DashboardIndicator | null;
   lastBiggestExpense: DashboardIndicator | null;
+  synthesisChart: SynthesisChart;
   accountsOverview: AccountsOverviewBank[];
   homepageReports: HomepageReportChart[];
 }
+
+const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
+  hidden: true,
+  axisBounds: null,
+  series: [],
+};
 
 function previousCalendarMonthRange(): { start: string; end: string } {
   const now = new Date();
@@ -118,6 +129,7 @@ export class DashboardService {
         totalBalances: [],
         lastSalary: null,
         lastBiggestExpense: null,
+        synthesisChart: EMPTY_SYNTHESIS_CHART,
         accountsOverview: [],
         homepageReports: [],
       };
@@ -160,9 +172,10 @@ export class DashboardService {
       .filter((a) => !a.closed && activeBankIds.has(a.bankId))
       .map((a) => a.id);
 
-    const [lastSalary, lastBiggestExpense] = await Promise.all([
+    const [lastSalary, lastBiggestExpense, synthesisChart] = await Promise.all([
       this.getLastSalary(fullyActiveAccountIds, accounts),
       this.getLastBiggestExpense(fullyActiveAccountIds, accounts),
+      this.getSynthesisChart(accounts),
     ]);
 
     const accountsOverview: AccountsOverviewBank[] = banks
@@ -189,9 +202,46 @@ export class DashboardService {
       totalBalances,
       lastSalary,
       lastBiggestExpense,
+      synthesisChart,
       accountsOverview,
       homepageReports,
     };
+  }
+
+  // Cumulative end-of-month balance, last 12 months, one line per
+  // currency — scoped to the same non-deleted-bank/non-deleted-account set
+  // as `accounts` above (closed included, deleted excluded, per 2.3).
+  private async getSynthesisChart(
+    accounts: (typeof account.$inferSelect)[],
+  ): Promise<SynthesisChart> {
+    if (accounts.length === 0) {
+      return EMPTY_SYNTHESIS_CHART;
+    }
+    const currencyByAccount = new Map(
+      accounts.map((a) => [a.id, a.currency] as const),
+    );
+    const rows = await this.db
+      .select({
+        accountId: operation.accountId,
+        debit: operation.debit,
+        credit: operation.credit,
+        valueDate: operation.valueDate,
+      })
+      .from(operation)
+      .where(
+        inArray(
+          operation.accountId,
+          accounts.map((a) => a.id),
+        ),
+      );
+    return computeSynthesisChart(
+      rows.map((row) => ({
+        debit: row.debit,
+        credit: row.credit,
+        valueDate: row.valueDate,
+        currency: currencyByAccount.get(row.accountId)!,
+      })),
+    );
   }
 
   private async getLastSalary(

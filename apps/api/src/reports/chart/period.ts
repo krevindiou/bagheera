@@ -33,11 +33,21 @@ export function periodStart(date: string, grouping: PeriodGrouping): string {
 // The next period's start date, one step after `key` (itself a period
 // start returned by `periodStart`).
 export function nextPeriodStart(key: string, grouping: PeriodGrouping): string {
+  return addMonths(
+    key,
+    grouping === 'year' ? 12 : grouping === 'quarter' ? 3 : 1,
+  );
+}
+
+// `key` (a month-period start, 'YYYY-MM-01') shifted by `months` steps —
+// negative to go backward. Used to derive the start of a trailing N-month
+// window (e.g. the dashboard/account synthesis chart's last-12-months
+// window), and shared by `nextPeriodStart` for its single-step case.
+export function addMonths(key: string, months: number): string {
   const { year, month } = parseIsoDate(key);
-  const step = grouping === 'year' ? 12 : grouping === 'quarter' ? 3 : 1;
-  const totalMonths = month - 1 + step;
-  const nextYear = year + Math.floor(totalMonths / 12);
-  const nextMonth = (totalMonths % 12) + 1;
+  const totalMonths = year * 12 + (month - 1) + months;
+  const nextYear = Math.floor(totalMonths / 12);
+  const nextMonth = (((totalMonths % 12) + 12) % 12) + 1;
   return formatPeriodStart(nextYear, nextMonth);
 }
 

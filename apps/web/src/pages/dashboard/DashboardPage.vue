@@ -6,7 +6,7 @@ import { apiClient } from "../../api/client";
 import { useSessionStore } from "../../stores/session.store";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { ReportChart } from "../reports/reports.types";
-import type { DashboardResponse } from "./dashboard.types";
+import type { DashboardResponse, DashboardSynthesisChart } from "./dashboard.types";
 
 const router = useRouter();
 const session = useSessionStore();
@@ -15,6 +15,9 @@ const { t } = useI18n();
 const dashboard = ref<DashboardResponse | null>(null);
 
 const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
+// Cycled by currency index — the synthesis chart is one line per currency
+// (not a fixed debit/credit pair), so it needs its own small palette.
+const SYNTHESIS_COLORS = ["#0d6efd", "#6f42c1", "#fd7e14", "#20c997", "#e83e8c", "#6610f2"];
 
 async function load() {
   const { data } = await apiClient.GET("/dashboard");
@@ -50,6 +53,14 @@ function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
     }
   }
   return series;
+}
+
+function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
+  return chart.series.map((s, i) => ({
+    label: s.currency,
+    color: SYNTHESIS_COLORS[i % SYNTHESIS_COLORS.length],
+    points: s.points,
+  }));
 }
 </script>
 
@@ -124,6 +135,14 @@ function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
         </p>
         <p class="text-muted small">{{ dashboard.lastBiggestExpense.valueDate }}</p>
       </div>
+    </section>
+
+    <section v-if="!dashboard.synthesisChart.hidden" class="mb-4" data-testid="synthesis-chart">
+      <h2 class="h5">{{ $t("dashboard.synthesisChart") }}</h2>
+      <SynthesisChart
+        :series="toSynthesisSeries(dashboard.synthesisChart)"
+        :axis-bounds="dashboard.synthesisChart.axisBounds"
+      />
     </section>
 
     <section class="mb-4">

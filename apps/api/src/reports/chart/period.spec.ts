@@ -1,4 +1,9 @@
-import { fillPeriodGaps, nextPeriodStart, periodStart } from './period';
+import {
+  addMonths,
+  fillPeriodGaps,
+  nextPeriodStart,
+  periodStart,
+} from './period';
 
 describe('periodStart', () => {
   it('floors a date to the first of its month', () => {
@@ -28,6 +33,28 @@ describe('nextPeriodStart', () => {
 
   it('steps one year forward', () => {
     expect(nextPeriodStart('2026-01-01', 'year')).toBe('2027-01-01');
+  });
+});
+
+describe('addMonths', () => {
+  it('steps forward within a year', () => {
+    expect(addMonths('2026-03-01', 2)).toBe('2026-05-01');
+  });
+
+  it('steps forward across a year boundary', () => {
+    expect(addMonths('2026-11-01', 3)).toBe('2027-02-01');
+  });
+
+  it('steps backward within a year', () => {
+    expect(addMonths('2026-08-01', -3)).toBe('2026-05-01');
+  });
+
+  it('steps backward across a year boundary', () => {
+    expect(addMonths('2026-02-01', -3)).toBe('2025-11-01');
+  });
+
+  it('is a no-op for zero months', () => {
+    expect(addMonths('2026-06-01', 0)).toBe('2026-06-01');
   });
 });
 

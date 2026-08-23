@@ -437,7 +437,18 @@ describe('accounts (integration)', () => {
     });
   });
 
-  it('aggregates the monthly net sum for an account with operations', async () => {
+  // First-of-month date, `monthsAgo` months before the current month —
+  // dates are built relative to "now" so the test stays valid regardless
+  // of when it runs (the chart's 12-month window is anchored to today).
+  function monthKeyAgo(monthsAgo: number): string {
+    const now = new Date();
+    const d = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsAgo, 1),
+    );
+    return d.toISOString().slice(0, 10);
+  }
+
+  it('computes the cumulative end-of-month balance for the last 12 months', async () => {
     const owner = await createMember('acc10@example.com', 'password1');
     const [ownerBank] = await ctx.db
       .insert(bank)
@@ -448,19 +459,28 @@ describe('accounts (integration)', () => {
       .values({ bankId: ownerBank.id, name: 'Checking', currency: 'USD' })
       .returning();
     await ctx.db.insert(operation).values([
+      // Outside the 12-month window: carried over as the running total's
+      // starting point, not shown as its own point.
+      {
+        accountId: acc.id,
+        paymentMethodId: 7,
+        thirdParty: 'Employer',
+        credit: 300000,
+        valueDate: monthKeyAgo(13),
+      },
       {
         accountId: acc.id,
         paymentMethodId: 1,
         thirdParty: 'Shop',
         debit: 50000,
-        valueDate: '2026-01-15',
+        valueDate: monthKeyAgo(2),
       },
       {
         accountId: acc.id,
         paymentMethodId: 7,
         thirdParty: 'Employer',
         credit: 200000,
-        valueDate: '2026-03-10',
+        valueDate: monthKeyAgo(0),
       },
     ]);
     const { cookies } = await authedRequest('acc10@example.com', 'password1');
@@ -471,12 +491,24 @@ describe('accounts (integration)', () => {
       .set('X-Forwarded-Proto', 'https');
 
     expect(res.status).toBe(200);
-    const body = res.body as { currency: string; points: unknown[] };
+    const body = res.body as {
+      currency: string;
+      points: { period: string; value: number }[];
+    };
     expect(body.currency).toBe('USD');
-    expect(body.points).toEqual([
-      { period: '2026-01-01', value: -5 },
-      { period: '2026-02-01', value: 0 },
-      { period: '2026-03-01', value: 20 },
-    ]);
+    expect(body.points).toHaveLength(12);
+    // Oldest (11 months ago) through the month before the debit: running
+    // total is just the carried-over 30, repeated (no movement).
+    for (let monthsAgo = 11; monthsAgo >= 3; monthsAgo--) {
+      expect(body.points[11 - monthsAgo]).toEqual({
+        period: monthKeyAgo(monthsAgo),
+        value: 30,
+      });
+    }
+    // The debit month and the still-flat month after it: 30 − 5 = 25.
+    expect(body.points[9]).toEqual({ period: monthKeyAgo(2), value: 25 });
+    expect(body.points[10]).toEqual({ period: monthKeyAgo(1), value: 25 });
+    // Current month: 25 + 20 = 45.
+    expect(body.points[11]).toEqual({ period: monthKeyAgo(0), value: 45 });
   });
 });
