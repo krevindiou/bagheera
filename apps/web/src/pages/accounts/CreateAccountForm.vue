@@ -9,7 +9,7 @@ import { createAccountSchema, type CreateAccountForm } from "./accounts.schemas"
 import type { Bank } from "./accounts.types";
 
 const props = defineProps<{ banks: Bank[] }>();
-const emit = defineEmits<{ created: []; cancel: [] }>();
+const emit = defineEmits<{ created: [accountId: number]; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -47,7 +47,7 @@ const onSubmit = handleSubmit(async (values) => {
     toast(t("accounts.bankSaved"), "success");
   }
 
-  const { error, response } = await apiClient.POST("/accounts", {
+  const { data, error, response } = await apiClient.POST("/accounts", {
     body: {
       bankId: resolvedBankId,
       name: values.name,
@@ -61,7 +61,8 @@ const onSubmit = handleSubmit(async (values) => {
   }
 
   toast(t("accounts.accountSaved"), "success");
-  emit("created");
+  const created = data as unknown as { account: { id: number } };
+  emit("created", created.account.id);
 });
 
 function errorMessage(error: unknown): string | undefined {

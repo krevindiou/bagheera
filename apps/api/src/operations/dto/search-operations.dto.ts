@@ -10,6 +10,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  MaxLength,
   Min,
   MinLength,
   ValidateNested,
@@ -38,6 +39,7 @@ export class SearchOperationsDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
+  @MaxLength(64)
   thirdParty?: string;
 
   @IsOptional()
@@ -74,6 +76,7 @@ export class SearchOperationsDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
+  @MaxLength(128)
   notes?: string;
 
   @IsOptional()

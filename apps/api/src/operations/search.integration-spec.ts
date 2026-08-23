@@ -364,6 +364,32 @@ describe('operations search (integration)', () => {
     expect(body.items[0].thirdParty).toBe('Employer Inc');
   });
 
+  it('rejects a third-party criterion over 64 characters and a notes criterion over 128', async () => {
+    const { acc } = await seedFixtures('search6b@example.com');
+    const { token, cookies } = await authedRequest(
+      'search6b@example.com',
+      'password1',
+    );
+
+    const tooLongThirdParty = await request(app.getHttpServer())
+      .post('/operations/search')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ accountId: acc.id, thirdParty: 'x'.repeat(65) });
+    expect(tooLongThirdParty.status).toBe(400);
+
+    const { token: token2, cookies: cookies2 } =
+      await getCsrfTokenAndCookies(cookies);
+    const tooLongNotes = await request(app.getHttpServer())
+      .post('/operations/search')
+      .set('Cookie', cookies2)
+      .set('x-csrf-token', token2)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ accountId: acc.id, notes: 'x'.repeat(129) });
+    expect(tooLongNotes.status).toBe(400);
+  });
+
   it('filters by reconciled tri-state', async () => {
     const { acc } = await seedFixtures('search7@example.com');
     const { token, cookies } = await authedRequest(

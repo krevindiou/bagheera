@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import { useConfirm } from "../../composables/useConfirm";
@@ -13,6 +14,7 @@ import CreateAccountForm from "./CreateAccountForm.vue";
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
 const { t } = useI18n();
+const router = useRouter();
 
 const banks = ref<Bank[]>([]);
 const accounts = ref<Account[]>([]);
@@ -148,9 +150,9 @@ async function deleteAccount(account: Account) {
   await load();
 }
 
-async function onAccountCreated() {
+async function onAccountCreated(accountId: number) {
   showCreateForm.value = false;
-  await load();
+  router.push({ name: "operations", params: { accountId } });
 }
 
 function errorMessage(error: unknown): string | undefined {

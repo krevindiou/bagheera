@@ -47,7 +47,7 @@ export class ChangePasswordService {
 
     const currentOk = await this.hash.verify(row.password, dto.currentPassword);
     if (!currentOk) {
-      throw new BadRequestException('Current password is incorrect.');
+      throw new BadRequestException('Current password is invalid.');
     }
 
     const newHash = await this.hash.hash(dto.newPassword);

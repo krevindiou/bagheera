@@ -30,7 +30,7 @@ export class ResendActivationController {
       req.ip ?? 'unknown',
     );
     return {
-      message: 'A fresh activation link has been sent to your email address.',
+      message: 'A new activation email has been sent.',
     };
   }
 }

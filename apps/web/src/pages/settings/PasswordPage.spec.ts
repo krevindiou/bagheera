@@ -58,7 +58,7 @@ describe("PasswordPage", () => {
   it("shows the API's error message in an error toast when the current password is wrong", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
       response: { ok: false, status: 400 },
-      error: { message: "Current password is incorrect." },
+      error: { message: "Current password is invalid." },
     } as never);
     const wrapper = mountPage();
 
@@ -68,6 +68,6 @@ describe("PasswordPage", () => {
     await submitAndSettle(wrapper);
 
     const toast = useToast().toasts.find((t) => t.variant === "error");
-    expect(toast?.text).toBe("Current password is incorrect.");
+    expect(toast?.text).toBe("Current password is invalid.");
   });
 });

@@ -91,6 +91,10 @@ describe("AccountsPage", () => {
   });
 
   it("creates a new bank via the choice endpoint then the account", async () => {
+    // Spied rather than let it actually resolve: the "operations" route
+    // lazy-loads its component, which outlives this test.
+    const pushSpy = vi.spyOn(router, "push").mockResolvedValue(undefined as never);
+
     vi.mocked(apiClient.GET).mockResolvedValue({ data: [], response: { ok: true } } as never);
     vi.mocked(apiClient.POST).mockImplementation((path: string) => {
       if (path === "/banks/choice") {
@@ -99,7 +103,10 @@ describe("AccountsPage", () => {
           response: { ok: true },
         }) as never;
       }
-      return Promise.resolve({ data: { id: 20 }, response: { ok: true } }) as never;
+      return Promise.resolve({
+        data: { message: "Account saved", account: { id: 20 } },
+        response: { ok: true },
+      }) as never;
     });
 
     const wrapper = mountPage();
@@ -117,5 +124,7 @@ describe("AccountsPage", () => {
     expect(apiClient.POST).toHaveBeenCalledWith("/accounts", {
       body: { bankId: 5, name: "Checking", currency: "USD", initialBalance: undefined },
     });
+    expect(pushSpy).toHaveBeenCalledWith({ name: "operations", params: { accountId: 20 } });
+    pushSpy.mockRestore();
   });
 });

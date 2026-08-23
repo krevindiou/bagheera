@@ -82,7 +82,13 @@ function onClear() {
 
     <div class="mb-3">
       <label class="form-label" for="search-third-party">{{ $t("operations.thirdParty") }}</label>
-      <input id="search-third-party" v-model="thirdParty" type="text" class="form-control" />
+      <input
+        id="search-third-party"
+        v-model="thirdParty"
+        type="text"
+        maxlength="64"
+        class="form-control"
+      />
     </div>
 
     <div class="mb-3">
@@ -161,7 +167,13 @@ function onClear() {
 
     <div class="mb-3">
       <label class="form-label" for="search-notes">{{ $t("operations.notes") }}</label>
-      <input id="search-notes" v-model="notes" type="text" class="form-control" />
+      <input
+        id="search-notes"
+        v-model="notes"
+        type="text"
+        maxlength="128"
+        class="form-control"
+      />
     </div>
 
     <div class="mb-3">
