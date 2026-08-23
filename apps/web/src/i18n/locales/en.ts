@@ -228,10 +228,13 @@ export default {
     viewChart: "View chart",
     hideChart: "Hide chart",
     saved: "Report saved",
-    deleted: "Reports deleted",
     genericError: "Something went wrong. Please try again.",
     empty: "No reports yet.",
-    deleteConfirm: 'Delete the report "{title}"?',
+    batch: {
+      delete: "Delete selected",
+      deleteConfirm: "Delete {count} selected report(s)?",
+      deleted: "Reports deleted",
+    },
   },
   dashboard: {
     title: "Dashboard",

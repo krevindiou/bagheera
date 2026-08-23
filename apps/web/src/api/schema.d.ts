@@ -36,6 +36,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/csrf-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Mint a CSRF token for the current session */
+        get: operations["CsrfTokenController_csrfToken"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/members/register": {
         parameters: {
             query?: never;
@@ -532,6 +549,22 @@ export interface paths {
         patch: operations["ReportController_update"];
         trace?: never;
     };
+    "/reports/batch/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ReportBatchController_delete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/dashboard": {
         parameters: {
             query?: never;
@@ -745,6 +778,23 @@ export interface operations {
         };
     };
     HealthController_check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CsrfTokenController_csrfToken: {
         parameters: {
             query?: never;
             header?: never;
@@ -1591,6 +1641,27 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateReportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ReportBatchController_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchIdsDto"];
             };
         };
         responses: {

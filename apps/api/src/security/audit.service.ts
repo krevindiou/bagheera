@@ -15,7 +15,8 @@ export type SecurityEventType =
   | 'activation_used'
   | 'operation_batch_deleted'
   | 'operation_batch_reconciled'
-  | 'scheduler_batch_deleted';
+  | 'scheduler_batch_deleted'
+  | 'report_batch_deleted';
 
 /**
  * Writes to the security event log — the audit trail behind incident

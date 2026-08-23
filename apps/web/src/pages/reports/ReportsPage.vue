@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
-import { useConfirm } from "../../composables/useConfirm";
-import { useToast } from "../../composables/useToast";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account } from "../accounts/accounts.types";
+import BatchActions from "./batch.vue";
 import ReportForm from "./ReportForm.vue";
 import type { Report, ReportChart } from "./reports.types";
 
-const { confirm } = useConfirm();
-const { push: toast } = useToast();
 const { t } = useI18n();
 
 const reports = ref<Report[]>([]);
@@ -20,12 +17,25 @@ const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<number | null>(null);
 const chartSeries = ref<SynthesisChartSeries[]>([]);
 const chartAxisBounds = ref<{ min: number; max: number } | null>(null);
+const selectedIds = ref<Set<number>>(new Set());
+const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
 
 async function loadReports() {
   const { data } = await apiClient.GET("/reports");
   reports.value = (data as Report[] | undefined) ?? [];
+  selectedIds.value = new Set();
+}
+
+function toggleSelected(id: number) {
+  const next = new Set(selectedIds.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  selectedIds.value = next;
 }
 
 async function loadAccounts() {
@@ -53,17 +63,8 @@ async function onSaved() {
   await loadReports();
 }
 
-async function deleteReport(report: Report) {
-  if (!(await confirm(t("reports.deleteConfirm", { title: report.title })))) return;
-  const { response } = await apiClient.DELETE("/reports/{id}", {
-    params: { path: { id: report.id } },
-  });
-  if (!response.ok) {
-    toast(t("reports.genericError"), "error");
-    return;
-  }
-  if (viewingReportId.value === report.id) viewingReportId.value = null;
-  toast(t("reports.deleted"), "success");
+async function onBatchDeleted() {
+  viewingReportId.value = null;
   await loadReports();
 }
 
@@ -117,52 +118,56 @@ async function toggleView(report: Report) {
 
     <p v-if="reports.length === 0" class="text-muted">{{ $t("reports.empty") }}</p>
 
-    <ul v-else class="list-unstyled">
-      <li
-        v-for="report in reports"
-        :key="report.id"
-        class="border rounded p-3 mb-3"
-        data-testid="report-row"
-      >
-        <div class="d-flex align-items-center gap-2">
-          <h2 class="h6 mb-0">{{ report.title }}</h2>
-          <span class="badge text-bg-secondary">{{ $t(`reports.${report.type}`) }}</span>
-          <span v-if="report.homepage" class="badge text-bg-info">{{
-            $t("reports.homepage")
-          }}</span>
-          <div class="ms-auto d-flex gap-2">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              @click="toggleView(report)"
-            >
-              {{
-                viewingReportId === report.id ? $t("reports.hideChart") : $t("reports.viewChart")
-              }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              @click="startEdit(report)"
-            >
-              {{ $t("operations.edit") }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-danger"
-              @click="deleteReport(report)"
-            >
-              {{ $t("accounts.delete") }}
-            </button>
+    <template v-else>
+      <BatchActions :selected-ids="selectedIdList" @done="onBatchDeleted" />
+
+      <ul class="list-unstyled">
+        <li
+          v-for="report in reports"
+          :key="report.id"
+          class="border rounded p-3 mb-3"
+          :class="{ 'table-active': selectedIds.has(report.id) }"
+          data-testid="report-row"
+        >
+          <div class="d-flex align-items-center gap-2">
+            <input
+              type="checkbox"
+              data-testid="report-checkbox"
+              :checked="selectedIds.has(report.id)"
+              @change="toggleSelected(report.id)"
+            />
+            <h2 class="h6 mb-0">{{ report.title }}</h2>
+            <span class="badge text-bg-secondary">{{ $t(`reports.${report.type}`) }}</span>
+            <span v-if="report.homepage" class="badge text-bg-info">{{
+              $t("reports.homepage")
+            }}</span>
+            <div class="ms-auto d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                @click="toggleView(report)"
+              >
+                {{
+                  viewingReportId === report.id ? $t("reports.hideChart") : $t("reports.viewChart")
+                }}
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                @click="startEdit(report)"
+              >
+                {{ $t("operations.edit") }}
+              </button>
+            </div>
           </div>
-        </div>
-        <SynthesisChart
-          v-if="viewingReportId === report.id"
-          :series="chartSeries"
-          :axis-bounds="chartAxisBounds"
-        />
-      </li>
-    </ul>
+          <SynthesisChart
+            v-if="viewingReportId === report.id"
+            :series="chartSeries"
+            :axis-bounds="chartAxisBounds"
+          />
+        </li>
+      </ul>
+    </template>
 
     <ReportForm
       v-if="showForm"

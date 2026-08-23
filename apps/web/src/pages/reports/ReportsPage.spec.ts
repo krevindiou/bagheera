@@ -73,4 +73,21 @@ describe("ReportsPage", () => {
 
     expect(wrapper.find(".synthesis-chart").exists()).toBe(true);
   });
+
+  it("highlights a report row once its checkbox is checked", async () => {
+    vi.mocked(apiClient.GET).mockImplementation((path: string) => {
+      if (path === "/reports") return jsonResponse(reports);
+      if (path === "/accounts") return jsonResponse([]);
+      return jsonResponse(undefined);
+    });
+
+    const wrapper = mount(ReportsPage, { global: { plugins: [i18n] } });
+    await flushPromises();
+
+    const row = wrapper.get('[data-testid="report-row"]');
+    expect(row.classes()).not.toContain("table-active");
+
+    await row.get('[data-testid="report-checkbox"]').setValue(true);
+    expect(row.classes()).toContain("table-active");
+  });
 });
