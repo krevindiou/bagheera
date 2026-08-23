@@ -188,6 +188,22 @@ describe('security event audit logging (integration)', () => {
     expect(events).toHaveLength(1);
   });
 
+  it('records sign_in_inactive for correct credentials against an inactive member', async () => {
+    const row = await createMember(
+      'inactive-audit@example.com',
+      'correct-horse',
+      false,
+    );
+    const { res } = await postWithCsrf('/auth/sign-in', {
+      email: 'inactive-audit@example.com',
+      password: 'correct-horse',
+    });
+    expect(res.status).toBe(403);
+
+    const events = await eventsFor('sign_in_inactive', row.id);
+    expect(events).toHaveLength(1);
+  });
+
   it('records sign_in_throttled', async () => {
     await createMember('throttle@example.com', 'correct-horse');
 

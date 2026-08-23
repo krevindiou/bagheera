@@ -10,7 +10,7 @@ import {
   IntegrationDb,
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
-import { bank, member } from '../db/schema';
+import { bank, member, securityEvent } from '../db/schema';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -85,6 +85,9 @@ describe('banks (integration)', () => {
   });
 
   beforeEach(async () => {
+    await ctx.db.execute(
+      sql`truncate table ${securityEvent} restart identity cascade`,
+    );
     await ctx.db.execute(sql`truncate table ${bank} restart identity cascade`);
     await ctx.db.execute(
       sql`truncate table ${member} restart identity cascade`,
@@ -307,6 +310,13 @@ describe('banks (integration)', () => {
       .where(sql`${bank.id} = ${active.id}`);
     expect(row.closed).toBe(true);
 
+    const [event] = await ctx.db
+      .select()
+      .from(securityEvent)
+      .where(sql`${securityEvent.eventType} = 'bank_closed'`);
+    expect(event).toBeDefined();
+    expect(event.memberId).toBe(owner.id);
+
     const { token: token2, cookies: cookies2 } =
       await getCsrfTokenAndCookies(cookies);
     const again = await request(app.getHttpServer())
@@ -339,6 +349,13 @@ describe('banks (integration)', () => {
       .from(bank)
       .where(sql`${bank.id} = ${closed.id}`);
     expect(row.deleted).toBe(true);
+
+    const [event] = await ctx.db
+      .select()
+      .from(securityEvent)
+      .where(sql`${securityEvent.eventType} = 'bank_deleted'`);
+    expect(event).toBeDefined();
+    expect(event.memberId).toBe(owner.id);
 
     const { token: token2, cookies: cookies2 } =
       await getCsrfTokenAndCookies(cookies);

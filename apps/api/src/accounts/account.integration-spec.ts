@@ -10,7 +10,7 @@ import {
   IntegrationDb,
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
-import { account, bank, member, operation } from '../db/schema';
+import { account, bank, member, operation, securityEvent } from '../db/schema';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -87,6 +87,9 @@ describe('accounts (integration)', () => {
   });
 
   beforeEach(async () => {
+    await ctx.db.execute(
+      sql`truncate table ${securityEvent} restart identity cascade`,
+    );
     await ctx.db.execute(
       sql`truncate table ${operation} restart identity cascade`,
     );
@@ -325,6 +328,42 @@ describe('accounts (integration)', () => {
     expect(currRes.status).toBe(400);
   });
 
+  it('closes an active account and records an audit event', async () => {
+    const owner = await createMember('acc5-close@example.com', 'password1');
+    const [ownerBank] = await ctx.db
+      .insert(bank)
+      .values({ memberId: owner.id, name: 'Bank Five' })
+      .returning();
+    const [acc] = await ctx.db
+      .insert(account)
+      .values({ bankId: ownerBank.id, name: 'Checking', currency: 'USD' })
+      .returning();
+    const { token, cookies } = await authedRequest(
+      'acc5-close@example.com',
+      'password1',
+    );
+
+    const res = await request(app.getHttpServer())
+      .post(`/accounts/${acc.id}/close`)
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https');
+    expect(res.status).toBe(200);
+
+    const [row] = await ctx.db
+      .select()
+      .from(account)
+      .where(sql`${account.id} = ${acc.id}`);
+    expect(row.closed).toBe(true);
+
+    const [event] = await ctx.db
+      .select()
+      .from(securityEvent)
+      .where(sql`${securityEvent.eventType} = 'account_closed'`);
+    expect(event).toBeDefined();
+    expect(event.memberId).toBe(owner.id);
+  });
+
   it('deletes any non-deleted account whose bank is non-deleted, including a closed one', async () => {
     const owner = await createMember('acc6@example.com', 'password1');
     const [ownerBank] = await ctx.db
@@ -357,6 +396,13 @@ describe('accounts (integration)', () => {
       .from(account)
       .where(sql`${account.id} = ${closedAcc.id}`);
     expect(row.deleted).toBe(true);
+
+    const [event] = await ctx.db
+      .select()
+      .from(securityEvent)
+      .where(sql`${securityEvent.eventType} = 'account_deleted'`);
+    expect(event).toBeDefined();
+    expect(event.memberId).toBe(owner.id);
   });
 
   it('returns not found for an account whose bank is deleted, even for the owner', async () => {

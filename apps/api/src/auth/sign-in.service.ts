@@ -54,6 +54,7 @@ export class SignInService {
     if (!row.active) {
       // Only reachable once the password has already matched, so this
       // doesn't itself leak account existence to an unauthenticated guesser.
+      await this.audit.record('sign_in_inactive', row.id, sourceAddress);
       throw new ForbiddenException('Your account is not activated yet.');
     }
 

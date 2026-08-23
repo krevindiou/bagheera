@@ -12,6 +12,7 @@ import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
+import { AuditService } from '../security/audit.service';
 import '../session/session-data';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
@@ -27,6 +28,7 @@ export class BankService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly transfers: TransferService,
+    private readonly audit: AuditService,
   ) {}
 
   private requireMemberId(req: Request): number {
@@ -98,6 +100,7 @@ export class BankService {
       throw new UnprocessableEntityException('Bank is not active.');
     }
     await this.db.update(bank).set({ closed: true }).where(eq(bank.id, id));
+    await this.audit.record('bank_closed', memberId, req.ip ?? 'unknown');
   }
 
   async remove(req: Request, id: number): Promise<void> {
@@ -112,5 +115,6 @@ export class BankService {
       // accounts convert to the External placeholder, irreversibly.
       await this.transfers.convertBankReferencesToExternal(tx, id);
     });
+    await this.audit.record('bank_deleted', memberId, req.ip ?? 'unknown');
   }
 }

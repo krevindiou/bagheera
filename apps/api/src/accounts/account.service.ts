@@ -15,6 +15,7 @@ import { computeSynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
+import { AuditService } from '../security/audit.service';
 import '../session/session-data';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -39,6 +40,7 @@ export class AccountService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly transfers: TransferService,
+    private readonly audit: AuditService,
   ) {}
 
   private requireMemberId(req: Request): number {
@@ -184,6 +186,7 @@ export class AccountService {
       .update(account)
       .set({ closed: true })
       .where(eq(account.id, id));
+    await this.audit.record('account_closed', memberId, req.ip ?? 'unknown');
   }
 
   async remove(req: Request, id: number): Promise<void> {
@@ -198,5 +201,6 @@ export class AccountService {
       // to the External placeholder, irreversibly, at deletion time.
       await this.transfers.convertAccountReferencesToExternal(tx, id);
     });
+    await this.audit.record('account_deleted', memberId, req.ip ?? 'unknown');
   }
 }

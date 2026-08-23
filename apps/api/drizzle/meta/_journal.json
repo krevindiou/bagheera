@@ -71,6 +71,13 @@
       "when": 1787516503003,
       "tag": "0009_report_batch_event_type",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787517360582,
+      "tag": "0010_bank_account_audit_events",
+      "breakpoints": true
     }
   ]
 }

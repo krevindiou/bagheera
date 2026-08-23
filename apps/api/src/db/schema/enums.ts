@@ -27,6 +27,7 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'sign_in_success',
   'sign_in_failure',
   'sign_in_throttled',
+  'sign_in_inactive',
   'password_recovery_requested',
   'password_recovery_completed',
   'password_changed',
@@ -37,4 +38,8 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'operation_batch_reconciled',
   'scheduler_batch_deleted',
   'report_batch_deleted',
+  'bank_closed',
+  'bank_deleted',
+  'account_closed',
+  'account_deleted',
 ]);
