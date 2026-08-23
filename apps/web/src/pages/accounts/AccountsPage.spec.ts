@@ -87,7 +87,7 @@ describe("AccountsPage", () => {
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).not.toHaveBeenCalled();
-    expect(wrapper.text()).toContain("Choose an existing bank or type a new bank name, not both.");
+    expect(wrapper.text()).toContain("You must select a bank.");
   });
 
   it("creates a new bank via the choice endpoint then the account", async () => {

@@ -63,7 +63,7 @@ const submitEditBank = handleBankSubmit(async (values) => {
     return;
   }
   editingBankId.value = null;
-  toast(t("accounts.bankUpdated"), "success");
+  toast(t("accounts.bankSaved"), "success");
   await load();
 });
 
@@ -76,6 +76,7 @@ async function closeBank(bank: Bank) {
     toast(t("accounts.genericError"), "error");
     return;
   }
+  toast(t("accounts.bankClosed"), "success");
   await load();
 }
 
@@ -86,6 +87,7 @@ async function deleteBank(bank: Bank) {
     toast(t("accounts.genericError"), "error");
     return;
   }
+  toast(t("accounts.bankDeleted"), "success");
   await load();
 }
 
@@ -116,7 +118,7 @@ const submitEditAccount = handleAccountSubmit(async (values) => {
     return;
   }
   editingAccountId.value = null;
-  toast(t("accounts.accountUpdated"), "success");
+  toast(t("accounts.accountSaved"), "success");
   await load();
 });
 
@@ -129,6 +131,7 @@ async function closeAccount(account: Account) {
     toast(t("accounts.genericError"), "error");
     return;
   }
+  toast(t("accounts.accountClosed"), "success");
   await load();
 }
 
@@ -141,6 +144,7 @@ async function deleteAccount(account: Account) {
     toast(t("accounts.genericError"), "error");
     return;
   }
+  toast(t("accounts.accountDeleted"), "success");
   await load();
 }
 

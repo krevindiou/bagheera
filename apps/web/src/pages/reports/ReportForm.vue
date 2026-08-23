@@ -95,7 +95,7 @@ const onSubmit = handleSubmit(async (submitted) => {
     return;
   }
 
-  toast(t(props.report ? "reports.updated" : "reports.created"), "success");
+  toast(t("reports.saved"), "success");
   emit("saved");
 });
 

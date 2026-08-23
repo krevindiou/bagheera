@@ -65,7 +65,7 @@ describe("SignInPage", () => {
     expect(apiClient.POST).toHaveBeenLastCalledWith("/members/resend-activation", {
       body: { email: "inactive@example.com", password: "correct-horse" },
     });
-    expect(wrapper.text()).toContain("A fresh activation link has been sent");
+    expect(wrapper.text()).toContain("A new activation email has been sent.");
   });
 
   it("prefills the email field from the last attempted email", async () => {

@@ -63,6 +63,7 @@ async function deleteReport(report: Report) {
     return;
   }
   if (viewingReportId.value === report.id) viewingReportId.value = null;
+  toast(t("reports.deleted"), "success");
   await loadReports();
 }
 

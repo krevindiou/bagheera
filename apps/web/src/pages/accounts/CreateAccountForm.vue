@@ -44,6 +44,7 @@ const onSubmit = handleSubmit(async (values) => {
       return;
     }
     resolvedBankId = (data as unknown as { id: number }).id;
+    toast(t("accounts.bankSaved"), "success");
   }
 
   const { error, response } = await apiClient.POST("/accounts", {
@@ -59,7 +60,7 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
 
-  toast(t("accounts.accountCreated"), "success");
+  toast(t("accounts.accountSaved"), "success");
   emit("created");
 });
 
