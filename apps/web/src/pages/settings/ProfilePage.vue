@@ -20,7 +20,7 @@ const [email, emailAttrs] = defineField("email");
 const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
 
 const onSubmit = handleSubmit(async (values) => {
-  const { error, response } = await apiClient.POST("/members/profile", {
+  const { data, error, response } = await apiClient.POST("/members/profile", {
     body: values,
   });
 
@@ -32,7 +32,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   session.setMember({ email: values.email });
   resetField("currentPassword");
-  toast(t("settings.profile.success"), "success");
+  toast(data?.message ?? t("settings.profile.success"), "success");
 });
 
 function errorMessage(error: unknown): string | undefined {
