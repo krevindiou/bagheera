@@ -49,6 +49,25 @@ describe("ReportForm", () => {
     );
   });
 
+  it("submits reconciledOnly as true when checked, omitted when unchecked", async () => {
+    vi.mocked(apiClient.POST).mockResolvedValue({
+      data: { message: "Report saved", report: { id: 1 } },
+      response: { ok: true },
+    } as never);
+
+    const wrapper = mountForm();
+    await wrapper.find("#report-title").setValue("Reconciled spend");
+    await wrapper.find("#report-reconciled").setValue(true);
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith(
+      "/reports",
+      expect.objectContaining({
+        body: expect.objectContaining({ reconciledOnly: true }),
+      }),
+    );
+  });
+
   it("prefills from an existing report when editing", () => {
     const wrapper = mount(ReportForm, {
       props: {
@@ -72,6 +91,6 @@ describe("ReportForm", () => {
 
     expect(wrapper.get<HTMLInputElement>("#report-title").element.value).toBe("Existing");
     expect(wrapper.get<HTMLInputElement>("#report-type-average").element.checked).toBe(true);
-    expect(wrapper.get<HTMLSelectElement>("#report-reconciled").element.value).toBe("true");
+    expect(wrapper.get<HTMLInputElement>("#report-reconciled").element.checked).toBe(true);
   });
 });

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -57,18 +56,8 @@ const [valueDateStart, valueDateStartAttrs] = defineField("valueDateStart");
 const [valueDateEnd, valueDateEndAttrs] = defineField("valueDateEnd");
 const [thirdParties, thirdPartiesAttrs] = defineField("thirdParties");
 const [accountIds, accountIdsAttrs] = defineField("accountIds");
+const [reconciledOnly, reconciledOnlyAttrs] = defineField("reconciledOnly");
 const [periodGrouping, periodGroupingAttrs] = defineField("periodGrouping");
-
-// reconciledOnly is a true tri-state (yes/no/either) — bridged through a
-// string select since the form's boolean|undefined can't drive a
-// checkbox's two states.
-const reconciledOnly = ref<"" | "true" | "false">(
-  props.report?.reconciledOnly === true
-    ? "true"
-    : props.report?.reconciledOnly === false
-      ? "false"
-      : "",
-);
 
 const onSubmit = handleSubmit(async (submitted) => {
   const body = {
@@ -79,7 +68,7 @@ const onSubmit = handleSubmit(async (submitted) => {
     valueDateEnd: submitted.valueDateEnd,
     thirdParties: submitted.thirdParties,
     accountIds: submitted.accountIds,
-    reconciledOnly: reconciledOnly.value === "" ? undefined : reconciledOnly.value === "true",
+    reconciledOnly: submitted.reconciledOnly || undefined,
     periodGrouping: submitted.periodGrouping,
   };
 
@@ -107,17 +96,6 @@ function errorMessage(error: unknown): string | undefined {
   return undefined;
 }
 
-watch(
-  () => props.report,
-  () => {
-    reconciledOnly.value =
-      props.report?.reconciledOnly === true
-        ? "true"
-        : props.report?.reconciledOnly === false
-          ? "false"
-          : "";
-  },
-);
 </script>
 
 <template>
@@ -223,13 +201,17 @@ watch(
       <div class="form-text">{{ $t("reports.accountsHint") }}</div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-reconciled">{{ $t("operations.reconciled") }}</label>
-      <select id="report-reconciled" v-model="reconciledOnly" class="form-select">
-        <option value="">{{ $t("operations.search.any") }}</option>
-        <option value="true">{{ $t("operations.search.yes") }}</option>
-        <option value="false">{{ $t("operations.search.no") }}</option>
-      </select>
+    <div class="mb-3 form-check">
+      <input
+        id="report-reconciled"
+        v-model="reconciledOnly"
+        v-bind="reconciledOnlyAttrs"
+        type="checkbox"
+        class="form-check-input"
+      />
+      <label class="form-check-label" for="report-reconciled">{{
+        $t("reports.reconciledOnly")
+      }}</label>
     </div>
 
     <div class="mb-3">
