@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -100,6 +100,35 @@ watch(type, () => {
   paymentMethodId.value = undefined as unknown as number;
 });
 
+interface ThirdPartySuggestion {
+  thirdParty: string;
+  categoryId: number | null;
+}
+
+const suggestions = ref<ThirdPartySuggestion[]>([]);
+let debounceHandle: ReturnType<typeof setTimeout> | undefined;
+
+// Same third-party autocomplete as the operation form (spec 4.15 applies to
+// "operation and scheduler forms").
+watch(thirdParty, (value) => {
+  if (debounceHandle) clearTimeout(debounceHandle);
+  const query = value?.trim() ?? "";
+  if (query.length < 2) {
+    suggestions.value = [];
+    return;
+  }
+  debounceHandle = setTimeout(async () => {
+    const { data } = await apiClient.GET("/operations/autocomplete", {
+      params: { query: { q: query, type: type.value } },
+    });
+    suggestions.value = (data as ThirdPartySuggestion[] | undefined) ?? [];
+    const exact = suggestions.value.find((s) => s.thirdParty.toLowerCase() === query.toLowerCase());
+    if (exact?.categoryId) {
+      categoryId.value = exact.categoryId;
+    }
+  }, 300);
+});
+
 const onSubmit = handleSubmit(async (submitted) => {
   const body = {
     accountId: props.accountId,
@@ -160,6 +189,7 @@ function errorMessage(error: unknown): string | undefined {
           class="form-check-input"
           type="radio"
           value="debit"
+          autofocus
         />
         <label class="form-check-label" for="scheduler-type-debit">{{
           $t("operations.debit")
@@ -180,7 +210,7 @@ function errorMessage(error: unknown): string | undefined {
       </div>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3 position-relative">
       <label class="form-label" for="scheduler-third-party">{{
         $t("operations.thirdParty")
       }}</label>
@@ -189,9 +219,14 @@ function errorMessage(error: unknown): string | undefined {
         v-model="thirdParty"
         v-bind="thirdPartyAttrs"
         type="text"
+        list="scheduler-third-party-suggestions"
+        autocomplete="off"
         class="form-control"
         :class="{ 'is-invalid': errors.thirdParty }"
       />
+      <datalist id="scheduler-third-party-suggestions">
+        <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
+      </datalist>
       <div v-if="errors.thirdParty" class="invalid-feedback">
         {{ $t("auth.validation.required") }}
       </div>

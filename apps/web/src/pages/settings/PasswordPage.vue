@@ -60,6 +60,7 @@ function errorMessage(error: unknown): string | undefined {
         <PasswordInput
           id="password-current"
           v-model="currentPassword"
+          autofocus
           v-bind="currentPasswordAttrs"
           :class="{ 'is-invalid': errors.currentPassword }"
         />

@@ -100,6 +100,7 @@ const onSubmit = handleSubmit(async (values) => {
           type="email"
           inputmode="email"
           autocomplete="username"
+          autofocus
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />

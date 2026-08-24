@@ -5,7 +5,7 @@ import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { toDisplayAmount } from "./money";
-import { PAYMENT_METHOD_NAMES } from "./operations.types";
+import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "./operations.types";
 import type { Category, Operation, OperationList, SearchCriteria } from "./operations.types";
 import OperationForm from "./OperationForm.vue";
 import BatchActions from "./batch.vue";
@@ -138,6 +138,10 @@ function paymentMethodName(id: number): string {
   return PAYMENT_METHOD_NAMES[id] ?? String(id);
 }
 
+function paymentMethodIcon(id: number): string {
+  return PAYMENT_METHOD_ICONS[id] ?? "";
+}
+
 function amountLabel(operation: Operation): string {
   const minorUnits = operation.debit ?? operation.credit ?? 0;
   return toDisplayAmount(minorUnits).toFixed(2);
@@ -187,9 +191,10 @@ function isEditable(operation: Operation): boolean {
 
 <template>
   <div class="container py-5">
-    <h1>
-      {{ $t("operations.title") }}<span v-if="account"> — {{ account.name }}</span>
+    <h1 v-if="account">
+      {{ accountBank?.name }} − {{ account.name }}
     </h1>
+    <h1 v-else>{{ $t("operations.title") }}</h1>
 
     <div v-if="balance" class="d-flex gap-4 mb-3" data-testid="account-balances">
       <span
@@ -248,11 +253,11 @@ function isEditable(operation: Operation): boolean {
           <tr>
             <th></th>
             <th></th>
-            <th>{{ $t("operations.valueDate") }}</th>
             <th>{{ $t("operations.thirdParty") }}</th>
-            <th>{{ $t("operations.category") }}</th>
-            <th>{{ $t("operations.paymentMethod") }}</th>
             <th class="text-end">{{ $t("operations.amount") }}</th>
+            <th>{{ $t("operations.paymentMethod") }}</th>
+            <th>{{ $t("operations.category") }}</th>
+            <th>{{ $t("operations.valueDate") }}</th>
             <th></th>
           </tr>
         </thead>
@@ -284,13 +289,15 @@ function isEditable(operation: Operation): boolean {
                 >🕐</span
               >
             </td>
-            <td>{{ operation.valueDate }}</td>
             <td>{{ operation.thirdParty }}</td>
-            <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : "" }}</td>
-            <td>{{ paymentMethodName(operation.paymentMethodId) }}</td>
             <td class="text-end" :class="operation.debit ? 'text-danger' : 'text-success'">
               {{ operation.debit ? "-" : "+" }}{{ amountLabel(operation) }}
             </td>
+            <td :title="paymentMethodName(operation.paymentMethodId)">
+              {{ paymentMethodIcon(operation.paymentMethodId) }}
+            </td>
+            <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : "" }}</td>
+            <td>{{ operation.valueDate }}</td>
             <td>
               <button
                 v-if="isEditable(operation)"

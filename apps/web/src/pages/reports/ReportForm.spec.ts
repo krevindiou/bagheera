@@ -68,7 +68,12 @@ describe("ReportForm", () => {
     );
   });
 
-  it("prefills from an existing report when editing", () => {
+  it("prefills from an existing report when editing, keeping its type", async () => {
+    vi.mocked(apiClient.PATCH).mockResolvedValue({
+      data: { message: "Report saved", report: { id: 5 } },
+      response: { ok: true },
+    } as never);
+
     const wrapper = mount(ReportForm, {
       props: {
         accounts,
@@ -90,7 +95,38 @@ describe("ReportForm", () => {
     });
 
     expect(wrapper.get<HTMLInputElement>("#report-title").element.value).toBe("Existing");
-    expect(wrapper.get<HTMLInputElement>("#report-type-average").element.checked).toBe(true);
     expect(wrapper.get<HTMLInputElement>("#report-reconciled").element.checked).toBe(true);
+
+    await submitAndSettle(wrapper);
+
+    // Type isn't an editable field on the form (spec 4.13: it's fixed by
+    // which "New … report" button created it) — editing must preserve it.
+    expect(apiClient.PATCH).toHaveBeenCalledWith(
+      "/reports/{id}",
+      expect.objectContaining({
+        body: expect.objectContaining({ type: "average" }),
+      }),
+    );
+  });
+
+  it("defaults a new report's type to the creating button's choice", async () => {
+    vi.mocked(apiClient.POST).mockResolvedValue({
+      data: { message: "Report saved", report: { id: 1 } },
+      response: { ok: true },
+    } as never);
+
+    const wrapper = mount(ReportForm, {
+      props: { accounts, defaultType: "average" },
+      global: { plugins: [i18n] },
+    });
+    await wrapper.find("#report-title").setValue("Avg spend");
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith(
+      "/reports",
+      expect.objectContaining({
+        body: expect.objectContaining({ type: "average" }),
+      }),
+    );
   });
 });

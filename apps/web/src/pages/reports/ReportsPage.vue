@@ -13,6 +13,7 @@ const { t } = useI18n();
 const reports = ref<Report[]>([]);
 const accounts = ref<Account[]>([]);
 const showForm = ref(false);
+const createType = ref<"sum" | "average">("sum");
 const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<number | null>(null);
 const chartSeries = ref<SynthesisChartSeries[]>([]);
@@ -47,7 +48,8 @@ onMounted(async () => {
   await Promise.all([loadReports(), loadAccounts()]);
 });
 
-function startCreate() {
+function startCreate(type: "sum" | "average") {
+  createType.value = type;
   editingReport.value = null;
   showForm.value = true;
 }
@@ -173,11 +175,17 @@ async function toggleView(report: Report) {
       v-if="showForm"
       :accounts="accounts"
       :report="editingReport"
+      :default-type="createType"
       @saved="onSaved"
       @cancel="showForm = false"
     />
-    <button v-else type="button" class="btn btn-primary" @click="startCreate">
-      {{ $t("reports.addReport") }}
-    </button>
+    <div v-else class="d-flex gap-2">
+      <button type="button" class="btn btn-primary" @click="startCreate('sum')">
+        {{ $t("reports.newSumReport") }}
+      </button>
+      <button type="button" class="btn btn-primary" @click="startCreate('average')">
+        {{ $t("reports.newAverageReport") }}
+      </button>
+    </div>
   </div>
 </template>

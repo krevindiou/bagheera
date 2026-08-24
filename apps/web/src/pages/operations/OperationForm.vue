@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -121,7 +121,18 @@ interface ThirdPartySuggestion {
 }
 
 const suggestions = ref<ThirdPartySuggestion[]>([]);
+const amountInput = ref<HTMLInputElement | null>(null);
 let debounceHandle: ReturnType<typeof setTimeout> | undefined;
+
+// Native "change" (not "input") fires when a datalist suggestion is picked,
+// as opposed to every keystroke while typing — spec 4.15: selecting a
+// suggestion moves focus to the next field.
+function onThirdPartyChange() {
+  const isSuggestion = suggestions.value.some((s) => s.thirdParty === thirdParty.value);
+  if (isSuggestion) {
+    nextTick(() => amountInput.value?.focus());
+  }
+}
 
 watch(thirdParty, (value) => {
   if (debounceHandle) clearTimeout(debounceHandle);
@@ -213,6 +224,7 @@ function errorMessage(error: unknown): string | undefined {
           class="form-check-input"
           type="radio"
           value="debit"
+          autofocus
         />
         <label class="form-check-label" for="operation-type-debit">{{
           $t("operations.debit")
@@ -246,6 +258,7 @@ function errorMessage(error: unknown): string | undefined {
         autocomplete="off"
         class="form-control"
         :class="{ 'is-invalid': errors.thirdParty }"
+        @change="onThirdPartyChange"
       />
       <datalist id="operation-third-party-suggestions">
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
@@ -259,6 +272,7 @@ function errorMessage(error: unknown): string | undefined {
       <label class="form-label" for="operation-amount">{{ $t("operations.amount") }}</label>
       <input
         id="operation-amount"
+        ref="amountInput"
         v-model="amount"
         v-bind="amountAttrs"
         type="number"

@@ -5,7 +5,7 @@ test("a due scheduler generates an operation once the member signs back in", asy
   const { email, password } = await registerActivateSignIn(page);
 
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
-  await page.getByRole("button", { name: "Add account" }).click();
+  await page.getByRole("button", { name: "New account" }).click();
   await page.locator("#account-bank-name").fill("First National");
   await page.locator("#account-name").fill("Checking");
   await page.locator("#account-currency").fill("USD");
@@ -16,7 +16,7 @@ test("a due scheduler generates an operation once the member signs back in", asy
   await page.getByRole("link", { name: "Scheduled operations" }).click();
   await expect(page).toHaveURL(/\/schedulers$/);
 
-  await page.getByRole("button", { name: "Add scheduled operation" }).click();
+  await page.getByRole("button", { name: "New scheduler" }).click();
   await page.locator("#scheduler-type-debit").check();
   await page.locator("#scheduler-third-party").fill("Rent");
   await page.locator("#scheduler-amount").fill("900");

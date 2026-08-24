@@ -50,6 +50,21 @@ export const PAYMENT_METHOD_NAMES: Record<number, string> = {
   9: "Initial balance",
 };
 
+// Spec 3.1 display icons: initial balance = gauge, credit card = card,
+// check = list, cash withdrawal/deposit = money, transfer/direct debit =
+// exchange arrows.
+export const PAYMENT_METHOD_ICONS: Record<number, string> = {
+  1: "💳",
+  2: "📋",
+  3: "💵",
+  4: "🔁",
+  5: "📋",
+  6: "🔁",
+  7: "💵",
+  8: "🔁",
+  9: "🎚️",
+};
+
 const PAYMENT_METHOD_TYPES: Record<number, "debit" | "credit"> = {
   1: "debit",
   2: "debit",

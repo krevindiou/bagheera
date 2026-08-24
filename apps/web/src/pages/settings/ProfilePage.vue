@@ -58,6 +58,7 @@ function errorMessage(error: unknown): string | undefined {
           type="email"
           inputmode="email"
           autocomplete="email"
+          autofocus
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />

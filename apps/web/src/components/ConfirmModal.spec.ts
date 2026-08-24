@@ -12,9 +12,10 @@ describe("ConfirmModal", () => {
     const wrapper = mount(ConfirmModal, { global: { plugins: [i18n] } });
     const { confirm } = useConfirm();
 
-    const pending = confirm("Are you sure?");
+    const pending = confirm();
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).toContain("Are you sure?");
+    expect(wrapper.text()).toContain("Confirmation");
+    expect(wrapper.text()).toContain("Do you confirm?");
 
     await wrapper.get(".btn-primary").trigger("click");
     expect(await pending).toBe(true);

@@ -4,7 +4,7 @@ import { registerActivateSignIn } from "../support/auth-helpers";
 // Assumes it's called from the accounts page; leaves the test on the
 // accounts page afterwards too.
 async function createAccount(page: Page, name: string): Promise<void> {
-  await page.getByRole("button", { name: "Add account" }).click();
+  await page.getByRole("button", { name: "New account" }).click();
   const bankField = page.locator("#account-bank-id");
   const banks = await bankField.locator("option").allTextContents();
   if (banks.some((label) => label.includes("First National"))) {
@@ -33,7 +33,7 @@ test("a transfer operation mirrors into the target account and unlinks on delete
 
   await page.getByTestId("account-row").filter({ hasText: "Checking" }).getByRole("link").click();
 
-  await page.getByRole("button", { name: "Add operation" }).click();
+  await page.getByRole("button", { name: "New operation" }).click();
   await page.locator("#operation-type-debit").check();
   await page.locator("#operation-third-party").fill("Savings transfer");
   await page.locator("#operation-amount").fill("20");
@@ -65,7 +65,7 @@ test("a transfer operation mirrors into the target account and unlinks on delete
     .click();
   await sourceRow.locator('input[type="checkbox"]').check();
   await page.getByTestId("batch-delete").click();
-  await page.getByRole("button", { name: "Confirm" }).click();
+  await page.getByRole("button", { name: "Ok" }).click();
   await expect(sourceRow).toHaveCount(0);
 
   await page.getByRole("link", { name: "Bagheera" }).click();

@@ -11,7 +11,7 @@ test("create a bank, an account, then an operation, and see the balance update",
   // so a hard navigation would bounce back to sign-in despite the cookie
   // still being valid.
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
-  await page.getByRole("button", { name: "Add account" }).click();
+  await page.getByRole("button", { name: "New account" }).click();
   await page.locator("#account-bank-name").fill("First National");
   await page.locator("#account-name").fill("Checking");
   await page.locator("#account-currency").fill("USD");
@@ -23,7 +23,7 @@ test("create a bank, an account, then an operation, and see the balance update",
   await accountRow.getByRole("link").click();
   await expect(page).toHaveURL(/\/operations$/);
 
-  await page.getByRole("button", { name: "Add operation" }).click();
+  await page.getByRole("button", { name: "New operation" }).click();
   await page.locator("#operation-type-debit").check();
   await page.locator("#operation-third-party").fill("Grocery Store");
   await page.locator("#operation-amount").fill("25");

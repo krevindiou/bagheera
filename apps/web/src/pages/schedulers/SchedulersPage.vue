@@ -2,9 +2,9 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { apiClient } from "../../api/client";
-import type { Account } from "../accounts/accounts.types";
+import type { Account, Bank } from "../accounts/accounts.types";
 import { toDisplayAmount } from "../operations/money";
-import { PAYMENT_METHOD_NAMES } from "../operations/operations.types";
+import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "../operations/operations.types";
 import type { Category } from "../operations/operations.types";
 import SchedulerForm from "./SchedulerForm.vue";
 import BatchActions from "./batch.vue";
@@ -15,6 +15,7 @@ const accountId = computed(() => Number(route.params.accountId));
 
 const account = ref<Account | null>(null);
 const accounts = ref<Account[]>([]);
+const banks = ref<Bank[]>([]);
 const categories = ref<Category[]>([]);
 const list = ref<SchedulerList>({ items: [], total: 0, page: 1, pageSize: 20 });
 const showForm = ref(false);
@@ -26,10 +27,21 @@ const categoryNames = computed(() => new Map(categories.value.map((c) => [c.id, 
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 async function loadAccounts() {
-  const { data } = await apiClient.GET("/accounts");
-  accounts.value = (data as Account[] | undefined) ?? [];
+  const [accountsResult, banksResult] = await Promise.all([
+    apiClient.GET("/accounts"),
+    apiClient.GET("/banks"),
+  ]);
+  accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
+  banks.value = (banksResult.data as Bank[] | undefined) ?? [];
   account.value = accounts.value.find((a) => a.id === accountId.value) ?? null;
 }
+
+// "Fully active" per spec: neither the account nor its bank is closed or
+// deleted (mirrors apps/web/src/pages/operations/OperationsPage.vue).
+const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
+const isAccountFullyActive = computed(
+  () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
+);
 
 async function loadCategories() {
   const { data } = await apiClient.GET("/reference-data/categories");
@@ -58,6 +70,10 @@ watch(accountId, loadAll);
 
 function paymentMethodName(id: number): string {
   return PAYMENT_METHOD_NAMES[id] ?? String(id);
+}
+
+function paymentMethodIcon(id: number): string {
+  return PAYMENT_METHOD_ICONS[id] ?? "";
 }
 
 function amountLabel(scheduler: Scheduler): string {
@@ -112,13 +128,13 @@ function goToPage(page: number) {
         <thead>
           <tr>
             <th></th>
-            <th>{{ $t("schedulers.firstOccurrence") }}</th>
+            <th></th>
             <th>{{ $t("operations.thirdParty") }}</th>
-            <th>{{ $t("operations.category") }}</th>
-            <th>{{ $t("operations.paymentMethod") }}</th>
-            <th>{{ $t("schedulers.frequencyUnit") }}</th>
             <th class="text-end">{{ $t("operations.amount") }}</th>
-            <th>{{ $t("schedulers.active") }}</th>
+            <th>{{ $t("operations.paymentMethod") }}</th>
+            <th>{{ $t("operations.category") }}</th>
+            <th class="text-end">{{ $t("schedulers.every") }}</th>
+            <th>{{ $t("schedulers.frequencyUnit") }}</th>
             <th></th>
           </tr>
         </thead>
@@ -136,27 +152,22 @@ function goToPage(page: number) {
                 @change="toggleSelected(scheduler.id)"
               />
             </td>
-            <td>{{ scheduler.valueDate }}</td>
-            <td>{{ scheduler.thirdParty }}</td>
-            <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : "" }}</td>
-            <td>{{ paymentMethodName(scheduler.paymentMethodId) }}</td>
             <td>
-              {{
-                $t("schedulers.everyN", {
-                  count: scheduler.frequencyValue,
-                  unit: $t(`schedulers.units.${scheduler.frequencyUnit}`),
-                })
-              }}
+              <span
+                :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')"
+                >{{ scheduler.active ? "▶" : "⏸" }}</span
+              >
             </td>
+            <td>{{ scheduler.thirdParty }}</td>
             <td class="text-end" :class="scheduler.debit ? 'text-danger' : 'text-success'">
               {{ scheduler.debit ? "-" : "+" }}{{ amountLabel(scheduler) }}
             </td>
-            <td>
-              <span v-if="scheduler.active" class="badge text-bg-success">{{
-                $t("schedulers.active")
-              }}</span>
-              <span v-else class="badge text-bg-secondary">{{ $t("schedulers.paused") }}</span>
+            <td :title="paymentMethodName(scheduler.paymentMethodId)">
+              {{ paymentMethodIcon(scheduler.paymentMethodId) }}
             </td>
+            <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : "" }}</td>
+            <td class="text-end">{{ scheduler.frequencyValue }}</td>
+            <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
             <td>
               <button
                 type="button"
@@ -200,7 +211,12 @@ function goToPage(page: number) {
       @saved="onSaved"
       @cancel="showForm = false"
     />
-    <button v-else type="button" class="btn btn-primary mt-3" @click="startCreate">
+    <button
+      v-else-if="isAccountFullyActive"
+      type="button"
+      class="btn btn-primary mt-3"
+      @click="startCreate"
+    >
       {{ $t("schedulers.addScheduler") }}
     </button>
   </div>

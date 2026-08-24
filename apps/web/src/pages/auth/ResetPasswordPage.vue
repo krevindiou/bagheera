@@ -2,13 +2,14 @@
 import { ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { resetPasswordSchema, type ResetPasswordForm } from "./auth.schemas";
 
 const route = useRoute();
+const router = useRouter();
 
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<ResetPasswordForm>({
   validationSchema: toTypedSchema(resetPasswordSchema),
@@ -18,22 +19,24 @@ const [password, passwordAttrs] = defineField("password");
 const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
 const submitted = ref(false);
-const invalidKey = ref(false);
+
+// Spec 4.4: a rejected key (missing, invalid, expired, already used) is a
+// silent return to sign-in — no visible error, so the visitor never learns
+// which case applies.
+const key = route.query.key;
+if (typeof key !== "string" || key.length === 0) {
+  router.replace({ name: "sign-in" });
+}
 
 const onSubmit = handleSubmit(async (values) => {
-  invalidKey.value = false;
-  const key = route.query.key;
-  if (typeof key !== "string" || key.length === 0) {
-    invalidKey.value = true;
-    return;
-  }
+  if (typeof key !== "string" || key.length === 0) return;
 
   const { response } = await apiClient.POST("/auth/password-recovery/reset", {
     body: { key, ...values },
   });
 
   if (!response.ok) {
-    invalidKey.value = true;
+    router.replace({ name: "sign-in" });
     return;
   }
 
@@ -49,10 +52,6 @@ const onSubmit = handleSubmit(async (values) => {
       {{ $t("auth.resetPassword.success") }}
     </div>
 
-    <div v-if="invalidKey" class="alert alert-danger" role="alert">
-      {{ $t("auth.resetPassword.invalidKey") }}
-    </div>
-
     <form v-if="!submitted" novalidate @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="reset-password-password">{{
@@ -61,6 +60,7 @@ const onSubmit = handleSubmit(async (values) => {
         <PasswordInput
           id="reset-password-password"
           v-model="password"
+          autofocus
           v-bind="passwordAttrs"
           :class="{ 'is-invalid': errors.password }"
         />

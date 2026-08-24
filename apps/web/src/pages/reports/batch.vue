@@ -13,7 +13,7 @@ const { t } = useI18n();
 
 async function batchDelete() {
   if (props.selectedIds.length === 0) return;
-  if (!(await confirm(t("reports.batch.deleteConfirm", { count: props.selectedIds.length }))))
+  if (!(await confirm()))
     return;
 
   const { response } = await apiClient.POST("/reports/batch/delete", {

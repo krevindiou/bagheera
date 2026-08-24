@@ -70,7 +70,7 @@ const submitEditBank = handleBankSubmit(async (values) => {
 });
 
 async function closeBank(bank: Bank) {
-  if (!(await confirm(t("accounts.closeBankConfirm", { name: bank.name })))) return;
+  if (!(await confirm())) return;
   const { response } = await apiClient.POST("/banks/{id}/close", {
     params: { path: { id: bank.id } },
   });
@@ -83,7 +83,7 @@ async function closeBank(bank: Bank) {
 }
 
 async function deleteBank(bank: Bank) {
-  if (!(await confirm(t("accounts.deleteBankConfirm", { name: bank.name })))) return;
+  if (!(await confirm())) return;
   const { response } = await apiClient.DELETE("/banks/{id}", { params: { path: { id: bank.id } } });
   if (!response.ok) {
     toast(t("accounts.genericError"), "error");
@@ -125,7 +125,7 @@ const submitEditAccount = handleAccountSubmit(async (values) => {
 });
 
 async function closeAccount(account: Account) {
-  if (!(await confirm(t("accounts.closeAccountConfirm", { name: account.name })))) return;
+  if (!(await confirm())) return;
   const { response } = await apiClient.POST("/accounts/{id}/close", {
     params: { path: { id: account.id } },
   });
@@ -138,7 +138,7 @@ async function closeAccount(account: Account) {
 }
 
 async function deleteAccount(account: Account) {
-  if (!(await confirm(t("accounts.deleteAccountConfirm", { name: account.name })))) return;
+  if (!(await confirm())) return;
   const { response } = await apiClient.DELETE("/accounts/{id}", {
     params: { path: { id: account.id } },
   });
@@ -182,6 +182,7 @@ function errorMessage(error: unknown): string | undefined {
               v-model="editBankName"
               v-bind="editBankNameAttrs"
               type="text"
+              autofocus
               class="form-control form-control-sm w-auto"
               :class="{ 'is-invalid': bankErrors.name }"
             />
@@ -232,7 +233,10 @@ function errorMessage(error: unknown): string | undefined {
         </template>
       </div>
 
-      <ul class="list-unstyled ms-3 mt-2">
+      <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-3 mt-2 mb-0">
+        {{ $t("accounts.noAccountsForBank") }}
+      </p>
+      <ul v-else class="list-unstyled ms-3 mt-2">
         <li
           v-for="account in accountsForBank(bank.id)"
           :key="account.id"
@@ -249,6 +253,7 @@ function errorMessage(error: unknown): string | undefined {
                 v-model="editAccountName"
                 v-bind="editAccountNameAttrs"
                 type="text"
+                autofocus
                 class="form-control form-control-sm w-auto"
                 :class="{ 'is-invalid': accountErrors.name }"
               />

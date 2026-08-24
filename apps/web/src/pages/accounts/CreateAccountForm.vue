@@ -84,6 +84,7 @@ function errorMessage(error: unknown): string | undefined {
         id="account-bank-id"
         v-model="bankId"
         v-bind="bankIdAttrs"
+        autofocus
         class="form-select"
         :class="{ 'is-invalid': errors.bankId }"
       >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { PAYMENT_METHODS } from "./operations.types";
 import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
 
@@ -22,6 +22,14 @@ const reconciled = ref<"" | "true" | "false">("");
 
 const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", "eq"];
 
+// Spec 2.7: selecting the type rebuilds the category/payment-method choices
+// to show only entries of that type (previous selection preserved when
+// still valid).
+const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
+const filteredPaymentMethods = computed(() =>
+  PAYMENT_METHODS.filter((pm) => pm.type === type.value),
+);
+
 function buildCriteria(): SearchCriteria {
   const amountComparators: SearchCriteria["amountComparators"] = [];
   if (amountOperator1.value && amountValue1.value !== undefined) {
@@ -42,6 +50,15 @@ function buildCriteria(): SearchCriteria {
     reconciled: reconciled.value === "" ? undefined : reconciled.value === "true",
   };
 }
+
+watch(type, () => {
+  categoryIds.value = categoryIds.value.filter((id) =>
+    filteredCategories.value.some((c) => c.id === id),
+  );
+  paymentMethodIds.value = paymentMethodIds.value.filter((id) =>
+    filteredPaymentMethods.value.some((pm) => pm.id === id),
+  );
+});
 
 function onSubmit() {
   emit("submit", buildCriteria());
@@ -81,6 +98,7 @@ function onClear() {
           class="form-check-input"
           type="radio"
           value="debit"
+          autofocus
         />
         <label class="form-check-label" for="search-type-debit">{{ $t("operations.debit") }}</label>
       </div>
@@ -112,7 +130,7 @@ function onClear() {
     <div class="mb-3">
       <label class="form-label" for="search-categories">{{ $t("operations.category") }}</label>
       <select id="search-categories" v-model="categoryIds" multiple class="form-select">
-        <option v-for="c in props.categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
     </div>
 
@@ -121,7 +139,7 @@ function onClear() {
         $t("operations.paymentMethod")
       }}</label>
       <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
-        <option v-for="pm in PAYMENT_METHODS" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
       </select>
     </div>
 

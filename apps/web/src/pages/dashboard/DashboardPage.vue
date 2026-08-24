@@ -101,87 +101,89 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
       <router-link :to="{ name: 'accounts' }">{{ $t("dashboard.onboardingCta") }}</router-link>
     </div>
 
-    <section class="mb-4">
-      <h2 class="h5">{{ $t("dashboard.totalBalances") }}</h2>
-      <p v-if="dashboard.totalBalances.length === 0" class="text-muted">
-        {{ $t("dashboard.noBalances") }}
-      </p>
-      <ul v-else class="list-unstyled d-flex flex-wrap gap-3">
-        <li
-          v-for="balance in dashboard.totalBalances"
-          :key="balance.currency"
-          data-testid="total-balance"
-          class="fs-4"
-          :class="balance.amount >= 0 ? 'text-success' : 'text-danger'"
-        >
-          {{ balance.amount.toFixed(2) }} {{ balance.currency }}
-        </li>
-      </ul>
-    </section>
-
-    <section class="mb-4 d-flex gap-4">
-      <div v-if="dashboard.lastSalary" data-testid="last-salary">
-        <h2 class="h6">{{ $t("dashboard.lastSalary") }}</h2>
-        <p class="text-success fs-5 mb-0">
-          {{ dashboard.lastSalary.amount.toFixed(2) }} {{ dashboard.lastSalary.currency }}
+    <template v-if="dashboard.onboarding !== 'no-bank'">
+      <section class="mb-4">
+        <h2 class="h5">{{ $t("dashboard.totalBalances") }}</h2>
+        <p v-if="dashboard.totalBalances.length === 0" class="text-muted">
+          {{ $t("dashboard.noBalances") }}
         </p>
-        <p class="text-muted small">{{ dashboard.lastSalary.valueDate }}</p>
-      </div>
-      <div v-if="dashboard.lastBiggestExpense" data-testid="last-biggest-expense">
-        <h2 class="h6">{{ $t("dashboard.lastBiggestExpense") }}</h2>
-        <p class="text-danger fs-5 mb-0">
-          {{ dashboard.lastBiggestExpense.amount.toFixed(2) }}
-          {{ dashboard.lastBiggestExpense.currency }}
-        </p>
-        <p class="text-muted small">{{ dashboard.lastBiggestExpense.valueDate }}</p>
-      </div>
-    </section>
-
-    <section v-if="!dashboard.synthesisChart.hidden" class="mb-4" data-testid="synthesis-chart">
-      <h2 class="h5">{{ $t("dashboard.synthesisChart") }}</h2>
-      <SynthesisChart
-        :series="toSynthesisSeries(dashboard.synthesisChart)"
-        :axis-bounds="dashboard.synthesisChart.axisBounds"
-      />
-    </section>
-
-    <section class="mb-4">
-      <h2 class="h5">{{ $t("dashboard.accountsOverview") }}</h2>
-      <p v-if="dashboard.accountsOverview.length === 0" class="text-muted">
-        {{ $t("dashboard.noAccounts") }}
-      </p>
-      <div
-        v-for="bank in dashboard.accountsOverview"
-        :key="bank.id"
-        class="mb-3"
-        data-testid="overview-bank"
-      >
-        <h3 class="h6">{{ bank.name }}</h3>
-        <ul class="list-unstyled ms-3">
-          <li v-for="account in bank.accounts" :key="account.id" data-testid="overview-account">
-            <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
-              {{ account.name }}
-            </router-link>
-            — {{ account.balance.toFixed(2) }} {{ account.currency }}
+        <ul v-else class="list-unstyled d-flex flex-wrap gap-3">
+          <li
+            v-for="balance in dashboard.totalBalances"
+            :key="balance.currency"
+            data-testid="total-balance"
+            class="fs-4"
+            :class="balance.amount >= 0 ? 'text-success' : 'text-danger'"
+          >
+            {{ balance.amount.toFixed(2) }} {{ balance.currency }}
           </li>
         </ul>
-      </div>
-    </section>
+      </section>
 
-    <section v-if="dashboard.homepageReports.length > 0">
-      <h2 class="h5">{{ $t("dashboard.reportCharts") }}</h2>
-      <div
-        v-for="entry in dashboard.homepageReports"
-        :key="entry.id"
-        class="mb-4"
-        data-testid="homepage-report"
-      >
-        <h3 class="h6">{{ entry.title }}</h3>
+      <section class="mb-4 d-flex gap-4">
+        <div v-if="dashboard.lastSalary" data-testid="last-salary">
+          <h2 class="h6">{{ $t("dashboard.lastSalary") }}</h2>
+          <p class="text-success fs-5 mb-0">
+            {{ dashboard.lastSalary.amount.toFixed(2) }} {{ dashboard.lastSalary.currency }}
+          </p>
+          <p class="text-muted small">{{ dashboard.lastSalary.valueDate }}</p>
+        </div>
+        <div v-if="dashboard.lastBiggestExpense" data-testid="last-biggest-expense">
+          <h2 class="h6">{{ $t("dashboard.lastBiggestExpense") }}</h2>
+          <p class="text-danger fs-5 mb-0">
+            {{ dashboard.lastBiggestExpense.amount.toFixed(2) }}
+            {{ dashboard.lastBiggestExpense.currency }}
+          </p>
+          <p class="text-muted small">{{ dashboard.lastBiggestExpense.valueDate }}</p>
+        </div>
+      </section>
+
+      <section v-if="!dashboard.synthesisChart.hidden" class="mb-4" data-testid="synthesis-chart">
+        <h2 class="h5">{{ $t("dashboard.synthesisChart") }}</h2>
         <SynthesisChart
-          :series="toChartSeries(entry.chart)"
-          :axis-bounds="entry.chart.axisBounds"
+          :series="toSynthesisSeries(dashboard.synthesisChart)"
+          :axis-bounds="dashboard.synthesisChart.axisBounds"
         />
-      </div>
-    </section>
+      </section>
+
+      <section class="mb-4">
+        <h2 class="h5">{{ $t("dashboard.accountsOverview") }}</h2>
+        <p v-if="dashboard.accountsOverview.length === 0" class="text-muted">
+          {{ $t("dashboard.noAccounts") }}
+        </p>
+        <div
+          v-for="bank in dashboard.accountsOverview"
+          :key="bank.id"
+          class="mb-3"
+          data-testid="overview-bank"
+        >
+          <h3 class="h6">{{ bank.name }}</h3>
+          <ul class="list-unstyled ms-3">
+            <li v-for="account in bank.accounts" :key="account.id" data-testid="overview-account">
+              <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
+                {{ account.name }}
+              </router-link>
+              — {{ account.balance.toFixed(2) }} {{ account.currency }}
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section v-if="dashboard.homepageReports.length > 0">
+        <h2 class="h5">{{ $t("dashboard.reportCharts") }}</h2>
+        <div
+          v-for="entry in dashboard.homepageReports"
+          :key="entry.id"
+          class="mb-4"
+          data-testid="homepage-report"
+        >
+          <h3 class="h6">{{ entry.title }}</h3>
+          <SynthesisChart
+            :series="toChartSeries(entry.chart)"
+            :axis-bounds="entry.chart.axisBounds"
+          />
+        </div>
+      </section>
+    </template>
   </div>
 </template>

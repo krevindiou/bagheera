@@ -11,6 +11,7 @@ import type { Report } from "./reports.types";
 const props = defineProps<{
   accounts: Account[];
   report?: Report | null;
+  defaultType?: "sum" | "average";
 }>();
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
@@ -21,7 +22,7 @@ function initialValues(): ReportForm {
   const r = props.report;
   if (!r) {
     return {
-      type: "sum",
+      type: props.defaultType ?? "sum",
       title: "",
       homepage: false,
       valueDateStart: undefined,
@@ -49,7 +50,6 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<ReportForm>(
   validationSchema: toTypedSchema(reportSchema),
   initialValues: initialValues(),
 });
-const [type, typeAttrs] = defineField("type");
 const [title, titleAttrs] = defineField("title");
 const [homepage, homepageAttrs] = defineField("homepage");
 const [valueDateStart, valueDateStartAttrs] = defineField("valueDateStart");
@@ -103,39 +103,13 @@ function errorMessage(error: unknown): string | undefined {
     <h2 class="h5">{{ $t(props.report ? "reports.editTitle" : "reports.createTitle") }}</h2>
 
     <div class="mb-3">
-      <div class="form-check form-check-inline">
-        <input
-          id="report-type-sum"
-          v-model="type"
-          v-bind="typeAttrs"
-          class="form-check-input"
-          type="radio"
-          value="sum"
-        />
-        <label class="form-check-label" for="report-type-sum">{{ $t("reports.sum") }}</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input
-          id="report-type-average"
-          v-model="type"
-          v-bind="typeAttrs"
-          class="form-check-input"
-          type="radio"
-          value="average"
-        />
-        <label class="form-check-label" for="report-type-average">{{
-          $t("reports.average")
-        }}</label>
-      </div>
-    </div>
-
-    <div class="mb-3">
       <label class="form-label" for="report-title">{{ $t("reports.reportTitle") }}</label>
       <input
         id="report-title"
         v-model="title"
         v-bind="titleAttrs"
         type="text"
+        autofocus
         class="form-control"
         :class="{ 'is-invalid': errors.title }"
       />
