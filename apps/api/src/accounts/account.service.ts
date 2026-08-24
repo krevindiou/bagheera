@@ -6,11 +6,11 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds } from '../common/chart-axis';
-import { toMinorUnits } from '../common/money';
+import { toMajorUnits, toMinorUnits } from '../common/money';
 import { computeSynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
@@ -158,6 +158,34 @@ export class AccountService {
       currency: acc.currency,
       axisBounds: synthesis.axisBounds,
       points: series.points,
+    };
+  }
+
+  // Balance: sum of credits minus sum of debits over all the account's
+  // operations. Reconciled balance: same computation restricted to
+  // reconciled operations.
+  async balance(
+    req: Request,
+    id: number,
+  ): Promise<{ balance: number; reconciledBalance: number }> {
+    const memberId = this.requireMemberId(req);
+    await this.findOwned(id, memberId);
+
+    const [row] = await this.db
+      .select({
+        credit: sql<string>`coalesce(sum(${operation.credit}), 0)`,
+        debit: sql<string>`coalesce(sum(${operation.debit}), 0)`,
+        reconciledCredit: sql<string>`coalesce(sum(${operation.credit}) filter (where ${operation.reconciled}), 0)`,
+        reconciledDebit: sql<string>`coalesce(sum(${operation.debit}) filter (where ${operation.reconciled}), 0)`,
+      })
+      .from(operation)
+      .where(eq(operation.accountId, id));
+
+    return {
+      balance: toMajorUnits(Number(row.credit) - Number(row.debit)),
+      reconciledBalance: toMajorUnits(
+        Number(row.reconciledCredit) - Number(row.reconciledDebit),
+      ),
     };
   }
 

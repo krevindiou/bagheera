@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
-import type { Account } from "../accounts/accounts.types";
+import type { Account, Bank } from "../accounts/accounts.types";
 import { toDisplayAmount } from "./money";
 import { PAYMENT_METHOD_NAMES } from "./operations.types";
 import type { Category, Operation, OperationList, SearchCriteria } from "./operations.types";
@@ -16,23 +16,45 @@ const accountId = computed(() => Number(route.params.accountId));
 
 const account = ref<Account | null>(null);
 const accounts = ref<Account[]>([]);
+const banks = ref<Bank[]>([]);
 const categories = ref<Category[]>([]);
 const list = ref<OperationList>({ items: [], total: 0, page: 1, pageSize: 20 });
 const chartSeries = ref<SynthesisChartSeries[]>([]);
 const chartAxisBounds = ref<{ min: number; max: number } | null>(null);
+const balance = ref<{ balance: number; reconciledBalance: number } | null>(null);
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
 const showSearch = ref(false);
+const hasActiveSearch = ref(false);
 
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
 const categoryNames = computed(() => new Map(categories.value.map((c) => [c.id, c.name])));
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
+// "Fully active" per spec: neither the account nor its bank is closed or
+// deleted. Deleted accounts are unreachable (routing/loadAccounts already
+// exclude them), so only the closed flags matter here.
+const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
+const isAccountFullyActive = computed(
+  () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
+);
+
 async function loadAccounts() {
-  const { data } = await apiClient.GET("/accounts");
-  accounts.value = (data as Account[] | undefined) ?? [];
+  const [accountsResult, banksResult] = await Promise.all([
+    apiClient.GET("/accounts"),
+    apiClient.GET("/banks"),
+  ]);
+  accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
+  banks.value = (banksResult.data as Bank[] | undefined) ?? [];
   account.value = accounts.value.find((a) => a.id === accountId.value) ?? null;
+}
+
+async function loadBalance() {
+  const { data } = await apiClient.GET("/accounts/{id}/balance", {
+    params: { path: { id: accountId.value } },
+  });
+  balance.value = (data as { balance: number; reconciledBalance: number } | undefined) ?? null;
 }
 
 async function loadCategories() {
@@ -68,12 +90,14 @@ async function runSearch(criteria: SearchCriteria) {
     pageSize: 20,
   };
   selectedIds.value = new Set();
+  hasActiveSearch.value = true;
 }
 
 async function clearSearch() {
   await apiClient.DELETE("/operations/search", {
     params: { query: { accountId: accountId.value } },
   });
+  hasActiveSearch.value = false;
   await loadOperations(1);
 }
 
@@ -98,7 +122,13 @@ async function loadChart() {
 }
 
 async function loadAll() {
-  await Promise.all([loadAccounts(), loadCategories(), loadOperations(1), loadChart()]);
+  await Promise.all([
+    loadAccounts(),
+    loadCategories(),
+    loadOperations(1),
+    loadChart(),
+    loadBalance(),
+  ]);
 }
 
 onMounted(loadAll);
@@ -134,9 +164,13 @@ function startEdit(operation: Operation) {
 }
 
 async function onSaved() {
-  showForm.value = false;
   editingOperation.value = null;
-  await Promise.all([loadOperations(list.value.page), loadChart()]);
+  await Promise.all([loadOperations(list.value.page), loadChart(), loadBalance()]);
+}
+
+async function onSavedAndClose() {
+  showForm.value = false;
+  await onSaved();
 }
 
 function goToPage(page: number) {
@@ -156,6 +190,17 @@ function isEditable(operation: Operation): boolean {
     <h1>
       {{ $t("operations.title") }}<span v-if="account"> — {{ account.name }}</span>
     </h1>
+
+    <div v-if="balance" class="d-flex gap-4 mb-3" data-testid="account-balances">
+      <span
+        >{{ $t("operations.balance") }}:
+        <strong>{{ balance.balance.toFixed(2) }}</strong></span
+      >
+      <span
+        >{{ $t("operations.reconciledBalance") }}:
+        <strong>{{ balance.reconciledBalance.toFixed(2) }}</strong></span
+      >
+    </div>
 
     <router-link
       :to="{ name: 'schedulers', params: { accountId } }"
@@ -181,14 +226,27 @@ function isEditable(operation: Operation): boolean {
       @clear="clearSearch"
     />
 
-    <BatchActions :selected-ids="selectedIdList" @done="loadOperations(list.page)" />
+    <BatchActions
+      :selected-ids="selectedIdList"
+      @done="Promise.all([loadOperations(list.page), loadBalance()])"
+    />
 
-    <p v-if="list.items.length === 0" class="text-muted">{{ $t("operations.empty") }}</p>
+    <div v-if="list.items.length === 0" class="mb-3">
+      <p class="text-muted">{{ $t("operations.empty") }}</p>
+      <p
+        v-if="!hasActiveSearch && isAccountFullyActive"
+        class="text-muted"
+        data-testid="onboarding-tip"
+      >
+        {{ $t("operations.firstOperationTip") }}
+      </p>
+    </div>
 
     <div v-else class="table-responsive">
       <table class="table" data-testid="operations-table">
         <thead>
           <tr>
+            <th></th>
             <th></th>
             <th>{{ $t("operations.valueDate") }}</th>
             <th>{{ $t("operations.thirdParty") }}</th>
@@ -211,6 +269,20 @@ function isEditable(operation: Operation): boolean {
                 :checked="selectedIds.has(operation.id)"
                 @change="toggleSelected(operation.id)"
               />
+            </td>
+            <td>
+              <span
+                v-if="operation.reconciled"
+                :title="$t('operations.reconciled')"
+                data-testid="reconciled-icon"
+                >✓</span
+              >
+              <span
+                v-if="operation.schedulerId"
+                :title="$t('operations.generatedByScheduler')"
+                data-testid="scheduler-icon"
+                >🕐</span
+              >
             </td>
             <td>{{ operation.valueDate }}</td>
             <td>{{ operation.thirdParty }}</td>
@@ -259,11 +331,18 @@ function isEditable(operation: Operation): boolean {
       :account-id="accountId"
       :categories="categories"
       :accounts="accounts"
+      :banks="banks"
       :operation="editingOperation"
-      @saved="onSaved"
+      @saved="onSavedAndClose"
+      @saved-and-new="onSaved"
       @cancel="showForm = false"
     />
-    <button v-else type="button" class="btn btn-primary mt-3" @click="startCreate">
+    <button
+      v-else-if="isAccountFullyActive"
+      type="button"
+      class="btn btn-primary mt-3"
+      @click="startCreate"
+    >
       {{ $t("operations.addOperation") }}
     </button>
   </div>

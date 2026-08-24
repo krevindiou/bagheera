@@ -5,7 +5,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
-import type { Account } from "../accounts/accounts.types";
+import type { Account, Bank } from "../accounts/accounts.types";
 import { toDisplayAmount } from "./money";
 import { operationSchema, type OperationForm } from "./operations.schemas";
 import {
@@ -15,13 +15,17 @@ import {
   type Operation,
 } from "./operations.types";
 
-const props = defineProps<{
-  accountId: number;
-  categories: Category[];
-  accounts: Account[];
-  operation?: Operation | null;
-}>();
-const emit = defineEmits<{ saved: []; cancel: [] }>();
+const props = withDefaults(
+  defineProps<{
+    accountId: number;
+    categories: Category[];
+    accounts: Account[];
+    banks?: Bank[];
+    operation?: Operation | null;
+  }>(),
+  { banks: () => [] },
+);
+const emit = defineEmits<{ saved: []; savedAndNew: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -58,7 +62,7 @@ function initialValues(): OperationForm {
   };
 }
 
-const { defineField, handleSubmit, errors, isSubmitting } = useForm<OperationForm>({
+const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<OperationForm>({
   validationSchema: toTypedSchema(operationSchema),
   initialValues: initialValues(),
 });
@@ -78,7 +82,29 @@ const filteredCategories = computed(() => props.categories.filter((c) => c.type 
 const filteredPaymentMethods = computed(() =>
   PAYMENT_METHODS.filter((pm) => pm.type === type.value),
 );
-const transferTargets = computed(() => props.accounts.filter((a) => a.id !== props.accountId));
+// Choices: the member's other fully active accounts (account and bank
+// neither closed nor deleted) sharing the source account's currency, plus
+// — when editing an operation whose stored transfer account has since
+// gone inactive — that stored account kept selectable so the pair can be
+// preserved, retargeted, or unlinked.
+const sourceCurrency = computed(
+  () => props.accounts.find((a) => a.id === props.accountId)?.currency,
+);
+const bankById = computed(() => new Map(props.banks.map((b) => [b.id, b])));
+function isFullyActiveAccount(a: Account): boolean {
+  return !a.closed && !(bankById.value.get(a.bankId)?.closed ?? false);
+}
+const transferTargets = computed(() => {
+  const eligible = props.accounts.filter(
+    (a) => a.id !== props.accountId && a.currency === sourceCurrency.value && isFullyActiveAccount(a),
+  );
+  const storedTargetId = props.operation?.transferAccountId;
+  if (storedTargetId && !eligible.some((a) => a.id === storedTargetId)) {
+    const stored = props.accounts.find((a) => a.id === storedTargetId);
+    if (stored) eligible.push(stored);
+  }
+  return eligible;
+});
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
 );
@@ -116,7 +142,7 @@ watch(thirdParty, (value) => {
   }, 300);
 });
 
-const onSubmit = handleSubmit(async (submitted) => {
+async function submitForm(submitted: OperationForm): Promise<boolean> {
   const body = {
     accountId: props.accountId,
     type: submitted.type,
@@ -141,11 +167,26 @@ const onSubmit = handleSubmit(async (submitted) => {
 
   if (!response.ok) {
     toast(errorMessage(error) ?? t("operations.genericError"), "error");
-    return;
+    return false;
   }
 
-  toast(t(props.operation ? "operations.updated" : "operations.created"), "success");
-  emit("saved");
+  toast(t("operations.saved"), "success");
+  return true;
+}
+
+const onSubmit = handleSubmit(async (submitted) => {
+  if (await submitForm(submitted)) {
+    emit("saved");
+  }
+});
+
+// Creation form only: saves and immediately returns to a fresh creation
+// form for the same account, instead of closing.
+const onSubmitAndNew = handleSubmit(async (submitted) => {
+  if (await submitForm(submitted)) {
+    resetForm({ values: initialValues() });
+    emit("savedAndNew");
+  }
 });
 
 function errorMessage(error: unknown): string | undefined {
@@ -276,12 +317,9 @@ function errorMessage(error: unknown): string | undefined {
         class="form-select"
         :class="{ 'is-invalid': errors.transferAccountId }"
       >
-        <option value="">{{ $t("operations.chooseTransferAccount") }}</option>
+        <option value="">{{ $t("operations.externalAccount") }}</option>
         <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
-      <div v-if="errors.transferAccountId" class="invalid-feedback">
-        {{ $t("auth.validation.required") }}
-      </div>
     </div>
 
     <div class="mb-3">
@@ -321,6 +359,15 @@ function errorMessage(error: unknown): string | undefined {
     <div class="d-flex gap-2">
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
         {{ $t("operations.submit") }}
+      </button>
+      <button
+        v-if="!props.operation"
+        type="button"
+        class="btn btn-outline-primary"
+        :disabled="isSubmitting"
+        @click="onSubmitAndNew"
+      >
+        {{ $t("operations.submitAndNew") }}
       </button>
       <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
         {{ $t("common.cancel") }}

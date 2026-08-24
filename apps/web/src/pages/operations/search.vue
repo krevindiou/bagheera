@@ -6,7 +6,7 @@ import type { AmountComparatorOperator, Category, SearchCriteria } from "./opera
 const props = defineProps<{ categories: Category[] }>();
 const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
 
-const type = ref<"" | "debit" | "credit">("");
+const type = ref<"debit" | "credit">("debit");
 const thirdParty = ref("");
 const categoryIds = ref<number[]>([]);
 const paymentMethodIds = ref<number[]>([]);
@@ -17,6 +17,7 @@ const amountValue2 = ref<number | undefined>(undefined);
 const dateFrom = ref("");
 const dateTo = ref("");
 const notes = ref("");
+// Three-state, default "Reconciled & not reconciled" (no filter).
 const reconciled = ref<"" | "true" | "false">("");
 
 const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", "eq"];
@@ -30,7 +31,7 @@ function buildCriteria(): SearchCriteria {
     amountComparators.push({ operator: amountOperator2.value, value: amountValue2.value });
   }
   return {
-    type: type.value || undefined,
+    type: type.value,
     thirdParty: thirdParty.value.trim() || undefined,
     categoryIds: categoryIds.value.length ? categoryIds.value : undefined,
     paymentMethodIds: paymentMethodIds.value.length ? paymentMethodIds.value : undefined,
@@ -47,7 +48,7 @@ function onSubmit() {
 }
 
 function reset() {
-  type.value = "";
+  type.value = "debit";
   thirdParty.value = "";
   categoryIds.value = [];
   paymentMethodIds.value = [];
@@ -72,12 +73,29 @@ function onClear() {
     <h2 class="h6">{{ $t("operations.search.title") }}</h2>
 
     <div class="mb-3">
-      <label class="form-label" for="search-type">{{ $t("operations.search.type") }}</label>
-      <select id="search-type" v-model="type" class="form-select">
-        <option value="">{{ $t("operations.search.any") }}</option>
-        <option value="debit">{{ $t("operations.debit") }}</option>
-        <option value="credit">{{ $t("operations.credit") }}</option>
-      </select>
+      <div class="form-label">{{ $t("operations.search.type") }}</div>
+      <div class="form-check form-check-inline">
+        <input
+          id="search-type-debit"
+          v-model="type"
+          class="form-check-input"
+          type="radio"
+          value="debit"
+        />
+        <label class="form-check-label" for="search-type-debit">{{ $t("operations.debit") }}</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input
+          id="search-type-credit"
+          v-model="type"
+          class="form-check-input"
+          type="radio"
+          value="credit"
+        />
+        <label class="form-check-label" for="search-type-credit">{{
+          $t("operations.credit")
+        }}</label>
+      </div>
     </div>
 
     <div class="mb-3">
@@ -179,7 +197,7 @@ function onClear() {
     <div class="mb-3">
       <label class="form-label" for="search-reconciled">{{ $t("operations.reconciled") }}</label>
       <select id="search-reconciled" v-model="reconciled" class="form-select">
-        <option value="">{{ $t("operations.search.any") }}</option>
+        <option value="">{{ $t("operations.search.both") }}</option>
         <option value="true">{{ $t("operations.search.yes") }}</option>
         <option value="false">{{ $t("operations.search.no") }}</option>
       </select>

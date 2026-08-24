@@ -13,7 +13,7 @@ describe("SearchPanel", () => {
     const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
 
     await wrapper.get("#search-third-party").setValue("Coffee");
-    await wrapper.get("#search-type").setValue("debit");
+    await wrapper.get("#search-type-debit").setValue(true);
     await wrapper.get('[data-testid="search-form"]').trigger("submit");
 
     const events = wrapper.emitted("submit");

@@ -30,6 +30,11 @@ export class AccountController {
     return this.accounts.chart(req, id);
   }
 
+  @Get(':id/balance')
+  balance(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+    return this.accounts.balance(req, id);
+  }
+
   @Post()
   @HttpCode(200)
   async create(
