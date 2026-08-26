@@ -42,6 +42,17 @@ describe("SearchPanel", () => {
     expect(events![0][0]).toMatchObject({ amountComparators: [{ operator: "gte", value: 10 }] });
   });
 
+  it("ignores the second amount row when the first is left empty", async () => {
+    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+
+    await wrapper.get("#search-amount-operator-2").setValue("lte");
+    await wrapper.findAll('input[type="number"]')[1].setValue(20);
+    await wrapper.get('[data-testid="search-form"]').trigger("submit");
+
+    const events = wrapper.emitted("submit");
+    expect(events![0][0]).toMatchObject({ amountComparators: undefined });
+  });
+
   it("resets its fields and emits clear", async () => {
     const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
 

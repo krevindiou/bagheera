@@ -32,11 +32,12 @@ const filteredPaymentMethods = computed(() =>
 
 function buildCriteria(): SearchCriteria {
   const amountComparators: SearchCriteria["amountComparators"] = [];
+  // The second row is ignored unless the first has a value.
   if (amountOperator1.value && amountValue1.value !== undefined) {
     amountComparators.push({ operator: amountOperator1.value, value: amountValue1.value });
-  }
-  if (amountOperator2.value && amountValue2.value !== undefined) {
-    amountComparators.push({ operator: amountOperator2.value, value: amountValue2.value });
+    if (amountOperator2.value && amountValue2.value !== undefined) {
+      amountComparators.push({ operator: amountOperator2.value, value: amountValue2.value });
+    }
   }
   return {
     type: type.value,

@@ -86,8 +86,21 @@ export class OperationService {
     return row;
   }
 
-  private requireActive(row: { closed: boolean; deleted: boolean }): void {
-    if (row.closed || row.deleted) {
+  // Fully active = account and its bank are both neither closed nor
+  // deleted (mirrors scheduler.service.ts's requireFullyActive). Required
+  // for creating an operation and for editing/reconciling an existing one;
+  // an operation on a merely-closed account (or a closed bank) stays
+  // listable-only.
+  private requireFullyActive(row: {
+    account: { closed: boolean; deleted: boolean };
+    bank: { closed: boolean; deleted: boolean };
+  }): void {
+    if (
+      row.account.closed ||
+      row.account.deleted ||
+      row.bank.closed ||
+      row.bank.deleted
+    ) {
       throw new UnprocessableEntityException('Account is not active.');
     }
   }
@@ -163,11 +176,11 @@ export class OperationService {
 
   async create(req: Request, dto: CreateOperationDto) {
     const memberId = this.requireMemberId(req);
-    const { account: acc } = await this.findOwnedAccount(
+    const { account: acc, bank: accBank } = await this.findOwnedAccount(
       dto.accountId,
       memberId,
     );
-    this.requireActive(acc);
+    this.requireFullyActive({ account: acc, bank: accBank });
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
     const { debit, credit } = this.amountFields(dto.type, dto.amount);
@@ -233,11 +246,12 @@ export class OperationService {
     dto: UpdateOperationDto,
   ): Promise<void> {
     const memberId = this.requireMemberId(req);
-    const { operation: row, account: acc } = await this.findOwnedOperation(
-      id,
-      memberId,
-    );
-    this.requireActive(acc);
+    const {
+      operation: row,
+      account: acc,
+      bank: accBank,
+    } = await this.findOwnedOperation(id, memberId);
+    this.requireFullyActive({ account: acc, bank: accBank });
     if (dto.accountId !== row.accountId) {
       throw new BadRequestException('Account cannot be changed.');
     }
