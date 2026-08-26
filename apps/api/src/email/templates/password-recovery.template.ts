@@ -1,13 +1,15 @@
 import { EmailMessage } from '../email-message';
+import { emailCatalog } from '../i18n';
 
 /** Forgot-password email. */
 export function passwordRecoveryEmail(
   to: string,
   changePasswordLink: string,
 ): EmailMessage {
+  const t = emailCatalog().passwordRecovery;
   return {
     to,
-    subject: 'Bagheera change password',
-    html: `Click on the following link to change your password: <a href="${changePasswordLink}">${changePasswordLink}</a>`,
+    subject: t.subject,
+    html: t.body(changePasswordLink),
   };
 }
