@@ -11,7 +11,8 @@ import { changePasswordSchema, type ChangePasswordForm } from "./settings.schema
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<ChangePasswordForm>({
+const { defineField, handleSubmit, errors, isSubmitting, resetForm, setFieldError } =
+  useForm<ChangePasswordForm>({
   validationSchema: toTypedSchema(changePasswordSchema),
   initialValues: {
     currentPassword: "",
@@ -31,6 +32,10 @@ const onSubmit = handleSubmit(async (values) => {
 
   if (!response.ok) {
     const message = errorMessage(error) ?? t("settings.password.genericError");
+    if (message === "Current password is invalid.") {
+      setFieldError("currentPassword", message);
+      return;
+    }
     toast(message, "error");
     return;
   }
@@ -65,7 +70,11 @@ function errorMessage(error: unknown): string | undefined {
           :class="{ 'is-invalid': errors.currentPassword }"
         />
         <div v-if="errors.currentPassword" class="invalid-feedback">
-          {{ $t("auth.validation.required") }}
+          {{
+            errors.currentPassword === "Current password is invalid."
+              ? errors.currentPassword
+              : $t("auth.validation.required")
+          }}
         </div>
       </div>
 

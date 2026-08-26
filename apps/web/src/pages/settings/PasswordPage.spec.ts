@@ -55,7 +55,7 @@ describe("PasswordPage", () => {
     expect((wrapper.find("#password-current").element as HTMLInputElement).value).toBe("");
   });
 
-  it("shows the API's error message in an error toast when the current password is wrong", async () => {
+  it("shows the API's error message as an inline field error when the current password is wrong", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
       response: { ok: false, status: 400 },
       error: { message: "Current password is invalid." },
@@ -67,7 +67,10 @@ describe("PasswordPage", () => {
     await wrapper.find("#password-new-confirmation").setValue("new-correct-horse");
     await submitAndSettle(wrapper);
 
-    const toast = useToast().toasts.find((t) => t.variant === "error");
-    expect(toast?.text).toBe("Current password is invalid.");
+    expect(useToast().toasts.some((t) => t.variant === "error")).toBe(false);
+    const field = wrapper.find("#password-current").element.closest(".mb-3");
+    expect(field?.querySelector(".invalid-feedback")?.textContent).toBe(
+      "Current password is invalid.",
+    );
   });
 });

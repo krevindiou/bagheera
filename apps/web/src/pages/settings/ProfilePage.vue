@@ -12,7 +12,8 @@ const session = useSessionStore();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetField } = useForm<ProfileForm>({
+const { defineField, handleSubmit, errors, isSubmitting, resetField, setFieldError } =
+  useForm<ProfileForm>({
   validationSchema: toTypedSchema(profileSchema),
   initialValues: { email: session.member?.email ?? "", currentPassword: "" },
 });
@@ -26,6 +27,10 @@ const onSubmit = handleSubmit(async (values) => {
 
   if (!response.ok) {
     const message = errorMessage(error) ?? t("settings.profile.genericError");
+    if (message === "Current password is invalid.") {
+      setFieldError("currentPassword", message);
+      return;
+    }
     toast(message, "error");
     return;
   }
@@ -78,7 +83,11 @@ function errorMessage(error: unknown): string | undefined {
           :class="{ 'is-invalid': errors.currentPassword }"
         />
         <div v-if="errors.currentPassword" class="invalid-feedback">
-          {{ $t("auth.validation.required") }}
+          {{
+            errors.currentPassword === "Current password is invalid."
+              ? errors.currentPassword
+              : $t("auth.validation.required")
+          }}
         </div>
       </div>
 

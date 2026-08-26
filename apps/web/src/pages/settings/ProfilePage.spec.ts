@@ -62,7 +62,7 @@ describe("ProfilePage", () => {
     expect(useToast().toasts.some((t) => t.variant === "success")).toBe(true);
   });
 
-  it("shows the API's error message in an error toast on a rejected submission", async () => {
+  it("shows the API's error message as an inline field error on a rejected submission", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
       response: { ok: false, status: 400 },
       error: { message: "Current password is invalid." },
@@ -73,7 +73,10 @@ describe("ProfilePage", () => {
     await wrapper.find("#profile-current-password").setValue("wrong-password");
     await submitAndSettle(wrapper);
 
-    const toast = useToast().toasts.find((t) => t.variant === "error");
-    expect(toast?.text).toBe("Current password is invalid.");
+    expect(useToast().toasts.some((t) => t.variant === "error")).toBe(false);
+    const field = wrapper.find("#profile-current-password").element.closest(".mb-3");
+    expect(field?.querySelector(".invalid-feedback")?.textContent).toBe(
+      "Current password is invalid.",
+    );
   });
 });
