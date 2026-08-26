@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
-import { formatMoney } from "../operations/money";
+import { formatDate, formatMoney } from "../operations/money";
 import type { ReportChart } from "../reports/reports.types";
 import type { DashboardResponse, DashboardSynthesisChart } from "./dashboard.types";
 
@@ -15,6 +15,20 @@ const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
 // Cycled by currency index — the synthesis chart is one line per currency
 // (not a fixed debit/credit pair), so it needs its own small palette.
 const SYNTHESIS_COLORS = ["#0d6efd", "#6f42c1", "#fd7e14", "#20c997", "#e83e8c", "#6610f2"];
+
+// Accounts-overview bank badge cycles through a fixed color palette, one
+// color per bank (by position in the list).
+const BANK_BADGE_CLASSES = [
+  "bg-primary",
+  "bg-success",
+  "bg-warning text-dark",
+  "bg-info text-dark",
+  "bg-secondary",
+  "bg-danger",
+];
+function bankBadgeClass(index: number): string {
+  return BANK_BADGE_CLASSES[index % BANK_BADGE_CLASSES.length];
+}
 
 async function load() {
   const { data } = await apiClient.GET("/dashboard");
@@ -65,7 +79,9 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
       data-testid="onboarding-tip"
     >
       {{ $t("dashboard.onboardingNoBank") }}
-      <router-link :to="{ name: 'accounts' }">{{ $t("dashboard.onboardingCta") }}</router-link>
+      <router-link :to="{ name: 'accounts', query: { start: 'bank-choice' } }">{{
+        $t("dashboard.onboardingCta")
+      }}</router-link>
     </div>
     <div
       v-else-if="dashboard.onboarding === 'no-account'"
@@ -73,7 +89,9 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
       data-testid="onboarding-tip"
     >
       {{ $t("dashboard.onboardingNoAccount") }}
-      <router-link :to="{ name: 'accounts' }">{{ $t("dashboard.onboardingCta") }}</router-link>
+      <router-link :to="{ name: 'accounts', query: { start: 'new-account' } }">{{
+        $t("dashboard.onboardingCta")
+      }}</router-link>
     </div>
 
     <template v-if="dashboard.onboarding !== 'no-bank'">
@@ -101,7 +119,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
           <p class="text-success fs-5 mb-0">
             {{ formatMoney(dashboard.lastSalary.amount, dashboard.lastSalary.currency, true) }}
           </p>
-          <p class="text-muted small">{{ dashboard.lastSalary.valueDate }}</p>
+          <p class="text-muted small">{{ formatDate(dashboard.lastSalary.valueDate) }}</p>
         </div>
         <div v-if="dashboard.lastBiggestExpense" data-testid="last-biggest-expense">
           <h2 class="h6">{{ $t("dashboard.lastBiggestExpense") }}</h2>
@@ -114,7 +132,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
               )
             }}
           </p>
-          <p class="text-muted small">{{ dashboard.lastBiggestExpense.valueDate }}</p>
+          <p class="text-muted small">{{ formatDate(dashboard.lastBiggestExpense.valueDate) }}</p>
         </div>
       </section>
 
@@ -132,18 +150,25 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
           {{ $t("dashboard.noAccounts") }}
         </p>
         <div
-          v-for="bank in dashboard.accountsOverview"
+          v-for="(bank, bankIndex) in dashboard.accountsOverview"
           :key="bank.id"
           class="mb-3"
           data-testid="overview-bank"
         >
-          <h3 class="h6">{{ bank.name }}</h3>
+          <h3 class="h6">
+            <span class="badge me-2" :class="bankBadgeClass(bankIndex)" data-testid="bank-badge">{{
+              bank.name
+            }}</span>
+          </h3>
           <ul class="list-unstyled ms-3">
             <li v-for="account in bank.accounts" :key="account.id" data-testid="overview-account">
               <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
                 {{ account.name }}
               </router-link>
-              — {{ formatMoney(account.balance, account.currency, true) }}
+              —
+              <span :class="account.balance >= 0 ? 'text-success' : 'text-danger'">{{
+                formatMoney(account.balance, account.currency, true)
+              }}</span>
             </li>
           </ul>
         </div>
