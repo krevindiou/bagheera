@@ -19,13 +19,13 @@ describe("BatchActions", () => {
     vi.mocked(apiClient.POST).mockReset();
   });
 
-  it("disables both actions when nothing is selected", () => {
+  it("hides both actions when nothing is selected", () => {
     const wrapper = mount(BatchActions, {
       props: { selectedIds: [] },
       global: { plugins: [i18n] },
     });
-    expect(wrapper.get('[data-testid="batch-delete"]').attributes("disabled")).toBeDefined();
-    expect(wrapper.get('[data-testid="batch-reconcile"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.find('[data-testid="batch-delete"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="batch-reconcile"]').exists()).toBe(false);
   });
 
   it("only calls batch delete once the confirmation modal is accepted", async () => {

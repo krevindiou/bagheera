@@ -45,12 +45,11 @@ async function batchReconcile() {
 </script>
 
 <template>
-  <div class="d-flex gap-2 mb-3" data-testid="batch-actions">
+  <div v-if="selectedIds.length > 0" class="d-flex gap-2 mb-3" data-testid="batch-actions">
     <button
       type="button"
       class="btn btn-sm btn-outline-danger"
       data-testid="batch-delete"
-      :disabled="selectedIds.length === 0"
       @click="batchDelete"
     >
       {{ $t("operations.batch.delete") }}
@@ -59,7 +58,6 @@ async function batchReconcile() {
       type="button"
       class="btn btn-sm btn-outline-secondary"
       data-testid="batch-reconcile"
-      :disabled="selectedIds.length === 0"
       @click="batchReconcile"
     >
       {{ $t("operations.batch.reconcile") }}

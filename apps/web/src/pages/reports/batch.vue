@@ -29,12 +29,11 @@ async function batchDelete() {
 </script>
 
 <template>
-  <div class="d-flex gap-2 mb-3" data-testid="report-batch-actions">
+  <div v-if="selectedIds.length > 0" class="d-flex gap-2 mb-3" data-testid="report-batch-actions">
     <button
       type="button"
       class="btn btn-sm btn-outline-danger"
       data-testid="report-batch-delete"
-      :disabled="selectedIds.length === 0"
       @click="batchDelete"
     >
       {{ $t("reports.batch.delete") }}
