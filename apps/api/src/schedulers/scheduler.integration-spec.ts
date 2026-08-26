@@ -223,7 +223,9 @@ describe('schedulers (integration)', () => {
   });
 
   it('rejects a scheduler transfer target that belongs to another member', async () => {
-    const { account: acc } = await createOwnedAccount('sched-xfer1@example.com');
+    const { account: acc } = await createOwnedAccount(
+      'sched-xfer1@example.com',
+    );
     const { account: foreign } = await createOwnedAccount(
       'sched-xfer1b@example.com',
     );
@@ -291,7 +293,12 @@ describe('schedulers (integration)', () => {
     );
     const [closedTarget] = await ctx.db
       .insert(account)
-      .values({ bankId: ownerBank.id, name: 'Savings', currency: 'USD', closed: true })
+      .values({
+        bankId: ownerBank.id,
+        name: 'Savings',
+        currency: 'USD',
+        closed: true,
+      })
       .returning();
     const { token, cookies } = await authedRequest(
       'sched-xfer3@example.com',
@@ -346,8 +353,7 @@ describe('schedulers (integration)', () => {
         frequencyValue: 1,
       });
     expect(createRes.status).toBe(200);
-    const created = (createRes.body as { scheduler: { id: number } })
-      .scheduler;
+    const created = (createRes.body as { scheduler: { id: number } }).scheduler;
 
     // The target closes after the scheduler was linked to it.
     await ctx.db

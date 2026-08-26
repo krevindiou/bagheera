@@ -106,7 +106,10 @@ export class TransferService {
     sourceCurrency: string,
     memberId: number,
   ): Promise<void> {
-    if (targetAccountId === null || targetAccountId === previousTargetAccountId) {
+    if (
+      targetAccountId === null ||
+      targetAccountId === previousTargetAccountId
+    ) {
       return;
     }
     await this.requireEligibleTarget(

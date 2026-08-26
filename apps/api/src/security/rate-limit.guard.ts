@@ -144,13 +144,13 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   }
 
   private tooManyRequests(): HttpException {
-    return new HttpException(
-      'Too many requests',
-      HttpStatus.TOO_MANY_REQUESTS,
-    );
+    return new HttpException('Too many requests', HttpStatus.TOO_MANY_REQUESTS);
   }
 
-  private limiterFor(points: number, durationSeconds: number): RateLimiterRedis {
+  private limiterFor(
+    points: number,
+    durationSeconds: number,
+  ): RateLimiterRedis {
     const cacheKey = `${points}:${durationSeconds}`;
     let limiter = this.limiters.get(cacheKey);
     if (!limiter) {
