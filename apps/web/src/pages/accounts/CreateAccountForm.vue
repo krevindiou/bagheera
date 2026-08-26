@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import { getCurrencyOptions, getGuessedCurrency } from "../../composables/useCurrencyOptions";
+import { currencySymbol } from "../operations/money";
 import { createAccountSchema, type CreateAccountForm } from "./accounts.schemas";
 import type { Bank } from "./accounts.types";
 
@@ -29,6 +31,9 @@ const [bankName, bankNameAttrs] = defineField("bankName");
 const [name, nameAttrs] = defineField("name");
 const [currency, currencyAttrs] = defineField("currency");
 const [initialBalance, initialBalanceAttrs] = defineField("initialBalance");
+const initialBalanceCurrencySymbol = computed(() =>
+  currency.value ? currencySymbol(currency.value) : "",
+);
 
 const onSubmit = handleSubmit(async (values) => {
   let resolvedBankId: number;
@@ -148,15 +153,18 @@ function errorMessage(error: unknown): string | undefined {
       <label class="form-label" for="account-initial-balance">
         {{ $t("accounts.initialBalance") }}
       </label>
-      <input
-        id="account-initial-balance"
-        v-model="initialBalance"
-        v-bind="initialBalanceAttrs"
-        type="number"
-        inputmode="decimal"
-        step="0.01"
-        class="form-control"
-      />
+      <div class="input-group">
+        <span class="input-group-text">{{ initialBalanceCurrencySymbol }}</span>
+        <input
+          id="account-initial-balance"
+          v-model="initialBalance"
+          v-bind="initialBalanceAttrs"
+          type="number"
+          inputmode="decimal"
+          step="0.01"
+          class="form-control"
+        />
+      </div>
     </div>
 
     <div class="d-flex gap-2">

@@ -6,7 +6,7 @@ import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { Account, Bank } from "../accounts/accounts.types";
-import { toDisplayAmount } from "./money";
+import { currencySymbol, toDisplayAmount } from "./money";
 import { operationSchema, type OperationForm } from "./operations.schemas";
 import {
   PAYMENT_METHODS,
@@ -107,6 +107,9 @@ const transferTargets = computed(() => {
 });
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
+);
+const amountCurrencySymbol = computed(() =>
+  sourceCurrency.value ? currencySymbol(sourceCurrency.value) : "",
 );
 
 // Switching type invalidates the previous category/payment-method choice.
@@ -270,18 +273,21 @@ function errorMessage(error: unknown): string | undefined {
 
     <div class="mb-3">
       <label class="form-label" for="operation-amount">{{ $t("operations.amount") }}</label>
-      <input
-        id="operation-amount"
-        ref="amountInput"
-        v-model="amount"
-        v-bind="amountAttrs"
-        type="number"
-        inputmode="decimal"
-        step="0.01"
-        class="form-control"
-        :class="{ 'is-invalid': errors.amount }"
-      />
-      <div v-if="errors.amount" class="invalid-feedback">
+      <div class="input-group">
+        <span class="input-group-text">{{ amountCurrencySymbol }}</span>
+        <input
+          id="operation-amount"
+          ref="amountInput"
+          v-model="amount"
+          v-bind="amountAttrs"
+          type="number"
+          inputmode="decimal"
+          step="0.01"
+          class="form-control"
+          :class="{ 'is-invalid': errors.amount }"
+        />
+      </div>
+      <div v-if="errors.amount" class="invalid-feedback d-block">
         {{ $t("operations.validation.amount") }}
       </div>
     </div>

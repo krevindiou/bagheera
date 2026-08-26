@@ -6,7 +6,7 @@ import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import type { Account } from "../accounts/accounts.types";
-import { toDisplayAmount } from "../operations/money";
+import { currencySymbol, toDisplayAmount } from "../operations/money";
 import {
   PAYMENT_METHODS,
   TRANSFER_PAYMENT_METHOD_IDS,
@@ -93,6 +93,12 @@ const filteredPaymentMethods = computed(() =>
 const transferTargets = computed(() => props.accounts.filter((a) => a.id !== props.accountId));
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
+);
+const sourceCurrency = computed(
+  () => props.accounts.find((a) => a.id === props.accountId)?.currency,
+);
+const amountCurrencySymbol = computed(() =>
+  sourceCurrency.value ? currencySymbol(sourceCurrency.value) : "",
 );
 
 watch(type, () => {
@@ -234,17 +240,20 @@ function errorMessage(error: unknown): string | undefined {
 
     <div class="mb-3">
       <label class="form-label" for="scheduler-amount">{{ $t("operations.amount") }}</label>
-      <input
-        id="scheduler-amount"
-        v-model="amount"
-        v-bind="amountAttrs"
-        type="number"
-        inputmode="decimal"
-        step="0.01"
-        class="form-control"
-        :class="{ 'is-invalid': errors.amount }"
-      />
-      <div v-if="errors.amount" class="invalid-feedback">
+      <div class="input-group">
+        <span class="input-group-text">{{ amountCurrencySymbol }}</span>
+        <input
+          id="scheduler-amount"
+          v-model="amount"
+          v-bind="amountAttrs"
+          type="number"
+          inputmode="decimal"
+          step="0.01"
+          class="form-control"
+          :class="{ 'is-invalid': errors.amount }"
+        />
+      </div>
+      <div v-if="errors.amount" class="invalid-feedback d-block">
         {{ $t("operations.validation.amount") }}
       </div>
     </div>

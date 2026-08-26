@@ -10,6 +10,19 @@ export function toDisplayAmount(minorUnits: number): number {
 // formatting follows the active locale, which is `en` for now.
 const LOCALE = "en";
 
+// Spec 2.7: money inputs display the account currency symbol as an
+// input add-on.
+export function currencySymbol(currency: string): string {
+  try {
+    const part = new Intl.NumberFormat(LOCALE, { style: "currency", currency })
+      .formatToParts(0)
+      .find((p) => p.type === "currency");
+    return part?.value ?? currency;
+  } catch {
+    return currency;
+  }
+}
+
 // Spec 2.1: displayed amounts are localized currency strings in the
 // account's currency. Accepts either a stored (×10,000) integer, or an
 // already-converted decimal amount when `alreadyDisplayAmount` is true
