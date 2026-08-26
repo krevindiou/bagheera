@@ -67,12 +67,9 @@ export class BankService {
     }
 
     if (dto.bankId) {
-      const [row] = await this.db
-        .select()
-        .from(bank)
-        .where(eq(bank.id, dto.bankId));
-      if (!row || row.memberId !== memberId || row.closed || row.deleted) {
-        throw new NotFoundException();
+      const row = await this.findOwned(dto.bankId, memberId);
+      if (row.closed || row.deleted) {
+        throw new UnprocessableEntityException('Bank is not active.');
       }
       return { id: row.id, name: row.name, created: false };
     }

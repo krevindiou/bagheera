@@ -203,6 +203,49 @@ describe('banks (integration)', () => {
     expect(rows).toHaveLength(1);
   });
 
+  it('rejects choosing an own bank that is closed with access-denied, not not-found', async () => {
+    const owner = await createMember('owner2b@example.com', 'password1');
+    const [closed] = await ctx.db
+      .insert(bank)
+      .values({ memberId: owner.id, name: 'Closed Bank', closed: true })
+      .returning();
+    const { token, cookies } = await authedRequest(
+      'owner2b@example.com',
+      'password1',
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/banks/choice')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ bankId: closed.id });
+
+    expect(res.status).toBe(422);
+  });
+
+  it('returns not found choosing a bank owned by someone else', async () => {
+    const owner = await createMember('owner2c-owner@example.com', 'password1');
+    await createMember('owner2c-intruder@example.com', 'password1');
+    const [theirs] = await ctx.db
+      .insert(bank)
+      .values({ memberId: owner.id, name: 'Not Yours' })
+      .returning();
+    const { token, cookies } = await authedRequest(
+      'owner2c-intruder@example.com',
+      'password1',
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/banks/choice')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ bankId: theirs.id });
+
+    expect(res.status).toBe(404);
+  });
+
   it('rejects choosing with neither option selected', async () => {
     await createMember('owner3@example.com', 'password1');
     const { token, cookies } = await authedRequest(
