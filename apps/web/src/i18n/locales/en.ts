@@ -74,8 +74,13 @@ export default {
       passwordMismatch: "Passwords don't match.",
     },
   },
+  nav: {
+    home: "Home",
+    accounts: "Accounts",
+    settings: "Settings",
+  },
   home: {
-    signedInAs: "Signed in as {email}.",
+    signedInAs: "Connected as {email}",
     signOut: "Sign out",
     accountsLink: "Accounts",
     profileLink: "Profile settings",

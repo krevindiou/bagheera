@@ -1,15 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
-import { useSessionStore } from "../../stores/session.store";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { ReportChart } from "../reports/reports.types";
 import type { DashboardResponse, DashboardSynthesisChart } from "./dashboard.types";
 
-const router = useRouter();
-const session = useSessionStore();
 const { t } = useI18n();
 
 const dashboard = ref<DashboardResponse | null>(null);
@@ -25,12 +21,6 @@ async function load() {
 }
 
 onMounted(load);
-
-async function signOut() {
-  await apiClient.POST("/auth/sign-out");
-  session.clear();
-  router.push({ name: "sign-in" });
-}
 
 // Same per-currency debit/credit flattening as the reports page
 // (apps/web/src/pages/reports/ReportsPage.vue).
@@ -66,23 +56,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
 
 <template>
   <div v-if="dashboard" class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1 class="mb-0">{{ $t("dashboard.title") }}</h1>
-      <div class="d-flex gap-2">
-        <router-link :to="{ name: 'accounts' }" class="btn btn-outline-secondary btn-sm">
-          {{ $t("home.accountsLink") }}
-        </router-link>
-        <router-link :to="{ name: 'reports' }" class="btn btn-outline-secondary btn-sm">
-          {{ $t("dashboard.reportsLink") }}
-        </router-link>
-        <router-link :to="{ name: 'settings-profile' }" class="btn btn-outline-secondary btn-sm">
-          {{ $t("home.profileLink") }}
-        </router-link>
-        <button type="button" class="btn btn-outline-secondary btn-sm" @click="signOut">
-          {{ $t("home.signOut") }}
-        </button>
-      </div>
-    </div>
+    <h1 class="mb-4">{{ $t("dashboard.title") }}</h1>
 
     <div
       v-if="dashboard.onboarding === 'no-bank'"

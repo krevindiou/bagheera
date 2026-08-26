@@ -4,6 +4,7 @@ import { registerActivateSignIn, signIn } from "../support/auth-helpers";
 test("a due scheduler generates an operation once the member signs back in", async ({ page }) => {
   const { email, password } = await registerActivateSignIn(page);
 
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
   await page.getByRole("button", { name: "New account" }).click();
   await page.locator("#account-bank-name").fill("First National");
@@ -33,6 +34,7 @@ test("a due scheduler generates an operation once the member signs back in", asy
   await expect(page).toHaveURL(/\/en\/sign-in$/);
   await signIn(page, email, password);
 
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
   await page.getByTestId("account-row").filter({ hasText: "Checking" }).getByRole("link").click();
   await expect(page.getByTestId("operation-row").filter({ hasText: "Rent" })).toBeVisible();
