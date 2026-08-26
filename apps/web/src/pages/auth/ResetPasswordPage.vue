@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
+import { useToast } from "../../composables/useToast";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { resetPasswordSchema, type ResetPasswordForm } from "./auth.schemas";
 
 const route = useRoute();
 const router = useRouter();
+const { push: toast } = useToast();
+const { t } = useI18n();
 
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<ResetPasswordForm>({
   validationSchema: toTypedSchema(resetPasswordSchema),
@@ -17,8 +20,6 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<ResetPasswor
 });
 const [password, passwordAttrs] = defineField("password");
 const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
-
-const submitted = ref(false);
 
 // Spec 4.4: a rejected key (missing, invalid, expired, already used) is a
 // silent return to sign-in — no visible error, so the visitor never learns
@@ -40,7 +41,8 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
 
-  submitted.value = true;
+  toast(t("auth.resetPassword.success"), "success");
+  router.push({ name: "sign-in" });
 });
 </script>
 
@@ -48,11 +50,7 @@ const onSubmit = handleSubmit(async (values) => {
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.resetPassword.title") }}</h1>
 
-    <div v-if="submitted" class="alert alert-success" role="alert">
-      {{ $t("auth.resetPassword.success") }}
-    </div>
-
-    <form v-if="!submitted" novalidate @submit="onSubmit">
+    <form novalidate @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="reset-password-password">{{
           $t("auth.resetPassword.password")

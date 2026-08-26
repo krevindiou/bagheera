@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
 import { rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
+import { useToast } from "../../composables/useToast";
 import { forgotPasswordSchema, type ForgotPasswordForm } from "./auth.schemas";
+
+const router = useRouter();
+const { push: toast } = useToast();
+const { t } = useI18n();
 
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<ForgotPasswordForm>({
   validationSchema: toTypedSchema(forgotPasswordSchema),
@@ -12,14 +18,13 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<ForgotPasswo
 });
 const [email, emailAttrs] = defineField("email");
 
-const submitted = ref(false);
-
 const onSubmit = handleSubmit(async (values) => {
   rememberAttemptedEmail(values.email);
   // The API always returns the identical message whether or not the
   // address matched — nothing to branch on here.
   await apiClient.POST("/auth/password-recovery", { body: values });
-  submitted.value = true;
+  toast(t("auth.forgotPassword.requestSent"), "info");
+  router.push({ name: "sign-in" });
 });
 </script>
 
@@ -27,11 +32,7 @@ const onSubmit = handleSubmit(async (values) => {
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.forgotPassword.title") }}</h1>
 
-    <div v-if="submitted" class="alert alert-info" role="alert">
-      {{ $t("auth.forgotPassword.requestSent") }}
-    </div>
-
-    <form v-else novalidate @submit="onSubmit">
+    <form novalidate @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="forgot-password-email">{{
           $t("auth.forgotPassword.email")

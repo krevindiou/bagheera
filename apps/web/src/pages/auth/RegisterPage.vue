@@ -2,12 +2,19 @@
 import { ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
 import { rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
 import { getCountryOptions, getDefaultCountry } from "../../composables/useCountryOptions";
+import { useToast } from "../../composables/useToast";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { registerSchema, type RegisterForm } from "./auth.schemas";
+
+const router = useRouter();
+const { push: toast } = useToast();
+const { t } = useI18n();
 
 const countryOptions = getCountryOptions();
 
@@ -25,7 +32,6 @@ const [country, countryAttrs] = defineField("country");
 const [password, passwordAttrs] = defineField("password");
 const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
-const submitted = ref(false);
 const emailTaken = ref(false);
 
 const onSubmit = handleSubmit(async (values) => {
@@ -41,8 +47,9 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
 
-  submitted.value = true;
   resetForm();
+  toast(t("auth.register.success"), "info");
+  router.push({ name: "sign-in" });
 });
 </script>
 
@@ -50,15 +57,11 @@ const onSubmit = handleSubmit(async (values) => {
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.register.title") }}</h1>
 
-    <div v-if="submitted" class="alert alert-success" role="alert">
-      {{ $t("auth.register.success") }}
-    </div>
-
     <div v-if="emailTaken" class="alert alert-danger" role="alert">
       {{ $t("auth.register.emailTaken") }}
     </div>
 
-    <form v-if="!submitted" novalidate @submit="onSubmit">
+    <form novalidate @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="register-email">{{ $t("auth.register.email") }}</label>
         <input
