@@ -244,13 +244,6 @@ function isEditable(operation: Operation): boolean {
 
     <div v-if="list.items.length === 0" class="mb-3">
       <p class="text-muted">{{ $t("operations.empty") }}</p>
-      <p
-        v-if="!hasActiveSearch && isAccountFullyActive"
-        class="text-muted"
-        data-testid="onboarding-tip"
-      >
-        {{ $t("operations.firstOperationTip") }}
-      </p>
     </div>
 
     <div v-else class="table-responsive">
@@ -352,13 +345,19 @@ function isEditable(operation: Operation): boolean {
       @saved-and-new="onSaved"
       @cancel="showForm = false"
     />
-    <button
-      v-else-if="isAccountFullyActive"
-      type="button"
-      class="btn btn-primary mt-3"
-      @click="startCreate"
-    >
-      {{ $t("operations.addOperation") }}
-    </button>
+    <div v-else-if="isAccountFullyActive" class="mt-3">
+      <!-- Spec section 8: the first-operation tip is anchored to this
+           button (shown right above it), not floated elsewhere on the page. -->
+      <p
+        v-if="list.items.length === 0 && !hasActiveSearch"
+        class="text-muted mb-1"
+        data-testid="onboarding-tip"
+      >
+        {{ $t("operations.firstOperationTip") }}
+      </p>
+      <button type="button" class="btn btn-primary" @click="startCreate">
+        {{ $t("operations.addOperation") }}
+      </button>
+    </div>
   </div>
 </template>
