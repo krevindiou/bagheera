@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { categoryLabel, PAYMENT_METHODS } from "./operations.types";
+import { categoryLabel, groupCategories, PAYMENT_METHODS } from "./operations.types";
 import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
 
 const props = defineProps<{ categories: Category[] }>();
@@ -26,6 +26,7 @@ const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", 
 // to show only entries of that type (previous selection preserved when
 // still valid).
 const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
+const groupedCategories = computed(() => groupCategories(filteredCategories.value));
 const filteredPaymentMethods = computed(() =>
   PAYMENT_METHODS.filter((pm) => pm.type === type.value),
 );
@@ -131,9 +132,18 @@ function onClear() {
     <div class="mb-3">
       <label class="form-label" for="search-categories">{{ $t("operations.category") }}</label>
       <select id="search-categories" v-model="categoryIds" multiple class="form-select">
-        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">
-          {{ categoryLabel(c, props.categories) }}
-        </option>
+        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
+          <template v-if="group.label === null">
+            <option v-for="c in group.categories" :key="c.id" :value="c.id">
+              {{ categoryLabel(c, props.categories) }}
+            </option>
+          </template>
+          <optgroup v-else :label="group.label">
+            <option v-for="c in group.categories" :key="c.id" :value="c.id">
+              {{ categoryLabel(c, props.categories) }}
+            </option>
+          </optgroup>
+        </template>
       </select>
     </div>
 

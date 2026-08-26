@@ -42,6 +42,31 @@ export function categoryLabel(category: Category, allCategories: Category[]): st
   return parent ? `${parent.name} > ${category.name}` : category.name;
 }
 
+export interface CategoryGroup {
+  // null label = top-level categories with no children of their own —
+  // rendered as plain options outside any <optgroup>.
+  label: string | null;
+  categories: Category[];
+}
+
+// Spec 3.2/4.11: category choice lists are grouped (here, by parent — a
+// top-level category with children becomes an <optgroup>, itself included
+// as the group's first, still-selectable option).
+export function groupCategories(categories: Category[]): CategoryGroup[] {
+  const topLevel = categories.filter((c) => c.parentId === null);
+  const groups: CategoryGroup[] = [];
+  const standalone: Category[] = [];
+  for (const top of topLevel) {
+    const children = categories.filter((c) => c.parentId === top.id);
+    if (children.length > 0) {
+      groups.push({ label: top.name, categories: [top, ...children] });
+    } else {
+      standalone.push(top);
+    }
+  }
+  return standalone.length > 0 ? [{ label: null, categories: standalone }, ...groups] : groups;
+}
+
 // Fixed reference list — ids/names/types are stable identifiers relied on
 // across the app (apps/api/src/db/seed-data.ts), not fetched dynamically.
 // Id 9 ("Initial balance") is reserved for the system-generated opening

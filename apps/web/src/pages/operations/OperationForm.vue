@@ -10,6 +10,7 @@ import { currencySymbol, toDisplayAmount } from "./money";
 import { operationSchema, type OperationForm } from "./operations.schemas";
 import {
   categoryLabel,
+  groupCategories,
   PAYMENT_METHODS,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
@@ -80,6 +81,7 @@ const [reconciled, reconciledAttrs] = defineField("reconciled");
 // Type-driven filtering: category and payment-method choices only ever
 // show options matching the selected debit/credit type.
 const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
+const groupedCategories = computed(() => groupCategories(filteredCategories.value));
 const filteredPaymentMethods = computed(() =>
   PAYMENT_METHODS.filter((pm) => pm.type === type.value),
 );
@@ -302,9 +304,18 @@ function errorMessage(error: unknown): string | undefined {
         class="form-select"
       >
         <option value="">{{ $t("operations.noCategory") }}</option>
-        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">
-          {{ categoryLabel(c, props.categories) }}
-        </option>
+        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
+          <template v-if="group.label === null">
+            <option v-for="c in group.categories" :key="c.id" :value="c.id">
+              {{ categoryLabel(c, props.categories) }}
+            </option>
+          </template>
+          <optgroup v-else :label="group.label">
+            <option v-for="c in group.categories" :key="c.id" :value="c.id">
+              {{ categoryLabel(c, props.categories) }}
+            </option>
+          </optgroup>
+        </template>
       </select>
     </div>
 
