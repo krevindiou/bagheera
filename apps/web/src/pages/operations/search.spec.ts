@@ -53,6 +53,20 @@ describe("SearchPanel", () => {
     expect(events![0][0]).toMatchObject({ amountComparators: undefined });
   });
 
+  it("hydrates its fields from initialCriteria", async () => {
+    const wrapper = mount(SearchPanel, {
+      props: {
+        categories,
+        initialCriteria: { type: "credit", thirdParty: "Rent", reconciled: true },
+      },
+      global: { plugins: [i18n] },
+    });
+
+    expect((wrapper.get("#search-type-credit").element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.get("#search-third-party").element as HTMLInputElement).value).toBe("Rent");
+    expect((wrapper.get("#search-reconciled").element as HTMLSelectElement).value).toBe("true");
+  });
+
   it("resets its fields and emits clear", async () => {
     const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
 

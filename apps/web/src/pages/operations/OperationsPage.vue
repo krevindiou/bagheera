@@ -27,6 +27,7 @@ const editingOperation = ref<Operation | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
 const showSearch = ref(false);
 const hasActiveSearch = ref(false);
+const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
 
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
 const categoryNames = computed(
@@ -66,18 +67,23 @@ async function loadCategories() {
 
 // Re-runs the search remembered for this member+account (empty criteria —
 // i.e. the full list — when nothing was ever searched), so a search stays
-// applied across pagination and page reloads within the session.
+// applied across pagination and page reloads within the session. When the
+// recalled search is active, the panel is restored docked open and
+// hydrated with its criteria (spec 2.7 / 4.11).
 async function loadOperations(page = 1) {
   const { data } = await apiClient.GET("/operations/search", {
     params: { query: { accountId: accountId.value, page: String(page) } },
   });
-  list.value = (data as OperationList | undefined) ?? {
-    items: [],
-    total: 0,
-    page: 1,
-    pageSize: 20,
-  };
+  const result = data as
+    | (OperationList & { criteria?: SearchCriteria; active?: boolean })
+    | undefined;
+  list.value = result ?? { items: [], total: 0, page: 1, pageSize: 20 };
   selectedIds.value = new Set();
+  hasActiveSearch.value = result?.active ?? false;
+  if (result?.active) {
+    recalledCriteria.value = result.criteria;
+    showSearch.value = true;
+  }
 }
 
 async function runSearch(criteria: SearchCriteria) {
@@ -372,6 +378,7 @@ function isEditable(operation: Operation): boolean {
         class="flex-shrink-0"
         style="width: 320px"
         :categories="categories"
+        :initial-criteria="recalledCriteria"
         @submit="runSearch"
         @clear="clearSearch"
       />

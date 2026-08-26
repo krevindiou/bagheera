@@ -186,6 +186,37 @@ describe("OperationsPage", () => {
     expect(wrapper.text()).toContain("Coffee");
   });
 
+  it("restores an active remembered search docked open and hydrated on mount", async () => {
+    vi.mocked(apiClient.GET).mockImplementation((path: string) => {
+      if (path === "/accounts") {
+        return jsonResponse([
+          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+        ]);
+      }
+      if (path === "/reference-data/categories") return jsonResponse([]);
+      if (path === "/operations/search") {
+        return jsonResponse({
+          items: [],
+          total: 0,
+          page: 1,
+          pageSize: 20,
+          active: true,
+          criteria: { type: "credit", thirdParty: "Rent" },
+        });
+      }
+      if (path === "/accounts/{id}/chart")
+        return jsonResponse({ currency: "USD", axisBounds: null, points: [] });
+      return jsonResponse(undefined);
+    });
+
+    const wrapper = await mountPage();
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="onboarding-tip"]').exists()).toBe(false);
+    expect((wrapper.get("#search-third-party").element as HTMLInputElement).value).toBe("Rent");
+  });
+
   it("gates batch delete behind the confirmation modal", async () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {

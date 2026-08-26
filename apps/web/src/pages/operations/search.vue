@@ -3,7 +3,7 @@ import { computed, ref, watch } from "vue";
 import { categoryLabel, groupCategories, PAYMENT_METHODS } from "./operations.types";
 import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
 
-const props = defineProps<{ categories: Category[] }>();
+const props = defineProps<{ categories: Category[]; initialCriteria?: SearchCriteria }>();
 const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
 
 const type = ref<"debit" | "credit">("debit");
@@ -19,6 +19,27 @@ const dateTo = ref("");
 const notes = ref("");
 // Three-state, default "Reconciled & not reconciled" (no filter).
 const reconciled = ref<"" | "true" | "false">("");
+
+// Hydrate the panel's fields from a remembered search recalled by the
+// parent (e.g. on mount/navigate-back), so a docked-open panel reflects
+// the criteria that are actually applied.
+function hydrate(criteria: SearchCriteria | undefined) {
+  if (!criteria) return;
+  type.value = criteria.type ?? "debit";
+  thirdParty.value = criteria.thirdParty ?? "";
+  categoryIds.value = criteria.categoryIds ?? [];
+  paymentMethodIds.value = criteria.paymentMethodIds ?? [];
+  amountOperator1.value = criteria.amountComparators?.[0]?.operator ?? "";
+  amountValue1.value = criteria.amountComparators?.[0]?.value;
+  amountOperator2.value = criteria.amountComparators?.[1]?.operator ?? "";
+  amountValue2.value = criteria.amountComparators?.[1]?.value;
+  dateFrom.value = criteria.dateFrom ?? "";
+  dateTo.value = criteria.dateTo ?? "";
+  notes.value = criteria.notes ?? "";
+  reconciled.value = criteria.reconciled === undefined ? "" : criteria.reconciled ? "true" : "false";
+}
+
+watch(() => props.initialCriteria, hydrate, { immediate: true });
 
 const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", "eq"];
 

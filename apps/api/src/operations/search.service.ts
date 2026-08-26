@@ -117,12 +117,19 @@ export class OperationSearchService {
   }
 
   // Re-runs the last remembered search (empty criteria if none stored yet).
+  // Exposes the criteria and whether any is set, so the frontend can
+  // restore the search panel's open/hydrated state on mount.
   async recallAndRun(req: Request, accountId: number, page: number) {
     const memberId = this.requireMemberId(req);
     await this.requireOwnedAccount(accountId, memberId);
 
     const criteria = await this.recall(memberId, accountId);
-    return this.run(accountId, criteria, page);
+    const result = await this.run(accountId, criteria, page);
+    return {
+      ...result,
+      criteria,
+      active: Object.keys(criteria).length > 0,
+    };
   }
 
   private async run(accountId: number, criteria: SearchCriteria, page: number) {
