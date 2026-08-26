@@ -37,6 +37,9 @@ describe("OperationsPage", () => {
           { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
         ]);
       }
+      if (path === "/banks") {
+        return jsonResponse([{ id: 1, name: "My Bank", closed: false, deleted: false }]);
+      }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/operations/search") {
         return jsonResponse({
@@ -189,6 +192,9 @@ describe("OperationsPage", () => {
         return jsonResponse([
           { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
         ]);
+      }
+      if (path === "/banks") {
+        return jsonResponse([{ id: 1, name: "My Bank", closed: false, deleted: false }]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/operations/search") {

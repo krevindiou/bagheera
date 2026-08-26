@@ -16,11 +16,20 @@ async function batchDelete() {
   if (!(await confirm()))
     return;
 
-  const { response } = await apiClient.POST("/operations/batch/delete", {
+  const { data, response } = await apiClient.POST("/operations/batch/delete", {
     body: { ids: props.selectedIds },
   });
   if (!response.ok) {
     toast(t("operations.genericError"), "error");
+    return;
+  }
+  // The server silently skips ids it won't touch (foreign, closed-account,
+  // deleted — see batch.service.ts), still returning 200. A zero count
+  // means nothing was actually deleted, so don't claim success.
+  const deletedCount = (data as { deletedCount?: number } | undefined)?.deletedCount ?? 0;
+  if (deletedCount === 0) {
+    toast(t("operations.genericError"), "error");
+    emit("done");
     return;
   }
   toast(t("operations.batch.deleted"), "success");
@@ -32,11 +41,17 @@ async function batchReconcile() {
   if (!(await confirm()))
     return;
 
-  const { response } = await apiClient.POST("/operations/batch/reconcile", {
+  const { data, response } = await apiClient.POST("/operations/batch/reconcile", {
     body: { ids: props.selectedIds },
   });
   if (!response.ok) {
     toast(t("operations.genericError"), "error");
+    return;
+  }
+  const reconciledCount = (data as { reconciledCount?: number } | undefined)?.reconciledCount ?? 0;
+  if (reconciledCount === 0) {
+    toast(t("operations.genericError"), "error");
+    emit("done");
     return;
   }
   toast(t("operations.batch.reconciled"), "success");

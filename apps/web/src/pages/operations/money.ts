@@ -23,6 +23,14 @@ export function currencySymbol(currency: string): string {
   }
 }
 
+// Date formatting follows the active locale, same as money. Accepts a
+// stored `YYYY-MM-DD` date string and renders it localized.
+export function formatDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return new Intl.DateTimeFormat(LOCALE).format(parsed);
+}
+
 // Spec 2.1: displayed amounts are localized currency strings in the
 // account's currency. Accepts either a stored (×10,000) integer, or an
 // already-converted decimal amount when `alreadyDisplayAmount` is true
