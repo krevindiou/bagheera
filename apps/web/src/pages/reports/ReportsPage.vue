@@ -129,13 +129,16 @@ async function toggleView(report: Report) {
           :key="report.id"
           class="border rounded p-3 mb-3"
           :class="{ 'table-active': selectedIds.has(report.id) }"
+          style="cursor: pointer"
           data-testid="report-row"
+          @click="toggleView(report)"
         >
           <div class="d-flex align-items-center gap-2">
             <input
               type="checkbox"
               data-testid="report-checkbox"
               :checked="selectedIds.has(report.id)"
+              @click.stop
               @change="toggleSelected(report.id)"
             />
             <h2 class="h6 mb-0">{{ report.title }}</h2>
@@ -143,7 +146,7 @@ async function toggleView(report: Report) {
             <span v-if="report.homepage" class="badge text-bg-info">{{
               $t("reports.homepage")
             }}</span>
-            <div class="ms-auto d-flex gap-2">
+            <div class="ms-auto d-flex gap-2" @click.stop>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
