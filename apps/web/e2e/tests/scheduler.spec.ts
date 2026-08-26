@@ -30,7 +30,7 @@ test("a due scheduler generates an operation once the member signs back in", asy
   await expect(page.getByTestId("scheduler-row").filter({ hasText: "Rent" })).toBeVisible();
 
   await page.getByRole("link", { name: "Bagheera" }).click();
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("button", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/en\/sign-in$/);
   await signIn(page, email, password);
 

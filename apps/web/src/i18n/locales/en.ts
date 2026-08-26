@@ -42,6 +42,7 @@ export default {
       success:
         "You are now registered. You will receive an email with a link to activate your account.",
       emailTaken: "Email is already registered.",
+      genericError: "Something went wrong. Please try again.",
       signInLink: "Already have an account? Sign in",
     },
     activate: {
@@ -81,7 +82,7 @@ export default {
   },
   home: {
     signedInAs: "Connected as {email}",
-    signOut: "Sign out",
+    signOut: "Logout",
     accountsLink: "Accounts",
     profileLink: "Profile settings",
     passwordLink: "Change password",

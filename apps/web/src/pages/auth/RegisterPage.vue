@@ -33,17 +33,24 @@ const [password, passwordAttrs] = defineField("password");
 const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
 const emailTaken = ref(false);
+const genericError = ref(false);
 
 const onSubmit = handleSubmit(async (values) => {
   emailTaken.value = false;
+  genericError.value = false;
   rememberAttemptedEmail(values.email);
 
-  const { response } = await apiClient.POST("/members/register", {
+  const { error, response } = await apiClient.POST("/members/register", {
     body: { ...values, country: values.country.toUpperCase() },
   });
 
   if (!response.ok) {
-    emailTaken.value = true;
+    const message = (error as { message?: unknown } | undefined)?.message;
+    if (message === "Email is already registered.") {
+      emailTaken.value = true;
+    } else {
+      genericError.value = true;
+    }
     return;
   }
 
@@ -59,6 +66,9 @@ const onSubmit = handleSubmit(async (values) => {
 
     <div v-if="emailTaken" class="alert alert-danger" role="alert">
       {{ $t("auth.register.emailTaken") }}
+    </div>
+    <div v-if="genericError" class="alert alert-danger" role="alert">
+      {{ $t("auth.register.genericError") }}
     </div>
 
     <form novalidate @submit="onSubmit">
@@ -134,6 +144,9 @@ const onSubmit = handleSubmit(async (values) => {
 
     <div class="mt-3">
       <router-link :to="{ name: 'sign-in' }">{{ $t("auth.register.signInLink") }}</router-link>
+    </div>
+    <div class="mt-2">
+      <router-link :to="{ name: 'sign-in' }">{{ $t("common.cancel") }}</router-link>
     </div>
   </div>
 </template>

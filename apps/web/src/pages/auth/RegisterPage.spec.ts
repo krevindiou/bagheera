@@ -79,14 +79,28 @@ describe("RegisterPage", () => {
     await waitForRouteName(router, "sign-in");
   });
 
-  it("shows the email-taken banner on a rejected submission", async () => {
+  it("shows the email-taken banner when the API rejects with the uniqueness error", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
       response: { ok: false, status: 400 },
+      error: { message: "Email is already registered." },
     } as never);
     const wrapper = mountPage();
     await fillValidForm(wrapper);
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain("Email is already registered.");
+  });
+
+  it("shows a generic error, not the email-taken banner, for any other backend failure", async () => {
+    vi.mocked(apiClient.POST).mockResolvedValue({
+      response: { ok: false, status: 400 },
+      error: { message: "Country must be a 2-letter code." },
+    } as never);
+    const wrapper = mountPage();
+    await fillValidForm(wrapper);
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).not.toContain("Email is already registered.");
+    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
   });
 });

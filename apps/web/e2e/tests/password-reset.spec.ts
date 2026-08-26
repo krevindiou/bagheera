@@ -6,7 +6,7 @@ test("a member can reset their password via the emailed link", async ({ page }) 
   const { email } = await registerActivateSignIn(page);
   const newPassword = "a-brand-new-password";
 
-  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("button", { name: "Logout" }).click();
   await expect(page).toHaveURL(/\/en\/sign-in$/);
 
   await page.getByRole("link", { name: "Forgot your password?" }).click();
