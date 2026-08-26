@@ -3,11 +3,11 @@ import { computed, onMounted, ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import { useConfirm } from "../../composables/useConfirm";
-import { editBankSchema, editAccountSchema } from "./accounts.schemas";
+import { editBankSchema } from "./accounts.schemas";
 import type { Bank, Account } from "./accounts.types";
 import BankChoiceForm from "./BankChoiceForm.vue";
 import CreateAccountForm from "./CreateAccountForm.vue";
@@ -16,6 +16,7 @@ const { push: toast } = useToast();
 const { confirm } = useConfirm();
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 
 const banks = ref<Bank[]>([]);
 const accounts = ref<Account[]>([]);
@@ -52,7 +53,18 @@ async function load() {
   accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
 }
 
-onMounted(load);
+onMounted(async () => {
+  await load();
+  // The dashboard's onboarding tips deep-link here via a `start` query
+  // param so they land directly in the relevant flow instead of the
+  // plain accounts list.
+  if (route.query.start === "bank-choice") {
+    creationStep.value = "bank-choice";
+  } else if (route.query.start === "new-account" && activeBanks.value.length > 0) {
+    chosenBankId.value = activeBanks.value[0]!.id;
+    creationStep.value = "account";
+  }
+});
 
 function accountsForBank(bankId: number) {
   return accounts.value.filter((account) => account.bankId === bankId);
@@ -114,36 +126,16 @@ async function deleteBank(bank: Bank) {
   await load();
 }
 
-// -- Edit account name --
-const {
-  defineField: defineAccountField,
-  handleSubmit: handleAccountSubmit,
-  errors: accountErrors,
-  setValues: setAccountValues,
-} = useForm({ validationSchema: toTypedSchema(editAccountSchema) });
-const [editAccountName, editAccountNameAttrs] = defineAccountField("name");
-
+// -- Edit account (reuses the creation form, with bank and currency
+// shown read-only, see CreateAccountForm's `mode="edit"`) --
 function startEditAccount(account: Account) {
   editingAccountId.value = account.id;
-  setAccountValues({ name: account.name });
 }
 
-const submitEditAccount = handleAccountSubmit(async (values) => {
-  const id = editingAccountId.value;
-  const account = accounts.value.find((a) => a.id === id);
-  if (!account) return;
-  const { error, response } = await apiClient.PATCH("/accounts/{id}", {
-    params: { path: { id: account.id } },
-    body: { name: values.name, bankId: account.bankId, currency: account.currency },
-  });
-  if (!response.ok) {
-    toast(errorMessage(error) ?? t("accounts.genericError"), "error");
-    return;
-  }
+async function onAccountUpdated() {
   editingAccountId.value = null;
-  toast(t("accounts.accountSaved"), "success");
   await load();
-});
+}
 
 async function closeAccount(account: Account) {
   if (!(await confirm())) return;
@@ -268,38 +260,28 @@ function errorMessage(error: unknown): string | undefined {
         <li
           v-for="account in accountsForBank(bank.id)"
           :key="account.id"
-          class="d-flex align-items-center gap-2 py-1"
+          class="py-1"
           data-testid="account-row"
-          :style="editingAccountId === account.id ? undefined : 'cursor: pointer'"
-          @click="editingAccountId === account.id || goToAccount(account)"
         >
-          <template v-if="editingAccountId === account.id">
-            <form
-              novalidate
-              class="d-flex align-items-center gap-2 flex-grow-1"
-              @submit="submitEditAccount"
-            >
-              <input
-                v-model="editAccountName"
-                v-bind="editAccountNameAttrs"
-                type="text"
-                autofocus
-                class="form-control form-control-sm w-auto"
-                :class="{ 'is-invalid': accountErrors.name }"
-              />
-              <button type="submit" class="btn btn-sm btn-primary">
-                {{ $t("accounts.submit") }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                @click="editingAccountId = null"
-              >
-                {{ $t("common.cancel") }}
-              </button>
-            </form>
-          </template>
-          <template v-else>
+          <div
+            v-if="editingAccountId === account.id"
+            class="account-edit-form"
+            @click.stop
+          >
+            <CreateAccountForm
+              mode="edit"
+              :banks="banks"
+              :account="account"
+              @updated="onAccountUpdated"
+              @cancel="editingAccountId = null"
+            />
+          </div>
+          <div
+            v-else
+            class="d-flex align-items-center gap-2"
+            style="cursor: pointer"
+            @click="goToAccount(account)"
+          >
             <router-link
               :to="{ name: 'operations', params: { accountId: account.id } }"
               @click.stop
@@ -338,7 +320,7 @@ function errorMessage(error: unknown): string | undefined {
                 {{ $t("accounts.delete") }}
               </button>
             </div>
-          </template>
+          </div>
         </li>
       </ul>
     </section>

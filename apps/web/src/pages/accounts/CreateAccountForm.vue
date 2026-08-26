@@ -7,25 +7,35 @@ import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import { getCurrencyOptions, getGuessedCurrency } from "../../composables/useCurrencyOptions";
 import { currencySymbol } from "../operations/money";
-import { createAccountSchema, type CreateAccountForm } from "./accounts.schemas";
-import type { Bank } from "./accounts.types";
+import { createAccountSchema, editAccountSchema, type CreateAccountForm } from "./accounts.schemas";
+import type { Account, Bank } from "./accounts.types";
 
-// Spec 4.8: reached after the bank-choice step (4.7) — pre-scoped to the
-// chosen/created bank, but the bank field stays an editable dropdown of
-// the member's active banks.
-const props = defineProps<{ banks: Bank[]; bankId: number }>();
-const emit = defineEmits<{ created: [accountId: number]; cancel: [] }>();
+// Account creation, reached after the bank-choice step, pre-scoped to the
+// chosen/created bank (the bank field stays an editable dropdown of the
+// member's active banks). Editing reuses this same form: same fields, but
+// bank and currency are shown read-only and there's no initial-balance
+// field.
+const props = defineProps<{
+  banks: Bank[];
+  bankId?: number;
+  mode?: "create" | "edit";
+  account?: Account;
+}>();
+const emit = defineEmits<{ created: [accountId: number]; updated: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
 const currencyOptions = getCurrencyOptions();
 
+const isEdit = computed(() => props.mode === "edit");
+const schema = computed(() => (isEdit.value ? editAccountSchema : createAccountSchema));
+
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<CreateAccountForm>({
-  validationSchema: toTypedSchema(createAccountSchema),
+  validationSchema: toTypedSchema(schema.value),
   initialValues: {
-    bankId: props.bankId,
-    name: "",
-    currency: getGuessedCurrency(currencyOptions),
+    bankId: props.account?.bankId ?? props.bankId ?? "",
+    name: props.account?.name ?? "",
+    currency: props.account?.currency ?? getGuessedCurrency(currencyOptions),
   },
 });
 const [selectedBankId, bankIdAttrs] = defineField("bankId");
@@ -37,6 +47,20 @@ const initialBalanceCurrencySymbol = computed(() =>
 );
 
 const onSubmit = handleSubmit(async (values) => {
+  if (isEdit.value && props.account) {
+    const { error, response } = await apiClient.PATCH("/accounts/{id}", {
+      params: { path: { id: props.account.id } },
+      body: { name: values.name, bankId: props.account.bankId, currency: props.account.currency },
+    });
+    if (!response.ok) {
+      toast(errorMessage(error) ?? t("accounts.genericError"), "error");
+      return;
+    }
+    toast(t("accounts.accountSaved"), "success");
+    emit("updated");
+    return;
+  }
+
   const { data, error, response } = await apiClient.POST("/accounts", {
     body: {
       bankId: Number(values.bankId),
@@ -66,7 +90,7 @@ function errorMessage(error: unknown): string | undefined {
 
 <template>
   <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
-    <h2 class="h5">{{ $t("accounts.addAccount") }}</h2>
+    <h2 class="h5">{{ isEdit ? $t("accounts.edit") : $t("accounts.addAccount") }}</h2>
 
     <div class="mb-3">
       <label class="form-label" for="account-bank">{{ $t("accounts.bank") }}</label>
@@ -74,7 +98,8 @@ function errorMessage(error: unknown): string | undefined {
         id="account-bank"
         v-model="selectedBankId"
         v-bind="bankIdAttrs"
-        autofocus
+        :autofocus="!isEdit"
+        :disabled="isEdit"
         class="form-select"
         :class="{ 'is-invalid': errors.bankId }"
       >
@@ -91,6 +116,7 @@ function errorMessage(error: unknown): string | undefined {
         v-model="name"
         v-bind="nameAttrs"
         type="text"
+        :autofocus="isEdit"
         class="form-control"
         :class="{ 'is-invalid': errors.name }"
       />
@@ -105,6 +131,7 @@ function errorMessage(error: unknown): string | undefined {
         id="account-currency"
         v-model="currency"
         v-bind="currencyAttrs"
+        :disabled="isEdit"
         class="form-select"
         :class="{ 'is-invalid': errors.currency }"
       >
@@ -118,7 +145,7 @@ function errorMessage(error: unknown): string | undefined {
       </div>
     </div>
 
-    <div class="mb-3">
+    <div v-if="!isEdit" class="mb-3">
       <label class="form-label" for="account-initial-balance">
         {{ $t("accounts.initialBalance") }}
       </label>

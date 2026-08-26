@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -22,6 +23,15 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<BankChoiceFo
 });
 const [bankId, bankIdAttrs] = defineField("bankId");
 const [bankName, bankNameAttrs] = defineField("bankName");
+
+// The two options are mutually exclusive — selecting one clears the
+// other as the member interacts with the form, not only at submit.
+watch(bankId, (value) => {
+  if (value) bankName.value = "";
+});
+watch(bankName, (value) => {
+  if (value) bankId.value = "";
+});
 
 const onSubmit = handleSubmit(async (values) => {
   if (values.bankId) {
