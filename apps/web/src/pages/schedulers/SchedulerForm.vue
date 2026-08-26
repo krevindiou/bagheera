@@ -25,7 +25,7 @@ const props = withDefaults(
     banks?: Bank[];
     scheduler?: Scheduler | null;
   }>(),
-  { banks: () => [] },
+  { banks: () => [], scheduler: null },
 );
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 

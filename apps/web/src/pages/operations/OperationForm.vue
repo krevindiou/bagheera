@@ -25,7 +25,7 @@ const props = withDefaults(
     banks?: Bank[];
     operation?: Operation | null;
   }>(),
-  { banks: () => [] },
+  { banks: () => [], operation: null },
 );
 const emit = defineEmits<{ saved: []; savedAndNew: []; cancel: [] }>();
 
