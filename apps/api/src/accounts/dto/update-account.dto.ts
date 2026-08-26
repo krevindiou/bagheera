@@ -1,11 +1,12 @@
 import {
+  IsIn,
   IsInt,
   IsString,
-  Length,
   Min,
   MinLength,
   MaxLength,
 } from 'class-validator';
+import { ISO_CURRENCY_CODES } from '../../common/currency';
 
 // Bank and currency are shown read-only on the edit form but still
 // submitted — the server rejects any attempt to actually change them
@@ -20,7 +21,6 @@ export class UpdateAccountDto {
   @Min(1)
   bankId!: number;
 
-  @IsString()
-  @Length(3, 3)
+  @IsIn(ISO_CURRENCY_CODES)
   currency!: string;
 }

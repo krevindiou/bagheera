@@ -1,13 +1,14 @@
 import {
+  IsIn,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
-  Length,
   Min,
   MinLength,
   MaxLength,
 } from 'class-validator';
+import { ISO_CURRENCY_CODES } from '../../common/currency';
 
 export class CreateAccountDto {
   @IsInt()
@@ -20,8 +21,7 @@ export class CreateAccountDto {
   name!: string;
 
   // ISO currency code, e.g. "USD".
-  @IsString()
-  @Length(3, 3)
+  @IsIn(ISO_CURRENCY_CODES)
   currency!: string;
 
   // Decimal money value (÷10,000 boundary conversion happens server-side);
