@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
+import { formatMoney } from "../operations/money";
 import type { ReportChart } from "../reports/reports.types";
 import type { DashboardResponse, DashboardSynthesisChart } from "./dashboard.types";
 
@@ -89,7 +90,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
             class="fs-4"
             :class="balance.amount >= 0 ? 'text-success' : 'text-danger'"
           >
-            {{ balance.amount.toFixed(2) }} {{ balance.currency }}
+            {{ formatMoney(balance.amount, balance.currency, true) }}
           </li>
         </ul>
       </section>
@@ -98,15 +99,20 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
         <div v-if="dashboard.lastSalary" data-testid="last-salary">
           <h2 class="h6">{{ $t("dashboard.lastSalary") }}</h2>
           <p class="text-success fs-5 mb-0">
-            {{ dashboard.lastSalary.amount.toFixed(2) }} {{ dashboard.lastSalary.currency }}
+            {{ formatMoney(dashboard.lastSalary.amount, dashboard.lastSalary.currency, true) }}
           </p>
           <p class="text-muted small">{{ dashboard.lastSalary.valueDate }}</p>
         </div>
         <div v-if="dashboard.lastBiggestExpense" data-testid="last-biggest-expense">
           <h2 class="h6">{{ $t("dashboard.lastBiggestExpense") }}</h2>
           <p class="text-danger fs-5 mb-0">
-            {{ dashboard.lastBiggestExpense.amount.toFixed(2) }}
-            {{ dashboard.lastBiggestExpense.currency }}
+            {{
+              formatMoney(
+                dashboard.lastBiggestExpense.amount,
+                dashboard.lastBiggestExpense.currency,
+                true,
+              )
+            }}
           </p>
           <p class="text-muted small">{{ dashboard.lastBiggestExpense.valueDate }}</p>
         </div>
@@ -137,7 +143,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
               <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
                 {{ account.name }}
               </router-link>
-              — {{ account.balance.toFixed(2) }} {{ account.currency }}
+              — {{ formatMoney(account.balance, account.currency, true) }}
             </li>
           </ul>
         </div>

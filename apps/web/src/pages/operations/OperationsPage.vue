@@ -4,7 +4,7 @@ import { useRoute } from "vue-router";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account, Bank } from "../accounts/accounts.types";
-import { toDisplayAmount } from "./money";
+import { formatMoney } from "./money";
 import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "./operations.types";
 import type { Category, Operation, OperationList, SearchCriteria } from "./operations.types";
 import OperationForm from "./OperationForm.vue";
@@ -144,7 +144,7 @@ function paymentMethodIcon(id: number): string {
 
 function amountLabel(operation: Operation): string {
   const minorUnits = operation.debit ?? operation.credit ?? 0;
-  return toDisplayAmount(minorUnits).toFixed(2);
+  return formatMoney(minorUnits, account.value?.currency ?? "USD");
 }
 
 function toggleSelected(id: number) {
@@ -199,11 +199,15 @@ function isEditable(operation: Operation): boolean {
     <div v-if="balance" class="d-flex gap-4 mb-3" data-testid="account-balances">
       <span
         >{{ $t("operations.balance") }}:
-        <strong>{{ balance.balance.toFixed(2) }}</strong></span
+        <strong>{{
+          formatMoney(balance.balance, account?.currency ?? "USD", true)
+        }}</strong></span
       >
       <span
         >{{ $t("operations.reconciledBalance") }}:
-        <strong>{{ balance.reconciledBalance.toFixed(2) }}</strong></span
+        <strong>{{
+          formatMoney(balance.reconciledBalance, account?.currency ?? "USD", true)
+        }}</strong></span
       >
     </div>
 

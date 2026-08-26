@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { apiClient } from "../../api/client";
 import type { Account, Bank } from "../accounts/accounts.types";
-import { toDisplayAmount } from "../operations/money";
+import { formatMoney } from "../operations/money";
 import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "../operations/operations.types";
 import type { Category } from "../operations/operations.types";
 import SchedulerForm from "./SchedulerForm.vue";
@@ -78,7 +78,7 @@ function paymentMethodIcon(id: number): string {
 
 function amountLabel(scheduler: Scheduler): string {
   const minorUnits = scheduler.debit ?? scheduler.credit ?? 0;
-  return toDisplayAmount(minorUnits).toFixed(2);
+  return formatMoney(minorUnits, account.value?.currency ?? "USD");
 }
 
 function toggleSelected(id: number) {
