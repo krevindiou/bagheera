@@ -166,9 +166,9 @@ async function signOut() {
       </div>
     </nav>
     <main>
+      <ToastContainer />
       <router-view />
     </main>
-    <ToastContainer />
     <ConfirmModal />
   </div>
 </template>

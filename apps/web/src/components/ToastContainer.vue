@@ -11,7 +11,11 @@ const variantClass: Record<string, string> = {
 </script>
 
 <template>
-  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080">
+  <!-- Toasts render in the normal document flow at the top of the page
+       content, directly below the nav bar and above each page's own
+       title/content, rather than as a fixed viewport-corner overlay. -->
+  <div v-if="toasts.length > 0" class="toast-container container py-2 d-flex flex-column gap-2">
+
     <div
       v-for="toast in toasts"
       :key="toast.id"
