@@ -225,7 +225,7 @@ describe('schedulers (integration)', () => {
   it('rejects a scheduler transfer target that belongs to another member', async () => {
     const { account: acc } = await createOwnedAccount('sched-xfer1@example.com');
     const { account: foreign } = await createOwnedAccount(
-      'sched-xfer1-other@example.com',
+      'sched-xfer1b@example.com',
     );
     const { token, cookies } = await authedRequest(
       'sched-xfer1@example.com',
@@ -291,7 +291,7 @@ describe('schedulers (integration)', () => {
     );
     const [closedTarget] = await ctx.db
       .insert(account)
-      .values({ bankId: ownerBank.id, name: 'Savings', closed: true })
+      .values({ bankId: ownerBank.id, name: 'Savings', currency: 'USD', closed: true })
       .returning();
     const { token, cookies } = await authedRequest(
       'sched-xfer3@example.com',
@@ -323,7 +323,7 @@ describe('schedulers (integration)', () => {
     );
     const [target] = await ctx.db
       .insert(account)
-      .values({ bankId: ownerBank.id, name: 'Savings' })
+      .values({ bankId: ownerBank.id, name: 'Savings', currency: 'USD' })
       .returning();
     const { token, cookies } = await authedRequest(
       'sched-xfer4@example.com',

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -17,21 +16,12 @@ const emit = defineEmits<{ chosen: [bankId: number]; cancel: [] }>();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-const { defineField, handleSubmit, errors, isSubmitting, setFieldValue } =
-  useForm<BankChoiceForm>({
-    validationSchema: toTypedSchema(bankChoiceSchema),
-    initialValues: { bankId: "", bankName: "" },
-  });
+const { defineField, handleSubmit, errors, isSubmitting } = useForm<BankChoiceForm>({
+  validationSchema: toTypedSchema(bankChoiceSchema),
+  initialValues: { bankId: "", bankName: "" },
+});
 const [bankId, bankIdAttrs] = defineField("bankId");
 const [bankName, bankNameAttrs] = defineField("bankName");
-
-// The two options are mutually exclusive — selecting one clears the other.
-watch(bankId, (value) => {
-  if (value) setFieldValue("bankName", "");
-});
-watch(bankName, (value) => {
-  if (value) setFieldValue("bankId", "");
-});
 
 const onSubmit = handleSubmit(async (values) => {
   if (values.bankId) {
