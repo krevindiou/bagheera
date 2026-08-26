@@ -42,7 +42,7 @@ describe("SignInPage", () => {
     await wrapper.find("#sign-in-password").setValue("wrong-password");
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Invalid email or password.");
+    expect(wrapper.text()).toContain("Invalid email or password");
   });
 
   it("shows the inactive-account banner with a working resend for a 403", async () => {

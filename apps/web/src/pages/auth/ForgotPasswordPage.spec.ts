@@ -3,7 +3,9 @@ import { mount } from "@vue/test-utils";
 import { router } from "../../router";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
+import { useToast } from "../../composables/useToast";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
+import { waitForRouteName } from "../../test-support/waitForRouteName";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 
 vi.mock("../../api/client", () => ({
@@ -13,6 +15,10 @@ vi.mock("../../api/client", () => ({
 describe("ForgotPasswordPage", () => {
   beforeEach(() => {
     vi.mocked(apiClient.POST).mockReset();
+    // The toast queue is a shared module-level singleton, rendered by
+    // ToastContainer.vue (mounted separately in the real app shell, not
+    // here) — read it directly instead of the page's own rendered text.
+    useToast().toasts.splice(0);
   });
 
   it("rejects an invalid email", async () => {
@@ -35,6 +41,8 @@ describe("ForgotPasswordPage", () => {
     expect(apiClient.POST).toHaveBeenCalledWith("/auth/password-recovery", {
       body: { email: "someone@example.com" },
     });
-    expect(wrapper.text()).toContain("If an account exists for this address");
+    const toast = useToast().toasts.find((t) => t.variant === "info");
+    expect(toast?.text).toContain("If an account exists for this address");
+    await waitForRouteName(router, "sign-in");
   });
 });

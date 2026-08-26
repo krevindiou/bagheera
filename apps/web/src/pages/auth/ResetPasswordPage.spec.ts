@@ -3,7 +3,9 @@ import { mount } from "@vue/test-utils";
 import { router } from "../../router";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
+import { useToast } from "../../composables/useToast";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
+import { waitForRouteName } from "../../test-support/waitForRouteName";
 import ResetPasswordPage from "./ResetPasswordPage.vue";
 
 vi.mock("../../api/client", () => ({
@@ -18,6 +20,10 @@ async function goTo(key?: string) {
 describe("ResetPasswordPage", () => {
   beforeEach(() => {
     vi.mocked(apiClient.POST).mockReset();
+    // The toast queue is a shared module-level singleton, rendered by
+    // ToastContainer.vue (mounted separately in the real app shell, not
+    // here) — read it directly instead of the page's own rendered text.
+    useToast().toasts.splice(0);
   });
 
   it("rejects a short password and a mismatched confirmation", async () => {
@@ -48,18 +54,21 @@ describe("ResetPasswordPage", () => {
         passwordConfirmation: "correct-horse",
       },
     });
-    expect(wrapper.text()).toContain("Your password has been updated.");
+    const toast = useToast().toasts.find((t) => t.variant === "success");
+    expect(toast?.text).toContain("Your password has been updated.");
+    await waitForRouteName(router, "sign-in");
   });
 
-  it("shows the invalid-key banner without calling the API when no key is present", async () => {
+  // Spec 4.4: a rejected key (missing, invalid, expired, already used) is a
+  // *silent* return to sign-in — no banner, no toast, so the visitor never
+  // learns which case applies.
+  it("silently redirects to sign-in without calling the API when no key is present", async () => {
     await goTo();
     const wrapper = mount(ResetPasswordPage, { global: { plugins: [router, i18n] } });
-
-    await wrapper.find("#reset-password-password").setValue("correct-horse");
-    await wrapper.find("#reset-password-password-confirmation").setValue("correct-horse");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).not.toHaveBeenCalled();
-    expect(wrapper.text()).toContain("This reset link is invalid or has expired.");
+    expect(useToast().toasts).toHaveLength(0);
+    await waitForRouteName(router, "sign-in");
   });
 });
