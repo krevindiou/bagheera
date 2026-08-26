@@ -12,6 +12,7 @@ async function createAccount(page: Page, name: string): Promise<void> {
   } else {
     await page.locator("#account-bank-name").fill("First National");
   }
+  await page.getByRole("button", { name: "Save" }).click();
   await page.locator("#account-name").fill(name);
   await page.locator("#account-currency").fill("USD");
   await page.locator("#account-initial-balance").fill("100");
@@ -27,6 +28,7 @@ test("a transfer operation mirrors into the target account and unlinks on delete
   // In-app navigation throughout: the client only knows it's authenticated
   // for the current SPA session, so a hard page.goto would bounce back to
   // sign-in despite the cookie still being valid.
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
   await createAccount(page, "Checking");
   await createAccount(page, "Savings");

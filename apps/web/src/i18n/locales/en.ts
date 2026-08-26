@@ -91,6 +91,7 @@ export default {
     empty: "You don't have any bank yet.",
     addAccount: "New account",
     noAccountsForBank: "No account",
+    bank: "Bank",
     existingBank: "Use an existing bank",
     chooseBank: "Choose a bank…",
     newBankName: "Or create a new bank",

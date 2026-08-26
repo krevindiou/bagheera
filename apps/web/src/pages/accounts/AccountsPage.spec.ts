@@ -64,8 +64,6 @@ describe("AccountsPage", () => {
 
     await wrapper.find("#account-bank-id").setValue("1");
     await wrapper.find("#account-bank-name").setValue("New Bank");
-    await wrapper.find("#account-name").setValue("Checking");
-    await wrapper.find("#account-currency").setValue("USD");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).not.toHaveBeenCalled();
@@ -82,22 +80,30 @@ describe("AccountsPage", () => {
     await wrapper.find("button.btn-primary").trigger("click");
     await wrapper.vm.$nextTick();
 
-    await wrapper.find("#account-name").setValue("Checking");
-    await wrapper.find("#account-currency").setValue("USD");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain("You must select a bank.");
   });
 
-  it("creates a new bank via the choice endpoint then the account", async () => {
+  it("creates a new bank via the choice endpoint then the account, in two steps", async () => {
     // Spied rather than let it actually resolve: the "operations" route
     // lazy-loads its component, which outlives this test.
     const pushSpy = vi.spyOn(router, "push").mockResolvedValue(undefined as never);
 
-    vi.mocked(apiClient.GET).mockResolvedValue({ data: [], response: { ok: true } } as never);
+    let bankCreated = false;
+    vi.mocked(apiClient.GET).mockImplementation((path: string) => {
+      if (path === "/banks") {
+        return Promise.resolve({
+          data: bankCreated ? [{ id: 5, name: "New Bank", closed: false, deleted: false }] : [],
+          response: { ok: true },
+        }) as never;
+      }
+      return Promise.resolve({ data: [], response: { ok: true } }) as never;
+    });
     vi.mocked(apiClient.POST).mockImplementation((path: string) => {
       if (path === "/banks/choice") {
+        bankCreated = true;
         return Promise.resolve({
           data: { id: 5, name: "New Bank", created: true },
           response: { ok: true },
@@ -115,12 +121,18 @@ describe("AccountsPage", () => {
     await wrapper.find("button.btn-primary").trigger("click");
     await wrapper.vm.$nextTick();
 
+    // Step 1: bank choice.
     await wrapper.find("#account-bank-name").setValue("New Bank");
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith("/banks/choice", { body: { name: "New Bank" } });
+
+    // Step 2: account creation, pre-scoped to the bank chosen above.
+    expect(wrapper.find<HTMLSelectElement>("#account-bank").element.value).toBe("5");
     await wrapper.find("#account-name").setValue("Checking");
     await wrapper.find("#account-currency").setValue("USD");
     await submitAndSettle(wrapper);
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/banks/choice", { body: { name: "New Bank" } });
     expect(apiClient.POST).toHaveBeenCalledWith("/accounts", {
       body: { bankId: 5, name: "Checking", currency: "USD", initialBalance: undefined },
     });

@@ -9,6 +9,7 @@ import { useToast } from "../../composables/useToast";
 import { useConfirm } from "../../composables/useConfirm";
 import { editBankSchema, editAccountSchema } from "./accounts.schemas";
 import type { Bank, Account } from "./accounts.types";
+import BankChoiceForm from "./BankChoiceForm.vue";
 import CreateAccountForm from "./CreateAccountForm.vue";
 
 const { push: toast } = useToast();
@@ -18,9 +19,29 @@ const router = useRouter();
 
 const banks = ref<Bank[]>([]);
 const accounts = ref<Account[]>([]);
-const showCreateForm = ref(false);
+// Spec 4.7: "New account" starts with a bank-choice step; only once a bank
+// is chosen/created does account creation (4.8), pre-scoped to it, show.
+const creationStep = ref<"closed" | "bank-choice" | "account">("closed");
+const chosenBankId = ref<number | null>(null);
 const editingBankId = ref<number | null>(null);
 const editingAccountId = ref<number | null>(null);
+
+function startCreateAccount() {
+  creationStep.value = "bank-choice";
+}
+
+async function onBankChosen(bankId: number) {
+  // Reload so a freshly created bank is in `banks` (and thus in the
+  // account form's bank dropdown) before pre-selecting it.
+  await load();
+  chosenBankId.value = bankId;
+  creationStep.value = "account";
+}
+
+function cancelCreateAccount() {
+  creationStep.value = "closed";
+  chosenBankId.value = null;
+}
 
 async function load() {
   const [banksResult, accountsResult] = await Promise.all([
@@ -157,7 +178,8 @@ function goToAccount(account: Account) {
 }
 
 async function onAccountCreated(accountId: number) {
-  showCreateForm.value = false;
+  creationStep.value = "closed";
+  chosenBankId.value = null;
   router.push({ name: "operations", params: { accountId } });
 }
 
@@ -321,13 +343,20 @@ function errorMessage(error: unknown): string | undefined {
       </ul>
     </section>
 
-    <CreateAccountForm
-      v-if="showCreateForm"
+    <BankChoiceForm
+      v-if="creationStep === 'bank-choice'"
       :banks="activeBanks"
-      @created="onAccountCreated"
-      @cancel="showCreateForm = false"
+      @chosen="onBankChosen"
+      @cancel="cancelCreateAccount"
     />
-    <button v-else type="button" class="btn btn-primary" @click="showCreateForm = true">
+    <CreateAccountForm
+      v-else-if="creationStep === 'account' && chosenBankId !== null"
+      :banks="activeBanks"
+      :bank-id="chosenBankId"
+      @created="onAccountCreated"
+      @cancel="cancelCreateAccount"
+    />
+    <button v-else type="button" class="btn btn-primary" @click="startCreateAccount">
       {{ $t("accounts.addAccount") }}
     </button>
   </div>

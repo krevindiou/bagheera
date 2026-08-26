@@ -14,22 +14,35 @@ export const editAccountSchema = z.object({
 });
 export type EditAccountForm = z.infer<typeof editAccountSchema>;
 
-// The bank-choice step offers two mutually exclusive options: pick an
-// existing active bank (bankId) or type a new bank's name (bankName).
-export const createAccountSchema = z
+// Spec 4.7: the bank-choice step (its own screen) offers two mutually
+// exclusive options — pick an existing active bank (bankId) or type a new
+// bank's name (bankName) — before account creation (4.8) even starts.
+export const bankChoiceSchema = z
   .object({
     bankId: z.union([z.number(), z.string()]).optional(),
     bankName: z.string().trim().max(32).optional(),
-    name: accountName,
-    currency,
-    initialBalance: z.preprocess(
-      (value) =>
-        value === "" || value === undefined || value === null ? undefined : Number(value),
-      z.number().optional(),
-    ),
   })
   .refine((form) => Boolean(form.bankId) !== Boolean(form.bankName), {
     message: "bankChoiceRequired",
     path: ["bankName"],
   });
+export type BankChoiceForm = z.infer<typeof bankChoiceSchema>;
+
+// Spec 4.8: account creation, pre-scoped to the bank chosen/created above
+// (the bank field stays editable — a dropdown of the member's active
+// banks — but starts pre-selected to that bank).
+export const createAccountSchema = z.object({
+  bankId: z
+    .union([z.number(), z.string()])
+    .refine((value) => value !== "" && value !== undefined && value !== null, {
+      message: "required",
+    }),
+  name: accountName,
+  currency,
+  initialBalance: z.preprocess(
+    (value) =>
+      value === "" || value === undefined || value === null ? undefined : Number(value),
+    z.number().optional(),
+  ),
+});
 export type CreateAccountForm = z.infer<typeof createAccountSchema>;

@@ -13,6 +13,7 @@ test("an idle session redirects to sign-in on the next request", async ({ page }
   // flag stays put and this genuinely exercises the server session
   // expiring underneath it — the accounts data fetch 401s, which the API
   // client's response handler turns into a bounce to sign-in.
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
   await expect(page).toHaveURL(/\/en\/sign-in$/);
 });

@@ -10,9 +10,11 @@ test("create a bank, an account, then an operation, and see the balance update",
   // the client only knows it's authenticated for the current SPA session,
   // so a hard navigation would bounce back to sign-in despite the cookie
   // still being valid.
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
   await page.getByRole("button", { name: "New account" }).click();
   await page.locator("#account-bank-name").fill("First National");
+  await page.getByRole("button", { name: "Save" }).click();
   await page.locator("#account-name").fill("Checking");
   await page.locator("#account-currency").fill("USD");
   await page.locator("#account-initial-balance").fill("100");

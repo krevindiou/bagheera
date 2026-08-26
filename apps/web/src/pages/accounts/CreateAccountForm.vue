@@ -10,7 +10,10 @@ import { currencySymbol } from "../operations/money";
 import { createAccountSchema, type CreateAccountForm } from "./accounts.schemas";
 import type { Bank } from "./accounts.types";
 
-const props = defineProps<{ banks: Bank[] }>();
+// Spec 4.8: reached after the bank-choice step (4.7) — pre-scoped to the
+// chosen/created bank, but the bank field stays an editable dropdown of
+// the member's active banks.
+const props = defineProps<{ banks: Bank[]; bankId: number }>();
 const emit = defineEmits<{ created: [accountId: number]; cancel: [] }>();
 
 const { push: toast } = useToast();
@@ -20,14 +23,12 @@ const currencyOptions = getCurrencyOptions();
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<CreateAccountForm>({
   validationSchema: toTypedSchema(createAccountSchema),
   initialValues: {
-    bankId: "",
-    bankName: "",
+    bankId: props.bankId,
     name: "",
     currency: getGuessedCurrency(currencyOptions),
   },
 });
 const [bankId, bankIdAttrs] = defineField("bankId");
-const [bankName, bankNameAttrs] = defineField("bankName");
 const [name, nameAttrs] = defineField("name");
 const [currency, currencyAttrs] = defineField("currency");
 const [initialBalance, initialBalanceAttrs] = defineField("initialBalance");
@@ -36,25 +37,9 @@ const initialBalanceCurrencySymbol = computed(() =>
 );
 
 const onSubmit = handleSubmit(async (values) => {
-  let resolvedBankId: number;
-
-  if (values.bankId) {
-    resolvedBankId = Number(values.bankId);
-  } else {
-    const { data, error, response } = await apiClient.POST("/banks/choice", {
-      body: { name: values.bankName },
-    });
-    if (!response.ok) {
-      toast(errorMessage(error) ?? t("accounts.genericError"), "error");
-      return;
-    }
-    resolvedBankId = (data as unknown as { id: number }).id;
-    toast(t("accounts.bankSaved"), "success");
-  }
-
   const { data, error, response } = await apiClient.POST("/accounts", {
     body: {
-      bankId: resolvedBankId,
+      bankId: Number(values.bankId),
       name: values.name,
       currency: values.currency.toUpperCase(),
       initialBalance: values.initialBalance,
@@ -84,35 +69,19 @@ function errorMessage(error: unknown): string | undefined {
     <h2 class="h5">{{ $t("accounts.addAccount") }}</h2>
 
     <div class="mb-3">
-      <label class="form-label" for="account-bank-id">{{ $t("accounts.existingBank") }}</label>
+      <label class="form-label" for="account-bank">{{ $t("accounts.bank") }}</label>
       <select
-        id="account-bank-id"
+        id="account-bank"
         v-model="bankId"
         v-bind="bankIdAttrs"
         autofocus
         class="form-select"
         :class="{ 'is-invalid': errors.bankId }"
       >
-        <option value="">{{ $t("accounts.chooseBank") }}</option>
         <option v-for="bank in props.banks" :key="bank.id" :value="bank.id">
           {{ bank.name }}
         </option>
       </select>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="account-bank-name">{{ $t("accounts.newBankName") }}</label>
-      <input
-        id="account-bank-name"
-        v-model="bankName"
-        v-bind="bankNameAttrs"
-        type="text"
-        class="form-control"
-        :class="{ 'is-invalid': errors.bankName }"
-      />
-      <div v-if="errors.bankName" class="invalid-feedback">
-        {{ $t("accounts.validation.bankChoiceRequired") }}
-      </div>
     </div>
 
     <div class="mb-3">
