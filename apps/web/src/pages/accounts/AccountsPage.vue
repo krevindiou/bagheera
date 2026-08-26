@@ -150,6 +150,12 @@ async function deleteAccount(account: Account) {
   await load();
 }
 
+// Spec 2.7: clicking anywhere in a row (outside its checkbox/controls)
+// opens the row's primary destination — here, the account's operations.
+function goToAccount(account: Account) {
+  router.push({ name: "operations", params: { accountId: account.id } });
+}
+
 async function onAccountCreated(accountId: number) {
   showCreateForm.value = false;
   router.push({ name: "operations", params: { accountId } });
@@ -242,6 +248,8 @@ function errorMessage(error: unknown): string | undefined {
           :key="account.id"
           class="d-flex align-items-center gap-2 py-1"
           data-testid="account-row"
+          :style="editingAccountId === account.id ? undefined : 'cursor: pointer'"
+          @click="editingAccountId === account.id || goToAccount(account)"
         >
           <template v-if="editingAccountId === account.id">
             <form
@@ -270,7 +278,10 @@ function errorMessage(error: unknown): string | undefined {
             </form>
           </template>
           <template v-else>
-            <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
+            <router-link
+              :to="{ name: 'operations', params: { accountId: account.id } }"
+              @click.stop
+            >
               {{ account.name }} ({{ account.currency }})
             </router-link>
             <span v-if="account.closed" class="badge text-bg-secondary">
@@ -279,7 +290,7 @@ function errorMessage(error: unknown): string | undefined {
             <span v-if="account.deleted" class="badge text-bg-danger">
               {{ $t("accounts.deleted") }}
             </span>
-            <div class="ms-auto d-flex gap-2">
+            <div class="ms-auto d-flex gap-2" @click.stop>
               <button
                 v-if="!account.closed && !account.deleted"
                 type="button"

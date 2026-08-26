@@ -144,8 +144,10 @@ function goToPage(page: number) {
             :key="scheduler.id"
             data-testid="scheduler-row"
             :class="{ 'table-active': selectedIds.has(scheduler.id) }"
+            style="cursor: pointer"
+            @click="startEdit(scheduler)"
           >
-            <td>
+            <td @click.stop>
               <input
                 type="checkbox"
                 :checked="selectedIds.has(scheduler.id)"
@@ -168,7 +170,7 @@ function goToPage(page: number) {
             <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : "" }}</td>
             <td class="text-end">{{ scheduler.frequencyValue }}</td>
             <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
-            <td>
+            <td @click.stop>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary"

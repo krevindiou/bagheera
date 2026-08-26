@@ -271,8 +271,10 @@ function isEditable(operation: Operation): boolean {
             :key="operation.id"
             data-testid="operation-row"
             :class="{ 'table-active': selectedIds.has(operation.id) }"
+            :style="isEditable(operation) ? 'cursor: pointer' : undefined"
+            @click="isEditable(operation) && startEdit(operation)"
           >
-            <td>
+            <td @click.stop>
               <input
                 type="checkbox"
                 :checked="selectedIds.has(operation.id)"
@@ -302,7 +304,7 @@ function isEditable(operation: Operation): boolean {
             </td>
             <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : "" }}</td>
             <td>{{ operation.valueDate }}</td>
-            <td>
+            <td @click.stop>
               <button
                 v-if="isEditable(operation)"
                 type="button"
