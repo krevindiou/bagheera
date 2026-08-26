@@ -28,7 +28,7 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<CreateAccoun
     currency: getGuessedCurrency(currencyOptions),
   },
 });
-const [bankId, bankIdAttrs] = defineField("bankId");
+const [selectedBankId, bankIdAttrs] = defineField("bankId");
 const [name, nameAttrs] = defineField("name");
 const [currency, currencyAttrs] = defineField("currency");
 const [initialBalance, initialBalanceAttrs] = defineField("initialBalance");
@@ -72,7 +72,7 @@ function errorMessage(error: unknown): string | undefined {
       <label class="form-label" for="account-bank">{{ $t("accounts.bank") }}</label>
       <select
         id="account-bank"
-        v-model="bankId"
+        v-model="selectedBankId"
         v-bind="bankIdAttrs"
         autofocus
         class="form-select"
