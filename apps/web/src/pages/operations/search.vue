@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { PAYMENT_METHODS } from "./operations.types";
+import { categoryLabel, PAYMENT_METHODS } from "./operations.types";
 import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
 
 const props = defineProps<{ categories: Category[] }>();
@@ -131,7 +131,9 @@ function onClear() {
     <div class="mb-3">
       <label class="form-label" for="search-categories">{{ $t("operations.category") }}</label>
       <select id="search-categories" v-model="categoryIds" multiple class="form-select">
-        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
+        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">
+          {{ categoryLabel(c, props.categories) }}
+        </option>
       </select>
     </div>
 

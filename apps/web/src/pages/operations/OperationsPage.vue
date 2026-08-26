@@ -5,7 +5,7 @@ import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatMoney } from "./money";
-import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "./operations.types";
+import { categoryLabel, PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "./operations.types";
 import type { Category, Operation, OperationList, SearchCriteria } from "./operations.types";
 import OperationForm from "./OperationForm.vue";
 import BatchActions from "./batch.vue";
@@ -29,7 +29,9 @@ const showSearch = ref(false);
 const hasActiveSearch = ref(false);
 
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
-const categoryNames = computed(() => new Map(categories.value.map((c) => [c.id, c.name])));
+const categoryNames = computed(
+  () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
+);
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 // "Fully active" per spec: neither the account nor its bank is closed or

@@ -34,6 +34,14 @@ export interface Category {
   isSalaryCategory: boolean;
 }
 
+// Spec 3.2: displayed as "Parent > Child" when nested.
+export function categoryLabel(category: Category, allCategories: Category[]): string {
+  const parent = category.parentId
+    ? allCategories.find((c) => c.id === category.parentId)
+    : undefined;
+  return parent ? `${parent.name} > ${category.name}` : category.name;
+}
+
 // Fixed reference list — ids/names/types are stable identifiers relied on
 // across the app (apps/api/src/db/seed-data.ts), not fetched dynamically.
 // Id 9 ("Initial balance") is reserved for the system-generated opening

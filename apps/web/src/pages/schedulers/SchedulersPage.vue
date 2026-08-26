@@ -5,6 +5,7 @@ import { apiClient } from "../../api/client";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatMoney } from "../operations/money";
 import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "../operations/operations.types";
+import { categoryLabel } from "../operations/operations.types";
 import type { Category } from "../operations/operations.types";
 import SchedulerForm from "./SchedulerForm.vue";
 import BatchActions from "./batch.vue";
@@ -23,7 +24,9 @@ const editingScheduler = ref<Scheduler | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
 
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
-const categoryNames = computed(() => new Map(categories.value.map((c) => [c.id, c.name])));
+const categoryNames = computed(
+  () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
+);
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 async function loadAccounts() {

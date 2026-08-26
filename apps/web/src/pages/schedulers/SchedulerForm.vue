@@ -8,6 +8,7 @@ import { useToast } from "../../composables/useToast";
 import type { Account } from "../accounts/accounts.types";
 import { currencySymbol, toDisplayAmount } from "../operations/money";
 import {
+  categoryLabel,
   PAYMENT_METHODS,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
@@ -267,7 +268,9 @@ function errorMessage(error: unknown): string | undefined {
         class="form-select"
       >
         <option value="">{{ $t("operations.noCategory") }}</option>
-        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
+        <option v-for="c in filteredCategories" :key="c.id" :value="c.id">
+          {{ categoryLabel(c, props.categories) }}
+        </option>
       </select>
     </div>
 
