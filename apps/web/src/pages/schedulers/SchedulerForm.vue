@@ -5,7 +5,7 @@ import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
-import type { Account } from "../accounts/accounts.types";
+import type { Account, Bank } from "../accounts/accounts.types";
 import { currencySymbol, toDisplayAmount } from "../operations/money";
 import {
   categoryLabel,
@@ -17,12 +17,16 @@ import {
 import { schedulerSchema, type SchedulerForm } from "./schedulers.schemas";
 import type { Scheduler } from "./schedulers.types";
 
-const props = defineProps<{
-  accountId: number;
-  categories: Category[];
-  accounts: Account[];
-  scheduler?: Scheduler | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    accountId: number;
+    categories: Category[];
+    accounts: Account[];
+    banks?: Bank[];
+    scheduler?: Scheduler | null;
+  }>(),
+  { banks: () => [] },
+);
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
@@ -93,13 +97,32 @@ const groupedCategories = computed(() => groupCategories(filteredCategories.valu
 const filteredPaymentMethods = computed(() =>
   PAYMENT_METHODS.filter((pm) => pm.type === type.value),
 );
-const transferTargets = computed(() => props.accounts.filter((a) => a.id !== props.accountId));
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
 );
 const sourceCurrency = computed(
   () => props.accounts.find((a) => a.id === props.accountId)?.currency,
 );
+// Same choices/rules as the operation form (spec 4.9/4.12): the member's
+// other fully active accounts sharing the source's currency, plus — when
+// editing a scheduler whose stored target has since gone inactive — that
+// stored account, kept selectable so it can be preserved, retargeted, or
+// unlinked (never offered otherwise).
+const bankById = computed(() => new Map(props.banks.map((b) => [b.id, b])));
+function isFullyActiveAccount(a: Account): boolean {
+  return !a.closed && !(bankById.value.get(a.bankId)?.closed ?? false);
+}
+const transferTargets = computed(() => {
+  const eligible = props.accounts.filter(
+    (a) => a.id !== props.accountId && a.currency === sourceCurrency.value && isFullyActiveAccount(a),
+  );
+  const storedTargetId = props.scheduler?.transferAccountId;
+  if (storedTargetId && !eligible.some((a) => a.id === storedTargetId)) {
+    const stored = props.accounts.find((a) => a.id === storedTargetId);
+    if (stored) eligible.push(stored);
+  }
+  return eligible;
+});
 const amountCurrencySymbol = computed(() =>
   sourceCurrency.value ? currencySymbol(sourceCurrency.value) : "",
 );

@@ -19,7 +19,10 @@ import {
   paymentMethod,
   scheduler,
 } from '../db/schema';
-import { TRANSFER_PAYMENT_METHOD_IDS } from '../operations/transfer.service';
+import {
+  TRANSFER_PAYMENT_METHOD_IDS,
+  TransferService,
+} from '../operations/transfer.service';
 import '../session/session-data';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
@@ -32,6 +35,7 @@ export class SchedulerService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly generation: SchedulerGenerationService,
+    private readonly transfers: TransferService,
   ) {}
 
   private requireMemberId(req: Request): number {
@@ -174,6 +178,14 @@ export class SchedulerService {
       dto.paymentMethodId,
       dto.transferAccountId,
     );
+    await this.transfers.validateSchedulerTarget(
+      this.db,
+      transferAccountId,
+      null,
+      dto.accountId,
+      owned.account.currency,
+      memberId,
+    );
 
     const [created] = await this.db
       .insert(scheduler)
@@ -225,6 +237,14 @@ export class SchedulerService {
     const transferAccountId = this.transferAccountId(
       dto.paymentMethodId,
       dto.transferAccountId,
+    );
+    await this.transfers.validateSchedulerTarget(
+      this.db,
+      transferAccountId,
+      owned.scheduler.transferAccountId,
+      owned.scheduler.accountId,
+      owned.account.currency,
+      memberId,
     );
 
     const [updated] = await this.db

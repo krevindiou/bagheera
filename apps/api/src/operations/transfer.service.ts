@@ -92,6 +92,32 @@ export class TransferService {
     }
   }
 
+  // Public entry point for schedulers: unlike an operation, a scheduler
+  // template has no live mirror to sync, so there's nothing to route
+  // through `sync()`. Same eligibility rules apply to a *new* target
+  // though — same-currency, owned, fully active — while an unchanged
+  // target is left alone even if it has since gone inactive (generation
+  // itself skips it; see SchedulerGenerationService).
+  async validateSchedulerTarget(
+    db: Db,
+    targetAccountId: number | null,
+    previousTargetAccountId: number | null,
+    sourceAccountId: number,
+    sourceCurrency: string,
+    memberId: number,
+  ): Promise<void> {
+    if (targetAccountId === null || targetAccountId === previousTargetAccountId) {
+      return;
+    }
+    await this.requireEligibleTarget(
+      db,
+      targetAccountId,
+      sourceAccountId,
+      sourceCurrency,
+      memberId,
+    );
+  }
+
   // Creates, updates, retargets or removes the mirror operation of a
   // transfer pair so the source row (still to be persisted by the caller)
   // ends up consistent with it. Returns the `transferOperationId` the

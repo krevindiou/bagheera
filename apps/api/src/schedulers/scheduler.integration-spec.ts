@@ -222,6 +222,162 @@ describe('schedulers (integration)', () => {
     expect(row.frequencyUnit).toBe('month');
   });
 
+  it('rejects a scheduler transfer target that belongs to another member', async () => {
+    const { account: acc } = await createOwnedAccount('sched-xfer1@example.com');
+    const { account: foreign } = await createOwnedAccount(
+      'sched-xfer1-other@example.com',
+    );
+    const { token, cookies } = await authedRequest(
+      'sched-xfer1@example.com',
+      'password1',
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/schedulers')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({
+        accountId: acc.id,
+        type: 'debit',
+        thirdParty: 'Savings transfer',
+        amount: 100,
+        paymentMethodId: 4,
+        transferAccountId: foreign.id,
+        valueDate: '2026-02-01',
+        frequencyValue: 1,
+      });
+
+    expect(res.status).toBe(400);
+    const rows = await ctx.db.select().from(scheduler);
+    expect(rows).toHaveLength(0);
+  });
+
+  it('rejects a scheduler transfer target in a different currency', async () => {
+    const { bank: ownerBank, account: acc } = await createOwnedAccount(
+      'sched-xfer2@example.com',
+    );
+    const [eurAccount] = await ctx.db
+      .insert(account)
+      .values({ bankId: ownerBank.id, name: 'Savings', currency: 'EUR' })
+      .returning();
+    const { token, cookies } = await authedRequest(
+      'sched-xfer2@example.com',
+      'password1',
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/schedulers')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({
+        accountId: acc.id,
+        type: 'debit',
+        thirdParty: 'Savings transfer',
+        amount: 100,
+        paymentMethodId: 4,
+        transferAccountId: eurAccount.id,
+        valueDate: '2026-02-01',
+        frequencyValue: 1,
+      });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a new (never-before-stored) closed scheduler transfer target', async () => {
+    const { bank: ownerBank, account: acc } = await createOwnedAccount(
+      'sched-xfer3@example.com',
+    );
+    const [closedTarget] = await ctx.db
+      .insert(account)
+      .values({ bankId: ownerBank.id, name: 'Savings', closed: true })
+      .returning();
+    const { token, cookies } = await authedRequest(
+      'sched-xfer3@example.com',
+      'password1',
+    );
+
+    const res = await request(app.getHttpServer())
+      .post('/schedulers')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({
+        accountId: acc.id,
+        type: 'debit',
+        thirdParty: 'Savings transfer',
+        amount: 100,
+        paymentMethodId: 4,
+        transferAccountId: closedTarget.id,
+        valueDate: '2026-02-01',
+        frequencyValue: 1,
+      });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('keeps an already-stored scheduler transfer target on update even after it closes', async () => {
+    const { bank: ownerBank, account: acc } = await createOwnedAccount(
+      'sched-xfer4@example.com',
+    );
+    const [target] = await ctx.db
+      .insert(account)
+      .values({ bankId: ownerBank.id, name: 'Savings' })
+      .returning();
+    const { token, cookies } = await authedRequest(
+      'sched-xfer4@example.com',
+      'password1',
+    );
+
+    const createRes = await request(app.getHttpServer())
+      .post('/schedulers')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({
+        accountId: acc.id,
+        type: 'debit',
+        thirdParty: 'Savings transfer',
+        amount: 100,
+        paymentMethodId: 4,
+        transferAccountId: target.id,
+        valueDate: '2026-02-01',
+        frequencyValue: 1,
+      });
+    expect(createRes.status).toBe(200);
+    const created = (createRes.body as { scheduler: { id: number } })
+      .scheduler;
+
+    // The target closes after the scheduler was linked to it.
+    await ctx.db
+      .update(account)
+      .set({ closed: true })
+      .where(sql`${account.id} = ${target.id}`);
+
+    const { token: token2, cookies: cookies2 } =
+      await getCsrfTokenAndCookies(cookies);
+    const updateRes = await request(app.getHttpServer())
+      .patch(`/schedulers/${created.id}`)
+      .set('Cookie', cookies2)
+      .set('x-csrf-token', token2)
+      .set('X-Forwarded-Proto', 'https')
+      .send({
+        accountId: acc.id,
+        type: 'debit',
+        thirdParty: 'Savings transfer',
+        amount: 150,
+        paymentMethodId: 4,
+        transferAccountId: target.id,
+        valueDate: '2026-02-01',
+        frequencyValue: 1,
+      });
+
+    // Keeping the same (now-closed) target is allowed — only *new* targets
+    // must be fully active.
+    expect(updateRes.status).toBe(200);
+  });
+
   it('rejects creation on a closed account with an access-denied error', async () => {
     const { account: acc } = await createOwnedAccount('sched2@example.com', {
       closed: true,

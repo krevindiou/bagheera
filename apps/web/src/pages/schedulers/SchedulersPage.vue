@@ -212,6 +212,7 @@ function goToPage(page: number) {
       :account-id="accountId"
       :categories="categories"
       :accounts="accounts"
+      :banks="banks"
       :scheduler="editingScheduler"
       @saved="onSaved"
       @cancel="showForm = false"
