@@ -51,7 +51,7 @@ describe("AccountsPage", () => {
     expect(accountRows[1]!.text()).toContain("Deleted");
   });
 
-  it("rejects submitting both an existing bank and a new bank name", async () => {
+  it("clears the existing-bank choice when a new bank name is typed, and vice versa", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
       data: [{ id: 1, name: "Active Bank", closed: false, deleted: false }],
       response: { ok: true },
@@ -64,8 +64,13 @@ describe("AccountsPage", () => {
 
     await wrapper.find("#account-bank-id").setValue("1");
     await wrapper.find("#account-bank-name").setValue("New Bank");
-    await submitAndSettle(wrapper);
+    expect((wrapper.find("#account-bank-id").element as HTMLSelectElement).value).toBe("");
 
+    await wrapper.find("#account-bank-id").setValue("1");
+    expect((wrapper.find("#account-bank-name").element as HTMLInputElement).value).toBe("");
+
+    // Only the last-edited field (the existing-bank choice) is submitted.
+    await submitAndSettle(wrapper);
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
