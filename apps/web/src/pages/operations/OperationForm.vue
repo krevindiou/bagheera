@@ -115,10 +115,15 @@ const amountCurrencySymbol = computed(() =>
   sourceCurrency.value ? currencySymbol(sourceCurrency.value) : "",
 );
 
-// Switching type invalidates the previous category/payment-method choice.
+// Switching type clears the category/payment-method choice only when it no
+// longer matches the new type — a still-valid selection is preserved.
 watch(type, () => {
-  categoryId.value = undefined;
-  paymentMethodId.value = undefined as unknown as number;
+  if (!filteredCategories.value.some((c) => c.id === categoryId.value)) {
+    categoryId.value = undefined;
+  }
+  if (!filteredPaymentMethods.value.some((pm) => pm.id === paymentMethodId.value)) {
+    paymentMethodId.value = undefined as unknown as number;
+  }
 });
 
 interface ThirdPartySuggestion {
