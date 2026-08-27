@@ -13,6 +13,7 @@ import {
 } from "../../composables/useLastAttemptedEmail";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { signInSchema, type SignInForm } from "./auth.schemas";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const router = useRouter();
 const session = useSessionStore();
@@ -70,6 +71,7 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.signIn.title") }}</h1>
+    <ToastContainer />
 
     <div v-if="banner === 'invalid-credentials'" class="alert alert-danger" role="alert">
       {{ $t("auth.signIn.invalidCredentials") }}

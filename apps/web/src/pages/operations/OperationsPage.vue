@@ -10,6 +10,7 @@ import type { Category, Operation, OperationList, SearchCriteria } from "./opera
 import OperationForm from "./OperationForm.vue";
 import BatchActions from "./batch.vue";
 import SearchPanel from "./search.vue";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const route = useRoute();
 const accountId = computed(() => Number(route.params.accountId));
@@ -203,6 +204,7 @@ function isEditable(operation: Operation): boolean {
       {{ accountBank?.name }} − {{ account.name }}
     </h1>
     <h1 v-else>{{ $t("operations.title") }}</h1>
+    <ToastContainer />
 
     <div v-if="balance" class="d-flex gap-4 mb-3" data-testid="account-balances">
       <span

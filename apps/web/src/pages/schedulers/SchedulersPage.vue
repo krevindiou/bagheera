@@ -10,6 +10,7 @@ import type { Category } from "../operations/operations.types";
 import SchedulerForm from "./SchedulerForm.vue";
 import BatchActions from "./batch.vue";
 import type { Scheduler, SchedulerList } from "./schedulers.types";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const route = useRoute();
 const accountId = computed(() => Number(route.params.accountId));
@@ -121,6 +122,7 @@ function goToPage(page: number) {
     <h1>
       {{ $t("schedulers.title") }}<span v-if="account"> — {{ account.name }}</span>
     </h1>
+    <ToastContainer />
 
     <BatchActions :selected-ids="selectedIdList" @done="loadSchedulers(list.page)" />
 

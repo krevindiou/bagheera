@@ -7,6 +7,7 @@ import type { Account } from "../accounts/accounts.types";
 import BatchActions from "./batch.vue";
 import ReportForm from "./ReportForm.vue";
 import type { Report, ReportChart } from "./reports.types";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const { t } = useI18n();
 
@@ -117,6 +118,7 @@ async function toggleView(report: Report) {
 <template>
   <div class="container py-5">
     <h1>{{ $t("reports.title") }}</h1>
+    <ToastContainer />
 
     <p v-if="reports.length === 0" class="text-muted">{{ $t("reports.empty") }}</p>
 

@@ -6,6 +6,7 @@ import SynthesisChart, { type SynthesisChartSeries } from "../../components/Synt
 import { formatDate, formatMoney } from "../operations/money";
 import type { ReportChart } from "../reports/reports.types";
 import type { DashboardResponse, DashboardSynthesisChart } from "./dashboard.types";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const { t } = useI18n();
 
@@ -72,6 +73,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
 <template>
   <div v-if="dashboard" class="container py-5">
     <h1 class="mb-4">{{ $t("dashboard.title") }}</h1>
+    <ToastContainer />
 
     <div
       v-if="dashboard.onboarding === 'no-bank'"

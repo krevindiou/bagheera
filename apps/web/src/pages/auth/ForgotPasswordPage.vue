@@ -7,6 +7,7 @@ import { apiClient } from "../../api/client";
 import { rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
 import { useToast } from "../../composables/useToast";
 import { forgotPasswordSchema, type ForgotPasswordForm } from "./auth.schemas";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const router = useRouter();
 const { push: toast } = useToast();
@@ -31,6 +32,7 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.forgotPassword.title") }}</h1>
+    <ToastContainer />
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">

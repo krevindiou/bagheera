@@ -11,6 +11,7 @@ import { editBankSchema } from "./accounts.schemas";
 import type { Bank, Account } from "./accounts.types";
 import BankChoiceForm from "./BankChoiceForm.vue";
 import CreateAccountForm from "./CreateAccountForm.vue";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
@@ -187,6 +188,7 @@ function errorMessage(error: unknown): string | undefined {
 <template>
   <div class="container py-5" style="max-width: 720px">
     <h1>{{ $t("accounts.title") }}</h1>
+    <ToastContainer />
 
     <p v-if="banks.length === 0" class="text-muted">{{ $t("accounts.empty") }}</p>
 

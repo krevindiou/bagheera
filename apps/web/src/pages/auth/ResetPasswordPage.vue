@@ -8,6 +8,7 @@ import { useToast } from "../../composables/useToast";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { resetPasswordSchema, type ResetPasswordForm } from "./auth.schemas";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -49,6 +50,7 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("auth.resetPassword.title") }}</h1>
+    <ToastContainer />
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">

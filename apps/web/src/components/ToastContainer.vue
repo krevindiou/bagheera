@@ -11,9 +11,9 @@ const variantClass: Record<string, string> = {
 </script>
 
 <template>
-  <!-- Toasts render in the normal document flow at the top of the page
-       content, directly below the nav bar and above each page's own
-       title/content, rather than as a fixed viewport-corner overlay. -->
+  <!-- Toasts render in the normal document flow, placed by each page
+       directly under its own title, rather than as a fixed
+       viewport-corner overlay. -->
   <div v-if="toasts.length > 0" class="toast-container container py-2 d-flex flex-column gap-2">
 
     <div

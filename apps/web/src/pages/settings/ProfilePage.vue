@@ -7,6 +7,7 @@ import { useSessionStore } from "../../stores/session.store";
 import { useToast } from "../../composables/useToast";
 import PasswordInput from "../../components/PasswordInput.vue";
 import { profileSchema, type ProfileForm } from "./settings.schemas";
+import ToastContainer from "../../components/ToastContainer.vue";
 
 const session = useSessionStore();
 const { push: toast } = useToast();
@@ -52,6 +53,7 @@ function errorMessage(error: unknown): string | undefined {
 <template>
   <div class="container py-5" style="max-width: 480px">
     <h1>{{ $t("settings.profile.title") }}</h1>
+    <ToastContainer />
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">

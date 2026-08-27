@@ -4,7 +4,6 @@ import { useRouter } from "vue-router";
 import { apiClient } from "../api/client";
 import type { Account, Bank } from "../pages/accounts/accounts.types";
 import ConfirmModal from "../components/ConfirmModal.vue";
-import ToastContainer from "../components/ToastContainer.vue";
 import { useSessionStore } from "../stores/session.store";
 
 const session = useSessionStore();
@@ -166,7 +165,6 @@ async function signOut() {
       </div>
     </nav>
     <main>
-      <ToastContainer />
       <router-view />
     </main>
     <ConfirmModal />
