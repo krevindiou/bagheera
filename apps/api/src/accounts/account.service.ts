@@ -62,7 +62,12 @@ export class AccountService {
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(account.id, id));
-    if (!row || row.bank.memberId !== memberId || row.bank.deleted) {
+    if (
+      !row ||
+      row.bank.memberId !== memberId ||
+      row.bank.deleted ||
+      row.account.deleted
+    ) {
       throw new NotFoundException();
     }
     return row;
