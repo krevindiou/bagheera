@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
 import { router } from "../../router";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
@@ -11,7 +12,10 @@ vi.mock("../../api/client", () => ({
 }));
 
 function mountPage() {
-  return mount(AccountsPage, { global: { plugins: [router, i18n] } });
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return mount(AccountsPage, {
+    global: { plugins: [router, i18n, [VueQueryPlugin, { queryClient }]] },
+  });
 }
 
 describe("AccountsPage", () => {

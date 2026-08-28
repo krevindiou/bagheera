@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../api/client";
 import type { Account, Bank } from "../pages/accounts/accounts.types";
 import ConfirmModal from "../components/ConfirmModal.vue";
@@ -8,38 +9,45 @@ import { useSessionStore } from "../stores/session.store";
 
 const session = useSessionStore();
 const router = useRouter();
+const queryClient = useQueryClient();
 
-const banks = ref<Bank[]>([]);
-const accounts = ref<Account[]>([]);
+const isAuthenticated = computed(() => session.isAuthenticated);
+
+const banksQuery = useQuery({
+  queryKey: ["banks"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/banks");
+    return (data as Bank[] | undefined) ?? [];
+  },
+  enabled: isAuthenticated,
+});
+const banks = computed(() => banksQuery.data.value ?? []);
+
+const accountsQuery = useQuery({
+  queryKey: ["accounts"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts");
+    return (data as Account[] | undefined) ?? [];
+  },
+  enabled: isAuthenticated,
+});
+const accounts = computed(() => accountsQuery.data.value ?? []);
+
 const accountsMenuOpen = ref(false);
 const settingsMenuOpen = ref(false);
 
-async function loadMenuData() {
-  if (!session.isAuthenticated) {
-    banks.value = [];
-    accounts.value = [];
-    return;
-  }
-  const [banksResult, accountsResult] = await Promise.all([
-    apiClient.GET("/banks"),
-    apiClient.GET("/accounts"),
-  ]);
-  banks.value = (banksResult.data as Bank[] | undefined) ?? [];
-  accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
-}
-
-onMounted(loadMenuData);
-watch(() => session.isAuthenticated, loadMenuData);
 // Bank/account rows can be created, renamed, closed or deleted from other
 // pages — refresh the menu on every navigation so it never goes stale.
+// This also keeps any other page's ["banks"]/["accounts"] queries in sync.
 const stopAfterEach = router.afterEach(() => {
-  void loadMenuData();
+  if (!session.isAuthenticated) return;
+  void queryClient.invalidateQueries({ queryKey: ["banks"] });
+  void queryClient.invalidateQueries({ queryKey: ["accounts"] });
 });
 onBeforeUnmount(stopAfterEach);
 
 // Menus are day-to-day navigation, so closed/deleted banks and accounts are
-// hidden here (see spec 2.3) even though the accounts management screen
-// still lists them.
+// hidden here even though the accounts management screen still lists them.
 function accountsForBank(bankId: number) {
   return accounts.value.filter(
     (account) => account.bankId === bankId && !account.closed && !account.deleted,

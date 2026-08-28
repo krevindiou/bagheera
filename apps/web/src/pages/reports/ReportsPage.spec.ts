@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
+import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
 import ReportsPage from "./ReportsPage.vue";
@@ -10,6 +11,11 @@ vi.mock("../../api/client", () => ({
 
 function jsonResponse<T>(data: T) {
   return Promise.resolve({ data, response: { ok: true } }) as never;
+}
+
+function mountPage() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return mount(ReportsPage, { global: { plugins: [i18n, [VueQueryPlugin, { queryClient }]] } });
 }
 
 const reports = [
@@ -42,7 +48,7 @@ describe("ReportsPage", () => {
       return jsonResponse(undefined);
     });
 
-    const wrapper = mount(ReportsPage, { global: { plugins: [i18n] } });
+    const wrapper = mountPage();
     await flushPromises();
 
     await wrapper.get('[data-testid="report-row"]').get("button").trigger("click");
@@ -65,7 +71,7 @@ describe("ReportsPage", () => {
       return jsonResponse(undefined);
     });
 
-    const wrapper = mount(ReportsPage, { global: { plugins: [i18n] } });
+    const wrapper = mountPage();
     await flushPromises();
 
     await wrapper.get('[data-testid="report-row"]').get("button").trigger("click");
@@ -81,7 +87,7 @@ describe("ReportsPage", () => {
       return jsonResponse(undefined);
     });
 
-    const wrapper = mount(ReportsPage, { global: { plugins: [i18n] } });
+    const wrapper = mountPage();
     await flushPromises();
 
     const row = wrapper.get('[data-testid="report-row"]');

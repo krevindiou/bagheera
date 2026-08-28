@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account, Bank } from "../accounts/accounts.types";
@@ -15,14 +16,13 @@ import ToastContainer from "../../components/ToastContainer.vue";
 const route = useRoute();
 const accountId = computed(() => Number(route.params.accountId));
 
-const account = ref<Account | null>(null);
-const accounts = ref<Account[]>([]);
-const banks = ref<Bank[]>([]);
-const categories = ref<Category[]>([]);
-const list = ref<OperationList>({ items: [], total: 0, page: 1, pageSize: 20 });
-const chartSeries = ref<SynthesisChartSeries[]>([]);
-const chartAxisBounds = ref<{ min: number; max: number } | null>(null);
-const balance = ref<{ balance: number; reconciledBalance: number } | null>(null);
+const queryClient = useQueryClient();
+
+const page = ref(1);
+watch(accountId, () => {
+  page.value = 1;
+});
+
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
@@ -30,118 +30,174 @@ const showSearch = ref(false);
 const hasActiveSearch = ref(false);
 const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
 
+const accountsQuery = useQuery({
+  queryKey: ["accounts"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts");
+    return (data as Account[] | undefined) ?? [];
+  },
+});
+const accounts = computed(() => accountsQuery.data.value ?? []);
+const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
+
+const banksQuery = useQuery({
+  queryKey: ["banks"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/banks");
+    return (data as Bank[] | undefined) ?? [];
+  },
+});
+const banks = computed(() => banksQuery.data.value ?? []);
+
+const categoriesQuery = useQuery({
+  queryKey: ["categories"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/reference-data/categories");
+    return (data as Category[] | undefined) ?? [];
+  },
+});
+const categories = computed(() => categoriesQuery.data.value ?? []);
+
+const balanceQuery = useQuery({
+  queryKey: computed(() => ["balance", accountId.value]),
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts/{id}/balance", {
+      params: { path: { id: accountId.value } },
+    });
+    return (data as { balance: number; reconciledBalance: number } | undefined) ?? null;
+  },
+});
+const balance = computed(() => balanceQuery.data.value ?? null);
+
+const chartQuery = useQuery({
+  queryKey: computed(() => ["chart", accountId.value]),
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts/{id}/chart", {
+      params: { path: { id: accountId.value } },
+    });
+    return (
+      (data as
+        | {
+            currency: string;
+            axisBounds: { min: number; max: number } | null;
+            points: { period: string; value: number }[];
+          }
+        | undefined) ?? null
+    );
+  },
+});
+const chartSeries = computed<SynthesisChartSeries[]>(() => {
+  const chart = chartQuery.data.value;
+  if (!chart || chart.points.length === 0) return [];
+  return [{ label: chart.currency, color: "#0d6efd", points: chart.points }];
+});
+const chartAxisBounds = computed(() => chartQuery.data.value?.axisBounds ?? null);
+
+// Re-runs the search remembered for this member+account (empty criteria —
+// i.e. the full list — when nothing was ever searched), so a search stays
+// applied across pagination and page reloads within the session. When the
+// recalled search is active, the panel is restored docked open and
+// hydrated with its criteria.
+const operationsQuery = useQuery({
+  queryKey: computed(() => ["operations", accountId.value, page.value]),
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/operations/search", {
+      params: { query: { accountId: accountId.value, page: String(page.value) } },
+    });
+    return (
+      (data as (OperationList & { criteria?: SearchCriteria; active?: boolean }) | undefined) ?? {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+      }
+    );
+  },
+});
+const list = computed(
+  () => operationsQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: 20 },
+);
+
+watch(
+  () => operationsQuery.data.value,
+  (result) => {
+    selectedIds.value = new Set();
+    hasActiveSearch.value = result?.active ?? false;
+    if (result?.active) {
+      recalledCriteria.value = result.criteria;
+      showSearch.value = true;
+    }
+  },
+);
+
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
-// "Fully active" per spec: neither the account nor its bank is closed or
-// deleted. Deleted accounts are unreachable (routing/loadAccounts already
+// "Fully active": neither the account nor its bank is closed or deleted.
+// Deleted accounts are unreachable (routing/the accounts query already
 // exclude them), so only the closed flags matter here.
 const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
 const isAccountFullyActive = computed(
   () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
 );
 
-async function loadAccounts() {
-  const [accountsResult, banksResult] = await Promise.all([
-    apiClient.GET("/accounts"),
-    apiClient.GET("/banks"),
-  ]);
-  accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
-  banks.value = (banksResult.data as Bank[] | undefined) ?? [];
-  account.value = accounts.value.find((a) => a.id === accountId.value) ?? null;
+const searchMutation = useMutation({
+  mutationFn: async (criteria: SearchCriteria) => {
+    const { data } = await apiClient.POST("/operations/search", {
+      params: { query: { page: "1" } },
+      body: { accountId: accountId.value, ...criteria },
+    });
+    return (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+  },
+  onSuccess(data) {
+    page.value = 1;
+    queryClient.setQueryData(["operations", accountId.value, 1], data);
+    selectedIds.value = new Set();
+    hasActiveSearch.value = true;
+  },
+});
+function runSearch(criteria: SearchCriteria) {
+  searchMutation.mutate(criteria);
 }
 
-async function loadBalance() {
-  const { data } = await apiClient.GET("/accounts/{id}/balance", {
-    params: { path: { id: accountId.value } },
-  });
-  balance.value = (data as { balance: number; reconciledBalance: number } | undefined) ?? null;
+const clearSearchMutation = useMutation({
+  mutationFn: async () => {
+    await apiClient.DELETE("/operations/search", {
+      params: { query: { accountId: accountId.value } },
+    });
+  },
+  async onSuccess() {
+    hasActiveSearch.value = false;
+    page.value = 1;
+    await queryClient.invalidateQueries({ queryKey: ["operations", accountId.value] });
+  },
+});
+function clearSearch() {
+  clearSearchMutation.mutate();
 }
 
-async function loadCategories() {
-  const { data } = await apiClient.GET("/reference-data/categories");
-  categories.value = (data as Category[] | undefined) ?? [];
+function goToPage(newPage: number) {
+  if (newPage < 1 || newPage > pageCount.value) return;
+  page.value = newPage;
 }
 
-// Re-runs the search remembered for this member+account (empty criteria —
-// i.e. the full list — when nothing was ever searched), so a search stays
-// applied across pagination and page reloads within the session. When the
-// recalled search is active, the panel is restored docked open and
-// hydrated with its criteria (spec 2.7 / 4.11).
-async function loadOperations(page = 1) {
-  const { data } = await apiClient.GET("/operations/search", {
-    params: { query: { accountId: accountId.value, page: String(page) } },
-  });
-  const result = data as
-    | (OperationList & { criteria?: SearchCriteria; active?: boolean })
-    | undefined;
-  list.value = result ?? { items: [], total: 0, page: 1, pageSize: 20 };
-  selectedIds.value = new Set();
-  hasActiveSearch.value = result?.active ?? false;
-  if (result?.active) {
-    recalledCriteria.value = result.criteria;
-    showSearch.value = true;
-  }
-}
-
-async function runSearch(criteria: SearchCriteria) {
-  const { data } = await apiClient.POST("/operations/search", {
-    params: { query: { page: "1" } },
-    body: { accountId: accountId.value, ...criteria },
-  });
-  list.value = (data as OperationList | undefined) ?? {
-    items: [],
-    total: 0,
-    page: 1,
-    pageSize: 20,
-  };
-  selectedIds.value = new Set();
-  hasActiveSearch.value = true;
-}
-
-async function clearSearch() {
-  await apiClient.DELETE("/operations/search", {
-    params: { query: { accountId: accountId.value } },
-  });
-  hasActiveSearch.value = false;
-  await loadOperations(1);
-}
-
-async function loadChart() {
-  const { data } = await apiClient.GET("/accounts/{id}/chart", {
-    params: { path: { id: accountId.value } },
-  });
-  const chart = data as
-    | {
-        currency: string;
-        axisBounds: { min: number; max: number } | null;
-        points: { period: string; value: number }[];
-      }
-    | undefined;
-  if (!chart || chart.points.length === 0) {
-    chartSeries.value = [];
-    chartAxisBounds.value = null;
-    return;
-  }
-  chartSeries.value = [{ label: chart.currency, color: "#0d6efd", points: chart.points }];
-  chartAxisBounds.value = chart.axisBounds;
-}
-
-async function loadAll() {
+async function refreshAfterSave() {
   await Promise.all([
-    loadAccounts(),
-    loadCategories(),
-    loadOperations(1),
-    loadChart(),
-    loadBalance(),
+    queryClient.invalidateQueries({ queryKey: ["operations", accountId.value, page.value] }),
+    queryClient.invalidateQueries({ queryKey: ["chart", accountId.value] }),
+    queryClient.invalidateQueries({ queryKey: ["balance", accountId.value] }),
   ]);
 }
 
-onMounted(loadAll);
-watch(accountId, loadAll);
+async function refreshAfterBatch() {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["operations", accountId.value, page.value] }),
+    queryClient.invalidateQueries({ queryKey: ["balance", accountId.value] }),
+  ]);
+}
 
 function paymentMethodName(id: number): string {
   return PAYMENT_METHOD_NAMES[id] ?? String(id);
@@ -178,17 +234,12 @@ function startEdit(operation: Operation) {
 
 async function onSaved() {
   editingOperation.value = null;
-  await Promise.all([loadOperations(list.value.page), loadChart(), loadBalance()]);
+  await refreshAfterSave();
 }
 
 async function onSavedAndClose() {
   showForm.value = false;
   await onSaved();
-}
-
-function goToPage(page: number) {
-  if (page < 1 || page > pageCount.value) return;
-  loadOperations(page);
 }
 
 // The system-generated opening operation (payment method id 9) is not
@@ -265,7 +316,7 @@ function isEditable(operation: Operation): boolean {
         <BatchActions
           v-if="isAccountFullyActive"
           :selected-ids="selectedIdList"
-          @done="Promise.all([loadOperations(list.page), loadBalance()])"
+          @done="refreshAfterBatch"
         />
 
         <div v-if="list.items.length === 0" class="mb-3">

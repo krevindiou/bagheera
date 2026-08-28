@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account } from "../accounts/accounts.types";
@@ -11,24 +12,45 @@ import ToastContainer from "../../components/ToastContainer.vue";
 
 const { t } = useI18n();
 
-const reports = ref<Report[]>([]);
-const accounts = ref<Account[]>([]);
+const queryClient = useQueryClient();
+
+const reportsQuery = useQuery({
+  queryKey: ["reports"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/reports");
+    return (data as Report[] | undefined) ?? [];
+  },
+});
+const reports = computed(() => reportsQuery.data.value ?? []);
+
+const accountsQuery = useQuery({
+  queryKey: ["accounts"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts");
+    return (data as Account[] | undefined) ?? [];
+  },
+});
+const accounts = computed(() => accountsQuery.data.value ?? []);
+
+async function reloadReports() {
+  await queryClient.invalidateQueries({ queryKey: ["reports"] });
+}
+
 const showForm = ref(false);
 const createType = ref<"sum" | "average">("sum");
 const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<number | null>(null);
-const chartSeries = ref<SynthesisChartSeries[]>([]);
-const chartAxisBounds = ref<{ min: number; max: number } | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
-const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
+watch(
+  () => reportsQuery.data.value,
+  () => {
+    selectedIds.value = new Set();
+  },
+);
 
-async function loadReports() {
-  const { data } = await apiClient.GET("/reports");
-  reports.value = (data as Report[] | undefined) ?? [];
-  selectedIds.value = new Set();
-}
+const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
 
 function toggleSelected(id: number) {
   const next = new Set(selectedIds.value);
@@ -39,15 +61,6 @@ function toggleSelected(id: number) {
   }
   selectedIds.value = next;
 }
-
-async function loadAccounts() {
-  const { data } = await apiClient.GET("/accounts");
-  accounts.value = (data as Account[] | undefined) ?? [];
-}
-
-onMounted(async () => {
-  await Promise.all([loadReports(), loadAccounts()]);
-});
 
 function startCreate(type: "sum" | "average") {
   createType.value = type;
@@ -63,12 +76,12 @@ function startEdit(report: Report) {
 async function onSaved() {
   showForm.value = false;
   editingReport.value = null;
-  await loadReports();
+  await reloadReports();
 }
 
 async function onBatchDeleted() {
   viewingReportId.value = null;
-  await loadReports();
+  await reloadReports();
 }
 
 // A report's chart is per-currency, each with a separate debit and credit
@@ -95,23 +108,27 @@ function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
   return series;
 }
 
-async function toggleView(report: Report) {
-  if (viewingReportId.value === report.id) {
-    viewingReportId.value = null;
-    return;
-  }
-  const { data } = await apiClient.GET("/reports/{id}/chart", {
-    params: { path: { id: report.id } },
-  });
-  const chart = data as ReportChart | undefined;
-  if (!chart || chart.hidden) {
-    chartSeries.value = [];
-    chartAxisBounds.value = null;
-  } else {
-    chartSeries.value = toChartSeries(chart);
-    chartAxisBounds.value = chart.axisBounds;
-  }
-  viewingReportId.value = report.id;
+const chartQuery = useQuery({
+  queryKey: computed(() => ["report-chart", viewingReportId.value]),
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/reports/{id}/chart", {
+      params: { path: { id: viewingReportId.value! } },
+    });
+    return (data as ReportChart | undefined) ?? null;
+  },
+  enabled: computed(() => viewingReportId.value !== null),
+});
+const chartSeries = computed<SynthesisChartSeries[]>(() => {
+  const chart = chartQuery.data.value;
+  return !chart || chart.hidden ? [] : toChartSeries(chart);
+});
+const chartAxisBounds = computed(() => {
+  const chart = chartQuery.data.value;
+  return !chart || chart.hidden ? null : chart.axisBounds;
+});
+
+function toggleView(report: Report) {
+  viewingReportId.value = viewingReportId.value === report.id ? null : report.id;
 }
 </script>
 

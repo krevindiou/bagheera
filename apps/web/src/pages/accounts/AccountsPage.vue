@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import { useToast } from "../../composables/useToast";
 import { useConfirm } from "../../composables/useConfirm";
@@ -19,10 +20,35 @@ const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
-const banks = ref<Bank[]>([]);
-const accounts = ref<Account[]>([]);
-// Spec 4.7: "New account" starts with a bank-choice step; only once a bank
-// is chosen/created does account creation (4.8), pre-scoped to it, show.
+const queryClient = useQueryClient();
+
+const banksQuery = useQuery({
+  queryKey: ["banks"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/banks");
+    return (data as Bank[] | undefined) ?? [];
+  },
+});
+const banks = computed(() => banksQuery.data.value ?? []);
+
+const accountsQuery = useQuery({
+  queryKey: ["accounts"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts");
+    return (data as Account[] | undefined) ?? [];
+  },
+});
+const accounts = computed(() => accountsQuery.data.value ?? []);
+
+async function reload() {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["banks"] }),
+    queryClient.invalidateQueries({ queryKey: ["accounts"] }),
+  ]);
+}
+
+// "New account" starts with a bank-choice step; only once a bank is
+// chosen/created does account creation, pre-scoped to it, show.
 const creationStep = ref<"closed" | "bank-choice" | "account">("closed");
 const chosenBankId = ref<number | null>(null);
 const editingBankId = ref<number | null>(null);
@@ -35,7 +61,7 @@ function startCreateAccount() {
 async function onBankChosen(bankId: number) {
   // Reload so a freshly created bank is in `banks` (and thus in the
   // account form's bank dropdown) before pre-selecting it.
-  await load();
+  await reload();
   chosenBankId.value = bankId;
   creationStep.value = "account";
 }
@@ -45,27 +71,24 @@ function cancelCreateAccount() {
   chosenBankId.value = null;
 }
 
-async function load() {
-  const [banksResult, accountsResult] = await Promise.all([
-    apiClient.GET("/banks"),
-    apiClient.GET("/accounts"),
-  ]);
-  banks.value = (banksResult.data as Bank[] | undefined) ?? [];
-  accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
-}
-
-onMounted(async () => {
-  await load();
-  // The dashboard's onboarding tips deep-link here via a `start` query
-  // param so they land directly in the relevant flow instead of the
-  // plain accounts list.
-  if (route.query.start === "bank-choice") {
-    creationStep.value = "bank-choice";
-  } else if (route.query.start === "new-account" && activeBanks.value.length > 0) {
-    chosenBankId.value = activeBanks.value[0]!.id;
-    creationStep.value = "account";
-  }
-});
+// The dashboard's onboarding tips deep-link here via a `start` query
+// param so they land directly in the relevant flow instead of the plain
+// accounts list. Runs once, as soon as banks first load.
+const startedFromQuery = ref(false);
+watch(
+  () => banksQuery.data.value,
+  (data) => {
+    if (startedFromQuery.value || !data) return;
+    startedFromQuery.value = true;
+    if (route.query.start === "bank-choice") {
+      creationStep.value = "bank-choice";
+    } else if (route.query.start === "new-account" && activeBanks.value.length > 0) {
+      chosenBankId.value = activeBanks.value[0]!.id;
+      creationStep.value = "account";
+    }
+  },
+  { immediate: true },
+);
 
 function accountsForBank(bankId: number) {
   return accounts.value.filter((account) => account.bankId === bankId);
@@ -100,7 +123,7 @@ const submitEditBank = handleBankSubmit(async (values) => {
   }
   editingBankId.value = null;
   toast(t("accounts.bankSaved"), "success");
-  await load();
+  await reload();
 });
 
 async function closeBank(bank: Bank) {
@@ -113,7 +136,7 @@ async function closeBank(bank: Bank) {
     return;
   }
   toast(t("accounts.bankClosed"), "success");
-  await load();
+  await reload();
 }
 
 async function deleteBank(bank: Bank) {
@@ -124,7 +147,7 @@ async function deleteBank(bank: Bank) {
     return;
   }
   toast(t("accounts.bankDeleted"), "success");
-  await load();
+  await reload();
 }
 
 // -- Edit account (reuses the creation form, with bank and currency
@@ -135,7 +158,7 @@ function startEditAccount(account: Account) {
 
 async function onAccountUpdated() {
   editingAccountId.value = null;
-  await load();
+  await reload();
 }
 
 async function closeAccount(account: Account) {
@@ -148,7 +171,7 @@ async function closeAccount(account: Account) {
     return;
   }
   toast(t("accounts.accountClosed"), "success");
-  await load();
+  await reload();
 }
 
 async function deleteAccount(account: Account) {
@@ -161,11 +184,11 @@ async function deleteAccount(account: Account) {
     return;
   }
   toast(t("accounts.accountDeleted"), "success");
-  await load();
+  await reload();
 }
 
-// Spec 2.7: clicking anywhere in a row (outside its checkbox/controls)
-// opens the row's primary destination — here, the account's operations.
+// Clicking anywhere in a row (outside its checkbox/controls) opens the
+// row's primary destination — here, the account's operations.
 function goToAccount(account: Account) {
   router.push({ name: "operations", params: { accountId: account.id } });
 }

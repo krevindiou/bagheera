@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatMoney } from "../operations/money";
@@ -15,14 +16,72 @@ import ToastContainer from "../../components/ToastContainer.vue";
 const route = useRoute();
 const accountId = computed(() => Number(route.params.accountId));
 
-const account = ref<Account | null>(null);
-const accounts = ref<Account[]>([]);
-const banks = ref<Bank[]>([]);
-const categories = ref<Category[]>([]);
-const list = ref<SchedulerList>({ items: [], total: 0, page: 1, pageSize: 20 });
+const queryClient = useQueryClient();
+
+const page = ref(1);
+watch(accountId, () => {
+  page.value = 1;
+});
+
 const showForm = ref(false);
 const editingScheduler = ref<Scheduler | null>(null);
 const selectedIds = ref<Set<number>>(new Set());
+
+const accountsQuery = useQuery({
+  queryKey: ["accounts"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/accounts");
+    return (data as Account[] | undefined) ?? [];
+  },
+});
+const accounts = computed(() => accountsQuery.data.value ?? []);
+const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
+
+const banksQuery = useQuery({
+  queryKey: ["banks"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/banks");
+    return (data as Bank[] | undefined) ?? [];
+  },
+});
+const banks = computed(() => banksQuery.data.value ?? []);
+
+// "Fully active": neither the account nor its bank is closed or
+// deleted (mirrors apps/web/src/pages/operations/OperationsPage.vue).
+const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
+const isAccountFullyActive = computed(
+  () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
+);
+
+const categoriesQuery = useQuery({
+  queryKey: ["categories"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/reference-data/categories");
+    return (data as Category[] | undefined) ?? [];
+  },
+});
+const categories = computed(() => categoriesQuery.data.value ?? []);
+
+const schedulersQuery = useQuery({
+  queryKey: computed(() => ["schedulers", accountId.value, page.value]),
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/schedulers", {
+      params: { query: { accountId: accountId.value, page: String(page.value) } },
+    });
+    return (
+      (data as SchedulerList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 }
+    );
+  },
+});
+const list = computed(
+  () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: 20 },
+);
+watch(
+  () => schedulersQuery.data.value,
+  () => {
+    selectedIds.value = new Set();
+  },
+);
 
 const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
 const categoryNames = computed(
@@ -30,47 +89,9 @@ const categoryNames = computed(
 );
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
-async function loadAccounts() {
-  const [accountsResult, banksResult] = await Promise.all([
-    apiClient.GET("/accounts"),
-    apiClient.GET("/banks"),
-  ]);
-  accounts.value = (accountsResult.data as Account[] | undefined) ?? [];
-  banks.value = (banksResult.data as Bank[] | undefined) ?? [];
-  account.value = accounts.value.find((a) => a.id === accountId.value) ?? null;
+async function reloadSchedulers() {
+  await queryClient.invalidateQueries({ queryKey: ["schedulers", accountId.value, page.value] });
 }
-
-// "Fully active" per spec: neither the account nor its bank is closed or
-// deleted (mirrors apps/web/src/pages/operations/OperationsPage.vue).
-const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
-const isAccountFullyActive = computed(
-  () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
-);
-
-async function loadCategories() {
-  const { data } = await apiClient.GET("/reference-data/categories");
-  categories.value = (data as Category[] | undefined) ?? [];
-}
-
-async function loadSchedulers(page = 1) {
-  const { data } = await apiClient.GET("/schedulers", {
-    params: { query: { accountId: accountId.value, page: String(page) } },
-  });
-  list.value = (data as SchedulerList | undefined) ?? {
-    items: [],
-    total: 0,
-    page: 1,
-    pageSize: 20,
-  };
-  selectedIds.value = new Set();
-}
-
-async function loadAll() {
-  await Promise.all([loadAccounts(), loadCategories(), loadSchedulers(1)]);
-}
-
-onMounted(loadAll);
-watch(accountId, loadAll);
 
 function paymentMethodName(id: number): string {
   return PAYMENT_METHOD_NAMES[id] ?? String(id);
@@ -108,12 +129,12 @@ function startEdit(scheduler: Scheduler) {
 async function onSaved() {
   showForm.value = false;
   editingScheduler.value = null;
-  await loadSchedulers(list.value.page);
+  await reloadSchedulers();
 }
 
-function goToPage(page: number) {
-  if (page < 1 || page > pageCount.value) return;
-  loadSchedulers(page);
+function goToPage(newPage: number) {
+  if (newPage < 1 || newPage > pageCount.value) return;
+  page.value = newPage;
 }
 </script>
 
@@ -124,7 +145,7 @@ function goToPage(page: number) {
     </h1>
     <ToastContainer />
 
-    <BatchActions :selected-ids="selectedIdList" @done="loadSchedulers(list.page)" />
+    <BatchActions :selected-ids="selectedIdList" @done="reloadSchedulers" />
 
     <p v-if="list.items.length === 0" class="text-muted">{{ $t("schedulers.empty") }}</p>
 

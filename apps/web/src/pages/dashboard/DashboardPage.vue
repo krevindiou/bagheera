@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { useQuery } from "@tanstack/vue-query";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
@@ -10,7 +10,13 @@ import ToastContainer from "../../components/ToastContainer.vue";
 
 const { t } = useI18n();
 
-const dashboard = ref<DashboardResponse | null>(null);
+const { data: dashboard } = useQuery({
+  queryKey: ["dashboard"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/dashboard");
+    return (data as DashboardResponse | undefined) ?? null;
+  },
+});
 
 const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
 // Cycled by currency index — the synthesis chart is one line per currency
@@ -30,13 +36,6 @@ const BANK_BADGE_CLASSES = [
 function bankBadgeClass(index: number): string {
   return BANK_BADGE_CLASSES[index % BANK_BADGE_CLASSES.length];
 }
-
-async function load() {
-  const { data } = await apiClient.GET("/dashboard");
-  dashboard.value = (data as DashboardResponse | undefined) ?? null;
-}
-
-onMounted(load);
 
 // Same per-currency debit/credit flattening as the reports page
 // (apps/web/src/pages/reports/ReportsPage.vue).

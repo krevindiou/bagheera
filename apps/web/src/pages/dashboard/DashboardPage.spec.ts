@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { createRouter, createMemoryHistory } from "vue-router";
+import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
 import DashboardPage from "./DashboardPage.vue";
@@ -25,7 +26,10 @@ async function mountPage() {
   const router = createRouter({ history: createMemoryHistory(), routes });
   router.push("/");
   await router.isReady();
-  return mount(DashboardPage, { global: { plugins: [router, i18n] } });
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return mount(DashboardPage, {
+    global: { plugins: [router, i18n, [VueQueryPlugin, { queryClient }]] },
+  });
 }
 
 function jsonResponse<T>(data: T) {
