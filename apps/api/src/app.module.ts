@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
 import { BanksModule } from './banks/banks.module';
@@ -37,7 +35,5 @@ import { SessionModule } from './session/session.module';
     ReportsModule,
     DashboardModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
