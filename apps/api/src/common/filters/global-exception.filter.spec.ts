@@ -57,6 +57,19 @@ class TestErrorsController {
   boom() {
     throw new Error('unexpected wiring failure');
   }
+
+  // Shaped like what the `http-errors` package produces (used by
+  // Express-level middleware outside Nest's own pipeline, e.g. csrf-csrf's
+  // doubleCsrfProtection on a missing/invalid CSRF token) rather than
+  // Nest's own HttpException.
+  @Get('exposed-http-error')
+  exposedHttpError() {
+    const error = Object.assign(new Error('invalid csrf token'), {
+      statusCode: 403,
+      expose: true,
+    });
+    throw error;
+  }
 }
 
 describe('GlobalExceptionFilter', () => {
@@ -159,6 +172,22 @@ describe('GlobalExceptionFilter', () => {
     expect(Sentry.captureException).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'unexpected wiring failure' }),
     );
+  });
+
+  it('shapes an exposed http-errors-style exception by its own status, without logging or reporting it', async () => {
+    loggerErrorSpy.mockClear();
+    jest.mocked(Sentry.captureException).mockClear();
+
+    const res = await request(app.getHttpServer())
+      .get('/__test-errors/exposed-http-error')
+      .expect(403);
+    expect(res.body).toMatchObject({
+      statusCode: 403,
+      category: 'access_denied',
+      message: 'invalid csrf token',
+    });
+    expect(loggerErrorSpy).not.toHaveBeenCalled();
+    expect(Sentry.captureException).not.toHaveBeenCalled();
   });
 
   it('exposes OpenAPI docs at /api/docs-json and /api/docs', async () => {

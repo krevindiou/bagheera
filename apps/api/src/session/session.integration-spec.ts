@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import type { Request } from 'express';
 import { createClient, type RedisClientType } from 'redis';
 import request from 'supertest';
+import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
 import { SessionRotationService } from './session-rotation.service';
 import {
   SESSION_COOKIE_NAME,
@@ -80,6 +81,12 @@ describe('session infrastructure + CSRF (integration)', () => {
     // req.secure must come from X-Forwarded-Proto for Secure cookies to be
     // set. Requests below send that header the same way Caddy would.
     app.set('trust proxy', 1);
+    // Also mirrors main.ts's filter registration — without it, a CSRF
+    // rejection (an exposed http-errors exception thrown by Express-level
+    // middleware, not a Nest HttpException) falls through to Nest's own
+    // built-in default handler, which logs a scary-looking, misleadingly
+    // stack-attributed error for what's really an expected 403.
+    app.useGlobalFilters(new GlobalExceptionFilter());
     await app.init();
 
     redis = createClient({ url: process.env.VALKEY_URL });
