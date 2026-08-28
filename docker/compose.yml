@@ -70,6 +70,10 @@ services:
       - ../packages:/app/packages
       - api_root_node_modules:/app/node_modules
       - api_node_modules:/app/apps/api/node_modules
+      # Lets `pnpm test:integration` (Testcontainers) reach the host Docker
+      # daemon from inside this dev container to spin up its own ephemeral
+      # Postgres/Valkey — dev-only, not present in compose.prod.yml.
+      - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
       test:
         [

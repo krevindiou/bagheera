@@ -21,6 +21,16 @@ FROM deps AS dev
 # without a rebuild. node_modules paths are covered by named volumes there
 # so the bind mount doesn't shadow them.
 RUN chown -R node:node /app
+# Lets the `node` user read/write the host's docker.sock (bind-mounted in
+# compose.yml's dev volumes) so `pnpm test:integration` (Testcontainers)
+# can run without `docker compose exec -u root`. Matches this host's
+# docker group gid by default — override with
+# `docker compose build --build-arg DOCKER_GID=$(getent group docker | cut -d: -f3) api`
+# if it differs on yours.
+ARG DOCKER_GID=965
+RUN (addgroup -g "$DOCKER_GID" docker || true) \
+  && EXISTING_GROUP="$(getent group "$DOCKER_GID" | cut -d: -f1)" \
+  && adduser node "${EXISTING_GROUP:-docker}"
 ENV NODE_ENV=development
 USER node
 EXPOSE 3000
