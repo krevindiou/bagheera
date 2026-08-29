@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { registerActivateSignIn } from "../support/auth-helpers";
 
 // Assumes it's called from the accounts page; leaves the test on the
-// accounts page afterwards too.
+// accounts page afterwards too — saving an account redirects straight
+// into its operations page, so navigate back before returning.
 async function createAccount(page: Page, name: string): Promise<void> {
   await page.getByRole("button", { name: "New account" }).click();
   const bankField = page.locator("#account-bank-id");
@@ -14,10 +15,13 @@ async function createAccount(page: Page, name: string): Promise<void> {
   }
   await page.getByRole("button", { name: "Save" }).click();
   await page.locator("#account-name").fill(name);
-  await page.locator("#account-currency").fill("USD");
+  await page.locator("#account-currency").selectOption("USD");
   await page.locator("#account-initial-balance").fill("100");
   await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByTestId("account-row").filter({ hasText: name })).toBeVisible();
+  await expect(page).toHaveURL(/\/operations$/);
+
+  await page.getByRole("button", { name: "Settings" }).click();
+  await page.getByRole("link", { name: "Accounts", exact: true }).click();
 }
 
 test("a transfer operation mirrors into the target account and unlinks on delete", async ({
@@ -41,7 +45,9 @@ test("a transfer operation mirrors into the target account and unlinks on delete
   await page.locator("#operation-amount").fill("20");
   await page.locator("#operation-payment-method").selectOption({ label: "Transfer" });
   await page.locator("#operation-transfer-account").selectOption({ label: "Savings" });
-  await page.getByRole("button", { name: "Save" }).click();
+  // OperationForm also has a "Save & add another" button — exact match
+  // avoids resolving to both.
+  await page.getByRole("button", { name: "Save", exact: true }).click();
 
   const sourceRow = page.getByTestId("operation-row").filter({ hasText: "Savings transfer" });
   await expect(sourceRow).toBeVisible();

@@ -8,11 +8,13 @@ test("a due scheduler generates an operation once the member signs back in", asy
   await page.getByRole("link", { name: "Accounts", exact: true }).click();
   await page.getByRole("button", { name: "New account" }).click();
   await page.locator("#account-bank-name").fill("First National");
-  await page.locator("#account-name").fill("Checking");
-  await page.locator("#account-currency").fill("USD");
   await page.getByRole("button", { name: "Save" }).click();
-  const accountRow = page.getByTestId("account-row").filter({ hasText: "Checking" });
-  await accountRow.getByRole("link").click();
+  await page.locator("#account-name").fill("Checking");
+  await page.locator("#account-currency").selectOption("USD");
+  await page.getByRole("button", { name: "Save" }).click();
+  // Saving an account redirects straight into its operations page — no
+  // accounts-list row to click through first.
+  await expect(page).toHaveURL(/\/operations$/);
 
   await page.getByRole("link", { name: "Scheduled operations" }).click();
   await expect(page).toHaveURL(/\/schedulers$/);

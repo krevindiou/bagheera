@@ -15,7 +15,7 @@ export function uniqueEmail(): string {
 export async function register(page: Page, email: string, password = PASSWORD): Promise<void> {
   await page.goto("/en/register");
   await page.locator("#register-email").fill(email);
-  await page.locator("#register-country").fill("US");
+  await page.locator("#register-country").selectOption("US");
   await page.locator("#register-password").fill(password);
   await page.locator("#register-password-confirmation").fill(password);
   await page.getByRole("button", { name: "Register", exact: true }).click();

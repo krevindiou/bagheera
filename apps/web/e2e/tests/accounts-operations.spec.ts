@@ -16,13 +16,12 @@ test("create a bank, an account, then an operation, and see the balance update",
   await page.locator("#account-bank-name").fill("First National");
   await page.getByRole("button", { name: "Save" }).click();
   await page.locator("#account-name").fill("Checking");
-  await page.locator("#account-currency").fill("USD");
+  await page.locator("#account-currency").selectOption("USD");
   await page.locator("#account-initial-balance").fill("100");
   await page.getByRole("button", { name: "Save" }).click();
 
-  const accountRow = page.getByTestId("account-row").filter({ hasText: "Checking" });
-  await expect(accountRow).toBeVisible();
-  await accountRow.getByRole("link").click();
+  // Saving an account redirects straight into its operations page — no
+  // accounts-list row to click through first.
   await expect(page).toHaveURL(/\/operations$/);
 
   await page.getByRole("button", { name: "New operation" }).click();
@@ -30,7 +29,9 @@ test("create a bank, an account, then an operation, and see the balance update",
   await page.locator("#operation-third-party").fill("Grocery Store");
   await page.locator("#operation-amount").fill("25");
   await page.locator("#operation-payment-method").selectOption({ label: "Credit card" });
-  await page.getByRole("button", { name: "Save" }).click();
+  // OperationForm also has a "Save & add another" button — exact match
+  // avoids resolving to both.
+  await page.getByRole("button", { name: "Save", exact: true }).click();
 
   const operationRow = page.getByTestId("operation-row").filter({ hasText: "Grocery Store" });
   await expect(operationRow).toBeVisible();
