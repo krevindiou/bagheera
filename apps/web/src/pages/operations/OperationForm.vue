@@ -136,8 +136,8 @@ const amountInput = ref<HTMLInputElement | null>(null);
 let debounceHandle: ReturnType<typeof setTimeout> | undefined;
 
 // Native "change" (not "input") fires when a datalist suggestion is picked,
-// as opposed to every keystroke while typing — spec 4.15: selecting a
-// suggestion moves focus to the next field.
+// as opposed to every keystroke while typing — selecting a suggestion
+// moves focus to the next field.
 function onThirdPartyChange() {
   const isSuggestion = suggestions.value.some((s) => s.thirdParty === thirdParty.value);
   if (isSuggestion) {

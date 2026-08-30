@@ -10,8 +10,8 @@ vi.mock("../../api/client", () => ({
 }));
 
 const categories: Category[] = [
-  { id: 1, parentId: null, type: "credit", name: "Salary", isSalaryCategory: true },
-  { id: 2, parentId: null, type: "debit", name: "Food", isSalaryCategory: false },
+  { id: 1, parentId: null, type: "credit", name: "Salary" },
+  { id: 2, parentId: null, type: "debit", name: "Food" },
 ];
 
 function mountForm() {

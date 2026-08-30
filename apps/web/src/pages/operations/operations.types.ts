@@ -31,10 +31,9 @@ export interface Category {
   parentId: number | null;
   type: "debit" | "credit";
   name: string;
-  isSalaryCategory: boolean;
 }
 
-// Spec 3.2: displayed as "Parent > Child" when nested.
+// Displayed as "Parent > Child" when nested.
 export function categoryLabel(category: Category, allCategories: Category[]): string {
   const parent = category.parentId
     ? allCategories.find((c) => c.id === category.parentId)

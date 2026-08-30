@@ -31,10 +31,11 @@ describe('categorySeeds', () => {
   ): (typeof categorySeeds)[number][] =>
     seeds.flatMap((s) => [s, ...flatten(s.children ?? [])]);
 
-  it('flags exactly one category as the salary category', () => {
-    const flagged = flatten(categorySeeds).filter((c) => c.isSalaryCategory);
-    expect(flagged).toHaveLength(1);
-    expect(flagged[0]).toMatchObject({ name: 'Salary', type: 'credit' });
+  it('seeds "Salary" first, so it gets id 1 (matched by the SALARY_CATEGORY_ID default)', () => {
+    const matches = flatten(categorySeeds).filter((c) => c.name === 'Salary');
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({ type: 'credit' });
+    expect(categorySeeds[0].name).toBe('Salary');
   });
 
   it('keeps names within the 32-char column limit and uses only two levels', () => {

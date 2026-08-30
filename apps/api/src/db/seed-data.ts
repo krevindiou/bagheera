@@ -23,14 +23,14 @@ export const paymentMethodSeeds: PaymentMethodSeed[] = [
 export interface CategorySeed {
   name: string;
   type: 'debit' | 'credit';
-  isSalaryCategory?: boolean;
   children?: CategorySeed[];
 }
 
-// Placeholder set — real list TBD with the business owner. One credit-type
-// row is flagged as the salary category.
+// Placeholder set — real list TBD with the business owner. "Salary" is
+// seeded first so it gets id 1, matching the SALARY_CATEGORY_ID config
+// default (see dashboard.service.ts).
 export const categorySeeds: CategorySeed[] = [
-  { name: 'Salary', type: 'credit', isSalaryCategory: true },
+  { name: 'Salary', type: 'credit' },
   { name: 'Other income', type: 'credit' },
   {
     name: 'Housing',

@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -83,6 +84,7 @@ export class DashboardService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly reportCharts: ReportChartService,
+    private readonly config: ConfigService,
   ) {}
 
   private requireMemberId(req: Request): number {
@@ -251,10 +253,11 @@ export class DashboardService {
     if (fullyActiveAccountIds.length === 0) {
       return null;
     }
+    const salaryCategoryId = this.config.get<string>('SALARY_CATEGORY_ID', '1');
     const [salaryCategory] = await this.db
       .select()
       .from(category)
-      .where(eq(category.isSalaryCategory, true));
+      .where(eq(category.id, Number(salaryCategoryId)));
     if (!salaryCategory) {
       return null;
     }

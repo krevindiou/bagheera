@@ -166,7 +166,6 @@ describe('reference data (integration)', () => {
         expect.objectContaining({
           name: 'Salary',
           type: 'credit',
-          isSalaryCategory: true,
         }),
       ]),
     );

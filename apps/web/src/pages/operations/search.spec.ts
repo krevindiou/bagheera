@@ -5,7 +5,7 @@ import SearchPanel from "./search.vue";
 import type { Category } from "./operations.types";
 
 const categories: Category[] = [
-  { id: 1, parentId: null, type: "debit", name: "Groceries", isSalaryCategory: false },
+  { id: 1, parentId: null, type: "debit", name: "Groceries" },
 ];
 
 describe("SearchPanel", () => {

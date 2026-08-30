@@ -45,7 +45,6 @@ async function insertCategories(
           .values({
             name: seed.name,
             type: seed.type,
-            isSalaryCategory: seed.isSalaryCategory ?? false,
             parentId,
           })
           .returning({ id: category.id })
