@@ -4,10 +4,10 @@ description: Installs pnpm, Node.js (with pnpm store cache), and workspace depen
 runs:
   using: composite
   steps:
-    - uses: pnpm/action-setup@v4
+    - uses: pnpm/action-setup@v5
       with:
         package_json_file: package.json
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version: 22
         cache: pnpm
