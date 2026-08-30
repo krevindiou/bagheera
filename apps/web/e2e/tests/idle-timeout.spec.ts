@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { registerActivateSignIn } from "../support/auth-helpers";
 
-// The harness runs with a short SESSION_IDLE_TTL_SECONDS (see
-// support/infra.ts) so this doesn't have to wait out the real 30-minute
-// default.
+// `make e2e` runs with a short SESSION_IDLE_TTL_SECONDS (see
+// docker/compose.e2e.yml) so this doesn't have to wait out the real
+// 30-minute default.
 test("an idle session redirects to sign-in on the next request", async ({ page }) => {
   await registerActivateSignIn(page);
 
