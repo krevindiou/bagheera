@@ -53,9 +53,17 @@ jobs:
     needs: [api-integration, web-unit]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - run: pnpm --filter web exec playwright install --with-deps chromium
-      - run: pnpm --filter web e2e
+      - name: Write a throwaway api .env for the e2e stack
+        run: |
+          cat > apps/api/.env <<'EOF'
+          CRYPTO_KEYS={"1":"8mJ0e7Z3vscIKX6Sp4hzw1tCTQiSVF0gzOREHMhYTYM="}
+          CRYPTO_ACTIVE_KEY_ID=1
+          SESSION_SECRET=e2e-session-secret
+          CSRF_SECRET=e2e-csrf-secret
+          APP_URL=http://localhost:5173
+          EMAIL_FROM=Bagheera <no-reply@bagheera.example>
+          EOF
+      - run: make e2e
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

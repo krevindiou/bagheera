@@ -1,0 +1,27 @@
+# Override for docker/compose.yml — run with `-p <project>` (see the
+# Makefile's `e2e` target) to bring up a fully separate, ephemeral stack
+# for e2e: distinct containers, network, and volumes from your regular
+# dev stack (Compose automatically prefixes those by project name), so
+# running e2e never touches the DB/data you're working with in dev.
+#
+# Strips every service's host port publishing — nothing here needs one:
+# the playwright service reaches web directly (network_mode: "service:web",
+# see compose.yml), and every other service is reached by the others
+# purely over the project's own internal network. Removing them is also
+# what avoids port clashes with your already-running dev stack on the same
+# host ports.
+services:
+  postgres:
+    ports: !reset []
+  valkey:
+    ports: !reset []
+  mailpit:
+    ports: !reset []
+  api:
+    ports: !reset []
+    environment:
+      # Short enough for idle-timeout.spec.ts to exercise a real expiry
+      # without waiting out the 30-minute production default.
+      SESSION_IDLE_TTL_SECONDS: "8"
+  web:
+    ports: !reset []

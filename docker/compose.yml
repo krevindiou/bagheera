@@ -115,14 +115,70 @@ services:
     depends_on:
       - api
 
+  # Runs apps/web's e2e suite against this stack, from a container — needed
+  # because Playwright's Chromium build requires glibc (this repo's own web
+  # dev image is Alpine/musl). Not part of the default `docker compose up`
+  # set (profile-gated); invoke explicitly:
+  #   docker compose exec api pnpm db:seed   # once, or whenever you want a clean DB
+  #   docker compose --profile e2e run --rm playwright
+  playwright:
+    profiles: ["e2e"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.playwright
+    # Shares the web container's network namespace instead of joining the
+    # bridge network under its own hostname — visiting http://web:5173
+    # (rather than genuine localhost) both trips Vite's allowedHosts guard
+    # and, worse, makes Chromium refuse to store the Secure-flagged
+    # session/CSRF cookies at all (only localhost/127.0.0.1 count as a
+    # "potentially trustworthy origin" for that over plain HTTP) — every
+    # mutating request 403s with no cookie ever persisting. Sharing web's
+    # netns makes localhost:5173 genuinely reach it, matching the
+    # already-proven host-run path exactly. Sibling services (api,
+    # mailpit, ...) stay reachable by service name — DNS resolution comes
+    # along with the shared netns, unaffected by ports/ any of that.
+    network_mode: "service:web"
+    environment:
+      # mailpit isn't part of web's netns, so it still needs the
+      # container-network hostname (unlike E2E_BASE_URL, left at its
+      # localhost default — see network_mode above).
+      E2E_MAILPIT_HTTP_URL: http://mailpit:8025
+      # Docker doesn't forward host env vars into containers on its own —
+      # without this, playwright.config.ts's `process.env.CI` check never
+      # sees the CI runner's CI=true, the html reporter (and so
+      # playwright-report/) never gets produced, and ci.yml's
+      # upload-artifact step silently has nothing to upload. Empty locally
+      # (not run from a shell with CI set), which is the correct "list
+      # reporter only" behavior there too.
+      CI: ${CI:-}
+    volumes:
+      - ../apps/web:/app/apps/web
+      - ../packages:/app/packages
+      - playwright_root_node_modules:/app/node_modules
+      - playwright_node_modules:/app/apps/web/node_modules
+    depends_on:
+      - api
+      - web
+    command:
+      - sh
+      - -c
+      - |
+        until curl -sf http://api:3000/health >/dev/null; do sleep 2; done
+        until curl -sf http://localhost:5173/ >/dev/null; do sleep 2; done
+        pnpm e2e
+
 volumes:
   postgres_data:
   valkey_data:
   # Each service gets its own root node_modules volume — api and web's
   # deps/ trees differ now that each Dockerfile installs with `--filter
   # <app>...`, so sharing one volume let whichever container started
-  # first silently win the other's dependency tree.
+  # first silently win the other's dependency tree. playwright gets its
+  # own for the same reason, and to keep its glibc-built native deps
+  # (this image, unlike web's, isn't Alpine/musl) from mixing with web's.
   api_root_node_modules:
   web_root_node_modules:
   api_node_modules:
   web_node_modules:
+  playwright_root_node_modules:
+  playwright_node_modules:

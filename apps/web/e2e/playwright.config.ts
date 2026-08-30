@@ -1,21 +1,25 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Runs against an already-running stack (`make e2e`) rather than
+// spinning up its own infra — see docker/compose.e2e.yml and
+// the Makefile's `e2e` target for prerequisites (seeded DB, short
+// SESSION_IDLE_TTL_SECONDS for idle-timeout.spec.ts, etc). Run this
+// against your regular long-lived dev stack instead and that one test
+// will fail — it needs the short TTL to exercise a real expiry.
+process.env.E2E_BASE_URL ??= "http://localhost:5173";
+process.env.E2E_MAILPIT_HTTP_URL ??= "http://localhost:8025";
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
   workers: 1,
   retries: 0,
   timeout: 30_000,
-  globalSetup: "./support/global-setup.ts",
-  globalTeardown: "./support/global-teardown.ts",
   reporter: process.env.CI
     ? [["github"], ["list"], ["html", { outputFolder: "../playwright-report", open: "never" }]]
     : "list",
   use: {
-    // Fixed port the harness always starts the web dev server on (see
-    // support/infra.ts) — known before globalSetup runs, unlike
-    // E2E_BASE_URL which globalSetup only sets once containers are up.
-    baseURL: "http://localhost:5173",
+    baseURL: process.env.E2E_BASE_URL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

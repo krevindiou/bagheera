@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -24,14 +25,25 @@ const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordC
 
 // Spec 4.4: a rejected key (missing, invalid, expired, already used) is a
 // silent return to sign-in — no visible error, so the visitor never learns
-// which case applies.
-const key = route.query.key;
-if (typeof key !== "string" || key.length === 0) {
-  router.replace({ name: "sign-in" });
-}
+// which case applies. Read in onMounted, not at top-level setup — this
+// page is always reached via a hard navigation (an emailed link), and
+// reading route.query synchronously at setup can race Vue Router's
+// initial-navigation resolution, misreading a perfectly valid key as
+// absent (mirrors ActivatePage.vue, which has the same hard-navigation
+// entry point and already reads its key inside onMounted).
+let key: string | null = null;
+
+onMounted(() => {
+  const raw = route.query.key;
+  if (typeof raw !== "string" || raw.length === 0) {
+    router.replace({ name: "sign-in" });
+    return;
+  }
+  key = raw;
+});
 
 const onSubmit = handleSubmit(async (values) => {
-  if (typeof key !== "string" || key.length === 0) return;
+  if (!key) return;
 
   const { response } = await apiClient.POST("/auth/password-recovery/reset", {
     body: { key, ...values },

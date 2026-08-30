@@ -1,0 +1,50 @@
+# syntax=docker/dockerfile:1
+# Runs apps/web's e2e suite against the docker-compose dev stack, from a
+# container instead of the host — needed because Playwright's Chromium
+# build requires glibc (web's own dev image is Alpine/musl, see
+# Dockerfile.web) and to avoid needing Node/pnpm/browsers on the host at
+# all. Build context is the repo root, e.g.:
+#   docker build -f docker/Dockerfile.playwright -t bagheera-playwright .
+#
+# PLAYWRIGHT_VERSION must match apps/web/package.json's @playwright/test
+# version exactly — the browser binaries baked into this base image are
+# tied to that release. Bump both together.
+ARG PLAYWRIGHT_VERSION=1.62.1
+FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
+
+# Otherwise corepack's first pnpm invocation blocks on an interactive
+# "Do you want to continue? [Y/n]" download confirmation — fine with a
+# real TTY, but `docker compose run` doesn't guarantee one and CI never
+# has one.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable
+WORKDIR /app
+
+# Deps baked in from here; e2e source itself comes in via bind mount (see
+# docker/compose.yml) so edits don't need a rebuild. node_modules paths are
+# covered by named volumes there so the bind mount doesn't shadow them.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages ./packages
+RUN pnpm install --frozen-lockfile --filter web...
+
+# Run as a non-root user instead of root — otherwise anything this
+# container writes to the bind-mounted apps/web (test-results/,
+# playwright-report/) comes out root-owned on the host, same class of
+# problem as the node_modules mixup earlier this project. Uses the base
+# image's "ubuntu" user (uid 1000) rather than its "pwuser" (uid 1001) —
+# uid 1000 is also what Dockerfile.web/api's own "node" user resolves to,
+# and a bind mount enforces the numeric uid, not the in-container name, so
+# a mismatched uid here would still get EACCES against the host-owned
+# apps/web tree despite being "non-root".
+RUN chown -R ubuntu:ubuntu /app
+USER ubuntu
+
+# Pre-warms corepack's pnpm download into ubuntu's own cache (the RUN
+# above happened as root — a different $HOME, so a different cache dir —
+# so without this, the first `pnpm e2e` invocation at runtime would still
+# pay for a fresh download under the ubuntu user).
+RUN pnpm --version
+
+WORKDIR /app/apps/web
+CMD ["sleep", "infinity"]

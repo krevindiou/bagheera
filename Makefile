@@ -6,10 +6,12 @@ else
 COMPOSE := docker compose -f docker/compose.yml
 endif
 
-.PHONY: help build up down ps shell-api shell-web migrate test lint format
+COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
+
+.PHONY: help build up down ps shell-api shell-web migrate test lint format e2e
 
 help: ## Show this help (ENV=prod for prod stack, default dev)
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 build: ## Build images
@@ -44,3 +46,10 @@ lint: ## Lint whole repo
 format: ## Format whole repo
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm format
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm format
+
+e2e: ## Run e2e tests
+	$(COMPOSE_E2E) up -d --build
+	@echo "Waiting for api (db:migrate runs as part of its startup command)..."
+	@until [ "$$($(COMPOSE_E2E) ps api --format '{{.Health}}')" = "healthy" ]; do sleep 2; done
+	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
+	$(COMPOSE_E2E) --profile e2e run --rm playwright; status=$$?; $(COMPOSE_E2E) --profile e2e down -v; exit $$status
