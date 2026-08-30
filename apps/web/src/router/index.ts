@@ -83,17 +83,23 @@ export const router = createRouter({
   routes,
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   if (!to.meta.requiresAuth) {
     return true;
   }
   // No active Pinia (e.g. a bare navigation in a test) is treated the
   // same as "not signed in" — the safe default is to bounce to sign-in.
-  let authenticated: boolean;
+  let store: ReturnType<typeof useSessionStore>;
   try {
-    authenticated = useSessionStore().isAuthenticated;
+    store = useSessionStore();
   } catch {
-    authenticated = false;
+    return { name: "sign-in" };
   }
-  return authenticated ? true : { name: "sign-in" };
+  // On a fresh page load the store hasn't yet learned whether the session
+  // cookie is still valid — wait for that check before deciding, so a
+  // refresh doesn't bounce an actually-signed-in member to sign-in.
+  if (!store.restored) {
+    await store.restore();
+  }
+  return store.isAuthenticated ? true : { name: "sign-in" };
 });

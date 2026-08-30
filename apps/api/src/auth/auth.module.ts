@@ -3,6 +3,7 @@ import { SchedulersModule } from '../schedulers/schedulers.module';
 import { SessionModule } from '../session/session.module';
 import { ChangePasswordController } from './change-password.controller';
 import { ChangePasswordService } from './change-password.service';
+import { CurrentSessionController } from './current-session.controller';
 import { PasswordRecoveryController } from './password-recovery.controller';
 import { PasswordRecoveryService } from './password-recovery.service';
 import { SchedulerCatchUpService } from './scheduler-catch-up.service';
@@ -19,6 +20,7 @@ import { SignOutService } from './sign-out.service';
     SignOutController,
     PasswordRecoveryController,
     ChangePasswordController,
+    CurrentSessionController,
   ],
   providers: [
     SignInService,
