@@ -74,8 +74,8 @@ const chartOptions = computed<ChartOptions<"line">>(() => ({
   maintainAspectRatio: false,
   scales: {
     y: {
-      min: props.axisBounds?.min,
-      max: props.axisBounds?.max,
+      suggestedMin: props.axisBounds?.min,
+      suggestedMax: props.axisBounds?.max,
     },
   },
   plugins: {
