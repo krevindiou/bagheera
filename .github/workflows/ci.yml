@@ -39,13 +39,18 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
-      - run: pnpm --filter api test
+      - run: pnpm --filter api test:cov
       - uses: dorny/test-reporter@v3
         if: success() || failure()
         with:
           name: Jest Unit Test Report
           path: apps/api/junit-unit.xml
           reporter: jest-junit
+      - uses: ./.github/actions/coverage-summary
+        if: success() || failure()
+        with:
+          path: apps/api/coverage/coverage-summary.json
+          title: API unit test coverage
 
   web-unit:
     name: Web unit tests
@@ -54,7 +59,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: ./.github/actions/setup
-      - run: pnpm --filter web test
+      - run: pnpm --filter web test:cov
+      - uses: ./.github/actions/coverage-summary
+        if: success() || failure()
+        with:
+          path: apps/web/coverage/coverage-summary.json
+          title: Web unit test coverage
 
   api-integration:
     name: API integration tests

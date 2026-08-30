@@ -1,0 +1,16 @@
+name: Coverage summary
+description: Appends a coverage-summary.json's totals as a Job Summary table.
+
+inputs:
+  path:
+    description: Path to the coverage-summary.json file (e.g. apps/api/coverage/coverage-summary.json).
+    required: true
+  title:
+    description: Heading for the summary table.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - run: node "${{ github.action_path }}/../../scripts/coverage-summary.mjs" "${{ inputs.path }}" "${{ inputs.title }}"
+      shell: bash

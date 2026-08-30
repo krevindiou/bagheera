@@ -49,5 +49,9 @@ export default defineConfig({
     setupFiles: ["./src/test-setup.ts"],
     // e2e/ holds Playwright specs (run via `pnpm e2e`), not Vitest ones.
     exclude: ["**/node_modules/**", "e2e/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov", "json-summary"],
+    },
   },
 });
