@@ -8,7 +8,7 @@ endif
 
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
-.PHONY: help build up down ps shell-api shell-web migrate test lint format e2e
+.PHONY: help build up down ps shell-api shell-web migrate test test-unit test-integration test-e2e lint format
 
 help: ## Show this help (ENV=prod for prod stack, default dev)
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | \
@@ -35,9 +35,21 @@ shell-web: ## Shell into web container
 migrate: ## Run db migrations
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm db:migrate
 
-test: ## Run api + web tests
+test: test-unit test-integration test-e2e ## Run unit + integration + e2e tests
+
+test-unit: ## Run api + web unit tests
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm test
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm test
+
+test-integration: ## Run api integration tests
+	$(COMPOSE) exec --workdir /app/apps/api api pnpm test:integration
+
+test-e2e: ## Run e2e tests
+	$(COMPOSE_E2E) up -d --build
+	@echo "Waiting for api (db:migrate runs as part of its startup command)..."
+	@until [ "$$($(COMPOSE_E2E) ps api --format '{{.Health}}')" = "healthy" ]; do sleep 2; done
+	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
+	$(COMPOSE_E2E) --profile e2e run --rm playwright; status=$$?; $(COMPOSE_E2E) --profile e2e down -v; exit $$status
 
 lint: ## Lint whole repo
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm lint
@@ -46,10 +58,3 @@ lint: ## Lint whole repo
 format: ## Format whole repo
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm format
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm format
-
-e2e: ## Run e2e tests
-	$(COMPOSE_E2E) up -d --build
-	@echo "Waiting for api (db:migrate runs as part of its startup command)..."
-	@until [ "$$($(COMPOSE_E2E) ps api --format '{{.Health}}')" = "healthy" ]; do sleep 2; done
-	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
-	$(COMPOSE_E2E) --profile e2e run --rm playwright; status=$$?; $(COMPOSE_E2E) --profile e2e down -v; exit $$status

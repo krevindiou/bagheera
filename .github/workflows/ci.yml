@@ -63,7 +63,7 @@ jobs:
           APP_URL=http://localhost:5173
           EMAIL_FROM=Bagheera <no-reply@bagheera.example>
           EOF
-      - run: make e2e
+      - run: make test-e2e
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

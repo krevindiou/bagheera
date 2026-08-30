@@ -39,7 +39,7 @@ That's it — migrations run automatically on API startup. The root `.env.exampl
 make help      # list all targets
 make ps        # container status
 make migrate   # run db migrations
-make test      # api + web test suites
+make test      # unit + integration + e2e (or test-unit/test-integration/test-e2e individually)
 make lint      # lint api + web
 make format    # format api + web
 make shell-api # shell into the api container
