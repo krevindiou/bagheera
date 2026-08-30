@@ -4,14 +4,14 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { and, eq, gte, ilike, inArray, lte } from 'drizzle-orm';
+import { and, eq, gte, ilike, inArray, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
 import { toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, reportAccount } from '../db/schema';
-import { fillPeriodGaps, periodStart } from './chart/period';
+import { fillPeriodGaps } from './chart/period';
 
 export interface ReportChartSeriesPoint {
   period: string;
@@ -39,9 +39,14 @@ interface Bucket {
 
 const ALL_PERIOD_KEY = 'all';
 
-function emptyBucket(): Bucket {
-  return { debitSum: 0, debitCount: 0, creditSum: 0, creditCount: 0 };
-}
+// Postgres `date_trunc(field, ...)` field names, one per non-'all' grouping.
+// 'all' has no period arithmetic — it is a single aggregate bucket handled
+// separately below, without a GROUP BY on period at all.
+const DATE_TRUNC_FIELD = {
+  month: 'month',
+  quarter: 'quarter',
+  year: 'year',
+} as const;
 
 function currentYearStart(): string {
   return `${new Date().getUTCFullYear()}-01-01`;
@@ -129,9 +134,6 @@ export class ReportChartService {
       return { hidden: true, axisBounds: null, series: [] };
     }
 
-    const currencyByAccount = new Map(
-      accounts.map((a) => [a.id, a.currency] as const),
-    );
     const conditions = [
       inArray(
         operation.accountId,
@@ -151,46 +153,62 @@ export class ReportChartService {
       conditions.push(eq(operation.reconciled, true));
     }
 
-    const rows = await this.db
+    const grouping = rpt.periodGrouping;
+
+    // Period + sum/count aggregation happens in Postgres (GROUP BY +
+    // date_trunc), not by streaming every raw operation row into Node and
+    // bucketing it in a JS Map — the result set here is one row per
+    // currency/period actually present, not one row per operation.
+    const periodExpr =
+      grouping === 'all'
+        ? sql<string | null>`null`
+        : sql<string>`date_trunc(${DATE_TRUNC_FIELD[grouping]}, ${operation.valueDate})::date`;
+
+    const aggregated = await this.db
       .select({
-        accountId: operation.accountId,
-        debit: operation.debit,
-        credit: operation.credit,
-        valueDate: operation.valueDate,
+        currency: account.currency,
+        period: periodExpr.as('period'),
+        debitSum: sql<
+          string | null
+        >`sum(${operation.debit}) filter (where ${operation.debit} is not null)`,
+        debitCount: sql<string>`count(${operation.debit})`,
+        creditSum: sql<
+          string | null
+        >`sum(${operation.credit}) filter (where ${operation.credit} is not null)`,
+        creditCount: sql<string>`count(${operation.credit})`,
       })
       .from(operation)
-      .where(and(...conditions));
+      .innerJoin(account, eq(operation.accountId, account.id))
+      .where(and(...conditions))
+      // GROUP BY the *output column position* (2 = period), not a second
+      // rendering of `periodExpr` — Drizzle binds each `sql` usage as its
+      // own parameter, so repeating the expression here would give
+      // Postgres two `date_trunc($1, ...)` calls referencing different
+      // bind params it can't prove are equal, and it rejects the query
+      // ("must appear in the GROUP BY clause or be used in an aggregate
+      // function"). Ordinal position always refers back to the same
+      // already-computed SELECT-list expression. For 'all' grouping,
+      // `period` is a constant (`null`), which needs no GROUP BY entry.
+      .groupBy(
+        ...(grouping === 'all'
+          ? [account.currency]
+          : [account.currency, sql`2`]),
+      );
 
-    const grouping = rpt.periodGrouping;
     const byCurrency = new Map<string, Map<string, Bucket>>();
-
-    for (const row of rows) {
-      const currency = currencyByAccount.get(row.accountId);
-      if (!currency) {
-        continue;
-      }
-      const key =
-        grouping === 'all'
-          ? ALL_PERIOD_KEY
-          : periodStart(row.valueDate, grouping);
-      let periods = byCurrency.get(currency);
+    for (const row of aggregated) {
+      const key = row.period ?? ALL_PERIOD_KEY;
+      let periods = byCurrency.get(row.currency);
       if (!periods) {
         periods = new Map();
-        byCurrency.set(currency, periods);
+        byCurrency.set(row.currency, periods);
       }
-      let bucket = periods.get(key);
-      if (!bucket) {
-        bucket = emptyBucket();
-        periods.set(key, bucket);
-      }
-      if (row.debit !== null) {
-        bucket.debitSum += row.debit;
-        bucket.debitCount += 1;
-      }
-      if (row.credit !== null) {
-        bucket.creditSum += row.credit;
-        bucket.creditCount += 1;
-      }
+      periods.set(key, {
+        debitSum: row.debitSum === null ? 0 : Number(row.debitSum),
+        debitCount: Number(row.debitCount),
+        creditSum: row.creditSum === null ? 0 : Number(row.creditSum),
+        creditCount: Number(row.creditCount),
+      });
     }
 
     const series: ReportChartSeries[] = [];
