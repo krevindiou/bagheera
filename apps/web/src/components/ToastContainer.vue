@@ -15,7 +15,6 @@ const variantClass: Record<string, string> = {
        directly under its own title, rather than as a fixed
        viewport-corner overlay. -->
   <div v-if="toasts.length > 0" class="toast-container container py-2 d-flex flex-column gap-2">
-
     <div
       v-for="toast in toasts"
       :key="toast.id"

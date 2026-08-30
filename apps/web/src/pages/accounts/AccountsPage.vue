@@ -288,11 +288,7 @@ function errorMessage(error: unknown): string | undefined {
           class="py-1"
           data-testid="account-row"
         >
-          <div
-            v-if="editingAccountId === account.id"
-            class="account-edit-form"
-            @click.stop
-          >
+          <div v-if="editingAccountId === account.id" class="account-edit-form" @click.stop>
             <CreateAccountForm
               mode="edit"
               :banks="banks"

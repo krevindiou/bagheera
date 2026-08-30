@@ -4,9 +4,7 @@ import { i18n } from "../../i18n";
 import SearchPanel from "./search.vue";
 import type { Category } from "./operations.types";
 
-const categories: Category[] = [
-  { id: 1, parentId: null, type: "debit", name: "Groceries" },
-];
+const categories: Category[] = [{ id: 1, parentId: null, type: "debit", name: "Groceries" }];
 
 describe("SearchPanel", () => {
   it("emits only the fields the member filled in", async () => {

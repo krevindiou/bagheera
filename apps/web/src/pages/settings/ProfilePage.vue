@@ -15,9 +15,9 @@ const { t } = useI18n();
 
 const { defineField, handleSubmit, errors, isSubmitting, resetField, setFieldError } =
   useForm<ProfileForm>({
-  validationSchema: toTypedSchema(profileSchema),
-  initialValues: { email: session.member?.email ?? "", currentPassword: "" },
-});
+    validationSchema: toTypedSchema(profileSchema),
+    initialValues: { email: session.member?.email ?? "", currentPassword: "" },
+  });
 const [email, emailAttrs] = defineField("email");
 const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
 

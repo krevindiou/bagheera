@@ -13,8 +13,7 @@ const { t } = useI18n();
 
 async function batchDelete() {
   if (props.selectedIds.length === 0) return;
-  if (!(await confirm()))
-    return;
+  if (!(await confirm())) return;
 
   const { data, response } = await apiClient.POST("/operations/batch/delete", {
     body: { ids: props.selectedIds },
@@ -38,8 +37,7 @@ async function batchDelete() {
 
 async function batchReconcile() {
   if (props.selectedIds.length === 0) return;
-  if (!(await confirm()))
-    return;
+  if (!(await confirm())) return;
 
   const { data, response } = await apiClient.POST("/operations/batch/reconcile", {
     body: { ids: props.selectedIds },

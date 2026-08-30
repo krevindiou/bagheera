@@ -14,13 +14,13 @@ const { t } = useI18n();
 
 const { defineField, handleSubmit, errors, isSubmitting, resetForm, setFieldError } =
   useForm<ChangePasswordForm>({
-  validationSchema: toTypedSchema(changePasswordSchema),
-  initialValues: {
-    currentPassword: "",
-    newPassword: "",
-    newPasswordConfirmation: "",
-  },
-});
+    validationSchema: toTypedSchema(changePasswordSchema),
+    initialValues: {
+      currentPassword: "",
+      newPassword: "",
+      newPasswordConfirmation: "",
+    },
+  });
 const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
 const [newPassword, newPasswordAttrs] = defineField("newPassword");
 const [newPasswordConfirmation, newPasswordConfirmationAttrs] =

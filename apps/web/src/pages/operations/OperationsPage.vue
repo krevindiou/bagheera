@@ -141,7 +141,8 @@ const selectedIdList = computed(() => Array.from(selectedIds.value));
 // exclude them), so only the closed flags matter here.
 const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
 const isAccountFullyActive = computed(
-  () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
+  () =>
+    !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
 );
 
 const searchMutation = useMutation({
@@ -251,9 +252,7 @@ function isEditable(operation: Operation): boolean {
 
 <template>
   <div class="container py-5">
-    <h1 v-if="account">
-      {{ accountBank?.name }} − {{ account.name }}
-    </h1>
+    <h1 v-if="account">{{ accountBank?.name }} − {{ account.name }}</h1>
     <h1 v-else>{{ $t("operations.title") }}</h1>
     <ToastContainer />
 

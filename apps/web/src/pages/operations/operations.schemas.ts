@@ -18,8 +18,7 @@ export const operationSchema = z.object({
   ),
   categoryId: optionalId,
   paymentMethodId: z.preprocess(
-    (value) =>
-      value === "" || value === undefined || value === null ? undefined : Number(value),
+    (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
     z.number().int().positive(),
   ),
   transferAccountId: optionalId,

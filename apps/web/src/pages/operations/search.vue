@@ -36,7 +36,8 @@ function hydrate(criteria: SearchCriteria | undefined) {
   dateFrom.value = criteria.dateFrom ?? "";
   dateTo.value = criteria.dateTo ?? "";
   notes.value = criteria.notes ?? "";
-  reconciled.value = criteria.reconciled === undefined ? "" : criteria.reconciled ? "true" : "false";
+  reconciled.value =
+    criteria.reconciled === undefined ? "" : criteria.reconciled ? "true" : "false";
 }
 
 watch(() => props.initialCriteria, hydrate, { immediate: true });
@@ -173,7 +174,9 @@ function onClear() {
         $t("operations.paymentMethod")
       }}</label>
       <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">{{ pm.name }}</option>
+        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
+          {{ pm.name }}
+        </option>
       </select>
     </div>
 
@@ -237,13 +240,7 @@ function onClear() {
 
     <div class="mb-3">
       <label class="form-label" for="search-notes">{{ $t("operations.notes") }}</label>
-      <input
-        id="search-notes"
-        v-model="notes"
-        type="text"
-        maxlength="128"
-        class="form-control"
-      />
+      <input id="search-notes" v-model="notes" type="text" maxlength="128" class="form-control" />
     </div>
 
     <div class="mb-3">

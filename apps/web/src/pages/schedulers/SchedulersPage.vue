@@ -50,7 +50,8 @@ const banks = computed(() => banksQuery.data.value ?? []);
 // deleted (mirrors apps/web/src/pages/operations/OperationsPage.vue).
 const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
 const isAccountFullyActive = computed(
-  () => !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
+  () =>
+    !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
 );
 
 const categoriesQuery = useQuery({
@@ -68,9 +69,7 @@ const schedulersQuery = useQuery({
     const { data } = await apiClient.GET("/schedulers", {
       params: { query: { accountId: accountId.value, page: String(page.value) } },
     });
-    return (
-      (data as SchedulerList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 }
-    );
+    return (data as SchedulerList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
   },
 });
 const list = computed(
@@ -181,10 +180,9 @@ function goToPage(newPage: number) {
               />
             </td>
             <td>
-              <span
-                :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')"
-                >{{ scheduler.active ? "▶" : "⏸" }}</span
-              >
+              <span :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')">{{
+                scheduler.active ? "▶" : "⏸"
+              }}</span>
             </td>
             <td>{{ scheduler.thirdParty }}</td>
             <td class="text-end" :class="scheduler.debit ? 'text-danger' : 'text-success'">

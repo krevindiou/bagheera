@@ -99,7 +99,8 @@ function isFullyActiveAccount(a: Account): boolean {
 }
 const transferTargets = computed(() => {
   const eligible = props.accounts.filter(
-    (a) => a.id !== props.accountId && a.currency === sourceCurrency.value && isFullyActiveAccount(a),
+    (a) =>
+      a.id !== props.accountId && a.currency === sourceCurrency.value && isFullyActiveAccount(a),
   );
   const storedTargetId = props.operation?.transferAccountId;
   if (storedTargetId && !eligible.some((a) => a.id === storedTargetId)) {

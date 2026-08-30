@@ -95,7 +95,6 @@ function errorMessage(error: unknown): string | undefined {
   }
   return undefined;
 }
-
 </script>
 
 <template>
