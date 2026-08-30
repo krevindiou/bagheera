@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
@@ -144,10 +144,20 @@ interface ThirdPartySuggestion {
 }
 
 const suggestions = ref<ThirdPartySuggestion[]>([]);
+const amountInput = ref<HTMLInputElement | null>(null);
 let debounceHandle: ReturnType<typeof setTimeout> | undefined;
 
-// Same third-party autocomplete as the operation form (spec 4.15 applies to
-// "operation and scheduler forms").
+// Native "change" (not "input") fires when a datalist suggestion is picked,
+// as opposed to every keystroke while typing — selecting a suggestion
+// moves focus to the next field.
+function onThirdPartyChange() {
+  const isSuggestion = suggestions.value.some((s) => s.thirdParty === thirdParty.value);
+  if (isSuggestion) {
+    nextTick(() => amountInput.value?.focus());
+  }
+}
+
+// Same third-party autocomplete as the operation form.
 watch(thirdParty, (value) => {
   if (debounceHandle) clearTimeout(debounceHandle);
   const query = value?.trim() ?? "";
@@ -261,6 +271,7 @@ function errorMessage(error: unknown): string | undefined {
         autocomplete="off"
         class="form-control"
         :class="{ 'is-invalid': errors.thirdParty }"
+        @change="onThirdPartyChange"
       />
       <datalist id="scheduler-third-party-suggestions">
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
@@ -276,6 +287,7 @@ function errorMessage(error: unknown): string | undefined {
         <span class="input-group-text">{{ amountCurrencySymbol }}</span>
         <input
           id="scheduler-amount"
+          ref="amountInput"
           v-model="amount"
           v-bind="amountAttrs"
           type="number"
