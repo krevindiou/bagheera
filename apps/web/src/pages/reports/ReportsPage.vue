@@ -142,55 +142,73 @@ function toggleView(report: Report) {
     <template v-else>
       <BatchActions :selected-ids="selectedIdList" @done="onBatchDeleted" />
 
-      <ul class="list-unstyled">
-        <li
-          v-for="report in reports"
-          :key="report.id"
-          class="border rounded p-3 mb-3"
-          :class="{ 'table-active': selectedIds.has(report.id) }"
-          style="cursor: pointer"
-          data-testid="report-row"
-          @click="toggleView(report)"
-        >
-          <div class="d-flex align-items-center gap-2">
-            <input
-              type="checkbox"
-              data-testid="report-checkbox"
-              :checked="selectedIds.has(report.id)"
-              @click.stop
-              @change="toggleSelected(report.id)"
-            />
-            <h2 class="h6 mb-0">{{ report.title }}</h2>
-            <span class="badge text-bg-secondary">{{ $t(`reports.${report.type}`) }}</span>
-            <span v-if="report.homepage" class="badge text-bg-info">{{
-              $t("reports.homepage")
-            }}</span>
-            <div class="ms-auto d-flex gap-2" @click.stop>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
+      <div class="table-responsive">
+        <table class="table" data-testid="reports-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>{{ $t("reports.type") }}</th>
+              <th>{{ $t("reports.reportTitle") }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="report in reports" :key="report.id">
+              <tr
+                :class="{ 'table-active': selectedIds.has(report.id) }"
+                style="cursor: pointer"
+                data-testid="report-row"
                 @click="toggleView(report)"
               >
-                {{
-                  viewingReportId === report.id ? $t("reports.hideChart") : $t("reports.viewChart")
-                }}
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                @click="startEdit(report)"
-              >
-                {{ $t("operations.edit") }}
-              </button>
-            </div>
-          </div>
-          <SynthesisChart
-            v-if="viewingReportId === report.id"
-            :series="chartSeries"
-            :axis-bounds="chartAxisBounds"
-          />
-        </li>
-      </ul>
+                <td @click.stop>
+                  <input
+                    type="checkbox"
+                    data-testid="report-checkbox"
+                    :checked="selectedIds.has(report.id)"
+                    @change="toggleSelected(report.id)"
+                  />
+                </td>
+                <td>
+                  <span class="badge text-bg-secondary">{{ $t(`reports.${report.type}`) }}</span>
+                </td>
+                <td>
+                  {{ report.title }}
+                  <span v-if="report.homepage" class="badge text-bg-info">{{
+                    $t("reports.homepage")
+                  }}</span>
+                </td>
+                <td @click.stop>
+                  <div class="d-flex gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="toggleView(report)"
+                    >
+                      {{
+                        viewingReportId === report.id
+                          ? $t("reports.hideChart")
+                          : $t("reports.viewChart")
+                      }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      @click="startEdit(report)"
+                    >
+                      {{ $t("operations.edit") }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="viewingReportId === report.id">
+                <td colspan="4">
+                  <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
     </template>
 
     <ReportForm

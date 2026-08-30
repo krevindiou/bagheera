@@ -219,6 +219,7 @@ export default {
     editTitle: "Edit report",
     newSumReport: "New sum report",
     newAverageReport: "New average report",
+    type: "Type",
     reportTitle: "Title",
     reconciledOnly: "Reconciled only",
     sum: "Sum",
