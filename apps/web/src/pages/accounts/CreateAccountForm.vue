@@ -4,11 +4,17 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
+import type { components } from "../../api/schema";
 import { useToast } from "../../composables/useToast";
 import { getCurrencyOptions, getGuessedCurrency } from "../../composables/useCurrencyOptions";
 import { currencySymbol } from "../operations/money";
 import { createAccountSchema, editAccountSchema, type CreateAccountForm } from "./accounts.schemas";
 import type { Account, Bank } from "./accounts.types";
+
+// The API narrows currency to an ISO 4217 enum; the form only validates a
+// 3-letter code (see accounts.schemas.ts), so the value is cast at the API
+// boundary rather than widening the form's own type.
+type CurrencyCode = components["schemas"]["CreateAccountDto"]["currency"];
 
 // Account creation, reached after the bank-choice step, pre-scoped to the
 // chosen/created bank (the bank field stays an editable dropdown of the
@@ -50,7 +56,11 @@ const onSubmit = handleSubmit(async (values) => {
   if (isEdit.value && props.account) {
     const { error, response } = await apiClient.PATCH("/accounts/{id}", {
       params: { path: { id: props.account.id } },
-      body: { name: values.name, bankId: props.account.bankId, currency: props.account.currency },
+      body: {
+        name: values.name,
+        bankId: props.account.bankId,
+        currency: props.account.currency as CurrencyCode,
+      },
     });
     if (!response.ok) {
       toast(errorMessage(error) ?? t("accounts.genericError"), "error");
@@ -65,7 +75,7 @@ const onSubmit = handleSubmit(async (values) => {
     body: {
       bankId: Number(values.bankId),
       name: values.name,
-      currency: values.currency.toUpperCase(),
+      currency: values.currency.toUpperCase() as CurrencyCode,
       initialBalance: values.initialBalance,
     },
   });

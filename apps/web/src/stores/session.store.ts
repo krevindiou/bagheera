@@ -32,7 +32,11 @@ export const useSessionStore = defineStore("session", {
       this.restorePromise = apiClient
         .GET("/auth/me")
         .then(({ data }) => {
-          this.member = data ? { email: data.email } : null;
+          // The Swagger plugin can't infer a body schema from this
+          // controller's plain-interface return type (see DashboardPage.vue
+          // for the same pattern), so the generated type is untyped here.
+          const member = data as SessionMember | undefined;
+          this.member = member ? { email: member.email } : null;
         })
         .catch(() => {
           this.member = null;
