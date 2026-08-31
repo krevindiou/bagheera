@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NextFunction, Request, Response } from 'express';
+import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { initSentry } from './logging/sentry';
 
@@ -20,6 +21,22 @@ async function bootstrap() {
   // docker-compose.prod.yml); trust its X-Forwarded-* headers so
   // req.secure reflects the original HTTPS request and Secure cookies work.
   app.set('trust proxy', 1);
+  // Baseline security headers (X-Frame-Options, X-Content-Type-Options,
+  // HSTS, etc). CSP relaxed for 'unsafe-inline' script/style because
+  // Swagger UI (served from this same app at /api/docs) injects inline
+  // <script>/<style> tags; everything else stays same-origin only.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:'],
+        },
+      },
+    }),
+  );
   // Ask crawlers not to index API responses (spec section 7).
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');

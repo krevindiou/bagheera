@@ -38,6 +38,7 @@
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
     "nestjs-pino": "^4.6.1",
     "nodemailer": "^9.0.5",
@@ -97,11 +98,20 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "coverageReporters": ["text", "lcov", "json-summary"],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "json-summary"
+    ],
     "testEnvironment": "node",
     "reporters": [
       "default",
-      ["jest-junit", { "outputName": "junit-unit.xml" }]
+      [
+        "jest-junit",
+        {
+          "outputName": "junit-unit.xml"
+        }
+      ]
     ]
   }
 }
