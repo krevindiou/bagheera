@@ -45,13 +45,18 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  const swaggerDocument = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder().setTitle('Bagheera API').setVersion('1').build(),
-  );
-  SwaggerModule.setup('api/docs', app, swaggerDocument, {
-    jsonDocumentUrl: 'api/docs-json',
-  });
+  // Swagger UI/schema exposes the full route map — dev/staging convenience
+  // only, never serve it in production (it's on the same reverse-proxied
+  // origin as the real API, so there's no network boundary hiding it).
+  if (process.env.NODE_ENV !== 'production') {
+    const swaggerDocument = SwaggerModule.createDocument(
+      app,
+      new DocumentBuilder().setTitle('Bagheera API').setVersion('1').build(),
+    );
+    SwaggerModule.setup('api/docs', app, swaggerDocument, {
+      jsonDocumentUrl: 'api/docs-json',
+    });
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }
