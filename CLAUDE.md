@@ -53,7 +53,7 @@ docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm e2e -
 
 ## Before committing
 
-Run `make format`, `make lint`, `make test` — in that order. If any fail, fix and re-run; do not commit until all three pass.
+Run `make format`, `make lint`, `make test`, then the `security-review` skill — in that order. If any fail, fix and re-run; do not commit until all four pass.
 
 ## Architecture
 
