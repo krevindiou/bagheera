@@ -101,7 +101,7 @@ describe('registration (integration)', () => {
     expect(activationJobs[0].data.html).toContain('activate your account');
   });
 
-  it('rejects a duplicate email', async () => {
+  it('silently no-ops for an already-registered email (no enumeration)', async () => {
     await ctx.db.insert(member).values({
       email: 'existing@example.com',
       password: 'hash',
@@ -117,9 +117,14 @@ describe('registration (integration)', () => {
         passwordConfirmation: 'correct-horse',
       });
 
-    expect(res.status).toBe(400);
+    // Same 201/generic response as a genuinely new registration — the
+    // caller can't distinguish this from success.
+    expect(res.status).toBe(201);
     const rows = await ctx.db.select().from(member);
     expect(rows).toHaveLength(1);
+    expect(rows[0].password).toBe('hash'); // untouched, no re-registration
+    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
+    expect(jobs).toHaveLength(0); // no activation email re-sent
   });
 
   it('rejects an invalid email', async () => {

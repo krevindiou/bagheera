@@ -40,8 +40,7 @@ export default {
       passwordConfirmation: "Confirm password",
       submit: "Register",
       success:
-        "You are now registered. You will receive an email with a link to activate your account.",
-      emailTaken: "Email is already registered.",
+        "If this email isn't already registered, you'll receive a link to activate your account.",
       genericError: "Something went wrong. Please try again.",
       signInLink: "Already have an account? Sign in",
     },

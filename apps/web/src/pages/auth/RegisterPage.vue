@@ -33,25 +33,18 @@ const [country, countryAttrs] = defineField("country");
 const [password, passwordAttrs] = defineField("password");
 const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
-const emailTaken = ref(false);
 const genericError = ref(false);
 
 const onSubmit = handleSubmit(async (values) => {
-  emailTaken.value = false;
   genericError.value = false;
   rememberAttemptedEmail(values.email);
 
-  const { error, response } = await apiClient.POST("/members/register", {
+  const { response } = await apiClient.POST("/members/register", {
     body: { ...values, country: values.country.toUpperCase() },
   });
 
   if (!response.ok) {
-    const message = (error as { message?: unknown } | undefined)?.message;
-    if (message === "Email is already registered.") {
-      emailTaken.value = true;
-    } else {
-      genericError.value = true;
-    }
+    genericError.value = true;
     return;
   }
 
@@ -66,9 +59,6 @@ const onSubmit = handleSubmit(async (values) => {
     <h1>{{ $t("auth.register.title") }}</h1>
     <ToastContainer />
 
-    <div v-if="emailTaken" class="alert alert-danger" role="alert">
-      {{ $t("auth.register.emailTaken") }}
-    </div>
     <div v-if="genericError" class="alert alert-danger" role="alert">
       {{ $t("auth.register.genericError") }}
     </div>

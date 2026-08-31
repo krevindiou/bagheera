@@ -27,9 +27,11 @@ export class RegistrationController {
     @Body() dto: RegisterDto,
   ): Promise<{ message: string }> {
     await this.registration.register(dto, req.ip ?? 'unknown');
+    // Identical response whether or not the email was already registered —
+    // see the service's own doc for why.
     return {
       message:
-        'You are now registered. You will receive an email with a link to activate your account.',
+        "If this email isn't already registered, you'll receive a link to activate your account.",
     };
   }
 }

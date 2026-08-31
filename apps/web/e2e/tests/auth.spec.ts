@@ -11,7 +11,9 @@ test("register, activate via the emailed link, then sign in", async ({ page }) =
   const email = uniqueEmail();
 
   await register(page, email);
-  await expect(page.getByText("You are now registered.", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("you'll receive a link to activate your account", { exact: false }),
+  ).toBeVisible();
 
   await activateFromEmail(page, email);
   await expect(page.getByText("Account activated.", { exact: false })).toBeVisible();

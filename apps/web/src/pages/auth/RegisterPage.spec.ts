@@ -75,23 +75,11 @@ describe("RegisterPage", () => {
       },
     });
     const toast = useToast().toasts.find((t) => t.variant === "info");
-    expect(toast?.text).toContain("You are now registered.");
+    expect(toast?.text).toContain("you'll receive a link to activate your account.");
     await waitForRouteName(router, "sign-in");
   });
 
-  it("shows the email-taken banner when the API rejects with the uniqueness error", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({
-      response: { ok: false, status: 400 },
-      error: { message: "Email is already registered." },
-    } as never);
-    const wrapper = mountPage();
-    await fillValidForm(wrapper);
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.text()).toContain("Email is already registered.");
-  });
-
-  it("shows a generic error, not the email-taken banner, for any other backend failure", async () => {
+  it("shows a generic error for any backend failure", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
       response: { ok: false, status: 400 },
       error: { message: "Country must be a 2-letter code." },
@@ -100,7 +88,6 @@ describe("RegisterPage", () => {
     await fillValidForm(wrapper);
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).not.toContain("Email is already registered.");
     expect(wrapper.text()).toContain("Something went wrong. Please try again.");
   });
 });

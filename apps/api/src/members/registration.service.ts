@@ -27,6 +27,12 @@ export class RegistrationService {
     private readonly audit: AuditService,
   ) {}
 
+  /**
+   * Resolves the same way (silently, no error) whether or not `dto.email`
+   * is already registered — surfacing "this email is taken" would let
+   * anyone enumerate registered accounts through the sign-up form. Mirrors
+   * `PasswordRecoveryService.requestReset`'s anti-enumeration behavior.
+   */
   async register(dto: RegisterDto, sourceAddress = 'unknown'): Promise<void> {
     if (dto.password !== dto.passwordConfirmation) {
       throw new BadRequestException("Passwords don't match.");
@@ -37,7 +43,7 @@ export class RegistrationService {
       .from(member)
       .where(sql`lower(${member.email}) = lower(${dto.email})`);
     if (existing) {
-      throw new BadRequestException('Email is already registered.');
+      return;
     }
 
     const passwordHash = await this.hash.hash(dto.password);
@@ -60,7 +66,7 @@ export class RegistrationService {
       if (
         (err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION
       ) {
-        throw new BadRequestException('Email is already registered.');
+        return;
       }
       throw err;
     }
