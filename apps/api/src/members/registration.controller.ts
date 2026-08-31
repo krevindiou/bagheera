@@ -1,9 +1,11 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
+import { Public } from '../session/public.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { RegistrationService } from './registration.service';
 
 @Controller('members')
+@Public()
 export class RegistrationController {
   constructor(private readonly registration: RegistrationService) {}
 

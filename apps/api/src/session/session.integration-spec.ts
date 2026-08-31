@@ -12,6 +12,7 @@ import {
   SESSION_IDLE_TTL_SECONDS,
 } from './session.constants';
 import { SessionModule } from './session.module';
+import { Public } from './public.decorator';
 
 declare module 'express-session' {
   interface SessionData {
@@ -22,6 +23,7 @@ declare module 'express-session' {
 
 // Test-only controller — exists solely to exercise the session/CSRF
 // middleware chain from outside; never registered in the real app.
+@Public()
 @Controller('__test-session')
 class TestSessionController {
   constructor(private readonly rotation: SessionRotationService) {}

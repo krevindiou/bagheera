@@ -7,8 +7,10 @@ import {
 import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
+import { Public } from '../session/public.decorator';
 
 @Controller('health')
+@Public()
 export class HealthController {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 

@@ -29,6 +29,7 @@ import { HashService } from '../security/hash.service';
 import { SecurityModule } from '../security/security.module';
 import { SessionModule } from '../session/session.module';
 import { SchedulersModule } from './schedulers.module';
+import { Public } from '../session/public.decorator';
 
 class FakeEmailProvider implements EmailProvider {
   send(): Promise<void> {
@@ -37,6 +38,7 @@ class FakeEmailProvider implements EmailProvider {
 }
 
 // Test-only controller — mints a CSRF token/cookie pair; never shipped.
+@Public()
 @Controller('__test-csrf')
 class TestCsrfController {
   @Get('token')

@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
+import { Public } from '../session/public.decorator';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { PasswordRecoveryService } from './password-recovery.service';
@@ -8,6 +9,7 @@ const REQUEST_MESSAGE =
   'If an account exists for this address, a password reset link has been sent.';
 
 @Controller('auth')
+@Public()
 export class PasswordRecoveryController {
   constructor(private readonly passwordRecovery: PasswordRecoveryService) {}
 

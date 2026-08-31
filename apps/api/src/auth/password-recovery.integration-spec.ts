@@ -22,6 +22,7 @@ import { CryptoService } from '../security/crypto.service';
 import { SessionModule } from '../session/session.module';
 import { AuthModule } from './auth.module';
 import { buildResetToken } from './reset-token';
+import { Public } from '../session/public.decorator';
 
 class FakeEmailProvider implements EmailProvider {
   send(): Promise<void> {
@@ -30,6 +31,7 @@ class FakeEmailProvider implements EmailProvider {
 }
 
 // Test-only controller — mints a CSRF token/cookie pair; never shipped.
+@Public()
 @Controller('__test-csrf')
 class TestCsrfController {
   @Get('token')

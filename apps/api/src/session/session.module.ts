@@ -6,6 +6,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { RedisStore } from 'connect-redis';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -13,6 +14,7 @@ import type { RedisClientType } from 'redis';
 import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { buildCsrf } from './csrf';
 import { CsrfTokenController } from './csrf-token.controller';
+import { SessionAuthGuard } from './session-auth.guard';
 import { SessionRotationService } from './session-rotation.service';
 import { SessionTerminationService } from './session-termination.service';
 import {
@@ -29,6 +31,7 @@ import { valkeyClientProvider } from './valkey-client.provider';
     valkeyClientProvider,
     SessionRotationService,
     SessionTerminationService,
+    { provide: APP_GUARD, useClass: SessionAuthGuard },
   ],
   exports: [SessionRotationService, SessionTerminationService, VALKEY_CLIENT],
 })

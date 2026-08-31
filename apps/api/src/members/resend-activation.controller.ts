@@ -9,10 +9,12 @@ import {
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { RateLimitGuard } from '../security/rate-limit.guard';
+import { Public } from '../session/public.decorator';
 import { ResendActivationDto } from './dto/resend-activation.dto';
 import { ResendActivationService } from './resend-activation.service';
 
 @Controller('members')
+@Public()
 export class ResendActivationController {
   constructor(private readonly resendActivation: ResendActivationService) {}
 

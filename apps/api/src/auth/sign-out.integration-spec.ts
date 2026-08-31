@@ -12,8 +12,10 @@ import { SessionModule } from '../session/session.module';
 import { SessionTerminationService } from '../session/session-termination.service';
 import { SESSION_COOKIE_NAME } from '../session/session.constants';
 import { AuthModule } from './auth.module';
+import { Public } from '../session/public.decorator';
 
 // Test-only controller — mints a CSRF token/cookie pair; never shipped.
+@Public()
 @Controller('__test-csrf')
 class TestCsrfController {
   @Get('token')

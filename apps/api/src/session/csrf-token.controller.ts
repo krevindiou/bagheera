@@ -1,6 +1,7 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { Public } from './public.decorator';
 import './session-data';
 
 /**
@@ -12,6 +13,7 @@ import './session-data';
  */
 @ApiTags('auth')
 @Controller('auth')
+@Public()
 export class CsrfTokenController {
   @Get('csrf-token')
   @ApiOperation({ summary: 'Mint a CSRF token for the current session' })

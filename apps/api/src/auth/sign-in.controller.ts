@@ -10,6 +10,7 @@ import {
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { RateLimitGuard } from '../security/rate-limit.guard';
+import { Public } from '../session/public.decorator';
 import { SignInDto } from './dto/sign-in.dto';
 import { SignInService } from './sign-in.service';
 import { SignInThrottleAuditFilter } from './sign-in-throttle-audit.filter';
@@ -20,6 +21,7 @@ export class SignInController {
 
   @Post('sign-in')
   @HttpCode(200)
+  @Public()
   @UseGuards(RateLimitGuard)
   @UseFilters(SignInThrottleAuditFilter)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
