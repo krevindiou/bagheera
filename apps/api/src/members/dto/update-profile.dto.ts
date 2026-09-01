@@ -7,5 +7,6 @@ export class UpdateProfileDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(4096)
   currentPassword!: string;
 }
