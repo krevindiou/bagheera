@@ -8,6 +8,7 @@ import { and, eq, gte, ilike, inArray, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
+import { escapeLikePattern } from '../common/like-pattern';
 import { toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, reportAccount } from '../db/schema';
@@ -147,7 +148,9 @@ export class ReportChartService {
       conditions.push(lte(operation.valueDate, rpt.valueDateEnd));
     }
     if (rpt.thirdParties) {
-      conditions.push(ilike(operation.thirdParty, `%${rpt.thirdParties}%`));
+      conditions.push(
+        ilike(operation.thirdParty, `%${escapeLikePattern(rpt.thirdParties)}%`),
+      );
     }
     if (rpt.reconciledOnly) {
       conditions.push(eq(operation.reconciled, true));

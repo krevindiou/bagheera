@@ -2,6 +2,7 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { and, desc, eq, ilike, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { escapeLikePattern } from '../common/like-pattern';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation } from '../db/schema';
 import '../session/session-data';
@@ -51,7 +52,7 @@ export class OperationAutocompleteService {
           eq(bank.memberId, memberId),
           eq(bank.deleted, false),
           eq(account.deleted, false),
-          ilike(operation.thirdParty, `%${dto.q}%`),
+          ilike(operation.thirdParty, `%${escapeLikePattern(dto.q)}%`),
         ),
       )
       .orderBy(lowerThirdParty, desc(operation.valueDate), desc(operation.id));
