@@ -1,5 +1,14 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
+import { RateLimit } from '../security/rate-limit.decorator';
+import { RateLimitGuard } from '../security/rate-limit.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileService } from './profile.service';
 
@@ -9,6 +18,8 @@ export class ProfileController {
 
   @Post('profile')
   @HttpCode(200)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ points: 5, durationSeconds: 60 })
   async updateProfile(
     @Req() req: Request,
     @Body() dto: UpdateProfileDto,
