@@ -1,5 +1,14 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
+import { RateLimit } from '../security/rate-limit.decorator';
+import { RateLimitGuard } from '../security/rate-limit.guard';
 import { Public } from '../session/public.decorator';
 import { ActivationService } from './activation.service';
 import { ActivateDto } from './dto/activate.dto';
@@ -11,6 +20,8 @@ export class ActivationController {
 
   @Post('activate')
   @HttpCode(200)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'key' })
   async activate(
     @Req() req: Request,
     @Body() dto: ActivateDto,
