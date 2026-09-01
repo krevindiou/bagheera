@@ -51,6 +51,7 @@ export class UpdateSchedulerDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(4096)
   notes?: string;
 
   @IsOptional()

@@ -56,6 +56,7 @@ export class CreateOperationDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(4096)
   notes?: string;
 
   @IsOptional()
