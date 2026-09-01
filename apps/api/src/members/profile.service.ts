@@ -16,6 +16,11 @@ import { HashService } from '../security/hash.service';
 import '../session/session-data';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
+// Postgres unique_violation — guards the email-uniqueness race between the
+// pre-check below and the update (see member schema's case-insensitive
+// unique index).
+const UNIQUE_VIOLATION = '23505';
+
 @Injectable()
 export class ProfileService {
   constructor(
@@ -25,6 +30,13 @@ export class ProfileService {
     private readonly audit: AuditService,
   ) {}
 
+  /**
+   * Resolves the same way (silently, no error) whether or not `dto.email`
+   * is already registered to *another* member — surfacing "this email is
+   * taken" would let any signed-in member enumerate registered accounts by
+   * probing this endpoint with their own password. Mirrors
+   * `RegistrationService.register`'s anti-enumeration behavior.
+   */
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
     const memberId = req.session.memberId;
     if (!memberId) {
@@ -52,15 +64,24 @@ export class ProfileService {
       .from(member)
       .where(sql`lower(${member.email}) = lower(${dto.email})`);
     if (existing && existing.id !== row.id) {
-      throw new BadRequestException('Email is already registered.');
+      return;
     }
 
     const previousEmail = row.email;
     // No re-activation required — `active` is left untouched.
-    await this.db
-      .update(member)
-      .set({ email: dto.email })
-      .where(eq(member.id, row.id));
+    try {
+      await this.db
+        .update(member)
+        .set({ email: dto.email })
+        .where(eq(member.id, row.id));
+    } catch (err) {
+      if (
+        (err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION
+      ) {
+        return;
+      }
+      throw err;
+    }
 
     await this.emailQueue.enqueue(emailChangedEmail(previousEmail, dto.email));
     await this.audit.record('email_changed', row.id, req.ip ?? 'unknown');

@@ -206,7 +206,7 @@ describe('profile (integration)', () => {
     expect(notice[0].data.to).toBe('profile2@example.com');
   });
 
-  it('enforces email uniqueness', async () => {
+  it('silently no-ops for an email already taken by another member (no enumeration)', async () => {
     await createMember('taken@example.com', 'irrelevant');
     const row = await createMember('profile3@example.com', 'correct-horse');
     const authCookies = await signInAndGetSession(
@@ -222,11 +222,15 @@ describe('profile (integration)', () => {
       .set('X-Forwarded-Proto', 'https')
       .send({ email: 'Taken@Example.com', currentPassword: 'correct-horse' });
 
-    expect(res.status).toBe(400);
+    // Same 200/generic response as a genuine update — the caller can't
+    // distinguish this from success.
+    expect(res.status).toBe(200);
     const [unchanged] = await ctx.db
       .select()
       .from(member)
       .where(sql`${member.id} = ${row.id}`);
     expect(unchanged.email).toBe(row.email);
+    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
+    expect(jobs).toHaveLength(0); // no change-notice email sent
   });
 });

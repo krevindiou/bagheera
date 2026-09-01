@@ -14,6 +14,11 @@ export class ProfileController {
     @Body() dto: UpdateProfileDto,
   ): Promise<{ message: string }> {
     await this.profile.updateEmail(req, dto);
-    return { message: 'Profile updated' };
+    // Identical response whether or not the new email was already taken by
+    // another member — see the service's own doc for why.
+    return {
+      message:
+        "If this email isn't already registered to another account, it's now updated.",
+    };
   }
 }
