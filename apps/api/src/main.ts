@@ -22,16 +22,20 @@ async function bootstrap() {
   // req.secure reflects the original HTTPS request and Secure cookies work.
   app.set('trust proxy', 1);
   // Baseline security headers (X-Frame-Options, X-Content-Type-Options,
-  // HSTS, etc). CSP relaxed for 'unsafe-inline' script/style because
-  // Swagger UI (served from this same app at /api/docs) injects inline
-  // <script>/<style> tags; everything else stays same-origin only.
+  // HSTS, etc). CSP relaxed for 'unsafe-inline' script/style outside
+  // production only, because Swagger UI (served from this same app at
+  // /api/docs, and only mounted below when NODE_ENV !== 'production')
+  // injects inline <script>/<style> tags; everything else stays
+  // same-origin only. Production never mounts Swagger, so it gets the
+  // strict policy with no 'unsafe-inline'.
+  const isProduction = process.env.NODE_ENV === 'production';
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: isProduction ? ["'self'"] : ["'self'", "'unsafe-inline'"],
+          styleSrc: isProduction ? ["'self'"] : ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:'],
         },
       },
@@ -48,7 +52,7 @@ async function bootstrap() {
   // Swagger UI/schema exposes the full route map — dev/staging convenience
   // only, never serve it in production (it's on the same reverse-proxied
   // origin as the real API, so there's no network boundary hiding it).
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProduction) {
     const swaggerDocument = SwaggerModule.createDocument(
       app,
       new DocumentBuilder().setTitle('Bagheera API').setVersion('1').build(),
