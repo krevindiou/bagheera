@@ -1,8 +1,15 @@
-import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class AutocompleteThirdPartyDto {
   @IsString()
   @MinLength(2)
+  @MaxLength(64)
   q!: string;
 
   // When given, a matched category is only returned if its type matches;
