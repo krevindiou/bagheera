@@ -42,9 +42,11 @@ export class SearchOperationsDto {
   @MaxLength(64)
   thirdParty?: string;
 
+  // Bounded well above the seeded reference-data set's size.
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(50)
   @IsInt({ each: true })
   @Min(1, { each: true })
   categoryIds?: number[];
@@ -52,6 +54,7 @@ export class SearchOperationsDto {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
+  @ArrayMaxSize(50)
   @IsInt({ each: true })
   @Min(1, { each: true })
   paymentMethodIds?: number[];

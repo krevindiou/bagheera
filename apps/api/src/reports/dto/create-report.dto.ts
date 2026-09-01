@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   ArrayUnique,
   IsArray,
   IsBoolean,
@@ -43,6 +44,7 @@ export class CreateReportDto {
   @IsOptional()
   @IsArray()
   @ArrayUnique()
+  @ArrayMaxSize(100)
   @IsInt({ each: true })
   @Min(1, { each: true })
   accountIds?: number[];
