@@ -6,11 +6,9 @@ import {
   IsNumber,
   IsOptional,
   IsPositive,
-  IsString,
   Min,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
+import { NotesField, ThirdPartyField } from '../../common/dto-fields';
 
 export class CreateOperationDto {
   @IsInt()
@@ -22,9 +20,7 @@ export class CreateOperationDto {
   @IsIn(['debit', 'credit'])
   type!: 'debit' | 'credit';
 
-  @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @ThirdPartyField()
   thirdParty!: string;
 
   // Decimal money value, always positive; sign is derived from `type`
@@ -54,9 +50,7 @@ export class CreateOperationDto {
   @IsDateString()
   valueDate?: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(4096)
+  @NotesField()
   notes?: string;
 
   @IsOptional()

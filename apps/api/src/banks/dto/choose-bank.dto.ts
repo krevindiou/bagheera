@@ -1,11 +1,5 @@
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
+import { IsInt, IsOptional, Min } from 'class-validator';
+import { BankNameField } from '../../common/dto-fields';
 
 // The bank-choice form offers two mutually exclusive options:
 // pick an existing active bank (`bankId`) or type a new name (`name`).
@@ -16,8 +10,6 @@ export class ChooseBankDto {
   bankId?: number;
 
   @IsOptional()
-  @IsString()
-  @MinLength(1)
-  @MaxLength(32)
+  @BankNameField()
   name?: string;
 }

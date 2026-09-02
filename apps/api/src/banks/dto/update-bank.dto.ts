@@ -1,8 +1,6 @@
-import { IsString, MaxLength, MinLength } from 'class-validator';
+import { BankNameField } from '../../common/dto-fields';
 
 export class UpdateBankDto {
-  @IsString()
-  @MinLength(1)
-  @MaxLength(32)
+  @BankNameField()
   name!: string;
 }

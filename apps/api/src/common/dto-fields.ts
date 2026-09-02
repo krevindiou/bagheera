@@ -1,9 +1,11 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Length,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 
 // Composed class-validator property decorators for the field shapes that
@@ -42,4 +44,61 @@ export function SecretField(): PropertyDecorator {
  */
 export function NewPasswordField(): PropertyDecorator {
   return Length(8, 4096);
+}
+
+// Second wave: name-like and free-text fields, each capped to its own real
+// constraint rather than a hand-copied number (see db/schema/*.ts for the
+// name-like ones; notes is application-chosen, the column itself is
+// unbounded `text`). One private shape behind separate concept-named
+// builders, matching EmailField/SecretField/NewPasswordField above rather
+// than one parameterized builder — so a caller writes `@ThirdPartyField()`,
+// not `@NameField(64)` with a number to look up meaning for.
+
+/** A required, non-empty string capped to `maxLength` — shared shape behind the concept-named builders below. */
+function boundedName(maxLength: number): PropertyDecorator {
+  return function (target: object, propertyKey: string | symbol): void {
+    IsString()(target, propertyKey);
+    MinLength(1)(target, propertyKey);
+    MaxLength(maxLength)(target, propertyKey);
+  };
+}
+
+/** An account's display name: capped to the `account.name` column width. */
+export function AccountNameField(): PropertyDecorator {
+  return boundedName(64);
+}
+
+/**
+ * A third party's name, on an operation or scheduler: capped to the
+ * `third_party` column width shared by both tables.
+ */
+export function ThirdPartyField(): PropertyDecorator {
+  return boundedName(64);
+}
+
+/** A report's title: capped to the `report.title` column width. */
+export function ReportTitleField(): PropertyDecorator {
+  return boundedName(64);
+}
+
+/**
+ * A bank's display name: capped to the `bank.name` column width — narrower
+ * than the other name-like fields above, not a number to reconcile with them.
+ */
+export function BankNameField(): PropertyDecorator {
+  return boundedName(32);
+}
+
+/**
+ * Free-text notes on an operation/scheduler. An application-chosen ceiling,
+ * not schema-derived — the column itself is unbounded `text` — reusing the
+ * same 4096 SecretField() already does for an unrelated reason, this
+ * codebase's de facto generous free-text cap.
+ */
+export function NotesField(): PropertyDecorator {
+  return function (target: object, propertyKey: string | symbol): void {
+    IsOptional()(target, propertyKey);
+    IsString()(target, propertyKey);
+    MaxLength(4096)(target, propertyKey);
+  };
 }

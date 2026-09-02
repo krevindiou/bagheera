@@ -15,6 +15,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { ThirdPartyField } from '../../common/dto-fields';
 
 export class AmountComparatorDto {
   @IsIn(['gt', 'gte', 'lt', 'lte', 'eq'])
@@ -37,9 +38,7 @@ export class SearchOperationsDto {
   type?: 'debit' | 'credit';
 
   @IsOptional()
-  @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @ThirdPartyField()
   thirdParty?: string;
 
   // Bounded well above the seeded reference-data set's size.
@@ -76,6 +75,8 @@ export class SearchOperationsDto {
   @IsDateString()
   dateTo?: string;
 
+  // A search filter, not stored text — deliberately narrower than
+  // ThirdPartyField/NotesField's caps, which bound what's actually saved.
   @IsOptional()
   @IsString()
   @MinLength(1)

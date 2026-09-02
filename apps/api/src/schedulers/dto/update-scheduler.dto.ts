@@ -6,11 +6,9 @@ import {
   IsNumber,
   IsOptional,
   IsPositive,
-  IsString,
   Min,
-  MaxLength,
-  MinLength,
 } from 'class-validator';
+import { NotesField, ThirdPartyField } from '../../common/dto-fields';
 
 // accountId is shown read-only on the edit form but still submitted — the
 // server rejects any attempt to actually move the scheduler to another
@@ -23,9 +21,7 @@ export class UpdateSchedulerDto {
   @IsIn(['debit', 'credit'])
   type!: 'debit' | 'credit';
 
-  @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @ThirdPartyField()
   thirdParty!: string;
 
   @IsNumber()
@@ -49,9 +45,7 @@ export class UpdateSchedulerDto {
   @IsDateString()
   valueDate!: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(4096)
+  @NotesField()
   notes?: string;
 
   @IsOptional()

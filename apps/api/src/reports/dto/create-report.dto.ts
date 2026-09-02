@@ -10,16 +10,14 @@ import {
   IsString,
   Min,
   MaxLength,
-  MinLength,
 } from 'class-validator';
+import { ReportTitleField } from '../../common/dto-fields';
 
 export class CreateReportDto {
   @IsIn(['sum', 'average'])
   type!: 'sum' | 'average';
 
-  @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @ReportTitleField()
   title!: string;
 
   @IsOptional()
@@ -34,6 +32,7 @@ export class CreateReportDto {
   @IsDateString()
   valueDateEnd?: string;
 
+  // A filter, not stored text — its own cap, unrelated to ReportTitleField's.
   @IsOptional()
   @IsString()
   @MaxLength(255)
