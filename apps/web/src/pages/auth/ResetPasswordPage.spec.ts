@@ -59,9 +59,9 @@ describe("ResetPasswordPage", () => {
     await waitForRouteName(router, "sign-in");
   });
 
-  // Spec 4.4: a rejected key (missing, invalid, expired, already used) is a
-  // *silent* return to sign-in — no banner, no toast, so the visitor never
-  // learns which case applies.
+  // A rejected key (missing, invalid, expired, already used) is a
+  // *silent* return to sign-in — no banner, no toast, so the visitor
+  // never learns which case applies.
   it("silently redirects to sign-in without calling the API when no key is present", async () => {
     await goTo();
     const wrapper = mount(ResetPasswordPage, { global: { plugins: [router, i18n] } });

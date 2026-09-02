@@ -48,9 +48,9 @@ export interface CategoryGroup {
   categories: Category[];
 }
 
-// Spec 3.2/4.11: category choice lists are grouped (here, by parent — a
-// top-level category with children becomes an <optgroup>, itself included
-// as the group's first, still-selectable option).
+// Category choice lists are grouped (here, by parent — a top-level
+// category with children becomes an <optgroup>, itself included as the
+// group's first, still-selectable option).
 export function groupCategories(categories: Category[]): CategoryGroup[] {
   const topLevel = categories.filter((c) => c.parentId === null);
   const groups: CategoryGroup[] = [];
@@ -82,8 +82,8 @@ export function paymentMethodName(id: number, paymentMethods: PaymentMethod[]): 
   return paymentMethods.find((pm) => pm.id === id)?.name ?? String(id);
 }
 
-// Spec 3.1 display icons: initial balance = gauge, credit card = card,
-// check = list, cash withdrawal/deposit = money, transfer/direct debit =
+// Display icons: initial balance = gauge, credit card = card, check =
+// list, cash withdrawal/deposit = money, transfer/direct debit =
 // exchange arrows. Web-only — no equivalent column server-side.
 export const PAYMENT_METHOD_ICONS: Record<number, string> = {
   1: "💳",

@@ -23,8 +23,8 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<ResetPasswor
 const [password, passwordAttrs] = defineField("password");
 const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
 
-// Spec 4.4: a rejected key (missing, invalid, expired, already used) is a
-// silent return to sign-in — no visible error, so the visitor never learns
+// A rejected key (missing, invalid, expired, already used) is a silent
+// return to sign-in — no visible error, so the visitor never learns
 // which case applies. Read in onMounted, not at top-level setup — this
 // page is always reached via a hard navigation (an emailed link), and
 // reading route.query synchronously at setup can race Vue Router's

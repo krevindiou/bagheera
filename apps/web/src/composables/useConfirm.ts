@@ -7,8 +7,8 @@ interface ConfirmState {
 
 // Single shared instance: one confirmation dialog on screen at a time,
 // driven from anywhere via confirm() and rendered by ConfirmModal.vue.
-// Spec 2.7: the dialog is generic ("Confirmation" / "Do you confirm?"),
-// not per-action text, so no message is tracked here.
+// The dialog is generic ("Confirmation" / "Do you confirm?"), not
+// per-action text, so no message is tracked here.
 const state = reactive<ConfirmState>({
   visible: false,
   resolve: null,

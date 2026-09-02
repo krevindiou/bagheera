@@ -6,12 +6,11 @@ export function toDisplayAmount(minorUnits: number): number {
   return Math.round((minorUnits / MONEY_SCALE) * 100) / 100;
 }
 
-// Only English (`en`) is enabled currently (spec 2.6) — currency/date
-// formatting follows the active locale, which is `en` for now.
+// Only English (`en`) is enabled currently — currency/date formatting
+// follows the active locale, which is `en` for now.
 const LOCALE = "en";
 
-// Spec 2.7: money inputs display the account currency symbol as an
-// input add-on.
+// Money inputs display the account currency symbol as an input add-on.
 export function currencySymbol(currency: string): string {
   try {
     const part = new Intl.NumberFormat(LOCALE, { style: "currency", currency })
@@ -31,8 +30,8 @@ export function formatDate(date: string): string {
   return new Intl.DateTimeFormat(LOCALE).format(parsed);
 }
 
-// Spec 2.1: displayed amounts are localized currency strings in the
-// account's currency. Accepts either a stored (×10,000) integer, or an
+// Displayed amounts are localized currency strings in the account's
+// currency. Accepts either a stored (×10,000) integer, or an
 // already-converted decimal amount when `alreadyDisplayAmount` is true
 // (some API responses, e.g. the dashboard, return decimal amounts already).
 export function formatMoney(

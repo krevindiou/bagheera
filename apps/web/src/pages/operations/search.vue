@@ -54,8 +54,8 @@ watch(() => props.initialCriteria, hydrate, { immediate: true });
 
 const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", "eq"];
 
-// Spec 2.7: selecting the type rebuilds the category/payment-method choices
-// to show only entries of that type (previous selection preserved when
+// Selecting the type rebuilds the category/payment-method choices to
+// show only entries of that type (previous selection preserved when
 // still valid) — same field logic as OperationForm/SchedulerForm.
 const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
