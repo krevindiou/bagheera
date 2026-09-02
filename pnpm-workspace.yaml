@@ -5,6 +5,11 @@ overrides:
   # Both are transitive; direct upgrade of the parent isn't available yet.
   '@nestjs/swagger>js-yaml': '>=5.2.2' # GHSA-pm4m-ph32-ghv5 (high, ReDoS)
   '@esbuild-kit/core-utils>esbuild': '>=0.24.3' # GHSA-67mh-4wv8-2f99 (moderate)
+  # Transitive via express>body-parser>qs; direct upgrade of the parent
+  # isn't available yet. Clears GHSA-4mjr-xmp4-gh2g (high, DoS via
+  # attacker-controlled isBuffer) and GHSA-x5fp-wj9c-mxmx (moderate,
+  # array-limit bypass).
+  qs: '>=6.16.0'
 allowBuilds:
   '@scarf/scarf': false # telemetry postinstall, not needed
   argon2: true
