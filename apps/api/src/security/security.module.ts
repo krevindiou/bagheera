@@ -1,4 +1,5 @@
 import { Global, Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { DbModule } from '../db/db.module';
 import { AuditService } from './audit.service';
 import { CryptoService } from './crypto.service';
@@ -19,15 +20,14 @@ import { RateLimitGuard } from './rate-limit.guard';
     HashService,
     CryptoService,
     rateLimitValkeyClientProvider,
-    RateLimitGuard,
+    // Global, the same way SessionModule wires SessionAuthGuard — nothing
+    // resolves RateLimitGuard as its own injectable token (a route opts out
+    // with @SkipRateLimit or overrides with @RateLimit instead), so unlike
+    // AuditService/HashService/CryptoService it isn't also listed as a
+    // plain provider or exported.
+    { provide: APP_GUARD, useClass: RateLimitGuard },
     AuditService,
   ],
-  exports: [
-    HashService,
-    CryptoService,
-    RateLimitGuard,
-    RATE_LIMIT_VALKEY_CLIENT,
-    AuditService,
-  ],
+  exports: [HashService, CryptoService, RATE_LIMIT_VALKEY_CLIENT, AuditService],
 })
 export class SecurityModule {}

@@ -22,8 +22,12 @@ import { SessionModule } from './session/session.module';
     LoggingModule,
     DbModule,
     HealthModule,
-    SecurityModule,
+    // SessionModule before SecurityModule: both register a global APP_GUARD
+    // (SessionAuthGuard, RateLimitGuard), and this ordering is what makes
+    // SessionAuthGuard run first — see RateLimitGuard's own doc. Pinned by
+    // rate-limit.integration-spec.ts too; don't reorder on a hunch.
     SessionModule,
+    SecurityModule,
     EmailModule,
     MembersModule,
     AuthModule,

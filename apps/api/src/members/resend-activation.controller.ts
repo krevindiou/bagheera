@@ -1,14 +1,6 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
-import { RateLimitGuard } from '../security/rate-limit.guard';
 import { Public } from '../session/public.decorator';
 import { ResendActivationDto } from './dto/resend-activation.dto';
 import { ResendActivationService } from './resend-activation.service';
@@ -20,7 +12,6 @@ export class ResendActivationController {
 
   @Post('resend-activation')
   @HttpCode(200)
-  @UseGuards(RateLimitGuard)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
   async resend(
     @Req() req: Request,

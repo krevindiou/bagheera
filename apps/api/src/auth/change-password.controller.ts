@@ -1,14 +1,6 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
-import { RateLimitGuard } from '../security/rate-limit.guard';
 import { ChangePasswordService } from './change-password.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
@@ -18,7 +10,6 @@ export class ChangePasswordController {
 
   @Post('change-password')
   @HttpCode(200)
-  @UseGuards(RateLimitGuard)
   @RateLimit({ points: 5, durationSeconds: 60 })
   async changePasswordHandler(
     @Req() req: Request,

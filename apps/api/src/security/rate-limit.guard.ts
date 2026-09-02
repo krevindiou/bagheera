@@ -18,6 +18,7 @@ import {
   RateLimitOptions,
 } from './rate-limit.constants';
 import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
+import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 
 // Strikes (lockout violations) decay after an hour of no further
 // violations on that dimension, so a stale block count doesn't keep
@@ -25,6 +26,11 @@ import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
 const STRIKE_RESET_SECONDS = 3600;
 // Cap on how long a single lockout can run, how ever many strikes accrue.
 const MAX_BLOCK_SECONDS = 3600;
+
+// Mirrors eslint.config.mjs's MUTATING_HTTP_DECORATORS — kept as a separate
+// runtime list rather than shared, since one reads decorator names off an
+// AST at lint time and the other reads `req.method` at request time.
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 /**
  * Valkey-backed request throttling with progressive lockout.
@@ -39,6 +45,24 @@ const MAX_BLOCK_SECONDS = 3600;
  * "strike" count hasn't decayed doubles the block duration, up to
  * `MAX_BLOCK_SECONDS`. Rotating IPs against one account, or rotating
  * accounts from one IP, therefore doesn't dodge the limit.
+ *
+ * Registered globally as `APP_GUARD` (`SecurityModule`), the same way
+ * `SessionAuthGuard` enforces sign-in — see that guard's own doc for why a
+ * per-route opt-in kept getting forgotten. `app.module.ts` imports
+ * `SessionModule` before `SecurityModule` deliberately, so an unauthenticated
+ * flood against a session-only route gets rejected there first, before
+ * spending a Valkey round-trip here; `rate-limit.integration-spec.ts` pins
+ * that ordering rather than leaving it to import position alone.
+ *
+ * A route opts out entirely with `@SkipRateLimit()`, or overrides the
+ * budget with `@RateLimit(...)` — on any verb, not just mutating ones, so
+ * an explicit decision is never silently ignored. Absent either decorator,
+ * a plain read (not in `MUTATING_METHODS`) is let through untouched; a
+ * mutating request instead falls back to `DEFAULT_RATE_LIMIT`. That
+ * fallback is a backstop, not the common path — every route that exists
+ * today resolves through an explicit decision, one the
+ * `require-rate-limit-decision` eslint rule already requires of every
+ * mutating handler. It only fires for a future one that dodges that rule.
  */
 @Injectable()
 export class RateLimitGuard implements CanActivate, OnModuleDestroy {
@@ -61,7 +85,14 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const options =
+    const skip =
+      this.reflector.get<boolean>(SKIP_RATE_LIMIT_KEY, context.getHandler()) ??
+      this.reflector.get<boolean>(SKIP_RATE_LIMIT_KEY, context.getClass());
+    if (skip) {
+      return true;
+    }
+
+    const explicitOptions =
       this.reflector.get<RateLimitOptions>(
         RATE_LIMIT_OPTIONS,
         context.getHandler(),
@@ -69,10 +100,17 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
       this.reflector.get<RateLimitOptions>(
         RATE_LIMIT_OPTIONS,
         context.getClass(),
-      ) ??
-      DEFAULT_RATE_LIMIT;
+      );
 
     const req = context.switchToHttp().getRequest<Request>();
+    if (!explicitOptions && !MUTATING_METHODS.has(req.method)) {
+      // No explicit budget and nothing to throttle by default — the same
+      // scope require-rate-limit-decision already draws around what needs
+      // a decision at all.
+      return true;
+    }
+
+    const options = explicitOptions ?? DEFAULT_RATE_LIMIT;
     for (const dimension of this.dimensions(req, options)) {
       await this.checkDimension(dimension, options.durationSeconds);
     }
