@@ -4,7 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
@@ -15,11 +15,7 @@ import { AuditService } from '../security/audit.service';
 import { HashService } from '../security/hash.service';
 import '../session/session-data';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-
-// Postgres unique_violation — guards the email-uniqueness race between the
-// pre-check below and the update (see member schema's case-insensitive
-// unique index).
-const UNIQUE_VIOLATION = '23505';
+import { raceSafeUniqueEmail } from './race-safe-unique-email';
 
 @Injectable()
 export class ProfileService {
@@ -35,7 +31,9 @@ export class ProfileService {
    * is already registered to *another* member — surfacing "this email is
    * taken" would let any signed-in member enumerate registered accounts by
    * probing this endpoint with their own password. Mirrors
-   * `RegistrationService.register`'s anti-enumeration behavior.
+   * `RegistrationService.register`'s anti-enumeration behavior; the
+   * race-safety here specifically is `raceSafeUniqueEmail`'s, shared with
+   * `RegistrationService.register`.
    */
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
     const memberId = req.session.memberId;
@@ -59,28 +57,20 @@ export class ProfileService {
       throw new BadRequestException('Current password is invalid.');
     }
 
-    const [existing] = await this.db
-      .select({ id: member.id })
-      .from(member)
-      .where(sql`lower(${member.email}) = lower(${dto.email})`);
-    if (existing && existing.id !== row.id) {
-      return;
-    }
-
     const previousEmail = row.email;
     // No re-activation required — `active` is left untouched.
-    try {
-      await this.db
-        .update(member)
-        .set({ email: dto.email })
-        .where(eq(member.id, row.id));
-    } catch (err) {
-      if (
-        (err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION
-      ) {
-        return;
-      }
-      throw err;
+    const result = await raceSafeUniqueEmail(
+      this.db,
+      dto.email,
+      () =>
+        this.db
+          .update(member)
+          .set({ email: dto.email })
+          .where(eq(member.id, row.id)),
+      row.id,
+    );
+    if (!result.ok) {
+      return;
     }
 
     await this.emailQueue.enqueue(emailChangedEmail(previousEmail, dto.email));

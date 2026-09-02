@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
@@ -9,12 +8,8 @@ import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import { EmailQueueService } from '../email/email-queue.service';
 import { RegisterDto } from './dto/register.dto';
+import { raceSafeUniqueEmail } from './race-safe-unique-email';
 import { sendActivationEmail } from './send-activation-email';
-
-// Postgres unique_violation — guards the email-uniqueness race between the
-// pre-check below and the insert (see member schema's case-insensitive
-// unique index).
-const UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class RegistrationService {
@@ -31,26 +26,19 @@ export class RegistrationService {
    * Resolves the same way (silently, no error) whether or not `dto.email`
    * is already registered — surfacing "this email is taken" would let
    * anyone enumerate registered accounts through the sign-up form. Mirrors
-   * `PasswordRecoveryService.requestReset`'s anti-enumeration behavior.
+   * `PasswordRecoveryService.requestReset`'s anti-enumeration behavior; the
+   * race-safety here specifically is `raceSafeUniqueEmail`'s, shared with
+   * `ProfileService.updateEmail`.
    */
   async register(dto: RegisterDto, sourceAddress = 'unknown'): Promise<void> {
     if (dto.password !== dto.passwordConfirmation) {
       throw new BadRequestException("Passwords don't match.");
     }
 
-    const [existing] = await this.db
-      .select({ id: member.id })
-      .from(member)
-      .where(sql`lower(${member.email}) = lower(${dto.email})`);
-    if (existing) {
-      return;
-    }
-
     const passwordHash = await this.hash.hash(dto.password);
 
-    let inserted: { id: number; activationTokenVersion: number };
-    try {
-      [inserted] = await this.db
+    const result = await raceSafeUniqueEmail(this.db, dto.email, () =>
+      this.db
         .insert(member)
         .values({
           email: dto.email,
@@ -61,21 +49,22 @@ export class RegistrationService {
         .returning({
           id: member.id,
           activationTokenVersion: member.activationTokenVersion,
-        });
-    } catch (err) {
-      if (
-        (err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION
-      ) {
-        return;
-      }
-      throw err;
+        })
+        .then(([row]) => row),
+    );
+    if (!result.ok) {
+      return;
     }
 
     await sendActivationEmail(
       { crypto: this.crypto, emailQueue: this.emailQueue, config: this.config },
       dto.email,
-      inserted.activationTokenVersion,
+      result.value.activationTokenVersion,
     );
-    await this.audit.record('activation_issued', inserted.id, sourceAddress);
+    await this.audit.record(
+      'activation_issued',
+      result.value.id,
+      sourceAddress,
+    );
   }
 }
