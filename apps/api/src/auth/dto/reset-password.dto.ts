@@ -1,14 +1,12 @@
-import { IsNotEmpty, IsString, Length, MaxLength } from 'class-validator';
+import { NewPasswordField, SecretField } from '../../common/dto-fields';
 
 export class ResetPasswordDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(4096)
+  @SecretField()
   key!: string;
 
-  @Length(8, 4096)
+  @NewPasswordField()
   password!: string;
 
-  @Length(8, 4096)
+  @NewPasswordField()
   passwordConfirmation!: string;
 }

@@ -1,16 +1,16 @@
-import { IsEmail, Length, Matches, MaxLength } from 'class-validator';
+import { Matches } from 'class-validator';
+import { EmailField, NewPasswordField } from '../../common/dto-fields';
 
 export class RegisterDto {
-  @IsEmail()
-  @MaxLength(128)
+  @EmailField()
   email!: string;
 
   @Matches(/^[A-Za-z]{2}$/, { message: 'country must be a 2-letter code' })
   country!: string;
 
-  @Length(8, 4096)
+  @NewPasswordField()
   password!: string;
 
-  @Length(8, 4096)
+  @NewPasswordField()
   passwordConfirmation!: string;
 }

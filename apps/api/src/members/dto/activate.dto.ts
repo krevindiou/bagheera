@@ -1,8 +1,6 @@
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { SecretField } from '../../common/dto-fields';
 
 export class ActivateDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(4096)
+  @SecretField()
   key!: string;
 }

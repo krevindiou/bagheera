@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ReportBatchService } from './batch.service';
-import { BatchIdsDto } from './dto/batch-ids.dto';
+import { BatchIdsDto } from '../common/batch-ids.dto';
 
 @Controller('reports/batch')
 export class ReportBatchController {

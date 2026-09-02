@@ -1,12 +1,9 @@
-import { IsEmail, IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { EmailField, SecretField } from '../../common/dto-fields';
 
 export class ResendActivationDto {
-  @IsEmail()
-  @MaxLength(128)
+  @EmailField()
   email!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(4096)
+  @SecretField()
   password!: string;
 }

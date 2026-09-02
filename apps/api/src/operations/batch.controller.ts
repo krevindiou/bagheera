@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { BatchIdsDto } from './dto/batch-ids.dto';
+import { BatchIdsDto } from '../common/batch-ids.dto';
 import { OperationBatchService } from './batch.service';
 
 @Controller('operations/batch')

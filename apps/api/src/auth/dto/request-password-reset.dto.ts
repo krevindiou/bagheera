@@ -1,7 +1,6 @@
-import { IsEmail, MaxLength } from 'class-validator';
+import { EmailField } from '../../common/dto-fields';
 
 export class RequestPasswordResetDto {
-  @IsEmail()
-  @MaxLength(128)
+  @EmailField()
   email!: string;
 }
