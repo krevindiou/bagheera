@@ -4,9 +4,27 @@ import { i18n } from "../../i18n";
 import SearchPanel from "./search.vue";
 import type { Category } from "./operations.types";
 
-const categories: Category[] = [{ id: 1, parentId: null, type: "debit", name: "Groceries" }];
+const categories: Category[] = [
+  { id: 1, parentId: null, type: "debit", name: "Groceries" },
+  { id: 2, parentId: null, type: "credit", name: "Salary" },
+];
 
 describe("SearchPanel", () => {
+  it("only shows categories and payment methods matching the selected type — same field logic as the operation form", async () => {
+    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+
+    const categoryOptionsDebit = wrapper.findAll("#search-categories option").map((o) => o.text());
+    expect(categoryOptionsDebit).toContain("Groceries");
+    expect(categoryOptionsDebit).not.toContain("Salary");
+
+    await wrapper.get("#search-type-credit").setValue(true);
+    await wrapper.vm.$nextTick();
+
+    const categoryOptionsCredit = wrapper.findAll("#search-categories option").map((o) => o.text());
+    expect(categoryOptionsCredit).toContain("Salary");
+    expect(categoryOptionsCredit).not.toContain("Groceries");
+  });
+
   it("emits only the fields the member filled in", async () => {
     const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
 

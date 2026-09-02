@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
+import { useThirdPartyAutocomplete } from "../../composables/useThirdPartyAutocomplete";
 import { useToast } from "../../composables/useToast";
+import { useTransferTargets } from "../../composables/useTransferTargets";
+import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
 import type { Account, Bank } from "../accounts/accounts.types";
-import { currencySymbol, toDisplayAmount } from "../operations/money";
+import { toDisplayAmount } from "../operations/money";
 import {
   categoryLabel,
-  groupCategories,
-  PAYMENT_METHODS,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
 } from "../operations/operations.types";
@@ -90,63 +91,31 @@ const [frequencyUnit, frequencyUnitAttrs] = defineField("frequencyUnit");
 const [frequencyValue, frequencyValueAttrs] = defineField("frequencyValue");
 const [active, activeAttrs] = defineField("active");
 
-// Same field logic as the operation form: category/payment-method choices
-// only ever show options matching the selected debit/credit type.
-const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
-const groupedCategories = computed(() => groupCategories(filteredCategories.value));
-const filteredPaymentMethods = computed(() =>
-  PAYMENT_METHODS.filter((pm) => pm.type === type.value),
+// Same field logic as the operation form and the search panel:
+// category/payment-method choices only ever show options matching the
+// selected debit/credit type; a still-valid selection survives a type
+// switch.
+const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
+  type,
+  () => props.categories,
+  { categoryId, paymentMethodId },
 );
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
 );
-const sourceCurrency = computed(
-  () => props.accounts.find((a) => a.id === props.accountId)?.currency,
-);
-// Same choices/rules as the operation form (spec 4.9/4.12): the member's
-// other fully active accounts sharing the source's currency, plus — when
-// editing a scheduler whose stored target has since gone inactive — that
-// stored account, kept selectable so it can be preserved, retargeted, or
-// unlinked (never offered otherwise).
-const bankById = computed(() => new Map(props.banks.map((b) => [b.id, b])));
-function isFullyActiveAccount(a: Account): boolean {
-  return !a.closed && !(bankById.value.get(a.bankId)?.closed ?? false);
-}
-const transferTargets = computed(() => {
-  const eligible = props.accounts.filter(
-    (a) =>
-      a.id !== props.accountId && a.currency === sourceCurrency.value && isFullyActiveAccount(a),
-  );
-  const storedTargetId = props.scheduler?.transferAccountId;
-  if (storedTargetId && !eligible.some((a) => a.id === storedTargetId)) {
-    const stored = props.accounts.find((a) => a.id === storedTargetId);
-    if (stored) eligible.push(stored);
-  }
-  return eligible;
-});
-const amountCurrencySymbol = computed(() =>
-  sourceCurrency.value ? currencySymbol(sourceCurrency.value) : "",
+// Same choices/rules as the operation form (spec 4.9/4.12).
+const { transferTargets, amountCurrencySymbol } = useTransferTargets(
+  () => props.accountId,
+  () => props.accounts,
+  () => props.banks,
+  () => props.scheduler?.transferAccountId,
 );
 
-// Switching type clears the category/payment-method choice only when it no
-// longer matches the new type — a still-valid selection is preserved.
-watch(type, () => {
-  if (!filteredCategories.value.some((c) => c.id === categoryId.value)) {
-    categoryId.value = undefined;
-  }
-  if (!filteredPaymentMethods.value.some((pm) => pm.id === paymentMethodId.value)) {
-    paymentMethodId.value = undefined as unknown as number;
-  }
-});
-
-interface ThirdPartySuggestion {
-  thirdParty: string;
-  categoryId: number | null;
-}
-
-const suggestions = ref<ThirdPartySuggestion[]>([]);
 const amountInput = ref<HTMLInputElement | null>(null);
-let debounceHandle: ReturnType<typeof setTimeout> | undefined;
+// Same third-party autocomplete as the operation form.
+const { suggestions } = useThirdPartyAutocomplete(thirdParty, type, (matchedCategoryId) => {
+  categoryId.value = matchedCategoryId;
+});
 
 // Native "change" (not "input") fires when a datalist suggestion is picked,
 // as opposed to every keystroke while typing — selecting a suggestion
@@ -157,26 +126,6 @@ function onThirdPartyChange() {
     nextTick(() => amountInput.value?.focus());
   }
 }
-
-// Same third-party autocomplete as the operation form.
-watch(thirdParty, (value) => {
-  if (debounceHandle) clearTimeout(debounceHandle);
-  const query = value?.trim() ?? "";
-  if (query.length < 2) {
-    suggestions.value = [];
-    return;
-  }
-  debounceHandle = setTimeout(async () => {
-    const { data } = await apiClient.GET("/operations/autocomplete", {
-      params: { query: { q: query, type: type.value } },
-    });
-    suggestions.value = (data as ThirdPartySuggestion[] | undefined) ?? [];
-    const exact = suggestions.value.find((s) => s.thirdParty.toLowerCase() === query.toLowerCase());
-    if (exact?.categoryId) {
-      categoryId.value = exact.categoryId;
-    }
-  }, 300);
-});
 
 const onSubmit = handleSubmit(async (submitted) => {
   const body = {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { categoryLabel, groupCategories, PAYMENT_METHODS } from "./operations.types";
+import { ref, watch } from "vue";
+import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
+import { categoryLabel } from "./operations.types";
 import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
 
 const props = defineProps<{ categories: Category[]; initialCriteria?: SearchCriteria }>();
@@ -46,11 +47,10 @@ const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", 
 
 // Spec 2.7: selecting the type rebuilds the category/payment-method choices
 // to show only entries of that type (previous selection preserved when
-// still valid).
-const filteredCategories = computed(() => props.categories.filter((c) => c.type === type.value));
-const groupedCategories = computed(() => groupCategories(filteredCategories.value));
-const filteredPaymentMethods = computed(() =>
-  PAYMENT_METHODS.filter((pm) => pm.type === type.value),
+// still valid) — same field logic as OperationForm/SchedulerForm.
+const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
+  type,
+  () => props.categories,
 );
 
 function buildCriteria(): SearchCriteria {
