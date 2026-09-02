@@ -12,10 +12,14 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
+// Ordinary authenticated CRUD, scoped to the caller's own accounts — no
+// enumerable secret to brute-force. See SkipRateLimit's doc comment.
+@SkipRateLimit()
 @Controller('accounts')
 export class AccountController {
   constructor(private readonly accounts: AccountService) {}

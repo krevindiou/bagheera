@@ -10,9 +10,14 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { SearchOperationsDto } from './dto/search-operations.dto';
 import { OperationSearchService } from './search.service';
 
+// POST here runs a search (remembering the criteria), not a write to the
+// caller's data — scoped to their own operations, no enumerable secret to
+// brute-force. See SkipRateLimit's doc comment.
+@SkipRateLimit()
 @Controller('operations/search')
 export class OperationSearchController {
   constructor(private readonly search: OperationSearchService) {}

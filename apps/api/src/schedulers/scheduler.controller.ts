@@ -12,10 +12,14 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { SchedulerService } from './scheduler.service';
 
+// Ordinary authenticated CRUD, scoped to the caller's own schedulers — no
+// enumerable secret to brute-force. See SkipRateLimit's doc comment.
+@SkipRateLimit()
 @Controller('schedulers')
 export class SchedulerController {
   constructor(private readonly schedulers: SchedulerService) {}

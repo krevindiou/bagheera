@@ -11,11 +11,15 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { ReportChartService } from './chart.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { ReportService } from './report.service';
 
+// Ordinary authenticated CRUD, scoped to the caller's own reports — no
+// enumerable secret to brute-force. See SkipRateLimit's doc comment.
+@SkipRateLimit()
 @Controller('reports')
 export class ReportController {
   constructor(

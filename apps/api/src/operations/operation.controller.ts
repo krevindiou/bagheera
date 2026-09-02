@@ -11,10 +11,14 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 import { OperationService } from './operation.service';
 
+// Ordinary authenticated CRUD, scoped to the caller's own operations — no
+// enumerable secret to brute-force. See SkipRateLimit's doc comment.
+@SkipRateLimit()
 @Controller('operations')
 export class OperationController {
   constructor(private readonly operations: OperationService) {}

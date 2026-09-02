@@ -11,10 +11,14 @@ import {
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { BankService, ChooseBankResult } from './bank.service';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
 
+// Ordinary authenticated CRUD, scoped to the caller's own banks — no
+// enumerable secret to brute-force. See SkipRateLimit's doc comment.
+@SkipRateLimit()
 @Controller('banks')
 export class BankController {
   constructor(private readonly banks: BankService) {}
