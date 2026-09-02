@@ -87,8 +87,20 @@ export interface DueOccurrencesParams {
   horizon: string;
 }
 
+// Hard ceiling on occurrences returned by one dueOccurrences() call. Without
+// it, a scheduler with an old enough value date and a fine-grained enough
+// frequency (e.g. daily since 1990) turns a single catch-up — run
+// synchronously on every sign-in, and on every create/update of that
+// scheduler — into an unbounded run of inserts. A backlog past the cap
+// isn't lost: `after` tracks the latest surviving generated occurrence, so
+// the next call (next sign-in, or the next edit) picks back up right where
+// this one stopped, working through an oversized backlog a batch at a time
+// instead of all at once.
+export const MAX_OCCURRENCES_PER_RUN = 1000;
+
 // Every occurrence strictly after `after` (or from occurrence 0 if `after`
-// is null) up to and including `horizon`, in chronological order. ISO date
+// is null) up to and including `horizon`, in chronological order — capped
+// at `MAX_OCCURRENCES_PER_RUN` entries, even when more are due. ISO date
 // strings compare correctly with plain `<`/`>` since they're zero-padded.
 export function dueOccurrences(params: DueOccurrencesParams): string[] {
   const { valueDate, frequencyUnit, frequencyValue, after, horizon } = params;
@@ -100,6 +112,9 @@ export function dueOccurrences(params: DueOccurrencesParams): string[] {
     }
     if (after === null || date > after) {
       dates.push(date);
+      if (dates.length >= MAX_OCCURRENCES_PER_RUN) {
+        break;
+      }
     }
   }
   return dates;

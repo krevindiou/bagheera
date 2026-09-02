@@ -1,5 +1,10 @@
 import fc from 'fast-check';
-import { dueOccurrences, FrequencyUnit, occurrenceDate } from './interval';
+import {
+  dueOccurrences,
+  FrequencyUnit,
+  MAX_OCCURRENCES_PER_RUN,
+  occurrenceDate,
+} from './interval';
 
 describe('occurrenceDate', () => {
   it('clamps Jan 31 + 1 month to Feb 28, then returns to day 31 in March', () => {
@@ -120,6 +125,36 @@ describe('dueOccurrences', () => {
         horizon: '2026-02-01',
       }),
     ).toEqual(['2026-01-22', '2026-01-29']);
+  });
+
+  it('caps the occurrences returned by one call, however large the backlog', () => {
+    // 30 years of daily occurrences (~10,957) is far past the cap.
+    const dates = dueOccurrences({
+      valueDate: '2000-01-01',
+      frequencyUnit: 'day',
+      frequencyValue: 1,
+      after: null,
+      horizon: '2030-01-01',
+    });
+    expect(dates).toHaveLength(MAX_OCCURRENCES_PER_RUN);
+    expect(dates[0]).toBe('2000-01-01');
+    expect(dates[dates.length - 1] < '2030-01-01').toBe(true);
+  });
+
+  it('works through a capped backlog across repeated calls, making forward progress each time', () => {
+    const params = {
+      valueDate: '2000-01-01',
+      frequencyUnit: 'day' as const,
+      frequencyValue: 1,
+      horizon: '2030-01-01',
+    };
+    const first = dueOccurrences({ ...params, after: null });
+    const second = dueOccurrences({
+      ...params,
+      after: first[first.length - 1],
+    });
+    expect(second).toHaveLength(MAX_OCCURRENCES_PER_RUN);
+    expect(second[0] > first[first.length - 1]).toBe(true);
   });
 });
 

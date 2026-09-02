@@ -36,9 +36,13 @@ export class SchedulerGenerationService {
   ) {}
 
   // Generates every occurrence a single scheduler is due for, up to today
-  // (or its limit date if earlier). Safe to call repeatedly — occurrence
-  // tracking is derived from the latest surviving generated operation on
-  // the scheduler's own account, so re-running is a no-op once caught up.
+  // (or its limit date if earlier) — capped per call at
+  // dueOccurrences' MAX_OCCURRENCES_PER_RUN, so an oversized backlog is
+  // worked through a batch at a time rather than in one unbounded run.
+  // Safe to call repeatedly — occurrence tracking is derived from the
+  // latest surviving generated operation on the scheduler's own account,
+  // so re-running is a no-op once caught up (or, mid-backlog, resumes
+  // exactly where the previous run's cap cut it off).
   async generateForScheduler(
     db: Db,
     memberId: number,
