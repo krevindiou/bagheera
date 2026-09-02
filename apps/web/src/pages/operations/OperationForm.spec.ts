@@ -3,7 +3,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
 import OperationForm from "./OperationForm.vue";
-import type { Category } from "./operations.types";
+import type { Category, PaymentMethod } from "./operations.types";
 
 vi.mock("../../api/client", () => ({
   apiClient: { GET: vi.fn(), POST: vi.fn(), PATCH: vi.fn() },
@@ -14,11 +14,19 @@ const categories: Category[] = [
   { id: 2, parentId: null, type: "debit", name: "Food" },
 ];
 
+const paymentMethods: PaymentMethod[] = [
+  { id: 1, name: "Credit card", type: "debit" },
+  { id: 4, name: "Transfer", type: "debit" },
+  { id: 5, name: "Check", type: "credit" },
+  { id: 6, name: "Transfer", type: "credit" },
+];
+
 function mountForm() {
   return mount(OperationForm, {
     props: {
       accountId: 1,
       categories,
+      paymentMethods,
       accounts: [
         { id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false },
       ],

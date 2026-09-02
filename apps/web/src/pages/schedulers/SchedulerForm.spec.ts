@@ -4,7 +4,7 @@ import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
 import SchedulerForm from "./SchedulerForm.vue";
-import type { Category } from "../operations/operations.types";
+import type { Category, PaymentMethod } from "../operations/operations.types";
 
 vi.mock("../../api/client", () => ({
   apiClient: { POST: vi.fn(), PATCH: vi.fn() },
@@ -15,11 +15,19 @@ const categories: Category[] = [
   { id: 2, parentId: null, type: "debit", name: "Food" },
 ];
 
+const paymentMethods: PaymentMethod[] = [
+  { id: 1, name: "Credit card", type: "debit" },
+  { id: 4, name: "Transfer", type: "debit" },
+  { id: 5, name: "Check", type: "credit" },
+  { id: 6, name: "Transfer", type: "credit" },
+];
+
 function mountForm() {
   return mount(SchedulerForm, {
     props: {
       accountId: 1,
       categories,
+      paymentMethods,
       accounts: [
         { id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false },
       ],

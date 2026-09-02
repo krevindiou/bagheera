@@ -14,6 +14,7 @@ import {
   categoryLabel,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
+  type PaymentMethod,
 } from "../operations/operations.types";
 import { schedulerSchema, type SchedulerForm } from "./schedulers.schemas";
 import type { Scheduler } from "./schedulers.types";
@@ -22,6 +23,7 @@ const props = withDefaults(
   defineProps<{
     accountId: number;
     categories: Category[];
+    paymentMethods: PaymentMethod[];
     accounts: Account[];
     banks?: Bank[];
     scheduler?: Scheduler | null;
@@ -98,6 +100,7 @@ const [active, activeAttrs] = defineField("active");
 const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
   () => props.categories,
+  () => props.paymentMethods,
   { categoryId, paymentMethodId },
 );
 const showTransferAccount = computed(() =>

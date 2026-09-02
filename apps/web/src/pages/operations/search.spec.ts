@@ -2,16 +2,24 @@ import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 import { i18n } from "../../i18n";
 import SearchPanel from "./search.vue";
-import type { Category } from "./operations.types";
+import type { Category, PaymentMethod } from "./operations.types";
 
 const categories: Category[] = [
   { id: 1, parentId: null, type: "debit", name: "Groceries" },
   { id: 2, parentId: null, type: "credit", name: "Salary" },
 ];
 
+const paymentMethods: PaymentMethod[] = [
+  { id: 1, name: "Credit card", type: "debit" },
+  { id: 5, name: "Check", type: "credit" },
+];
+
 describe("SearchPanel", () => {
   it("only shows categories and payment methods matching the selected type — same field logic as the operation form", async () => {
-    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+    const wrapper = mount(SearchPanel, {
+      props: { categories, paymentMethods },
+      global: { plugins: [i18n] },
+    });
 
     const categoryOptionsDebit = wrapper.findAll("#search-categories option").map((o) => o.text());
     expect(categoryOptionsDebit).toContain("Groceries");
@@ -26,7 +34,10 @@ describe("SearchPanel", () => {
   });
 
   it("emits only the fields the member filled in", async () => {
-    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+    const wrapper = mount(SearchPanel, {
+      props: { categories, paymentMethods },
+      global: { plugins: [i18n] },
+    });
 
     await wrapper.get("#search-third-party").setValue("Coffee");
     await wrapper.get("#search-type-debit").setValue(true);
@@ -48,7 +59,10 @@ describe("SearchPanel", () => {
   });
 
   it("builds an amount comparator once both the operator and value are set", async () => {
-    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+    const wrapper = mount(SearchPanel, {
+      props: { categories, paymentMethods },
+      global: { plugins: [i18n] },
+    });
 
     await wrapper.get("#search-amount-operator-1").setValue("gte");
     await wrapper.get('input[type="number"]').setValue(10);
@@ -59,7 +73,10 @@ describe("SearchPanel", () => {
   });
 
   it("ignores the second amount row when the first is left empty", async () => {
-    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+    const wrapper = mount(SearchPanel, {
+      props: { categories, paymentMethods },
+      global: { plugins: [i18n] },
+    });
 
     await wrapper.get("#search-amount-operator-2").setValue("lte");
     await wrapper.findAll('input[type="number"]')[1].setValue(20);
@@ -73,6 +90,7 @@ describe("SearchPanel", () => {
     const wrapper = mount(SearchPanel, {
       props: {
         categories,
+        paymentMethods,
         initialCriteria: { type: "credit", thirdParty: "Rent", reconciled: true },
       },
       global: { plugins: [i18n] },
@@ -84,7 +102,10 @@ describe("SearchPanel", () => {
   });
 
   it("resets its fields and emits clear", async () => {
-    const wrapper = mount(SearchPanel, { props: { categories }, global: { plugins: [i18n] } });
+    const wrapper = mount(SearchPanel, {
+      props: { categories, paymentMethods },
+      global: { plugins: [i18n] },
+    });
 
     await wrapper.get("#search-third-party").setValue("Coffee");
     await wrapper.find("button.btn-outline-secondary").trigger("click");

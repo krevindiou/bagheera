@@ -1,15 +1,17 @@
 import { computed, watch, type Ref } from "vue";
 import {
   groupCategories,
-  PAYMENT_METHODS,
   type Category,
+  type PaymentMethod,
 } from "../pages/operations/operations.types";
 
 /**
  * Category/payment-method choices filtered to the selected debit/credit
  * type — the same field logic every operation-like form (and the search
  * panel) needs, matching the server-side type-filtered validation
- * (validateTypedRefs).
+ * (validateTypedRefs). A payment method with a null type (id 9, "Initial
+ * balance") matches neither filter — excluded from both without needing
+ * a special case, same as it always has been.
  *
  * Optionally also clears a single-select categoryId/paymentMethodId pair
  * when switching type leaves the current choice no longer valid (a still-
@@ -20,6 +22,7 @@ import {
 export function useTypedReferenceData(
   type: Ref<"debit" | "credit">,
   categories: () => Category[],
+  paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {
     categoryId: Ref<number | undefined>;
     paymentMethodId: Ref<number>;
@@ -28,7 +31,7 @@ export function useTypedReferenceData(
   const filteredCategories = computed(() => categories().filter((c) => c.type === type.value));
   const groupedCategories = computed(() => groupCategories(filteredCategories.value));
   const filteredPaymentMethods = computed(() =>
-    PAYMENT_METHODS.filter((pm) => pm.type === type.value),
+    paymentMethods().filter((pm) => pm.type === type.value),
   );
 
   if (clearOnMismatch) {

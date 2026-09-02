@@ -2,9 +2,18 @@
 import { ref, watch } from "vue";
 import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
 import { categoryLabel } from "./operations.types";
-import type { AmountComparatorOperator, Category, SearchCriteria } from "./operations.types";
+import type {
+  AmountComparatorOperator,
+  Category,
+  PaymentMethod,
+  SearchCriteria,
+} from "./operations.types";
 
-const props = defineProps<{ categories: Category[]; initialCriteria?: SearchCriteria }>();
+const props = defineProps<{
+  categories: Category[];
+  paymentMethods: PaymentMethod[];
+  initialCriteria?: SearchCriteria;
+}>();
 const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
 
 const type = ref<"debit" | "credit">("debit");
@@ -51,6 +60,7 @@ const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", 
 const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
   () => props.categories,
+  () => props.paymentMethods,
 );
 
 function buildCriteria(): SearchCriteria {

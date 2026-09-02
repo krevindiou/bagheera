@@ -5,9 +5,12 @@ import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatMoney } from "../operations/money";
-import { PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "../operations/operations.types";
-import { categoryLabel } from "../operations/operations.types";
-import type { Category } from "../operations/operations.types";
+import {
+  categoryLabel,
+  paymentMethodIcon,
+  paymentMethodName,
+} from "../operations/operations.types";
+import type { Category, PaymentMethod } from "../operations/operations.types";
 import SchedulerForm from "./SchedulerForm.vue";
 import BatchActions from "./batch.vue";
 import type { Scheduler, SchedulerList } from "./schedulers.types";
@@ -63,6 +66,15 @@ const categoriesQuery = useQuery({
 });
 const categories = computed(() => categoriesQuery.data.value ?? []);
 
+const paymentMethodsQuery = useQuery({
+  queryKey: ["payment-methods"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/reference-data/payment-methods");
+    return (data as PaymentMethod[] | undefined) ?? [];
+  },
+});
+const paymentMethods = computed(() => paymentMethodsQuery.data.value ?? []);
+
 const schedulersQuery = useQuery({
   queryKey: computed(() => ["schedulers", accountId.value, page.value]),
   queryFn: async () => {
@@ -90,14 +102,6 @@ const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 async function reloadSchedulers() {
   await queryClient.invalidateQueries({ queryKey: ["schedulers", accountId.value, page.value] });
-}
-
-function paymentMethodName(id: number): string {
-  return PAYMENT_METHOD_NAMES[id] ?? String(id);
-}
-
-function paymentMethodIcon(id: number): string {
-  return PAYMENT_METHOD_ICONS[id] ?? "";
 }
 
 function amountLabel(scheduler: Scheduler): string {
@@ -188,7 +192,7 @@ function goToPage(newPage: number) {
             <td class="text-end" :class="scheduler.debit ? 'text-danger' : 'text-success'">
               {{ scheduler.debit ? "-" : "+" }}{{ amountLabel(scheduler) }}
             </td>
-            <td :title="paymentMethodName(scheduler.paymentMethodId)">
+            <td :title="paymentMethodName(scheduler.paymentMethodId, paymentMethods)">
               {{ paymentMethodIcon(scheduler.paymentMethodId) }}
             </td>
             <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : "" }}</td>
@@ -232,6 +236,7 @@ function goToPage(newPage: number) {
       v-if="showForm"
       :account-id="accountId"
       :categories="categories"
+      :payment-methods="paymentMethods"
       :accounts="accounts"
       :banks="banks"
       :scheduler="editingScheduler"

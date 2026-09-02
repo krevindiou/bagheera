@@ -66,25 +66,25 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
   return standalone.length > 0 ? [{ label: null, categories: standalone }, ...groups] : groups;
 }
 
-// Fixed reference list — ids/names/types are stable identifiers relied on
-// across the app (apps/api/src/db/seed-data.ts), not fetched dynamically.
-// Id 9 ("Initial balance") is reserved for the system-generated opening
-// operation and is deliberately excluded — it's never a user choice.
-export const PAYMENT_METHOD_NAMES: Record<number, string> = {
-  1: "Credit card",
-  2: "Check",
-  3: "Cash withdrawal",
-  4: "Transfer",
-  5: "Check",
-  6: "Transfer",
-  7: "Deposit",
-  8: "Direct debit",
-  9: "Initial balance",
-};
+// Fetched live from GET /reference-data/payment-methods (the same fixed,
+// seeded list as apps/api/src/db/seed-data.ts — ids are stable identifiers
+// relied on across the app), the same way categories already are. `type`
+// is null only for id 9 ("Initial balance", the system-generated opening
+// operation) — never a user choice, and naturally excluded from any
+// debit/credit-filtered choice list since null matches neither.
+export interface PaymentMethod {
+  id: number;
+  name: string;
+  type: "debit" | "credit" | null;
+}
+
+export function paymentMethodName(id: number, paymentMethods: PaymentMethod[]): string {
+  return paymentMethods.find((pm) => pm.id === id)?.name ?? String(id);
+}
 
 // Spec 3.1 display icons: initial balance = gauge, credit card = card,
 // check = list, cash withdrawal/deposit = money, transfer/direct debit =
-// exchange arrows.
+// exchange arrows. Web-only — no equivalent column server-side.
 export const PAYMENT_METHOD_ICONS: Record<number, string> = {
   1: "💳",
   2: "📋",
@@ -97,26 +97,14 @@ export const PAYMENT_METHOD_ICONS: Record<number, string> = {
   9: "🎚️",
 };
 
-const PAYMENT_METHOD_TYPES: Record<number, "debit" | "credit"> = {
-  1: "debit",
-  2: "debit",
-  3: "debit",
-  4: "debit",
-  5: "credit",
-  6: "credit",
-  7: "credit",
-  8: "debit",
-};
-
-export const PAYMENT_METHODS: { id: number; name: string; type: "debit" | "credit" }[] =
-  Object.entries(PAYMENT_METHOD_TYPES).map(([id, type]) => ({
-    id: Number(id),
-    name: PAYMENT_METHOD_NAMES[Number(id)],
-    type,
-  }));
+export function paymentMethodIcon(id: number): string {
+  return PAYMENT_METHOD_ICONS[id] ?? "";
+}
 
 // Payment method ids 4 (debit) and 6 (credit) — the only two that can carry
-// a transfer pairing (apps/api/src/operations/transfer.service.ts).
+// a transfer pairing (apps/api/src/operations/transfer.service.ts). A fixed
+// business rule, not reference data — stays static regardless of where the
+// payment-method list itself comes from.
 export const TRANSFER_PAYMENT_METHOD_IDS: readonly number[] = [4, 6];
 
 export type AmountComparatorOperator = "gt" | "gte" | "lt" | "lte" | "eq";

@@ -16,12 +16,14 @@ import {
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
   type Operation,
+  type PaymentMethod,
 } from "./operations.types";
 
 const props = withDefaults(
   defineProps<{
     accountId: number;
     categories: Category[];
+    paymentMethods: PaymentMethod[];
     accounts: Account[];
     banks?: Bank[];
     operation?: Operation | null;
@@ -85,6 +87,7 @@ const [reconciled, reconciledAttrs] = defineField("reconciled");
 const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
   () => props.categories,
+  () => props.paymentMethods,
   { categoryId, paymentMethodId },
 );
 const { transferTargets, amountCurrencySymbol } = useTransferTargets(

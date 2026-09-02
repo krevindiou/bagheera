@@ -6,8 +6,14 @@ import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatDate, formatMoney } from "./money";
-import { categoryLabel, PAYMENT_METHOD_ICONS, PAYMENT_METHOD_NAMES } from "./operations.types";
-import type { Category, Operation, OperationList, SearchCriteria } from "./operations.types";
+import { categoryLabel, paymentMethodIcon, paymentMethodName } from "./operations.types";
+import type {
+  Category,
+  Operation,
+  OperationList,
+  PaymentMethod,
+  SearchCriteria,
+} from "./operations.types";
 import OperationForm from "./OperationForm.vue";
 import BatchActions from "./batch.vue";
 import SearchPanel from "./search.vue";
@@ -57,6 +63,15 @@ const categoriesQuery = useQuery({
   },
 });
 const categories = computed(() => categoriesQuery.data.value ?? []);
+
+const paymentMethodsQuery = useQuery({
+  queryKey: ["payment-methods"],
+  queryFn: async () => {
+    const { data } = await apiClient.GET("/reference-data/payment-methods");
+    return (data as PaymentMethod[] | undefined) ?? [];
+  },
+});
+const paymentMethods = computed(() => paymentMethodsQuery.data.value ?? []);
 
 const balanceQuery = useQuery({
   queryKey: computed(() => ["balance", accountId.value]),
@@ -198,14 +213,6 @@ async function refreshAfterBatch() {
     queryClient.invalidateQueries({ queryKey: ["operations", accountId.value, page.value] }),
     queryClient.invalidateQueries({ queryKey: ["balance", accountId.value] }),
   ]);
-}
-
-function paymentMethodName(id: number): string {
-  return PAYMENT_METHOD_NAMES[id] ?? String(id);
-}
-
-function paymentMethodIcon(id: number): string {
-  return PAYMENT_METHOD_ICONS[id] ?? "";
 }
 
 function amountLabel(operation: Operation): string {
@@ -370,7 +377,7 @@ function isEditable(operation: Operation): boolean {
                 <td class="text-end" :class="operation.debit ? 'text-danger' : 'text-success'">
                   {{ operation.debit ? "-" : "+" }}{{ amountLabel(operation) }}
                 </td>
-                <td :title="paymentMethodName(operation.paymentMethodId)">
+                <td :title="paymentMethodName(operation.paymentMethodId, paymentMethods)">
                   {{ paymentMethodIcon(operation.paymentMethodId) }}
                 </td>
                 <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : "" }}</td>
@@ -414,6 +421,7 @@ function isEditable(operation: Operation): boolean {
           v-if="showForm"
           :account-id="accountId"
           :categories="categories"
+          :payment-methods="paymentMethods"
           :accounts="accounts"
           :banks="banks"
           :operation="editingOperation"
@@ -430,6 +438,7 @@ function isEditable(operation: Operation): boolean {
         class="flex-shrink-0"
         style="width: 320px"
         :categories="categories"
+        :payment-methods="paymentMethods"
         :initial-criteria="recalledCriteria"
         @submit="runSearch"
         @clear="clearSearch"
