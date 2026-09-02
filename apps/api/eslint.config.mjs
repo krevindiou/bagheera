@@ -35,6 +35,25 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'drizzle-orm',
+              importNames: ['ilike'],
+              message:
+                "Don't build ILIKE conditions by hand — a raw term needs escaping. Use ilikeContains() from '../common/like-pattern' instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/common/like-pattern.ts'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
 );

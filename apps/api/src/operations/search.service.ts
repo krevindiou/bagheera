@@ -4,21 +4,11 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  and,
-  desc,
-  eq,
-  gte,
-  ilike,
-  inArray,
-  isNotNull,
-  lte,
-  sql,
-} from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import type { RedisClientType } from 'redis';
-import { escapeLikePattern } from '../common/like-pattern';
+import { ilikeContains } from '../common/like-pattern';
 import { toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
@@ -144,12 +134,7 @@ export class OperationSearchService {
       );
     }
     if (criteria.thirdParty) {
-      conditions.push(
-        ilike(
-          operation.thirdParty,
-          `%${escapeLikePattern(criteria.thirdParty)}%`,
-        ),
-      );
+      conditions.push(ilikeContains(operation.thirdParty, criteria.thirdParty));
     }
     if (criteria.categoryIds?.length) {
       conditions.push(inArray(operation.categoryId, criteria.categoryIds));
@@ -172,9 +157,7 @@ export class OperationSearchService {
       conditions.push(lte(operation.valueDate, criteria.dateTo));
     }
     if (criteria.notes) {
-      conditions.push(
-        ilike(operation.notes, `%${escapeLikePattern(criteria.notes)}%`),
-      );
+      conditions.push(ilikeContains(operation.notes, criteria.notes));
     }
     if (criteria.reconciled !== undefined) {
       conditions.push(eq(operation.reconciled, criteria.reconciled));
