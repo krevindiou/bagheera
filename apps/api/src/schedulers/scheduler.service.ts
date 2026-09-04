@@ -2,8 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
@@ -11,19 +9,13 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
-import {
-  account,
-  bank,
-  category,
-  operation,
-  paymentMethod,
-  scheduler,
-} from '../db/schema';
+import { category, operation, paymentMethod, scheduler } from '../db/schema';
 import {
   TRANSFER_PAYMENT_METHOD_IDS,
   TransferService,
 } from '../operations/transfer.service';
-import '../session/session-data';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { SchedulerGenerationService } from './generation.service';
@@ -36,54 +28,8 @@ export class SchedulerService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly generation: SchedulerGenerationService,
     private readonly transfers: TransferService,
+    private readonly ownership: OwnershipService,
   ) {}
-
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  // Ownership check always runs before any lifecycle-state check. An
-  // account of a deleted bank, or a deleted account itself, is unreachable
-  // — "not found" — even for the owner; closed accounts remain reachable
-  // (listable-only, enforced by callers where creation/editing applies).
-  private async findOwnedAccount(accountId: number, memberId: number) {
-    const [row] = await this.db
-      .select({ account, bank })
-      .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(account.id, accountId));
-    if (
-      !row ||
-      row.bank.memberId !== memberId ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
-
-  private async findOwnedScheduler(id: number, memberId: number) {
-    const [row] = await this.db
-      .select({ scheduler, account, bank })
-      .from(scheduler)
-      .innerJoin(account, eq(scheduler.accountId, account.id))
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(scheduler.id, id));
-    if (
-      !row ||
-      row.bank.memberId !== memberId ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
 
   // Fully active = account and its bank are both neither closed nor
   // deleted. Required for creation and for editing/deleting an existing
@@ -147,8 +93,8 @@ export class SchedulerService {
   }
 
   async list(req: Request, accountId: number, page: number) {
-    const memberId = this.requireMemberId(req);
-    await this.findOwnedAccount(accountId, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedAccount(accountId, memberId);
 
     const pageNumber = page > 0 ? page : 1;
     const rows = await this.db
@@ -168,8 +114,11 @@ export class SchedulerService {
   }
 
   async create(req: Request, dto: CreateSchedulerDto) {
-    const memberId = this.requireMemberId(req);
-    const owned = await this.findOwnedAccount(dto.accountId, memberId);
+    const memberId = requireMemberId(req);
+    const owned = await this.ownership.requireOwnedAccount(
+      dto.accountId,
+      memberId,
+    );
     this.requireFullyActive(owned);
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
@@ -225,8 +174,8 @@ export class SchedulerService {
     id: number,
     dto: UpdateSchedulerDto,
   ): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const owned = await this.findOwnedScheduler(id, memberId);
+    const memberId = requireMemberId(req);
+    const owned = await this.ownership.requireOwnedScheduler(id, memberId);
     this.requireFullyActive(owned);
     if (dto.accountId !== owned.scheduler.accountId) {
       throw new BadRequestException('Account cannot be changed.');
@@ -280,8 +229,8 @@ export class SchedulerService {
   }
 
   async remove(req: Request, id: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const owned = await this.findOwnedScheduler(id, memberId);
+    const memberId = requireMemberId(req);
+    const owned = await this.ownership.requireOwnedScheduler(id, memberId);
     this.requireFullyActive(owned);
 
     await this.db.transaction(async (tx) => {

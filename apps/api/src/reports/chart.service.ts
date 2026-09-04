@@ -1,9 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -12,6 +7,8 @@ import { ilikeContains } from '../common/like-pattern';
 import { toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, reportAccount } from '../db/schema';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import { fillPeriodGaps } from './chart/period';
 
 export interface ReportChartSeriesPoint {
@@ -55,23 +52,10 @@ function currentYearStart(): string {
 
 @Injectable()
 export class ReportChartService {
-  constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
-
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  private async findOwnedReport(id: number, memberId: number) {
-    const [row] = await this.db.select().from(report).where(eq(report.id, id));
-    if (!row || row.memberId !== memberId) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly ownership: OwnershipService,
+  ) {}
 
   // Data = the report's linked accounts, or all of the member's eligible
   // accounts when none are linked; in both cases, deleted accounts and
@@ -118,8 +102,8 @@ export class ReportChartService {
   }
 
   async getChart(req: Request, id: number): Promise<ReportChart> {
-    const memberId = this.requireMemberId(req);
-    const rpt = await this.findOwnedReport(id, memberId);
+    const memberId = requireMemberId(req);
+    const rpt = await this.ownership.requireOwnedReport(id, memberId);
     return this.computeChart(rpt, memberId);
   }
 

@@ -1,9 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -11,12 +6,13 @@ import type { RedisClientType } from 'redis';
 import { ilikeContains } from '../common/like-pattern';
 import { toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, operation } from '../db/schema';
+import { operation } from '../db/schema';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import {
   SESSION_IDLE_TTL_SECONDS,
   VALKEY_CLIENT,
 } from '../session/session.constants';
-import '../session/session-data';
 import { SearchOperationsDto } from './dto/search-operations.dto';
 
 const PAGE_SIZE = 20;
@@ -38,34 +34,8 @@ export class OperationSearchService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     @Inject(VALKEY_CLIENT) private readonly valkey: RedisClientType,
+    private readonly ownership: OwnershipService,
   ) {}
-
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  private async requireOwnedAccount(
-    accountId: number,
-    memberId: number,
-  ): Promise<void> {
-    const [row] = await this.db
-      .select({ account, bank })
-      .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(account.id, accountId));
-    if (
-      !row ||
-      row.bank.memberId !== memberId ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-  }
 
   private key(memberId: number, accountId: number): string {
     return `opsearch:${memberId}:${accountId}`;
@@ -92,15 +62,15 @@ export class OperationSearchService {
   }
 
   async clear(req: Request, accountId: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    await this.requireOwnedAccount(accountId, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedAccount(accountId, memberId);
     await this.valkey.del(this.key(memberId, accountId));
   }
 
   // Runs a fresh search and remembers the criteria for this member+account.
   async search(req: Request, dto: SearchOperationsDto, page: number) {
-    const memberId = this.requireMemberId(req);
-    await this.requireOwnedAccount(dto.accountId, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedAccount(dto.accountId, memberId);
 
     const { accountId, ...criteria } = dto;
     await this.remember(memberId, accountId, criteria);
@@ -111,8 +81,8 @@ export class OperationSearchService {
   // Exposes the criteria and whether any is set, so the frontend can
   // restore the search panel's open/hydrated state on mount.
   async recallAndRun(req: Request, accountId: number, page: number) {
-    const memberId = this.requireMemberId(req);
-    await this.requireOwnedAccount(accountId, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedAccount(accountId, memberId);
 
     const criteria = await this.recall(memberId, accountId);
     const result = await this.run(accountId, criteria, page);

@@ -4,6 +4,7 @@ import { DbModule } from '../db/db.module';
 import { AuditService } from './audit.service';
 import { CryptoService } from './crypto.service';
 import { HashService } from './hash.service';
+import { OwnershipService } from './ownership.service';
 import {
   RATE_LIMIT_VALKEY_CLIENT,
   rateLimitValkeyClientProvider,
@@ -27,7 +28,14 @@ import { RateLimitGuard } from './rate-limit.guard';
     // plain provider or exported.
     { provide: APP_GUARD, useClass: RateLimitGuard },
     AuditService,
+    OwnershipService,
   ],
-  exports: [HashService, CryptoService, RATE_LIMIT_VALKEY_CLIENT, AuditService],
+  exports: [
+    HashService,
+    CryptoService,
+    RATE_LIMIT_VALKEY_CLIENT,
+    AuditService,
+    OwnershipService,
+  ],
 })
 export class SecurityModule {}

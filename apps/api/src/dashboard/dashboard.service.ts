@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -11,6 +11,7 @@ import {
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
 import { ReportChart, ReportChartService } from '../reports/chart.service';
+import { requireMemberId } from '../session/require-member-id';
 
 export type OnboardingTip = 'no-bank' | 'no-account' | null;
 
@@ -87,14 +88,6 @@ export class DashboardService {
     private readonly config: ConfigService,
   ) {}
 
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
   private async balancesByAccount(
     accountIds: number[],
   ): Promise<Map<number, number>> {
@@ -119,7 +112,7 @@ export class DashboardService {
   }
 
   async getDashboard(req: Request): Promise<DashboardResponse> {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
 
     const banks = await this.db
       .select()

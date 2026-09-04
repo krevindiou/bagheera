@@ -2,8 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { and, asc, eq, sql } from 'drizzle-orm';
@@ -16,7 +14,8 @@ import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
-import '../session/session-data';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
@@ -41,51 +40,11 @@ export class AccountService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly transfers: TransferService,
     private readonly audit: AuditService,
+    private readonly ownership: OwnershipService,
   ) {}
 
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  // Ownership check always runs before any lifecycle-state check.
-  // An account of a deleted bank is unreachable — "not found" — even for
-  // the owner, so the bank's `deleted` flag is folded into the
-  // same not-found branch here rather than treated as an owner-visible
-  // access-denied error.
-  private async findOwned(id: number, memberId: number) {
-    const [row] = await this.db
-      .select({ account, bank })
-      .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(account.id, id));
-    if (
-      !row ||
-      row.bank.memberId !== memberId ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
-
-  private async requireActiveOwnedBank(bankId: number, memberId: number) {
-    const [row] = await this.db.select().from(bank).where(eq(bank.id, bankId));
-    if (!row || row.memberId !== memberId) {
-      throw new NotFoundException();
-    }
-    if (row.closed || row.deleted) {
-      throw new UnprocessableEntityException('Bank is not active.');
-    }
-    return row;
-  }
-
   async list(req: Request, bankId?: number) {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
     const conditions = [
       eq(bank.memberId, memberId),
       eq(bank.deleted, false),
@@ -104,8 +63,11 @@ export class AccountService {
   }
 
   async create(req: Request, dto: CreateAccountDto) {
-    const memberId = this.requireMemberId(req);
-    await this.requireActiveOwnedBank(dto.bankId, memberId);
+    const memberId = requireMemberId(req);
+    const bankRow = await this.ownership.requireOwnedBank(dto.bankId, memberId);
+    if (bankRow.closed || bankRow.deleted) {
+      throw new UnprocessableEntityException('Bank is not active.');
+    }
 
     const [created] = await this.db
       .insert(account)
@@ -137,8 +99,11 @@ export class AccountService {
   // signalled by an empty `points` array; the chart component hides
   // itself in that case.
   async chart(req: Request, id: number): Promise<AccountChart> {
-    const memberId = this.requireMemberId(req);
-    const { account: acc } = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const { account: acc } = await this.ownership.requireOwnedAccount(
+      id,
+      memberId,
+    );
 
     const rows = await this.db
       .select({
@@ -173,8 +138,8 @@ export class AccountService {
     req: Request,
     id: number,
   ): Promise<{ balance: number; reconciledBalance: number }> {
-    const memberId = this.requireMemberId(req);
-    await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedAccount(id, memberId);
 
     const [row] = await this.db
       .select({
@@ -195,8 +160,11 @@ export class AccountService {
   }
 
   async update(req: Request, id: number, dto: UpdateAccountDto): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const { account: row } = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const { account: row } = await this.ownership.requireOwnedAccount(
+      id,
+      memberId,
+    );
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
@@ -210,8 +178,11 @@ export class AccountService {
   }
 
   async close(req: Request, id: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const { account: row } = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const { account: row } = await this.ownership.requireOwnedAccount(
+      id,
+      memberId,
+    );
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
@@ -223,8 +194,11 @@ export class AccountService {
   }
 
   async remove(req: Request, id: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const { account: row } = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const { account: row } = await this.ownership.requireOwnedAccount(
+      id,
+      memberId,
+    );
     if (row.deleted) {
       throw new UnprocessableEntityException('Account is already deleted.');
     }

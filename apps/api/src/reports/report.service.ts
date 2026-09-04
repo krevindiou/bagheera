@@ -1,36 +1,20 @@
-import {
-  Injectable,
-  Inject,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, report, reportAccount } from '../db/schema';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 
 @Injectable()
 export class ReportService {
-  constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
-
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  private async findOwnedReport(id: number, memberId: number) {
-    const [row] = await this.db.select().from(report).where(eq(report.id, id));
-    if (!row || row.memberId !== memberId) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
+  constructor(
+    @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly ownership: OwnershipService,
+  ) {}
 
   // Keeps only the ids among the submitted set that belong to the member's
   // non-deleted accounts in non-deleted banks — foreign, unknown, closed
@@ -80,7 +64,7 @@ export class ReportService {
   }
 
   async list(req: Request) {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
     const rows = await this.db
       .select()
       .from(report)
@@ -97,7 +81,7 @@ export class ReportService {
   }
 
   async create(req: Request, dto: CreateReportDto) {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
     const accountIds = await this.filterOwnedActiveAccountIds(
       dto.accountIds ?? [],
       memberId,
@@ -132,8 +116,8 @@ export class ReportService {
   }
 
   async update(req: Request, id: number, dto: UpdateReportDto): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    await this.findOwnedReport(id, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedReport(id, memberId);
     const accountIds = await this.filterOwnedActiveAccountIds(
       dto.accountIds ?? [],
       memberId,
@@ -166,8 +150,8 @@ export class ReportService {
   }
 
   async remove(req: Request, id: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    await this.findOwnedReport(id, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedReport(id, memberId);
 
     await this.db.transaction(async (tx) => {
       await tx.delete(reportAccount).where(eq(reportAccount.reportId, id));

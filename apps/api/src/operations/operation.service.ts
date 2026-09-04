@@ -2,8 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
@@ -11,14 +9,9 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
-import {
-  account,
-  bank,
-  category,
-  operation,
-  paymentMethod,
-} from '../db/schema';
-import '../session/session-data';
+import { category, operation, paymentMethod } from '../db/schema';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 import {
@@ -37,54 +30,8 @@ export class OperationService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly transfers: TransferService,
+    private readonly ownership: OwnershipService,
   ) {}
-
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  // Ownership check always runs before any lifecycle-state check. An
-  // account of a deleted bank, or a deleted account itself, is unreachable
-  // — "not found" — even for the owner; closed accounts remain reachable
-  // (listable-only, enforced by callers where creation/editing applies).
-  private async findOwnedAccount(accountId: number, memberId: number) {
-    const [row] = await this.db
-      .select({ account, bank })
-      .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(account.id, accountId));
-    if (
-      !row ||
-      row.bank.memberId !== memberId ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
-
-  private async findOwnedOperation(id: number, memberId: number) {
-    const [row] = await this.db
-      .select({ operation, account, bank })
-      .from(operation)
-      .innerJoin(account, eq(operation.accountId, account.id))
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(operation.id, id));
-    if (
-      !row ||
-      row.bank.memberId !== memberId ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
 
   // Fully active = account and its bank are both neither closed nor
   // deleted (mirrors scheduler.service.ts's requireFullyActive). Required
@@ -150,8 +97,8 @@ export class OperationService {
   }
 
   async list(req: Request, accountId: number, page: number) {
-    const memberId = this.requireMemberId(req);
-    await this.findOwnedAccount(accountId, memberId);
+    const memberId = requireMemberId(req);
+    await this.ownership.requireOwnedAccount(accountId, memberId);
 
     const pageNumber = page > 0 ? page : 1;
     const rows = await this.db
@@ -175,11 +122,9 @@ export class OperationService {
   }
 
   async create(req: Request, dto: CreateOperationDto) {
-    const memberId = this.requireMemberId(req);
-    const { account: acc, bank: accBank } = await this.findOwnedAccount(
-      dto.accountId,
-      memberId,
-    );
+    const memberId = requireMemberId(req);
+    const { account: acc, bank: accBank } =
+      await this.ownership.requireOwnedAccount(dto.accountId, memberId);
     this.requireFullyActive({ account: acc, bank: accBank });
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
@@ -245,12 +190,12 @@ export class OperationService {
     id: number,
     dto: UpdateOperationDto,
   ): Promise<void> {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
     const {
       operation: row,
       account: acc,
       bank: accBank,
-    } = await this.findOwnedOperation(id, memberId);
+    } = await this.ownership.requireOwnedOperation(id, memberId);
     this.requireFullyActive({ account: acc, bank: accBank });
     if (dto.accountId !== row.accountId) {
       throw new BadRequestException('Account cannot be changed.');

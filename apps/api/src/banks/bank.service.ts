@@ -2,8 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  NotFoundException,
-  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
@@ -13,7 +11,8 @@ import { DRIZZLE } from '../db/db.constants';
 import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
-import '../session/session-data';
+import { OwnershipService } from '../security/ownership.service';
+import { requireMemberId } from '../session/require-member-id';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
 
@@ -29,29 +28,11 @@ export class BankService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly transfers: TransferService,
     private readonly audit: AuditService,
+    private readonly ownership: OwnershipService,
   ) {}
 
-  private requireMemberId(req: Request): number {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-    return memberId;
-  }
-
-  // Fetches by id first (ignoring owner) so the ownership check always runs
-  // ahead of any lifecycle-state check: a non-owner gets "not found"
-  // even when the bank is also closed/deleted.
-  private async findOwned(id: number, memberId: number) {
-    const [row] = await this.db.select().from(bank).where(eq(bank.id, id));
-    if (!row || row.memberId !== memberId) {
-      throw new NotFoundException();
-    }
-    return row;
-  }
-
   async list(req: Request) {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
     return this.db
       .select()
       .from(bank)
@@ -60,14 +41,14 @@ export class BankService {
   }
 
   async choose(req: Request, dto: ChooseBankDto): Promise<ChooseBankResult> {
-    const memberId = this.requireMemberId(req);
+    const memberId = requireMemberId(req);
 
     if ((!dto.bankId && !dto.name) || (dto.bankId && dto.name)) {
       throw new BadRequestException('You must select a bank.');
     }
 
     if (dto.bankId) {
-      const row = await this.findOwned(dto.bankId, memberId);
+      const row = await this.ownership.requireOwnedBank(dto.bankId, memberId);
       if (row.closed || row.deleted) {
         throw new UnprocessableEntityException('Bank is not active.');
       }
@@ -82,8 +63,8 @@ export class BankService {
   }
 
   async update(req: Request, id: number, dto: UpdateBankDto): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const row = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const row = await this.ownership.requireOwnedBank(id, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
@@ -91,8 +72,8 @@ export class BankService {
   }
 
   async close(req: Request, id: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const row = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const row = await this.ownership.requireOwnedBank(id, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
@@ -101,8 +82,8 @@ export class BankService {
   }
 
   async remove(req: Request, id: number): Promise<void> {
-    const memberId = this.requireMemberId(req);
-    const row = await this.findOwned(id, memberId);
+    const memberId = requireMemberId(req);
+    const row = await this.ownership.requireOwnedBank(id, memberId);
     if (row.deleted) {
       throw new UnprocessableEntityException('Bank is already deleted.');
     }
