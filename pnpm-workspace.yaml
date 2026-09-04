@@ -10,6 +10,16 @@ overrides:
   # attacker-controlled isBuffer) and GHSA-x5fp-wj9c-mxmx (moderate,
   # array-limit bypass).
   qs: '>=6.16.0'
+  # Transitive on both sides, neither a runtime path: api's chain is
+  # rooted in @nestjs/cli (devDependency, stripped by `pnpm deploy --prod`
+  # — never in the runtime image); web's is rooted in vue-router's own
+  # `unplugin`/webpack-based codegen plugin (a real `dependencies` entry,
+  # per `pnpm why fast-uri`, but this app never imports that codegen
+  # entry point, so Vite never bundles it into the shipped browser JS).
+  # Clears 4 high advisories (SSRF/host-confusion via URL parsing):
+  # GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf,
+  # GHSA-jqff-g426-hqxp.
+  fast-uri: '>=3.1.6'
 allowBuilds:
   '@scarf/scarf': false # telemetry postinstall, not needed
   argon2: true
