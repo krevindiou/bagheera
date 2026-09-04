@@ -67,12 +67,7 @@ scripts/   backup.sh
 
 ## Production
 
-```bash
-make ENV=prod build
-make ENV=prod up
-```
-
-Runs `docker/compose.prod.yml`, with Caddy serving the built SPA and reverse-proxying API routes. Deploys go through [Kamal](https://kamal-deploy.org) (`.kamal/`); see `docker/Caddyfile` for the edge/TLS setup and `scripts/backup.sh` for the Postgres backup routine.
+Deploys go through [Kamal](https://kamal-deploy.org) (`config/deploy.yml`, `.kamal/`), which builds `docker/Dockerfile.caddy` (Caddy serving the built SPA, reverse-proxying API routes) and rolls it out over SSH. See `docker/Caddyfile` for the edge/TLS setup and `scripts/backup.sh` for the Postgres backup routine.
 
 ## License
 

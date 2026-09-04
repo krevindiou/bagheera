@@ -49,7 +49,7 @@ docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm test 
 docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm e2e -- e2e/some.spec.ts         # single e2e test (needs the e2e stack, see make test-e2e)
 ```
 
-`ENV=prod make <target>` targets `docker/compose.prod.yml` instead (Caddy + built SPA, Kamal deploy — `.kamal/`, `scripts/backup.sh` for Postgres backups).
+Every `make`/`docker compose` target above is dev-only; deploys go through Kamal (`config/deploy.yml`, `.kamal/`), which builds `docker/Dockerfile.caddy` (Caddy + built SPA). See `scripts/backup.sh` for the Postgres backup routine that runs on the deploy host.
 
 ## Before committing
 

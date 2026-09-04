@@ -10,8 +10,9 @@
 #     target; any restic-supported backend works (S3-compatible via
 #     AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY, etc — see restic's own docs).
 #   POSTGRES_PASSWORD — password for POSTGRES_USER inside the container.
-# Optional env (defaults match docker/compose.prod.yml):
-#   POSTGRES_CONTAINER (default: postgres)
+# Optional env:
+#   POSTGRES_CONTAINER (default: postgres) — under Kamal this is
+#     "bagheera-web-postgres" (see config/deploy.yml), not the default.
 #   POSTGRES_USER (default: bagheera)
 #   POSTGRES_DB (default: bagheera)
 #   WAL_ARCHIVE_DIR (default: /var/lib/bagheera/wal-archive) — host

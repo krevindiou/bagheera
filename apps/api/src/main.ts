@@ -17,9 +17,10 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
-  // Production runs behind Caddy (TLS-terminating reverse proxy, see
-  // docker-compose.prod.yml); trust its X-Forwarded-* headers so
-  // req.secure reflects the original HTTPS request and Secure cookies work.
+  // Production runs behind Caddy (TLS-terminating reverse proxy, deployed
+  // via Kamal — see config/deploy.yml and docker/Dockerfile.caddy); trust
+  // its X-Forwarded-* headers so req.secure reflects the original HTTPS
+  // request and Secure cookies work.
   app.set('trust proxy', 1);
   // Baseline security headers (X-Frame-Options, X-Content-Type-Options,
   // HSTS, etc). CSP relaxed for 'unsafe-inline' script/style outside

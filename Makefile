@@ -1,16 +1,9 @@
-ENV ?= dev
-
-ifeq ($(ENV),prod)
-COMPOSE := docker compose -f docker/compose.prod.yml
-else
 COMPOSE := docker compose -f docker/compose.yml
-endif
-
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
 .PHONY: help build up down ps shell-api shell-web migrate test test-unit test-integration test-e2e lint format
 
-help: ## Show this help (ENV=prod for prod stack, default dev)
+help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
