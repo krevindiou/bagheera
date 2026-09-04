@@ -18,13 +18,30 @@ jobs:
           ssh-private-key: ${{ secrets.KAMAL_SSH_PRIVATE_KEY }}
       - run: mkdir -p ~/.ssh && ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
       - name: Run scripts/backup.sh on the deploy host
+        env:
+          RESTIC_REPOSITORY: ${{ secrets.RESTIC_REPOSITORY }}
+          RESTIC_PASSWORD: ${{ secrets.RESTIC_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.RESTIC_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.RESTIC_AWS_SECRET_ACCESS_KEY }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_CONTAINER: ${{ vars.BACKUP_POSTGRES_CONTAINER }}
+          WAL_ARCHIVE_DIR: ${{ vars.WAL_ARCHIVE_DIR }}
+        # The remote command is just `bash -s` — no secrets on it — so
+        # nothing sensitive ever appears in this runner's or the deploy
+        # host's own process list (`ps`/`/proc/<pid>/cmdline`). Every
+        # secret instead travels over the piped stdin stream, exported
+        # first, then scripts/backup.sh's own content appended after.
+        # `env:` above (rather than splicing `${{ secrets.* }}` directly
+        # into this script) also sidesteps having to shell-escape a
+        # secret value that might itself contain a quote.
         run: |
-          ssh root@"$DEPLOY_HOST" \
-            "RESTIC_REPOSITORY='${{ secrets.RESTIC_REPOSITORY }}' \
-             RESTIC_PASSWORD='${{ secrets.RESTIC_PASSWORD }}' \
-             AWS_ACCESS_KEY_ID='${{ secrets.RESTIC_AWS_ACCESS_KEY_ID }}' \
-             AWS_SECRET_ACCESS_KEY='${{ secrets.RESTIC_AWS_SECRET_ACCESS_KEY }}' \
-             POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}' \
-             POSTGRES_CONTAINER='${{ vars.BACKUP_POSTGRES_CONTAINER }}' \
-             WAL_ARCHIVE_DIR='${{ vars.WAL_ARCHIVE_DIR }}' \
-             bash -s" < scripts/backup.sh
+          {
+            printf 'export RESTIC_REPOSITORY=%q\n' "$RESTIC_REPOSITORY"
+            printf 'export RESTIC_PASSWORD=%q\n' "$RESTIC_PASSWORD"
+            printf 'export AWS_ACCESS_KEY_ID=%q\n' "$AWS_ACCESS_KEY_ID"
+            printf 'export AWS_SECRET_ACCESS_KEY=%q\n' "$AWS_SECRET_ACCESS_KEY"
+            printf 'export POSTGRES_PASSWORD=%q\n' "$POSTGRES_PASSWORD"
+            printf 'export POSTGRES_CONTAINER=%q\n' "$POSTGRES_CONTAINER"
+            printf 'export WAL_ARCHIVE_DIR=%q\n' "$WAL_ARCHIVE_DIR"
+            cat scripts/backup.sh
+          } | ssh root@"$DEPLOY_HOST" 'bash -s'

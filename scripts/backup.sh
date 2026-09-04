@@ -32,10 +32,18 @@ BACKUP_KEEP_WEEKLY="${BACKUP_KEEP_WEEKLY:-4}"
 BACKUP_KEEP_MONTHLY="${BACKUP_KEEP_MONTHLY:-6}"
 
 dump_file="$(mktemp -t bagheera-backup-XXXXXX.pgdump)"
-trap 'rm -f "$dump_file"' EXIT
+# `docker exec -e PGPASSWORD=...` would put the password directly in the
+# `docker` CLI's own argv, visible via `ps`/`/proc/<pid>/cmdline` to
+# anything else on this host for the run's duration. --env-file instead
+# puts only this file's *path* on argv; the value itself travels via the
+# file (mode 600, deleted with the dump on exit either way).
+pgpass_env_file="$(mktemp -t bagheera-backup-env-XXXXXX)"
+chmod 600 "$pgpass_env_file"
+trap 'rm -f "$dump_file" "$pgpass_env_file"' EXIT
+printf 'PGPASSWORD=%s\n' "$POSTGRES_PASSWORD" > "$pgpass_env_file"
 
 echo "==> Dumping $POSTGRES_DB from container $POSTGRES_CONTAINER"
-docker exec -e PGPASSWORD="$POSTGRES_PASSWORD" "$POSTGRES_CONTAINER" \
+docker exec --env-file "$pgpass_env_file" "$POSTGRES_CONTAINER" \
   pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB" > "$dump_file"
 
 restic snapshots >/dev/null 2>&1 || restic init
