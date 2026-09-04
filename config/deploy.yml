@@ -13,8 +13,8 @@
 #
 # Required at deploy time (see .kamal/secrets):
 #   KAMAL_REGISTRY_PASSWORD, POSTGRES_PASSWORD, DATABASE_URL, VALKEY_URL,
-#   CRYPTO_KEYS, CRYPTO_ACTIVE_KEY_ID, SESSION_SECRET, CSRF_SECRET,
-#   EMAIL_SMTP_URL, EMAIL_FROM
+#   VALKEY_PASSWORD, CRYPTO_KEYS, CRYPTO_ACTIVE_KEY_ID, SESSION_SECRET,
+#   CSRF_SECRET, EMAIL_SMTP_URL, EMAIL_FROM
 # Required as plain env (export before running kamal):
 #   DEPLOY_HOST, APP_DOMAIN, KAMAL_REGISTRY_SERVER, KAMAL_REGISTRY_USERNAME,
 #   API_IMAGE (registry/bagheera-api:<tag> pushed ahead of time)
@@ -65,7 +65,7 @@ accessories:
   postgres:
     image: postgres:18-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
-    port: "5432"
+    port: "127.0.0.1:5432:5432"
     cmd: >-
       postgres -c archive_mode=on
       -c archive_command="test ! -f /wal-archive/%f && cp %p /wal-archive/%f"
@@ -86,7 +86,11 @@ accessories:
   valkey:
     image: valkey/valkey:9-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
-    port: "6379"
+    port: "127.0.0.1:6379:6379"
+    cmd: sh -c 'exec valkey-server --requirepass "$VALKEY_PASSWORD"'
+    env:
+      secret:
+        - VALKEY_PASSWORD
     directories:
       - data:/data
 
@@ -101,6 +105,7 @@ accessories:
       secret:
         - DATABASE_URL
         - VALKEY_URL
+        - VALKEY_PASSWORD
         - CRYPTO_KEYS
         - CRYPTO_ACTIVE_KEY_ID
         - SESSION_SECRET

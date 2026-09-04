@@ -12,6 +12,7 @@ export const rateLimitValkeyClientProvider: Provider = {
   useFactory: async (config: ConfigService): Promise<RedisClientType> => {
     const client: RedisClientType = createClient({
       url: config.getOrThrow<string>('VALKEY_URL'),
+      password: config.get<string>('VALKEY_PASSWORD'),
     });
     client.on('error', (err) => logger.error('Valkey client error', err));
     await client.connect();
