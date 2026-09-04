@@ -14,7 +14,7 @@ jobs:
     name: Lint & typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
       - run: pnpm lint
       - run: pnpm format
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
       - run: pnpm --filter api build
       - run: pnpm --filter web build
@@ -37,10 +37,10 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
       - run: pnpm --filter api test:cov
-      - uses: dorny/test-reporter@v3
+      - uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         if: success() || failure()
         with:
           name: Jest Unit Test Report
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
       - run: pnpm --filter web test:cov
       - uses: ./.github/actions/coverage-summary
@@ -73,13 +73,13 @@ jobs:
     permissions:
       checks: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/write-api-test-env
         with:
           secret-suffix: integration
       - run: pnpm --filter api test:integration
-      - uses: dorny/test-reporter@v3
+      - uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         if: success() || failure()
         with:
           name: Jest Integration Test Report
@@ -93,12 +93,12 @@ jobs:
     needs: [api-integration, web-unit]
     if: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/write-api-test-env
         with:
           secret-suffix: e2e
       - run: make test-e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: failure()
         with:
           name: playwright-report
@@ -129,12 +129,12 @@ jobs:
       SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:
-      - uses: actions/checkout@v5
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1 (moving branch, not a tag)
         with:
           ruby-version: "3.4"
       - run: gem install kamal --no-document --version "~> 2.12"
-      - uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.KAMAL_SSH_PRIVATE_KEY }}
       - run: mkdir -p ~/.ssh && ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
