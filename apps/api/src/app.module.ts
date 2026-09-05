@@ -15,6 +15,7 @@ import { ReportsModule } from './reports/reports.module';
 import { SchedulersModule } from './schedulers/schedulers.module';
 import { SecurityModule } from './security/security.module';
 import { SessionModule } from './session/session.module';
+import { WebauthnModule } from './webauthn/webauthn.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SessionModule } from './session/session.module';
     EmailModule,
     MembersModule,
     AuthModule,
+    WebauthnModule,
     BanksModule,
     AccountsModule,
     OperationsModule,

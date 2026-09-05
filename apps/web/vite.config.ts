@@ -20,6 +20,7 @@ const apiRoutePrefixes = [
   "/reference-data",
   "/reports",
   "/schedulers",
+  "/webauthn",
 ];
 
 // https://vite.dev/config/

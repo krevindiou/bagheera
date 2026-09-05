@@ -8,7 +8,7 @@
 {$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
 
-	@api path /health /api* /auth* /members* /banks* /accounts* /operations* /schedulers* /reports* /dashboard* /reference-data*
+	@api path /health /api* /auth* /members* /banks* /accounts* /operations* /schedulers* /reports* /dashboard* /reference-data* /webauthn*
 	reverse_proxy @api api:3000 {
 		header_up X-Forwarded-Proto https
 	}

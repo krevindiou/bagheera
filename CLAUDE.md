@@ -71,7 +71,7 @@ Reference data (`payment_method`, `category`) is fixed/seeded, not user-editable
 
 ### API (`apps/api`, NestJS)
 
-One Nest module per bounded concern (`apps/api/src/*/`, wired in `app.module.ts`): `auth` (sign-in/out, password recovery/change, activation), `session` (cookie sessions, CSRF, rotation, absolute TTL), `security` (audit log, rate limiting, hashing/crypto, ownership scoping), `members`, `banks`, `accounts`, `operations` (incl. transfers, scheduler catch-up), `schedulers`, `reference-data`, `reports`, `dashboard`, `email` (BullMQ + nodemailer), `logging` (pino).
+One Nest module per bounded concern (`apps/api/src/*/`, wired in `app.module.ts`): `auth` (sign-in/out, password recovery/change, activation), `webauthn` (passkey registration/authentication — an additional, optional, passwordless sign-in method alongside the password, not a 2nd factor), `session` (cookie sessions, CSRF, rotation, absolute TTL), `security` (audit log, rate limiting, hashing/crypto, ownership scoping), `members`, `banks`, `accounts`, `operations` (incl. transfers, scheduler catch-up), `schedulers`, `reference-data`, `reports`, `dashboard`, `email` (BullMQ + nodemailer), `logging` (pino).
 
 - **DB**: Postgres via Drizzle ORM. Schema lives in `apps/api/src/db/schema/*.ts` (one file per table + `enums.ts`), config in `apps/api/drizzle.config.ts`, generated migrations in `apps/api/drizzle/`. Run `db:generate` after schema edits, `db:migrate` to apply (auto-run by the `api` container's start command).
 - **Sessions**: cookie-based, server-side, revocable — stored in Valkey (`connect-redis`/`ioredis`), not JWT. The signed-in member id is read via `session/require-member-id.ts`'s `requireMemberId(req)`, not by re-reading `req.session.memberId`.

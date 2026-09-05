@@ -8,8 +8,15 @@ import { submitAndSettle } from "../../test-support/submitAndSettle";
 import SignInPage from "./SignInPage.vue";
 
 vi.mock("../../api/client", () => ({
-  apiClient: { POST: vi.fn() },
+  apiClient: { POST: vi.fn(), GET: vi.fn() },
 }));
+
+vi.mock("@simplewebauthn/browser", () => ({
+  browserSupportsWebAuthn: () => true,
+  startAuthentication: vi.fn(),
+}));
+
+import { startAuthentication } from "@simplewebauthn/browser";
 
 function mountPage() {
   return mount(SignInPage, {
@@ -21,6 +28,13 @@ describe("SignInPage", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.mocked(apiClient.POST).mockReset();
+    // The post-sign-in redirect to "home" runs the router guard, which
+    // restores the session via GET /auth/me — give it a harmless default so
+    // that navigation doesn't reject with "apiClient.GET is not a function".
+    vi.mocked(apiClient.GET)
+      .mockReset()
+      .mockResolvedValue({ data: undefined } as never);
+    vi.mocked(startAuthentication).mockReset();
     window.sessionStorage.clear();
   });
 
@@ -66,6 +80,57 @@ describe("SignInPage", () => {
       body: { email: "inactive@example.com", password: "correct-horse" },
     });
     expect(wrapper.text()).toContain("A new activation email has been sent.");
+  });
+
+  it("prompts for an email before attempting a passkey sign-in", async () => {
+    const wrapper = mountPage();
+
+    await wrapper.find("button.btn-outline-secondary").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Enter your email address first.");
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
+  it("signs in with a passkey end to end", async () => {
+    vi.mocked(apiClient.POST)
+      .mockResolvedValueOnce({
+        data: { challenge: "c", rp: {}, allowCredentials: [] },
+        response: { ok: true },
+      } as never)
+      .mockResolvedValueOnce({ response: { ok: true } } as never);
+    vi.mocked(startAuthentication).mockResolvedValue({ id: "cred-1" } as never);
+
+    const wrapper = mountPage();
+    await wrapper.find("#sign-in-email").setValue("passkey@example.com");
+    await wrapper.find("button.btn-outline-secondary").trigger("click");
+    await flushPromises();
+
+    expect(apiClient.POST).toHaveBeenNthCalledWith(1, "/webauthn/authentication/options", {
+      body: { email: "passkey@example.com" },
+    });
+    expect(apiClient.POST).toHaveBeenNthCalledWith(2, "/webauthn/authentication/verify", {
+      body: { response: { id: "cred-1" } },
+    });
+    expect(wrapper.text()).not.toContain("Invalid email or password");
+  });
+
+  it("shows the generic banner when the passkey ceremony is rejected server-side", async () => {
+    vi.mocked(apiClient.POST).mockResolvedValueOnce({
+      data: { challenge: "c", rp: {}, allowCredentials: [] },
+      response: { ok: true },
+    } as never);
+    vi.mocked(startAuthentication).mockResolvedValue({ id: "cred-1" } as never);
+    vi.mocked(apiClient.POST).mockResolvedValueOnce({
+      response: { ok: false, status: 401 },
+    } as never);
+
+    const wrapper = mountPage();
+    await wrapper.find("#sign-in-email").setValue("passkey@example.com");
+    await wrapper.find("button.btn-outline-secondary").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Invalid email or password");
   });
 
   it("prefills the email field from the last attempted email", async () => {

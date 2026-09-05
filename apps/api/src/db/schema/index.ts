@@ -8,3 +8,4 @@ export * from './scheduler';
 export * from './operation';
 export * from './report';
 export * from './security-event';
+export * from './webauthn-credential';

@@ -73,6 +73,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import("../pages/settings/PasswordPage.vue"),
         meta: { requiresAuth: true },
       },
+      {
+        path: "settings/passkeys",
+        name: "settings-passkeys",
+        component: () => import("../pages/settings/PasskeysPage.vue"),
+        meta: { requiresAuth: true },
+      },
     ],
   },
   { path: "/:pathMatch(.*)*", redirect: "/en/sign-in" },

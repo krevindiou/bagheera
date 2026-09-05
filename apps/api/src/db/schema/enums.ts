@@ -42,4 +42,8 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'bank_deleted',
   'account_closed',
   'account_deleted',
+  'webauthn_credential_registered',
+  'webauthn_credential_removed',
+  'webauthn_sign_in_success',
+  'webauthn_sign_in_failure',
 ]);

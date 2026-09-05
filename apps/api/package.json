@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^11.2.1",
     "@nestjs/swagger": "11.4.6",
     "@sentry/node": "^10.70.0",
+    "@simplewebauthn/server": "^14.0.0",
     "argon2": "^0.45.1",
     "bullmq": "^6.1.2",
     "class-transformer": "^0.5.1",

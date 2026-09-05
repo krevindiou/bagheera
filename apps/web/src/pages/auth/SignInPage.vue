@@ -4,6 +4,8 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import { apiClient } from "../../api/client";
 import { useSessionStore } from "../../stores/session.store";
 import { useToast } from "../../composables/useToast";
@@ -27,10 +29,12 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<SignInForm>(
 const [email, emailAttrs] = defineField("email");
 const [password, passwordAttrs] = defineField("password");
 
-type Banner = "invalid-credentials" | "inactive" | null;
+type Banner = "invalid-credentials" | "inactive" | "passkey-email-required" | null;
 const banner = ref<Banner>(null);
 const resendSent = ref(false);
 const resending = ref(false);
+const passkeySubmitting = ref(false);
+const passkeysSupported = browserSupportsWebAuthn();
 
 async function resendActivation() {
   resending.value = true;
@@ -66,6 +70,55 @@ const onSubmit = handleSubmit(async (values) => {
   toast(t("auth.signIn.success"), "success");
   router.push({ name: "home" });
 });
+
+async function signInWithPasskey() {
+  const attemptedEmail = (email.value ?? "").trim();
+  if (!attemptedEmail) {
+    banner.value = "passkey-email-required";
+    return;
+  }
+
+  banner.value = null;
+  passkeySubmitting.value = true;
+  try {
+    const { data, response } = await apiClient.POST("/webauthn/authentication/options", {
+      body: { email: attemptedEmail },
+    });
+    if (!response.ok || !data) {
+      banner.value = "invalid-credentials";
+      return;
+    }
+
+    let assertion;
+    try {
+      assertion = await startAuthentication({
+        optionsJSON: data as unknown as PublicKeyCredentialRequestOptionsJSON,
+      });
+    } catch {
+      // The platform prompt was cancelled/dismissed — not a server error,
+      // just abandon the attempt.
+      return;
+    }
+
+    // See PasskeysPage.vue's comment: the generated client can't type this
+    // body beyond an opaque object, since Swagger has no visibility into
+    // @simplewebauthn/server's WebAuthn-spec types.
+    const { response: verifyResponse } = await apiClient.POST("/webauthn/authentication/verify", {
+      body: { response: assertion as unknown as Record<string, never> },
+    });
+    if (!verifyResponse.ok) {
+      banner.value = "invalid-credentials";
+      return;
+    }
+
+    rememberAttemptedEmail(attemptedEmail);
+    session.setMember({ email: attemptedEmail });
+    toast(t("auth.signIn.success"), "success");
+    router.push({ name: "home" });
+  } finally {
+    passkeySubmitting.value = false;
+  }
+}
 </script>
 
 <template>
@@ -75,6 +128,9 @@ const onSubmit = handleSubmit(async (values) => {
 
     <div v-if="banner === 'invalid-credentials'" class="alert alert-danger" role="alert">
       {{ $t("auth.signIn.invalidCredentials") }}
+    </div>
+    <div v-else-if="banner === 'passkey-email-required'" class="alert alert-danger" role="alert">
+      {{ $t("auth.signIn.passkeyEmailRequired") }}
     </div>
     <div v-else-if="banner === 'inactive'" class="alert alert-warning" role="alert">
       <p class="mb-2">{{ $t("auth.signIn.inactiveAccount") }}</p>
@@ -126,6 +182,15 @@ const onSubmit = handleSubmit(async (values) => {
 
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t("auth.signIn.submit") }}
+      </button>
+      <button
+        v-if="passkeysSupported"
+        type="button"
+        class="btn btn-outline-secondary w-100 mt-2"
+        :disabled="passkeySubmitting"
+        @click="signInWithPasskey"
+      >
+        {{ $t("auth.signIn.passkeySubmit") }}
       </button>
     </form>
 

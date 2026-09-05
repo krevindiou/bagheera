@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@sentry/vue": "^10.70.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "@tanstack/vue-query": "^5.101.4",
     "@vee-validate/zod": "^4.15.1",
     "bootstrap": "^5.3.8",
@@ -30,13 +31,13 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@types/node": "^24.13.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^4.1.11",
     "@vue/test-utils": "^2.4.11",
     "@vue/tsconfig": "^0.9.1",
-    "@eslint/js": "^10.0.1",
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.10.0",

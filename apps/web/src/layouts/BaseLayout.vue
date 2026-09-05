@@ -160,6 +160,11 @@ async function signOut() {
                     {{ $t("home.passwordLink") }}
                   </router-link>
                 </li>
+                <li>
+                  <router-link :to="{ name: 'settings-passkeys' }" class="dropdown-item">
+                    {{ $t("home.passkeysLink") }}
+                  </router-link>
+                </li>
               </ul>
             </li>
           </ul>

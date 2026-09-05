@@ -21,7 +21,11 @@ export type SecurityEventType =
   | 'bank_closed'
   | 'bank_deleted'
   | 'account_closed'
-  | 'account_deleted';
+  | 'account_deleted'
+  | 'webauthn_credential_registered'
+  | 'webauthn_credential_removed'
+  | 'webauthn_sign_in_success'
+  | 'webauthn_sign_in_failure';
 
 /**
  * Writes to the security event log — the audit trail behind incident
