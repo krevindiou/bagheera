@@ -16,6 +16,9 @@ runs:
         SESSION_SECRET=${{ inputs.secret-suffix }}-session-secret
         CSRF_SECRET=${{ inputs.secret-suffix }}-csrf-secret
         APP_URL=http://localhost:5173
+        RP_ID=localhost
+        RP_NAME=Bagheera
+        RP_ORIGIN=http://localhost:5173
         EMAIL_SMTP_URL=smtp://localhost:1025
         EMAIL_FROM=Bagheera <no-reply@bagheera.example>
         EOF
