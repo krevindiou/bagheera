@@ -1,8 +1,9 @@
 name: Backup
 
 on:
-  schedule:
-    - cron: "0 3 * * *"
+  # Temporarily disabled — re-enable by uncommenting the schedule trigger.
+  # schedule:
+  #   - cron: "0 3 * * *"
   workflow_dispatch:
 
 jobs:
