@@ -5,7 +5,7 @@
 // account/currency (spec 4.14 note).
 
 import { AxisBounds, computeAxisBounds } from './chart-axis';
-import { toMajorUnits } from './money';
+import { MinorUnits, toMajorUnits } from './money';
 import {
   addMonths,
   fillPeriodGaps,
@@ -32,8 +32,8 @@ export interface SynthesisChart {
 
 export interface SynthesisChartRow {
   currency: string;
-  debit: number | null;
-  credit: number | null;
+  debit: MinorUnits | null;
+  credit: MinorUnits | null;
   valueDate: string;
 }
 
@@ -83,7 +83,11 @@ export function computeSynthesisChart(
     let running = entry.before;
     const points = months.map((month) => {
       running += entry.byMonth.get(month) ?? 0;
-      const value = toMajorUnits(running);
+      // `running` is a plain-number accumulator — `+=` always widens back
+      // to `number`, even when every addend started as MinorUnits. This
+      // cast is the one place that says "done accumulating, this total is
+      // still minor units."
+      const value = toMajorUnits(running as MinorUnits);
       dataMin = Math.min(dataMin, value);
       dataMax = Math.max(dataMax, value);
       return { period: month, value };

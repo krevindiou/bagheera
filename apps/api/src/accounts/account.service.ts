@@ -8,7 +8,7 @@ import { and, asc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds } from '../common/chart-axis';
-import { toMajorUnits, toMinorUnits } from '../common/money';
+import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
 import { computeSynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
@@ -85,7 +85,7 @@ export class AccountService {
         paymentMethodId: INITIAL_BALANCE_PAYMENT_METHOD_ID,
         thirdParty: 'Initial balance',
         credit: minorUnits > 0 ? minorUnits : null,
-        debit: minorUnits < 0 ? -minorUnits : null,
+        debit: minorUnits < 0 ? (-(minorUnits as number) as MinorUnits) : null,
         reconciled: true,
       });
     }
@@ -152,9 +152,16 @@ export class AccountService {
       .where(eq(operation.accountId, id));
 
     return {
-      balance: toMajorUnits(Number(row.credit) - Number(row.debit)),
+      // Both operands are already MinorUnits at the SQL level; `Number(...)`
+      // is only unwrapping the string node-postgres hands back for a
+      // NUMERIC/bigint aggregate — the subtraction itself always widens to
+      // plain `number`, hence the cast on the finished total.
+      balance: toMajorUnits(
+        (Number(row.credit) - Number(row.debit)) as MinorUnits,
+      ),
       reconciledBalance: toMajorUnits(
-        Number(row.reconciledCredit) - Number(row.reconciledDebit),
+        (Number(row.reconciledCredit) -
+          Number(row.reconciledDebit)) as MinorUnits,
       ),
     };
   }

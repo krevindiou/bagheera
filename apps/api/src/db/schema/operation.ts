@@ -13,6 +13,7 @@ import {
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { MinorUnits } from '../../common/money';
 import { account } from './account';
 import { category } from './category';
 import { paymentMethod } from './payment-method';
@@ -42,8 +43,8 @@ export const operation = pgTable(
       .notNull()
       .references(() => paymentMethod.id),
     thirdParty: varchar('third_party', { length: 64 }).notNull(),
-    debit: bigint('debit', { mode: 'number' }),
-    credit: bigint('credit', { mode: 'number' }),
+    debit: bigint('debit', { mode: 'number' }).$type<MinorUnits>(),
+    credit: bigint('credit', { mode: 'number' }).$type<MinorUnits>(),
     valueDate: date('value_date').notNull().defaultNow(),
     reconciled: boolean('reconciled').notNull().default(false),
     notes: text('notes').notNull().default(''),

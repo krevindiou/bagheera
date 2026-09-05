@@ -7,7 +7,7 @@ import {
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
-import { toMinorUnits } from '../common/money';
+import { MinorUnits, toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { category, operation, paymentMethod } from '../db/schema';
 import { OwnershipService } from '../security/ownership.service';
@@ -80,7 +80,7 @@ export class OperationService {
   private amountFields(
     type: 'debit' | 'credit',
     amount: number,
-  ): { debit: number | null; credit: number | null } {
+  ): { debit: MinorUnits | null; credit: MinorUnits | null } {
     const minorUnits = toMinorUnits(amount);
     return type === 'debit'
       ? { debit: minorUnits, credit: null }

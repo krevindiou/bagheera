@@ -4,7 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
 import { ilikeContains } from '../common/like-pattern';
-import { toMajorUnits } from '../common/money';
+import { MinorUnits, toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, reportAccount } from '../db/schema';
 import { OwnershipService } from '../security/ownership.service';
@@ -29,9 +29,9 @@ export interface ReportChart {
 }
 
 interface Bucket {
-  debitSum: number;
+  debitSum: MinorUnits;
   debitCount: number;
-  creditSum: number;
+  creditSum: MinorUnits;
   creditCount: number;
 }
 
@@ -189,9 +189,13 @@ export class ReportChartService {
         byCurrency.set(row.currency, periods);
       }
       periods.set(key, {
-        debitSum: row.debitSum === null ? 0 : Number(row.debitSum),
+        debitSum: (row.debitSum === null
+          ? 0
+          : Number(row.debitSum)) as MinorUnits,
         debitCount: Number(row.debitCount),
-        creditSum: row.creditSum === null ? 0 : Number(row.creditSum),
+        creditSum: (row.creditSum === null
+          ? 0
+          : Number(row.creditSum)) as MinorUnits,
         creditCount: Number(row.creditCount),
       });
     }
@@ -227,8 +231,11 @@ export class ReportChartService {
             : rpt.type === 'sum'
               ? bucket.debitSum
               : bucket.debitSum / bucket.debitCount;
-        const creditValue = toMajorUnits(creditRaw);
-        const debitValue = toMajorUnits(debitRaw);
+        // Both ternaries' non-zero branches are already MinorUnits, but the
+        // `0` fallback and the `/ count` average branch each widen back to
+        // plain `number` — cast at the finished total, same as elsewhere.
+        const creditValue = toMajorUnits(creditRaw as MinorUnits);
+        const debitValue = toMajorUnits(debitRaw as MinorUnits);
         const label = grouping === 'all' ? currentYearStart() : key;
         credit.push({ period: label, value: creditValue });
         debit.push({ period: label, value: debitValue });

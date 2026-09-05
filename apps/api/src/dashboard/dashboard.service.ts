@@ -10,6 +10,7 @@ import {
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
+import { MinorUnits } from '../common/money';
 import { ReportChart, ReportChartService } from '../reports/chart.service';
 import { requireMemberId } from '../session/require-member-id';
 
@@ -90,7 +91,7 @@ export class DashboardService {
 
   private async balancesByAccount(
     accountIds: number[],
-  ): Promise<Map<number, number>> {
+  ): Promise<Map<number, MinorUnits>> {
     if (accountIds.length === 0) {
       return new Map();
     }
@@ -106,7 +107,7 @@ export class DashboardService {
     return new Map(
       rows.map((row) => [
         row.accountId,
-        Number(row.credit) - Number(row.debit),
+        (Number(row.credit) - Number(row.debit)) as MinorUnits,
       ]),
     );
   }
@@ -156,7 +157,10 @@ export class DashboardService {
       )
       .map(([currency, amount]) => ({
         currency,
-        amount: toMajorUnits(amount),
+        // `amount` came from rawTotals, a plain-number accumulator — see
+        // the comment on synthesis-chart.ts's `running` for why `+=`
+        // always drops the brand even though every addend was MinorUnits.
+        amount: toMajorUnits(amount as MinorUnits),
       }));
 
     // "Fully active" scope — the bank itself must also be non-closed.
@@ -186,7 +190,10 @@ export class DashboardService {
             id: a.id,
             name: a.name,
             currency: a.currency,
-            balance: toMajorUnits(balances.get(a.id) ?? 0),
+            // The `?? 0` fallback is an unbranded literal, so the whole
+            // expression reads as plain `number` even on the found-in-map
+            // branch.
+            balance: toMajorUnits((balances.get(a.id) ?? 0) as MinorUnits),
           })),
       }));
 

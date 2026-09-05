@@ -12,6 +12,7 @@ import {
   timestamp,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { MinorUnits } from '../../common/money';
 import { account } from './account';
 import { category } from './category';
 import { frequencyUnitEnum } from './enums';
@@ -34,8 +35,8 @@ export const scheduler = pgTable(
       .notNull()
       .references(() => paymentMethod.id),
     thirdParty: varchar('third_party', { length: 64 }).notNull(),
-    debit: bigint('debit', { mode: 'number' }),
-    credit: bigint('credit', { mode: 'number' }),
+    debit: bigint('debit', { mode: 'number' }).$type<MinorUnits>(),
+    credit: bigint('credit', { mode: 'number' }).$type<MinorUnits>(),
     valueDate: date('value_date').notNull(),
     reconciled: boolean('reconciled').notNull().default(false),
     notes: text('notes').notNull().default(''),

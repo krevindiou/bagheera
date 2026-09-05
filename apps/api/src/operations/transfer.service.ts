@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { account, bank, operation, scheduler } from '../db/schema';
+import { MinorUnits } from '../common/money';
 
 // Payment method ids 4 (debit) and 6 (credit) — the only two payment
 // methods that can carry a pairing; flipping between them mirrors a
@@ -36,8 +37,8 @@ export interface SyncPairingInput {
   // covers both a non-transfer payment method and the External placeholder.
   desiredTransferAccountId: number | null;
   paymentMethodId: number;
-  debit: number | null;
-  credit: number | null;
+  debit: MinorUnits | null;
+  credit: MinorUnits | null;
   thirdParty: string;
   valueDate: string;
   notes: string;
