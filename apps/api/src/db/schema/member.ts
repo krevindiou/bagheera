@@ -28,6 +28,13 @@ export const member = pgTable(
     passwordResetTokenVersion: integer('password_reset_token_version')
       .notNull()
       .default(0),
+    // Set while an email change is awaiting confirmation at the new
+    // address; null the rest of the time. `email` itself is only ever
+    // written once that confirmation lands — see ProfileService.
+    pendingEmail: varchar('pending_email', { length: 128 }),
+    emailChangeTokenVersion: integer('email_change_token_version')
+      .notNull()
+      .default(0),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

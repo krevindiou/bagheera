@@ -101,6 +101,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/members/profile/confirm-email-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProfileController_confirmEmailChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/sign-in": {
         parameters: {
             query?: never;
@@ -714,6 +730,9 @@ export interface components {
             email: string;
             currentPassword: string;
         };
+        ConfirmEmailChangeDto: {
+            key: string;
+        };
         SignInDto: {
             email: string;
             password: string;
@@ -986,6 +1005,27 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfileController_confirmEmailChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmEmailChangeDto"];
             };
         };
         responses: {

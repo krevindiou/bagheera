@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import("../pages/auth/ResetPasswordPage.vue"),
       },
       {
+        path: "confirm-email-change",
+        name: "confirm-email-change",
+        component: () => import("../pages/auth/ConfirmEmailChangePage.vue"),
+      },
+      {
         path: "home",
         name: "home",
         component: () => import("../pages/dashboard/DashboardPage.vue"),

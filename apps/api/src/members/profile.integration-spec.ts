@@ -16,9 +16,11 @@ import { member } from '../db/schema';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER, EMAIL_QUEUE } from '../email/email.constants';
 import type { EmailMessage, EmailProvider } from '../email/email-message';
+import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import { SecurityModule } from '../security/security.module';
 import { SessionModule } from '../session/session.module';
+import { buildEmailChangeToken } from './email-change-token';
 import { MembersModule } from './members.module';
 import { Public } from '../session/public.decorator';
 
@@ -53,6 +55,7 @@ describe('profile (integration)', () => {
   let app: NestExpressApplication;
   let ctx: IntegrationDb;
   let hash: HashService;
+  let crypto: CryptoService;
   let emailQueue: Queue<EmailMessage>;
 
   beforeAll(async () => {
@@ -80,6 +83,7 @@ describe('profile (integration)', () => {
     await app.init();
 
     hash = moduleRef.get(HashService);
+    crypto = moduleRef.get(CryptoService);
     emailQueue = moduleRef.get<Queue<EmailMessage>>(EMAIL_QUEUE);
     ctx = connectIntegrationDb();
   });
@@ -171,7 +175,7 @@ describe('profile (integration)', () => {
     expect(unchanged.email).toBe(row.email);
   });
 
-  it('updates the email, requires no re-activation, and notifies the previous address', async () => {
+  it('requests an email change: leaves the address unchanged and emails a confirmation link to the new address', async () => {
     const row = await createMember('profile2@example.com', 'correct-horse');
     const authCookies = await signInAndGetSession(
       'profile2@example.com',
@@ -191,11 +195,74 @@ describe('profile (integration)', () => {
 
     expect(res.status).toBe(200);
 
+    // Unchanged until the new address's owner confirms it.
+    const [pending] = await ctx.db
+      .select()
+      .from(member)
+      .where(sql`${member.id} = ${row.id}`);
+    expect(pending.email).toBe('profile2@example.com');
+    expect(pending.pendingEmail).toBe('profile2-new@example.com');
+
+    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
+    const confirmation = jobs.filter(
+      (j) => j.data.subject === 'Confirm your new Bagheera email address',
+    );
+    expect(confirmation).toHaveLength(1);
+    expect(confirmation[0].data.to).toBe('profile2-new@example.com');
+    // Not sent yet — only once the change is actually confirmed.
+    const notice = jobs.filter(
+      (j) => j.data.subject === 'Bagheera email address changed',
+    );
+    expect(notice).toHaveLength(0);
+  });
+
+  it('confirms a pending email change: updates the address, requires no re-activation, and notifies the previous address', async () => {
+    const row = await createMember('profile2b@example.com', 'correct-horse');
+    const authCookies = await signInAndGetSession(
+      'profile2b@example.com',
+      'correct-horse',
+    );
+    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
+    await request(app.getHttpServer())
+      .post('/members/profile')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({
+        email: 'profile2b-new@example.com',
+        currentPassword: 'correct-horse',
+      })
+      .expect(200);
+
+    const [pending] = await ctx.db
+      .select()
+      .from(member)
+      .where(sql`${member.id} = ${row.id}`);
+    const confirmToken = buildEmailChangeToken(
+      crypto,
+      row.id,
+      pending.pendingEmail!,
+      pending.emailChangeTokenVersion,
+    );
+
+    // Reached from the emailed link, not the signed-in session above — a
+    // fresh, unauthenticated CSRF pair, same as a brand-new browser tab.
+    const confirmCsrf = await getCsrfTokenAndCookies();
+    const res = await request(app.getHttpServer())
+      .post('/members/profile/confirm-email-change')
+      .set('Cookie', confirmCsrf.cookies)
+      .set('x-csrf-token', confirmCsrf.token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ key: confirmToken });
+
+    expect(res.status).toBe(200);
+
     const [updated] = await ctx.db
       .select()
       .from(member)
       .where(sql`${member.id} = ${row.id}`);
-    expect(updated.email).toBe('profile2-new@example.com');
+    expect(updated.email).toBe('profile2b-new@example.com');
+    expect(updated.pendingEmail).toBeNull();
     expect(updated.active).toBe(true);
 
     const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
@@ -203,7 +270,68 @@ describe('profile (integration)', () => {
       (j) => j.data.subject === 'Bagheera email address changed',
     );
     expect(notice).toHaveLength(1);
-    expect(notice[0].data.to).toBe('profile2@example.com');
+    expect(notice[0].data.to).toBe('profile2b@example.com');
+  });
+
+  it('rejects a confirmation link superseded by a later change request', async () => {
+    const row = await createMember('profile2c@example.com', 'correct-horse');
+    const authCookies = await signInAndGetSession(
+      'profile2c@example.com',
+      'correct-horse',
+    );
+
+    async function requestChange(email: string) {
+      const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
+      await request(app.getHttpServer())
+        .post('/members/profile')
+        .set('Cookie', cookies)
+        .set('x-csrf-token', token)
+        .set('X-Forwarded-Proto', 'https')
+        .send({ email, currentPassword: 'correct-horse' })
+        .expect(200);
+    }
+
+    await requestChange('profile2c-first@example.com');
+    const [afterFirst] = await ctx.db
+      .select()
+      .from(member)
+      .where(sql`${member.id} = ${row.id}`);
+    const staleToken = buildEmailChangeToken(
+      crypto,
+      row.id,
+      afterFirst.pendingEmail!,
+      afterFirst.emailChangeTokenVersion,
+    );
+
+    await requestChange('profile2c-second@example.com');
+
+    const confirmCsrf = await getCsrfTokenAndCookies();
+    const res = await request(app.getHttpServer())
+      .post('/members/profile/confirm-email-change')
+      .set('Cookie', confirmCsrf.cookies)
+      .set('x-csrf-token', confirmCsrf.token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ key: staleToken });
+
+    expect(res.status).toBe(400);
+    const [unchanged] = await ctx.db
+      .select()
+      .from(member)
+      .where(sql`${member.id} = ${row.id}`);
+    expect(unchanged.email).toBe('profile2c@example.com');
+    expect(unchanged.pendingEmail).toBe('profile2c-second@example.com');
+  });
+
+  it('rejects a malformed confirmation key', async () => {
+    const { token, cookies } = await getCsrfTokenAndCookies();
+    const res = await request(app.getHttpServer())
+      .post('/members/profile/confirm-email-change')
+      .set('Cookie', cookies)
+      .set('x-csrf-token', token)
+      .set('X-Forwarded-Proto', 'https')
+      .send({ key: 'not-a-real-token' });
+
+    expect(res.status).toBe(400);
   });
 
   it('silently no-ops for an email already taken by another member (no enumeration)', async () => {
@@ -222,7 +350,7 @@ describe('profile (integration)', () => {
       .set('X-Forwarded-Proto', 'https')
       .send({ email: 'Taken@Example.com', currentPassword: 'correct-horse' });
 
-    // Same 200/generic response as a genuine update — the caller can't
+    // Same 200/generic response as a genuine request — the caller can't
     // distinguish this from success.
     expect(res.status).toBe(200);
     const [unchanged] = await ctx.db
@@ -230,7 +358,8 @@ describe('profile (integration)', () => {
       .from(member)
       .where(sql`${member.id} = ${row.id}`);
     expect(unchanged.email).toBe(row.email);
+    expect(unchanged.pendingEmail).toBeNull();
     const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    expect(jobs).toHaveLength(0); // no change-notice email sent
+    expect(jobs).toHaveLength(0); // no confirmation email sent
   });
 });

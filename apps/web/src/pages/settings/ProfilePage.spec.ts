@@ -43,7 +43,7 @@ describe("ProfilePage", () => {
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
-  it("updates the session email and shows a success toast", async () => {
+  it("requests the change, shows a success toast, and leaves the session email alone until it's confirmed", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
       response: { ok: true, status: 200 },
       error: undefined,
@@ -58,7 +58,9 @@ describe("ProfilePage", () => {
     expect(apiClient.POST).toHaveBeenCalledWith("/members/profile", {
       body: { email: "new@example.com", currentPassword: "correct-horse" },
     });
-    expect(useSessionStore().member?.email).toBe("new@example.com");
+    // The address on file doesn't change until the emailed confirmation
+    // link is clicked — see ConfirmEmailChangePage.
+    expect(useSessionStore().member?.email).toBe("old@example.com");
     expect(useToast().toasts.some((t) => t.variant === "success")).toBe(true);
   });
 

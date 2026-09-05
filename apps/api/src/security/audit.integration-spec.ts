@@ -7,6 +7,7 @@ import type { Request } from 'express';
 import request from 'supertest';
 import { AuthModule } from '../auth/auth.module';
 import { buildActivationToken } from '../members/activation-token';
+import { buildEmailChangeToken } from '../members/email-change-token';
 import { buildResetToken } from '../auth/reset-token';
 import {
   connectIntegrationDb,
@@ -278,7 +279,7 @@ describe('security event audit logging (integration)', () => {
     expect(events).toHaveLength(1);
   });
 
-  it('records email_changed', async () => {
+  it('records email_change_requested', async () => {
     const row = await createMember('email1@example.com', 'correct-horse');
     const { cookies } = await postWithCsrf('/auth/sign-in', {
       email: 'email1@example.com',
@@ -289,6 +290,41 @@ describe('security event audit logging (integration)', () => {
       '/members/profile',
       { email: 'email1-new@example.com', currentPassword: 'correct-horse' },
       cookies,
+    );
+    expect(res.status).toBe(200);
+
+    const events = await eventsFor('email_change_requested', row.id);
+    expect(events).toHaveLength(1);
+  });
+
+  it('records email_changed (on confirmation, not on request)', async () => {
+    const row = await createMember('email2@example.com', 'correct-horse');
+    const { cookies } = await postWithCsrf('/auth/sign-in', {
+      email: 'email2@example.com',
+      password: 'correct-horse',
+    });
+    await postWithCsrf(
+      '/members/profile',
+      { email: 'email2-new@example.com', currentPassword: 'correct-horse' },
+      cookies,
+    );
+    expect(await eventsFor('email_changed', row.id)).toHaveLength(0);
+
+    const [pending] = await ctx.db
+      .select()
+      .from(member)
+      .where(eq(member.id, row.id));
+    const confirmToken = buildEmailChangeToken(
+      crypto,
+      row.id,
+      pending.pendingEmail!,
+      pending.emailChangeTokenVersion,
+    );
+    const { res } = await postWithCsrf(
+      '/members/profile/confirm-email-change',
+      {
+        key: confirmToken,
+      },
     );
     expect(res.status).toBe(200);
 

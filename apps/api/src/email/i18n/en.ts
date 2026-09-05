@@ -27,6 +27,11 @@ export default {
     body: (newAddress: string) =>
       safeHtml`The email address of your Bagheera account has just been changed to ${newAddress}. If you did not do this, use the password recovery link on the sign-in page immediately.`,
   },
+  confirmEmailChange: {
+    subject: 'Confirm your new Bagheera email address',
+    body: (confirmLink: string) =>
+      safeHtml`A change of your Bagheera account's email address to this address was requested. Click on the following link to confirm it: <a href="${confirmLink}">${confirmLink}</a>. If you did not request this, ignore this email — your account's email address stays unchanged until this link is clicked.`,
+  },
   passkeyRegistered: {
     subject: 'Bagheera passkey added',
     body: 'A new passkey was just added to your Bagheera account, letting it sign in without your password. If you did not do this, change your password immediately from the sign-in page and remove the passkey from your account settings.',

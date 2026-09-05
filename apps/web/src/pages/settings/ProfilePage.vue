@@ -36,7 +36,9 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
 
-  session.setMember({ email: values.email });
+  // The address on file doesn't change yet — only once the confirmation
+  // link just emailed to it is clicked — so the session's email stays as
+  // it was.
   resetField("currentPassword");
   toast(t("settings.profile.success"), "success");
 });

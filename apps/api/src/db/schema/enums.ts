@@ -31,6 +31,7 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'password_recovery_requested',
   'password_recovery_completed',
   'password_changed',
+  'email_change_requested',
   'email_changed',
   'activation_issued',
   'activation_used',

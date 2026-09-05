@@ -53,6 +53,12 @@ export default {
       error: "Activation error (Already activated?)",
       signInLink: "Go to sign in",
     },
+    confirmEmailChange: {
+      title: "Confirm email change",
+      pending: "Confirming your new email address…",
+      success: "Your email address has been updated.",
+      error: "Email change error (link expired or already used?)",
+    },
     forgotPassword: {
       title: "Forgot your password?",
       email: "Email address",
@@ -269,7 +275,8 @@ export default {
       email: "Email address",
       currentPassword: "Current password",
       submit: "Save changes",
-      success: "Profile updated",
+      success:
+        "If this email isn't already registered to another account, check it for a link to confirm the change.",
       genericError: "Something went wrong. Please try again.",
     },
     password: {
