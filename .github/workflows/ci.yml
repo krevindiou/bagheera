@@ -130,7 +130,7 @@ jobs:
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1 (moving branch, not a tag)
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: "3.4"
       - run: gem install kamal --no-document --version "~> 2.12"
