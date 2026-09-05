@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { sql } from 'drizzle-orm';
 import type { Request } from 'express';
+import { MinorUnits } from '../common/money';
 import request from 'supertest';
 import {
   connectIntegrationDb,
@@ -447,7 +448,7 @@ describe('schedulers (integration)', () => {
     await ctx.db.insert(scheduler).values({
       accountId: acc.id,
       thirdParty: 'Landlord',
-      debit: 9000000,
+      debit: 9000000 as MinorUnits,
       paymentMethodId: 2,
       valueDate: '2026-02-01',
       frequencyValue: 1,
@@ -477,7 +478,7 @@ describe('schedulers (integration)', () => {
       .values({
         accountId: acc.id,
         thirdParty: 'Landlord',
-        debit: 9000000,
+        debit: 9000000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -527,7 +528,7 @@ describe('schedulers (integration)', () => {
       .values({
         accountId: acc.id,
         thirdParty: 'Landlord',
-        debit: 9000000,
+        debit: 9000000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -563,7 +564,7 @@ describe('schedulers (integration)', () => {
       .values({
         accountId: acc.id,
         thirdParty: 'Landlord',
-        debit: 9000000,
+        debit: 9000000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -607,7 +608,7 @@ describe('schedulers (integration)', () => {
       .values({
         accountId: acc.id,
         thirdParty: 'Landlord',
-        debit: 9000000,
+        debit: 9000000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -619,7 +620,7 @@ describe('schedulers (integration)', () => {
         accountId: acc.id,
         schedulerId: created.id,
         thirdParty: 'Landlord',
-        debit: 9000000,
+        debit: 9000000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2026-02-01',
       })

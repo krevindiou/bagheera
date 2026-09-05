@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { MinorUnits } from '../../common/money';
 import {
   connectIntegrationDb,
   IntegrationDb,
@@ -9,6 +10,10 @@ import { member } from './member';
 import { operation } from './operation';
 import { paymentMethod } from './payment-method';
 import { scheduler } from './scheduler';
+
+// Test fixtures write already-minor-units literals straight into insert
+// calls; brand them so they satisfy debit/credit's MinorUnits type.
+const asMinorUnits = (value: number) => value as MinorUnits;
 
 describe('scheduler schema', () => {
   let ctx: IntegrationDb;
@@ -55,7 +60,11 @@ describe('scheduler schema', () => {
 
   it('rejects a row with both debit and credit set', async () => {
     await expect(
-      ctx.db.insert(scheduler).values({ ...base(), debit: 1000, credit: 1000 }),
+      ctx.db.insert(scheduler).values({
+        ...base(),
+        debit: asMinorUnits(1000),
+        credit: asMinorUnits(1000),
+      }),
     ).rejects.toMatchObject({ cause: { code: '23514' } }); // check_violation
   });
 
@@ -68,7 +77,7 @@ describe('scheduler schema', () => {
   it('inserts a scheduler and an operation linked via scheduler_id', async () => {
     const [schedulerRow] = await ctx.db
       .insert(scheduler)
-      .values({ ...base(), debit: 5000 })
+      .values({ ...base(), debit: asMinorUnits(5000) })
       .returning();
     expect(schedulerRow).toMatchObject({
       active: true,
@@ -82,7 +91,7 @@ describe('scheduler schema', () => {
         schedulerId: schedulerRow.id,
         paymentMethodId: 1,
         thirdParty: 'Rent',
-        debit: 5000,
+        debit: asMinorUnits(5000),
       })
       .returning();
 

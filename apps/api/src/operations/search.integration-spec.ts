@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { sql } from 'drizzle-orm';
 import type { Request } from 'express';
+import { MinorUnits } from '../common/money';
 import request from 'supertest';
 import {
   connectIntegrationDb,
@@ -201,8 +202,12 @@ describe('operations search (integration)', () => {
         thirdParty: overrides.thirdParty ?? 'Third Party',
         paymentMethodId: overrides.paymentMethodId ?? 1,
         categoryId: overrides.categoryId,
-        debit: overrides.debit === undefined ? 100000 : overrides.debit,
-        credit: overrides.credit,
+        // overrides carries plain, already-minor-units literals from callers;
+        // brand them here, the one spot that needs to satisfy Drizzle's typed column.
+        debit: (overrides.debit === undefined
+          ? 100000
+          : overrides.debit) as MinorUnits | null,
+        credit: overrides.credit as MinorUnits | null | undefined,
         valueDate: overrides.valueDate ?? '2026-01-01',
         notes: overrides.notes ?? '',
         reconciled: overrides.reconciled ?? false,

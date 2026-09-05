@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { sql } from 'drizzle-orm';
 import type { Request } from 'express';
+import { MinorUnits } from '../common/money';
 import request from 'supertest';
 import {
   connectIntegrationDb,
@@ -584,7 +585,7 @@ describe('transfer pairing (integration)', () => {
       transferAccountId: target.id,
       paymentMethodId: TRANSFER_DEBIT,
       thirdParty: 'Scheduled transfer',
-      debit: 5000,
+      debit: 5000 as MinorUnits,
       valueDate: '2026-01-01',
       frequencyValue: 1,
     });

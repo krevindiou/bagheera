@@ -2,6 +2,7 @@ import { ConfigModule } from '@nestjs/config';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { sql } from 'drizzle-orm';
+import { MinorUnits } from '../common/money';
 import { DbModule } from '../db/db.module';
 import {
   account,
@@ -201,7 +202,7 @@ describe('OwnershipService (integration)', () => {
           accountId: a.id,
           paymentMethodId: 1,
           thirdParty: 'Shop',
-          debit: 1000,
+          debit: 1000 as MinorUnits,
         })
         .returning();
 
@@ -221,7 +222,7 @@ describe('OwnershipService (integration)', () => {
           accountId: a.id,
           paymentMethodId: 1,
           thirdParty: 'Shop',
-          debit: 1000,
+          debit: 1000 as MinorUnits,
         })
         .returning();
 
@@ -241,7 +242,7 @@ describe('OwnershipService (integration)', () => {
           accountId: a.id,
           paymentMethodId: 1,
           thirdParty: 'Shop',
-          debit: 1000,
+          debit: 1000 as MinorUnits,
         })
         .returning();
 
@@ -262,7 +263,7 @@ describe('OwnershipService (integration)', () => {
           accountId: a.id,
           paymentMethodId: 1,
           thirdParty: 'Rent',
-          debit: 1000,
+          debit: 1000 as MinorUnits,
           valueDate: '2026-01-01',
           frequencyValue: 1,
         })
@@ -284,7 +285,7 @@ describe('OwnershipService (integration)', () => {
           accountId: a.id,
           paymentMethodId: 1,
           thirdParty: 'Rent',
-          debit: 1000,
+          debit: 1000 as MinorUnits,
           valueDate: '2026-01-01',
           frequencyValue: 1,
         })
@@ -306,7 +307,7 @@ describe('OwnershipService (integration)', () => {
           accountId: a.id,
           paymentMethodId: 1,
           thirdParty: 'Rent',
-          debit: 1000,
+          debit: 1000 as MinorUnits,
           valueDate: '2026-01-01',
           frequencyValue: 1,
         })
@@ -375,7 +376,11 @@ describe('OwnershipService (integration)', () => {
       const foreignBank = await createBank(intruder.id);
       const foreignAccount = await createAccount(foreignBank.id);
 
-      const values = { paymentMethodId: 1, thirdParty: 'X', debit: 1000 };
+      const values = {
+        paymentMethodId: 1,
+        thirdParty: 'X',
+        debit: 1000 as MinorUnits,
+      };
       const [keep, droppedClosed, droppedDeletedBank, droppedForeign] =
         await ctx.db
           .insert(operation)
@@ -421,7 +426,7 @@ describe('OwnershipService (integration)', () => {
       const values = {
         paymentMethodId: 1,
         thirdParty: 'X',
-        debit: 1000,
+        debit: 1000 as MinorUnits,
         valueDate: '2026-01-01',
         frequencyValue: 1,
       };

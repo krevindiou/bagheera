@@ -1,4 +1,9 @@
+import { MinorUnits } from './money';
 import { computeSynthesisChart } from './synthesis-chart';
+
+// Test fixtures write already-minor-units literals straight into row
+// objects; brand them so they satisfy SynthesisChartRow's MinorUnits type.
+const asMinorUnits = (value: number) => value as MinorUnits;
 
 describe('computeSynthesisChart', () => {
   const TODAY = '2026-08-23';
@@ -17,7 +22,7 @@ describe('computeSynthesisChart', () => {
         {
           currency: 'USD',
           debit: null,
-          credit: 100000,
+          credit: asMinorUnits(100000),
           valueDate: '2026-08-01',
         },
       ],
@@ -34,11 +39,26 @@ describe('computeSynthesisChart', () => {
     const rows = [
       // 13 months before "today" — outside the 12-month window, folded
       // into the running total's starting point.
-      { currency: 'USD', debit: null, credit: 300000, valueDate: '2025-07-15' },
+      {
+        currency: 'USD',
+        debit: null,
+        credit: asMinorUnits(300000),
+        valueDate: '2025-07-15',
+      },
       // 2 months before "today".
-      { currency: 'USD', debit: 50000, credit: null, valueDate: '2026-06-10' },
+      {
+        currency: 'USD',
+        debit: asMinorUnits(50000),
+        credit: null,
+        valueDate: '2026-06-10',
+      },
       // Current month.
-      { currency: 'USD', debit: null, credit: 200000, valueDate: TODAY },
+      {
+        currency: 'USD',
+        debit: null,
+        credit: asMinorUnits(200000),
+        valueDate: TODAY,
+      },
     ];
     const result = computeSynthesisChart(rows, TODAY);
     const points = result.series[0].points;
@@ -57,8 +77,18 @@ describe('computeSynthesisChart', () => {
   it('keeps currencies in separate series, sorted, with no cross-currency conversion', () => {
     const result = computeSynthesisChart(
       [
-        { currency: 'EUR', debit: null, credit: 100000, valueDate: TODAY },
-        { currency: 'USD', debit: null, credit: 500000, valueDate: TODAY },
+        {
+          currency: 'EUR',
+          debit: null,
+          credit: asMinorUnits(100000),
+          valueDate: TODAY,
+        },
+        {
+          currency: 'USD',
+          debit: null,
+          credit: asMinorUnits(500000),
+          valueDate: TODAY,
+        },
       ],
       TODAY,
     );

@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { eq, sql } from 'drizzle-orm';
 import type { Request } from 'express';
+import { MinorUnits } from '../common/money';
 import request from 'supertest';
 import { AccountsModule } from '../accounts/accounts.module';
 import { AuthModule } from '../auth/auth.module';
@@ -194,7 +195,7 @@ describe('scheduler batch actions (integration)', () => {
       .values({
         accountId,
         thirdParty,
-        debit: 100000,
+        debit: 100000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2030-01-01', // future — never due, so no generated ops
         frequencyValue: 1,
@@ -251,7 +252,7 @@ describe('scheduler batch actions (integration)', () => {
         accountId: acc.id,
         schedulerId: owned.id,
         thirdParty: 'Mine',
-        debit: 100000,
+        debit: 100000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2026-01-01',
       })

@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { sql } from 'drizzle-orm';
 import type { Request } from 'express';
+import { MinorUnits } from '../common/money';
 import request from 'supertest';
 import {
   connectIntegrationDb,
@@ -21,6 +22,10 @@ import { AuthModule } from '../auth/auth.module';
 import { BanksModule } from '../banks/banks.module';
 import { AccountsModule } from './accounts.module';
 import { Public } from '../session/public.decorator';
+
+// Test fixtures write already-minor-units literals straight into insert
+// calls; brand them so they satisfy operation.debit/credit's MinorUnits type.
+const asMinorUnits = (value: number) => value as MinorUnits;
 
 class FakeEmailProvider implements EmailProvider {
   send(): Promise<void> {
@@ -513,21 +518,21 @@ describe('accounts (integration)', () => {
         accountId: acc.id,
         paymentMethodId: 7,
         thirdParty: 'Employer',
-        credit: 300000,
+        credit: asMinorUnits(300000),
         valueDate: monthKeyAgo(13),
       },
       {
         accountId: acc.id,
         paymentMethodId: 1,
         thirdParty: 'Shop',
-        debit: 50000,
+        debit: asMinorUnits(50000),
         valueDate: monthKeyAgo(2),
       },
       {
         accountId: acc.id,
         paymentMethodId: 7,
         thirdParty: 'Employer',
-        credit: 200000,
+        credit: asMinorUnits(200000),
         valueDate: monthKeyAgo(0),
       },
     ]);

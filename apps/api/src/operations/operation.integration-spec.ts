@@ -22,6 +22,11 @@ import { BanksModule } from '../banks/banks.module';
 import { AccountsModule } from '../accounts/accounts.module';
 import { OperationsModule } from './operations.module';
 import { Public } from '../session/public.decorator';
+import { MinorUnits } from '../common/money';
+
+// Test fixtures write already-minor-units literals straight into insert
+// calls; brand them so they satisfy operation.debit/credit's MinorUnits type.
+const asMinorUnits = (value: number) => value as MinorUnits;
 
 class FakeEmailProvider implements EmailProvider {
   send(): Promise<void> {
@@ -319,7 +324,7 @@ describe('operations (integration)', () => {
       accountId: acc.id,
       thirdParty: 'Old Op',
       paymentMethodId: 1,
-      debit: 1000,
+      debit: asMinorUnits(1000),
       valueDate: '2026-01-01',
     });
     const { token, cookies } = await authedRequest(
@@ -346,7 +351,7 @@ describe('operations (integration)', () => {
         accountId: acc.id,
         thirdParty: `Op ${i}`,
         paymentMethodId: 1,
-        debit: 100,
+        debit: asMinorUnits(100),
         valueDate: '2026-01-01',
       });
     }
@@ -392,7 +397,7 @@ describe('operations (integration)', () => {
         accountId: acc.id,
         thirdParty: 'Initial balance',
         paymentMethodId: 9,
-        credit: 500000,
+        credit: asMinorUnits(500000),
         reconciled: true,
         valueDate: '2026-01-01',
       })
@@ -419,7 +424,7 @@ describe('operations (integration)', () => {
         accountId: acc.id,
         thirdParty: 'Regular',
         paymentMethodId: 1,
-        debit: 1000,
+        debit: asMinorUnits(1000),
         valueDate: '2026-01-01',
       })
       .returning();

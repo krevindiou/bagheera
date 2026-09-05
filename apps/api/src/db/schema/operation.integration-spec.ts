@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { MinorUnits } from '../../common/money';
 import {
   connectIntegrationDb,
   IntegrationDb,
@@ -8,6 +9,10 @@ import { bank } from './bank';
 import { member } from './member';
 import { operation } from './operation';
 import { paymentMethod } from './payment-method';
+
+// Test fixtures write already-minor-units literals straight into insert
+// calls; brand them so they satisfy operation.debit/credit's MinorUnits type.
+const asMinorUnits = (value: number) => value as MinorUnits;
 
 describe('operation schema', () => {
   let ctx: IntegrationDb;
@@ -54,7 +59,11 @@ describe('operation schema', () => {
 
   it('rejects a row with both debit and credit set', async () => {
     await expect(
-      ctx.db.insert(operation).values({ ...base(), debit: 1000, credit: 1000 }),
+      ctx.db.insert(operation).values({
+        ...base(),
+        debit: asMinorUnits(1000),
+        credit: asMinorUnits(1000),
+      }),
     ).rejects.toMatchObject({ cause: { code: '23514' } }); // check_violation
   });
 
@@ -68,20 +77,20 @@ describe('operation schema', () => {
     await expect(
       ctx.db
         .insert(operation)
-        .values({ ...base(), accountId: 9999, credit: 1000 }),
+        .values({ ...base(), accountId: 9999, credit: asMinorUnits(1000) }),
     ).rejects.toMatchObject({ cause: { code: '23503' } }); // foreign_key_violation
   });
 
   it('accepts a valid debit-only row and a valid credit-only row', async () => {
     const [debitRow] = await ctx.db
       .insert(operation)
-      .values({ ...base(), debit: 1000 })
+      .values({ ...base(), debit: asMinorUnits(1000) })
       .returning();
     expect(debitRow).toMatchObject({ debit: 1000, credit: null });
 
     const [creditRow] = await ctx.db
       .insert(operation)
-      .values({ ...base(), credit: 2000 })
+      .values({ ...base(), credit: asMinorUnits(2000) })
       .returning();
     expect(creditRow).toMatchObject({ debit: null, credit: 2000 });
   });
@@ -89,11 +98,11 @@ describe('operation schema', () => {
   it('enforces uniqueness of transfer_operation_id', async () => {
     const [first] = await ctx.db
       .insert(operation)
-      .values({ ...base(), credit: 1000 })
+      .values({ ...base(), credit: asMinorUnits(1000) })
       .returning({ id: operation.id });
     const [second] = await ctx.db
       .insert(operation)
-      .values({ ...base(), debit: 1000 })
+      .values({ ...base(), debit: asMinorUnits(1000) })
       .returning({ id: operation.id });
 
     await ctx.db
@@ -103,7 +112,7 @@ describe('operation schema', () => {
 
     const [third] = await ctx.db
       .insert(operation)
-      .values({ ...base(), debit: 1000 })
+      .values({ ...base(), debit: asMinorUnits(1000) })
       .returning({ id: operation.id });
 
     await expect(

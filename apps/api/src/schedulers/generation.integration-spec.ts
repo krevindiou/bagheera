@@ -4,6 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { eq, sql } from 'drizzle-orm';
 import type { Request } from 'express';
+import { MinorUnits } from '../common/money';
 import request from 'supertest';
 import { AccountsModule } from '../accounts/accounts.module';
 import { SchedulerCatchUpService } from '../auth/scheduler-catch-up.service';
@@ -190,7 +191,7 @@ describe('scheduler generation (integration)', () => {
       .values({
         accountId: overrides.accountId!,
         thirdParty: 'Landlord',
-        debit: 9000000,
+        debit: 9000000 as MinorUnits,
         paymentMethodId: 2,
         valueDate: '2020-01-15',
         frequencyValue: 1,

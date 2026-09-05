@@ -29,6 +29,7 @@ import { HashService } from '../security/hash.service';
 import { SecurityModule } from '../security/security.module';
 import { SessionModule } from '../session/session.module';
 import { Public } from '../session/public.decorator';
+import { MinorUnits } from '../common/money';
 
 class FakeEmailProvider implements EmailProvider {
   send(): Promise<void> {
@@ -194,8 +195,10 @@ describe('report chart (integration)', () => {
     await ctx.db.insert(operation).values({
       accountId,
       thirdParty: 'Grocery Store',
-      debit: opts.debit ?? null,
-      credit: opts.credit ?? null,
+      // opts carries plain, already-minor-units literals from callers;
+      // brand them here, the one spot that needs to satisfy Drizzle's typed column.
+      debit: (opts.debit ?? null) as MinorUnits | null,
+      credit: (opts.credit ?? null) as MinorUnits | null,
       paymentMethodId: 1,
       valueDate,
     });
