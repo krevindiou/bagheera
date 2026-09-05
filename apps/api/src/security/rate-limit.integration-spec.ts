@@ -178,8 +178,10 @@ describe('RateLimitGuard (integration)', () => {
     }
     // First violation: locked out, base window (60s) applies.
     await exhaust().expect(429);
-    const strikeKey = 'rl:strikes:id:repeat-offender@example.com';
-    const blockKey = 'rl:block:id:repeat-offender@example.com';
+    const strikeKey =
+      'rl:strikes:TestRateLimitController#attempt:id:repeat-offender@example.com';
+    const blockKey =
+      'rl:block:TestRateLimitController#attempt:id:repeat-offender@example.com';
     expect(await redis.get(strikeKey)).toBe('1');
     const firstBlockTtl = await redis.ttl(blockKey);
     expect(firstBlockTtl).toBeGreaterThan(0);
@@ -190,7 +192,9 @@ describe('RateLimitGuard (integration)', () => {
     // the strike count, exactly as if the dimension came back and violated
     // the limit again before its strikes decayed.
     await redis.del(blockKey);
-    await redis.del('rl:id:repeat-offender@example.com');
+    await redis.del(
+      'rl:TestRateLimitController#attempt:id:repeat-offender@example.com',
+    );
     for (let i = 0; i < 3; i++) {
       await exhaust().expect(200);
     }
@@ -226,6 +230,29 @@ describe('RateLimitGuard (integration)', () => {
         .post('/__test-rate-limit/skipped')
         .expect(200);
     }
+  });
+
+  it("keeps the IP dimension isolated per route — a busy route can't exhaust an unrelated route's budget", async () => {
+    const ip = '10.0.0.9';
+    // unannotated-write falls back to DEFAULT_RATE_LIMIT (5 points/60s, IP-only).
+    for (let i = 0; i < DEFAULT_RATE_LIMIT.points; i++) {
+      await request(app.getHttpServer())
+        .post('/__test-rate-limit/unannotated-write')
+        .set('X-Forwarded-For', ip)
+        .expect(200);
+    }
+    await request(app.getHttpServer())
+      .post('/__test-rate-limit/unannotated-write')
+      .set('X-Forwarded-For', ip)
+      .expect(429);
+
+    // A different route, same source IP, still has its own untouched
+    // budget — before routeKey scoping, both shared one bare "ip:<ip>"
+    // Valkey key, so exhausting one silently tripped the other too.
+    await request(app.getHttpServer())
+      .get('/__test-rate-limit/explicit-read')
+      .set('X-Forwarded-For', ip)
+      .expect(200);
   });
 
   it('falls back to DEFAULT_RATE_LIMIT for a mutating route with neither decorator', async () => {

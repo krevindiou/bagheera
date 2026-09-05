@@ -111,7 +111,13 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     }
 
     const options = explicitOptions ?? DEFAULT_RATE_LIMIT;
-    for (const dimension of this.dimensions(req, options)) {
+    // Scopes every dimension's Valkey key to this handler — without it,
+    // every route sharing the bare "ip:<ip>"/"id:<value>" key would consume
+    // from the very same counter regardless of each route's own configured
+    // budget (see the class doc's "per route" language, which the key
+    // construction didn't actually honor before this).
+    const routeKey = `${context.getClass().name}#${context.getHandler().name}`;
+    for (const dimension of this.dimensions(req, options, routeKey)) {
       await this.checkDimension(dimension, options.durationSeconds);
     }
     return true;
@@ -120,14 +126,21 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   /**
    * Independent throttle dimensions for this request: always the source
    * IP, plus the submitted identifier (e.g. email) when the route names
-   * one — each with its own budget (see `ipPointsFor`).
+   * one — each with its own budget (see `ipPointsFor`), scoped to
+   * `routeKey` so unrelated routes never share a counter. A single route
+   * still checks both dimensions together (an attacker can't dodge one by
+   * rotating the other), it's only cross-route sharing that's excluded.
    */
   private dimensions(
     req: Request,
     options: RateLimitOptions,
+    routeKey: string,
   ): { key: string; points: number }[] {
     const dims = [
-      { key: `ip:${req.ip ?? 'unknown'}`, points: ipPointsFor(options) },
+      {
+        key: `${routeKey}:ip:${req.ip ?? 'unknown'}`,
+        points: ipPointsFor(options),
+      },
     ];
     const rawIdentifier = options.identifierField
       ? (req.body as Record<string, unknown> | undefined)?.[
@@ -135,7 +148,10 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
         ]
       : undefined;
     if (typeof rawIdentifier === 'string' && rawIdentifier.length > 0) {
-      dims.push({ key: `id:${rawIdentifier}`, points: options.points });
+      dims.push({
+        key: `${routeKey}:id:${rawIdentifier}`,
+        points: options.points,
+      });
     }
     return dims;
   }
