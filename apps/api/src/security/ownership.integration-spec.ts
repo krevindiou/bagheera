@@ -1,6 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 import { NotFoundException } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { sql } from 'drizzle-orm';
 import { DbModule } from '../db/db.module';
 import {
@@ -28,11 +28,12 @@ import { OwnershipService } from './ownership.service';
 // their controller still wires ownership checking in at all; the exhaustive
 // combinatorics live here, once per chain shape.
 describe('OwnershipService (integration)', () => {
+  let moduleRef: TestingModule;
   let ownership: OwnershipService;
   let ctx: IntegrationDb;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
+    moduleRef = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         DbModule,
@@ -46,6 +47,13 @@ describe('OwnershipService (integration)', () => {
 
   afterAll(async () => {
     await ctx.pool.end();
+    // Unlike every other *.integration-spec.ts file here, this one never
+    // calls createNestApplication()/app.close() — there's no HTTP surface
+    // to test, just the service. TestingModule still needs an explicit
+    // close() to run onModuleDestroy (SecurityModule's rate-limit Valkey
+    // client, notably) — skipping it is exactly the leak this suite's
+    // sibling fix (SecurityModule.onModuleDestroy) was chasing.
+    await moduleRef.close();
   });
 
   beforeEach(async () => {
