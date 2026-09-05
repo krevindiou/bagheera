@@ -108,28 +108,32 @@ export class SchedulerGenerationService {
         .returning();
 
       if (row.transferAccountId !== null) {
-        const transferOperationId = await this.transfers.sync(db, {
-          sourceId: created.id,
-          sourceAccountId: created.accountId,
-          sourceCurrency: acc.currency,
-          memberId,
-          previousTransferAccountId: null,
-          previousTransferOperationId: null,
-          desiredTransferAccountId: row.transferAccountId,
-          paymentMethodId: created.paymentMethodId,
-          debit: created.debit,
-          credit: created.credit,
-          thirdParty: created.thirdParty,
-          valueDate: created.valueDate,
-          notes: created.notes,
-          schedulerId: created.schedulerId,
-        });
-        if (transferOperationId !== null) {
-          await db
-            .update(operation)
-            .set({ transferOperationId })
-            .where(eq(operation.id, created.id));
-        }
+        // A freshly-generated occurrence can never have prior pairing
+        // state, so this is always an attach — never sync()'s fuller
+        // reconcile.
+        const transferOperationId = await this.transfers.attach(
+          db,
+          {
+            sourceOperationId: created.id,
+            sourceAccountId: created.accountId,
+            sourceCurrency: acc.currency,
+            memberId,
+          },
+          row.transferAccountId,
+          {
+            paymentMethodId: created.paymentMethodId,
+            debit: created.debit,
+            credit: created.credit,
+            thirdParty: created.thirdParty,
+            valueDate: created.valueDate,
+            notes: created.notes,
+            schedulerId: created.schedulerId,
+          },
+        );
+        await db
+          .update(operation)
+          .set({ transferOperationId })
+          .where(eq(operation.id, created.id));
       }
     }
   }

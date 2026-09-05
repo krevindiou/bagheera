@@ -129,11 +129,13 @@ export class SchedulerService {
     );
     await this.transfers.validateSchedulerTarget(
       this.db,
+      {
+        sourceAccountId: dto.accountId,
+        sourceCurrency: owned.account.currency,
+        memberId,
+      },
+      { targetAccountId: null },
       transferAccountId,
-      null,
-      dto.accountId,
-      owned.account.currency,
-      memberId,
     );
 
     const [created] = await this.db
@@ -189,11 +191,13 @@ export class SchedulerService {
     );
     await this.transfers.validateSchedulerTarget(
       this.db,
+      {
+        sourceAccountId: owned.scheduler.accountId,
+        sourceCurrency: owned.account.currency,
+        memberId,
+      },
+      { targetAccountId: owned.scheduler.transferAccountId },
       transferAccountId,
-      owned.scheduler.transferAccountId,
-      owned.scheduler.accountId,
-      owned.account.currency,
-      memberId,
     );
 
     const [updated] = await this.db

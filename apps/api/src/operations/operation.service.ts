@@ -154,31 +154,34 @@ export class OperationService {
         .returning();
 
       // A transfer target was chosen: pair the operation with a mirror in
-      // the target account (see transfer.service.ts for the rules).
+      // the target account (see transfer.service.ts for the rules). A
+      // fresh operation can never have prior pairing state, so this is
+      // always an attach — never sync()'s fuller reconcile.
       if (transferAccountId !== null) {
-        const transferOperationId = await this.transfers.sync(tx, {
-          sourceId: created.id,
-          sourceAccountId: created.accountId,
-          sourceCurrency: acc.currency,
-          memberId,
-          previousTransferAccountId: null,
-          previousTransferOperationId: null,
-          desiredTransferAccountId: transferAccountId,
-          paymentMethodId: created.paymentMethodId,
-          debit: created.debit,
-          credit: created.credit,
-          thirdParty: created.thirdParty,
-          valueDate: created.valueDate,
-          notes: created.notes,
-          schedulerId: created.schedulerId,
-        });
-        if (transferOperationId !== null) {
-          await tx
-            .update(operation)
-            .set({ transferOperationId })
-            .where(eq(operation.id, created.id));
-          created.transferOperationId = transferOperationId;
-        }
+        const transferOperationId = await this.transfers.attach(
+          tx,
+          {
+            sourceOperationId: created.id,
+            sourceAccountId: created.accountId,
+            sourceCurrency: acc.currency,
+            memberId,
+          },
+          transferAccountId,
+          {
+            paymentMethodId: created.paymentMethodId,
+            debit: created.debit,
+            credit: created.credit,
+            thirdParty: created.thirdParty,
+            valueDate: created.valueDate,
+            notes: created.notes,
+            schedulerId: created.schedulerId,
+          },
+        );
+        await tx
+          .update(operation)
+          .set({ transferOperationId })
+          .where(eq(operation.id, created.id));
+        created.transferOperationId = transferOperationId;
       }
 
       return created;
@@ -219,22 +222,29 @@ export class OperationService {
       // Resolved from the pairing state stored before this save — creates,
       // updates, retargets or removes the mirror as needed (see
       // transfer.service.ts).
-      const transferOperationId = await this.transfers.sync(tx, {
-        sourceId: id,
-        sourceAccountId: row.accountId,
-        sourceCurrency: acc.currency,
-        memberId,
-        previousTransferAccountId: row.transferAccountId,
-        previousTransferOperationId: row.transferOperationId,
+      const transferOperationId = await this.transfers.sync(
+        tx,
+        {
+          sourceOperationId: id,
+          sourceAccountId: row.accountId,
+          sourceCurrency: acc.currency,
+          memberId,
+        },
+        {
+          targetAccountId: row.transferAccountId,
+          mirrorOperationId: row.transferOperationId,
+        },
         desiredTransferAccountId,
-        paymentMethodId: dto.paymentMethodId,
-        debit,
-        credit,
-        thirdParty: dto.thirdParty,
-        valueDate: dto.valueDate,
-        notes,
-        schedulerId: row.schedulerId,
-      });
+        {
+          paymentMethodId: dto.paymentMethodId,
+          debit,
+          credit,
+          thirdParty: dto.thirdParty,
+          valueDate: dto.valueDate,
+          notes,
+          schedulerId: row.schedulerId,
+        },
+      );
 
       await tx
         .update(operation)

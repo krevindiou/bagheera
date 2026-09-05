@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { account, bank, operation, scheduler } from '../db/schema';
 import { MinorUnits } from '../common/money';
+import { account, bank, operation, scheduler } from '../db/schema';
 
 // Payment method ids 4 (debit) and 6 (credit) — the only two payment
 // methods that can carry a pairing; flipping between them mirrors a
@@ -24,18 +24,27 @@ type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (
   : never;
 type Db = NodePgDatabase | Executor;
 
-export interface SyncPairingInput {
-  sourceId: number;
+// Facts needed to validate a *new* transfer target (attach or retarget) —
+// nothing here depends on the source operation already existing.
+export interface PairingEligibility {
   sourceAccountId: number;
   sourceCurrency: string;
   memberId: number;
-  // Pairing state stored on the source row before this save (null on
-  // create, or when the source was never paired).
-  previousTransferAccountId: number | null;
-  previousTransferOperationId: number | null;
-  // Pairing state requested by this save; null means "no target chosen" —
-  // covers both a non-transfer payment method and the External placeholder.
-  desiredTransferAccountId: number | null;
+}
+
+// Adds the source operation's own id, needed to stamp a brand-new mirror's
+// back-reference — only attach()/sync() ever create a mirror, so only they
+// need this; validateSchedulerTarget (no row to reference) doesn't.
+export interface PairingSource extends PairingEligibility {
+  sourceOperationId: number;
+}
+
+// The mirror's own editable content: everything about the transfer that
+// isn't the pairing relationship itself. Callers pass the *source's* own
+// values here — attach/sync flip the payment method and swap debit/credit
+// internally; never pre-flip them yourself. `reconciled` is deliberately
+// excluded: a mirror's reconciled state is never inherited from the source.
+export interface MirrorContent {
   paymentMethodId: number;
   debit: MinorUnits | null;
   credit: MinorUnits | null;
@@ -43,6 +52,50 @@ export interface SyncPairingInput {
   valueDate: string;
   notes: string;
   schedulerId: number | null;
+}
+
+// The pairing state stored on the source row before this save. Both null
+// when the source has never been paired; both set otherwise — never mixed,
+// on any row this module itself wrote.
+export interface PreviousPairing {
+  targetAccountId: number | null;
+  mirrorOperationId: number | null;
+}
+
+export type PairingEdit =
+  | { action: 'none' }
+  | { action: 'attach'; targetAccountId: number }
+  | { action: 'retarget'; mirrorOperationId: number; targetAccountId: number }
+  | { action: 'refresh'; mirrorOperationId: number }
+  | { action: 'detach'; mirrorOperationId: number };
+
+// Pure — no Db, no `this`. Classifies previous-vs-desired pairing state
+// into the one transition it represents. Exported standalone so it's
+// unit-testable with zero DB (see transfer-pairing.spec.ts), and so a
+// future caller could inspect intent before acting on it (e.g. confirming
+// before a retarget) without going through sync() itself.
+export function classifyPairingEdit(
+  previous: PreviousPairing,
+  desiredTargetAccountId: number | null,
+): PairingEdit {
+  if (desiredTargetAccountId === null) {
+    return previous.mirrorOperationId !== null
+      ? { action: 'detach', mirrorOperationId: previous.mirrorOperationId }
+      : { action: 'none' };
+  }
+  if (
+    previous.mirrorOperationId !== null &&
+    previous.targetAccountId === desiredTargetAccountId
+  ) {
+    return { action: 'refresh', mirrorOperationId: previous.mirrorOperationId };
+  }
+  return previous.mirrorOperationId !== null
+    ? {
+        action: 'retarget',
+        mirrorOperationId: previous.mirrorOperationId,
+        targetAccountId: desiredTargetAccountId,
+      }
+    : { action: 'attach', targetAccountId: desiredTargetAccountId };
 }
 
 @Injectable()
@@ -61,15 +114,13 @@ export class TransferService {
   // source's currency, are eligible as a *new* transfer target — whether
   // that's a first-time pairing or a retarget. An operation's already-paired
   // target that has since gone inactive is left alone by the caller instead
-  // of routed through here (see `sync`'s same-target branch).
+  // of routed through here (see sync()'s 'refresh' branch).
   private async requireEligibleTarget(
     db: Db,
     targetAccountId: number,
-    sourceAccountId: number,
-    sourceCurrency: string,
-    memberId: number,
+    source: PairingEligibility,
   ): Promise<void> {
-    if (targetAccountId === sourceAccountId) {
+    if (targetAccountId === source.sourceAccountId) {
       throw new BadRequestException('Cannot transfer to the same account.');
     }
     const [row] = await db
@@ -77,7 +128,7 @@ export class TransferService {
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(account.id, targetAccountId));
-    if (!row || row.bank.memberId !== memberId) {
+    if (!row || row.bank.memberId !== source.memberId) {
       throw new BadRequestException('Invalid transfer account.');
     }
     if (
@@ -88,113 +139,127 @@ export class TransferService {
     ) {
       throw new BadRequestException('Transfer account is not active.');
     }
-    if (row.account.currency !== sourceCurrency) {
+    if (row.account.currency !== source.sourceCurrency) {
       throw new BadRequestException('Transfer account currency mismatch.');
     }
   }
 
-  // Public entry point for schedulers: unlike an operation, a scheduler
-  // template has no live mirror to sync, so there's nothing to route
-  // through `sync()`. Same eligibility rules apply to a *new* target
-  // though — same-currency, owned, fully active — while an unchanged
-  // target is left alone even if it has since gone inactive (generation
-  // itself skips it; see SchedulerGenerationService).
-  async validateSchedulerTarget(
-    db: Db,
-    targetAccountId: number | null,
-    previousTargetAccountId: number | null,
-    sourceAccountId: number,
-    sourceCurrency: string,
-    memberId: number,
-  ): Promise<void> {
-    if (
-      targetAccountId === null ||
-      targetAccountId === previousTargetAccountId
-    ) {
-      return;
-    }
-    await this.requireEligibleTarget(
-      db,
-      targetAccountId,
-      sourceAccountId,
-      sourceCurrency,
-      memberId,
-    );
+  private mirrorFieldsFrom(content: MirrorContent) {
+    return {
+      paymentMethodId: this.flip(content.paymentMethodId),
+      debit: content.credit,
+      credit: content.debit,
+      thirdParty: content.thirdParty,
+      valueDate: content.valueDate,
+      notes: content.notes,
+      schedulerId: content.schedulerId,
+    };
   }
 
-  // Creates, updates, retargets or removes the mirror operation of a
-  // transfer pair so the source row (still to be persisted by the caller)
-  // ends up consistent with it. Returns the `transferOperationId` the
-  // caller should store on the source row.
-  async sync(db: Db, input: SyncPairingInput): Promise<number | null> {
-    if (input.desiredTransferAccountId === null) {
-      if (input.previousTransferOperationId) {
-        // The source row's own transferOperationId still points at the
-        // mirror until the caller persists it; clear it first or the FK
-        // blocks the mirror's deletion.
-        await db
-          .update(operation)
-          .set({ transferOperationId: null, transferAccountId: null })
-          .where(eq(operation.id, input.sourceId));
-        await db
-          .delete(operation)
-          .where(eq(operation.id, input.previousTransferOperationId));
-      }
-      return null;
-    }
-
-    const mirrorFields = {
-      paymentMethodId: this.flip(input.paymentMethodId),
-      debit: input.credit,
-      credit: input.debit,
-      thirdParty: input.thirdParty,
-      valueDate: input.valueDate,
-      notes: input.notes,
-      schedulerId: input.schedulerId,
-    };
-
-    // Same target as before: the mirror is reused in place, syncing fields
-    // only — no eligibility re-check, since a paired target that went
-    // inactive after the fact stays syncable (only *new* targets require
-    // active state).
-    if (
-      input.previousTransferOperationId &&
-      input.previousTransferAccountId === input.desiredTransferAccountId
-    ) {
-      await db
-        .update(operation)
-        .set(mirrorFields)
-        .where(eq(operation.id, input.previousTransferOperationId));
-      return input.previousTransferOperationId;
-    }
-
-    await this.requireEligibleTarget(
-      db,
-      input.desiredTransferAccountId,
-      input.sourceAccountId,
-      input.sourceCurrency,
-      input.memberId,
-    );
-
-    if (input.previousTransferOperationId) {
-      await db
-        .update(operation)
-        .set({ ...mirrorFields, accountId: input.desiredTransferAccountId })
-        .where(eq(operation.id, input.previousTransferOperationId));
-      return input.previousTransferOperationId;
-    }
-
+  // Pairs `source` with a FRESH mirror in `targetAccountId` — always
+  // validates the target first, then inserts the mirror (its own
+  // transferOperationId pointing back at source.sourceOperationId). Never
+  // writes the source row itself: the caller persists the returned id onto
+  // its own transferOperationId column (its own transferAccountId it
+  // already knows and sets itself). Call only when the source has no
+  // existing mirror — use sync() instead when it might.
+  async attach(
+    db: Db,
+    source: PairingSource,
+    targetAccountId: number,
+    content: MirrorContent,
+  ): Promise<number> {
+    await this.requireEligibleTarget(db, targetAccountId, source);
     const [mirror] = await db
       .insert(operation)
       .values({
-        accountId: input.desiredTransferAccountId,
-        transferAccountId: input.sourceAccountId,
-        transferOperationId: input.sourceId,
+        accountId: targetAccountId,
+        transferAccountId: source.sourceAccountId,
+        transferOperationId: source.sourceOperationId,
         reconciled: false,
-        ...mirrorFields,
+        ...this.mirrorFieldsFrom(content),
       })
       .returning();
     return mirror.id;
+  }
+
+  // Reconciles an existing operation's transfer pairing against a newly
+  // desired target — the only entry point that can hit all four
+  // transitions a full edit can produce (classifyPairingEdit above decides
+  // which). Never writes the source row: the caller must persist the
+  // returned transferOperationId, and `desiredTargetAccountId` onto
+  // transferAccountId, in the same write that saves the operation's other
+  // edited fields.
+  async sync(
+    db: Db,
+    source: PairingSource,
+    previous: PreviousPairing,
+    desiredTargetAccountId: number | null,
+    content: MirrorContent,
+  ): Promise<number | null> {
+    const edit = classifyPairingEdit(previous, desiredTargetAccountId);
+    switch (edit.action) {
+      case 'none':
+        return null;
+
+      case 'detach':
+        // The source row's own transferOperationId still points at the
+        // mirror until the caller persists its save; clear it first or the
+        // FK blocks the mirror's deletion.
+        await db
+          .update(operation)
+          .set({ transferOperationId: null, transferAccountId: null })
+          .where(eq(operation.id, source.sourceOperationId));
+        await db
+          .delete(operation)
+          .where(eq(operation.id, edit.mirrorOperationId));
+        return null;
+
+      case 'refresh':
+        // Same target as before: the mirror is reused in place, syncing
+        // content only — no eligibility re-check, since a paired target
+        // that went inactive after the fact stays syncable (only *new*
+        // targets require active state).
+        await db
+          .update(operation)
+          .set(this.mirrorFieldsFrom(content))
+          .where(eq(operation.id, edit.mirrorOperationId));
+        return edit.mirrorOperationId;
+
+      case 'retarget':
+        await this.requireEligibleTarget(db, edit.targetAccountId, source);
+        await db
+          .update(operation)
+          .set({
+            ...this.mirrorFieldsFrom(content),
+            accountId: edit.targetAccountId,
+          })
+          .where(eq(operation.id, edit.mirrorOperationId));
+        return edit.mirrorOperationId;
+
+      case 'attach':
+        return this.attach(db, source, edit.targetAccountId, content);
+    }
+  }
+
+  // Eligibility-only check for a scheduler template's transfer target — no
+  // mirror row exists for a scheduler, so there's nothing to sync. `null`,
+  // or unchanged from `previous.targetAccountId`, is always a no-op (an
+  // unchanged target is left alone even if it's since gone inactive — same
+  // rule as sync()'s 'refresh' branch).
+  async validateSchedulerTarget(
+    db: Db,
+    source: PairingEligibility,
+    previous: Pick<PreviousPairing, 'targetAccountId'>,
+    desiredTargetAccountId: number | null,
+  ): Promise<void> {
+    if (
+      desiredTargetAccountId === null ||
+      desiredTargetAccountId === previous.targetAccountId
+    ) {
+      return;
+    }
+    await this.requireEligibleTarget(db, desiredTargetAccountId, source);
   }
 
   // Deleting an operation leaves any counterpart in place, converted to an
