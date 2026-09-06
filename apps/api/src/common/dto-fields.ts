@@ -1,9 +1,12 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   Length,
+  Max,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -100,5 +103,22 @@ export function NotesField(): PropertyDecorator {
     IsOptional()(target, propertyKey);
     IsString()(target, propertyKey);
     MaxLength(4096)(target, propertyKey);
+  };
+}
+
+/**
+ * A monetary amount entered by the member — always positive; the sign is
+ * derived from the operation/scheduler's own `type` field, never from this
+ * value. The upper bound isn't a realistic transaction size — it's a
+ * sanity ceiling that keeps `toMinorUnits()`'s ×MONEY_SCALE scaling well
+ * clear of floating-point precision loss and the `debit`/`credit` columns'
+ * `bigint` range (Number.MAX_SAFE_INTEGER / MONEY_SCALE is ~900 billion;
+ * this leaves three orders of magnitude of headroom below that).
+ */
+export function AmountField(): PropertyDecorator {
+  return function (target: object, propertyKey: string | symbol): void {
+    IsNumber()(target, propertyKey);
+    IsPositive()(target, propertyKey);
+    Max(999_999_999.9999)(target, propertyKey);
   };
 }

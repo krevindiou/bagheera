@@ -2,12 +2,14 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
-  IsNumber,
   IsOptional,
-  IsPositive,
   IsUUID,
 } from 'class-validator';
-import { NotesField, ThirdPartyField } from '../../common/dto-fields';
+import {
+  AmountField,
+  NotesField,
+  ThirdPartyField,
+} from '../../common/dto-fields';
 
 export class CreateOperationDto {
   @IsUUID('7')
@@ -21,10 +23,9 @@ export class CreateOperationDto {
   @ThirdPartyField()
   thirdParty!: string;
 
-  // Decimal money value, always positive; sign is derived from `type`
-  // (÷10,000 boundary conversion happens server-side).
-  @IsNumber()
-  @IsPositive()
+  // Decimal money value; sign is derived from `type` (÷10,000 boundary
+  // conversion happens server-side).
+  @AmountField()
   amount!: number;
 
   @IsOptional()

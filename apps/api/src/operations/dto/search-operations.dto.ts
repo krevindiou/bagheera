@@ -10,6 +10,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
   MinLength,
   ValidateNested,
@@ -20,7 +21,12 @@ export class AmountComparatorDto {
   @IsIn(['gt', 'gte', 'lt', 'lte', 'eq'])
   operator!: 'gt' | 'gte' | 'lt' | 'lte' | 'eq';
 
+  // Not routed through AmountField(): a filter threshold, not a stored
+  // amount — 0 (and, harmlessly, negative) stays a legal comparator value
+  // here, unlike an actual operation/scheduler amount. Only the same
+  // overflow-safety ceiling applies.
   @IsNumber()
+  @Max(999_999_999.9999)
   value!: number;
 }
 

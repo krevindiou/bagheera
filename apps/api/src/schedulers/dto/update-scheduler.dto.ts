@@ -3,12 +3,15 @@ import {
   IsDateString,
   IsIn,
   IsInt,
-  IsNumber,
   IsOptional,
   IsPositive,
   IsUUID,
 } from 'class-validator';
-import { NotesField, ThirdPartyField } from '../../common/dto-fields';
+import {
+  AmountField,
+  NotesField,
+  ThirdPartyField,
+} from '../../common/dto-fields';
 
 // accountId is shown read-only on the edit form but still submitted — the
 // server rejects any attempt to actually move the scheduler to another
@@ -23,8 +26,7 @@ export class UpdateSchedulerDto {
   @ThirdPartyField()
   thirdParty!: string;
 
-  @IsNumber()
-  @IsPositive()
+  @AmountField()
   amount!: number;
 
   @IsOptional()
