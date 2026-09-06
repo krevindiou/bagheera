@@ -17,11 +17,17 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
-  // Production runs behind Caddy (TLS-terminating reverse proxy, deployed
-  // via Kamal — see config/deploy.yml and docker/Dockerfile.caddy); trust
-  // its X-Forwarded-* headers so req.secure reflects the original HTTPS
-  // request and Secure cookies work.
-  app.set('trust proxy', 1);
+  // Production sits behind TWO reverse-proxy hops, not one: Kamal's own
+  // TLS-terminating edge proxy, then the Caddy container it forwards to
+  // (see config/deploy.yml and docker/Caddyfile) — both are ordinary
+  // reverse proxies that append to X-Forwarded-For, as such proxies
+  // normally do. Trusting only 1 hop here resolves req.ip to an
+  // intermediate proxy's own address instead of the real client's, on
+  // every request — which collapses RateLimitGuard's per-IP dimension
+  // (keyed on req.ip) into a single bucket shared by the whole site, and
+  // corrupts every audit-log source address. The count must match the
+  // real number of hops exactly.
+  app.set('trust proxy', 2);
   // Baseline security headers (X-Frame-Options, X-Content-Type-Options,
   // HSTS, etc). CSP relaxed for 'unsafe-inline' script/style outside
   // production only, because Swagger UI (served from this same app at

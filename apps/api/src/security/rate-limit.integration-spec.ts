@@ -267,6 +267,136 @@ describe('RateLimitGuard (integration)', () => {
   });
 });
 
+// Pins the assumption main.ts's `app.set('trust proxy', N)` depends on:
+// production sits behind TWO real reverse-proxy hops (Kamal's own
+// TLS-terminating edge proxy, then the Caddy container it forwards to —
+// see main.ts's own comment), each of which appends its observed peer to
+// X-Forwarded-For, as such proxies normally do. Getting the hop count
+// wrong there previously made every request's req.ip resolve to an
+// intermediate proxy's own address instead of the real client's — which
+// silently collapsed RateLimitGuard's per-IP dimension into one bucket
+// shared by every caller on the whole site. This builds one app at the
+// wrong (regression) hop count and one at the real one, and asserts they
+// resolve a realistic chained X-Forwarded-For differently — so a future
+// change to either main.ts's setting or this assumption about the
+// deployed topology has to break a test, not just production.
+describe("RateLimitGuard's req.ip resolution across a two-hop proxy chain (integration)", () => {
+  let wrongHopCountApp: NestExpressApplication;
+  let realHopCountApp: NestExpressApplication;
+  let redis: RedisClientType;
+
+  // Simulates the exact header shape a real request carries by the time it
+  // reaches the api container: whatever the client itself sent (leftmost,
+  // attacker-controlled — here a deliberately spoofed decoy), then the real
+  // client IP appended by hop 1 (Kamal's edge proxy), then hop 1's own
+  // address as seen and appended by hop 2 (Caddy — rightmost, closest to
+  // this app).
+  const chainedForwardedFor = (realClientIp: string) =>
+    `spoofed-decoy, ${realClientIp}, 10.10.10.10`;
+
+  const ipKeysFor = (redisClient: RedisClientType) =>
+    redisClient.keys('rl:TestRateLimitController#attempt:ip:*');
+
+  beforeAll(async () => {
+    const buildApp = async () => {
+      const moduleRef = await Test.createTestingModule({
+        imports: [ConfigModule.forRoot({ isGlobal: true }), SecurityModule],
+        controllers: [TestRateLimitController],
+      }).compile();
+      const testApp = moduleRef.createNestApplication<NestExpressApplication>();
+      return testApp;
+    };
+
+    wrongHopCountApp = await buildApp();
+    // The regression this guards against: trusting only 1 hop when 2 real
+    // proxies actually sit in front of the app.
+    wrongHopCountApp.set('trust proxy', 1);
+    await wrongHopCountApp.init();
+
+    realHopCountApp = await buildApp();
+    // Matches main.ts's real setting.
+    realHopCountApp.set('trust proxy', 2);
+    await realHopCountApp.init();
+
+    redis = createClient({ url: process.env.VALKEY_URL });
+    await redis.connect();
+  });
+
+  afterAll(async () => {
+    await redis.quit();
+    await wrongHopCountApp.close();
+    await realHopCountApp.close();
+  });
+
+  beforeEach(async () => {
+    const keys = await redis.keys('rl:*');
+    if (keys.length > 0) {
+      await redis.del(keys);
+    }
+  });
+
+  it('at the real hop count (2), resolves to the real client — the middle entry — ignoring the decoy ahead of it and the proxies behind it', async () => {
+    const realClientIp = '203.0.113.5';
+
+    await request(realHopCountApp.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .set('X-Forwarded-For', chainedForwardedFor(realClientIp))
+      .send({ email: 'two-hop-correct@example.com' })
+      .expect(200);
+
+    expect(await ipKeysFor(redis)).toEqual([
+      `rl:TestRateLimitController#attempt:ip:${realClientIp}`,
+    ]);
+  });
+
+  it('still tells two different real clients apart behind an identical decoy and identical proxy address', async () => {
+    const clientA = '203.0.113.5';
+    const clientB = '203.0.113.9';
+
+    await request(realHopCountApp.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .set('X-Forwarded-For', chainedForwardedFor(clientA))
+      .send({ email: 'two-hop-client-a@example.com' })
+      .expect(200);
+    await request(realHopCountApp.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .set('X-Forwarded-For', chainedForwardedFor(clientB))
+      .send({ email: 'two-hop-client-b@example.com' })
+      .expect(200);
+
+    const keys = await ipKeysFor(redis);
+    expect(keys.sort()).toEqual(
+      [
+        `rl:TestRateLimitController#attempt:ip:${clientA}`,
+        `rl:TestRateLimitController#attempt:ip:${clientB}`,
+      ].sort(),
+    );
+  });
+
+  it('at the wrong hop count (1, the regressed setting), instead resolves to a proxy address — never the real client, and shared by every caller', async () => {
+    const clientA = '203.0.113.5';
+    const clientB = '203.0.113.9';
+
+    await request(wrongHopCountApp.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .set('X-Forwarded-For', chainedForwardedFor(clientA))
+      .send({ email: 'two-hop-wrong-a@example.com' })
+      .expect(200);
+    await request(wrongHopCountApp.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .set('X-Forwarded-For', chainedForwardedFor(clientB))
+      .send({ email: 'two-hop-wrong-b@example.com' })
+      .expect(200);
+
+    // Both distinct real clients collapse onto the exact same key — the
+    // rightmost proxy-appended address, not either client's own — which in
+    // production means every visitor shares one IP-dimension budget.
+    expect(await ipKeysFor(redis)).toEqual([
+      'rl:TestRateLimitController#attempt:ip:10.10.10.10',
+    ]);
+  });
+});
+
 describe('RateLimitGuard vs SessionAuthGuard ordering (integration)', () => {
   let app: NestExpressApplication;
 
