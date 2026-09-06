@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsPositive,
   IsUUID,
+  Max,
 } from 'class-validator';
 import {
   AmountField,
@@ -62,8 +63,15 @@ export class CreateSchedulerDto {
   @IsIn(['day', 'week', 'month', 'year'])
   frequencyUnit?: 'day' | 'week' | 'month' | 'year';
 
+  // Upper-bounded, not just positive: generation/interval.ts's date
+  // arithmetic assumes occurrence dates stay well within JS `Date`'s
+  // representable range — an unbounded value (paired with 'month'/'year')
+  // can push a generated date past that range, corrupting the ISO-string
+  // comparison dueOccurrences() relies on to terminate correctly. 100 is
+  // already far beyond any real recurrence.
   @IsInt()
   @IsPositive()
+  @Max(100)
   frequencyValue!: number;
 
   @IsOptional()

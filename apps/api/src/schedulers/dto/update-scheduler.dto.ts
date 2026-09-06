@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsPositive,
   IsUUID,
+  Max,
 } from 'class-validator';
 import {
   AmountField,
@@ -58,8 +59,11 @@ export class UpdateSchedulerDto {
   @IsIn(['day', 'week', 'month', 'year'])
   frequencyUnit?: 'day' | 'week' | 'month' | 'year';
 
+  // See CreateSchedulerDto's frequencyValue for why this is capped, not
+  // just positive.
   @IsInt()
   @IsPositive()
+  @Max(100)
   frequencyValue!: number;
 
   @IsOptional()
