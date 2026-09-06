@@ -59,13 +59,13 @@ Run `make format`, `make lint`, `make test`, then the `security-review` skill �
 
 ## Architecture
 
-Monorepo (pnpm workspace): `apps/api` (NestJS), `apps/web` (Vue 3 SPA). `packages/` is reserved, currently empty.
+Monorepo (pnpm workspace): `apps/api` (NestJS), `apps/web` (Vue 3 SPA), `packages/` (cross-stack code both depend on — currently just `packages/money`, see below). A `packages/*` member ships compiled output (`main`/`types` point at `dist/`, built via its own `pnpm build`) since the API's production image runs `node dist/main` with no TS loader — editing a package's `src/` needs `pnpm --filter <package> build` (or a container restart) to reach a running dev container, unlike `apps/api`/`apps/web`'s own hot reload.
 
 ### Domain
 
 Manual-entry personal finance manager: members own banks → accounts → operations (transactions). Operations can be transfers between two of a member's accounts, or automated via recurring schedulers. Reports/dashboard aggregate balances and spending. Every entity that carries a monetary/flow direction (`payment_method`, `category`, `operation`, `scheduler`) shares one `entry_type` enum: `'debit' | 'credit'` — a payment method and a category are each pinned to one type, and the type on an operation/scheduler must match both (enforced server-side, see `operation.service.ts`'s `validateTypedRefs`; mirrored client-side in the Vue forms' type-driven filtering).
 
-Money is stored as integers scaled by `MONEY_SCALE = 10000` (four decimal places) — see `apps/api/src/common/money.ts`'s `toMinorUnits`/`toMajorUnits`. Never do currency math in floating-point major units.
+Money is stored as integers scaled by `MONEY_SCALE = 10000` (four decimal places) — see `packages/money`'s `toMinorUnits`/`toMajorUnits` (also home to `AMOUNT_CEILING`, the sanity ceiling `AmountField()` and the web amount schemas validate against). `apps/api/src/common/money.ts` and `apps/web/src/pages/operations/money.ts` re-export/wrap it rather than each carrying their own copy. Never do currency math in floating-point major units.
 
 Reference data (`payment_method`, `category`) is fixed/seeded, not user-editable — ids are relied on as stable identifiers both in `apps/api/src/db/seed-data.ts` and hardcoded in `apps/web/src/pages/operations/operations.types.ts` (`PAYMENT_METHOD_NAMES`, `PAYMENT_METHOD_TYPES`, etc.). Changing these ids/types means updating both sides.
 

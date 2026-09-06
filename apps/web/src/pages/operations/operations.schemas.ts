@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from "@bagheera/money";
 import { z } from "zod";
 
 const optionalId = z.preprocess(
@@ -14,7 +15,7 @@ export const operationSchema = z.object({
   thirdParty: z.string().trim().min(1).max(64),
   amount: z.preprocess(
     (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
-    z.number().positive(),
+    z.number().positive().max(AMOUNT_CEILING),
   ),
   categoryId: optionalId,
   paymentMethodId: z.string().uuid(),

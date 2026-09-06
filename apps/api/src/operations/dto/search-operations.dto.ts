@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -24,9 +25,10 @@ export class AmountComparatorDto {
   // Not routed through AmountField(): a filter threshold, not a stored
   // amount — 0 (and, harmlessly, negative) stays a legal comparator value
   // here, unlike an actual operation/scheduler amount. Only the same
-  // overflow-safety ceiling applies.
+  // overflow-safety ceiling applies, shared via AMOUNT_CEILING rather than
+  // a second hand-typed copy of the literal.
   @IsNumber()
-  @Max(999_999_999.9999)
+  @Max(AMOUNT_CEILING)
   value!: number;
 }
 

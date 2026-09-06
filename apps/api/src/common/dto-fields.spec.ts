@@ -1,6 +1,8 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { validate } from 'class-validator';
 import {
   AccountNameField,
+  AmountField,
   BankNameField,
   EmailField,
   NewPasswordField,
@@ -48,6 +50,11 @@ class BankNameHolder {
 class NotesHolder {
   @NotesField()
   notes?: string;
+}
+
+class AmountHolder {
+  @AmountField()
+  amount!: number;
 }
 
 describe('EmailField', () => {
@@ -220,5 +227,32 @@ describe('NotesField', () => {
     const dto = Object.assign(new NotesHolder(), { notes: 'x'.repeat(4097) });
     const errors = await validate(dto);
     expect(errors[0].constraints).toHaveProperty('maxLength');
+  });
+});
+
+describe('AmountField', () => {
+  it('accepts a positive value at the ceiling', async () => {
+    const dto = Object.assign(new AmountHolder(), { amount: AMOUNT_CEILING });
+    expect(await validate(dto)).toHaveLength(0);
+  });
+
+  it('rejects a value over the ceiling', async () => {
+    const dto = Object.assign(new AmountHolder(), {
+      amount: AMOUNT_CEILING + 1,
+    });
+    const errors = await validate(dto);
+    expect(errors[0].constraints).toHaveProperty('max');
+  });
+
+  it('rejects zero — the sign comes from the operation/scheduler type, not this field', async () => {
+    const dto = Object.assign(new AmountHolder(), { amount: 0 });
+    const errors = await validate(dto);
+    expect(errors[0].constraints).toHaveProperty('isPositive');
+  });
+
+  it('rejects a negative value', async () => {
+    const dto = Object.assign(new AmountHolder(), { amount: -1 });
+    const errors = await validate(dto);
+    expect(errors[0].constraints).toHaveProperty('isPositive');
   });
 });

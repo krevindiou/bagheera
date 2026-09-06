@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from "@bagheera/money";
 import { z } from "zod";
 import { TRANSFER_PAYMENT_METHOD_IDS } from "../operations/operations.types";
 
@@ -16,7 +17,7 @@ export const schedulerSchema = z
     amount: z.preprocess(
       (value) =>
         value === "" || value === undefined || value === null ? undefined : Number(value),
-      z.number().positive(),
+      z.number().positive().max(AMOUNT_CEILING),
     ),
     categoryId: optionalId,
     paymentMethodId: z.string().uuid(),

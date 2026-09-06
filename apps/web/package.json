@@ -16,6 +16,7 @@
     "format": "prettier --write \"src/**/*.{ts,vue}\" \"e2e/**/*.ts\""
   },
   "dependencies": {
+    "@bagheera/money": "workspace:*",
     "@sentry/vue": "^10.70.0",
     "@simplewebauthn/browser": "^14.0.0",
     "@tanstack/vue-query": "^5.101.4",

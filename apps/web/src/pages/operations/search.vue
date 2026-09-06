@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AMOUNT_CEILING } from "@bagheera/money";
 import { ref, watch } from "vue";
 import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
 import { categoryLabel } from "./operations.types";
@@ -208,6 +209,7 @@ function onClear() {
           type="number"
           inputmode="decimal"
           step="0.01"
+          :max="AMOUNT_CEILING"
           class="form-control"
           :aria-label="$t('operations.search.amount')"
         />
@@ -229,6 +231,7 @@ function onClear() {
           type="number"
           inputmode="decimal"
           step="0.01"
+          :max="AMOUNT_CEILING"
           class="form-control"
           :aria-label="$t('operations.search.amount')"
         />
