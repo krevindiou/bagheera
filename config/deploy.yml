@@ -97,7 +97,11 @@ accessories:
   api:
     image: <%= ENV.fetch("API_IMAGE") %>
     host: <%= ENV.fetch("DEPLOY_HOST") %>
-    port: "3000"
+    # Loopback-only, like postgres/valkey above — Caddy reaches this
+    # accessory over the internal Docker network via "api:3000" regardless
+    # of any host-published port; this is for host-side debugging only
+    # (e.g. `curl localhost:3000/health` from the deploy host).
+    port: "127.0.0.1:3000:3000"
     env:
       clear:
         PORT: "3000"
