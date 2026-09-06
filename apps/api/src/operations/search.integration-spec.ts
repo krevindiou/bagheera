@@ -11,7 +11,8 @@ import {
   IntegrationDb,
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
-import { account, bank, member, operation } from '../db/schema';
+import { account, bank, category, member, operation } from '../db/schema';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -185,8 +186,8 @@ describe('operations search (integration)', () => {
 
   type OpOverrides = Partial<{
     thirdParty: string;
-    categoryId: number;
-    paymentMethodId: number;
+    categoryId: string;
+    paymentMethodId: string;
     debit: number | null;
     credit: number | null;
     valueDate: string;
@@ -194,13 +195,28 @@ describe('operations search (integration)', () => {
     reconciled: boolean;
   }>;
 
-  async function insertOperation(accountId: number, overrides: OpOverrides) {
+  // Test-local category, independent of the fixed reference-data set — only
+  // Salary has a stable id there, so a test needing "some debit category"
+  // mints its own instead of relying on any other seeded id.
+  async function insertCategory(type: 'debit' | 'credit') {
+    const [row] = await ctx.db
+      .insert(category)
+      .values({
+        name: `Test ${type} ${Math.random().toString(36).slice(2, 8)}`,
+        type,
+      })
+      .returning();
+    return row;
+  }
+
+  async function insertOperation(accountId: string, overrides: OpOverrides) {
     const [row] = await ctx.db
       .insert(operation)
       .values({
         accountId,
         thirdParty: overrides.thirdParty ?? 'Third Party',
-        paymentMethodId: overrides.paymentMethodId ?? 1,
+        paymentMethodId:
+          overrides.paymentMethodId ?? PAYMENT_METHOD_ID.CREDIT_CARD,
         categoryId: overrides.categoryId,
         // overrides carries plain, already-minor-units literals from callers;
         // brand them here, the one spot that needs to satisfy Drizzle's typed column.
@@ -218,10 +234,11 @@ describe('operations search (integration)', () => {
 
   async function seedFixtures(email: string) {
     const { account: acc } = await createOwnedAccount(email);
+    const groceryCategory = await insertCategory('debit');
     const grocery = await insertOperation(acc.id, {
       thirdParty: 'Grocery Store',
-      categoryId: 6, // Food (debit)
-      paymentMethodId: 1,
+      categoryId: groceryCategory.id,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       debit: 42_5000,
       credit: null,
       valueDate: '2026-01-10',
@@ -230,15 +247,15 @@ describe('operations search (integration)', () => {
     });
     const salary = await insertOperation(acc.id, {
       thirdParty: 'Employer Inc',
-      categoryId: 1, // Salary (credit)
-      paymentMethodId: 7,
+      categoryId: SALARY_CATEGORY_SEED_ID,
+      paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
       debit: null,
       credit: 2000_0000,
       valueDate: '2026-01-05',
       notes: 'monthly pay',
       reconciled: false,
     });
-    return { acc, grocery, salary };
+    return { acc, grocery, groceryCategory, salary };
   }
 
   it('filters by type', async () => {
@@ -282,7 +299,7 @@ describe('operations search (integration)', () => {
   });
 
   it('filters by category and payment-method multi-select', async () => {
-    const { acc } = await seedFixtures('search3@example.com');
+    const { acc, groceryCategory } = await seedFixtures('search3@example.com');
     const { token, cookies } = await authedRequest(
       'search3@example.com',
       'password1',
@@ -293,7 +310,11 @@ describe('operations search (integration)', () => {
       .set('Cookie', cookies)
       .set('x-csrf-token', token)
       .set('X-Forwarded-Proto', 'https')
-      .send({ accountId: acc.id, categoryIds: [1, 6], paymentMethodIds: [7] });
+      .send({
+        accountId: acc.id,
+        categoryIds: [SALARY_CATEGORY_SEED_ID, groceryCategory.id],
+        paymentMethodIds: [PAYMENT_METHOD_ID.DEPOSIT],
+      });
 
     expect(res.status).toBe(200);
     const body = res.body as { items: { thirdParty: string }[] };

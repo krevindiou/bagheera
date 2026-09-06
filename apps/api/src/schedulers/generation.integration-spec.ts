@@ -12,6 +12,7 @@ import { AuthModule } from '../auth/auth.module';
 import { BanksModule } from '../banks/banks.module';
 import { DbModule } from '../db/db.module';
 import { account, bank, member, operation, scheduler } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   connectIntegrationDb,
   IntegrationDb,
@@ -192,7 +193,7 @@ describe('scheduler generation (integration)', () => {
         accountId: overrides.accountId!,
         thirdParty: 'Landlord',
         debit: 9000000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2020-01-15',
         frequencyValue: 1,
         frequencyUnit: 'month',
@@ -202,7 +203,7 @@ describe('scheduler generation (integration)', () => {
     return row;
   }
 
-  function operationsFor(schedulerId: number, accountId?: number) {
+  function operationsFor(schedulerId: string, accountId?: string) {
     return ctx.db
       .select()
       .from(operation)
@@ -217,7 +218,7 @@ describe('scheduler generation (integration)', () => {
   // Deleting a paired operation must first clear both sides' cross-links —
   // the transfer FK forbids deleting a row another operation still points
   // at — mirroring what the real batch-delete path does before removal.
-  async function deletePairedOperation(id: number) {
+  async function deletePairedOperation(id: string) {
     const [row] = await ctx.db
       .select()
       .from(operation)
@@ -271,13 +272,13 @@ describe('scheduler generation (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 900,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2020-01-15',
         frequencyValue: 1,
       })
       .expect(200);
 
-    const created = (res.body as { scheduler: { id: number } }).scheduler;
+    const created = (res.body as { scheduler: { id: string } }).scheduler;
     const ops = await ctx.db
       .select()
       .from(operation)
@@ -359,7 +360,7 @@ describe('scheduler generation (integration)', () => {
       .returning();
     const s = await insertScheduler({
       accountId: source.id,
-      paymentMethodId: 4, // Transfer, debit
+      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT, // Transfer, debit
       transferAccountId: target.id,
       valueDate: '2025-11-01',
     });
@@ -404,7 +405,7 @@ describe('scheduler generation (integration)', () => {
       .where(eq(account.id, target.id));
     const s = await insertScheduler({
       accountId: source.id,
-      paymentMethodId: 4,
+      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
       transferAccountId: target.id,
       valueDate: '2025-11-01',
     });
@@ -428,7 +429,7 @@ describe('scheduler generation (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 900,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2025-11-01',
         frequencyValue: 1,
       })
@@ -454,7 +455,7 @@ describe('scheduler generation (integration)', () => {
       .returning();
     const s = await insertScheduler({
       accountId: source.id,
-      paymentMethodId: 4,
+      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
       transferAccountId: target.id,
       valueDate: '2025-11-01',
     });

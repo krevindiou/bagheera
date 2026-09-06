@@ -12,6 +12,7 @@ import {
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
 import { account, bank, member, operation, scheduler } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -51,8 +52,8 @@ function cookiePair(setCookieHeader: string): string {
   return setCookieHeader.split(';')[0];
 }
 
-const TRANSFER_DEBIT = 4;
-const TRANSFER_CREDIT = 6;
+const TRANSFER_DEBIT = PAYMENT_METHOD_ID.TRANSFER_DEBIT;
+const TRANSFER_CREDIT = PAYMENT_METHOD_ID.TRANSFER_CREDIT;
 
 describe('transfer pairing (integration)', () => {
   let app: NestExpressApplication;
@@ -195,7 +196,7 @@ describe('transfer pairing (integration)', () => {
     return { owner, bank: ownerBank, accounts: rows };
   }
 
-  async function fetchOperation(id: number) {
+  async function fetchOperation(id: string) {
     const [row] = await ctx.db
       .select()
       .from(operation)
@@ -231,7 +232,7 @@ describe('transfer pairing (integration)', () => {
       });
 
     expect(res.status).toBe(200);
-    const created = (res.body as { operation: { id: number } }).operation;
+    const created = (res.body as { operation: { id: string } }).operation;
     const sourceRow = await fetchOperation(created.id);
     expect(sourceRow.transferAccountId).toBe(target.id);
     expect(sourceRow.transferOperationId).not.toBeNull();
@@ -330,7 +331,7 @@ describe('transfer pairing (integration)', () => {
       });
 
     expect(res.status).toBe(200);
-    const created = (res.body as { operation: { id: number } }).operation;
+    const created = (res.body as { operation: { id: string } }).operation;
     const row = await fetchOperation(created.id);
     expect(row.transferAccountId).toBeNull();
     expect(row.transferOperationId).toBeNull();
@@ -364,7 +365,7 @@ describe('transfer pairing (integration)', () => {
         reconciled: true,
       });
     expect(createRes.status).toBe(200);
-    const created = (createRes.body as { operation: { id: number } }).operation;
+    const created = (createRes.body as { operation: { id: string } }).operation;
     const sourceRow = await fetchOperation(created.id);
     const mirrorId = sourceRow.transferOperationId!;
 
@@ -423,7 +424,7 @@ describe('transfer pairing (integration)', () => {
         paymentMethodId: TRANSFER_DEBIT,
         transferAccountId: targetA.id,
       });
-    const created = (createRes.body as { operation: { id: number } }).operation;
+    const created = (createRes.body as { operation: { id: string } }).operation;
     const beforeRow = await fetchOperation(created.id);
     const originalMirrorId = beforeRow.transferOperationId!;
 
@@ -479,7 +480,7 @@ describe('transfer pairing (integration)', () => {
         paymentMethodId: TRANSFER_DEBIT,
         transferAccountId: target.id,
       });
-    const created = (createRes.body as { operation: { id: number } }).operation;
+    const created = (createRes.body as { operation: { id: string } }).operation;
     const beforeRow = await fetchOperation(created.id);
     const mirrorId = beforeRow.transferOperationId!;
 
@@ -495,7 +496,7 @@ describe('transfer pairing (integration)', () => {
         type: 'debit',
         thirdParty: 'Unlink me',
         amount: 15,
-        paymentMethodId: 1, // no longer a transfer method
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD, // no longer a transfer method
         valueDate: '2026-01-10',
       });
     expect(editRes.status).toBe(200);
@@ -531,7 +532,7 @@ describe('transfer pairing (integration)', () => {
         paymentMethodId: TRANSFER_DEBIT,
         transferAccountId: target.id,
       });
-    const created = (createRes.body as { operation: { id: number } }).operation;
+    const created = (createRes.body as { operation: { id: string } }).operation;
     const sourceRow = await fetchOperation(created.id);
     const mirrorId = sourceRow.transferOperationId!;
 
@@ -577,7 +578,7 @@ describe('transfer pairing (integration)', () => {
         paymentMethodId: TRANSFER_DEBIT,
         transferAccountId: target.id,
       });
-    const created = (createRes.body as { operation: { id: number } }).operation;
+    const created = (createRes.body as { operation: { id: string } }).operation;
     const sourceRow = await fetchOperation(created.id);
 
     await ctx.db.insert(scheduler).values({

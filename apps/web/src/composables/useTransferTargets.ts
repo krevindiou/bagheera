@@ -12,10 +12,10 @@ import type { Account, Bank } from "../pages/accounts/accounts.types";
  * source-account lookup.
  */
 export function useTransferTargets(
-  accountId: () => number,
+  accountId: () => string,
   accounts: () => Account[],
   banks: () => Bank[],
-  currentTransferAccountId: () => number | null | undefined,
+  currentTransferAccountId: () => string | null | undefined,
 ) {
   const sourceCurrency = computed(() => accounts().find((a) => a.id === accountId())?.currency);
   const bankById = computed(() => new Map(banks().map((b) => [b.id, b])));

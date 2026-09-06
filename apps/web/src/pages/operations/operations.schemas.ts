@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const optionalId = z.preprocess(
-  (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
-  z.number().int().positive().optional(),
+  (value) => (value === "" || value === undefined || value === null ? undefined : value),
+  z.string().uuid().optional(),
 );
 
 // Field rules mirror the API DTOs (apps/api/src/operations/dto/*). The
@@ -17,10 +17,7 @@ export const operationSchema = z.object({
     z.number().positive(),
   ),
   categoryId: optionalId,
-  paymentMethodId: z.preprocess(
-    (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
-    z.number().int().positive(),
-  ),
+  paymentMethodId: z.string().uuid(),
   transferAccountId: optionalId,
   valueDate: z.string().min(1),
   notes: z.string().max(4096).optional(),

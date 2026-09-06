@@ -62,9 +62,9 @@ export class ReportChartService {
   // accounts of deleted banks are excluded — including accounts that were
   // explicitly selected before being deleted.
   private async effectiveAccounts(
-    reportId: number,
-    memberId: number,
-  ): Promise<{ id: number; currency: string }[]> {
+    reportId: string,
+    memberId: string,
+  ): Promise<{ id: string; currency: string }[]> {
     // "None selected" means no link rows at all — a selection that's been
     // narrowed to nothing by exclusion (e.g. every linked account has
     // since been deleted) does NOT fall back to "all accounts".
@@ -101,7 +101,7 @@ export class ReportChartService {
       );
   }
 
-  async getChart(req: Request, id: number): Promise<ReportChart> {
+  async getChart(req: Request, id: string): Promise<ReportChart> {
     const memberId = requireMemberId(req);
     const rpt = await this.ownership.requireOwnedReport(id, memberId);
     return this.computeChart(rpt, memberId);
@@ -112,7 +112,7 @@ export class ReportChartService {
   // owns, without a second ownership round-trip.
   async computeChart(
     rpt: typeof report.$inferSelect,
-    memberId: number,
+    memberId: string,
   ): Promise<ReportChart> {
     const accounts = await this.effectiveAccounts(rpt.id, memberId);
     if (accounts.length === 0) {

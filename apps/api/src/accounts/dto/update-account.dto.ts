@@ -1,4 +1,4 @@
-import { IsIn, IsInt, Min } from 'class-validator';
+import { IsIn, IsUUID } from 'class-validator';
 import { AccountNameField } from '../../common/dto-fields';
 import { ISO_CURRENCY_CODES } from '../../common/currency';
 
@@ -9,9 +9,8 @@ export class UpdateAccountDto {
   @AccountNameField()
   name!: string;
 
-  @IsInt()
-  @Min(1)
-  bankId!: number;
+  @IsUUID('7')
+  bankId!: string;
 
   @IsIn(ISO_CURRENCY_CODES)
   currency!: string;

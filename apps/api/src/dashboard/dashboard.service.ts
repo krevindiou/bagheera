@@ -10,6 +10,7 @@ import {
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
+import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { MinorUnits } from '../common/money';
 import { ReportChart, ReportChartService } from '../reports/chart.service';
 import { requireMemberId } from '../session/require-member-id';
@@ -28,13 +29,13 @@ export interface DashboardIndicator {
 }
 
 export interface AccountsOverviewBank {
-  id: number;
+  id: string;
   name: string;
-  accounts: { id: number; name: string; currency: string; balance: number }[];
+  accounts: { id: string; name: string; currency: string; balance: number }[];
 }
 
 export interface HomepageReportChart {
-  id: number;
+  id: string;
   title: string;
   chart: ReportChart;
 }
@@ -90,8 +91,8 @@ export class DashboardService {
   ) {}
 
   private async balancesByAccount(
-    accountIds: number[],
-  ): Promise<Map<number, MinorUnits>> {
+    accountIds: string[],
+  ): Promise<Map<string, MinorUnits>> {
     if (accountIds.length === 0) {
       return new Map();
     }
@@ -247,17 +248,20 @@ export class DashboardService {
   }
 
   private async getLastSalary(
-    fullyActiveAccountIds: number[],
+    fullyActiveAccountIds: string[],
     accounts: (typeof account.$inferSelect)[],
   ): Promise<DashboardIndicator | null> {
     if (fullyActiveAccountIds.length === 0) {
       return null;
     }
-    const salaryCategoryId = this.config.get<string>('SALARY_CATEGORY_ID', '1');
+    const salaryCategoryId = this.config.get<string>(
+      'SALARY_CATEGORY_ID',
+      SALARY_CATEGORY_SEED_ID,
+    );
     const [salaryCategory] = await this.db
       .select()
       .from(category)
-      .where(eq(category.id, Number(salaryCategoryId)));
+      .where(eq(category.id, salaryCategoryId));
     if (!salaryCategory) {
       return null;
     }
@@ -285,7 +289,7 @@ export class DashboardService {
   }
 
   private async getLastBiggestExpense(
-    fullyActiveAccountIds: number[],
+    fullyActiveAccountIds: string[],
     accounts: (typeof account.$inferSelect)[],
   ): Promise<DashboardIndicator | null> {
     if (fullyActiveAccountIds.length === 0) {
@@ -310,9 +314,10 @@ export class DashboardService {
     }
 
     // Largest raw stored (minor-unit) amount wins, no currency conversion;
-    // deterministic tie-break by operation id.
+    // deterministic tie-break by operation id — UUIDv7 ids sort
+    // lexicographically in creation order, so a plain string compare works.
     const winner = rows.sort((a, b) =>
-      b.debit! !== a.debit! ? b.debit! - a.debit! : a.id - b.id,
+      b.debit! !== a.debit! ? b.debit! - a.debit! : a.id.localeCompare(b.id),
     )[0];
     const currency = accounts.find((a) => a.id === winner.accountId)!.currency;
     return {
@@ -323,7 +328,7 @@ export class DashboardService {
   }
 
   private async getHomepageReports(
-    memberId: number,
+    memberId: string,
   ): Promise<HomepageReportChart[]> {
     const homepageReports = await this.db
       .select()

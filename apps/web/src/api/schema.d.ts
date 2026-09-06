@@ -751,14 +751,18 @@ export interface components {
             newPasswordConfirmation: string;
         };
         CreateSchedulerDto: {
-            accountId: number;
+            /** Format: uuid */
+            accountId: string;
             /** @enum {string} */
             type: "debit" | "credit";
             thirdParty: string;
             amount: number;
-            categoryId?: number;
-            paymentMethodId: number;
-            transferAccountId?: number;
+            /** Format: uuid */
+            categoryId?: string;
+            /** Format: uuid */
+            paymentMethodId: string;
+            /** Format: uuid */
+            transferAccountId?: string;
             valueDate: string;
             notes?: string;
             reconciled?: boolean;
@@ -769,14 +773,18 @@ export interface components {
             active?: boolean;
         };
         UpdateSchedulerDto: {
-            accountId: number;
+            /** Format: uuid */
+            accountId: string;
             /** @enum {string} */
             type: "debit" | "credit";
             thirdParty: string;
             amount: number;
-            categoryId?: number;
-            paymentMethodId: number;
-            transferAccountId?: number;
+            /** Format: uuid */
+            categoryId?: string;
+            /** Format: uuid */
+            paymentMethodId: string;
+            /** Format: uuid */
+            transferAccountId?: string;
             valueDate: string;
             notes?: string;
             reconciled?: boolean;
@@ -787,30 +795,38 @@ export interface components {
             active?: boolean;
         };
         BatchIdsDto: {
-            ids: number[];
+            ids: string[];
         };
         CreateOperationDto: {
-            accountId: number;
+            /** Format: uuid */
+            accountId: string;
             /** @enum {string} */
             type: "debit" | "credit";
             thirdParty: string;
             amount: number;
-            categoryId?: number;
-            paymentMethodId: number;
-            transferAccountId?: number;
+            /** Format: uuid */
+            categoryId?: string;
+            /** Format: uuid */
+            paymentMethodId: string;
+            /** Format: uuid */
+            transferAccountId?: string;
             valueDate?: string;
             notes?: string;
             reconciled?: boolean;
         };
         UpdateOperationDto: {
-            accountId: number;
+            /** Format: uuid */
+            accountId: string;
             /** @enum {string} */
             type: "debit" | "credit";
             thirdParty: string;
             amount: number;
-            categoryId?: number;
-            paymentMethodId: number;
-            transferAccountId?: number;
+            /** Format: uuid */
+            categoryId?: string;
+            /** Format: uuid */
+            paymentMethodId: string;
+            /** Format: uuid */
+            transferAccountId?: string;
             valueDate: string;
             notes?: string;
             reconciled?: boolean;
@@ -821,12 +837,13 @@ export interface components {
             value: number;
         };
         SearchOperationsDto: {
-            accountId: number;
+            /** Format: uuid */
+            accountId: string;
             /** @enum {string} */
             type?: "debit" | "credit";
             thirdParty?: string;
-            categoryIds?: number[];
-            paymentMethodIds?: number[];
+            categoryIds?: string[];
+            paymentMethodIds?: string[];
             amountComparators?: components["schemas"]["AmountComparatorDto"][];
             dateFrom?: string;
             dateTo?: string;
@@ -844,14 +861,16 @@ export interface components {
             response: Record<string, never>;
         };
         ChooseBankDto: {
-            bankId?: number;
+            /** Format: uuid */
+            bankId?: string;
             name?: string;
         };
         UpdateBankDto: {
             name: string;
         };
         CreateAccountDto: {
-            bankId: number;
+            /** Format: uuid */
+            bankId: string;
             name: string;
             /** @enum {string} */
             currency: "AED" | "AFN" | "ALL" | "AMD" | "ANG" | "AOA" | "ARS" | "AUD" | "AWG" | "AZN" | "BAM" | "BBD" | "BDT" | "BGN" | "BHD" | "BIF" | "BMD" | "BND" | "BOB" | "BRL" | "BSD" | "BTN" | "BWP" | "BYN" | "BZD" | "CAD" | "CDF" | "CHF" | "CLP" | "CNY" | "COP" | "CRC" | "CUC" | "CUP" | "CVE" | "CZK" | "DJF" | "DKK" | "DOP" | "DZD" | "EGP" | "ERN" | "ETB" | "EUR" | "FJD" | "FKP" | "GBP" | "GEL" | "GHS" | "GIP" | "GMD" | "GNF" | "GTQ" | "GYD" | "HKD" | "HNL" | "HRK" | "HTG" | "HUF" | "IDR" | "ILS" | "INR" | "IQD" | "IRR" | "ISK" | "JMD" | "JOD" | "JPY" | "KES" | "KGS" | "KHR" | "KMF" | "KPW" | "KRW" | "KWD" | "KYD" | "KZT" | "LAK" | "LBP" | "LKR" | "LRD" | "LSL" | "LYD" | "MAD" | "MDL" | "MGA" | "MKD" | "MMK" | "MNT" | "MOP" | "MRU" | "MUR" | "MVR" | "MWK" | "MXN" | "MYR" | "MZN" | "NAD" | "NGN" | "NIO" | "NOK" | "NPR" | "NZD" | "OMR" | "PAB" | "PEN" | "PGK" | "PHP" | "PKR" | "PLN" | "PYG" | "QAR" | "RON" | "RSD" | "RUB" | "RWF" | "SAR" | "SBD" | "SCR" | "SDG" | "SEK" | "SGD" | "SHP" | "SLE" | "SLL" | "SOS" | "SRD" | "SSP" | "STN" | "SVC" | "SYP" | "SZL" | "THB" | "TJS" | "TMT" | "TND" | "TOP" | "TRY" | "TTD" | "TWD" | "TZS" | "UAH" | "UGX" | "USD" | "UYU" | "UZS" | "VES" | "VND" | "VUV" | "WST" | "XAF" | "XCD" | "XCG" | "XDR" | "XOF" | "XPF" | "XSU" | "YER" | "ZAR" | "ZMW" | "ZWG" | "ZWL";
@@ -859,7 +878,8 @@ export interface components {
         };
         UpdateAccountDto: {
             name: string;
-            bankId: number;
+            /** Format: uuid */
+            bankId: string;
             /** @enum {string} */
             currency: "AED" | "AFN" | "ALL" | "AMD" | "ANG" | "AOA" | "ARS" | "AUD" | "AWG" | "AZN" | "BAM" | "BBD" | "BDT" | "BGN" | "BHD" | "BIF" | "BMD" | "BND" | "BOB" | "BRL" | "BSD" | "BTN" | "BWP" | "BYN" | "BZD" | "CAD" | "CDF" | "CHF" | "CLP" | "CNY" | "COP" | "CRC" | "CUC" | "CUP" | "CVE" | "CZK" | "DJF" | "DKK" | "DOP" | "DZD" | "EGP" | "ERN" | "ETB" | "EUR" | "FJD" | "FKP" | "GBP" | "GEL" | "GHS" | "GIP" | "GMD" | "GNF" | "GTQ" | "GYD" | "HKD" | "HNL" | "HRK" | "HTG" | "HUF" | "IDR" | "ILS" | "INR" | "IQD" | "IRR" | "ISK" | "JMD" | "JOD" | "JPY" | "KES" | "KGS" | "KHR" | "KMF" | "KPW" | "KRW" | "KWD" | "KYD" | "KZT" | "LAK" | "LBP" | "LKR" | "LRD" | "LSL" | "LYD" | "MAD" | "MDL" | "MGA" | "MKD" | "MMK" | "MNT" | "MOP" | "MRU" | "MUR" | "MVR" | "MWK" | "MXN" | "MYR" | "MZN" | "NAD" | "NGN" | "NIO" | "NOK" | "NPR" | "NZD" | "OMR" | "PAB" | "PEN" | "PGK" | "PHP" | "PKR" | "PLN" | "PYG" | "QAR" | "RON" | "RSD" | "RUB" | "RWF" | "SAR" | "SBD" | "SCR" | "SDG" | "SEK" | "SGD" | "SHP" | "SLE" | "SLL" | "SOS" | "SRD" | "SSP" | "STN" | "SVC" | "SYP" | "SZL" | "THB" | "TJS" | "TMT" | "TND" | "TOP" | "TRY" | "TTD" | "TWD" | "TZS" | "UAH" | "UGX" | "USD" | "UYU" | "UZS" | "VES" | "VND" | "VUV" | "WST" | "XAF" | "XCD" | "XCG" | "XDR" | "XOF" | "XPF" | "XSU" | "YER" | "ZAR" | "ZMW" | "ZWG" | "ZWL";
         };
@@ -871,7 +891,7 @@ export interface components {
             valueDateStart?: string;
             valueDateEnd?: string;
             thirdParties?: string;
-            accountIds?: number[];
+            accountIds?: string[];
             reconciledOnly?: boolean;
             /** @enum {string} */
             periodGrouping: "month" | "quarter" | "year" | "all";
@@ -884,7 +904,7 @@ export interface components {
             valueDateStart?: string;
             valueDateEnd?: string;
             thirdParties?: string;
-            accountIds?: number[];
+            accountIds?: string[];
             reconciledOnly?: boolean;
             /** @enum {string} */
             periodGrouping: "month" | "quarter" | "year" | "all";
@@ -1158,7 +1178,7 @@ export interface operations {
     SchedulerController_list: {
         parameters: {
             query: {
-                accountId: number;
+                accountId: string;
                 page?: string;
             };
             header?: never;
@@ -1201,7 +1221,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1220,7 +1240,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1262,7 +1282,7 @@ export interface operations {
     OperationController_list: {
         parameters: {
             query: {
-                accountId: number;
+                accountId: string;
                 page?: string;
             };
             header?: never;
@@ -1305,7 +1325,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1368,7 +1388,7 @@ export interface operations {
     OperationSearchController_recall: {
         parameters: {
             query: {
-                accountId: number;
+                accountId: string;
                 page?: string;
             };
             header?: never;
@@ -1411,7 +1431,7 @@ export interface operations {
     OperationSearchController_clear: {
         parameters: {
             query: {
-                accountId: number;
+                accountId: string;
             };
             header?: never;
             path?: never;
@@ -1557,7 +1577,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1616,7 +1636,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1635,7 +1655,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1658,7 +1678,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1717,7 +1737,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1738,7 +1758,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1757,7 +1777,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1776,7 +1796,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1799,7 +1819,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1894,7 +1914,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1915,7 +1935,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };
@@ -1934,7 +1954,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                id: number;
+                id: string;
             };
             cookie?: never;
         };

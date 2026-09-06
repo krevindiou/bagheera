@@ -16,7 +16,7 @@ export const reportSchema = z.object({
     (value) => (value === "" ? undefined : value),
     z.string().max(255).optional(),
   ),
-  accountIds: z.array(z.number()).optional(),
+  accountIds: z.array(z.string()).optional(),
   reconciledOnly: z.boolean().optional(),
   periodGrouping: z.enum(["month", "quarter", "year", "all"]),
 });

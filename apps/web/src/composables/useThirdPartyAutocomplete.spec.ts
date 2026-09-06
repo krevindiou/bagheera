@@ -47,7 +47,7 @@ describe("useThirdPartyAutocomplete", () => {
 
   it("reports an exact match's category back via onExactMatch", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ thirdParty: "Landlord", categoryId: 7 }],
+      data: [{ thirdParty: "Landlord", categoryId: "7" }],
       response: { ok: true },
     } as never);
     const thirdParty = ref("");
@@ -59,12 +59,12 @@ describe("useThirdPartyAutocomplete", () => {
     await flushPromises();
     await new Promise((resolve) => setTimeout(resolve, 350));
 
-    expect(onExactMatch).toHaveBeenCalledWith(7);
+    expect(onExactMatch).toHaveBeenCalledWith("7");
   });
 
   it("does not report a non-exact match", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ thirdParty: "Landlord", categoryId: 7 }],
+      data: [{ thirdParty: "Landlord", categoryId: "7" }],
       response: { ok: true },
     } as never);
     const thirdParty = ref("");

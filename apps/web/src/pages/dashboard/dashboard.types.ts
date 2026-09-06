@@ -17,20 +17,20 @@ export interface DashboardIndicator {
 }
 
 export interface AccountsOverviewAccount {
-  id: number;
+  id: string;
   name: string;
   currency: string;
   balance: number;
 }
 
 export interface AccountsOverviewBank {
-  id: number;
+  id: string;
   name: string;
   accounts: AccountsOverviewAccount[];
 }
 
 export interface HomepageReportChart {
-  id: number;
+  id: string;
   title: string;
   chart: ReportChart;
 }

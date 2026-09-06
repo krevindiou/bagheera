@@ -153,7 +153,7 @@ describe('security event audit logging (integration)', () => {
     return row;
   }
 
-  async function eventsFor(eventType: string, memberId?: number) {
+  async function eventsFor(eventType: string, memberId?: string) {
     return ctx.db
       .select()
       .from(securityEvent)

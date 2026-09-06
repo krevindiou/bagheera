@@ -21,7 +21,7 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    accountId: number;
+    accountId: string;
     categories: Category[];
     paymentMethods: PaymentMethod[];
     accounts: Account[];
@@ -47,7 +47,7 @@ function initialValues(): OperationForm {
       thirdParty: "",
       amount: undefined as unknown as number,
       categoryId: undefined,
-      paymentMethodId: undefined as unknown as number,
+      paymentMethodId: undefined as unknown as string,
       transferAccountId: undefined,
       valueDate: today(),
       notes: "",
@@ -97,7 +97,7 @@ const { transferTargets, amountCurrencySymbol } = useTransferTargets(
   () => props.operation?.transferAccountId,
 );
 const showTransferAccount = computed(() =>
-  TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
+  TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
 );
 
 const amountInput = ref<HTMLInputElement | null>(null);

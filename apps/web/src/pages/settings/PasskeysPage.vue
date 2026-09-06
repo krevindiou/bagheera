@@ -14,7 +14,7 @@ import ToastContainer from "../../components/ToastContainer.vue";
 // generated client types these bodies as an opaque `Record<string, never>`
 // — cast at the boundary rather than widening the real API contract.
 interface PasskeySummary {
-  id: number;
+  id: string;
   deviceName: string | null;
   createdAt: string;
   lastUsedAt: string | null;
@@ -80,7 +80,7 @@ async function addPasskey() {
   }
 }
 
-async function removePasskey(id: number) {
+async function removePasskey(id: string) {
   if (!(await confirm())) return;
   const { response } = await apiClient.DELETE("/webauthn/credentials/{id}", {
     params: { path: { id } },

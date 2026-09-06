@@ -21,7 +21,7 @@ export async function seedDatabase(db: Db): Promise<void> {
 async function insertCategories(
   db: Db,
   seeds: CategorySeed[],
-  parentId: number | null,
+  parentId: string | null,
 ): Promise<void> {
   for (const seed of seeds) {
     const [existing] = await db
@@ -43,6 +43,7 @@ async function insertCategories(
         await db
           .insert(category)
           .values({
+            id: seed.id,
             name: seed.name,
             type: seed.type,
             parentId,

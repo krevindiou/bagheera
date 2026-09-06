@@ -1,16 +1,16 @@
 import {
   boolean,
-  integer,
   pgTable,
-  serial,
   timestamp,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { uuidPk } from './id';
 import { member } from './member';
 
 export const bank = pgTable('bank', {
-  id: serial('id').primaryKey(),
-  memberId: integer('member_id')
+  id: uuidPk(),
+  memberId: uuid('member_id')
     .notNull()
     .references(() => member.id),
   name: varchar('name', { length: 32 }).notNull(),

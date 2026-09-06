@@ -12,7 +12,7 @@ import { SchedulerGenerationService } from '../schedulers/generation.service';
 export class SchedulerCatchUpService {
   constructor(private readonly generation: SchedulerGenerationService) {}
 
-  catchUp(memberId: number): Promise<void> {
+  catchUp(memberId: string): Promise<void> {
     return this.generation.catchUpMember(memberId);
   }
 }

@@ -110,11 +110,17 @@ describe('sign-out (integration)', () => {
   });
 
   it('terminateOtherSessions removes every session for the member except the excepted one', async () => {
-    await redis.set('sess:keep-me', JSON.stringify({ memberId: 42 }));
-    await redis.set('sess:remove-me', JSON.stringify({ memberId: 42 }));
-    await redis.set('sess:other-member', JSON.stringify({ memberId: 99 }));
+    await redis.set('sess:keep-me', JSON.stringify({ memberId: 'member-42' }));
+    await redis.set(
+      'sess:remove-me',
+      JSON.stringify({ memberId: 'member-42' }),
+    );
+    await redis.set(
+      'sess:other-member',
+      JSON.stringify({ memberId: 'member-99' }),
+    );
 
-    await terminationService.terminateOtherSessions(42, 'keep-me');
+    await terminationService.terminateOtherSessions('member-42', 'keep-me');
 
     expect(await redis.exists('sess:keep-me')).toBe(1);
     expect(await redis.exists('sess:remove-me')).toBe(0);

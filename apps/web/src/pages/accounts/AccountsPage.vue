@@ -50,15 +50,15 @@ async function reload() {
 // "New account" starts with a bank-choice step; only once a bank is
 // chosen/created does account creation, pre-scoped to it, show.
 const creationStep = ref<"closed" | "bank-choice" | "account">("closed");
-const chosenBankId = ref<number | null>(null);
-const editingBankId = ref<number | null>(null);
-const editingAccountId = ref<number | null>(null);
+const chosenBankId = ref<string | null>(null);
+const editingBankId = ref<string | null>(null);
+const editingAccountId = ref<string | null>(null);
 
 function startCreateAccount() {
   creationStep.value = "bank-choice";
 }
 
-async function onBankChosen(bankId: number) {
+async function onBankChosen(bankId: string) {
   // Reload so a freshly created bank is in `banks` (and thus in the
   // account form's bank dropdown) before pre-selecting it.
   await reload();
@@ -90,7 +90,7 @@ watch(
   { immediate: true },
 );
 
-function accountsForBank(bankId: number) {
+function accountsForBank(bankId: string) {
   return accounts.value.filter((account) => account.bankId === bankId);
 }
 
@@ -193,7 +193,7 @@ function goToAccount(account: Account) {
   router.push({ name: "operations", params: { accountId: account.id } });
 }
 
-async function onAccountCreated(accountId: number) {
+async function onAccountCreated(accountId: string) {
   creationStep.value = "closed";
   chosenBankId.value = null;
   router.push({ name: "operations", params: { accountId } });

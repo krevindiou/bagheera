@@ -13,7 +13,7 @@ import { seedDatabase } from '../src/db/seed';
 // keeps this module instance alive between setup and teardown), giving the
 // integration suite real Postgres/Valkey instances instead of a
 // developer-started `docker compose` pair.
-const POSTGRES_IMAGE = 'postgres:16-alpine';
+const POSTGRES_IMAGE = 'postgres:18-alpine';
 const VALKEY_IMAGE = 'valkey/valkey:8-alpine';
 const POSTGRES_USER = 'bagheera';
 const POSTGRES_PASSWORD = 'bagheera';

@@ -4,18 +4,18 @@ import {
   boolean,
   check,
   date,
-  integer,
   pgTable,
-  serial,
   smallint,
   text,
   timestamp,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { MinorUnits } from '../../common/money';
 import { account } from './account';
 import { category } from './category';
 import { frequencyUnitEnum } from './enums';
+import { uuidPk } from './id';
 import { paymentMethod } from './payment-method';
 
 // Same operation-like fields (value date = first occurrence) plus recurrence
@@ -23,15 +23,13 @@ import { paymentMethod } from './payment-method';
 export const scheduler = pgTable(
   'scheduler',
   {
-    id: serial('id').primaryKey(),
-    accountId: integer('account_id')
+    id: uuidPk(),
+    accountId: uuid('account_id')
       .notNull()
       .references(() => account.id),
-    transferAccountId: integer('transfer_account_id').references(
-      () => account.id,
-    ),
-    categoryId: integer('category_id').references(() => category.id),
-    paymentMethodId: integer('payment_method_id')
+    transferAccountId: uuid('transfer_account_id').references(() => account.id),
+    categoryId: uuid('category_id').references(() => category.id),
+    paymentMethodId: uuid('payment_method_id')
       .notNull()
       .references(() => paymentMethod.id),
     thirdParty: varchar('third_party', { length: 64 }).notNull(),

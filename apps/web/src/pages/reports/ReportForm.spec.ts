@@ -11,8 +11,8 @@ vi.mock("../../api/client", () => ({
 }));
 
 const accounts: Account[] = [
-  { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
-  { id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false },
+  { id: "1", bankId: "1", name: "Checking", currency: "USD", closed: false, deleted: false },
+  { id: "2", bankId: "1", name: "Savings", currency: "USD", closed: false, deleted: false },
 ];
 
 function mountForm() {
@@ -27,7 +27,7 @@ describe("ReportForm", () => {
 
   it("submits the selected account ids and period grouping", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
-      data: { message: "Report saved", report: { id: 1 } },
+      data: { message: "Report saved", report: { id: "1" } },
       response: { ok: true },
     } as never);
 
@@ -42,7 +42,7 @@ describe("ReportForm", () => {
       expect.objectContaining({
         body: expect.objectContaining({
           title: "Monthly spend",
-          accountIds: [1],
+          accountIds: ["1"],
           periodGrouping: "quarter",
         }),
       }),
@@ -51,7 +51,7 @@ describe("ReportForm", () => {
 
   it("submits reconciledOnly as true when checked, omitted when unchecked", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
-      data: { message: "Report saved", report: { id: 1 } },
+      data: { message: "Report saved", report: { id: "1" } },
       response: { ok: true },
     } as never);
 
@@ -70,7 +70,7 @@ describe("ReportForm", () => {
 
   it("prefills from an existing report when editing, keeping its type", async () => {
     vi.mocked(apiClient.PATCH).mockResolvedValue({
-      data: { message: "Report saved", report: { id: 5 } },
+      data: { message: "Report saved", report: { id: "5" } },
       response: { ok: true },
     } as never);
 
@@ -78,15 +78,15 @@ describe("ReportForm", () => {
       props: {
         accounts,
         report: {
-          id: 5,
-          memberId: 1,
+          id: "5",
+          memberId: "1",
           type: "average",
           title: "Existing",
           homepage: true,
           valueDateStart: null,
           valueDateEnd: null,
           thirdParties: null,
-          accountIds: [2],
+          accountIds: ["2"],
           reconciledOnly: true,
           periodGrouping: "year",
         },
@@ -111,7 +111,7 @@ describe("ReportForm", () => {
 
   it("defaults a new report's type to the creating button's choice", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
-      data: { message: "Report saved", report: { id: 1 } },
+      data: { message: "Report saved", report: { id: "1" } },
       response: { ok: true },
     } as never);
 

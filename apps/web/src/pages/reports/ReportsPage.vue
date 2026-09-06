@@ -39,8 +39,8 @@ async function reloadReports() {
 const showForm = ref(false);
 const createType = ref<"sum" | "average">("sum");
 const editingReport = ref<Report | null>(null);
-const viewingReportId = ref<number | null>(null);
-const selectedIds = ref<Set<number>>(new Set());
+const viewingReportId = ref<string | null>(null);
+const selectedIds = ref<Set<string>>(new Set());
 const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 watch(
@@ -52,7 +52,7 @@ watch(
 
 const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
 
-function toggleSelected(id: number) {
+function toggleSelected(id: string) {
   const next = new Set(selectedIds.value);
   if (next.has(id)) {
     next.delete(id);

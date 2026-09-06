@@ -1,18 +1,18 @@
 import {
   boolean,
-  integer,
   pgTable,
-  serial,
   timestamp,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { bank } from './bank';
+import { uuidPk } from './id';
 
 // Bank is immutable after creation — enforced at the application layer, not
 // the schema.
 export const account = pgTable('account', {
-  id: serial('id').primaryKey(),
-  bankId: integer('bank_id')
+  id: uuidPk(),
+  bankId: uuid('bank_id')
     .notNull()
     .references(() => bank.id),
   name: varchar('name', { length: 64 }).notNull(),

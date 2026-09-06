@@ -5,13 +5,13 @@ import SearchPanel from "./search.vue";
 import type { Category, PaymentMethod } from "./operations.types";
 
 const categories: Category[] = [
-  { id: 1, parentId: null, type: "debit", name: "Groceries" },
-  { id: 2, parentId: null, type: "credit", name: "Salary" },
+  { id: "1", parentId: null, type: "debit", name: "Groceries" },
+  { id: "2", parentId: null, type: "credit", name: "Salary" },
 ];
 
 const paymentMethods: PaymentMethod[] = [
-  { id: 1, name: "Credit card", type: "debit" },
-  { id: 5, name: "Check", type: "credit" },
+  { id: "1", name: "Credit card", type: "debit" },
+  { id: "5", name: "Check", type: "credit" },
 ];
 
 describe("SearchPanel", () => {

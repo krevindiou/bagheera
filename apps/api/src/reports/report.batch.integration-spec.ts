@@ -163,7 +163,7 @@ describe('report batch actions (integration)', () => {
     return { token, cookies };
   }
 
-  async function insertReport(memberId: number, title: string) {
+  async function insertReport(memberId: string, title: string) {
     const [row] = await ctx.db
       .insert(report)
       .values({ memberId, type: 'sum', title, periodGrouping: 'month' })
@@ -177,7 +177,8 @@ describe('report batch actions (integration)', () => {
 
     const owned = await insertReport(owner.id, 'Mine');
     const foreign = await insertReport(other.id, 'Not mine');
-    const nonexistentId = 999999;
+    // Well-formed UUIDv7 that matches no row.
+    const nonexistentId = '00000000-0000-7000-8000-00000000ffff';
 
     const { token, cookies } = await authedRequest(
       'rbatch1@example.com',

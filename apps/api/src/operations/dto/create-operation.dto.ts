@@ -2,18 +2,16 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
-  IsInt,
   IsNumber,
   IsOptional,
   IsPositive,
-  Min,
+  IsUUID,
 } from 'class-validator';
 import { NotesField, ThirdPartyField } from '../../common/dto-fields';
 
 export class CreateOperationDto {
-  @IsInt()
-  @Min(1)
-  accountId!: number;
+  @IsUUID('7')
+  accountId!: string;
 
   // Radio Debit / Credit; drives the debit/credit column exclusivity
   // and the server-side type-filtered category/payment-method validation.
@@ -30,20 +28,17 @@ export class CreateOperationDto {
   amount!: number;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  categoryId?: number;
+  @IsUUID('7')
+  categoryId?: string;
 
-  @IsInt()
-  @Min(1)
-  paymentMethodId!: number;
+  @IsUUID('7')
+  paymentMethodId!: string;
 
   // Visible/meaningful only when the payment method is a transfer method;
   // discarded server-side otherwise. No pairing/mirroring yet.
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  transferAccountId?: number;
+  @IsUUID('7')
+  transferAccountId?: string;
 
   // Defaults to today (schema default) when omitted.
   @IsOptional()

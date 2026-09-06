@@ -1,15 +1,15 @@
 import {
   bigint,
   index,
-  integer,
   jsonb,
   pgTable,
-  serial,
   text,
   timestamp,
   uniqueIndex,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { uuidPk } from './id';
 import { member } from './member';
 
 // One row per registered passkey. A member can hold several (one per
@@ -18,8 +18,8 @@ import { member } from './member';
 export const webauthnCredential = pgTable(
   'webauthn_credential',
   {
-    id: serial('id').primaryKey(),
-    memberId: integer('member_id')
+    id: uuidPk(),
+    memberId: uuid('member_id')
       .notNull()
       .references(() => member.id, { onDelete: 'cascade' }),
     // Base64url authenticator-issued credential id — opaque, looked up on

@@ -30,6 +30,7 @@ import { SecurityModule } from '../security/security.module';
 import { SessionModule } from '../session/session.module';
 import { Public } from '../session/public.decorator';
 import { MinorUnits } from '../common/money';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 
 class FakeEmailProvider implements EmailProvider {
   send(): Promise<void> {
@@ -68,11 +69,11 @@ interface DashboardBody {
     valueDate: string;
   } | null;
   accountsOverview: {
-    id: number;
+    id: string;
     name: string;
-    accounts: { id: number; name: string; currency: string; balance: number }[];
+    accounts: { id: string; name: string; currency: string; balance: number }[];
   }[];
-  homepageReports: { id: number; title: string; chart: unknown }[];
+  homepageReports: { id: string; title: string; chart: unknown }[];
 }
 
 describe('dashboard (integration)', () => {
@@ -181,7 +182,7 @@ describe('dashboard (integration)', () => {
   }
 
   async function createBank(
-    memberId: number,
+    memberId: string,
     opts: { closed?: boolean; deleted?: boolean } = {},
   ) {
     const [row] = await ctx.db
@@ -197,7 +198,7 @@ describe('dashboard (integration)', () => {
   }
 
   async function createAccount(
-    bankId: number,
+    bankId: string,
     opts: {
       currency?: string;
       closed?: boolean;
@@ -219,13 +220,13 @@ describe('dashboard (integration)', () => {
   }
 
   async function createOperation(
-    accountId: number,
+    accountId: string,
     valueDate: string,
     opts: {
       debit?: number;
       credit?: number;
-      categoryId?: number;
-      schedulerId?: number | null;
+      categoryId?: string;
+      schedulerId?: string | null;
     } = {},
   ) {
     await ctx.db.insert(operation).values({
@@ -236,7 +237,7 @@ describe('dashboard (integration)', () => {
       debit: (opts.debit ?? null) as MinorUnits | null,
       credit: (opts.credit ?? null) as MinorUnits | null,
       categoryId: opts.categoryId,
-      paymentMethodId: 1,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       valueDate,
     });
   }
@@ -342,11 +343,11 @@ describe('dashboard (integration)', () => {
 
     await createOperation(acc.id, '2026-01-05', {
       credit: 2000_0000,
-      categoryId: 1,
+      categoryId: SALARY_CATEGORY_SEED_ID,
     });
     await createOperation(acc.id, '2026-02-05', {
       credit: 2100_0000,
-      categoryId: 1,
+      categoryId: SALARY_CATEGORY_SEED_ID,
     });
 
     const body = await fetchDashboard(cookies);
@@ -363,7 +364,7 @@ describe('dashboard (integration)', () => {
     const acc = await createAccount(closedBank.id);
     await createOperation(acc.id, '2026-01-05', {
       credit: 2000_0000,
-      categoryId: 1,
+      categoryId: SALARY_CATEGORY_SEED_ID,
     });
     const { cookies } = await authedRequest('dash7@example.com', 'password1');
 

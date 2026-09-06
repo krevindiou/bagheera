@@ -5,12 +5,12 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { BankService, ChooseBankResult } from './bank.service';
 import { ChooseBankDto } from './dto/choose-bank.dto';
@@ -41,7 +41,7 @@ export class BankController {
   @HttpCode(200)
   async update(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateBankDto,
   ): Promise<{ message: string }> {
     await this.banks.update(req, id, dto);
@@ -52,7 +52,7 @@ export class BankController {
   @HttpCode(200)
   async close(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.banks.close(req, id);
     return { message: 'Bank closed' };
@@ -62,7 +62,7 @@ export class BankController {
   @HttpCode(200)
   async remove(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.banks.remove(req, id);
     return { message: 'Bank deleted' };

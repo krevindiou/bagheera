@@ -15,7 +15,7 @@ export interface EmailChangeTokenPayload {
    * from an authenticated session, so the stable id is already in hand and
    * is what this token should stay bound to.
    */
-  memberId: number;
+  memberId: string;
   newEmail: string;
   /** Must match the member's current `emailChangeTokenVersion`; a fresh
    * change request bumps the stored version, invalidating every
@@ -27,7 +27,7 @@ export interface EmailChangeTokenPayload {
 
 export function buildEmailChangeToken(
   crypto: CryptoService,
-  memberId: number,
+  memberId: string,
   newEmail: string,
   version: number,
 ): string {
@@ -84,7 +84,7 @@ function isEmailChangeTokenPayload(
   const candidate = value as Record<string, unknown>;
   return (
     candidate.type === 'email_change' &&
-    typeof candidate.memberId === 'number' &&
+    typeof candidate.memberId === 'string' &&
     typeof candidate.newEmail === 'string' &&
     typeof candidate.version === 'number' &&
     typeof candidate.exp === 'number'

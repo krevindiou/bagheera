@@ -12,6 +12,7 @@ import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
 import { computeSynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
@@ -30,9 +31,9 @@ export interface AccountChart {
   points: AccountChartPoint[];
 }
 
-// Payment method id 9, "Initial balance", reserved for the
-// system-generated opening operation.
-const INITIAL_BALANCE_PAYMENT_METHOD_ID = 9;
+// The "Initial balance" payment method, reserved for the system-generated
+// opening operation.
+const INITIAL_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 @Injectable()
 export class AccountService {
@@ -43,7 +44,7 @@ export class AccountService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async list(req: Request, bankId?: number) {
+  async list(req: Request, bankId?: string) {
     const memberId = requireMemberId(req);
     const conditions = [
       eq(bank.memberId, memberId),
@@ -98,7 +99,7 @@ export class AccountService {
   // therefore its one currency). Empty (no operations at all, ever) is
   // signalled by an empty `points` array; the chart component hides
   // itself in that case.
-  async chart(req: Request, id: number): Promise<AccountChart> {
+  async chart(req: Request, id: string): Promise<AccountChart> {
     const memberId = requireMemberId(req);
     const { account: acc } = await this.ownership.requireOwnedAccount(
       id,
@@ -136,7 +137,7 @@ export class AccountService {
   // reconciled operations.
   async balance(
     req: Request,
-    id: number,
+    id: string,
   ): Promise<{ balance: number; reconciledBalance: number }> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(id, memberId);
@@ -166,7 +167,7 @@ export class AccountService {
     };
   }
 
-  async update(req: Request, id: number, dto: UpdateAccountDto): Promise<void> {
+  async update(req: Request, id: string, dto: UpdateAccountDto): Promise<void> {
     const memberId = requireMemberId(req);
     const { account: row } = await this.ownership.requireOwnedAccount(
       id,
@@ -184,7 +185,7 @@ export class AccountService {
       .where(eq(account.id, id));
   }
 
-  async close(req: Request, id: number): Promise<void> {
+  async close(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const { account: row } = await this.ownership.requireOwnedAccount(
       id,
@@ -200,7 +201,7 @@ export class AccountService {
     await this.audit.record('account_closed', memberId, req.ip ?? 'unknown');
   }
 
-  async remove(req: Request, id: number): Promise<void> {
+  async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const { account: row } = await this.ownership.requireOwnedAccount(
       id,

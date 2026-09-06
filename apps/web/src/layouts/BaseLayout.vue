@@ -48,7 +48,7 @@ onBeforeUnmount(stopAfterEach);
 
 // Menus are day-to-day navigation, so closed/deleted banks and accounts are
 // hidden here even though the accounts management screen still lists them.
-function accountsForBank(bankId: number) {
+function accountsForBank(bankId: string) {
   return accounts.value.filter(
     (account) => account.bankId === bankId && !account.closed && !account.deleted,
   );

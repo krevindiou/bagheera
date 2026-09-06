@@ -5,10 +5,9 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
-  IsInt,
   IsOptional,
   IsString,
-  Min,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 import { ReportTitleField } from '../../common/dto-fields';
@@ -44,9 +43,8 @@ export class CreateReportDto {
   @IsArray()
   @ArrayUnique()
   @ArrayMaxSize(100)
-  @IsInt({ each: true })
-  @Min(1, { each: true })
-  accountIds?: number[];
+  @IsUUID('7', { each: true })
+  accountIds?: string[];
 
   @IsOptional()
   @IsBoolean()

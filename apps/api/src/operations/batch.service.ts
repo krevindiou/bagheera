@@ -30,7 +30,7 @@ export class OperationBatchService {
 
   async batchDelete(
     req: Request,
-    ids: number[],
+    ids: string[],
   ): Promise<{ deletedCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedOperationIds(ids, memberId);
@@ -52,7 +52,7 @@ export class OperationBatchService {
 
   async batchReconcile(
     req: Request,
-    ids: number[],
+    ids: string[],
   ): Promise<{ reconciledCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedOperationIds(ids, memberId);

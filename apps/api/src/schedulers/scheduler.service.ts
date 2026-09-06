@@ -52,8 +52,8 @@ export class SchedulerService {
   // type, enforcing type-driven choice filtering server-side.
   private async validateTypedRefs(
     type: 'debit' | 'credit',
-    paymentMethodId: number,
-    categoryId?: number,
+    paymentMethodId: string,
+    categoryId?: string,
   ): Promise<void> {
     const [method] = await this.db
       .select()
@@ -84,15 +84,15 @@ export class SchedulerService {
   }
 
   private transferAccountId(
-    paymentMethodId: number,
-    transferAccountId?: number,
-  ): number | null {
+    paymentMethodId: string,
+    transferAccountId?: string,
+  ): string | null {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId)
       ? (transferAccountId ?? null)
       : null;
   }
 
-  async list(req: Request, accountId: number, page: number) {
+  async list(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(accountId, memberId);
 
@@ -173,7 +173,7 @@ export class SchedulerService {
 
   async update(
     req: Request,
-    id: number,
+    id: string,
     dto: UpdateSchedulerDto,
   ): Promise<void> {
     const memberId = requireMemberId(req);
@@ -232,7 +232,7 @@ export class SchedulerService {
     );
   }
 
-  async remove(req: Request, id: number): Promise<void> {
+  async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.requireOwnedScheduler(id, memberId);
     this.requireFullyActive(owned);

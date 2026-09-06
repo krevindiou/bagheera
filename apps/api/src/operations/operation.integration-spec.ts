@@ -10,7 +10,8 @@ import {
   IntegrationDb,
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
-import { account, bank, member, operation } from '../db/schema';
+import { account, bank, category, member, operation } from '../db/schema';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -187,8 +188,23 @@ describe('operations (integration)', () => {
     return { owner, bank: ownerBank, account: acc };
   }
 
+  // Test-local category, independent of the fixed reference-data set — only
+  // Salary has a stable id there, so a test needing "some debit category"
+  // mints its own instead of relying on any other seeded id.
+  async function insertCategory(type: 'debit' | 'credit') {
+    const [row] = await ctx.db
+      .insert(category)
+      .values({
+        name: `Test ${type} ${Math.random().toString(36).slice(2, 8)}`,
+        type,
+      })
+      .returning();
+    return row;
+  }
+
   it('creates a debit operation and rejects both-type validation errors', async () => {
     const { owner, account: acc } = await createOwnedAccount('op1@example.com');
+    const foodCategory = await insertCategory('debit');
     const { token, cookies } = await authedRequest(
       'op1@example.com',
       'password1',
@@ -204,13 +220,13 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Grocery Store',
         amount: 42.5,
-        paymentMethodId: 1,
-        categoryId: 6, // Food (debit)
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        categoryId: foodCategory.id,
         valueDate: '2026-01-15',
       });
 
     expect(res.status).toBe(200);
-    const created = (res.body as { operation: { id: number } }).operation;
+    const created = (res.body as { operation: { id: string } }).operation;
 
     const [row] = await ctx.db
       .select()
@@ -239,7 +255,7 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Employer',
         amount: 100,
-        paymentMethodId: 7, // Deposit, credit-only
+        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT, // credit-only
       });
 
     expect(res.status).toBe(400);
@@ -262,8 +278,8 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Grocery Store',
         amount: 10,
-        paymentMethodId: 1,
-        categoryId: 1, // Salary, credit-only
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        categoryId: SALARY_CATEGORY_SEED_ID, // Salary, credit-only
       });
 
     expect(res.status).toBe(400);
@@ -288,7 +304,7 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Grocery Store',
         amount: 10,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       });
 
     expect(res.status).toBe(422);
@@ -323,7 +339,7 @@ describe('operations (integration)', () => {
     await ctx.db.insert(operation).values({
       accountId: acc.id,
       thirdParty: 'Old Op',
-      paymentMethodId: 1,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       debit: asMinorUnits(1000),
       valueDate: '2026-01-01',
     });
@@ -346,14 +362,22 @@ describe('operations (integration)', () => {
 
   it('sorts operations by value date desc, then created desc, then id desc, paginated at 20', async () => {
     const { account: acc } = await createOwnedAccount('op7@example.com');
+    // UUIDv7 ids are time-ordered, so insertion order still determines the
+    // id-desc tiebreak — capture each row's actual id rather than assuming
+    // small sequential integers.
+    const ids: string[] = [];
     for (let i = 0; i < 25; i++) {
-      await ctx.db.insert(operation).values({
-        accountId: acc.id,
-        thirdParty: `Op ${i}`,
-        paymentMethodId: 1,
-        debit: asMinorUnits(100),
-        valueDate: '2026-01-01',
-      });
+      const [row] = await ctx.db
+        .insert(operation)
+        .values({
+          accountId: acc.id,
+          thirdParty: `Op ${i}`,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+          debit: asMinorUnits(100),
+          valueDate: '2026-01-01',
+        })
+        .returning({ id: operation.id });
+      ids.push(row.id);
     }
     const { token, cookies } = await authedRequest(
       'op7@example.com',
@@ -366,21 +390,21 @@ describe('operations (integration)', () => {
       .set('x-csrf-token', token)
       .set('X-Forwarded-Proto', 'https');
     expect(page1.status).toBe(200);
-    const body1 = page1.body as { items: { id: number }[]; total: number };
+    const body1 = page1.body as { items: { id: string }[]; total: number };
     expect(body1.items).toHaveLength(20);
     expect(body1.total).toBe(25);
-    expect(body1.items[0].id).toBe(25);
-    expect(body1.items[19].id).toBe(6);
+    expect(body1.items[0].id).toBe(ids[24]);
+    expect(body1.items[19].id).toBe(ids[5]);
 
     const page2 = await request(app.getHttpServer())
       .get(`/operations?accountId=${acc.id}&page=2`)
       .set('Cookie', cookies)
       .set('x-csrf-token', token)
       .set('X-Forwarded-Proto', 'https');
-    const body2 = page2.body as { items: { id: number }[] };
+    const body2 = page2.body as { items: { id: string }[] };
     expect(body2.items).toHaveLength(5);
-    expect(body2.items[0].id).toBe(5);
-    expect(body2.items[4].id).toBe(1);
+    expect(body2.items[0].id).toBe(ids[4]);
+    expect(body2.items[4].id).toBe(ids[0]);
   });
 
   it('keeps the account immutable and rejects editing the opening operation', async () => {
@@ -396,7 +420,7 @@ describe('operations (integration)', () => {
       .values({
         accountId: acc.id,
         thirdParty: 'Initial balance',
-        paymentMethodId: 9,
+        paymentMethodId: PAYMENT_METHOD_ID.INITIAL_BALANCE,
         credit: asMinorUnits(500000),
         reconciled: true,
         valueDate: '2026-01-01',
@@ -413,7 +437,7 @@ describe('operations (integration)', () => {
         type: 'credit',
         thirdParty: 'Initial balance',
         amount: 50,
-        paymentMethodId: 7,
+        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
         valueDate: '2026-01-01',
       });
     expect(openingRes.status).toBe(422);
@@ -423,7 +447,7 @@ describe('operations (integration)', () => {
       .values({
         accountId: acc.id,
         thirdParty: 'Regular',
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         debit: asMinorUnits(1000),
         valueDate: '2026-01-01',
       })
@@ -441,7 +465,7 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Regular',
         amount: 10,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         valueDate: '2026-01-01',
       });
     expect(moveRes.status).toBe(400);
@@ -458,7 +482,7 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Regular Renamed',
         amount: 12,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         valueDate: '2026-01-02',
       });
     expect(okRes.status).toBe(200);
@@ -508,12 +532,12 @@ describe('operations (integration)', () => {
         type: 'debit',
         thirdParty: 'Not a transfer',
         amount: 10,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         transferAccountId: other.id,
       });
 
     expect(res.status).toBe(200);
-    const created = (res.body as { operation: { id: number } }).operation;
+    const created = (res.body as { operation: { id: string } }).operation;
     const [row] = await ctx.db
       .select()
       .from(operation)

@@ -9,7 +9,7 @@ import {
  * Category/payment-method choices filtered to the selected debit/credit
  * type — the same field logic every operation-like form (and the search
  * panel) needs, matching the server-side type-filtered validation
- * (validateTypedRefs). A payment method with a null type (id 9, "Initial
+ * (validateTypedRefs). A payment method with a null type ("Initial
  * balance") matches neither filter — excluded from both without needing
  * a special case, same as it always has been.
  *
@@ -24,8 +24,8 @@ export function useTypedReferenceData(
   categories: () => Category[],
   paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {
-    categoryId: Ref<number | undefined>;
-    paymentMethodId: Ref<number>;
+    categoryId: Ref<string | undefined>;
+    paymentMethodId: Ref<string>;
   },
 ) {
   const filteredCategories = computed(() => categories().filter((c) => c.type === type.value));
@@ -41,7 +41,7 @@ export function useTypedReferenceData(
         categoryId.value = undefined;
       }
       if (!filteredPaymentMethods.value.some((pm) => pm.id === paymentMethodId.value)) {
-        paymentMethodId.value = undefined as unknown as number;
+        paymentMethodId.value = undefined as unknown as string;
       }
     });
   }

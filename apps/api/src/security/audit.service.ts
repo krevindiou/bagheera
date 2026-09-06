@@ -42,7 +42,7 @@ export class AuditService {
 
   async record(
     eventType: SecurityEventType,
-    memberId: number | null,
+    memberId: string | null,
     sourceAddress: string,
   ): Promise<void> {
     try {

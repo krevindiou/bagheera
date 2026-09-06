@@ -11,7 +11,8 @@ import {
   IntegrationDb,
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
-import { account, bank, member, operation } from '../db/schema';
+import { account, bank, category, member, operation } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -161,14 +162,14 @@ describe('operations autocomplete (integration)', () => {
   }
 
   async function insertBank(
-    memberId: number,
+    memberId: string,
     overrides: { deleted?: boolean } = {},
   ) {
     const [row] = await ctx.db
       .insert(bank)
       .values({
         memberId,
-        name: `Bank ${memberId}-${Math.random()}`,
+        name: `Bank ${Math.random().toString(36).slice(2, 10)}`,
         deleted: overrides.deleted ?? false,
       })
       .returning();
@@ -176,7 +177,7 @@ describe('operations autocomplete (integration)', () => {
   }
 
   async function insertAccount(
-    bankId: number,
+    bankId: string,
     overrides: { deleted?: boolean } = {},
   ) {
     const [row] = await ctx.db
@@ -191,22 +192,37 @@ describe('operations autocomplete (integration)', () => {
     return row;
   }
 
+  // Test-local category, independent of the fixed reference-data set — only
+  // Salary has a stable id there, so a test needing "some debit/credit
+  // category" mints its own instead of relying on any other seeded id.
+  async function insertCategory(type: 'debit' | 'credit') {
+    const [row] = await ctx.db
+      .insert(category)
+      .values({
+        name: `Test ${type} ${Math.random().toString(36).slice(2, 8)}`,
+        type,
+      })
+      .returning();
+    return row;
+  }
+
   type OpOverrides = Partial<{
     thirdParty: string;
-    categoryId: number;
-    paymentMethodId: number;
+    categoryId: string;
+    paymentMethodId: string;
     debit: number | null;
     credit: number | null;
     valueDate: string;
   }>;
 
-  async function insertOperation(accountId: number, overrides: OpOverrides) {
+  async function insertOperation(accountId: string, overrides: OpOverrides) {
     const [row] = await ctx.db
       .insert(operation)
       .values({
         accountId,
         thirdParty: overrides.thirdParty ?? 'Third Party',
-        paymentMethodId: overrides.paymentMethodId ?? 1,
+        paymentMethodId:
+          overrides.paymentMethodId ?? PAYMENT_METHOD_ID.CREDIT_CARD,
         categoryId: overrides.categoryId,
         // overrides carries plain, already-minor-units literals from callers;
         // brand them here, the one spot that needs to satisfy Drizzle's typed column.
@@ -242,9 +258,10 @@ describe('operations autocomplete (integration)', () => {
     const owner = await createMember('auto2@example.com', 'password1');
     const ownerBank = await insertBank(owner.id);
     const acc = await insertAccount(ownerBank.id);
+    const groceries = await insertCategory('debit');
     await insertOperation(acc.id, {
       thirdParty: 'Grocery Store',
-      categoryId: 6,
+      categoryId: groceries.id,
       valueDate: '2026-01-10',
     });
     const { token, cookies } = await authedRequest(
@@ -261,24 +278,29 @@ describe('operations autocomplete (integration)', () => {
     expect(res.status).toBe(200);
     const body = res.body as {
       thirdParty: string;
-      categoryId: number | null;
+      categoryId: string | null;
     }[];
     expect(body).toHaveLength(1);
-    expect(body[0]).toEqual({ thirdParty: 'Grocery Store', categoryId: 6 });
+    expect(body[0]).toEqual({
+      thirdParty: 'Grocery Store',
+      categoryId: groceries.id,
+    });
   });
 
   it('returns the category of the latest-value-date operation per third party', async () => {
     const owner = await createMember('auto3@example.com', 'password1');
     const ownerBank = await insertBank(owner.id);
     const acc = await insertAccount(ownerBank.id);
+    const earlierCategory = await insertCategory('debit');
+    const laterCategory = await insertCategory('debit');
     await insertOperation(acc.id, {
       thirdParty: 'Grocery Store',
-      categoryId: 6,
+      categoryId: earlierCategory.id,
       valueDate: '2026-01-01',
     });
     await insertOperation(acc.id, {
       thirdParty: 'Grocery Store',
-      categoryId: 7,
+      categoryId: laterCategory.id,
       valueDate: '2026-02-15',
     });
     const { token, cookies } = await authedRequest(
@@ -295,10 +317,10 @@ describe('operations autocomplete (integration)', () => {
     expect(res.status).toBe(200);
     const body = res.body as {
       thirdParty: string;
-      categoryId: number | null;
+      categoryId: string | null;
     }[];
     expect(body).toHaveLength(1);
-    expect(body[0].categoryId).toBe(7);
+    expect(body[0].categoryId).toBe(laterCategory.id);
   });
 
   it('includes closed accounts but excludes deleted accounts and deleted banks', async () => {
@@ -350,9 +372,10 @@ describe('operations autocomplete (integration)', () => {
     const owner = await createMember('auto5@example.com', 'password1');
     const ownerBank = await insertBank(owner.id);
     const acc = await insertAccount(ownerBank.id);
+    const debitCategory = await insertCategory('debit');
     await insertOperation(acc.id, {
       thirdParty: 'Grocery Store',
-      categoryId: 6, // debit-type category
+      categoryId: debitCategory.id,
       valueDate: '2026-01-01',
     });
     const { token, cookies } = await authedRequest(
@@ -369,7 +392,7 @@ describe('operations autocomplete (integration)', () => {
     expect(res.status).toBe(200);
     const body = res.body as {
       thirdParty: string;
-      categoryId: number | null;
+      categoryId: string | null;
     }[];
     expect(body).toHaveLength(1);
     expect(body[0]).toEqual({ thirdParty: 'Grocery Store', categoryId: null });

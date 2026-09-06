@@ -19,7 +19,7 @@ export type EditAccountForm = z.infer<typeof editAccountSchema>;
 // name (bankName) — before account creation even starts.
 export const bankChoiceSchema = z
   .object({
-    bankId: z.union([z.number(), z.string()]).optional(),
+    bankId: z.string().optional(),
     bankName: z.string().trim().max(32).optional(),
   })
   .refine((form) => Boolean(form.bankId) !== Boolean(form.bankName), {
@@ -32,11 +32,7 @@ export type BankChoiceForm = z.infer<typeof bankChoiceSchema>;
 // bank field stays editable — a dropdown of the member's active banks —
 // but starts pre-selected to that bank).
 export const createAccountSchema = z.object({
-  bankId: z
-    .union([z.number(), z.string()])
-    .refine((value) => value !== "" && value !== undefined && value !== null, {
-      message: "required",
-    }),
+  bankId: z.string().min(1, "required"),
   name: accountName,
   currency,
   initialBalance: z.preprocess(

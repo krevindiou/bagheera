@@ -12,6 +12,7 @@ import {
 import { AuthModule } from '../auth/auth.module';
 import { DbModule } from '../db/db.module';
 import { member } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
 import { EmailModule } from '../email/email.module';
@@ -154,8 +155,16 @@ describe('reference data (integration)', () => {
       .expect(200);
     expect(paymentMethods.body).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: 1, name: 'Credit card', type: 'debit' }),
-        expect.objectContaining({ id: 9, name: 'Initial balance', type: null }),
+        expect.objectContaining({
+          id: PAYMENT_METHOD_ID.CREDIT_CARD,
+          name: 'Credit card',
+          type: 'debit',
+        }),
+        expect.objectContaining({
+          id: PAYMENT_METHOD_ID.INITIAL_BALANCE,
+          name: 'Initial balance',
+          type: null,
+        }),
       ]),
     );
 

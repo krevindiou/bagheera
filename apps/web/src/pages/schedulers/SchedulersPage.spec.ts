@@ -35,7 +35,14 @@ describe("SchedulersPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
@@ -43,11 +50,11 @@ describe("SchedulersPage", () => {
         return jsonResponse({
           items: [
             {
-              id: 5,
-              accountId: 1,
+              id: "5",
+              accountId: "1",
               transferAccountId: null,
               categoryId: null,
-              paymentMethodId: 1,
+              paymentMethodId: "1",
               thirdParty: "Rent",
               debit: 1000000,
               credit: null,
@@ -83,7 +90,14 @@ describe("SchedulersPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);

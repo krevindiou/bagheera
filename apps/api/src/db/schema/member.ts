@@ -3,18 +3,18 @@ import {
   boolean,
   integer,
   pgTable,
-  serial,
   timestamp,
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { uuidPk } from './id';
 
 // Password column is sized for an Argon2id PHC-format hash rather than a
 // legacy bcrypt-length hash.
 export const member = pgTable(
   'member',
   {
-    id: serial('id').primaryKey(),
+    id: uuidPk(),
     email: varchar('email', { length: 128 }).notNull(),
     password: varchar('password', { length: 255 }).notNull(),
     country: varchar('country', { length: 2 }).notNull(),

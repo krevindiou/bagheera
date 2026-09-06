@@ -146,7 +146,7 @@ describe('webauthn authentication (integration)', () => {
     return row;
   }
 
-  async function addCredential(memberId: number, credentialId: string) {
+  async function addCredential(memberId: string, credentialId: string) {
     await ctx.db.insert(webauthnCredential).values({
       memberId,
       credentialId,

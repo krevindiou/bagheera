@@ -21,7 +21,7 @@ import type { Scheduler } from "./schedulers.types";
 
 const props = withDefaults(
   defineProps<{
-    accountId: number;
+    accountId: string;
     categories: Category[];
     paymentMethods: PaymentMethod[];
     accounts: Account[];
@@ -47,7 +47,7 @@ function initialValues(): SchedulerForm {
       thirdParty: "",
       amount: undefined as unknown as number,
       categoryId: undefined,
-      paymentMethodId: undefined as unknown as number,
+      paymentMethodId: undefined as unknown as string,
       transferAccountId: undefined,
       valueDate: today(),
       notes: "",
@@ -104,7 +104,7 @@ const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   { categoryId, paymentMethodId },
 );
 const showTransferAccount = computed(() =>
-  TRANSFER_PAYMENT_METHOD_IDS.includes(Number(paymentMethodId.value)),
+  TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
 );
 // Same choices/rules as the operation form (spec 4.9/4.12).
 const { transferTargets, amountCurrencySymbol } = useTransferTargets(

@@ -17,7 +17,7 @@ import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
 
 export interface ChooseBankResult {
-  id: number;
+  id: string;
   name: string;
   created: boolean;
 }
@@ -62,7 +62,7 @@ export class BankService {
     return { id: created.id, name: created.name, created: true };
   }
 
-  async update(req: Request, id: number, dto: UpdateBankDto): Promise<void> {
+  async update(req: Request, id: string, dto: UpdateBankDto): Promise<void> {
     const memberId = requireMemberId(req);
     const row = await this.ownership.requireOwnedBank(id, memberId);
     if (row.closed || row.deleted) {
@@ -71,7 +71,7 @@ export class BankService {
     await this.db.update(bank).set({ name: dto.name }).where(eq(bank.id, id));
   }
 
-  async close(req: Request, id: number): Promise<void> {
+  async close(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const row = await this.ownership.requireOwnedBank(id, memberId);
     if (row.closed || row.deleted) {
@@ -81,7 +81,7 @@ export class BankService {
     await this.audit.record('bank_closed', memberId, req.ip ?? 'unknown');
   }
 
-  async remove(req: Request, id: number): Promise<void> {
+  async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const row = await this.ownership.requireOwnedBank(id, memberId);
     if (row.deleted) {

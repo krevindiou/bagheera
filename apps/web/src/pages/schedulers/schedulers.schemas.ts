@@ -2,8 +2,8 @@ import { z } from "zod";
 import { TRANSFER_PAYMENT_METHOD_IDS } from "../operations/operations.types";
 
 const optionalId = z.preprocess(
-  (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
-  z.number().int().positive().optional(),
+  (value) => (value === "" || value === undefined || value === null ? undefined : value),
+  z.string().uuid().optional(),
 );
 
 // Field rules mirror the API DTOs (apps/api/src/schedulers/dto/*) — the
@@ -19,11 +19,7 @@ export const schedulerSchema = z
       z.number().positive(),
     ),
     categoryId: optionalId,
-    paymentMethodId: z.preprocess(
-      (value) =>
-        value === "" || value === undefined || value === null ? undefined : Number(value),
-      z.number().int().positive(),
-    ),
+    paymentMethodId: z.string().uuid(),
     transferAccountId: optionalId,
     valueDate: z.string().min(1),
     notes: z.string().max(4096).optional(),

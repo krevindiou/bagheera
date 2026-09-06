@@ -30,7 +30,7 @@ export class OwnershipService {
   // folded into the throw — a non-owner still 404s regardless, but the
   // owner sees the row and decides what a closed/deleted bank means for
   // their call (bank.service.ts rejects it; account creation does too).
-  async requireOwnedBank(id: number, memberId: number) {
+  async requireOwnedBank(id: string, memberId: string) {
     const [row] = await this.db.select().from(bank).where(eq(bank.id, id));
     if (!row || row.memberId !== memberId) {
       throw new NotFoundException();
@@ -38,7 +38,7 @@ export class OwnershipService {
     return row;
   }
 
-  async requireOwnedAccount(id: number, memberId: number) {
+  async requireOwnedAccount(id: string, memberId: string) {
     const [row] = await this.db
       .select({ account, bank })
       .from(account)
@@ -55,7 +55,7 @@ export class OwnershipService {
     return row;
   }
 
-  async requireOwnedOperation(id: number, memberId: number) {
+  async requireOwnedOperation(id: string, memberId: string) {
     const [row] = await this.db
       .select({ operation, account, bank })
       .from(operation)
@@ -73,7 +73,7 @@ export class OwnershipService {
     return row;
   }
 
-  async requireOwnedScheduler(id: number, memberId: number) {
+  async requireOwnedScheduler(id: string, memberId: string) {
     const [row] = await this.db
       .select({ scheduler, account, bank })
       .from(scheduler)
@@ -91,7 +91,7 @@ export class OwnershipService {
     return row;
   }
 
-  async requireOwnedReport(id: number, memberId: number) {
+  async requireOwnedReport(id: string, memberId: string) {
     const [row] = await this.db.select().from(report).where(eq(report.id, id));
     if (!row || row.memberId !== memberId) {
       throw new NotFoundException();
@@ -103,9 +103,9 @@ export class OwnershipService {
   // reachable only through a closed/deleted bank or account — the caller
   // never learns which of its ids were foreign vs. simply weren't usable.
   async filterOwnedOperationIds(
-    ids: number[],
-    memberId: number,
-  ): Promise<number[]> {
+    ids: string[],
+    memberId: string,
+  ): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -135,9 +135,9 @@ export class OwnershipService {
   }
 
   async filterOwnedSchedulerIds(
-    ids: number[],
-    memberId: number,
-  ): Promise<number[]> {
+    ids: string[],
+    memberId: string,
+  ): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -167,9 +167,9 @@ export class OwnershipService {
   }
 
   async filterOwnedReportIds(
-    ids: number[],
-    memberId: number,
-  ): Promise<number[]> {
+    ids: string[],
+    memberId: string,
+  ): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }

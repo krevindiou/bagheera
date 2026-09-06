@@ -8,7 +8,7 @@ import { AuditService } from '../security/audit.service';
 import { requireMemberId } from '../session/require-member-id';
 
 export interface WebauthnCredentialSummary {
-  id: number;
+  id: string;
   deviceName: string | null;
   createdAt: Date;
   lastUsedAt: Date | null;
@@ -36,7 +36,7 @@ export class WebauthnCredentialsService {
     return rows;
   }
 
-  async remove(req: Request, id: number): Promise<void> {
+  async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const result = await this.db
       .delete(webauthnCredential)

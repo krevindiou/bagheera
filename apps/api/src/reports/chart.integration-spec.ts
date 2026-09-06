@@ -21,6 +21,7 @@ import {
   report,
   reportAccount,
 } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
 import { EmailModule } from '../email/email.module';
@@ -164,7 +165,7 @@ describe('report chart (integration)', () => {
   }
 
   async function createAccount(
-    memberId: number,
+    memberId: string,
     opts: { currency?: string; deleted?: boolean; bankDeleted?: boolean } = {},
   ) {
     const [ownerBank] = await ctx.db
@@ -188,7 +189,7 @@ describe('report chart (integration)', () => {
   }
 
   async function createOperation(
-    accountId: number,
+    accountId: string,
     valueDate: string,
     opts: { debit?: number; credit?: number } = {},
   ) {
@@ -199,12 +200,12 @@ describe('report chart (integration)', () => {
       // brand them here, the one spot that needs to satisfy Drizzle's typed column.
       debit: (opts.debit ?? null) as MinorUnits | null,
       credit: (opts.credit ?? null) as MinorUnits | null,
-      paymentMethodId: 1,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       valueDate,
     });
   }
 
-  async function fetchChart(id: number, cookies: string[]) {
+  async function fetchChart(id: string, cookies: string[]) {
     const res = await request(app.getHttpServer())
       .get(`/reports/${id}/chart`)
       .set('Cookie', cookies)

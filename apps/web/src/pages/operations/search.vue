@@ -18,8 +18,8 @@ const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
 
 const type = ref<"debit" | "credit">("debit");
 const thirdParty = ref("");
-const categoryIds = ref<number[]>([]);
-const paymentMethodIds = ref<number[]>([]);
+const categoryIds = ref<string[]>([]);
+const paymentMethodIds = ref<string[]>([]);
 const amountOperator1 = ref<"" | AmountComparatorOperator>("");
 const amountValue1 = ref<number | undefined>(undefined);
 const amountOperator2 = ref<"" | AmountComparatorOperator>("");

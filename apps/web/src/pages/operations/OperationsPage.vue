@@ -6,7 +6,12 @@ import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatDate, formatMoney } from "./money";
-import { categoryLabel, paymentMethodIcon, paymentMethodName } from "./operations.types";
+import {
+  categoryLabel,
+  PAYMENT_METHOD_ID,
+  paymentMethodIcon,
+  paymentMethodName,
+} from "./operations.types";
 import type {
   Category,
   Operation,
@@ -20,7 +25,7 @@ import SearchPanel from "./search.vue";
 import ToastContainer from "../../components/ToastContainer.vue";
 
 const route = useRoute();
-const accountId = computed(() => Number(route.params.accountId));
+const accountId = computed(() => route.params.accountId as string);
 
 const queryClient = useQueryClient();
 
@@ -31,7 +36,7 @@ watch(accountId, () => {
 
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
-const selectedIds = ref<Set<number>>(new Set());
+const selectedIds = ref<Set<string>>(new Set());
 const showSearch = ref(false);
 const hasActiveSearch = ref(false);
 const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
@@ -220,7 +225,7 @@ function amountLabel(operation: Operation): string {
   return formatMoney(minorUnits, account.value?.currency ?? "USD");
 }
 
-function toggleSelected(id: number) {
+function toggleSelected(id: string) {
   const next = new Set(selectedIds.value);
   if (next.has(id)) {
     next.delete(id);
@@ -250,10 +255,9 @@ async function onSavedAndClose() {
   await onSaved();
 }
 
-// The system-generated opening operation (payment method id 9) is not
-// editable.
+// The system-generated opening operation is not editable.
 function isEditable(operation: Operation): boolean {
-  return operation.paymentMethodId !== 9;
+  return operation.paymentMethodId !== PAYMENT_METHOD_ID.INITIAL_BALANCE;
 }
 </script>
 

@@ -37,13 +37,13 @@ export class OperationSearchService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  private key(memberId: number, accountId: number): string {
+  private key(memberId: string, accountId: string): string {
     return `opsearch:${memberId}:${accountId}`;
   }
 
   private async remember(
-    memberId: number,
-    accountId: number,
+    memberId: string,
+    accountId: string,
     criteria: SearchCriteria,
   ): Promise<void> {
     await this.valkey.set(
@@ -54,14 +54,14 @@ export class OperationSearchService {
   }
 
   private async recall(
-    memberId: number,
-    accountId: number,
+    memberId: string,
+    accountId: string,
   ): Promise<SearchCriteria> {
     const raw = await this.valkey.get(this.key(memberId, accountId));
     return raw ? (JSON.parse(raw) as SearchCriteria) : {};
   }
 
-  async clear(req: Request, accountId: number): Promise<void> {
+  async clear(req: Request, accountId: string): Promise<void> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(accountId, memberId);
     await this.valkey.del(this.key(memberId, accountId));
@@ -80,7 +80,7 @@ export class OperationSearchService {
   // Re-runs the last remembered search (empty criteria if none stored yet).
   // Exposes the criteria and whether any is set, so the frontend can
   // restore the search panel's open/hydrated state on mount.
-  async recallAndRun(req: Request, accountId: number, page: number) {
+  async recallAndRun(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(accountId, memberId);
 
@@ -93,7 +93,7 @@ export class OperationSearchService {
     };
   }
 
-  private async run(accountId: number, criteria: SearchCriteria, page: number) {
+  private async run(accountId: string, criteria: SearchCriteria, page: number) {
     const conditions = [eq(operation.accountId, accountId)];
 
     if (criteria.type) {

@@ -13,12 +13,16 @@ import {
   scheduler,
   securityEvent,
 } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   connectIntegrationDb,
   IntegrationDb,
 } from '../db/test-utils/integration-db';
 import { SecurityModule } from './security.module';
 import { OwnershipService } from './ownership.service';
+
+// Well-formed UUIDv7 that matches no row.
+const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
 
 // Exercises the join/edge-case behaviour of each `requireOwned*`/
 // `filterOwned*` method directly against Postgres — the predicate
@@ -88,7 +92,7 @@ describe('OwnershipService (integration)', () => {
   }
 
   async function createBank(
-    memberId: number,
+    memberId: string,
     overrides: Partial<typeof bank.$inferInsert> = {},
   ) {
     const [row] = await ctx.db
@@ -99,7 +103,7 @@ describe('OwnershipService (integration)', () => {
   }
 
   async function createAccount(
-    bankId: number,
+    bankId: string,
     overrides: Partial<typeof account.$inferInsert> = {},
   ) {
     const [row] = await ctx.db
@@ -133,7 +137,7 @@ describe('OwnershipService (integration)', () => {
     it('404s for an unknown id', async () => {
       const owner = await createMember('bank-owner3@example.com');
       await expect(
-        ownership.requireOwnedBank(999999, owner.id),
+        ownership.requireOwnedBank(NONEXISTENT_ID, owner.id),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
@@ -200,7 +204,7 @@ describe('OwnershipService (integration)', () => {
         .insert(operation)
         .values({
           accountId: a.id,
-          paymentMethodId: 1,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: 'Shop',
           debit: 1000 as MinorUnits,
         })
@@ -220,7 +224,7 @@ describe('OwnershipService (integration)', () => {
         .insert(operation)
         .values({
           accountId: a.id,
-          paymentMethodId: 1,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: 'Shop',
           debit: 1000 as MinorUnits,
         })
@@ -240,7 +244,7 @@ describe('OwnershipService (integration)', () => {
         .insert(operation)
         .values({
           accountId: a.id,
-          paymentMethodId: 1,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: 'Shop',
           debit: 1000 as MinorUnits,
         })
@@ -261,7 +265,7 @@ describe('OwnershipService (integration)', () => {
         .insert(scheduler)
         .values({
           accountId: a.id,
-          paymentMethodId: 1,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: 'Rent',
           debit: 1000 as MinorUnits,
           valueDate: '2026-01-01',
@@ -283,7 +287,7 @@ describe('OwnershipService (integration)', () => {
         .insert(scheduler)
         .values({
           accountId: a.id,
-          paymentMethodId: 1,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: 'Rent',
           debit: 1000 as MinorUnits,
           valueDate: '2026-01-01',
@@ -305,7 +309,7 @@ describe('OwnershipService (integration)', () => {
         .insert(scheduler)
         .values({
           accountId: a.id,
-          paymentMethodId: 1,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: 'Rent',
           debit: 1000 as MinorUnits,
           valueDate: '2026-01-01',
@@ -357,7 +361,7 @@ describe('OwnershipService (integration)', () => {
     it('404s for an unknown id', async () => {
       const owner = await createMember('rpt-owner3@example.com');
       await expect(
-        ownership.requireOwnedReport(999999, owner.id),
+        ownership.requireOwnedReport(NONEXISTENT_ID, owner.id),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
@@ -377,7 +381,7 @@ describe('OwnershipService (integration)', () => {
       const foreignAccount = await createAccount(foreignBank.id);
 
       const values = {
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         thirdParty: 'X',
         debit: 1000 as MinorUnits,
       };
@@ -398,7 +402,7 @@ describe('OwnershipService (integration)', () => {
           droppedClosed.id,
           droppedDeletedBank.id,
           droppedForeign.id,
-          999999,
+          NONEXISTENT_ID,
         ],
         owner.id,
       );
@@ -424,7 +428,7 @@ describe('OwnershipService (integration)', () => {
       const foreignAccount = await createAccount(foreignBank.id);
 
       const values = {
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         thirdParty: 'X',
         debit: 1000 as MinorUnits,
         valueDate: '2026-01-01',
@@ -440,7 +444,7 @@ describe('OwnershipService (integration)', () => {
         .returning();
 
       const result = await ownership.filterOwnedSchedulerIds(
-        [keep.id, droppedClosed.id, droppedForeign.id, 999999],
+        [keep.id, droppedClosed.id, droppedForeign.id, NONEXISTENT_ID],
         owner.id,
       );
       expect(result).toEqual([keep.id]);
@@ -466,7 +470,7 @@ describe('OwnershipService (integration)', () => {
         .returning();
 
       const result = await ownership.filterOwnedReportIds(
-        [keep.id, foreign.id, 999999],
+        [keep.id, foreign.id, NONEXISTENT_ID],
         owner.id,
       );
       expect(result).toEqual([keep.id]);

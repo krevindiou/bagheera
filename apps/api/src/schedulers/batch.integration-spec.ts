@@ -18,6 +18,7 @@ import {
   scheduler,
   securityEvent,
 } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   connectIntegrationDb,
   IntegrationDb,
@@ -189,14 +190,14 @@ describe('scheduler batch actions (integration)', () => {
     return { owner, bank: ownerBank, account: acc };
   }
 
-  async function insertScheduler(accountId: number, thirdParty: string) {
+  async function insertScheduler(accountId: string, thirdParty: string) {
     const [row] = await ctx.db
       .insert(scheduler)
       .values({
         accountId,
         thirdParty,
         debit: 100000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2030-01-01', // future — never due, so no generated ops
         frequencyValue: 1,
         frequencyUnit: 'month',
@@ -204,6 +205,9 @@ describe('scheduler batch actions (integration)', () => {
       .returning();
     return row;
   }
+
+  // Well-formed UUIDv7 that matches no row.
+  const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
 
   it('deletes only owned ids, silently skips foreign/nonexistent, and writes an audit event', async () => {
     const { owner, account: acc } = await createOwnedAccount(
@@ -215,7 +219,6 @@ describe('scheduler batch actions (integration)', () => {
 
     const owned = await insertScheduler(acc.id, 'Mine');
     const foreign = await insertScheduler(otherAcc.id, 'Not mine');
-    const nonexistentId = 999999;
 
     const { token, cookies } = await authedRequest(
       'sbatch1@example.com',
@@ -227,7 +230,7 @@ describe('scheduler batch actions (integration)', () => {
       .set('Cookie', cookies)
       .set('x-csrf-token', token)
       .set('X-Forwarded-Proto', 'https')
-      .send({ ids: [owned.id, foreign.id, nonexistentId] });
+      .send({ ids: [owned.id, foreign.id, NONEXISTENT_ID] });
 
     expect(res.status).toBe(200);
     expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
@@ -253,7 +256,7 @@ describe('scheduler batch actions (integration)', () => {
         schedulerId: owned.id,
         thirdParty: 'Mine',
         debit: 100000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-01-01',
       })
       .returning();

@@ -4,13 +4,13 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
@@ -26,7 +26,7 @@ export class OperationController {
   @Get()
   list(
     @Req() req: Request,
-    @Query('accountId', ParseIntPipe) accountId: number,
+    @Query('accountId', ParseUuidV7Pipe) accountId: string,
     @Query('page') page?: string,
   ) {
     return this.operations.list(req, accountId, page ? Number(page) : 1);
@@ -49,7 +49,7 @@ export class OperationController {
   @HttpCode(200)
   async update(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateOperationDto,
   ): Promise<{ message: string }> {
     await this.operations.update(req, id, dto);

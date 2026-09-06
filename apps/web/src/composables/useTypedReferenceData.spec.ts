@@ -4,14 +4,14 @@ import type { Category, PaymentMethod } from "../pages/operations/operations.typ
 import { useTypedReferenceData } from "./useTypedReferenceData";
 
 const categories: Category[] = [
-  { id: 1, parentId: null, type: "credit", name: "Salary" },
-  { id: 2, parentId: null, type: "debit", name: "Food" },
+  { id: "1", parentId: null, type: "credit", name: "Salary" },
+  { id: "2", parentId: null, type: "debit", name: "Food" },
 ];
 
 const paymentMethods: PaymentMethod[] = [
-  { id: 1, name: "Credit card", type: "debit" },
-  { id: 5, name: "Check", type: "credit" },
-  { id: 9, name: "Initial balance", type: null }, // system-generated, never a choice
+  { id: "1", name: "Credit card", type: "debit" },
+  { id: "5", name: "Check", type: "credit" },
+  { id: "9", name: "Initial balance", type: null }, // system-generated, never a choice
 ];
 
 describe("useTypedReferenceData", () => {
@@ -24,11 +24,11 @@ describe("useTypedReferenceData", () => {
     );
 
     expect(filteredCategories.value.map((c) => c.name)).toEqual(["Food"]);
-    expect(filteredPaymentMethods.value.map((pm) => pm.id)).toEqual([1]);
+    expect(filteredPaymentMethods.value.map((pm) => pm.id)).toEqual(["1"]);
 
     type.value = "credit";
     expect(filteredCategories.value.map((c) => c.name)).toEqual(["Salary"]);
-    expect(filteredPaymentMethods.value.map((pm) => pm.id)).toEqual([5]);
+    expect(filteredPaymentMethods.value.map((pm) => pm.id)).toEqual(["5"]);
   });
 
   it("excludes a null-type payment method from either filter", () => {
@@ -39,9 +39,9 @@ describe("useTypedReferenceData", () => {
       () => paymentMethods,
     );
 
-    expect(filteredPaymentMethods.value.some((pm) => pm.id === 9)).toBe(false);
+    expect(filteredPaymentMethods.value.some((pm) => pm.id === "9")).toBe(false);
     type.value = "credit";
-    expect(filteredPaymentMethods.value.some((pm) => pm.id === 9)).toBe(false);
+    expect(filteredPaymentMethods.value.some((pm) => pm.id === "9")).toBe(false);
   });
 
   it("groups the filtered categories", () => {
@@ -70,8 +70,8 @@ describe("useTypedReferenceData", () => {
   describe("clearOnMismatch", () => {
     it("clears a category selection that no longer matches the new type", async () => {
       const type = ref<"debit" | "credit">("debit");
-      const categoryId = ref<number | undefined>(2); // "Food", debit
-      const paymentMethodId = ref<number>(1); // "Credit card", debit
+      const categoryId = ref<string | undefined>("2"); // "Food", debit
+      const paymentMethodId = ref<string>("1"); // "Credit card", debit
       useTypedReferenceData(
         type,
         () => categories,
@@ -90,8 +90,8 @@ describe("useTypedReferenceData", () => {
 
     it("clears a payment-method selection that no longer matches the new type", async () => {
       const type = ref<"debit" | "credit">("debit");
-      const categoryId = ref<number | undefined>(undefined);
-      const paymentMethodId = ref<number>(1); // "Credit card", debit
+      const categoryId = ref<string | undefined>(undefined);
+      const paymentMethodId = ref<string>("1"); // "Credit card", debit
       useTypedReferenceData(
         type,
         () => categories,

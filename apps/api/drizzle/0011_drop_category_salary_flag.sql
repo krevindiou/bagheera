@@ -1,1 +1,0 @@
-ALTER TABLE "category" DROP COLUMN "is_salary_category";

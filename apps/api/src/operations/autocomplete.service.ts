@@ -10,7 +10,7 @@ import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
 
 export interface ThirdPartySuggestion {
   thirdParty: string;
-  categoryId: number | null;
+  categoryId: string | null;
 }
 
 @Injectable()

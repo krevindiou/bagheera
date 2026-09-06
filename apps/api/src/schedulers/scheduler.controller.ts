@@ -5,13 +5,13 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
@@ -27,7 +27,7 @@ export class SchedulerController {
   @Get()
   list(
     @Req() req: Request,
-    @Query('accountId', ParseIntPipe) accountId: number,
+    @Query('accountId', ParseUuidV7Pipe) accountId: string,
     @Query('page') page?: string,
   ) {
     return this.schedulers.list(req, accountId, page ? Number(page) : 1);
@@ -50,7 +50,7 @@ export class SchedulerController {
   @HttpCode(200)
   async update(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateSchedulerDto,
   ): Promise<{ message: string }> {
     await this.schedulers.update(req, id, dto);
@@ -61,7 +61,7 @@ export class SchedulerController {
   @HttpCode(200)
   async remove(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.schedulers.remove(req, id);
     return { message: 'Scheduler deleted' };

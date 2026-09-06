@@ -4,12 +4,12 @@ import {
   Delete,
   Get,
   HttpCode,
-  ParseIntPipe,
   Post,
   Query,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { SearchOperationsDto } from './dto/search-operations.dto';
 import { OperationSearchService } from './search.service';
@@ -35,7 +35,7 @@ export class OperationSearchController {
   @Get()
   recall(
     @Req() req: Request,
-    @Query('accountId', ParseIntPipe) accountId: number,
+    @Query('accountId', ParseUuidV7Pipe) accountId: string,
     @Query('page') page?: string,
   ) {
     return this.search.recallAndRun(req, accountId, page ? Number(page) : 1);
@@ -45,7 +45,7 @@ export class OperationSearchController {
   @HttpCode(200)
   async clear(
     @Req() req: Request,
-    @Query('accountId', ParseIntPipe) accountId: number,
+    @Query('accountId', ParseUuidV7Pipe) accountId: string,
   ): Promise<{ message: string }> {
     await this.search.clear(req, accountId);
     return { message: 'Search cleared' };

@@ -3,13 +3,16 @@ import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits } from '../common/money';
 import { account, bank, operation, scheduler } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 
-// Payment method ids 4 (debit) and 6 (credit) — the only two payment
-// methods that can carry a pairing; flipping between them mirrors a
-// transfer from one side to the other.
-export const TRANSFER_DEBIT_PAYMENT_METHOD_ID = 4;
-export const TRANSFER_CREDIT_PAYMENT_METHOD_ID = 6;
-export const TRANSFER_PAYMENT_METHOD_IDS = [
+// The "Transfer" debit/credit payment methods — the only two that can carry
+// a pairing; flipping between them mirrors a transfer from one side to the
+// other.
+export const TRANSFER_DEBIT_PAYMENT_METHOD_ID: string =
+  PAYMENT_METHOD_ID.TRANSFER_DEBIT;
+export const TRANSFER_CREDIT_PAYMENT_METHOD_ID: string =
+  PAYMENT_METHOD_ID.TRANSFER_CREDIT;
+export const TRANSFER_PAYMENT_METHOD_IDS: string[] = [
   TRANSFER_DEBIT_PAYMENT_METHOD_ID,
   TRANSFER_CREDIT_PAYMENT_METHOD_ID,
 ];
@@ -27,16 +30,16 @@ type Db = NodePgDatabase | Executor;
 // Facts needed to validate a *new* transfer target (attach or retarget) —
 // nothing here depends on the source operation already existing.
 export interface PairingEligibility {
-  sourceAccountId: number;
+  sourceAccountId: string;
   sourceCurrency: string;
-  memberId: number;
+  memberId: string;
 }
 
 // Adds the source operation's own id, needed to stamp a brand-new mirror's
 // back-reference — only attach()/sync() ever create a mirror, so only they
 // need this; validateSchedulerTarget (no row to reference) doesn't.
 export interface PairingSource extends PairingEligibility {
-  sourceOperationId: number;
+  sourceOperationId: string;
 }
 
 // The mirror's own editable content: everything about the transfer that
@@ -45,29 +48,29 @@ export interface PairingSource extends PairingEligibility {
 // internally; never pre-flip them yourself. `reconciled` is deliberately
 // excluded: a mirror's reconciled state is never inherited from the source.
 export interface MirrorContent {
-  paymentMethodId: number;
+  paymentMethodId: string;
   debit: MinorUnits | null;
   credit: MinorUnits | null;
   thirdParty: string;
   valueDate: string;
   notes: string;
-  schedulerId: number | null;
+  schedulerId: string | null;
 }
 
 // The pairing state stored on the source row before this save. Both null
 // when the source has never been paired; both set otherwise — never mixed,
 // on any row this module itself wrote.
 export interface PreviousPairing {
-  targetAccountId: number | null;
-  mirrorOperationId: number | null;
+  targetAccountId: string | null;
+  mirrorOperationId: string | null;
 }
 
 export type PairingEdit =
   | { action: 'none' }
-  | { action: 'attach'; targetAccountId: number }
-  | { action: 'retarget'; mirrorOperationId: number; targetAccountId: number }
-  | { action: 'refresh'; mirrorOperationId: number }
-  | { action: 'detach'; mirrorOperationId: number };
+  | { action: 'attach'; targetAccountId: string }
+  | { action: 'retarget'; mirrorOperationId: string; targetAccountId: string }
+  | { action: 'refresh'; mirrorOperationId: string }
+  | { action: 'detach'; mirrorOperationId: string };
 
 // Pure — no Db, no `this`. Classifies previous-vs-desired pairing state
 // into the one transition it represents. Exported standalone so it's
@@ -76,7 +79,7 @@ export type PairingEdit =
 // before a retarget) without going through sync() itself.
 export function classifyPairingEdit(
   previous: PreviousPairing,
-  desiredTargetAccountId: number | null,
+  desiredTargetAccountId: string | null,
 ): PairingEdit {
   if (desiredTargetAccountId === null) {
     return previous.mirrorOperationId !== null
@@ -100,11 +103,11 @@ export function classifyPairingEdit(
 
 @Injectable()
 export class TransferService {
-  isTransferMethod(paymentMethodId: number): boolean {
+  isTransferMethod(paymentMethodId: string): boolean {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId);
   }
 
-  private flip(paymentMethodId: number): number {
+  private flip(paymentMethodId: string): string {
     return paymentMethodId === TRANSFER_DEBIT_PAYMENT_METHOD_ID
       ? TRANSFER_CREDIT_PAYMENT_METHOD_ID
       : TRANSFER_DEBIT_PAYMENT_METHOD_ID;
@@ -117,7 +120,7 @@ export class TransferService {
   // of routed through here (see sync()'s 'refresh' branch).
   private async requireEligibleTarget(
     db: Db,
-    targetAccountId: number,
+    targetAccountId: string,
     source: PairingEligibility,
   ): Promise<void> {
     if (targetAccountId === source.sourceAccountId) {
@@ -166,9 +169,9 @@ export class TransferService {
   async attach(
     db: Db,
     source: PairingSource,
-    targetAccountId: number,
+    targetAccountId: string,
     content: MirrorContent,
-  ): Promise<number> {
+  ): Promise<string> {
     await this.requireEligibleTarget(db, targetAccountId, source);
     const [mirror] = await db
       .insert(operation)
@@ -194,9 +197,9 @@ export class TransferService {
     db: Db,
     source: PairingSource,
     previous: PreviousPairing,
-    desiredTargetAccountId: number | null,
+    desiredTargetAccountId: string | null,
     content: MirrorContent,
-  ): Promise<number | null> {
+  ): Promise<string | null> {
     const edit = classifyPairingEdit(previous, desiredTargetAccountId);
     switch (edit.action) {
       case 'none':
@@ -251,7 +254,7 @@ export class TransferService {
     db: Db,
     source: PairingEligibility,
     previous: Pick<PreviousPairing, 'targetAccountId'>,
-    desiredTargetAccountId: number | null,
+    desiredTargetAccountId: string | null,
   ): Promise<void> {
     if (
       desiredTargetAccountId === null ||
@@ -267,7 +270,7 @@ export class TransferService {
   // whose mirror is itself among the deleted ids need no such fix-up — both
   // sides are gone. Must run before the deletion itself, in the same
   // transaction.
-  async convertSurvivorsOfDeleted(db: Db, deletedIds: number[]): Promise<void> {
+  async convertSurvivorsOfDeleted(db: Db, deletedIds: string[]): Promise<void> {
     if (deletedIds.length === 0) {
       return;
     }
@@ -277,7 +280,7 @@ export class TransferService {
       .where(inArray(operation.id, deletedIds));
     const mirrorIds = rows
       .map((row) => row.transferOperationId)
-      .filter((id): id is number => id !== null && !deletedIds.includes(id));
+      .filter((id): id is string => id !== null && !deletedIds.includes(id));
     if (mirrorIds.length > 0) {
       await db
         .update(operation)
@@ -291,7 +294,7 @@ export class TransferService {
   // placeholder: a one-time, irreversible conversion at deletion time.
   async convertAccountReferencesToExternal(
     db: Db,
-    accountId: number,
+    accountId: string,
   ): Promise<void> {
     await db
       .update(operation)
@@ -304,7 +307,7 @@ export class TransferService {
   }
 
   // Same conversion, applied to every account of a bank being deleted.
-  async convertBankReferencesToExternal(db: Db, bankId: number): Promise<void> {
+  async convertBankReferencesToExternal(db: Db, bankId: string): Promise<void> {
     const accounts = await db
       .select({ id: account.id })
       .from(account)

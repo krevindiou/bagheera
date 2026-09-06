@@ -4,7 +4,7 @@ import { VALKEY_CLIENT } from './session.constants';
 import './session-data';
 
 interface StoredSessionData {
-  memberId?: number;
+  memberId?: string;
 }
 
 /**
@@ -28,12 +28,12 @@ export class SessionTerminationService {
    * unauthenticated password-recovery flow, which has no "current
    * session" to except.
    */
-  async terminateAllSessions(memberId: number): Promise<void> {
+  async terminateAllSessions(memberId: string): Promise<void> {
     await this.terminateOtherSessions(memberId, null);
   }
 
   async terminateOtherSessions(
-    memberId: number,
+    memberId: string,
     exceptSessionId: string | null,
   ): Promise<void> {
     const exceptKey = exceptSessionId ? `sess:${exceptSessionId}` : null;

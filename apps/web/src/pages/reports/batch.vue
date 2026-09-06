@@ -4,7 +4,7 @@ import { apiClient } from "../../api/client";
 import { useConfirm } from "../../composables/useConfirm";
 import { useToast } from "../../composables/useToast";
 
-const props = defineProps<{ selectedIds: number[] }>();
+const props = defineProps<{ selectedIds: string[] }>();
 const emit = defineEmits<{ done: [] }>();
 
 const { confirm } = useConfirm();

@@ -1,11 +1,10 @@
-import { IsIn, IsInt, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsIn, IsNumber, IsOptional, IsUUID } from 'class-validator';
 import { AccountNameField } from '../../common/dto-fields';
 import { ISO_CURRENCY_CODES } from '../../common/currency';
 
 export class CreateAccountDto {
-  @IsInt()
-  @Min(1)
-  bankId!: number;
+  @IsUUID('7')
+  bankId!: string;
 
   @AccountNameField()
   name!: string;

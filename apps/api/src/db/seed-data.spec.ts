@@ -1,18 +1,43 @@
-import { categorySeeds, paymentMethodSeeds } from './seed-data';
+import {
+  categorySeeds,
+  PAYMENT_METHOD_ID,
+  paymentMethodSeeds,
+  SALARY_CATEGORY_SEED_ID,
+} from './seed-data';
 
 describe('paymentMethodSeeds', () => {
   it('has exactly the 9 fixed payment methods', () => {
     expect(paymentMethodSeeds).toHaveLength(9);
     expect(paymentMethodSeeds).toEqual([
-      { id: 1, name: 'Credit card', type: 'debit' },
-      { id: 2, name: 'Check', type: 'debit' },
-      { id: 3, name: 'Cash withdrawal', type: 'debit' },
-      { id: 4, name: 'Transfer', type: 'debit' },
-      { id: 5, name: 'Check', type: 'credit' },
-      { id: 6, name: 'Transfer', type: 'credit' },
-      { id: 7, name: 'Deposit', type: 'credit' },
-      { id: 8, name: 'Direct debit', type: 'debit' },
-      { id: 9, name: 'Initial balance', type: null },
+      { id: PAYMENT_METHOD_ID.CREDIT_CARD, name: 'Credit card', type: 'debit' },
+      { id: PAYMENT_METHOD_ID.CHECK_DEBIT, name: 'Check', type: 'debit' },
+      {
+        id: PAYMENT_METHOD_ID.CASH_WITHDRAWAL,
+        name: 'Cash withdrawal',
+        type: 'debit',
+      },
+      {
+        id: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+        name: 'Transfer',
+        type: 'debit',
+      },
+      { id: PAYMENT_METHOD_ID.CHECK_CREDIT, name: 'Check', type: 'credit' },
+      {
+        id: PAYMENT_METHOD_ID.TRANSFER_CREDIT,
+        name: 'Transfer',
+        type: 'credit',
+      },
+      { id: PAYMENT_METHOD_ID.DEPOSIT, name: 'Deposit', type: 'credit' },
+      {
+        id: PAYMENT_METHOD_ID.DIRECT_DEBIT,
+        name: 'Direct debit',
+        type: 'debit',
+      },
+      {
+        id: PAYMENT_METHOD_ID.INITIAL_BALANCE,
+        name: 'Initial balance',
+        type: null,
+      },
     ]);
   });
 
@@ -31,11 +56,21 @@ describe('categorySeeds', () => {
   ): (typeof categorySeeds)[number][] =>
     seeds.flatMap((s) => [s, ...flatten(s.children ?? [])]);
 
-  it('seeds "Salary" first, so it gets id 1 (matched by the SALARY_CATEGORY_ID default)', () => {
+  it('seeds "Salary" first with the fixed id matched by SALARY_CATEGORY_ID', () => {
     const matches = flatten(categorySeeds).filter((c) => c.name === 'Salary');
     expect(matches).toHaveLength(1);
-    expect(matches[0]).toMatchObject({ type: 'credit' });
+    expect(matches[0]).toMatchObject({
+      type: 'credit',
+      id: SALARY_CATEGORY_SEED_ID,
+    });
     expect(categorySeeds[0].name).toBe('Salary');
+  });
+
+  it('only Salary has a fixed id — the rest get a DB-generated one', () => {
+    const others = flatten(categorySeeds).filter((c) => c.name !== 'Salary');
+    for (const category of others) {
+      expect(category.id).toBeUndefined();
+    }
   });
 
   it('keeps names within the 32-char column limit and uses only two levels', () => {

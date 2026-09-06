@@ -12,7 +12,7 @@ import type { Bank } from "./accounts.types";
 // active banks, or create a new one — before account creation even
 // starts.
 const props = defineProps<{ banks: Bank[] }>();
-const emit = defineEmits<{ chosen: [bankId: number]; cancel: [] }>();
+const emit = defineEmits<{ chosen: [bankId: string]; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -35,7 +35,7 @@ watch(bankName, (value) => {
 
 const onSubmit = handleSubmit(async (values) => {
   if (values.bankId) {
-    emit("chosen", Number(values.bankId));
+    emit("chosen", values.bankId);
     return;
   }
 
@@ -47,7 +47,7 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
   toast(t("accounts.bankSaved"), "success");
-  const created = data as unknown as { id: number };
+  const created = data as unknown as { id: string };
   emit("chosen", created.id);
 });
 

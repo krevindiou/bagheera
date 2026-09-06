@@ -38,24 +38,31 @@ describe("OperationsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/banks") {
-        return jsonResponse([{ id: 1, name: "My Bank", closed: false, deleted: false }]);
+        return jsonResponse([{ id: "1", name: "My Bank", closed: false, deleted: false }]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/operations/search") {
         return jsonResponse({
           items: [
             {
-              id: 10,
-              accountId: 1,
+              id: "10",
+              accountId: "1",
               schedulerId: null,
               transferOperationId: null,
               transferAccountId: null,
               categoryId: null,
-              paymentMethodId: 1,
+              paymentMethodId: "1",
               thirdParty: "Shop",
               debit: 50000,
               credit: null,
@@ -89,7 +96,14 @@ describe("OperationsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
@@ -110,7 +124,14 @@ describe("OperationsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
@@ -136,7 +157,14 @@ describe("OperationsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
@@ -151,13 +179,13 @@ describe("OperationsPage", () => {
         return jsonResponse({
           items: [
             {
-              id: 11,
-              accountId: 1,
+              id: "11",
+              accountId: "1",
               schedulerId: null,
               transferOperationId: null,
               transferAccountId: null,
               categoryId: null,
-              paymentMethodId: 1,
+              paymentMethodId: "1",
               thirdParty: "Coffee",
               debit: 5000,
               credit: null,
@@ -185,7 +213,7 @@ describe("OperationsPage", () => {
 
     expect(apiClient.POST).toHaveBeenCalledWith(
       "/operations/search",
-      expect.objectContaining({ body: expect.objectContaining({ accountId: 1 }) }),
+      expect.objectContaining({ body: expect.objectContaining({ accountId: "1" }) }),
     );
     expect(wrapper.text()).toContain("Coffee");
   });
@@ -194,7 +222,14 @@ describe("OperationsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
@@ -225,24 +260,31 @@ describe("OperationsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/accounts") {
         return jsonResponse([
-          { id: 1, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
+          {
+            id: "1",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
         ]);
       }
       if (path === "/banks") {
-        return jsonResponse([{ id: 1, name: "My Bank", closed: false, deleted: false }]);
+        return jsonResponse([{ id: "1", name: "My Bank", closed: false, deleted: false }]);
       }
       if (path === "/reference-data/categories") return jsonResponse([]);
       if (path === "/operations/search") {
         return jsonResponse({
           items: [
             {
-              id: 10,
-              accountId: 1,
+              id: "10",
+              accountId: "1",
               schedulerId: null,
               transferOperationId: null,
               transferAccountId: null,
               categoryId: null,
-              paymentMethodId: 1,
+              paymentMethodId: "1",
               thirdParty: "Shop",
               debit: 50000,
               credit: null,

@@ -1,13 +1,6 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  ParseIntPipe,
-  Req,
-} from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, Param, Req } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { RateLimit } from '../security/rate-limit.decorator';
 import {
   WebauthnCredentialSummary,
@@ -29,7 +22,7 @@ export class WebauthnCredentialsController {
   @RateLimit({ points: 10, durationSeconds: 60 })
   async remove(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.credentials.remove(req, id);
     return { message: 'ok' };

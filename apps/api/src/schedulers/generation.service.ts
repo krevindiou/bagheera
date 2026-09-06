@@ -45,7 +45,7 @@ export class SchedulerGenerationService {
   // exactly where the previous run's cap cut it off).
   async generateForScheduler(
     db: Db,
-    memberId: number,
+    memberId: string,
     row: SchedulerRow,
     acc: AccountRow,
     bnk: BankRow,
@@ -141,7 +141,7 @@ export class SchedulerGenerationService {
   // Runs catch-up for every active scheduler owned by a member, across all
   // their banks/accounts — one transaction per scheduler so one failure
   // can't roll back another's already-generated occurrences.
-  async catchUpMember(memberId: number): Promise<void> {
+  async catchUpMember(memberId: string): Promise<void> {
     const rows = await this.db
       .select({ scheduler, account, bank })
       .from(scheduler)

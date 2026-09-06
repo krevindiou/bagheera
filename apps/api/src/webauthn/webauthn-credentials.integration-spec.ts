@@ -134,7 +134,7 @@ describe('webauthn credentials management (integration)', () => {
   }
 
   async function addCredential(
-    memberId: number,
+    memberId: string,
     credentialId: string,
     deviceName?: string,
   ) {

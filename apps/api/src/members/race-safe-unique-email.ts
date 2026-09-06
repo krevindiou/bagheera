@@ -28,7 +28,7 @@ export async function raceSafeUniqueEmail<T>(
   db: NodePgDatabase,
   email: string,
   write: () => Promise<T>,
-  excludeId?: number,
+  excludeId?: string,
 ): Promise<{ ok: true; value: T } | { ok: false }> {
   const [existing] = await db
     .select({ id: member.id })

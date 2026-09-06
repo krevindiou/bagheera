@@ -5,13 +5,13 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -26,16 +26,16 @@ export class AccountController {
 
   @Get()
   list(@Req() req: Request, @Query('bankId') bankId?: string) {
-    return this.accounts.list(req, bankId ? Number(bankId) : undefined);
+    return this.accounts.list(req, bankId);
   }
 
   @Get(':id/chart')
-  chart(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+  chart(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
     return this.accounts.chart(req, id);
   }
 
   @Get(':id/balance')
-  balance(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+  balance(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
     return this.accounts.balance(req, id);
   }
 
@@ -56,7 +56,7 @@ export class AccountController {
   @HttpCode(200)
   async update(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateAccountDto,
   ): Promise<{ message: string }> {
     await this.accounts.update(req, id, dto);
@@ -67,7 +67,7 @@ export class AccountController {
   @HttpCode(200)
   async close(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.accounts.close(req, id);
     return { message: 'Account closed' };
@@ -77,7 +77,7 @@ export class AccountController {
   @HttpCode(200)
   async remove(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.accounts.remove(req, id);
     return { message: 'Account deleted' };

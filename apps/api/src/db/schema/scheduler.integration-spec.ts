@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { MinorUnits } from '../../common/money';
+import { PAYMENT_METHOD_ID } from '../seed-data';
 import {
   connectIntegrationDb,
   IntegrationDb,
@@ -17,13 +18,17 @@ const asMinorUnits = (value: number) => value as MinorUnits;
 
 describe('scheduler schema', () => {
   let ctx: IntegrationDb;
-  let accountId: number;
+  let accountId: string;
 
   beforeAll(async () => {
     ctx = connectIntegrationDb();
     await ctx.db
       .insert(paymentMethod)
-      .values({ id: 1, name: 'Credit card', type: 'debit' })
+      .values({
+        id: PAYMENT_METHOD_ID.CREDIT_CARD,
+        name: 'Credit card',
+        type: 'debit',
+      })
       .onConflictDoNothing();
   });
 
@@ -52,7 +57,7 @@ describe('scheduler schema', () => {
 
   const base = () => ({
     accountId,
-    paymentMethodId: 1,
+    paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
     thirdParty: 'Rent',
     valueDate: '2026-01-01',
     frequencyValue: 1,
@@ -89,7 +94,7 @@ describe('scheduler schema', () => {
       .values({
         accountId,
         schedulerId: schedulerRow.id,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         thirdParty: 'Rent',
         debit: asMinorUnits(5000),
       })

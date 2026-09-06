@@ -6,12 +6,11 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
-  IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
-  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -29,9 +28,8 @@ export class AmountComparatorDto {
 // field imposes no constraint (reconciled is a true tri-state: absent means
 // "either").
 export class SearchOperationsDto {
-  @IsInt()
-  @Min(1)
-  accountId!: number;
+  @IsUUID('7')
+  accountId!: string;
 
   @IsOptional()
   @IsIn(['debit', 'credit'])
@@ -46,17 +44,15 @@ export class SearchOperationsDto {
   @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(50)
-  @IsInt({ each: true })
-  @Min(1, { each: true })
-  categoryIds?: number[];
+  @IsUUID('7', { each: true })
+  categoryIds?: string[];
 
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
   @ArrayMaxSize(50)
-  @IsInt({ each: true })
-  @Min(1, { each: true })
-  paymentMethodIds?: number[];
+  @IsUUID('7', { each: true })
+  paymentMethodIds?: string[];
 
   // At most two comparators — e.g. a lower and upper bound.
   @IsOptional()

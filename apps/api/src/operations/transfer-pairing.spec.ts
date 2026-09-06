@@ -14,30 +14,39 @@ describe('classifyPairingEdit', () => {
     expect(
       classifyPairingEdit(
         { targetAccountId: null, mirrorOperationId: null },
-        7,
+        'account-7',
       ),
-    ).toEqual({ action: 'attach', targetAccountId: 7 });
+    ).toEqual({ action: 'attach', targetAccountId: 'account-7' });
   });
 
   it('classifies an existing pairing with no desired target as a detach', () => {
     expect(
-      classifyPairingEdit({ targetAccountId: 7, mirrorOperationId: 42 }, null),
-    ).toEqual({ action: 'detach', mirrorOperationId: 42 });
+      classifyPairingEdit(
+        { targetAccountId: 'account-7', mirrorOperationId: 'operation-42' },
+        null,
+      ),
+    ).toEqual({ action: 'detach', mirrorOperationId: 'operation-42' });
   });
 
   it('classifies the same desired target as the existing one as a refresh', () => {
     expect(
-      classifyPairingEdit({ targetAccountId: 7, mirrorOperationId: 42 }, 7),
-    ).toEqual({ action: 'refresh', mirrorOperationId: 42 });
+      classifyPairingEdit(
+        { targetAccountId: 'account-7', mirrorOperationId: 'operation-42' },
+        'account-7',
+      ),
+    ).toEqual({ action: 'refresh', mirrorOperationId: 'operation-42' });
   });
 
   it('classifies a different desired target than the existing one as a retarget', () => {
     expect(
-      classifyPairingEdit({ targetAccountId: 7, mirrorOperationId: 42 }, 9),
+      classifyPairingEdit(
+        { targetAccountId: 'account-7', mirrorOperationId: 'operation-42' },
+        'account-9',
+      ),
     ).toEqual({
       action: 'retarget',
-      mirrorOperationId: 42,
-      targetAccountId: 9,
+      mirrorOperationId: 'operation-42',
+      targetAccountId: 'account-9',
     });
   });
 });

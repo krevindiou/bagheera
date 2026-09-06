@@ -25,7 +25,7 @@ export class ReportBatchService {
 
   async batchDelete(
     req: Request,
-    ids: number[],
+    ids: string[],
   ): Promise<{ deletedCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedReportIds(ids, memberId);

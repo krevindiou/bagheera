@@ -29,16 +29,30 @@ describe("AccountsPage", () => {
       if (path === "/banks") {
         return Promise.resolve({
           data: [
-            { id: 1, name: "Active Bank", closed: false, deleted: false },
-            { id: 2, name: "Closed Bank", closed: true, deleted: false },
+            { id: "1", name: "Active Bank", closed: false, deleted: false },
+            { id: "2", name: "Closed Bank", closed: true, deleted: false },
           ],
           response: { ok: true },
         }) as never;
       }
       return Promise.resolve({
         data: [
-          { id: 10, bankId: 1, name: "Checking", currency: "USD", closed: false, deleted: false },
-          { id: 11, bankId: 1, name: "Old account", currency: "USD", closed: true, deleted: true },
+          {
+            id: "10",
+            bankId: "1",
+            name: "Checking",
+            currency: "USD",
+            closed: false,
+            deleted: false,
+          },
+          {
+            id: "11",
+            bankId: "1",
+            name: "Old account",
+            currency: "USD",
+            closed: true,
+            deleted: true,
+          },
         ],
         response: { ok: true },
       }) as never;
@@ -57,7 +71,7 @@ describe("AccountsPage", () => {
 
   it("clears the existing-bank choice when a new bank name is typed, and vice versa", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ id: 1, name: "Active Bank", closed: false, deleted: false }],
+      data: [{ id: "1", name: "Active Bank", closed: false, deleted: false }],
       response: { ok: true },
     } as never);
     const wrapper = mountPage();
@@ -80,7 +94,7 @@ describe("AccountsPage", () => {
 
   it("rejects submitting neither an existing bank nor a new bank name", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ id: 1, name: "Active Bank", closed: false, deleted: false }],
+      data: [{ id: "1", name: "Active Bank", closed: false, deleted: false }],
       response: { ok: true },
     } as never);
     const wrapper = mountPage();
@@ -104,7 +118,7 @@ describe("AccountsPage", () => {
     vi.mocked(apiClient.GET).mockImplementation((path: string) => {
       if (path === "/banks") {
         return Promise.resolve({
-          data: bankCreated ? [{ id: 5, name: "New Bank", closed: false, deleted: false }] : [],
+          data: bankCreated ? [{ id: "5", name: "New Bank", closed: false, deleted: false }] : [],
           response: { ok: true },
         }) as never;
       }
@@ -114,12 +128,12 @@ describe("AccountsPage", () => {
       if (path === "/banks/choice") {
         bankCreated = true;
         return Promise.resolve({
-          data: { id: 5, name: "New Bank", created: true },
+          data: { id: "5", name: "New Bank", created: true },
           response: { ok: true },
         }) as never;
       }
       return Promise.resolve({
-        data: { message: "Account saved", account: { id: 20 } },
+        data: { message: "Account saved", account: { id: "20" } },
         response: { ok: true },
       }) as never;
     });
@@ -143,9 +157,9 @@ describe("AccountsPage", () => {
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/accounts", {
-      body: { bankId: 5, name: "Checking", currency: "USD", initialBalance: undefined },
+      body: { bankId: "5", name: "Checking", currency: "USD", initialBalance: undefined },
     });
-    expect(pushSpy).toHaveBeenCalledWith({ name: "operations", params: { accountId: 20 } });
+    expect(pushSpy).toHaveBeenCalledWith({ name: "operations", params: { accountId: "20" } });
     pushSpy.mockRestore();
   });
 });

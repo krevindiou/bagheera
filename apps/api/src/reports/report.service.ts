@@ -20,9 +20,9 @@ export class ReportService {
   // non-deleted accounts in non-deleted banks — foreign, unknown, closed
   // (allowed), and since-deleted ids are dropped silently.
   private async filterOwnedActiveAccountIds(
-    accountIds: number[],
-    memberId: number,
-  ): Promise<number[]> {
+    accountIds: string[],
+    memberId: string,
+  ): Promise<string[]> {
     if (accountIds.length === 0) {
       return [];
     }
@@ -42,9 +42,9 @@ export class ReportService {
   }
 
   private async accountIdsByReport(
-    reportIds: number[],
-  ): Promise<Map<number, number[]>> {
-    const map = new Map<number, number[]>();
+    reportIds: string[],
+  ): Promise<Map<string, string[]>> {
+    const map = new Map<string, string[]>();
     if (reportIds.length === 0) {
       return map;
     }
@@ -115,7 +115,7 @@ export class ReportService {
     return { ...created, accountIds };
   }
 
-  async update(req: Request, id: number, dto: UpdateReportDto): Promise<void> {
+  async update(req: Request, id: string, dto: UpdateReportDto): Promise<void> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedReport(id, memberId);
     const accountIds = await this.filterOwnedActiveAccountIds(
@@ -149,7 +149,7 @@ export class ReportService {
     });
   }
 
-  async remove(req: Request, id: number): Promise<void> {
+  async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedReport(id, memberId);
 

@@ -44,7 +44,7 @@ describe("PasskeysPage", () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
       data: [
         {
-          id: 1,
+          id: "1",
           deviceName: "My laptop",
           createdAt: "2026-01-01T00:00:00.000Z",
           lastUsedAt: null,

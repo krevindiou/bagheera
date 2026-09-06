@@ -10,8 +10,8 @@ import { report, reportAccount } from './report';
 
 describe('report schema', () => {
   let ctx: IntegrationDb;
-  let memberId: number;
-  let accountId: number;
+  let memberId: string;
+  let accountId: string;
 
   beforeAll(() => {
     ctx = connectIntegrationDb();
@@ -66,8 +66,12 @@ describe('report schema', () => {
   });
 
   it('rejects a report account link with no matching report', async () => {
+    // Well-formed UUIDv7 that matches no row.
+    const nonexistentReportId = '00000000-0000-7000-8000-00000000ffff';
     await expect(
-      ctx.db.insert(reportAccount).values({ reportId: 9999, accountId }),
+      ctx.db
+        .insert(reportAccount)
+        .values({ reportId: nonexistentReportId, accountId }),
     ).rejects.toMatchObject({ cause: { code: '23503' } });
   });
 });

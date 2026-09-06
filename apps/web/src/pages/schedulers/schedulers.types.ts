@@ -2,11 +2,11 @@
 // the generated API client types their bodies as `Record<string, never>`.
 // This mirrors the actual shape (apps/api/src/db/schema/scheduler.ts).
 export interface Scheduler {
-  id: number;
-  accountId: number;
-  transferAccountId: number | null;
-  categoryId: number | null;
-  paymentMethodId: number;
+  id: string;
+  accountId: string;
+  transferAccountId: string | null;
+  categoryId: string | null;
+  paymentMethodId: string;
   thirdParty: string;
   // Minor units (real value × 10,000); exactly one of debit/credit is set.
   debit: number | null;

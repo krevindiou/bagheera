@@ -158,7 +158,7 @@ describe('reports (integration)', () => {
 
   async function createOwnedAccount(
     email: string,
-    opts: { deleted?: boolean; owner?: { id: number } } = {},
+    opts: { deleted?: boolean; owner?: { id: string } } = {},
   ) {
     const owner = opts.owner ?? (await createMember(email, 'password1'));
     const [ownerBank] = await ctx.db
@@ -198,7 +198,7 @@ describe('reports (integration)', () => {
 
     expect(res.status).toBe(200);
     const created = (
-      res.body as { report: { id: number; accountIds: number[] } }
+      res.body as { report: { id: string; accountIds: string[] } }
     ).report;
     expect(created.accountIds).toEqual([acc.id]);
 
@@ -240,7 +240,7 @@ describe('reports (integration)', () => {
       });
 
     expect(res.status).toBe(200);
-    const created = (res.body as { report: { accountIds: number[] } }).report;
+    const created = (res.body as { report: { accountIds: string[] } }).report;
     expect(created.accountIds).toEqual([acc.id]);
   });
 

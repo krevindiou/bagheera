@@ -2,11 +2,10 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
-  IsInt,
   IsNumber,
   IsOptional,
   IsPositive,
-  Min,
+  IsUUID,
 } from 'class-validator';
 import { NotesField, ThirdPartyField } from '../../common/dto-fields';
 
@@ -14,9 +13,8 @@ import { NotesField, ThirdPartyField } from '../../common/dto-fields';
 // server rejects any attempt to actually move the operation to another
 // account — an operation's account is immutable after creation.
 export class UpdateOperationDto {
-  @IsInt()
-  @Min(1)
-  accountId!: number;
+  @IsUUID('7')
+  accountId!: string;
 
   @IsIn(['debit', 'credit'])
   type!: 'debit' | 'credit';
@@ -29,18 +27,15 @@ export class UpdateOperationDto {
   amount!: number;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  categoryId?: number;
+  @IsUUID('7')
+  categoryId?: string;
 
-  @IsInt()
-  @Min(1)
-  paymentMethodId!: number;
+  @IsUUID('7')
+  paymentMethodId!: string;
 
   @IsOptional()
-  @IsInt()
-  @Min(1)
-  transferAccountId?: number;
+  @IsUUID('7')
+  transferAccountId?: string;
 
   @IsDateString()
   valueDate!: string;

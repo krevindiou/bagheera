@@ -20,8 +20,8 @@ function mountPage() {
 
 const reports = [
   {
-    id: 1,
-    memberId: 1,
+    id: "1",
+    memberId: "1",
     type: "sum",
     title: "Monthly spend",
     homepage: false,

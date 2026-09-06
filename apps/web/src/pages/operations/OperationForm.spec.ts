@@ -3,6 +3,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
 import OperationForm from "./OperationForm.vue";
+import { PAYMENT_METHOD_ID } from "./operations.types";
 import type { Category, PaymentMethod } from "./operations.types";
 
 vi.mock("../../api/client", () => ({
@@ -10,25 +11,25 @@ vi.mock("../../api/client", () => ({
 }));
 
 const categories: Category[] = [
-  { id: 1, parentId: null, type: "credit", name: "Salary" },
-  { id: 2, parentId: null, type: "debit", name: "Food" },
+  { id: "1", parentId: null, type: "credit", name: "Salary" },
+  { id: "2", parentId: null, type: "debit", name: "Food" },
 ];
 
 const paymentMethods: PaymentMethod[] = [
-  { id: 1, name: "Credit card", type: "debit" },
-  { id: 4, name: "Transfer", type: "debit" },
-  { id: 5, name: "Check", type: "credit" },
-  { id: 6, name: "Transfer", type: "credit" },
+  { id: PAYMENT_METHOD_ID.CREDIT_CARD, name: "Credit card", type: "debit" },
+  { id: PAYMENT_METHOD_ID.TRANSFER_DEBIT, name: "Transfer", type: "debit" },
+  { id: PAYMENT_METHOD_ID.CHECK_CREDIT, name: "Check", type: "credit" },
+  { id: PAYMENT_METHOD_ID.TRANSFER_CREDIT, name: "Transfer", type: "credit" },
 ];
 
 function mountForm() {
   return mount(OperationForm, {
     props: {
-      accountId: 1,
+      accountId: "1",
       categories,
       paymentMethods,
       accounts: [
-        { id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false },
+        { id: "2", bankId: "1", name: "Savings", currency: "USD", closed: false, deleted: false },
       ],
     },
     global: { plugins: [i18n] },
@@ -63,7 +64,7 @@ describe("OperationForm", () => {
     const wrapper = mountForm();
     expect(wrapper.find("#operation-transfer-account").exists()).toBe(false);
 
-    await wrapper.find("#operation-payment-method").setValue("4");
+    await wrapper.find("#operation-payment-method").setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find("#operation-transfer-account").exists()).toBe(true);
@@ -71,7 +72,7 @@ describe("OperationForm", () => {
 
   it("fills the category from an exact autocomplete match", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ thirdParty: "Landlord", categoryId: 2 }],
+      data: [{ thirdParty: "Landlord", categoryId: "2" }],
       response: { ok: true },
     } as never);
     const wrapper = mountForm();

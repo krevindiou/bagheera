@@ -4,6 +4,7 @@ import { i18n } from "../../i18n";
 import { apiClient } from "../../api/client";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
 import SchedulerForm from "./SchedulerForm.vue";
+import { PAYMENT_METHOD_ID } from "../operations/operations.types";
 import type { Category, PaymentMethod } from "../operations/operations.types";
 
 vi.mock("../../api/client", () => ({
@@ -11,25 +12,25 @@ vi.mock("../../api/client", () => ({
 }));
 
 const categories: Category[] = [
-  { id: 1, parentId: null, type: "credit", name: "Salary" },
-  { id: 2, parentId: null, type: "debit", name: "Food" },
+  { id: "1", parentId: null, type: "credit", name: "Salary" },
+  { id: "2", parentId: null, type: "debit", name: "Food" },
 ];
 
 const paymentMethods: PaymentMethod[] = [
-  { id: 1, name: "Credit card", type: "debit" },
-  { id: 4, name: "Transfer", type: "debit" },
-  { id: 5, name: "Check", type: "credit" },
-  { id: 6, name: "Transfer", type: "credit" },
+  { id: PAYMENT_METHOD_ID.CREDIT_CARD, name: "Credit card", type: "debit" },
+  { id: PAYMENT_METHOD_ID.TRANSFER_DEBIT, name: "Transfer", type: "debit" },
+  { id: PAYMENT_METHOD_ID.CHECK_CREDIT, name: "Check", type: "credit" },
+  { id: PAYMENT_METHOD_ID.TRANSFER_CREDIT, name: "Transfer", type: "credit" },
 ];
 
 function mountForm() {
   return mount(SchedulerForm, {
     props: {
-      accountId: 1,
+      accountId: "1",
       categories,
       paymentMethods,
       accounts: [
-        { id: 2, bankId: 1, name: "Savings", currency: "USD", closed: false, deleted: false },
+        { id: "2", bankId: "1", name: "Savings", currency: "USD", closed: false, deleted: false },
       ],
     },
     global: { plugins: [i18n] },
@@ -63,7 +64,7 @@ describe("SchedulerForm", () => {
     const wrapper = mountForm();
     expect(wrapper.find("#scheduler-transfer-account").exists()).toBe(false);
 
-    await wrapper.find("#scheduler-payment-method").setValue("4");
+    await wrapper.find("#scheduler-payment-method").setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find("#scheduler-transfer-account").exists()).toBe(true);
@@ -71,14 +72,14 @@ describe("SchedulerForm", () => {
 
   it("submits the recurrence fields alongside the operation-like fields", async () => {
     vi.mocked(apiClient.POST).mockResolvedValue({
-      data: { message: "Scheduler saved", scheduler: { id: 9 } },
+      data: { message: "Scheduler saved", scheduler: { id: "9" } },
       response: { ok: true },
     } as never);
 
     const wrapper = mountForm();
     await wrapper.find("#scheduler-third-party").setValue("Rent");
     await wrapper.find("#scheduler-amount").setValue("100");
-    await wrapper.find("#scheduler-payment-method").setValue("1");
+    await wrapper.find("#scheduler-payment-method").setValue(PAYMENT_METHOD_ID.CREDIT_CARD);
     await wrapper.find("#scheduler-frequency-value").setValue("2");
     await wrapper.find("#scheduler-frequency-unit").setValue("week");
     await submitAndSettle(wrapper);
@@ -87,7 +88,7 @@ describe("SchedulerForm", () => {
       "/schedulers",
       expect.objectContaining({
         body: expect.objectContaining({
-          accountId: 1,
+          accountId: "1",
           thirdParty: "Rent",
           frequencyValue: 2,
           frequencyUnit: "week",

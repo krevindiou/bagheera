@@ -2,15 +2,15 @@
 // so the generated API client types their bodies as `Record<string, never>`.
 // These mirror the actual shapes (apps/api/src/db/schema/{bank,account}.ts).
 export interface Bank {
-  id: number;
+  id: string;
   name: string;
   closed: boolean;
   deleted: boolean;
 }
 
 export interface Account {
-  id: number;
-  bankId: number;
+  id: string;
+  bankId: string;
   name: string;
   currency: string;
   closed: boolean;

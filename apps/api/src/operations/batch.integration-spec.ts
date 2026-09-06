@@ -12,6 +12,7 @@ import {
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
 import { account, bank, member, operation, securityEvent } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -178,19 +179,22 @@ describe('operations batch actions (integration)', () => {
     return { owner, bank: ownerBank, account: acc };
   }
 
-  async function insertOperation(accountId: number, thirdParty: string) {
+  async function insertOperation(accountId: string, thirdParty: string) {
     const [row] = await ctx.db
       .insert(operation)
       .values({
         accountId,
         thirdParty,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         debit: 1000 as MinorUnits,
         valueDate: '2026-01-01',
       })
       .returning();
     return row;
   }
+
+  // Well-formed UUIDv7 that matches no row.
+  const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
 
   it('deletes only owned ids, silently skips foreign/nonexistent, and writes an audit event', async () => {
     const { account: acc, owner } =
@@ -200,7 +204,6 @@ describe('operations batch actions (integration)', () => {
     );
     const owned = await insertOperation(acc.id, 'Mine');
     const foreign = await insertOperation(otherAcc.id, 'Not mine');
-    const nonexistentId = 999999;
 
     const { token, cookies } = await authedRequest(
       'batch1@example.com',
@@ -212,7 +215,7 @@ describe('operations batch actions (integration)', () => {
       .set('Cookie', cookies)
       .set('x-csrf-token', token)
       .set('X-Forwarded-Proto', 'https')
-      .send({ ids: [owned.id, foreign.id, nonexistentId] });
+      .send({ ids: [owned.id, foreign.id, NONEXISTENT_ID] });
 
     expect(res.status).toBe(200);
     expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
@@ -248,7 +251,7 @@ describe('operations batch actions (integration)', () => {
       .set('Cookie', cookies)
       .set('x-csrf-token', token)
       .set('X-Forwarded-Proto', 'https')
-      .send({ ids: [owned.id, foreign.id, 999999] });
+      .send({ ids: [owned.id, foreign.id, NONEXISTENT_ID] });
 
     expect(res.status).toBe(200);
     expect((res.body as { reconciledCount: number }).reconciledCount).toBe(1);

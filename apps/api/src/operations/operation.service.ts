@@ -10,6 +10,7 @@ import type { Request } from 'express';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { category, operation, paymentMethod } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateOperationDto } from './dto/create-operation.dto';
@@ -19,9 +20,9 @@ import {
   TransferService,
 } from './transfer.service';
 
-// Payment method id 9, "Initial balance", reserved for the
-// system-generated opening operation — non-editable.
-const OPENING_BALANCE_PAYMENT_METHOD_ID = 9;
+// The "Initial balance" payment method, reserved for the system-generated
+// opening operation — non-editable.
+const OPENING_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 const PAGE_SIZE = 20;
 
@@ -56,8 +57,8 @@ export class OperationService {
   // type, enforcing type-driven choice filtering server-side.
   private async validateTypedRefs(
     type: 'debit' | 'credit',
-    paymentMethodId: number,
-    categoryId?: number,
+    paymentMethodId: string,
+    categoryId?: string,
   ): Promise<void> {
     const [method] = await this.db
       .select()
@@ -88,15 +89,15 @@ export class OperationService {
   }
 
   private transferAccountId(
-    paymentMethodId: number,
-    transferAccountId?: number,
-  ): number | null {
+    paymentMethodId: string,
+    transferAccountId?: string,
+  ): string | null {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId)
       ? (transferAccountId ?? null)
       : null;
   }
 
-  async list(req: Request, accountId: number, page: number) {
+  async list(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(accountId, memberId);
 
@@ -190,7 +191,7 @@ export class OperationService {
 
   async update(
     req: Request,
-    id: number,
+    id: string,
     dto: UpdateOperationDto,
   ): Promise<void> {
     const memberId = requireMemberId(req);

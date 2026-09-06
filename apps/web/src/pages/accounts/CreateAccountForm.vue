@@ -23,11 +23,11 @@ type CurrencyCode = components["schemas"]["CreateAccountDto"]["currency"];
 // field.
 const props = defineProps<{
   banks: Bank[];
-  bankId?: number;
+  bankId?: string;
   mode?: "create" | "edit";
   account?: Account;
 }>();
-const emit = defineEmits<{ created: [accountId: number]; updated: []; cancel: [] }>();
+const emit = defineEmits<{ created: [accountId: string]; updated: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -73,7 +73,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   const { data, error, response } = await apiClient.POST("/accounts", {
     body: {
-      bankId: Number(values.bankId),
+      bankId: values.bankId,
       name: values.name,
       currency: values.currency.toUpperCase() as CurrencyCode,
       initialBalance: values.initialBalance,
@@ -85,7 +85,7 @@ const onSubmit = handleSubmit(async (values) => {
   }
 
   toast(t("accounts.accountSaved"), "success");
-  const created = data as unknown as { account: { id: number } };
+  const created = data as unknown as { account: { id: string } };
   emit("created", created.account.id);
 });
 

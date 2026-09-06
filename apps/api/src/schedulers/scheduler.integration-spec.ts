@@ -15,6 +15,7 @@ import { AuthModule } from '../auth/auth.module';
 import { BanksModule } from '../banks/banks.module';
 import { DbModule } from '../db/db.module';
 import { account, bank, member, operation, scheduler } from '../db/schema';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
 import { EmailModule } from '../email/email.module';
@@ -205,14 +206,14 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 900,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyUnit: 'month',
         frequencyValue: 1,
       });
 
     expect(res.status).toBe(200);
-    const created = (res.body as { scheduler: { id: number } }).scheduler;
+    const created = (res.body as { scheduler: { id: string } }).scheduler;
 
     const [row] = await ctx.db
       .select()
@@ -247,7 +248,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Savings transfer',
         amount: 100,
-        paymentMethodId: 4,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
         transferAccountId: foreign.id,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -281,7 +282,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Savings transfer',
         amount: 100,
-        paymentMethodId: 4,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
         transferAccountId: eurAccount.id,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -318,7 +319,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Savings transfer',
         amount: 100,
-        paymentMethodId: 4,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
         transferAccountId: closedTarget.id,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -350,13 +351,13 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Savings transfer',
         amount: 100,
-        paymentMethodId: 4,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
         transferAccountId: target.id,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       });
     expect(createRes.status).toBe(200);
-    const created = (createRes.body as { scheduler: { id: number } }).scheduler;
+    const created = (createRes.body as { scheduler: { id: string } }).scheduler;
 
     // The target closes after the scheduler was linked to it.
     await ctx.db
@@ -376,7 +377,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Savings transfer',
         amount: 150,
-        paymentMethodId: 4,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
         transferAccountId: target.id,
         valueDate: '2026-02-01',
         frequencyValue: 1,
@@ -406,7 +407,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 900,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       });
@@ -434,7 +435,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 900,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       });
@@ -449,7 +450,7 @@ describe('schedulers (integration)', () => {
       accountId: acc.id,
       thirdParty: 'Landlord',
       debit: 9000000 as MinorUnits,
-      paymentMethodId: 2,
+      paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
       valueDate: '2026-02-01',
       frequencyValue: 1,
     });
@@ -479,7 +480,7 @@ describe('schedulers (integration)', () => {
         accountId: acc.id,
         thirdParty: 'Landlord',
         debit: 9000000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       })
@@ -503,7 +504,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 950,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       });
@@ -529,7 +530,7 @@ describe('schedulers (integration)', () => {
         accountId: acc.id,
         thirdParty: 'Landlord',
         debit: 9000000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       })
@@ -549,7 +550,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 950,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       });
@@ -565,7 +566,7 @@ describe('schedulers (integration)', () => {
         accountId: acc.id,
         thirdParty: 'Landlord',
         debit: 9000000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       })
@@ -585,7 +586,7 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Landlord',
         amount: 950,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-03-01',
         frequencyUnit: 'month',
         frequencyValue: 1,
@@ -609,7 +610,7 @@ describe('schedulers (integration)', () => {
         accountId: acc.id,
         thirdParty: 'Landlord',
         debit: 9000000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
         frequencyValue: 1,
       })
@@ -621,7 +622,7 @@ describe('schedulers (integration)', () => {
         schedulerId: created.id,
         thirdParty: 'Landlord',
         debit: 9000000 as MinorUnits,
-        paymentMethodId: 2,
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
         valueDate: '2026-02-01',
       })
       .returning();
@@ -668,8 +669,8 @@ describe('schedulers (integration)', () => {
         type: 'debit',
         thirdParty: 'Grocery Store',
         amount: 10,
-        paymentMethodId: 1,
-        categoryId: 1, // Salary, credit-only
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        categoryId: SALARY_CATEGORY_SEED_ID, // Salary, credit-only
         valueDate: '2026-02-01',
         frequencyValue: 1,
       });

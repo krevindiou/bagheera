@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { MinorUnits } from '../../common/money';
+import { PAYMENT_METHOD_ID } from '../seed-data';
 import {
   connectIntegrationDb,
   IntegrationDb,
@@ -14,9 +15,12 @@ import { paymentMethod } from './payment-method';
 // calls; brand them so they satisfy operation.debit/credit's MinorUnits type.
 const asMinorUnits = (value: number) => value as MinorUnits;
 
+// Well-formed UUIDv7 that matches no row — used to trigger FK violations.
+const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
+
 describe('operation schema', () => {
   let ctx: IntegrationDb;
-  let accountId: number;
+  let accountId: string;
 
   beforeAll(async () => {
     ctx = connectIntegrationDb();
@@ -24,7 +28,11 @@ describe('operation schema', () => {
     // method row these tests need.
     await ctx.db
       .insert(paymentMethod)
-      .values({ id: 1, name: 'Credit card', type: 'debit' })
+      .values({
+        id: PAYMENT_METHOD_ID.CREDIT_CARD,
+        name: 'Credit card',
+        type: 'debit',
+      })
       .onConflictDoNothing();
   });
 
@@ -53,7 +61,7 @@ describe('operation schema', () => {
 
   const base = () => ({
     accountId,
-    paymentMethodId: 1,
+    paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
     thirdParty: 'Some Third Party',
   });
 
@@ -75,9 +83,11 @@ describe('operation schema', () => {
 
   it('rejects an operation with no matching account', async () => {
     await expect(
-      ctx.db
-        .insert(operation)
-        .values({ ...base(), accountId: 9999, credit: asMinorUnits(1000) }),
+      ctx.db.insert(operation).values({
+        ...base(),
+        accountId: NONEXISTENT_ID,
+        credit: asMinorUnits(1000),
+      }),
     ).rejects.toMatchObject({ cause: { code: '23503' } }); // foreign_key_violation
   });
 

@@ -17,7 +17,7 @@ import type { Scheduler, SchedulerList } from "./schedulers.types";
 import ToastContainer from "../../components/ToastContainer.vue";
 
 const route = useRoute();
-const accountId = computed(() => Number(route.params.accountId));
+const accountId = computed(() => route.params.accountId as string);
 
 const queryClient = useQueryClient();
 
@@ -28,7 +28,7 @@ watch(accountId, () => {
 
 const showForm = ref(false);
 const editingScheduler = ref<Scheduler | null>(null);
-const selectedIds = ref<Set<number>>(new Set());
+const selectedIds = ref<Set<string>>(new Set());
 
 const accountsQuery = useQuery({
   queryKey: ["accounts"],
@@ -109,7 +109,7 @@ function amountLabel(scheduler: Scheduler): string {
   return formatMoney(minorUnits, account.value?.currency ?? "USD");
 }
 
-function toggleSelected(id: number) {
+function toggleSelected(id: string) {
   const next = new Set(selectedIds.value);
   if (next.has(id)) {
     next.delete(id);

@@ -3,7 +3,7 @@ import { apiClient } from "../api/client";
 
 export interface ThirdPartySuggestion {
   thirdParty: string;
-  categoryId: number | null;
+  categoryId: string | null;
 }
 
 /**
@@ -17,7 +17,7 @@ export interface ThirdPartySuggestion {
 export function useThirdPartyAutocomplete(
   thirdParty: Ref<string | undefined>,
   type: Ref<"debit" | "credit">,
-  onExactMatch: (categoryId: number) => void,
+  onExactMatch: (categoryId: string) => void,
 ) {
   const suggestions = ref<ThirdPartySuggestion[]>([]);
   let debounceHandle: ReturnType<typeof setTimeout> | undefined;

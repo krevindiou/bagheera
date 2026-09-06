@@ -12,6 +12,7 @@ import {
 } from '../db/test-utils/integration-db';
 import { DbModule } from '../db/db.module';
 import { account, bank, member, operation, securityEvent } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { EmailModule } from '../email/email.module';
 import { EMAIL_PROVIDER } from '../email/email.constants';
 import type { EmailProvider } from '../email/email-message';
@@ -199,7 +200,7 @@ describe('accounts (integration)', () => {
       .where(sql`${operation.accountId} = ${created.id}`);
     expect(ops).toHaveLength(1);
     expect(ops[0].thirdParty).toBe('Initial balance');
-    expect(ops[0].paymentMethodId).toBe(9);
+    expect(ops[0].paymentMethodId).toBe(PAYMENT_METHOD_ID.INITIAL_BALANCE);
     expect(ops[0].credit).toBe(1234500);
     expect(ops[0].debit).toBeNull();
     expect(ops[0].reconciled).toBe(true);
@@ -516,21 +517,21 @@ describe('accounts (integration)', () => {
       // starting point, not shown as its own point.
       {
         accountId: acc.id,
-        paymentMethodId: 7,
+        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
         thirdParty: 'Employer',
         credit: asMinorUnits(300000),
         valueDate: monthKeyAgo(13),
       },
       {
         accountId: acc.id,
-        paymentMethodId: 1,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         thirdParty: 'Shop',
         debit: asMinorUnits(50000),
         valueDate: monthKeyAgo(2),
       },
       {
         accountId: acc.id,
-        paymentMethodId: 7,
+        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
         thirdParty: 'Employer',
         credit: asMinorUnits(200000),
         valueDate: monthKeyAgo(0),

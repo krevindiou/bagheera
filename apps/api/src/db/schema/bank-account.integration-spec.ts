@@ -24,7 +24,7 @@ describe('bank + account schema', () => {
     await ctx.pool.end();
   });
 
-  async function seedMember(): Promise<number> {
+  async function seedMember(): Promise<string> {
     const [row] = await ctx.db
       .insert(member)
       .values({ email: 'owner@example.com', password: 'hash', country: 'FR' })
@@ -32,16 +32,21 @@ describe('bank + account schema', () => {
     return row.id;
   }
 
+  // Well-formed UUIDv7 that matches no row — used to trigger FK violations.
+  const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
+
   it('rejects a bank with no matching member', async () => {
     await expect(
-      ctx.db.insert(bank).values({ memberId: 9999, name: 'Some Bank' }),
+      ctx.db
+        .insert(bank)
+        .values({ memberId: NONEXISTENT_ID, name: 'Some Bank' }),
     ).rejects.toMatchObject({ cause: { code: '23503' } }); // foreign_key_violation
   });
 
   it('rejects an account with no matching bank', async () => {
     await expect(
       ctx.db.insert(account).values({
-        bankId: 9999,
+        bankId: NONEXISTENT_ID,
         name: 'Checking',
         currency: 'EUR',
       }),

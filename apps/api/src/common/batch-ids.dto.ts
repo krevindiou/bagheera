@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayNotEmpty, IsInt, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayNotEmpty, IsUUID } from 'class-validator';
 
 // Batch actions: caller submits the ids it believes it owns; foreign
 // or nonexistent ids are silently skipped rather than rejected. Capped
@@ -13,7 +13,6 @@ import { ArrayMaxSize, ArrayNotEmpty, IsInt, Min } from 'class-validator';
 export class BatchIdsDto {
   @ArrayNotEmpty()
   @ArrayMaxSize(500)
-  @IsInt({ each: true })
-  @Min(1, { each: true })
-  ids!: number[];
+  @IsUUID('7', { each: true })
+  ids!: string[];
 }

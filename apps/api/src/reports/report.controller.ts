@@ -5,12 +5,12 @@ import {
   Get,
   HttpCode,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Req,
 } from '@nestjs/common';
 import type { Request } from 'express';
+import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
 import { ReportChartService } from './chart.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -33,7 +33,7 @@ export class ReportController {
   }
 
   @Get(':id/chart')
-  chart(@Req() req: Request, @Param('id', ParseIntPipe) id: number) {
+  chart(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
     return this.charts.getChart(req, id);
   }
 
@@ -54,7 +54,7 @@ export class ReportController {
   @HttpCode(200)
   async update(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateReportDto,
   ): Promise<{ message: string }> {
     await this.reports.update(req, id, dto);
@@ -65,7 +65,7 @@ export class ReportController {
   @HttpCode(200)
   async remove(
     @Req() req: Request,
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
     await this.reports.remove(req, id);
     return { message: 'Report deleted' };

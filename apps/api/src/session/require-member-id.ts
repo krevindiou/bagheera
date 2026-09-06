@@ -8,7 +8,7 @@ import './session-data';
 // reordered or scoped differently, rather than trusting that guarantee
 // silently. Every caller across the app goes through this one function
 // instead of re-reading `req.session.memberId` itself.
-export function requireMemberId(req: Request): number {
+export function requireMemberId(req: Request): string {
   const memberId = req.session.memberId;
   if (!memberId) {
     throw new UnauthorizedException();
