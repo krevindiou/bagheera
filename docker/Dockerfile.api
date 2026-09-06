@@ -9,7 +9,7 @@ WORKDIR /app
 FROM base AS deps
 # argon2 compiles a native addon on install.
 RUN apk add --no-cache python3 make g++
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/api/package.json apps/api/package.json
 COPY packages ./packages
 # --filter api... : api's deps + any workspace packages/* it depends on.

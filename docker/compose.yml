@@ -70,6 +70,7 @@ services:
       - ../packages:/app/packages
       - api_root_node_modules:/app/node_modules
       - api_node_modules:/app/apps/api/node_modules
+      - api_money_node_modules:/app/packages/money/node_modules
       # Lets `pnpm test:integration` (Testcontainers) reach the host Docker
       # daemon from inside this dev container to spin up its own ephemeral
       - /var/run/docker.sock:/var/run/docker.sock
@@ -112,6 +113,7 @@ services:
       - ../packages:/app/packages
       - web_root_node_modules:/app/node_modules
       - web_node_modules:/app/apps/web/node_modules
+      - web_money_node_modules:/app/packages/money/node_modules
     depends_on:
       - api
 
@@ -156,6 +158,7 @@ services:
       - ../packages:/app/packages
       - playwright_root_node_modules:/app/node_modules
       - playwright_node_modules:/app/apps/web/node_modules
+      - playwright_money_node_modules:/app/packages/money/node_modules
     depends_on:
       - api
       - web
@@ -176,9 +179,19 @@ volumes:
   # first silently win the other's dependency tree. playwright gets its
   # own for the same reason, and to keep its glibc-built native deps
   # (this image, unlike web's, isn't Alpine/musl) from mixing with web's.
+  # Same story for packages/money's node_modules: it's bind-mounted from
+  # the host via ../packages (so a fresh package can show up without a
+  # compose edit), but a bare bind mount leaves it un-populated — nothing
+  # ever `pnpm install`s into the host dir directly — and reusing one of
+  # the volumes above would hit the same silent-cross-contamination
+  # problem they were split up to avoid. So it gets its own named volume
+  # per service too.
   api_root_node_modules:
   web_root_node_modules:
   api_node_modules:
   web_node_modules:
+  api_money_node_modules:
+  web_money_node_modules:
   playwright_root_node_modules:
   playwright_node_modules:
+  playwright_money_node_modules:

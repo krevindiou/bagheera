@@ -23,7 +23,7 @@ WORKDIR /app
 # Deps baked in from here; e2e source itself comes in via bind mount (see
 # docker/compose.yml) so edits don't need a rebuild. node_modules paths are
 # covered by named volumes there so the bind mount doesn't shadow them.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter web...
