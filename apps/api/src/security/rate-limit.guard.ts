@@ -148,8 +148,15 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
         ]
       : undefined;
     if (typeof rawIdentifier === 'string' && rawIdentifier.length > 0) {
+      // Normalized the same way every auth flow looks the value up
+      // (`lower(email) = lower(...)`, see e.g. sign-in.service.ts) —
+      // otherwise varying letter case mints a fresh dimension key per
+      // variant, letting an attacker with a handful of source IPs bypass
+      // the per-account budget entirely by pairing each IP with its own
+      // case variant of the target email.
+      const normalizedIdentifier = rawIdentifier.trim().toLowerCase();
       dims.push({
-        key: `${routeKey}:id:${rawIdentifier}`,
+        key: `${routeKey}:id:${normalizedIdentifier}`,
         points: options.points,
       });
     }

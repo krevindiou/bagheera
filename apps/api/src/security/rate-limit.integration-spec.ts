@@ -137,6 +137,30 @@ describe('RateLimitGuard (integration)', () => {
       .expect(200);
   });
 
+  it('treats an identifier as case-insensitive (mirrors the case-insensitive email lookup every auth flow uses)', async () => {
+    const email = 'Case-Me@Example.com';
+
+    await request(app.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .send({ email: email.toLowerCase() })
+      .expect(200);
+    await request(app.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .send({ email: email.toUpperCase() })
+      .expect(200);
+    await request(app.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .send({ email })
+      .expect(200);
+
+    // Budget is 3 — a 4th attempt under yet another casing must still land
+    // on the same dimension, not mint a fresh one.
+    await request(app.getHttpServer())
+      .post('/__test-rate-limit/attempt')
+      .send({ email: 'CASE-ME@EXAMPLE.COM' })
+      .expect(429);
+  });
+
   it('tracks distinct source IPs independently (account-level throttling alone is not enough)', async () => {
     const email = 'shared-account@example.com';
 
