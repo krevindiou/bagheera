@@ -27,8 +27,13 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
-      - run: pnpm --filter api build
-      - run: pnpm --filter web build
+      # api...  / web... : build api/web's workspace packages/* dependencies
+      # first (topological order), then the app itself — pnpm run --filter
+      # doesn't build a filtered package's dependencies on its own. Matches
+      # docker/Dockerfile.api and docker/Dockerfile.caddy's production
+      # build stages.
+      - run: pnpm --filter api... build
+      - run: pnpm --filter web... build
 
   api-unit:
     name: API unit tests
