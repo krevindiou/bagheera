@@ -26,6 +26,15 @@ const apiRoutePrefixes = [
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  optimizeDeps: {
+    // packages/money is a pnpm workspace symlink, so Vite's dep crawler
+    // treats it as source and serves its dist/index.js untransformed —
+    // but that file is tsc's CommonJS output (`exports.foo = ...`), which
+    // isn't valid syntax for a browser loading it as a native ES module.
+    // Forcing it through esbuild's pre-bundling step (like any regular
+    // node_modules dep) converts it to real ESM first.
+    include: ["@bagheera/money"],
+  },
   server: {
     host: true,
     proxy: Object.fromEntries(
