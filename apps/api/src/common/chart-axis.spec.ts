@@ -1,25 +1,42 @@
 import { computeAxisBounds } from './chart-axis';
 
 describe('computeAxisBounds', () => {
-  it('pads a normal spread by 5%, rounded outward to two significant digits', () => {
-    expect(computeAxisBounds(100, 200)).toEqual({ min: 95, max: 205 });
-  });
-
-  it('rounds the padding up, not to the nearest value', () => {
-    // spread 37 -> 5% = 1.85 -> rounded outward to 1.9
-    expect(computeAxisBounds(10, 47)).toEqual({ min: 8.1, max: 48.9 });
-  });
-
-  it('is direction-safe for negative values', () => {
-    expect(computeAxisBounds(-200, -100)).toEqual({ min: -205, max: -95 });
-  });
-
-  it('pads flat non-zero data by 5% of the absolute value', () => {
-    // 5% of 250 = 12.5 -> rounded outward to 13
-    expect(computeAxisBounds(250, 250)).toEqual({ min: 237, max: 263 });
-  });
-
-  it('defaults all-zero data to [-1, +1]', () => {
+  it('defaults to [-1, 1] for all-zero flat data', () => {
     expect(computeAxisBounds(0, 0)).toEqual({ min: -1, max: 1 });
+  });
+
+  it('pads flat non-zero data by 5% of its magnitude, rounded outward', () => {
+    // |200| * 5% = 10 -> rounds outward to two significant digits: 10.
+    const bounds = computeAxisBounds(200, 200);
+    expect(bounds.min).toBeCloseTo(190, 6);
+    expect(bounds.max).toBeCloseTo(210, 6);
+  });
+
+  it('pads a spread by 5% of the spread, rounded outward', () => {
+    // spread = 100 -> 5% = 5 -> already two significant digits.
+    const bounds = computeAxisBounds(0, 100);
+    expect(bounds.min).toBeCloseTo(-5, 6);
+    expect(bounds.max).toBeCloseTo(105, 6);
+  });
+
+  it('rounds the padding outward to two significant digits (1.85 -> 1.9)', () => {
+    // spread = 37 -> 5% = 1.85 -> rounds outward to 1.9.
+    const bounds = computeAxisBounds(0, 37);
+    expect(bounds.min).toBeCloseTo(-1.9, 6);
+    expect(bounds.max).toBeCloseTo(38.9, 6);
+  });
+
+  it('rounds the padding outward to two significant digits (12.5 -> 13)', () => {
+    // spread = 250 -> 5% = 12.5 -> rounds outward to 13.
+    const bounds = computeAxisBounds(0, 250);
+    expect(bounds.min).toBeCloseTo(-13, 6);
+    expect(bounds.max).toBeCloseTo(263, 6);
+  });
+
+  it('handles a negative-only range', () => {
+    const bounds = computeAxisBounds(-100, -50);
+    // spread = 50 -> 5% = 2.5 -> rounds outward to 2.5 (already two sig figs).
+    expect(bounds.min).toBeCloseTo(-102.5, 6);
+    expect(bounds.max).toBeCloseTo(-47.5, 6);
   });
 });

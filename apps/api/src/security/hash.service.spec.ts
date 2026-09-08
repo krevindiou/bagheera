@@ -1,32 +1,28 @@
 import { HashService } from './hash.service';
 
 describe('HashService', () => {
-  let service: HashService;
+  const service = new HashService();
 
-  beforeEach(() => {
-    service = new HashService();
+  it('hashes using the argon2id variant', async () => {
+    const hash = await service.hash('correct horse battery staple');
+    expect(hash.startsWith('$argon2id$')).toBe(true);
   });
 
-  it('hashes and verifies a matching password', async () => {
-    const hash = await service.hash('correct-horse-battery-staple');
+  it('verifies a hash against the password it was made from', async () => {
+    const hash = await service.hash('correct horse battery staple');
     await expect(
-      service.verify(hash, 'correct-horse-battery-staple'),
+      service.verify(hash, 'correct horse battery staple'),
     ).resolves.toBe(true);
   });
 
-  it('rejects a wrong password', async () => {
-    const hash = await service.hash('correct-horse-battery-staple');
-    await expect(service.verify(hash, 'wrong-password')).resolves.toBe(false);
+  it('rejects an incorrect password', async () => {
+    const hash = await service.hash('correct horse battery staple');
+    await expect(service.verify(hash, 'wrong password')).resolves.toBe(false);
   });
 
-  it('rejects a malformed hash instead of throwing', async () => {
-    await expect(service.verify('not-a-real-hash', 'anything')).resolves.toBe(
-      false,
-    );
-  });
-
-  it('produces Argon2id hashes', async () => {
-    const hash = await service.hash('password');
-    expect(hash).toMatch(/^\$argon2id\$/);
+  it('returns false, rather than throwing, for a malformed/foreign hash string', async () => {
+    await expect(
+      service.verify('not-a-real-argon2-hash', 'anything'),
+    ).resolves.toBe(false);
   });
 });

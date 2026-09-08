@@ -1,4 +1,5 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
+import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import {
   AccountNameField,
@@ -12,247 +13,183 @@ import {
   ThirdPartyField,
 } from './dto-fields';
 
-class EmailHolder {
-  @EmailField()
-  email!: string;
+class EmailFieldHost {
+  @EmailField() value!: string;
 }
-
-class SecretHolder {
-  @SecretField()
-  value!: string;
+class SecretFieldHost {
+  @SecretField() value!: string;
 }
-
-class NewPasswordHolder {
-  @NewPasswordField()
-  value!: string;
+class NewPasswordFieldHost {
+  @NewPasswordField() value!: string;
 }
-
-class AccountNameHolder {
-  @AccountNameField()
-  name!: string;
+class ThirdPartyFieldHost {
+  @ThirdPartyField() value!: string;
 }
-
-class ThirdPartyHolder {
-  @ThirdPartyField()
-  thirdParty!: string;
+class AccountNameFieldHost {
+  @AccountNameField() value!: string;
 }
-
-class ReportTitleHolder {
-  @ReportTitleField()
-  title!: string;
+class ReportTitleFieldHost {
+  @ReportTitleField() value!: string;
 }
-
-class BankNameHolder {
-  @BankNameField()
-  name!: string;
+class BankNameFieldHost {
+  @BankNameField() value!: string;
 }
-
-class NotesHolder {
-  @NotesField()
-  notes?: string;
+class NotesFieldHost {
+  @NotesField() value?: string;
 }
-
-class AmountHolder {
-  @AmountField()
-  amount!: number;
+class AmountFieldHost {
+  @AmountField() value!: number;
 }
 
 describe('EmailField', () => {
-  it('accepts a well-formed email under the cap', async () => {
-    const dto = Object.assign(new EmailHolder(), { email: 'a@example.com' });
-    expect(await validate(dto)).toHaveLength(0);
+  it('accepts a valid email under the column width', async () => {
+    const dto = plainToInstance(EmailFieldHost, { value: 'a@b.com' });
+    expect(await validate(dto)).toEqual([]);
   });
 
-  it('rejects a non-email value', async () => {
-    const dto = Object.assign(new EmailHolder(), { email: 'not-an-email' });
+  it('rejects a non-email string', async () => {
+    const dto = plainToInstance(EmailFieldHost, { value: 'not-an-email' });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('isEmail');
+    expect(errors[0]?.constraints).toHaveProperty('isEmail');
   });
 
-  it('rejects an email over the 128-char cap', async () => {
-    const local = 'a'.repeat(122); // + '@a.com' = 128 exactly
-    const dto = Object.assign(new EmailHolder(), {
-      email: `${local}x@a.com`, // one over
-    });
+  it('rejects an email longer than 128 characters', async () => {
+    const local = 'a'.repeat(150);
+    const dto = plainToInstance(EmailFieldHost, { value: `${local}@b.com` });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
 });
 
 describe('SecretField', () => {
-  it('accepts a non-empty string under the cap', async () => {
-    const dto = Object.assign(new SecretHolder(), { value: 'x' });
-    expect(await validate(dto)).toHaveLength(0);
+  it('accepts a non-empty string with no minimum length', async () => {
+    const dto = plainToInstance(SecretFieldHost, { value: 'x' });
+    expect(await validate(dto)).toEqual([]);
   });
 
   it('rejects an empty string', async () => {
-    const dto = Object.assign(new SecretHolder(), { value: '' });
+    const dto = plainToInstance(SecretFieldHost, { value: '' });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('isNotEmpty');
+    expect(errors[0]?.constraints).toHaveProperty('isNotEmpty');
   });
 
-  it('rejects a value over the 4096-char cap', async () => {
-    const dto = Object.assign(new SecretHolder(), { value: 'x'.repeat(4097) });
+  it('rejects a string longer than 4096 characters', async () => {
+    const dto = plainToInstance(SecretFieldHost, { value: 'x'.repeat(4097) });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
-  });
-
-  it('imposes no minimum length beyond non-empty', async () => {
-    const dto = Object.assign(new SecretHolder(), { value: 'x' });
-    expect(await validate(dto)).toHaveLength(0);
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
 });
 
 describe('NewPasswordField', () => {
-  it('accepts a value between 8 and 4096 chars', async () => {
-    const dto = Object.assign(new NewPasswordHolder(), {
-      value: 'x'.repeat(8),
-    });
-    expect(await validate(dto)).toHaveLength(0);
-  });
-
-  it('rejects a value under the 8-char minimum', async () => {
-    const dto = Object.assign(new NewPasswordHolder(), {
-      value: 'x'.repeat(7),
-    });
+  it('rejects a password shorter than 8 characters', async () => {
+    const dto = plainToInstance(NewPasswordFieldHost, { value: 'short1' });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('isLength');
+    expect(errors[0]?.constraints).toHaveProperty('isLength');
   });
 
-  it('rejects a value over the 4096-char cap', async () => {
-    const dto = Object.assign(new NewPasswordHolder(), {
+  it('accepts an 8-character password', async () => {
+    const dto = plainToInstance(NewPasswordFieldHost, { value: 'exactly8' });
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('rejects a password longer than 4096 characters', async () => {
+    const dto = plainToInstance(NewPasswordFieldHost, {
       value: 'x'.repeat(4097),
     });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('isLength');
+    expect(errors[0]?.constraints).toHaveProperty('isLength');
   });
 });
 
-describe('AccountNameField', () => {
-  it('accepts a non-empty name under the cap', async () => {
-    const dto = Object.assign(new AccountNameHolder(), { name: 'Checking' });
-    expect(await validate(dto)).toHaveLength(0);
+describe('ThirdPartyField (boundedName, 64 chars)', () => {
+  it('rejects an empty string', async () => {
+    const dto = plainToInstance(ThirdPartyFieldHost, { value: '' });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('minLength');
   });
 
-  it('rejects an empty name', async () => {
-    const dto = Object.assign(new AccountNameHolder(), { name: '' });
-    const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('minLength');
+  it('accepts a name up to 64 characters', async () => {
+    const dto = plainToInstance(ThirdPartyFieldHost, { value: 'x'.repeat(64) });
+    expect(await validate(dto)).toEqual([]);
   });
 
-  it('rejects a name over the 64-char cap', async () => {
-    const dto = Object.assign(new AccountNameHolder(), {
-      name: 'x'.repeat(65),
-    });
+  it('rejects a name longer than 64 characters', async () => {
+    const dto = plainToInstance(ThirdPartyFieldHost, { value: 'x'.repeat(65) });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
 });
 
-describe('ThirdPartyField', () => {
-  it('accepts a non-empty value under the cap', async () => {
-    const dto = Object.assign(new ThirdPartyHolder(), { thirdParty: 'Amazon' });
-    expect(await validate(dto)).toHaveLength(0);
-  });
-
-  it('rejects an empty value', async () => {
-    const dto = Object.assign(new ThirdPartyHolder(), { thirdParty: '' });
-    const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('minLength');
-  });
-
-  it('rejects a value over the 64-char cap', async () => {
-    const dto = Object.assign(new ThirdPartyHolder(), {
-      thirdParty: 'x'.repeat(65),
+describe('AccountNameField and ReportTitleField (same boundedName shape, 64 chars)', () => {
+  it('AccountNameField rejects a name longer than 64 characters', async () => {
+    const dto = plainToInstance(AccountNameFieldHost, {
+      value: 'x'.repeat(65),
     });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
+  });
+
+  it('ReportTitleField rejects a name longer than 64 characters', async () => {
+    const dto = plainToInstance(ReportTitleFieldHost, {
+      value: 'x'.repeat(65),
+    });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
 });
 
-describe('ReportTitleField', () => {
-  it('accepts a non-empty title under the cap', async () => {
-    const dto = Object.assign(new ReportTitleHolder(), {
-      title: 'Monthly spend',
-    });
-    expect(await validate(dto)).toHaveLength(0);
+describe('BankNameField (boundedName, narrower 32-char cap)', () => {
+  it('accepts a name up to 32 characters', async () => {
+    const dto = plainToInstance(BankNameFieldHost, { value: 'x'.repeat(32) });
+    expect(await validate(dto)).toEqual([]);
   });
 
-  it('rejects an empty title', async () => {
-    const dto = Object.assign(new ReportTitleHolder(), { title: '' });
+  it('rejects a name of 33 characters, even though ThirdPartyField would accept it', async () => {
+    const dto = plainToInstance(BankNameFieldHost, { value: 'x'.repeat(33) });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('minLength');
-  });
-
-  it('rejects a title over the 64-char cap', async () => {
-    const dto = Object.assign(new ReportTitleHolder(), {
-      title: 'x'.repeat(65),
-    });
-    const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
-  });
-});
-
-describe('BankNameField', () => {
-  it('accepts a non-empty name under the 32-char cap', async () => {
-    const dto = Object.assign(new BankNameHolder(), { name: 'My Bank' });
-    expect(await validate(dto)).toHaveLength(0);
-  });
-
-  it('rejects an empty name', async () => {
-    const dto = Object.assign(new BankNameHolder(), { name: '' });
-    const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('minLength');
-  });
-
-  it('rejects a name over the 32-char cap — narrower than the other name-like fields', async () => {
-    const dto = Object.assign(new BankNameHolder(), { name: 'x'.repeat(33) });
-    const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
 });
 
 describe('NotesField', () => {
-  it('accepts being omitted — optional', async () => {
-    const dto = Object.assign(new NotesHolder(), {});
-    expect(await validate(dto)).toHaveLength(0);
+  it('is optional — undefined passes', async () => {
+    const dto = plainToInstance(NotesFieldHost, {});
+    expect(await validate(dto)).toEqual([]);
   });
 
-  it('accepts a non-empty value under the 4096-char cap', async () => {
-    const dto = Object.assign(new NotesHolder(), { notes: 'x' });
-    expect(await validate(dto)).toHaveLength(0);
+  it('accepts a note within 4096 characters', async () => {
+    const dto = plainToInstance(NotesFieldHost, { value: 'x'.repeat(4096) });
+    expect(await validate(dto)).toEqual([]);
   });
 
-  it('rejects a value over the 4096-char cap', async () => {
-    const dto = Object.assign(new NotesHolder(), { notes: 'x'.repeat(4097) });
+  it('rejects a note longer than 4096 characters', async () => {
+    const dto = plainToInstance(NotesFieldHost, { value: 'x'.repeat(4097) });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('maxLength');
+    expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
 });
 
 describe('AmountField', () => {
-  it('accepts a positive value at the ceiling', async () => {
-    const dto = Object.assign(new AmountHolder(), { amount: AMOUNT_CEILING });
-    expect(await validate(dto)).toHaveLength(0);
+  it('accepts a positive amount up to AMOUNT_CEILING', async () => {
+    const dto = plainToInstance(AmountFieldHost, { value: AMOUNT_CEILING });
+    expect(await validate(dto)).toEqual([]);
   });
 
-  it('rejects a value over the ceiling', async () => {
-    const dto = Object.assign(new AmountHolder(), {
-      amount: AMOUNT_CEILING + 1,
-    });
+  it('rejects an amount above AMOUNT_CEILING', async () => {
+    const dto = plainToInstance(AmountFieldHost, { value: AMOUNT_CEILING + 1 });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('max');
+    expect(errors[0]?.constraints).toHaveProperty('max');
   });
 
-  it('rejects zero — the sign comes from the operation/scheduler type, not this field', async () => {
-    const dto = Object.assign(new AmountHolder(), { amount: 0 });
+  it('rejects zero — the sign/magnitude comes from the amount, so it must be strictly positive', async () => {
+    const dto = plainToInstance(AmountFieldHost, { value: 0 });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('isPositive');
+    expect(errors[0]?.constraints).toHaveProperty('isPositive');
   });
 
-  it('rejects a negative value', async () => {
-    const dto = Object.assign(new AmountHolder(), { amount: -1 });
+  it('rejects a negative amount', async () => {
+    const dto = plainToInstance(AmountFieldHost, { value: -5 });
     const errors = await validate(dto);
-    expect(errors[0].constraints).toHaveProperty('isPositive');
+    expect(errors[0]?.constraints).toHaveProperty('isPositive');
   });
 });

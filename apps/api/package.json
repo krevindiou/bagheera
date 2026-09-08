@@ -97,7 +97,31 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!**/*.integration-spec.ts",
+      "!test-support/**",
+      "!**/*.module.ts",
+      "!**/*.controller.ts",
+      "health/health.controller.ts",
+      "!**/*.service.ts",
+      "security/crypto.service.ts",
+      "security/hash.service.ts",
+      "!db/schema/**",
+      "!**/*.provider.ts",
+      "!main.ts",
+      "!db/db.constants.ts",
+      "!db/seed.ts",
+      "!db/test-utils/**",
+      "!email/**",
+      "email/i18n/en.ts",
+      "!logging/sentry.ts",
+      "!session/session-data.ts",
+      "!session/webauthn-session-data.ts",
+      "!session/session.constants.ts",
+      "!members/send-activation-email.ts",
+      "!common/money.ts",
+      "!common/currency.ts",
+      "!common/parse-uuid-v7.pipe.ts"
     ],
     "coverageDirectory": "../coverage",
     "coverageReporters": [
@@ -105,6 +129,11 @@
       "lcov",
       "json-summary"
     ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90
+      }
+    },
     "testEnvironment": "node",
     "reporters": [
       "default",

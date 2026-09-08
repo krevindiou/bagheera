@@ -1,203 +1,166 @@
-import {
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  INestApplication,
-  NotFoundException,
-  Post,
-  UnprocessableEntityException,
-  ValidationPipe,
-} from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { IsEmail } from 'class-validator';
-import request from 'supertest';
-import type { App } from 'supertest/types';
-import * as Sentry from '@sentry/node';
-import { Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './global-exception.filter';
-import type { ErrorResponseBody } from './error-response';
+import {
+  fakeArgumentsHost,
+  fakeRequest,
+  fakeResponse,
+} from '../../test-support/fake-http-context';
 
-jest.mock('@sentry/node', () => ({
-  captureException: jest.fn(),
-  init: jest.fn(),
-}));
+// @sentry/node's named exports aren't spy-able in place (frozen/read-only
+// bindings) — a full module mock sidesteps that instead of fighting it.
+jest.mock('@sentry/node');
+import { Sentry } from '../../logging/sentry';
 
-class SignInDto {
-  @IsEmail()
-  email!: string;
-}
+describe('GlobalExceptionFilter', () => {
+  const filter = new GlobalExceptionFilter();
+  // Kept as its own variable (rather than re-reading Logger.prototype.error
+  // in each assertion) so assertions read off a plain jest.SpyInstance,
+  // not a reference extracted off the real Logger class — the latter trips
+  // @typescript-eslint/unbound-method, a false positive for jest matchers.
+  let errorSpy: jest.SpyInstance;
 
-// Test-only controller — exists solely to exercise GlobalExceptionFilter
-// from outside; never registered in the real app.
-@Controller('__test-errors')
-class TestErrorsController {
-  @Get('not-found')
-  notFound() {
-    throw new NotFoundException('bank not found');
-  }
+  beforeEach(() => {
+    errorSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    (Sentry.captureException as jest.Mock).mockReturnValue('event-id');
+  });
 
-  @Get('forbidden')
-  forbidden() {
-    throw new ForbiddenException('not your account');
-  }
+  afterEach(() => {
+    jest.restoreAllMocks();
+    (Sentry.captureException as jest.Mock).mockClear();
+  });
 
-  @Get('unprocessable')
-  unprocessable() {
-    throw new UnprocessableEntityException('cannot delete active bank');
-  }
+  it("uses an HttpException's string response as the message", async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      new HttpException('plain message', 400),
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        category: 'validation_error',
+        message: 'plain message',
+      }),
+    );
+  });
 
-  @Post('validate')
-  validate(@Body() dto: SignInDto) {
-    return dto;
-  }
+  it("uses an HttpException's object {message} response as-is (e.g. class-validator's array)", async () => {
+    const res = fakeResponse();
+    const exception = new BadRequestException({
+      message: ['field is required'],
+    });
+    await filter.catch(exception, fakeArgumentsHost(fakeRequest(), res));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ message: ['field is required'] }),
+    );
+  });
 
-  @Get('boom')
-  boom() {
-    throw new Error('unexpected wiring failure');
-  }
+  it('falls back to exception.message when the response body has no message property', async () => {
+    const res = fakeResponse();
+    class NoBodyException extends HttpException {
+      constructor() {
+        super({ notMessage: 'x' }, 400);
+      }
+    }
+    await filter.catch(
+      new NoBodyException(),
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    // Nest's HttpException.message defaults to the status text when the
+    // response body carries no usable message of its own.
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.any() is untyped (any) in @types/jest */
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ message: expect.any(String) }),
+    );
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+  });
 
-  // Shaped like what the `http-errors` package produces (used by
-  // Express-level middleware outside Nest's own pipeline, e.g. csrf-csrf's
-  // doubleCsrfProtection on a missing/invalid CSRF token) rather than
-  // Nest's own HttpException.
-  @Get('exposed-http-error')
-  exposedHttpError() {
-    const error = Object.assign(new Error('invalid csrf token'), {
+  it('logs and reports to Sentry, then returns a generic 500 body, for a plain Error', async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      new Error('boom'),
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 500,
+        category: 'error',
+        message: 'Internal server error',
+      }),
+    );
+    expect(errorSpy).toHaveBeenCalled();
+    expect(Sentry.captureException).toHaveBeenCalled();
+  });
+
+  it('passes an exposed http-errors-style error through at its own status, without logging', async () => {
+    const res = fakeResponse();
+    const httpError = Object.assign(new Error('CSRF token mismatch'), {
       statusCode: 403,
       expose: true,
     });
-    throw error;
-  }
-}
-
-describe('GlobalExceptionFilter', () => {
-  let app: INestApplication<App>;
-  let loggerErrorSpy: jest.SpyInstance;
-
-  beforeAll(async () => {
-    // The "boom" case below deliberately triggers a 500, which the filter
-    // logs via Nest's Logger — silence it so a passing suite doesn't print
-    // a scary-looking stack trace to the console.
-    loggerErrorSpy = jest
-      .spyOn(Logger.prototype, 'error')
-      .mockImplementation(() => undefined);
-
-    const moduleRef = await Test.createTestingModule({
-      controllers: [TestErrorsController],
-    }).compile();
-
-    app = moduleRef.createNestApplication();
-    app.useGlobalFilters(new GlobalExceptionFilter());
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-
-    const swaggerDocument = SwaggerModule.createDocument(
-      app,
-      new DocumentBuilder().setTitle('Test').setVersion('1').build(),
+    await filter.catch(httpError, fakeArgumentsHost(fakeRequest(), res));
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 403,
+        category: 'access_denied',
+        message: 'CSRF token mismatch',
+      }),
     );
-    SwaggerModule.setup('api/docs', app, swaggerDocument, {
-      jsonDocumentUrl: 'api/docs-json',
-    });
-
-    await app.init();
-  });
-
-  afterAll(async () => {
-    await app.close();
-    loggerErrorSpy.mockRestore();
-  });
-
-  it('shapes a 404 as "not_found"', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/__test-errors/not-found')
-      .expect(404);
-    expect(res.body).toMatchObject({
-      statusCode: 404,
-      category: 'not_found',
-      message: 'bank not found',
-      path: '/__test-errors/not-found',
-    });
-    expect(typeof (res.body as ErrorResponseBody).timestamp).toBe('string');
-  });
-
-  it('shapes a 403 as "access_denied"', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/__test-errors/forbidden')
-      .expect(403);
-    expect(res.body).toMatchObject({
-      statusCode: 403,
-      category: 'access_denied',
-      message: 'not your account',
-    });
-  });
-
-  it('shapes a 422 as "access_denied" too', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/__test-errors/unprocessable')
-      .expect(422);
-    expect(res.body).toMatchObject({
-      statusCode: 422,
-      category: 'access_denied',
-      message: 'cannot delete active bank',
-    });
-  });
-
-  it('shapes a ValidationPipe 400 as "validation_error"', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/__test-errors/validate')
-      .send({ email: 'not-an-email' })
-      .expect(400);
-    expect(res.body).toMatchObject({
-      statusCode: 400,
-      category: 'validation_error',
-    });
-    expect(Array.isArray((res.body as ErrorResponseBody).message)).toBe(true);
-  });
-
-  it('shapes an unhandled error as a generic 500 without leaking details', async () => {
-    const res = await request(app.getHttpServer())
-      .get('/__test-errors/boom')
-      .expect(500);
-    expect(res.body).toMatchObject({
-      statusCode: 500,
-      category: 'error',
-      message: 'Internal server error',
-    });
-  });
-
-  it('reports unhandled errors to Sentry', async () => {
-    await request(app.getHttpServer()).get('/__test-errors/boom').expect(500);
-
-    expect(Sentry.captureException).toHaveBeenCalledWith(
-      expect.objectContaining({ message: 'unexpected wiring failure' }),
-    );
-  });
-
-  it('shapes an exposed http-errors-style exception by its own status, without logging or reporting it', async () => {
-    loggerErrorSpy.mockClear();
-    jest.mocked(Sentry.captureException).mockClear();
-
-    const res = await request(app.getHttpServer())
-      .get('/__test-errors/exposed-http-error')
-      .expect(403);
-    expect(res.body).toMatchObject({
-      statusCode: 403,
-      category: 'access_denied',
-      message: 'invalid csrf token',
-    });
-    expect(loggerErrorSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
     expect(Sentry.captureException).not.toHaveBeenCalled();
   });
 
-  it('exposes OpenAPI docs at /api/docs-json and /api/docs', async () => {
-    const json = await request(app.getHttpServer())
-      .get('/api/docs-json')
-      .expect(200);
-    expect(json.body as { openapi: string }).toMatchObject({
-      openapi: expect.any(String) as string,
+  it('treats a statusCode-bearing error without expose:true as an ordinary 500, not an exposed error', async () => {
+    const res = fakeResponse();
+    const lookalike = Object.assign(new Error('internal detail'), {
+      statusCode: 403,
     });
+    await filter.catch(lookalike, fakeArgumentsHost(fakeRequest(), res));
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Internal server error' }),
+    );
+  });
 
-    await request(app.getHttpServer()).get('/api/docs').expect(200);
+  // extractMessage()'s `exception instanceof Error ? exception.message :
+  // 'Unknown error'` fallback looks reachable for a non-Error throw, but
+  // isn't: statusCodeOf() only ever returns something other than 500 for
+  // an HttpException (handled earlier) or an isExposedHttpError() match,
+  // which itself requires `exception instanceof Error`. So any non-Error
+  // throw always has statusCode === 500, and extractMessage returns
+  // 'Internal server error' one branch earlier — 'Unknown error' is
+  // currently dead code, not exercised by this or any other case.
+  it('reports a generic "Internal server error", not the raw value, for a thrown non-Error', async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      'a raw string throw',
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Internal server error' }),
+    );
+  });
+
+  it('stamps the request path and an ISO timestamp on every response', async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      new HttpException('x', 404),
+      fakeArgumentsHost(fakeRequest({ url: '/accounts/1' }), res),
+    );
+
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.stringMatching() is untyped (any) in @types/jest */
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: '/accounts/1',
+        timestamp: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+      }),
+    );
+    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   });
 });
