@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
+import { useSelection } from "../../composables/useSelection";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatMoney } from "../operations/money";
 import {
@@ -28,7 +29,7 @@ watch(accountId, () => {
 
 const showForm = ref(false);
 const editingScheduler = ref<Scheduler | null>(null);
-const selectedIds = ref<Set<string>>(new Set());
+const { selectedIds, selectedIdList, toggleSelected } = useSelection();
 
 const accountsQuery = useQuery({
   queryKey: ["accounts"],
@@ -98,7 +99,6 @@ const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.v
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
-const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 async function reloadSchedulers() {
   await queryClient.invalidateQueries({ queryKey: ["schedulers", accountId.value, page.value] });
@@ -107,16 +107,6 @@ async function reloadSchedulers() {
 function amountLabel(scheduler: Scheduler): string {
   const minorUnits = scheduler.debit ?? scheduler.credit ?? 0;
   return formatMoney(minorUnits, account.value?.currency ?? "USD");
-}
-
-function toggleSelected(id: string) {
-  const next = new Set(selectedIds.value);
-  if (next.has(id)) {
-    next.delete(id);
-  } else {
-    next.add(id);
-  }
-  selectedIds.value = next;
 }
 
 function startCreate() {

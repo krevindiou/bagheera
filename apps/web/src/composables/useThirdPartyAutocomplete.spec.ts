@@ -1,81 +1,120 @@
-import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ref } from "vue";
-import { apiClient } from "../api/client";
+import { nextTick, ref } from "vue";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { asMockedApiClient, mockApiClient } from "../test-support/mockApiClient";
+
+vi.mock("../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../api/client";
 import { useThirdPartyAutocomplete } from "./useThirdPartyAutocomplete";
 
-vi.mock("../api/client", () => ({
-  apiClient: { GET: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
 describe("useThirdPartyAutocomplete", () => {
   beforeEach(() => {
-    vi.mocked(apiClient.GET).mockReset();
+    vi.useFakeTimers();
+    apiClient.GET.mockReset();
+    apiClient.GET.mockResolvedValue({ data: [], error: undefined, response: new Response() });
   });
 
-  it("does not query below 2 characters", async () => {
-    const thirdParty = ref("");
-    const type = ref<"debit" | "credit">("debit");
-    const { suggestions } = useThirdPartyAutocomplete(thirdParty, type, vi.fn());
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("doesn't query below 2 characters", async () => {
+    const thirdParty = ref<string | undefined>("");
+    const { suggestions } = useThirdPartyAutocomplete(thirdParty, ref("debit"), vi.fn());
 
     thirdParty.value = "a";
-    await flushPromises();
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(300);
 
     expect(apiClient.GET).not.toHaveBeenCalled();
     expect(suggestions.value).toEqual([]);
   });
 
-  it("queries, debounced, once the field holds at least 2 characters", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ thirdParty: "Landlord", categoryId: null }],
-      response: { ok: true },
-    } as never);
-    const thirdParty = ref("");
-    const type = ref<"debit" | "credit">("debit");
-    const { suggestions } = useThirdPartyAutocomplete(thirdParty, type, vi.fn());
+  it("queries 300ms after the field settles at 2+ characters", async () => {
+    const thirdParty = ref<string | undefined>("");
+    useThirdPartyAutocomplete(thirdParty, ref("debit"), vi.fn());
 
-    thirdParty.value = "Land";
-    await flushPromises();
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    thirdParty.value = "Lan";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(299);
+    expect(apiClient.GET).not.toHaveBeenCalled();
 
+    await vi.advanceTimersByTimeAsync(1);
     expect(apiClient.GET).toHaveBeenCalledWith("/operations/autocomplete", {
-      params: { query: { q: "Land", type: "debit" } },
+      params: { query: { q: "Lan", type: "debit" } },
     });
-    expect(suggestions.value).toEqual([{ thirdParty: "Landlord", categoryId: null }]);
   });
 
-  it("reports an exact match's category back via onExactMatch", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ thirdParty: "Landlord", categoryId: "7" }],
-      response: { ok: true },
-    } as never);
-    const thirdParty = ref("");
-    const type = ref<"debit" | "credit">("debit");
-    const onExactMatch = vi.fn();
-    useThirdPartyAutocomplete(thirdParty, type, onExactMatch);
+  it("resets the debounce on every keystroke, only querying once for the final value", async () => {
+    const thirdParty = ref<string | undefined>("");
+    useThirdPartyAutocomplete(thirdParty, ref("debit"), vi.fn());
 
-    thirdParty.value = "Landlord";
-    await flushPromises();
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    thirdParty.value = "La";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(200);
 
-    expect(onExactMatch).toHaveBeenCalledWith("7");
+    thirdParty.value = "Lan";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(apiClient.GET).toHaveBeenCalledTimes(1);
+    expect(apiClient.GET).toHaveBeenCalledWith("/operations/autocomplete", {
+      params: { query: { q: "Lan", type: "debit" } },
+    });
   });
 
-  it("does not report a non-exact match", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [{ thirdParty: "Landlord", categoryId: "7" }],
-      response: { ok: true },
-    } as never);
-    const thirdParty = ref("");
-    const type = ref<"debit" | "credit">("debit");
+  it("reports an exact match's category back through onExactMatch", async () => {
+    apiClient.GET.mockResolvedValueOnce({
+      data: [{ thirdParty: "Landlord", categoryId: "cat-1" }],
+      error: undefined,
+      response: new Response(),
+    });
     const onExactMatch = vi.fn();
-    useThirdPartyAutocomplete(thirdParty, type, onExactMatch);
+    const thirdParty = ref<string | undefined>("");
+    useThirdPartyAutocomplete(thirdParty, ref("debit"), onExactMatch);
 
-    thirdParty.value = "Land"; // partial, not exact
-    await flushPromises();
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    thirdParty.value = "landlord";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(onExactMatch).toHaveBeenCalledWith("cat-1");
+  });
+
+  it("doesn't call onExactMatch when nothing matches exactly", async () => {
+    apiClient.GET.mockResolvedValueOnce({
+      data: [{ thirdParty: "Landlord Inc", categoryId: "cat-1" }],
+      error: undefined,
+      response: new Response(),
+    });
+    const onExactMatch = vi.fn();
+    const thirdParty = ref<string | undefined>("");
+    useThirdPartyAutocomplete(thirdParty, ref("debit"), onExactMatch);
+
+    thirdParty.value = "landlord";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(300);
 
     expect(onExactMatch).not.toHaveBeenCalled();
+  });
+
+  it("clears suggestions once the field drops back under 2 characters", async () => {
+    apiClient.GET.mockResolvedValueOnce({
+      data: [{ thirdParty: "Landlord", categoryId: null }],
+      error: undefined,
+      response: new Response(),
+    });
+    const thirdParty = ref<string | undefined>("");
+    const { suggestions } = useThirdPartyAutocomplete(thirdParty, ref("debit"), vi.fn());
+
+    thirdParty.value = "La";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(suggestions.value).toHaveLength(1);
+
+    thirdParty.value = "L";
+    await nextTick();
+    expect(suggestions.value).toEqual([]);
   });
 });

@@ -4,6 +4,7 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
+import { errorMessage } from "../../api/errorMessage";
 import { useThirdPartyAutocomplete } from "../../composables/useThirdPartyAutocomplete";
 import { useToast } from "../../composables/useToast";
 import { useTransferTargets } from "../../composables/useTransferTargets";
@@ -161,14 +162,6 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
     emit("savedAndNew");
   }
 });
-
-function errorMessage(error: unknown): string | undefined {
-  if (error && typeof error === "object" && "message" in error) {
-    const { message } = error as { message: string | string[] };
-    return Array.isArray(message) ? message[0] : message;
-  }
-  return undefined;
-}
 </script>
 
 <template>

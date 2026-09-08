@@ -1,116 +1,148 @@
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
-import { i18n } from "../../i18n";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
 import SearchPanel from "./search.vue";
-import type { Category, PaymentMethod } from "./operations.types";
+import type { Category, PaymentMethod, SearchCriteria } from "./operations.types";
 
 const categories: Category[] = [
-  { id: "1", parentId: null, type: "debit", name: "Groceries" },
-  { id: "2", parentId: null, type: "credit", name: "Salary" },
+  { id: "c1", parentId: null, type: "debit", name: "Food" },
+  { id: "c2", parentId: null, type: "credit", name: "Salary" },
+];
+const paymentMethods: PaymentMethod[] = [
+  { id: "p1", name: "Cash", type: "debit" },
+  { id: "p2", name: "Deposit", type: "credit" },
 ];
 
-const paymentMethods: PaymentMethod[] = [
-  { id: "1", name: "Credit card", type: "debit" },
-  { id: "5", name: "Check", type: "credit" },
-];
+function mountPanel(initialCriteria?: SearchCriteria) {
+  return mount(SearchPanel, {
+    ...withGlobalPlugins(),
+    props: { categories, paymentMethods, initialCriteria },
+  });
+}
 
 describe("SearchPanel", () => {
-  it("only shows categories and payment methods matching the selected type — same field logic as the operation form", async () => {
-    const wrapper = mount(SearchPanel, {
-      props: { categories, paymentMethods },
-      global: { plugins: [i18n] },
-    });
-
-    const categoryOptionsDebit = wrapper.findAll("#search-categories option").map((o) => o.text());
-    expect(categoryOptionsDebit).toContain("Groceries");
-    expect(categoryOptionsDebit).not.toContain("Salary");
-
-    await wrapper.get("#search-type-credit").setValue(true);
-    await wrapper.vm.$nextTick();
-
-    const categoryOptionsCredit = wrapper.findAll("#search-categories option").map((o) => o.text());
-    expect(categoryOptionsCredit).toContain("Salary");
-    expect(categoryOptionsCredit).not.toContain("Groceries");
+  it("defaults to debit with every other field empty", () => {
+    const wrapper = mountPanel();
+    expect((wrapper.find("#search-type-debit").element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find("#search-reconciled").element as HTMLSelectElement).value).toBe("");
   });
 
-  it("emits only the fields the member filled in", async () => {
-    const wrapper = mount(SearchPanel, {
-      props: { categories, paymentMethods },
-      global: { plugins: [i18n] },
+  it("hydrates every field from the initial criteria", () => {
+    const wrapper = mountPanel({
+      type: "credit",
+      thirdParty: "Foo",
+      categoryIds: ["c2"],
+      paymentMethodIds: ["p2"],
+      amountComparators: [{ operator: "lt", value: 50 }],
+      dateFrom: "2026-01-01",
+      dateTo: "2026-01-31",
+      notes: "bar",
+      reconciled: false,
     });
-
-    await wrapper.get("#search-third-party").setValue("Coffee");
-    await wrapper.get("#search-type-debit").setValue(true);
-    await wrapper.get('[data-testid="search-form"]').trigger("submit");
-
-    const events = wrapper.emitted("submit");
-    expect(events).toHaveLength(1);
-    expect(events![0][0]).toEqual({
-      type: "debit",
-      thirdParty: "Coffee",
-      categoryIds: undefined,
-      paymentMethodIds: undefined,
-      amountComparators: undefined,
-      dateFrom: undefined,
-      dateTo: undefined,
-      notes: undefined,
-      reconciled: undefined,
-    });
+    expect((wrapper.find("#search-type-credit").element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find("#search-third-party").element as HTMLInputElement).value).toBe("Foo");
+    expect((wrapper.find("#search-amount-operator-1").element as HTMLSelectElement).value).toBe(
+      "lt",
+    );
+    expect((wrapper.find("#search-date-from").element as HTMLInputElement).value).toBe(
+      "2026-01-01",
+    );
+    expect((wrapper.find("#search-notes").element as HTMLInputElement).value).toBe("bar");
+    expect((wrapper.find("#search-reconciled").element as HTMLSelectElement).value).toBe("false");
   });
 
-  it("builds an amount comparator once both the operator and value are set", async () => {
-    const wrapper = mount(SearchPanel, {
-      props: { categories, paymentMethods },
-      global: { plugins: [i18n] },
-    });
+  it("builds and emits criteria on submit, trimming text and dropping empty fields", async () => {
+    const wrapper = mountPanel();
+    await wrapper.find("#search-third-party").setValue("  Landlord  ");
+    await wrapper.find("#search-categories").setValue(["c1"]);
+    await wrapper.find("#search-payment-methods").setValue(["p1"]);
+    await wrapper.find("#search-amount-operator-1").setValue("gt");
+    await wrapper.findAll('input[type="number"]')[0].setValue(100);
+    await wrapper.find("#search-date-from").setValue("2026-01-01");
+    await wrapper.find("#search-date-to").setValue("2026-01-31");
+    await wrapper.find("#search-notes").setValue("  rent  ");
+    await wrapper.find("#search-reconciled").setValue("true");
+    await wrapper.find("form").trigger("submit");
 
-    await wrapper.get("#search-amount-operator-1").setValue("gte");
-    await wrapper.get('input[type="number"]').setValue(10);
-    await wrapper.get('[data-testid="search-form"]').trigger("submit");
-
-    const events = wrapper.emitted("submit");
-    expect(events![0][0]).toMatchObject({ amountComparators: [{ operator: "gte", value: 10 }] });
+    expect(wrapper.emitted("submit")).toEqual([
+      [
+        {
+          type: "debit",
+          thirdParty: "Landlord",
+          categoryIds: ["c1"],
+          paymentMethodIds: ["p1"],
+          amountComparators: [{ operator: "gt", value: 100 }],
+          dateFrom: "2026-01-01",
+          dateTo: "2026-01-31",
+          notes: "rent",
+          reconciled: true,
+        },
+      ],
+    ]);
   });
 
-  it("ignores the second amount row when the first is left empty", async () => {
+  it("groups categories with children under their parent's name", () => {
     const wrapper = mount(SearchPanel, {
-      props: { categories, paymentMethods },
-      global: { plugins: [i18n] },
-    });
-
-    await wrapper.get("#search-amount-operator-2").setValue("lte");
-    await wrapper.findAll('input[type="number"]')[1].setValue(20);
-    await wrapper.get('[data-testid="search-form"]').trigger("submit");
-
-    const events = wrapper.emitted("submit");
-    expect(events![0][0]).toMatchObject({ amountComparators: undefined });
-  });
-
-  it("hydrates its fields from initialCriteria", async () => {
-    const wrapper = mount(SearchPanel, {
+      ...withGlobalPlugins(),
       props: {
-        categories,
+        categories: [...categories, { id: "c3", parentId: "c1", type: "debit", name: "Groceries" }],
         paymentMethods,
-        initialCriteria: { type: "credit", thirdParty: "Rent", reconciled: true },
       },
-      global: { plugins: [i18n] },
     });
-
-    expect((wrapper.get("#search-type-credit").element as HTMLInputElement).checked).toBe(true);
-    expect((wrapper.get("#search-third-party").element as HTMLInputElement).value).toBe("Rent");
-    expect((wrapper.get("#search-reconciled").element as HTMLSelectElement).value).toBe("true");
+    const group = wrapper.find("optgroup");
+    expect(group.attributes("label")).toBe("Food");
+    expect(group.text()).toContain("Groceries");
   });
 
-  it("resets its fields and emits clear", async () => {
-    const wrapper = mount(SearchPanel, {
-      props: { categories, paymentMethods },
-      global: { plugins: [i18n] },
-    });
+  it("ignores the second amount row when the first is empty", async () => {
+    const wrapper = mountPanel();
+    await wrapper.find("#search-amount-operator-2").setValue("lt");
+    await wrapper.find("form").trigger("submit");
 
-    await wrapper.get("#search-third-party").setValue("Coffee");
+    const [criteria] = wrapper.emitted("submit")![0] as [SearchCriteria];
+    expect(criteria.amountComparators).toBeUndefined();
+  });
+
+  it("includes the second amount row once the first is set too", async () => {
+    const wrapper = mountPanel();
+    await wrapper.find("#search-amount-operator-1").setValue("gte");
+    await wrapper.findAll('input[type="number"]')[0].setValue(10);
+    await wrapper.find("#search-amount-operator-2").setValue("lte");
+    await wrapper.findAll('input[type="number"]')[1].setValue(20);
+    await wrapper.find("form").trigger("submit");
+
+    const [criteria] = wrapper.emitted("submit")![0] as [SearchCriteria];
+    expect(criteria.amountComparators).toEqual([
+      { operator: "gte", value: 10 },
+      { operator: "lte", value: 20 },
+    ]);
+  });
+
+  it("drops a category/payment-method selection that no longer matches the type", async () => {
+    const wrapper = mountPanel({ type: "debit", categoryIds: ["c1"], paymentMethodIds: ["p1"] });
+    await wrapper.find("#search-type-credit").setValue(true);
+    await wrapper.find("form").trigger("submit");
+
+    const [criteria] = wrapper.emitted("submit")![0] as [SearchCriteria];
+    expect(criteria.categoryIds).toBeUndefined();
+    expect(criteria.paymentMethodIds).toBeUndefined();
+
+    // And switching back to debit restores the debit-only choices.
+    await wrapper.find("#search-type-debit").setValue(true);
+    await wrapper.find("#search-categories").setValue(["c1"]);
+    await wrapper.find("form").trigger("submit");
+
+    const [secondCriteria] = wrapper.emitted("submit")![1] as [SearchCriteria];
+    expect(secondCriteria.type).toBe("debit");
+    expect(secondCriteria.categoryIds).toEqual(["c1"]);
+  });
+
+  it("resets every field and emits clear when Clear is clicked", async () => {
+    const wrapper = mountPanel({ type: "credit", thirdParty: "Foo", notes: "bar" });
     await wrapper.find("button.btn-outline-secondary").trigger("click");
 
+    expect((wrapper.find("#search-type-debit").element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find("#search-third-party").element as HTMLInputElement).value).toBe("");
     expect(wrapper.emitted("clear")).toHaveLength(1);
-    expect((wrapper.get("#search-third-party").element as HTMLInputElement).value).toBe("");
   });
 });

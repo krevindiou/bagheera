@@ -1,51 +1,75 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { i18n } from "../../i18n";
-import { apiClient } from "../../api/client";
+import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+
+vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../../api/client";
+import { useConfirm } from "../../composables/useConfirm";
+import { useToast } from "../../composables/useToast";
 import BatchActions from "./batch.vue";
-import ConfirmModal from "../../components/ConfirmModal.vue";
 
-vi.mock("../../api/client", () => ({
-  apiClient: { POST: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
-function jsonResponse<T>(data: T) {
-  return Promise.resolve({ data, response: { ok: true } }) as never;
+function jsonResult(status: number) {
+  return { data: undefined, error: undefined, response: new Response(null, { status }) };
 }
 
-describe("ReportBatchActions", () => {
+describe("reports BatchActions", () => {
   beforeEach(() => {
-    vi.mocked(apiClient.POST).mockReset();
+    apiClient.POST.mockReset();
+    useToast().toasts.splice(0);
+    const { state, settle } = useConfirm();
+    settle(false);
+    state.visible = false;
   });
 
-  it("hides the delete action when nothing is selected", () => {
+  it("renders nothing when nothing is selected", () => {
+    const wrapper = mount(BatchActions, { ...withGlobalPlugins(), props: { selectedIds: [] } });
+    expect(wrapper.find('[data-testid="report-batch-actions"]').exists()).toBe(false);
+  });
+
+  it("deletes the selected reports once confirmed", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(BatchActions, {
-      props: { selectedIds: [] },
-      global: { plugins: [i18n] },
+      ...withGlobalPlugins(),
+      props: { selectedIds: ["r1", "r2"] },
     });
-    expect(wrapper.find('[data-testid="report-batch-delete"]').exists()).toBe(false);
-  });
-
-  it("only calls batch delete once the confirmation modal is accepted", async () => {
-    vi.mocked(apiClient.POST).mockReturnValue(
-      jsonResponse({ message: "Reports deleted", deletedCount: 1 }),
-    );
-
-    const wrapper = mount(
-      {
-        components: { BatchActions, ConfirmModal },
-        template: `<div><BatchActions :selected-ids="[3]" /><ConfirmModal /></div>`,
-      },
-      { global: { plugins: [i18n] } },
-    );
-
-    await wrapper.get('[data-testid="report-batch-delete"]').trigger("click");
-    expect(apiClient.POST).not.toHaveBeenCalled();
-
-    await wrapper.vm.$nextTick();
-    await wrapper.get(".btn-primary").trigger("click");
+    await wrapper.find('[data-testid="report-batch-delete"]').trigger("click");
+    useConfirm().settle(true);
     await flushPromises();
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/reports/batch/delete", { body: { ids: [3] } });
+    expect(apiClient.POST).toHaveBeenCalledWith("/reports/batch/delete", {
+      body: { ids: ["r1", "r2"] },
+    });
+    expect(useToast().toasts[0]?.text).toBe("Reports deleted");
+    expect(wrapper.emitted("done")).toHaveLength(1);
+  });
+
+  it("does nothing when the confirmation is cancelled", async () => {
+    const wrapper = mount(BatchActions, {
+      ...withGlobalPlugins(),
+      props: { selectedIds: ["r1"] },
+    });
+    await wrapper.find('[data-testid="report-batch-delete"]').trigger("click");
+    useConfirm().settle(false);
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(wrapper.emitted("done")).toBeUndefined();
+  });
+
+  it("shows an error and doesn't emit done when the request fails", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(400));
+    const wrapper = mount(BatchActions, {
+      ...withGlobalPlugins(),
+      props: { selectedIds: ["r1"] },
+    });
+    await wrapper.find('[data-testid="report-batch-delete"]').trigger("click");
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+    expect(wrapper.emitted("done")).toBeUndefined();
   });
 });

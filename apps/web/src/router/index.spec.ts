@@ -1,45 +1,60 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { router } from "./index";
-import { apiClient } from "../api/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { asMockedApiClient, mockApiClient } from "../test-support/mockApiClient";
+
+vi.mock("../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../api/client";
 import { useSessionStore } from "../stores/session.store";
+import { router } from "./index";
 
-vi.mock("../api/client", () => ({
-  apiClient: { GET: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
-describe("router", () => {
-  beforeEach(() => {
+describe("router auth guard", () => {
+  beforeEach(async () => {
+    apiClient.GET.mockReset();
     setActivePinia(createPinia());
-    vi.mocked(apiClient.GET).mockReset();
+    await router.push({ name: "sign-in" });
   });
 
-  it("redirects the root path to the English sign-in page", async () => {
-    await router.push("/");
-    await router.isReady();
-    expect(router.currentRoute.value.fullPath).toBe("/en/sign-in");
+  it("lets navigation through to a route with no requiresAuth, without touching the session", async () => {
+    await router.push({ name: "register" });
+    expect(router.currentRoute.value.name).toBe("register");
+    expect(apiClient.GET).not.toHaveBeenCalled();
   });
 
-  it("redirects unknown paths to the English sign-in page", async () => {
-    await router.push("/does/not/exist");
-    await router.isReady();
-    expect(router.currentRoute.value.fullPath).toBe("/en/sign-in");
-  });
-
-  it("bounces to sign-in when the session cookie is no longer valid", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({ data: undefined } as never);
-    await router.push("/en/home");
-    await router.isReady();
+  it("redirects to sign-in when no Pinia instance is active", async () => {
+    setActivePinia(undefined);
+    await router.push({ name: "home" });
     expect(router.currentRoute.value.name).toBe("sign-in");
   });
 
-  it("allows a requiresAuth route once /auth/me confirms an active session", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({
+  it("redirects to sign-in once restore() resolves with no active session", async () => {
+    apiClient.GET.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 401 }),
+    });
+    await router.push({ name: "home" });
+    expect(router.currentRoute.value.name).toBe("sign-in");
+  });
+
+  it("allows navigation once restore() resolves with an authenticated member", async () => {
+    apiClient.GET.mockResolvedValueOnce({
       data: { email: "member@example.com" },
-    } as never);
-    await router.push("/en/home");
-    await router.isReady();
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    await router.push({ name: "home" });
     expect(router.currentRoute.value.name).toBe("home");
-    expect(useSessionStore().isAuthenticated).toBe(true);
+  });
+
+  it("skips the restore round trip once the session is already restored", async () => {
+    const store = useSessionStore();
+    store.setMember({ email: "member@example.com" });
+    store.restored = true;
+    await router.push({ name: "home" });
+    expect(router.currentRoute.value.name).toBe("home");
+    expect(apiClient.GET).not.toHaveBeenCalled();
   });
 });

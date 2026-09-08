@@ -1,23 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { mount } from "@vue/test-utils";
-import { createPinia } from "pinia";
-import { VueQueryPlugin } from "@tanstack/vue-query";
+import { shallowMount } from "@vue/test-utils";
+import { withGlobalPlugins } from "./test-support/withGlobalPlugins";
 import App from "./App.vue";
-import { router } from "./router";
-import { i18n } from "./i18n";
+import BaseLayout from "./layouts/BaseLayout.vue";
 
+// App.vue has no logic of its own — just wires up BaseLayout, which has its
+// own full spec (src/layouts/BaseLayout.spec.ts). Shallow-mount so this test
+// doesn't re-exercise BaseLayout's internals (queries, router, session).
 describe("App", () => {
-  it("redirects to the sign-in page and renders the brand", async () => {
-    await router.push("/");
-    await router.isReady();
-
-    const wrapper = mount(App, {
-      global: {
-        plugins: [createPinia(), router, i18n, VueQueryPlugin],
-      },
-    });
-
-    expect(router.currentRoute.value.fullPath).toBe("/en/sign-in");
-    expect(wrapper.get(".navbar-brand").text()).toBe("Bagheera");
+  it("renders BaseLayout", () => {
+    const wrapper = shallowMount(App, withGlobalPlugins());
+    expect(wrapper.findComponent(BaseLayout).exists()).toBe(true);
   });
 });

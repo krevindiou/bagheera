@@ -1,48 +1,49 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import { router } from "../../router";
-import { i18n } from "../../i18n";
-import { apiClient } from "../../api/client";
-import { useToast } from "../../composables/useToast";
+import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
 import { waitForRouteName } from "../../test-support/waitForRouteName";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+
+vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../../api/client";
+import { readLastAttemptedEmail } from "../../composables/useLastAttemptedEmail";
+import { useToast } from "../../composables/useToast";
+import { router } from "../../router";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 
-vi.mock("../../api/client", () => ({
-  apiClient: { POST: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
 describe("ForgotPasswordPage", () => {
-  beforeEach(() => {
-    vi.mocked(apiClient.POST).mockReset();
-    // The toast queue is a shared module-level singleton, rendered by
-    // ToastContainer.vue (mounted separately in the real app shell, not
-    // here) — read it directly instead of the page's own rendered text.
+  beforeEach(async () => {
+    apiClient.POST.mockReset();
     useToast().toasts.splice(0);
+    window.sessionStorage.clear();
+    await router.push({ name: "forgot-password" });
   });
 
-  it("rejects an invalid email", async () => {
-    const wrapper = mount(ForgotPasswordPage, { global: { plugins: [router, i18n] } });
-
-    await wrapper.find("#forgot-password-email").setValue("not-an-email");
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.find(".invalid-feedback").exists()).toBe(true);
-    expect(apiClient.POST).not.toHaveBeenCalled();
-  });
-
-  it("shows the identical request-sent message regardless of whether the address matches", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({ response: { ok: true, status: 200 } } as never);
-    const wrapper = mount(ForgotPasswordPage, { global: { plugins: [router, i18n] } });
-
-    await wrapper.find("#forgot-password-email").setValue("someone@example.com");
+  it("submits the address, remembers it, shows a toast, and returns to sign-in", async () => {
+    const wrapper = mount(ForgotPasswordPage, withGlobalPlugins());
+    await wrapper.find("#forgot-password-email").setValue("member@example.com");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/auth/password-recovery", {
-      body: { email: "someone@example.com" },
+      body: { email: "member@example.com" },
     });
-    const toast = useToast().toasts.find((t) => t.variant === "info");
-    expect(toast?.text).toContain("If an account exists for this address");
+    expect(readLastAttemptedEmail()).toBe("member@example.com");
+    expect(useToast().toasts[0]?.text).toBe(
+      "If an account exists for this address, a password reset link has been sent.",
+    );
     await waitForRouteName(router, "sign-in");
+  });
+
+  it("shows a validation error and doesn't submit for an invalid email", async () => {
+    const wrapper = mount(ForgotPasswordPage, withGlobalPlugins());
+    await wrapper.find("#forgot-password-email").setValue("not-an-email");
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Enter a valid email address.");
+    expect(apiClient.POST).not.toHaveBeenCalled();
   });
 });

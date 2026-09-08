@@ -1,26 +1,51 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
-import { createI18n } from "vue-i18n";
-import ConfirmModal from "./ConfirmModal.vue";
 import { useConfirm } from "../composables/useConfirm";
-import en from "../i18n/locales/en";
-
-const i18n = createI18n({ legacy: false, locale: "en", messages: { en } });
+import { withGlobalPlugins } from "../test-support/withGlobalPlugins";
+import ConfirmModal from "./ConfirmModal.vue";
 
 describe("ConfirmModal", () => {
-  it("resolves true when confirmed and false when cancelled", async () => {
-    const wrapper = mount(ConfirmModal, { global: { plugins: [i18n] } });
-    const { confirm } = useConfirm();
+  // Module-singleton state (one dialog for the whole app) — drain any
+  // pending confirmation left over from a previous test before each one.
+  beforeEach(() => {
+    const { state, settle } = useConfirm();
+    settle(false);
+    state.visible = false;
+  });
 
-    const pending = confirm();
-    await wrapper.vm.$nextTick();
-    expect(wrapper.text()).toContain("Confirmation");
-    expect(wrapper.text()).toContain("Do you confirm?");
-
-    await wrapper.get(".btn-primary").trigger("click");
-    expect(await pending).toBe(true);
-
-    await wrapper.vm.$nextTick();
+  it("renders nothing when no confirmation is pending", () => {
+    const wrapper = mount(ConfirmModal, withGlobalPlugins());
     expect(wrapper.find(".modal").exists()).toBe(false);
+  });
+
+  it("shows the dialog's title/body/actions once a confirmation starts", async () => {
+    const wrapper = mount(ConfirmModal, withGlobalPlugins());
+    useConfirm().confirm();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".modal-title").text()).toBe("Confirmation");
+    expect(wrapper.find(".modal-body").text()).toBe("Do you confirm?");
+    expect(wrapper.findAll("button").map((b) => b.text())).toEqual(["Ok", "Cancel"]);
+  });
+
+  it("resolves true and hides once Ok is clicked", async () => {
+    const wrapper = mount(ConfirmModal, withGlobalPlugins());
+    const pending = useConfirm().confirm();
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find("button.btn-primary").trigger("click");
+
+    await expect(pending).resolves.toBe(true);
+    expect(wrapper.find(".modal").exists()).toBe(false);
+  });
+
+  it("resolves false once Cancel is clicked", async () => {
+    const wrapper = mount(ConfirmModal, withGlobalPlugins());
+    const pending = useConfirm().confirm();
+    await wrapper.vm.$nextTick();
+
+    await wrapper.find("button.btn-secondary").trigger("click");
+
+    await expect(pending).resolves.toBe(false);
   });
 });

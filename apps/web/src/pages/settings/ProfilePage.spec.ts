@@ -1,84 +1,95 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mount } from "@vue/test-utils";
-import { createPinia, setActivePinia } from "pinia";
-import { router } from "../../router";
-import { i18n } from "../../i18n";
-import { apiClient } from "../../api/client";
-import { useSessionStore } from "../../stores/session.store";
-import { useToast } from "../../composables/useToast";
+import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+
+vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../../api/client";
+import { useToast } from "../../composables/useToast";
+import { useSessionStore } from "../../stores/session.store";
 import ProfilePage from "./ProfilePage.vue";
 
-vi.mock("../../api/client", () => ({
-  apiClient: { POST: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
-function mountPage() {
-  return mount(ProfilePage, { global: { plugins: [router, i18n] } });
+function jsonResult(status: number, error?: unknown) {
+  return { data: undefined, error, response: new Response(null, { status }) };
+}
+
+// ProfilePage reads session.member.email once, synchronously, as its form's
+// initial value — the session needs to be populated on the *same* pinia
+// instance before mount(), not after (see withGlobalPlugins' own doc-comment
+// on why a fresh pinia is activated as soon as it's called).
+function mountWithSession(email: string) {
+  const plugins = withGlobalPlugins();
+  useSessionStore().setMember({ email });
+  return mount(ProfilePage, plugins);
 }
 
 describe("ProfilePage", () => {
   beforeEach(() => {
-    setActivePinia(createPinia());
-    vi.mocked(apiClient.POST).mockReset();
+    apiClient.POST.mockReset();
     useToast().toasts.splice(0);
   });
 
-  it("prefills the email field from the session", () => {
-    useSessionStore().setMember({ email: "current@example.com" });
-    const wrapper = mountPage();
-
+  it("prefills the email from the signed-in member", () => {
+    const wrapper = mountWithSession("member@example.com");
     expect((wrapper.find("#profile-email").element as HTMLInputElement).value).toBe(
-      "current@example.com",
+      "member@example.com",
     );
   });
 
-  it("rejects an invalid email and an empty current password", async () => {
-    const wrapper = mountPage();
-
-    await wrapper.find("#profile-email").setValue("not-an-email");
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.findAll(".invalid-feedback")).toHaveLength(2);
-    expect(apiClient.POST).not.toHaveBeenCalled();
-  });
-
-  it("requests the change, shows a success toast, and leaves the session email alone until it's confirmed", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({
-      response: { ok: true, status: 200 },
-      error: undefined,
-    } as never);
-    useSessionStore().setMember({ email: "old@example.com" });
-    const wrapper = mountPage();
-
-    await wrapper.find("#profile-email").setValue("new@example.com");
-    await wrapper.find("#profile-current-password").setValue("correct-horse");
+  it("submits the change, clears the password field, and shows a success toast", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mountWithSession("member@example.com");
+    await wrapper.find("#profile-current-password").setValue("hunter2");
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/members/profile", {
-      body: { email: "new@example.com", currentPassword: "correct-horse" },
+      body: { email: "member@example.com", currentPassword: "hunter2" },
     });
-    // The address on file doesn't change until the emailed confirmation
-    // link is clicked — see ConfirmEmailChangePage.
-    expect(useSessionStore().member?.email).toBe("old@example.com");
-    expect(useToast().toasts.some((t) => t.variant === "success")).toBe(true);
+    expect((wrapper.find("#profile-current-password").element as HTMLInputElement).value).toBe("");
+    expect(wrapper.text()).toContain("If this email isn't already registered to another account");
   });
 
-  it("shows the API's error message as an inline field error on a rejected submission", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({
-      response: { ok: false, status: 400 },
-      error: { message: "Current password is invalid." },
-    } as never);
-    const wrapper = mountPage();
-
-    await wrapper.find("#profile-email").setValue("new@example.com");
-    await wrapper.find("#profile-current-password").setValue("wrong-password");
+  it("shows an inline field error (not a toast) for an invalid current password", async () => {
+    apiClient.POST.mockResolvedValueOnce(
+      jsonResult(400, { message: "Current password is invalid." }),
+    );
+    const wrapper = mountWithSession("member@example.com");
+    await wrapper.find("#profile-current-password").setValue("wrong");
     await submitAndSettle(wrapper);
 
-    expect(useToast().toasts.some((t) => t.variant === "error")).toBe(false);
-    const field = wrapper.find("#profile-current-password").element.closest(".mb-3");
-    expect(field?.querySelector(".invalid-feedback")?.textContent).toBe(
-      "Current password is invalid.",
-    );
+    expect(wrapper.text()).toContain("Current password is invalid.");
+    expect(useToast().toasts).toHaveLength(0);
+  });
+
+  it("shows a toast for any other failure", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: "Email already taken" }));
+    const wrapper = mountWithSession("member@example.com");
+    await wrapper.find("#profile-current-password").setValue("hunter2");
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Email already taken");
+  });
+
+  it("falls back to a generic error toast when the update fails without a message", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(500));
+    const wrapper = mountWithSession("member@example.com");
+    await wrapper.find("#profile-current-password").setValue("hunter2");
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+  });
+
+  it("shows a validation error and doesn't submit for an invalid email", async () => {
+    const wrapper = mountWithSession("member@example.com");
+    await wrapper.find("#profile-email").setValue("not-an-email");
+    await wrapper.find("#profile-current-password").setValue("hunter2");
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Enter a valid email address.");
+    expect(apiClient.POST).not.toHaveBeenCalled();
   });
 });

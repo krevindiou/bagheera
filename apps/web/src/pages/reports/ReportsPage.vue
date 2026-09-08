@@ -4,8 +4,10 @@ import { useI18n } from "vue-i18n";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
+import { useSelection } from "../../composables/useSelection";
 import type { Account } from "../accounts/accounts.types";
 import BatchActions from "./batch.vue";
+import { toChartSeries } from "./chartSeries";
 import ReportForm from "./ReportForm.vue";
 import type { Report, ReportChart } from "./reports.types";
 import ToastContainer from "../../components/ToastContainer.vue";
@@ -40,8 +42,7 @@ const showForm = ref(false);
 const createType = ref<"sum" | "average">("sum");
 const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<string | null>(null);
-const selectedIds = ref<Set<string>>(new Set());
-const selectedIdList = computed(() => Array.from(selectedIds.value));
+const { selectedIds, selectedIdList, toggleSelected } = useSelection();
 
 watch(
   () => reportsQuery.data.value,
@@ -49,18 +50,6 @@ watch(
     selectedIds.value = new Set();
   },
 );
-
-const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
-
-function toggleSelected(id: string) {
-  const next = new Set(selectedIds.value);
-  if (next.has(id)) {
-    next.delete(id);
-  } else {
-    next.add(id);
-  }
-  selectedIds.value = next;
-}
 
 function startCreate(type: "sum" | "average") {
   createType.value = type;
@@ -84,30 +73,6 @@ async function onBatchDeleted() {
   await reloadReports();
 }
 
-// A report's chart is per-currency, each with a separate debit and credit
-// series (apps/api/src/reports/chart.service.ts) — flattened into the
-// shared chart component's series list, one entry per currency×type.
-function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
-  const series: SynthesisChartSeries[] = [];
-  for (const s of chart.series) {
-    if (s.debit.length > 0) {
-      series.push({
-        label: `${s.currency} ${t("operations.debit")}`,
-        color: CHART_COLORS.debit,
-        points: s.debit,
-      });
-    }
-    if (s.credit.length > 0) {
-      series.push({
-        label: `${s.currency} ${t("operations.credit")}`,
-        color: CHART_COLORS.credit,
-        points: s.credit,
-      });
-    }
-  }
-  return series;
-}
-
 const chartQuery = useQuery({
   queryKey: computed(() => ["report-chart", viewingReportId.value]),
   queryFn: async () => {
@@ -120,7 +85,7 @@ const chartQuery = useQuery({
 });
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;
-  return !chart || chart.hidden ? [] : toChartSeries(chart);
+  return !chart || chart.hidden ? [] : toChartSeries(chart, t);
 });
 const chartAxisBounds = computed(() => {
   const chart = chartQuery.data.value;

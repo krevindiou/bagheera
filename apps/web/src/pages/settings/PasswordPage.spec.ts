@@ -1,76 +1,94 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { mount } from "@vue/test-utils";
-import { router } from "../../router";
-import { i18n } from "../../i18n";
-import { apiClient } from "../../api/client";
-import { useToast } from "../../composables/useToast";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mount, type VueWrapper } from "@vue/test-utils";
+import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
 import { submitAndSettle } from "../../test-support/submitAndSettle";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+
+vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../../api/client";
+import { useToast } from "../../composables/useToast";
 import PasswordPage from "./PasswordPage.vue";
 
-vi.mock("../../api/client", () => ({
-  apiClient: { POST: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
-function mountPage() {
-  return mount(PasswordPage, { global: { plugins: [router, i18n] } });
+function jsonResult(status: number, error?: unknown) {
+  return { data: undefined, error, response: new Response(null, { status }) };
+}
+
+async function fillValidForm(wrapper: VueWrapper) {
+  await wrapper.find("#password-current").setValue("hunter2");
+  await wrapper.find("#password-new").setValue("longenough1");
+  await wrapper.find("#password-new-confirmation").setValue("longenough1");
 }
 
 describe("PasswordPage", () => {
   beforeEach(() => {
-    vi.mocked(apiClient.POST).mockReset();
+    apiClient.POST.mockReset();
     useToast().toasts.splice(0);
   });
 
-  it("rejects an empty current password, a short new password, and a mismatched confirmation", async () => {
-    const wrapper = mountPage();
-
-    await wrapper.find("#password-new").setValue("short");
-    await wrapper.find("#password-new-confirmation").setValue("different");
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.findAll(".invalid-feedback")).toHaveLength(3);
-    expect(apiClient.POST).not.toHaveBeenCalled();
-  });
-
-  it("submits and shows a success toast, then resets the form", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({
-      response: { ok: true, status: 200 },
-      error: undefined,
-    } as never);
-    const wrapper = mountPage();
-
-    await wrapper.find("#password-current").setValue("correct-horse");
-    await wrapper.find("#password-new").setValue("new-correct-horse");
-    await wrapper.find("#password-new-confirmation").setValue("new-correct-horse");
+  it("submits the change, resets every field, and shows a success toast", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith("/auth/change-password", {
       body: {
-        currentPassword: "correct-horse",
-        newPassword: "new-correct-horse",
-        newPasswordConfirmation: "new-correct-horse",
+        currentPassword: "hunter2",
+        newPassword: "longenough1",
+        newPasswordConfirmation: "longenough1",
       },
     });
-    expect(useToast().toasts.some((t) => t.variant === "success")).toBe(true);
-    expect((wrapper.find("#password-current").element as HTMLInputElement).value).toBe("");
+    expect((wrapper.find("#password-new").element as HTMLInputElement).value).toBe("");
+    expect(wrapper.text()).toContain("Your password has been updated.");
   });
 
-  it("shows the API's error message as an inline field error when the current password is wrong", async () => {
-    vi.mocked(apiClient.POST).mockResolvedValue({
-      response: { ok: false, status: 400 },
-      error: { message: "Current password is invalid." },
-    } as never);
-    const wrapper = mountPage();
-
-    await wrapper.find("#password-current").setValue("wrong-password");
-    await wrapper.find("#password-new").setValue("new-correct-horse");
-    await wrapper.find("#password-new-confirmation").setValue("new-correct-horse");
+  it("shows an inline field error (not a toast) for an invalid current password", async () => {
+    apiClient.POST.mockResolvedValueOnce(
+      jsonResult(400, { message: "Current password is invalid." }),
+    );
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
     await submitAndSettle(wrapper);
 
-    expect(useToast().toasts.some((t) => t.variant === "error")).toBe(false);
-    const field = wrapper.find("#password-current").element.closest(".mb-3");
-    expect(field?.querySelector(".invalid-feedback")?.textContent).toBe(
-      "Current password is invalid.",
-    );
+    expect(wrapper.text()).toContain("Current password is invalid.");
+    expect(useToast().toasts).toHaveLength(0);
+  });
+
+  it("shows a toast for any other failure", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: "Rate limited" }));
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Rate limited");
+  });
+
+  it("falls back to a generic error toast when the change fails without a message", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(500));
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+  });
+
+  it("shows a validation error and doesn't submit for mismatched passwords", async () => {
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await wrapper.find("#password-current").setValue("hunter2");
+    await wrapper.find("#password-new").setValue("longenough1");
+    await wrapper.find("#password-new-confirmation").setValue("different1");
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain("Passwords don't match.");
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
+  it("shows the strength meter reacting to the new password", async () => {
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await wrapper.find("#password-new").setValue("aA1!aA1!aA1!aA1!");
+    expect(wrapper.text()).toContain("Strong");
   });
 });

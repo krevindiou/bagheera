@@ -3,6 +3,7 @@ import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
+import { errorMessage } from "../../api/errorMessage";
 import { useToast } from "../../composables/useToast";
 import type { Account } from "../accounts/accounts.types";
 import { reportSchema, type ReportForm } from "./reports.schemas";
@@ -87,14 +88,6 @@ const onSubmit = handleSubmit(async (submitted) => {
   toast(t("reports.saved"), "success");
   emit("saved");
 });
-
-function errorMessage(error: unknown): string | undefined {
-  if (error && typeof error === "object" && "message" in error) {
-    const { message } = error as { message: string | string[] };
-    return Array.isArray(message) ? message[0] : message;
-  }
-  return undefined;
-}
 </script>
 
 <template>

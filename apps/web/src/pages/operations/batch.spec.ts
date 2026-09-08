@@ -1,73 +1,139 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { i18n } from "../../i18n";
-import { apiClient } from "../../api/client";
+import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+
+vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+
+import { apiClient as realApiClient } from "../../api/client";
 import { useConfirm } from "../../composables/useConfirm";
+import { useToast } from "../../composables/useToast";
 import BatchActions from "./batch.vue";
-import ConfirmModal from "../../components/ConfirmModal.vue";
 
-vi.mock("../../api/client", () => ({
-  apiClient: { POST: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
-function jsonResponse<T>(data: T) {
-  return Promise.resolve({ data, response: { ok: true } }) as never;
+function jsonResult(status: number, data?: unknown) {
+  return { data, error: undefined, response: new Response(null, { status }) };
 }
 
 describe("BatchActions", () => {
   beforeEach(() => {
-    vi.mocked(apiClient.POST).mockReset();
+    apiClient.POST.mockReset();
+    useToast().toasts.splice(0);
+    const { state, settle } = useConfirm();
+    settle(false);
+    state.visible = false;
   });
 
-  it("hides both actions when nothing is selected", () => {
-    const wrapper = mount(BatchActions, {
-      props: { selectedIds: [] },
-      global: { plugins: [i18n] },
+  it("renders nothing when nothing is selected", () => {
+    const wrapper = mount(BatchActions, { ...withGlobalPlugins(), props: { selectedIds: [] } });
+    expect(wrapper.find('[data-testid="batch-actions"]').exists()).toBe(false);
+  });
+
+  describe("delete", () => {
+    it("deletes the selected operations once confirmed", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 2 }));
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1", "o2"] },
+      });
+
+      await wrapper.find('[data-testid="batch-delete"]').trigger("click");
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(apiClient.POST).toHaveBeenCalledWith("/operations/batch/delete", {
+        body: { ids: ["o1", "o2"] },
+      });
+      expect(useToast().toasts[0]?.text).toBe("Operations deleted");
+      expect(wrapper.emitted("done")).toHaveLength(1);
     });
-    expect(wrapper.find('[data-testid="batch-delete"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="batch-reconcile"]').exists()).toBe(false);
-  });
 
-  it("only calls batch delete once the confirmation modal is accepted", async () => {
-    vi.mocked(apiClient.POST).mockReturnValue(
-      jsonResponse({ message: "Operations deleted", deletedCount: 2 }),
-    );
+    it("does nothing when the confirmation is cancelled", async () => {
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1"] },
+      });
+      await wrapper.find('[data-testid="batch-delete"]').trigger("click");
+      useConfirm().settle(false);
 
-    const wrapper = mount(
-      {
-        components: { BatchActions, ConfirmModal },
-        template: `<div><BatchActions :selected-ids="[1, 2]" @done="$emit('done')" /><ConfirmModal /></div>`,
-      },
-      { global: { plugins: [i18n] } },
-    );
+      expect(apiClient.POST).not.toHaveBeenCalled();
+      expect(wrapper.emitted("done")).toBeUndefined();
+    });
 
-    await wrapper.get('[data-testid="batch-delete"]').trigger("click");
-    expect(apiClient.POST).not.toHaveBeenCalled();
+    it("shows an error but still closes when the server deletes nothing", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 0 }));
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1"] },
+      });
+      await wrapper.find('[data-testid="batch-delete"]').trigger("click");
+      useConfirm().settle(true);
+      await flushPromises();
 
-    await wrapper.vm.$nextTick();
-    await wrapper.get(".btn-primary").trigger("click");
-    await flushPromises();
+      expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+      expect(wrapper.emitted("done")).toHaveLength(1);
+    });
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/operations/batch/delete", {
-      body: { ids: [1, 2] },
+    it("shows an error and doesn't close when the request itself fails", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(400));
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1"] },
+      });
+      await wrapper.find('[data-testid="batch-delete"]').trigger("click");
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+      expect(wrapper.emitted("done")).toBeUndefined();
     });
   });
 
-  it("skips the reconcile call when the confirmation is cancelled", async () => {
-    const wrapper = mount(
-      {
-        components: { BatchActions, ConfirmModal },
-        template: `<div><BatchActions :selected-ids="[1]" /><ConfirmModal /></div>`,
-      },
-      { global: { plugins: [i18n] } },
-    );
+  describe("reconcile", () => {
+    it("reconciles the selected operations once confirmed", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(200, { reconciledCount: 1 }));
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1"] },
+      });
+      await wrapper.find('[data-testid="batch-reconcile"]').trigger("click");
+      useConfirm().settle(true);
+      await flushPromises();
 
-    await wrapper.get('[data-testid="batch-reconcile"]').trigger("click");
-    await wrapper.vm.$nextTick();
-    await wrapper.get(".btn-secondary").trigger("click");
-    await flushPromises();
+      expect(apiClient.POST).toHaveBeenCalledWith("/operations/batch/reconcile", {
+        body: { ids: ["o1"] },
+      });
+      expect(useToast().toasts[0]?.text).toBe("Operations reconciled");
+      expect(wrapper.emitted("done")).toHaveLength(1);
+    });
 
-    expect(apiClient.POST).not.toHaveBeenCalled();
-    expect(useConfirm().state.visible).toBe(false);
+    it("shows an error but still closes when the server reconciles nothing", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(200, { reconciledCount: 0 }));
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1"] },
+      });
+      await wrapper.find('[data-testid="batch-reconcile"]').trigger("click");
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+      expect(wrapper.emitted("done")).toHaveLength(1);
+    });
+
+    it("shows an error and doesn't close when the request itself fails", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(400));
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: { selectedIds: ["o1"] },
+      });
+      await wrapper.find('[data-testid="batch-reconcile"]').trigger("click");
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+      expect(wrapper.emitted("done")).toBeUndefined();
+    });
   });
 });

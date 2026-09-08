@@ -1,36 +1,34 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getCurrencyOptions, getGuessedCurrency } from "./useCurrencyOptions";
 
-function mockLanguage(language: string) {
-  vi.spyOn(window.navigator, "language", "get").mockReturnValue(language);
-}
-
 describe("getCurrencyOptions", () => {
-  it("sorts options alphabetically by name", () => {
-    const options = getCurrencyOptions();
+  it("resolves a display name for a known code", () => {
+    expect(getCurrencyOptions()).toContainEqual({ code: "USD", name: "US Dollar" });
+  });
 
-    const names = options.map((option) => option.name);
+  it("sorts options alphabetically by name", () => {
+    const names = getCurrencyOptions().map((o) => o.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
   });
 });
 
 describe("getGuessedCurrency", () => {
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
-  it("guesses EUR for a French locale", () => {
-    mockLanguage("fr-FR");
-    expect(getGuessedCurrency(getCurrencyOptions())).toBe("EUR");
+  it("guesses the primary currency for the browser locale's region", () => {
+    vi.stubGlobal("navigator", { language: "en-US" });
+    expect(getGuessedCurrency(getCurrencyOptions())).toBe("USD");
   });
 
-  it("guesses JPY for a Japanese locale", () => {
-    mockLanguage("ja-JP");
-    expect(getGuessedCurrency(getCurrencyOptions())).toBe("JPY");
+  it("returns an empty string when the guess isn't among the offered options", () => {
+    vi.stubGlobal("navigator", { language: "en-US" });
+    expect(getGuessedCurrency([{ code: "EUR", name: "Euro" }])).toBe("");
   });
 
-  it("falls back to an empty string for an unmappable locale", () => {
-    mockLanguage("xx");
+  it("returns an empty string when the browser locale can't be parsed", () => {
+    vi.stubGlobal("navigator", { language: "" });
     expect(getGuessedCurrency(getCurrencyOptions())).toBe("");
   });
 });

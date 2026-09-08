@@ -1,96 +1,111 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
-import { router } from "../../router";
-import { i18n } from "../../i18n";
-import { apiClient } from "../../api/client";
+import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
+import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+
+vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+vi.mock("@simplewebauthn/browser", () => ({ startRegistration: vi.fn() }));
+
+import { startRegistration } from "@simplewebauthn/browser";
+import { apiClient as realApiClient } from "../../api/client";
+import { useConfirm } from "../../composables/useConfirm";
 import { useToast } from "../../composables/useToast";
 import PasskeysPage from "./PasskeysPage.vue";
 
-vi.mock("../../api/client", () => ({
-  apiClient: { GET: vi.fn(), POST: vi.fn(), DELETE: vi.fn() },
-}));
+const apiClient = asMockedApiClient(realApiClient);
 
-vi.mock("@simplewebauthn/browser", () => ({
-  startRegistration: vi.fn(),
-}));
+interface PasskeySummary {
+  id: string;
+  deviceName: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
 
-import { startRegistration } from "@simplewebauthn/browser";
+function jsonResult(status: number, data?: unknown) {
+  return { data, error: undefined, response: new Response(null, { status }) };
+}
 
-function mountPage() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return mount(PasskeysPage, {
-    global: { plugins: [router, i18n, [VueQueryPlugin, { queryClient }]] },
+function mockCredentials(credentials: PasskeySummary[]) {
+  apiClient.GET.mockImplementation(async (path: string) => {
+    if (path === "/webauthn/credentials") return jsonResult(200, credentials);
+    return jsonResult(200, undefined);
   });
 }
 
 describe("PasskeysPage", () => {
   beforeEach(() => {
-    vi.mocked(apiClient.GET).mockReset();
-    vi.mocked(apiClient.POST).mockReset();
+    apiClient.GET.mockReset();
+    apiClient.POST.mockReset();
+    apiClient.DELETE.mockReset();
     vi.mocked(startRegistration).mockReset();
+    mockCredentials([]);
     useToast().toasts.splice(0);
+    const { state, settle } = useConfirm();
+    settle(false);
+    state.visible = false;
   });
 
-  it("shows the empty state with no registered passkeys", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({ data: [], response: { ok: true } } as never);
-    const wrapper = mountPage();
+  it("shows the empty-state message when there are no passkeys", async () => {
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
-
     expect(wrapper.text()).toContain("You don't have any passkey yet.");
   });
 
-  it("lists a registered passkey with its device name", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({
-      data: [
-        {
-          id: "1",
-          deviceName: "My laptop",
-          createdAt: "2026-01-01T00:00:00.000Z",
-          lastUsedAt: null,
-        },
-      ],
-      response: { ok: true },
-    } as never);
-    const wrapper = mountPage();
+  it("lists passkeys, falling back for an unnamed device and a never-used one", async () => {
+    mockCredentials([
+      { id: "p1", deviceName: "MacBook", createdAt: "2026-01-01", lastUsedAt: "2026-01-15" },
+      { id: "p2", deviceName: null, createdAt: "2026-01-02", lastUsedAt: null },
+    ]);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 
-    expect(wrapper.text()).toContain("My laptop");
-    expect(wrapper.text()).toContain("Never");
+    const rows = wrapper.findAll("tbody tr");
+    expect(rows).toHaveLength(2);
+    expect(rows[0].text()).toContain("MacBook");
+    expect(rows[0].text()).toContain("1/15/2026");
+    expect(rows[1].text()).toContain("Unnamed passkey");
+    expect(rows[1].text()).toContain("Never");
   });
 
-  it("registers a new passkey and refreshes the list on success", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({ data: [], response: { ok: true } } as never);
-    vi.mocked(apiClient.POST)
-      .mockResolvedValueOnce({
-        data: { challenge: "c", rp: {}, user: {} },
-        response: { ok: true },
-      } as never)
-      .mockResolvedValueOnce({ response: { ok: true } } as never);
-    vi.mocked(startRegistration).mockResolvedValue({ id: "cred-1" } as never);
-
-    const wrapper = mountPage();
+  it("registers a passkey end to end and reloads the list", async () => {
+    apiClient.POST.mockImplementation(async (path: string) => {
+      if (path === "/webauthn/registration/options") return jsonResult(200, {});
+      if (path === "/webauthn/registration/verify") return jsonResult(200);
+      return jsonResult(404);
+    });
+    vi.mocked(startRegistration).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startRegistration>>,
+    );
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 
-    await wrapper.find("#passkey-device-name").setValue("Work phone");
+    await wrapper.find("#passkey-device-name").setValue("MacBook");
     await wrapper.find("button.btn-primary").trigger("click");
     await flushPromises();
 
-    expect(apiClient.POST).toHaveBeenNthCalledWith(2, "/webauthn/registration/verify", {
-      body: { response: { id: "cred-1" }, deviceName: "Work phone" },
+    expect(apiClient.POST).toHaveBeenCalledWith("/webauthn/registration/verify", {
+      body: { response: {}, deviceName: "MacBook" },
     });
-    expect(useToast().toasts.some((t) => t.text === "Passkey added")).toBe(true);
+    expect(useToast().toasts[0]?.text).toBe("Passkey added");
+    expect((wrapper.find("#passkey-device-name").element as HTMLInputElement).value).toBe("");
   });
 
-  it("abandons silently when the platform prompt is cancelled", async () => {
-    vi.mocked(apiClient.GET).mockResolvedValue({ data: [], response: { ok: true } } as never);
-    vi.mocked(apiClient.POST).mockResolvedValueOnce({
-      data: { challenge: "c", rp: {}, user: {} },
-      response: { ok: true },
-    } as never);
-    vi.mocked(startRegistration).mockRejectedValue(new Error("cancelled"));
+  it("shows an error and never prompts for a passkey when registration options fail", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(400));
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
 
-    const wrapper = mountPage();
+    await wrapper.find("button.btn-primary").trigger("click");
+    await flushPromises();
+
+    expect(startRegistration).not.toHaveBeenCalled();
+    expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+  });
+
+  it("silently abandons a cancelled passkey prompt", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
+    vi.mocked(startRegistration).mockRejectedValueOnce(new Error("cancelled"));
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 
     await wrapper.find("button.btn-primary").trigger("click");
@@ -98,5 +113,70 @@ describe("PasskeysPage", () => {
 
     expect(apiClient.POST).toHaveBeenCalledTimes(1);
     expect(useToast().toasts).toHaveLength(0);
+  });
+
+  it("shows an error when verification fails", async () => {
+    apiClient.POST.mockImplementation(async (path: string) => {
+      if (path === "/webauthn/registration/options") return jsonResult(200, {});
+      if (path === "/webauthn/registration/verify") return jsonResult(400);
+      return jsonResult(404);
+    });
+    vi.mocked(startRegistration).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startRegistration>>,
+    );
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find("button.btn-primary").trigger("click");
+    await flushPromises();
+
+    expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+  });
+
+  it("removes a passkey once confirmed", async () => {
+    mockCredentials([
+      { id: "p1", deviceName: "MacBook", createdAt: "2026-01-01", lastUsedAt: null },
+    ]);
+    apiClient.DELETE.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find("button.btn-outline-danger").trigger("click");
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(apiClient.DELETE).toHaveBeenCalledWith("/webauthn/credentials/{id}", {
+      params: { path: { id: "p1" } },
+    });
+    expect(useToast().toasts[0]?.text).toBe("Passkey removed");
+  });
+
+  it("shows an error toast when removing a passkey fails", async () => {
+    mockCredentials([
+      { id: "p1", deviceName: "MacBook", createdAt: "2026-01-01", lastUsedAt: null },
+    ]);
+    apiClient.DELETE.mockResolvedValueOnce(jsonResult(500));
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find("button.btn-outline-danger").trigger("click");
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(useToast().toasts[0]?.text).toBe("Something went wrong. Please try again.");
+  });
+
+  it("doesn't remove a passkey when the confirmation is cancelled", async () => {
+    mockCredentials([
+      { id: "p1", deviceName: "MacBook", createdAt: "2026-01-01", lastUsedAt: null },
+    ]);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find("button.btn-outline-danger").trigger("click");
+    useConfirm().settle(false);
+    await flushPromises();
+
+    expect(apiClient.DELETE).not.toHaveBeenCalled();
   });
 });

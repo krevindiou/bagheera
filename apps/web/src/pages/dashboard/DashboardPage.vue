@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
 import { formatDate, formatMoney } from "../operations/money";
-import type { ReportChart } from "../reports/reports.types";
+import { toChartSeries } from "../reports/chartSeries";
 import type { DashboardResponse, DashboardSynthesisChart } from "./dashboard.types";
 import ToastContainer from "../../components/ToastContainer.vue";
 
@@ -18,7 +18,6 @@ const { data: dashboard } = useQuery({
   },
 });
 
-const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
 // Cycled by currency index — the synthesis chart is one line per currency
 // (not a fixed debit/credit pair), so it needs its own small palette.
 const SYNTHESIS_COLORS = ["#0d6efd", "#6f42c1", "#fd7e14", "#20c997", "#e83e8c", "#6610f2"];
@@ -35,29 +34,6 @@ const BANK_BADGE_CLASSES = [
 ];
 function bankBadgeClass(index: number): string {
   return BANK_BADGE_CLASSES[index % BANK_BADGE_CLASSES.length];
-}
-
-// Same per-currency debit/credit flattening as the reports page
-// (apps/web/src/pages/reports/ReportsPage.vue).
-function toChartSeries(chart: ReportChart): SynthesisChartSeries[] {
-  const series: SynthesisChartSeries[] = [];
-  for (const s of chart.series) {
-    if (s.debit.length > 0) {
-      series.push({
-        label: `${s.currency} ${t("operations.debit")}`,
-        color: CHART_COLORS.debit,
-        points: s.debit,
-      });
-    }
-    if (s.credit.length > 0) {
-      series.push({
-        label: `${s.currency} ${t("operations.credit")}`,
-        color: CHART_COLORS.credit,
-        points: s.credit,
-      });
-    }
-  }
-  return series;
 }
 
 function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
@@ -185,7 +161,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
         >
           <h3 class="h6">{{ entry.title }}</h3>
           <SynthesisChart
-            :series="toChartSeries(entry.chart)"
+            :series="toChartSeries(entry.chart, t)"
             :axis-bounds="entry.chart.axisBounds"
           />
         </div>

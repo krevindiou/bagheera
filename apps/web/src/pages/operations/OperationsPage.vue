@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { apiClient } from "../../api/client";
 import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
+import { useSelection } from "../../composables/useSelection";
 import type { Account, Bank } from "../accounts/accounts.types";
 import { formatDate, formatMoney } from "./money";
 import {
@@ -36,7 +37,7 @@ watch(accountId, () => {
 
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
-const selectedIds = ref<Set<string>>(new Set());
+const { selectedIds, selectedIdList, toggleSelected } = useSelection();
 const showSearch = ref(false);
 const hasActiveSearch = ref(false);
 const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
@@ -154,7 +155,6 @@ const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.v
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
-const selectedIdList = computed(() => Array.from(selectedIds.value));
 
 // "Fully active": neither the account nor its bank is closed or deleted.
 // Deleted accounts are unreachable (routing/the accounts query already
@@ -223,16 +223,6 @@ async function refreshAfterBatch() {
 function amountLabel(operation: Operation): string {
   const minorUnits = operation.debit ?? operation.credit ?? 0;
   return formatMoney(minorUnits, account.value?.currency ?? "USD");
-}
-
-function toggleSelected(id: string) {
-  const next = new Set(selectedIds.value);
-  if (next.has(id)) {
-    next.delete(id);
-  } else {
-    next.add(id);
-  }
-  selectedIds.value = next;
 }
 
 function startCreate() {

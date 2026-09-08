@@ -62,6 +62,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov", "json-summary"],
+      // Branches only, not lines/statements/functions — branch is the one
+      // metric that can't be satisfied by a line merely running once (it
+      // needs both sides of a conditional exercised), so it's the one worth
+      // gating on. Set as a floor a bit under current (~90.5%), to catch a
+      // real regression without flaking on normal variance — not a target
+      // to ratchet upward for its own sake.
+      thresholds: { branches: 90 },
     },
   },
 });
