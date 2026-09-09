@@ -41,7 +41,7 @@ function fakeReflector(
   opts: { skip?: boolean; options?: RateLimitOptions } = {},
 ): Reflector {
   return {
-    get: jest.fn((key: symbol) => {
+    get: jest.fn((key: string | symbol) => {
       if (key === SKIP_RATE_LIMIT_KEY) return opts.skip;
       if (key === RATE_LIMIT_OPTIONS) return opts.options;
       return undefined;
