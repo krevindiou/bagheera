@@ -71,6 +71,20 @@ jobs:
           path: apps/web/coverage/coverage-summary.json
           title: Web unit test coverage
 
+  money-unit:
+    name: Money package unit tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: ./.github/actions/setup
+      - run: pnpm --filter @bagheera/money test:cov
+      - uses: ./.github/actions/coverage-summary
+        if: success() || failure()
+        with:
+          path: packages/money/coverage/coverage-summary.json
+          title: Money package unit test coverage
+
   api-integration:
     name: API integration tests
     runs-on: ubuntu-latest
