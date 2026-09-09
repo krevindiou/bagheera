@@ -109,7 +109,7 @@ jobs:
   e2e:
     name: End-to-end tests
     runs-on: ubuntu-latest
-    needs: [api-integration, web-unit]
+    needs: [api-integration, web-unit, money-unit]
     if: false
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
