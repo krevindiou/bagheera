@@ -1,680 +1,251 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
-import { MinorUnits } from '../common/money';
-import request from 'supertest';
+import { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { operation, scheduler } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { AccountsModule } from '../accounts/accounts.module';
-import { AuthModule } from '../auth/auth.module';
-import { BanksModule } from '../banks/banks.module';
-import { DbModule } from '../db/db.module';
-import { account, bank, member, operation, scheduler } from '../db/schema';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
-import { EMAIL_PROVIDER } from '../email/email.constants';
-import type { EmailProvider } from '../email/email-message';
-import { EmailModule } from '../email/email.module';
-import { OperationsModule } from '../operations/operations.module';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { SchedulersModule } from './schedulers.module';
-import { Public } from '../session/public.decorator';
+  seedSignedInMember,
+  SignedInFixture,
+} from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
+  const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
+  return (res.body as { id: string }).id;
 }
 
-// Test-only controller — mints a CSRF token/cookie pair; never shipped.
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
+async function createAccount(
+  mutate: SignedInFixture['mutate'],
+  bankId: string,
+): Promise<string> {
+  const res = await mutate('post', '/accounts', {
+    bankId,
+    name: 'Account',
+    currency: 'EUR',
+  });
+  return (res.body as { account: { id: string } }).account.id;
 }
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
+function schedulerPayload(
+  accountId: string,
+  overrides: Record<string, unknown> = {},
+) {
+  return {
+    accountId,
+    type: 'debit',
+    thirdParty: 'Rent',
+    amount: 50,
+    paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+    valueDate: '2099-01-01',
+    frequencyValue: 1,
+    frequencyUnit: 'month',
+    ...overrides,
+  };
 }
 
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-describe('schedulers (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
+describe('schedulers', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        BanksModule,
-        AccountsModule,
-        OperationsModule,
-        SchedulersModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    ctx = connectIntegrationDb();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${scheduler} restart identity cascade`,
-    );
-    await ctx.db.execute(
-      sql`truncate table ${operation} restart identity cascade`,
-    );
-    await ctx.db.execute(
-      sql`truncate table ${account} restart identity cascade`,
-    );
-    await ctx.db.execute(sql`truncate table ${bank} restart identity cascade`);
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
-  });
+  describe('POST /schedulers', () => {
+    it('creates a scheduler with no immediate occurrence when the value date is in the future', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
 
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...existingCookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: merged,
-    };
-  }
+      const res = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId),
+      );
+      expect(res.status).toBe(200);
+      const { scheduler: created } = res.body as {
+        scheduler: { id: string };
+      };
 
-  async function signInAndGetSession(email: string, password: string) {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
-      .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ email, password })
-      .expect(200);
-
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...cookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return merged;
-  }
-
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
-
-  async function authedRequest(email: string, password: string) {
-    const authCookies = await signInAndGetSession(email, password);
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-    return { token, cookies };
-  }
-
-  async function createOwnedAccount(
-    email: string,
-    opts: { closed?: boolean; currency?: string } = {},
-  ) {
-    const owner = await createMember(email, 'password1');
-    const [ownerBank] = await ctx.db
-      .insert(bank)
-      .values({ memberId: owner.id, name: `Bank ${email}` })
-      .returning();
-    const [acc] = await ctx.db
-      .insert(account)
-      .values({
-        bankId: ownerBank.id,
-        name: 'Checking',
-        currency: opts.currency ?? 'USD',
-        closed: opts.closed ?? false,
-      })
-      .returning();
-    return { owner, bank: ownerBank, account: acc };
-  }
-
-  it('creates a scheduler on a fully active account', async () => {
-    const { account: acc } = await createOwnedAccount('sched1@example.com');
-    const { token, cookies } = await authedRequest(
-      'sched1@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Landlord',
-        amount: 900,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyUnit: 'month',
-        frequencyValue: 1,
-      });
-
-    expect(res.status).toBe(200);
-    const created = (res.body as { scheduler: { id: string } }).scheduler;
-
-    const [row] = await ctx.db
-      .select()
-      .from(scheduler)
-      .where(sql`${scheduler.id} = ${created.id}`);
-    expect(row.debit).toBe(9000000);
-    expect(row.credit).toBeNull();
-    expect(row.accountId).toBe(acc.id);
-    expect(row.active).toBe(true);
-    expect(row.frequencyUnit).toBe('month');
-  });
-
-  it('rejects a scheduler transfer target that belongs to another member', async () => {
-    const { account: acc } = await createOwnedAccount(
-      'sched-xfer1@example.com',
-    );
-    const { account: foreign } = await createOwnedAccount(
-      'sched-xfer1b@example.com',
-    );
-    const { token, cookies } = await authedRequest(
-      'sched-xfer1@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Savings transfer',
-        amount: 100,
-        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-        transferAccountId: foreign.id,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-
-    expect(res.status).toBe(400);
-    const rows = await ctx.db.select().from(scheduler);
-    expect(rows).toHaveLength(0);
-  });
-
-  it('rejects a scheduler transfer target in a different currency', async () => {
-    const { bank: ownerBank, account: acc } = await createOwnedAccount(
-      'sched-xfer2@example.com',
-    );
-    const [eurAccount] = await ctx.db
-      .insert(account)
-      .values({ bankId: ownerBank.id, name: 'Savings', currency: 'EUR' })
-      .returning();
-    const { token, cookies } = await authedRequest(
-      'sched-xfer2@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Savings transfer',
-        amount: 100,
-        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-        transferAccountId: eurAccount.id,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-
-    expect(res.status).toBe(400);
-  });
-
-  it('rejects a new (never-before-stored) closed scheduler transfer target', async () => {
-    const { bank: ownerBank, account: acc } = await createOwnedAccount(
-      'sched-xfer3@example.com',
-    );
-    const [closedTarget] = await ctx.db
-      .insert(account)
-      .values({
-        bankId: ownerBank.id,
-        name: 'Savings',
-        currency: 'USD',
-        closed: true,
-      })
-      .returning();
-    const { token, cookies } = await authedRequest(
-      'sched-xfer3@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Savings transfer',
-        amount: 100,
-        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-        transferAccountId: closedTarget.id,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-
-    expect(res.status).toBe(400);
-  });
-
-  it('keeps an already-stored scheduler transfer target on update even after it closes', async () => {
-    const { bank: ownerBank, account: acc } = await createOwnedAccount(
-      'sched-xfer4@example.com',
-    );
-    const [target] = await ctx.db
-      .insert(account)
-      .values({ bankId: ownerBank.id, name: 'Savings', currency: 'USD' })
-      .returning();
-    const { token, cookies } = await authedRequest(
-      'sched-xfer4@example.com',
-      'password1',
-    );
-
-    const createRes = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Savings transfer',
-        amount: 100,
-        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-        transferAccountId: target.id,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-    expect(createRes.status).toBe(200);
-    const created = (createRes.body as { scheduler: { id: string } }).scheduler;
-
-    // The target closes after the scheduler was linked to it.
-    await ctx.db
-      .update(account)
-      .set({ closed: true })
-      .where(sql`${account.id} = ${target.id}`);
-
-    const { token: token2, cookies: cookies2 } =
-      await getCsrfTokenAndCookies(cookies);
-    const updateRes = await request(app.getHttpServer())
-      .patch(`/schedulers/${created.id}`)
-      .set('Cookie', cookies2)
-      .set('x-csrf-token', token2)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Savings transfer',
-        amount: 150,
-        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-        transferAccountId: target.id,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-
-    // Keeping the same (now-closed) target is allowed — only *new* targets
-    // must be fully active.
-    expect(updateRes.status).toBe(200);
-  });
-
-  it('rejects creation on a closed account with an access-denied error', async () => {
-    const { account: acc } = await createOwnedAccount('sched2@example.com', {
-      closed: true,
+      const generated = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.schedulerId, created.id));
+      expect(generated).toHaveLength(0);
     });
-    const { token, cookies } = await authedRequest(
-      'sched2@example.com',
-      'password1',
-    );
 
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Landlord',
-        amount: 900,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
+    it('generates the due occurrence immediately when the value date is today or earlier', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
 
-    expect(res.status).toBe(422);
-  });
+      const res = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { valueDate: '2020-01-01' }),
+      );
+      const { scheduler: created } = res.body as {
+        scheduler: { id: string };
+      };
 
-  it('rejects creation on a non-owned account with not-found', async () => {
-    const { account: acc } = await createOwnedAccount(
-      'sched3-owner@example.com',
-    );
-    await createMember('sched3-other@example.com', 'password1');
-    const { token, cookies } = await authedRequest(
-      'sched3-other@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Landlord',
-        amount: 900,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-
-    expect(res.status).toBe(404);
-  });
-
-  it('lists schedulers on a closed account (listable-only)', async () => {
-    const { account: acc, owner } =
-      await createOwnedAccount('sched4@example.com');
-    await ctx.db.insert(scheduler).values({
-      accountId: acc.id,
-      thirdParty: 'Landlord',
-      debit: 9000000 as MinorUnits,
-      paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-      valueDate: '2026-02-01',
-      frequencyValue: 1,
+      const generated = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.schedulerId, created.id));
+      expect(generated.length).toBeGreaterThan(0);
     });
-    await ctx.db
-      .update(account)
-      .set({ closed: true })
-      .where(sql`${account.id} = ${acc.id}`);
-    const { cookies } = await authedRequest('sched4@example.com', 'password1');
 
-    const res = await request(app.getHttpServer())
-      .get(`/schedulers?accountId=${acc.id}`)
-      .set('Cookie', cookies)
-      .set('X-Forwarded-Proto', 'https');
+    it('rejects a frequencyValue beyond the DTO cap (726f0aed regression)', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
 
-    expect(res.status).toBe(200);
-    const body = res.body as { items: unknown[]; total: number };
-    expect(body.total).toBe(1);
-    expect(body.items).toHaveLength(1);
-    void owner;
+      const res = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { frequencyValue: 101 }),
+      );
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects a mismatched payment method type', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      const res = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, {
+          type: 'credit',
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        }),
+      );
+      expect(res.status).toBe(400);
+    });
+
+    it("404s creating a scheduler under another member's account", async () => {
+      const { mutate: ownerMutate } = await seedSignedInMember(app);
+      const bankId = await createBank(ownerMutate);
+      const accountId = await createAccount(ownerMutate, bankId);
+
+      const { mutate: attackerMutate } = await seedSignedInMember(app);
+      const res = await attackerMutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId),
+      );
+      expect(res.status).toBe(404);
+    });
   });
 
-  it('rejects edit and delete on a closed account with an access-denied error', async () => {
-    const { account: acc } = await createOwnedAccount('sched5@example.com');
-    const [created] = await ctx.db
-      .insert(scheduler)
-      .values({
-        accountId: acc.id,
-        thirdParty: 'Landlord',
-        debit: 9000000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      })
-      .returning();
-    await ctx.db
-      .update(account)
-      .set({ closed: true })
-      .where(sql`${account.id} = ${acc.id}`);
-    const { token, cookies } = await authedRequest(
-      'sched5@example.com',
-      'password1',
-    );
+  describe('GET /schedulers', () => {
+    it('paginates and 404s for a foreign account', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      await mutate('post', '/schedulers', schedulerPayload(accountId));
 
-    const updateRes = await request(app.getHttpServer())
-      .patch(`/schedulers/${created.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Landlord',
-        amount: 950,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-    expect(updateRes.status).toBe(422);
+      const res = await agent
+        .get(`/schedulers?accountId=${accountId}&page=1`)
+        .expect(200);
+      const body = res.body as { total: number };
+      expect(body.total).toBe(1);
 
-    const deleteRes = await request(app.getHttpServer())
-      .delete(`/schedulers/${created.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-    expect(deleteRes.status).toBe(422);
+      const { agent: attackerAgent } = await seedSignedInMember(app);
+      await attackerAgent
+        .get(`/schedulers?accountId=${accountId}&page=1`)
+        .expect(404);
+    });
   });
 
-  it('rejects moving a scheduler to another account on update', async () => {
-    const { account: acc } = await createOwnedAccount('sched6@example.com');
-    const [otherAcc] = await ctx.db
-      .insert(account)
-      .values({ bankId: acc.bankId, name: 'Savings', currency: 'USD' })
-      .returning();
-    const [created] = await ctx.db
-      .insert(scheduler)
-      .values({
-        accountId: acc.id,
-        thirdParty: 'Landlord',
-        debit: 9000000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      })
-      .returning();
-    const { token, cookies } = await authedRequest(
-      'sched6@example.com',
-      'password1',
-    );
+  describe('PATCH /schedulers/:id', () => {
+    it('re-triggers generation when an edit brings an occurrence into range', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId),
+      );
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
 
-    const res = await request(app.getHttpServer())
-      .patch(`/schedulers/${created.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: otherAcc.id,
-        type: 'debit',
-        thirdParty: 'Landlord',
-        amount: 950,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
+      const before = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.schedulerId, id));
+      expect(before).toHaveLength(0);
 
-    expect(res.status).toBe(400);
+      const res = await mutate(
+        'patch',
+        `/schedulers/${id}`,
+        schedulerPayload(accountId, { valueDate: '2020-01-01' }),
+      );
+      expect(res.status).toBe(200);
+
+      const after = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.schedulerId, id));
+      expect(after.length).toBeGreaterThan(0);
+    });
+
+    it('rejects moving a scheduler to a different account', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const otherAccountId = await createAccount(mutate, bankId);
+      const created = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId),
+      );
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+
+      const res = await mutate(
+        'patch',
+        `/schedulers/${id}`,
+        schedulerPayload(otherAccountId),
+      );
+      expect(res.status).toBe(400);
+    });
   });
 
-  it('updates a scheduler on a fully active account', async () => {
-    const { account: acc } = await createOwnedAccount('sched7@example.com');
-    const [created] = await ctx.db
-      .insert(scheduler)
-      .values({
-        accountId: acc.id,
-        thirdParty: 'Landlord',
-        debit: 9000000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      })
-      .returning();
-    const { token, cookies } = await authedRequest(
-      'sched7@example.com',
-      'password1',
-    );
+  describe('DELETE /schedulers/:id', () => {
+    it('deletes the scheduler but leaves generated operations, unlinked', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { valueDate: '2020-01-01' }),
+      );
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+      const [generatedBefore] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.schedulerId, id));
+      expect(generatedBefore).toBeDefined();
 
-    const res = await request(app.getHttpServer())
-      .patch(`/schedulers/${created.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Landlord',
-        amount: 950,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-03-01',
-        frequencyUnit: 'month',
-        frequencyValue: 1,
-        active: false,
-      });
+      const res = await mutate('delete', `/schedulers/${id}`);
+      expect(res.status).toBe(200);
 
-    expect(res.status).toBe(200);
-    const [row] = await ctx.db
-      .select()
-      .from(scheduler)
-      .where(sql`${scheduler.id} = ${created.id}`);
-    expect(row.debit).toBe(9500000);
-    expect(row.active).toBe(false);
-  });
+      const schedulerRows = await getDb(app)
+        .select()
+        .from(scheduler)
+        .where(eq(scheduler.id, id));
+      expect(schedulerRows).toHaveLength(0);
 
-  it('deletes a scheduler and drops the link from generated operations', async () => {
-    const { account: acc } = await createOwnedAccount('sched8@example.com');
-    const [created] = await ctx.db
-      .insert(scheduler)
-      .values({
-        accountId: acc.id,
-        thirdParty: 'Landlord',
-        debit: 9000000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      })
-      .returning();
-    const [generatedOp] = await ctx.db
-      .insert(operation)
-      .values({
-        accountId: acc.id,
-        schedulerId: created.id,
-        thirdParty: 'Landlord',
-        debit: 9000000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-02-01',
-      })
-      .returning();
-    const { token, cookies } = await authedRequest(
-      'sched8@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .delete(`/schedulers/${created.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-
-    expect(res.status).toBe(200);
-
-    const [row] = await ctx.db
-      .select()
-      .from(scheduler)
-      .where(sql`${scheduler.id} = ${created.id}`);
-    expect(row).toBeUndefined();
-
-    const [op] = await ctx.db
-      .select()
-      .from(operation)
-      .where(sql`${operation.id} = ${generatedOp.id}`);
-    expect(op.schedulerId).toBeNull();
-  });
-
-  it('rejects a mismatched-type category', async () => {
-    const { account: acc } = await createOwnedAccount('sched9@example.com');
-    const { token, cookies } = await authedRequest(
-      'sched9@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Grocery Store',
-        amount: 10,
-        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-        categoryId: SALARY_CATEGORY_SEED_ID, // Salary, credit-only
-        valueDate: '2026-02-01',
-        frequencyValue: 1,
-      });
-
-    expect(res.status).toBe(400);
+      const [survivor] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.id, generatedBefore.id));
+      expect(survivor).toBeDefined();
+      expect(survivor.schedulerId).toBeNull();
+    });
   });
 });

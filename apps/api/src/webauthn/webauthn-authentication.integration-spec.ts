@@ -1,30 +1,18 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { verifyAuthenticationResponse } from '@simplewebauthn/server';
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import { INestApplication } from '@nestjs/common';
+import { and, desc, eq } from 'drizzle-orm';
+import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
-import { EmailModule } from '../email/email.module';
 import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SESSION_COOKIE_NAME } from '../session/session.constants';
-import { SessionModule } from '../session/session.module';
-import { AuthModule } from '../auth/auth.module';
-import { Public } from '../session/public.decorator';
-import { WebauthnModule } from './webauthn.module';
+import {
+  csrfTokenFor,
+  insertActiveMember,
+  uniqueEmail,
+} from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-// generateAuthenticationOptions runs for real; only verifyAuthenticationResponse
-// is mocked (a real assertion needs a real/virtual authenticator — see the
-// Playwright e2e suite for that coverage).
+// Same reasoning as webauthn-registration.integration-spec.ts: mock only
+// the one function a real authenticator would otherwise be needed for.
 jest.mock('@simplewebauthn/server', () => ({
   ...jest.requireActual<typeof import('@simplewebauthn/server')>(
     '@simplewebauthn/server',
@@ -32,250 +20,263 @@ jest.mock('@simplewebauthn/server', () => ({
   verifyAuthenticationResponse: jest.fn(),
 }));
 
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
+import { verifyAuthenticationResponse } from '@simplewebauthn/server';
+
+const mockVerify = verifyAuthenticationResponse as jest.MockedFunction<
+  typeof verifyAuthenticationResponse
+>;
+
+function verifiedResult(newCounter: number): VerifiedAuthenticationResponse {
+  return {
+    verified: true,
+    authenticationInfo: { newCounter },
+  } as unknown as VerifiedAuthenticationResponse;
 }
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
+function messageOf(res: request.Response): string {
+  return (res.body as { message: string }).message;
 }
 
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
+function fakeResponseFor(credentialId: string) {
+  return {
+    id: credentialId,
+    rawId: credentialId,
+    response: {},
+    clientExtensionResults: {},
+    type: 'public-key',
+  };
 }
 
-function mergeCookies(existing: string[], fresh: string[]): string[] {
-  return [
-    ...existing.filter(
-      (c) => !fresh.some((n) => n.split('=')[0] === c.split('=')[0]),
-    ),
-    ...fresh,
-  ];
-}
-
-describe('webauthn authentication (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
-
-  beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        WebauthnModule,
-      ],
-      controllers: [TestCsrfController],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    ctx = connectIntegrationDb();
-  });
-
-  afterAll(async () => {
-    await ctx.pool.end();
-    await app.close();
-  });
-
-  beforeEach(async () => {
-    jest.mocked(verifyAuthenticationResponse).mockReset();
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
-  });
-
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const fresh = (res.headers['set-cookie'] as unknown as string[]).map(
-      cookiePair,
-    );
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: mergeCookies(existingCookies, fresh),
-    };
-  }
-
-  async function postWithCsrf(
-    cookies: string[],
-    path: string,
-    body: object,
-  ): Promise<{ res: request.Response; cookies: string[] }> {
-    const { token, cookies: withToken } = await getCsrfTokenAndCookies(cookies);
-    const res = await request(app.getHttpServer())
-      .post(path)
-      .set('Cookie', withToken)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send(body);
-    const fresh =
-      (res.headers['set-cookie'] as unknown as string[] | undefined) ?? [];
-    return { res, cookies: mergeCookies(withToken, fresh.map(cookiePair)) };
-  }
-
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
-
-  async function addCredential(memberId: string, credentialId: string) {
-    await ctx.db.insert(webauthnCredential).values({
+async function insertCredential(
+  app: INestApplication,
+  memberId: string,
+  credentialId: string,
+) {
+  const [row] = await getDb(app)
+    .insert(webauthnCredential)
+    .values({
       memberId,
       credentialId,
       publicKey: Buffer.from([1, 2, 3]).toString('base64'),
       counter: 0,
+    })
+    .returning();
+  return row;
+}
+
+/** A member with no password/session concerns, just a fixed active state and one passkey — for tests that never need to sign in with a password. */
+async function insertMemberWithCredential(
+  app: INestApplication,
+  credentialId: string,
+  overrides: { active?: boolean } = {},
+) {
+  const hash = await app.get(HashService).hash('unused-password-1');
+  const [row] = await getDb(app)
+    .insert(member)
+    .values({
+      email: uniqueEmail(),
+      password: hash,
+      country: 'FR',
+      active: overrides.active ?? true,
+    })
+    .returning();
+  await insertCredential(app, row.id, credentialId);
+  return row;
+}
+
+describe('webauthn authentication', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    ({ app } = await createTestApp());
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  beforeEach(() => {
+    mockVerify.mockReset();
+  });
+
+  describe('POST /webauthn/authentication/options', () => {
+    it('returns real, non-empty allowCredentials for a member with a passkey', async () => {
+      const { email, memberId } = await insertActiveMember(app);
+      await insertCredential(app, memberId, 'cred-opts-1');
+
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      const res = await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email })
+        .expect(200);
+
+      expect(
+        (res.body as { allowCredentials: unknown[] }).allowCredentials,
+      ).toHaveLength(1);
     });
-  }
 
-  const responseFor = (id: string) => ({
-    id,
-    rawId: id,
-    response: {},
-    clientExtensionResults: {},
-    type: 'public-key',
+    it('returns the same shape with empty allowCredentials for an unknown email (anti-enumeration)', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      const res = await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: uniqueEmail('nobody') })
+        .expect(200);
+
+      expect(
+        (res.body as { allowCredentials: unknown[] }).allowCredentials,
+      ).toEqual([]);
+    });
   });
 
-  it('lists the real credential ids in allowCredentials for a known email', async () => {
-    const row = await createMember('known@example.com', 'correct-horse');
-    await addCredential(row.id, 'cred-1');
-    const { cookies } = await getCsrfTokenAndCookies();
+  describe('POST /webauthn/authentication/verify', () => {
+    it('signs in, bumps the counter, and records webauthn_sign_in_success', async () => {
+      const row = await insertMemberWithCredential(app, 'cred-verify-1');
 
-    const { res } = await postWithCsrf(
-      cookies,
-      '/webauthn/authentication/options',
-      { email: 'known@example.com' },
-    );
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: row.email })
+        .expect(200);
 
-    expect(res.status).toBe(200);
-    const body = res.body as PublicKeyCredentialRequestOptionsJSON;
-    expect(body.allowCredentials).toHaveLength(1);
-    expect(body.allowCredentials?.[0].id).toBe('cred-1');
-  });
+      mockVerify.mockResolvedValueOnce(verifiedResult(7));
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('cred-verify-1') })
+        .expect(200);
+      expect(messageOf(res)).toBe('ok');
 
-  it('returns an empty allowCredentials, indistinguishably, for an unknown email', async () => {
-    const { cookies } = await getCsrfTokenAndCookies();
+      await agent.get('/auth/me').expect(200);
 
-    const { res } = await postWithCsrf(
-      cookies,
-      '/webauthn/authentication/options',
-      { email: 'nobody@example.com' },
-    );
+      const [updatedCredential] = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, 'cred-verify-1'));
+      expect(updatedCredential.counter).toBe(7);
+      expect(updatedCredential.lastUsedAt).toBeInstanceOf(Date);
 
-    expect(res.status).toBe(200);
-    const body = res.body as PublicKeyCredentialRequestOptionsJSON;
-    expect(body.allowCredentials).toHaveLength(0);
-  });
+      const [updatedMember] = await getDb(app)
+        .select({ loggedAt: member.loggedAt })
+        .from(member)
+        .where(eq(member.id, row.id));
+      expect(updatedMember.loggedAt).toBeInstanceOf(Date);
 
-  it('rejects a verify call with no prior options call', async () => {
-    const { cookies } = await getCsrfTokenAndCookies();
+      const [event] = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_sign_in_success'),
+            eq(securityEvent.memberId, row.id),
+          ),
+        )
+        .orderBy(desc(securityEvent.createdAt))
+        .limit(1);
+      expect(event).toBeDefined();
+    });
 
-    const { res } = await postWithCsrf(
-      cookies,
-      '/webauthn/authentication/verify',
-      { response: responseFor('cred-1') },
-    );
+    it('rejects verification with no prior options() call', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
 
-    expect(res.status).toBe(401);
-  });
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('whatever') })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      expect(mockVerify).not.toHaveBeenCalled();
+    });
 
-  it('rejects verify for an unknown email exactly like a genuine mismatch, recording no member', async () => {
-    const { cookies } = await getCsrfTokenAndCookies();
-    const { cookies: afterOptions } = await postWithCsrf(
-      cookies,
-      '/webauthn/authentication/options',
-      { email: 'nobody@example.com' },
-    );
+    it('rejects when options() found no credential (anti-enumeration path)', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: uniqueEmail('nobody') })
+        .expect(200);
 
-    const { res } = await postWithCsrf(
-      afterOptions,
-      '/webauthn/authentication/verify',
-      { response: responseFor('cred-1') },
-    );
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('whatever') })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      expect(mockVerify).not.toHaveBeenCalled();
+    });
 
-    expect(res.status).toBe(401);
-    const [event] = await ctx.db
-      .select()
-      .from(securityEvent)
-      .where(sql`${securityEvent.eventType} = 'webauthn_sign_in_failure'`);
-    expect(event.memberId).toBeNull();
-  });
+    it("rejects a response whose credential id belongs to someone else's stashed session", async () => {
+      const memberA = await insertMemberWithCredential(app, 'cred-owner-a');
+      await insertMemberWithCredential(app, 'cred-owner-b');
 
-  it('signs in, rotates the session, updates the counter, and records the audit event on success', async () => {
-    const row = await createMember('signin@example.com', 'correct-horse');
-    await addCredential(row.id, 'cred-1');
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      // Options are requested for member A...
+      await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: memberA.email })
+        .expect(200);
 
-    const { cookies } = await getCsrfTokenAndCookies();
-    const { cookies: afterOptions } = await postWithCsrf(
-      cookies,
-      '/webauthn/authentication/options',
-      { email: 'signin@example.com' },
-    );
-    const preVerifySessionCookie = afterOptions.find((c) =>
-      c.startsWith(`${SESSION_COOKIE_NAME}=`),
-    );
+      // ...but the response presented is member B's credential id.
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('cred-owner-b') })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      expect(mockVerify).not.toHaveBeenCalled();
+    });
 
-    jest.mocked(verifyAuthenticationResponse).mockResolvedValue({
-      verified: true,
-      authenticationInfo: { newCounter: 7 },
-    } as never);
+    it('rejects when the ceremony fails verification', async () => {
+      const row = await insertMemberWithCredential(app, 'cred-fail-verify');
 
-    const { res, cookies: afterVerify } = await postWithCsrf(
-      afterOptions,
-      '/webauthn/authentication/verify',
-      { response: responseFor('cred-1') },
-    );
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: row.email })
+        .expect(200);
 
-    expect(res.status).toBe(200);
-    const postVerifySessionCookie = afterVerify.find((c) =>
-      c.startsWith(`${SESSION_COOKIE_NAME}=`),
-    );
-    expect(postVerifySessionCookie).not.toBe(preVerifySessionCookie);
+      mockVerify.mockResolvedValueOnce({
+        verified: false,
+      } as VerifiedAuthenticationResponse);
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('cred-fail-verify') })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+    });
 
-    const [updatedMember] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(updatedMember.loggedAt).not.toBeNull();
+    it('rejects a passkey sign-in for an inactive member', async () => {
+      const row = await insertMemberWithCredential(app, 'cred-inactive', {
+        active: false,
+      });
 
-    const [updatedCredential] = await ctx.db
-      .select()
-      .from(webauthnCredential)
-      .where(sql`${webauthnCredential.memberId} = ${row.id}`);
-    expect(updatedCredential.counter).toBe(7);
-    expect(updatedCredential.lastUsedAt).not.toBeNull();
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: row.email })
+        .expect(200);
 
-    const [event] = await ctx.db
-      .select()
-      .from(securityEvent)
-      .where(sql`${securityEvent.eventType} = 'webauthn_sign_in_success'`);
-    expect(event.memberId).toBe(row.id);
+      mockVerify.mockResolvedValueOnce(verifiedResult(1));
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('cred-inactive') })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+    });
   });
 });

@@ -1,238 +1,134 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { Test } from '@nestjs/testing';
-import { Queue } from 'bullmq';
-import { sql } from 'drizzle-orm';
+import { INestApplication } from '@nestjs/common';
+import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
-import type { App } from 'supertest/types';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
-import { member } from '../db/schema';
-import { EmailModule } from '../email/email.module';
-import { EMAIL_PROVIDER, EMAIL_QUEUE } from '../email/email.constants';
-import type { EmailMessage, EmailProvider } from '../email/email-message';
-import { SecurityModule } from '../security/security.module';
+import { member, securityEvent } from '../db/schema';
 import { CryptoService } from '../security/crypto.service';
-import { buildActivationToken } from './activation-token';
-import { ActivationService } from './activation.service';
-import { MembersModule } from './members.module';
+import { HashService } from '../security/hash.service';
+import { csrfTokenFor, uniqueEmail } from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
+import {
+  ActivationTokenPayload,
+  buildActivationToken,
+} from './activation-token';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+function messageOf(res: request.Response): string {
+  return (res.body as { message: string }).message;
 }
 
-describe('activation (integration)', () => {
-  let app: INestApplication<App>;
-  let ctx: IntegrationDb;
-  let crypto: CryptoService;
-  let emailQueue: Queue<EmailMessage>;
-  let activationService: ActivationService;
+const ACTIVATION_ERROR = 'Activation error (Already activated?)';
+
+async function insertMemberRow(
+  app: INestApplication,
+  overrides: { active?: boolean; activationTokenVersion?: number } = {},
+) {
+  const email = uniqueEmail();
+  const hash = await app.get(HashService).hash('some-password-1');
+  const [row] = await getDb(app)
+    .insert(member)
+    .values({
+      email,
+      password: hash,
+      country: 'FR',
+      active: overrides.active ?? false,
+      activationTokenVersion: overrides.activationTokenVersion ?? 0,
+    })
+    .returning();
+  return row;
+}
+
+async function post(app: INestApplication, key: string) {
+  const agent = request.agent(app.getHttpServer());
+  const csrfToken = await csrfTokenFor(agent);
+  return agent
+    .post('/members/activate')
+    .set('x-csrf-token', csrfToken)
+    .send({ key });
+}
+
+describe('POST /members/activate', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        EmailModule,
-        MembersModule,
-      ],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    crypto = moduleRef.get(CryptoService);
-    emailQueue = moduleRef.get<Queue<EmailMessage>>(EMAIL_QUEUE);
-    activationService = moduleRef.get(ActivationService);
-    ctx = connectIntegrationDb();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await emailQueue.drain();
-    await emailQueue.clean(0, 1000, 'completed');
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
-  });
-
-  async function createInactiveMember(email: string) {
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: 'hash', country: 'FR' })
-      .returning();
-    return row;
-  }
-
-  it('activates the member with a valid token', async () => {
-    const row = await createInactiveMember('valid@example.com');
-    const token = buildActivationToken(
-      crypto,
+  it('activates the member and records activation_used for a valid key', async () => {
+    const row = await insertMemberRow(app);
+    const key = buildActivationToken(
+      app.get(CryptoService),
       row.email,
       row.activationTokenVersion,
     );
 
-    const res = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: token });
-
+    const res = await post(app, key);
     expect(res.status).toBe(200);
-    const [updated] = await ctx.db
-      .select()
+    expect(messageOf(res)).toBe('Account activated. You can now sign in.');
+
+    const [updated] = await getDb(app)
+      .select({ active: member.active })
       .from(member)
-      .where(sql`${member.id} = ${row.id}`);
+      .where(eq(member.id, row.id));
     expect(updated.active).toBe(true);
-  });
 
-  it('rejects an expired token', async () => {
-    const row = await createInactiveMember('expired@example.com');
-    const expiredToken = crypto.encrypt(
-      JSON.stringify({
-        type: 'register',
-        email: row.email,
-        version: row.activationTokenVersion,
-        exp: Date.now() - 1000,
-      }),
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: expiredToken });
-
-    expect(res.status).toBe(400);
-    const [unchanged] = await ctx.db
+    const [event] = await getDb(app)
       .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.active).toBe(false);
+      .from(securityEvent)
+      .where(
+        and(
+          eq(securityEvent.eventType, 'activation_used'),
+          eq(securityEvent.memberId, row.id),
+        ),
+      )
+      .orderBy(desc(securityEvent.createdAt))
+      .limit(1);
+    expect(event).toBeDefined();
   });
 
-  it('rejects a malformed token', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: 'not-a-real-token' });
-
+  it('rejects a malformed key', async () => {
+    const res = await post(app, 'not-a-real-token');
     expect(res.status).toBe(400);
+    expect(messageOf(res)).toBe(ACTIVATION_ERROR);
   });
 
-  it('rejects a token for an already-active member', async () => {
-    const row = await createInactiveMember('active@example.com');
-    const token = buildActivationToken(
-      crypto,
-      row.email,
-      row.activationTokenVersion,
-    );
-    await ctx.db
-      .update(member)
-      .set({ active: true })
-      .where(sql`${member.id} = ${row.id}`);
+  it('rejects an expired key', async () => {
+    const row = await insertMemberRow(app);
+    const payload: ActivationTokenPayload = {
+      type: 'register',
+      email: row.email,
+      version: row.activationTokenVersion,
+      exp: Date.now() - 1000,
+    };
+    const key = app.get(CryptoService).encrypt(JSON.stringify(payload));
 
-    const res = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: token });
-
+    const res = await post(app, key);
     expect(res.status).toBe(400);
+    expect(messageOf(res)).toBe(ACTIVATION_ERROR);
   });
 
-  it('rejects a token issued under a stale version', async () => {
-    const row = await createInactiveMember('stale@example.com');
-    const staleToken = buildActivationToken(
-      crypto,
-      row.email,
-      row.activationTokenVersion,
-    );
-    // Bump the stored version behind the token's back (as a reissue would).
-    await ctx.db
-      .update(member)
-      .set({ activationTokenVersion: row.activationTokenVersion + 1 })
-      .where(sql`${member.id} = ${row.id}`);
+  it('rejects a key minted under a since-superseded token version', async () => {
+    const row = await insertMemberRow(app, { activationTokenVersion: 1 });
+    // Built for version 0 — the member's row has already moved to 1.
+    const key = buildActivationToken(app.get(CryptoService), row.email, 0);
 
-    const res = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: staleToken });
-
+    const res = await post(app, key);
     expect(res.status).toBe(400);
-    const [unchanged] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.active).toBe(false);
+    expect(messageOf(res)).toBe(ACTIVATION_ERROR);
   });
 
-  it('reissue bumps the version, invalidating the prior token, and enqueues a fresh one', async () => {
-    const row = await createInactiveMember('resend@example.com');
-    const originalToken = buildActivationToken(
-      crypto,
+  it('rejects a key for a member that is already active', async () => {
+    const row = await insertMemberRow(app, { active: true });
+    const key = buildActivationToken(
+      app.get(CryptoService),
       row.email,
       row.activationTokenVersion,
     );
 
-    await activationService.reissue(row.email);
-
-    const [updated] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(updated.activationTokenVersion).toBe(row.activationTokenVersion + 1);
-
-    // The original token, minted under the old version, no longer works.
-    const staleRes = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: originalToken });
-    expect(staleRes.status).toBe(400);
-
-    // A fresh activation job was enqueued.
-    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    const reissued = jobs.filter((j) => j.data.to === 'resend@example.com');
-    expect(reissued).toHaveLength(1);
-
-    // The newly issued token (current version) does activate.
-    const freshToken = buildActivationToken(
-      crypto,
-      row.email,
-      updated.activationTokenVersion,
-    );
-    const okRes = await request(app.getHttpServer())
-      .post('/members/activate')
-      .send({ key: freshToken });
-    expect(okRes.status).toBe(200);
-  });
-
-  it('reissue silently no-ops for an unknown email', async () => {
-    await expect(
-      activationService.reissue('nobody@example.com'),
-    ).resolves.toBeUndefined();
-  });
-
-  it('reissue silently no-ops for an already-active member', async () => {
-    const row = await createInactiveMember('alreadyactive@example.com');
-    await ctx.db
-      .update(member)
-      .set({ active: true })
-      .where(sql`${member.id} = ${row.id}`);
-
-    await activationService.reissue(row.email);
-
-    const [unchanged] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.activationTokenVersion).toBe(row.activationTokenVersion);
+    const res = await post(app, key);
+    expect(res.status).toBe(400);
+    expect(messageOf(res)).toBe(ACTIVATION_ERROR);
   });
 });

@@ -1,56 +1,56 @@
-import { sql } from 'drizzle-orm';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../test-utils/integration-db';
-import { member } from './member';
+import { INestApplication } from '@nestjs/common';
+import { createTestApp, getDb } from '../../test-support/create-test-app';
+import { uniqueEmail } from '../../test-support/auth-fixture';
+import { insertMember } from '../../test-support/db-fixtures';
 
 describe('member schema', () => {
-  let ctx: IntegrationDb;
+  let app: INestApplication;
 
-  beforeAll(() => {
-    ctx = connectIntegrationDb();
-  });
-
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  beforeAll(async () => {
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
+    await app.close();
   });
 
-  it('rejects a duplicate email (case-insensitive)', async () => {
-    await ctx.db.insert(member).values({
-      email: 'person@example.com',
-      password: 'hash',
-      country: 'FR',
+  describe('email uniqueness (case-insensitive)', () => {
+    it('rejects a second member with the exact same email', async () => {
+      const email = uniqueEmail();
+      await insertMember(getDb(app), { email });
+
+      await expect(insertMember(getDb(app), { email })).rejects.toMatchObject({
+        cause: { code: '23505' },
+      });
     });
 
-    await expect(
-      ctx.db.insert(member).values({
-        email: 'Person@Example.com',
-        password: 'hash',
-        country: 'FR',
-      }),
-    ).rejects.toMatchObject({ cause: { code: '23505' } }); // unique_violation
+    it('rejects a second member whose email only differs by case', async () => {
+      const email = uniqueEmail();
+      await insertMember(getDb(app), { email });
+
+      await expect(
+        insertMember(getDb(app), { email: email.toUpperCase() }),
+      ).rejects.toMatchObject({ cause: { code: '23505' } });
+    });
+
+    it('allows two members with genuinely distinct emails', async () => {
+      const first = await insertMember(getDb(app));
+      const second = await insertMember(getDb(app));
+
+      expect(first.id).not.toBe(second.id);
+    });
   });
 
-  it('accepts distinct emails', async () => {
-    await ctx.db.insert(member).values({
-      email: 'a@example.com',
-      password: 'hash',
-      country: 'FR',
-    });
-    await ctx.db.insert(member).values({
-      email: 'b@example.com',
-      password: 'hash',
-      country: 'FR',
-    });
+  describe('defaults on a minimal insert', () => {
+    it('sets an inactive, zero-token-version member with no pending email', async () => {
+      const row = await insertMember(getDb(app));
 
-    const rows = await ctx.db.select().from(member);
-    expect(rows).toHaveLength(2);
+      expect(row.active).toBe(false);
+      expect(row.activationTokenVersion).toBe(0);
+      expect(row.passwordResetTokenVersion).toBe(0);
+      expect(row.emailChangeTokenVersion).toBe(0);
+      expect(row.pendingEmail).toBeNull();
+      expect(row.createdAt).toBeInstanceOf(Date);
+    });
   });
 });

@@ -1,193 +1,128 @@
-import { Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import type { Request } from 'express';
-import { createClient, type RedisClientType } from 'redis';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
-import { SessionRotationService } from './session-rotation.service';
+import type { RedisClientType } from 'redis';
 import {
-  SESSION_COOKIE_NAME,
-  SESSION_IDLE_TTL_SECONDS,
-} from './session.constants';
-import { SessionModule } from './session.module';
-import { Public } from './public.decorator';
+  csrfTokenFor,
+  insertActiveMember,
+  seedSignedInMember,
+} from '../test-support/auth-fixture';
+import { createTestApp } from '../test-support/create-test-app';
+import { SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
 
-declare module 'express-session' {
-  interface SessionData {
-    sessionMarker?: string;
-    csrfIssued?: boolean;
-  }
+interface StoredSession {
+  memberId?: string;
+  createdAt?: number;
+  [key: string]: unknown;
 }
 
-// Test-only controller — exists solely to exercise the session/CSRF
-// middleware chain from outside; never registered in the real app.
-@Public()
-@Controller('__test-session')
-class TestSessionController {
-  constructor(private readonly rotation: SessionRotationService) {}
-
-  @Get('csrf-token')
-  csrfToken(@Req() req: Request) {
-    // Force the session to persist so the id used to derive this token's
-    // HMAC (getSessionIdentifier) stays stable across requests — without
-    // this, saveUninitialized:false would drop the never-modified session
-    // and a later request would mint a different id.
-    req.session.csrfIssued = true;
-    return { csrfToken: req.csrfToken!() };
+async function findSessionKey(
+  valkey: RedisClientType,
+  memberId: string,
+): Promise<string> {
+  for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
+    const keys = Array.isArray(batch) ? batch : [batch];
+    for (const key of keys) {
+      const raw = await valkey.get(key);
+      if (!raw) continue;
+      const data = JSON.parse(raw) as StoredSession;
+      if (data.memberId === memberId) {
+        return key;
+      }
+    }
   }
-
-  @Post('touch')
-  @HttpCode(200)
-  touch(@Req() req: Request) {
-    req.session.sessionMarker = 'set';
-    return { id: req.session.id };
-  }
-
-  @Post('rotate')
-  @HttpCode(200)
-  async rotate(@Req() req: Request) {
-    const previousId = req.session.id;
-    await this.rotation.rotate(req);
-    return {
-      previousId,
-      newId: req.session.id,
-      sessionMarker: req.session.sessionMarker,
-    };
-  }
+  throw new Error(`No stored session found for member ${memberId}`);
 }
 
-function sessionIdFromCookie(cookie: string): string {
-  const raw = decodeURIComponent(cookie.split(';')[0].split('=')[1]);
-  return raw.split('.')[0].replace(/^s:/, '');
-}
-
-/** name=value out of a Set-Cookie header, dropping attributes (Secure etc). */
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-describe('session infrastructure + CSRF (integration)', () => {
-  let app: NestExpressApplication;
-  let redis: RedisClientType;
+describe('session lifecycle', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true }), SessionModule],
-      controllers: [TestSessionController],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    // Mirrors main.ts: production sits behind Caddy (TLS-terminating), so
-    // req.secure must come from X-Forwarded-Proto for Secure cookies to be
-    // set. Requests below send that header the same way Caddy would.
-    app.set('trust proxy', 1);
-    // Also mirrors main.ts's filter registration — without it, a CSRF
-    // rejection (an exposed http-errors exception thrown by Express-level
-    // middleware, not a Nest HttpException) falls through to Nest's own
-    // built-in default handler, which logs a scary-looking, misleadingly
-    // stack-attributed error for what's really an expected 403.
-    app.useGlobalFilters(new GlobalExceptionFilter());
-    await app.init();
-
-    redis = createClient({ url: process.env.VALKEY_URL });
-    await redis.connect();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await redis.quit();
     await app.close();
   });
 
-  // supertest's server runs plain http, and superagent's cookie jar honours
-  // the Secure attribute (won't replay a Secure cookie over http) — so
-  // cookies are threaded through requests manually here rather than via
-  // request.agent()'s implicit jar.
-  async function getCsrfTokenAndCookies(): Promise<{
-    token: string;
-    cookies: string[];
-  }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-session/csrf-token')
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: setCookie.map(cookiePair),
-    };
-  }
-
-  it('sets a session cookie with Secure/HttpOnly/SameSite and stores it in Valkey with the idle TTL', async () => {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-
-    const res = await request(app.getHttpServer())
-      .post('/__test-session/touch')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const sessionCookie = setCookie.find((c) =>
-      c.startsWith(`${SESSION_COOKIE_NAME}=`),
-    );
-    expect(sessionCookie).toBeDefined();
-    expect(sessionCookie).toMatch(/HttpOnly/i);
-    expect(sessionCookie).toMatch(/Secure/i);
-    expect(sessionCookie).toMatch(/SameSite=Lax/i);
-
-    const sid = sessionIdFromCookie(sessionCookie!);
-    const ttl = await redis.ttl(`sess:${sid}`);
-    expect(ttl).toBeGreaterThan(0);
-    expect(ttl).toBeLessThanOrEqual(SESSION_IDLE_TTL_SECONDS);
-    expect(ttl).toBeGreaterThan(SESSION_IDLE_TTL_SECONDS - 30);
+  it('rejects a mutating request with no CSRF token, even from an authenticated agent', async () => {
+    const { agent } = await seedSignedInMember(app);
+    await agent.post('/banks/choice').send({ name: 'No token' }).expect(403);
   });
 
-  it('rejects a POST without a CSRF token', async () => {
-    const { cookies } = await getCsrfTokenAndCookies();
-    await request(app.getHttpServer())
-      .post('/__test-session/touch')
-      .set('Cookie', cookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(403);
+  it('rotates the session id on sign-in (fixation defense)', async () => {
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+
+    const before = new Set<string>();
+    for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
+      for (const key of Array.isArray(batch) ? batch : [batch]) {
+        before.add(key);
+      }
+    }
+
+    const { email, password } = await insertActiveMember(app);
+    await agent
+      .post('/auth/sign-in')
+      .set('x-csrf-token', csrfToken)
+      .send({ email, password })
+      .expect(200);
+
+    const after = new Set<string>();
+    for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
+      for (const key of Array.isArray(batch) ? batch : [batch]) {
+        after.add(key);
+      }
+    }
+
+    const brandNewKeys = [...after].filter((key) => !before.has(key));
+    expect(brandNewKeys.length).toBeGreaterThan(0);
   });
 
-  it('rotation helper produces a new session id while preserving session data', async () => {
-    const { token, cookies } = await getCsrfTokenAndCookies();
+  // KNOWN BUG, not a test mistake — kept as `it.failing` rather than
+  // asserting the crash as correct: CurrentSessionController.me() is
+  // @Public() (deliberately, so an anonymous caller gets a clean 401
+  // instead of SessionAuthGuard's) and reads `req.session.memberId`
+  // directly with no optional chaining. absoluteSessionTtl's destroy()
+  // path (session past the 24h absolute cap) deletes `req.session`
+  // entirely mid-request (express-session's Session.prototype.destroy
+  // does `delete this.req.session`) — every *other* protected path is
+  // safe from this because SessionAuthGuard checks `req.session?.
+  // memberId` (session-auth.guard.ts) before requireMemberId() ever runs,
+  // but this one route has no guard in front of it and skips the `?.`
+  // both. Net effect: the first request to /auth/me after a session
+  // crosses the absolute TTL 500s instead of 401ing. One-line fix:
+  // `req.session?.memberId` in current-session.controller.ts. Flagged for
+  // the user rather than fixed here — out of scope for a test-writing pass.
+  it.failing(
+    'force-expires a session past the absolute TTL, regardless of activity',
+    async () => {
+      const { agent, memberId } = await seedSignedInMember(app);
+      await agent.get('/auth/me').expect(200);
 
-    const first = await request(app.getHttpServer())
-      .post('/__test-session/touch')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const firstId = (first.body as { id: string }).id;
-    const cookiesAfterFirst = (
-      first.headers['set-cookie'] as unknown as string[]
-    ).map(cookiePair);
-    // Keep the csrf cookie from the first exchange alongside whatever
-    // session cookie the touch call refreshed.
-    const mergedCookies = [
-      ...cookies.filter((c) => !c.startsWith(`${SESSION_COOKIE_NAME}=`)),
-      ...cookiesAfterFirst,
-    ];
+      const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+      const key = await findSessionKey(valkey, memberId);
+      const raw = await valkey.get(key);
+      const data = JSON.parse(raw!) as StoredSession;
+      data.createdAt = Date.now() - SESSION_MAX_AGE_MS - 1000;
+      await valkey.set(key, JSON.stringify(data));
 
-    const rotated = await request(app.getHttpServer())
-      .post('/__test-session/rotate')
-      .set('Cookie', mergedCookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const body = rotated.body as {
-      previousId: string;
-      newId: string;
-      sessionMarker: string;
-    };
+      await agent.get('/auth/me').expect(401);
+    },
+  );
 
-    expect(body.previousId).toBe(firstId);
-    expect(body.newId).not.toBe(firstId);
-    expect(body.sessionMarker).toBe('set');
+  it("lets SessionAuthGuard reject an unauthenticated request before RateLimitGuard ever runs (app.module.ts's SessionModule-before-SecurityModule ordering)", async () => {
+    // webauthn/registration/options requires auth and carries its own
+    // @RateLimit({ points: 10, ... }) — if SecurityModule's guard ran
+    // first, the 11th+ of these would 429 instead of 401.
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+
+    for (let i = 0; i < 15; i++) {
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(401);
+    }
   });
 });

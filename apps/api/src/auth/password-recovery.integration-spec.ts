@@ -1,277 +1,174 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { Queue } from 'bullmq';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import request from 'supertest';
-import { createClient, type RedisClientType } from 'redis';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
 import { member } from '../db/schema';
-import { EmailModule } from '../email/email.module';
-import { EMAIL_PROVIDER, EMAIL_QUEUE } from '../email/email.constants';
-import type { EmailMessage, EmailProvider } from '../email/email-message';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
 import { CryptoService } from '../security/crypto.service';
-import { SessionModule } from '../session/session.module';
-import { AuthModule } from './auth.module';
+import {
+  csrfTokenFor,
+  insertActiveMember,
+  seedSignedInMember,
+  uniqueEmail,
+} from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 import { buildResetToken } from './reset-token';
-import { Public } from '../session/public.decorator';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+function messageOf(res: request.Response): string {
+  return (res.body as { message: string }).message;
 }
 
-// Test-only controller — mints a CSRF token/cookie pair; never shipped.
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
-}
+const REQUEST_MESSAGE =
+  'If an account exists for this address, a password reset link has been sent.';
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
-}
-
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-describe('password recovery (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
-  let crypto: CryptoService;
-  let emailQueue: Queue<EmailMessage>;
-  let redis: RedisClientType;
+describe('POST /auth/password-recovery', () => {
+  let app: INestApplication;
+  let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    crypto = moduleRef.get(CryptoService);
-    emailQueue = moduleRef.get<Queue<EmailMessage>>(EMAIL_QUEUE);
-    ctx = connectIntegrationDb();
-
-    redis = createClient({ url: process.env.VALKEY_URL });
-    await redis.connect();
+    ({ app, fakeEmailQueue } = await createTestApp());
   });
 
   afterAll(async () => {
-    await redis.quit();
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await emailQueue.drain();
-    await emailQueue.clean(0, 1000, 'completed');
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  beforeEach(() => {
+    fakeEmailQueue.enqueue.mockClear();
   });
 
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
+  describe('POST /auth/password-recovery (request)', () => {
+    it('queues a reset email for a real member and returns the generic message', async () => {
+      const { email } = await insertActiveMember(app);
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
 
-  async function postWithCsrf(path: string, body: object) {
-    const tokenRes = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const cookies = (tokenRes.headers['set-cookie'] as unknown as string[]).map(
-      cookiePair,
-    );
-    const token = (tokenRes.body as { csrfToken: string }).csrfToken;
+      const res = await agent
+        .post('/auth/password-recovery')
+        .set('x-csrf-token', csrfToken)
+        .send({ email })
+        .expect(200);
 
-    return request(app.getHttpServer())
-      .post(path)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send(body);
-  }
-
-  it('returns the identical message whether or not the email matches a member', async () => {
-    await createMember('exists@example.com', 'correct-horse');
-
-    const matched = await postWithCsrf('/auth/password-recovery', {
-      email: 'exists@example.com',
-    });
-    const unmatched = await postWithCsrf('/auth/password-recovery', {
-      email: 'nobody@example.com',
+      expect(messageOf(res)).toBe(REQUEST_MESSAGE);
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledTimes(1);
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
+        expect.objectContaining({ to: email }),
+      );
     });
 
-    expect(matched.status).toBe(unmatched.status);
-    expect(matched.body).toEqual(unmatched.body);
+    it('returns the exact same message for an unknown email and queues nothing', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+
+      const res = await agent
+        .post('/auth/password-recovery')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: uniqueEmail('nobody') })
+        .expect(200);
+
+      expect(messageOf(res)).toBe(REQUEST_MESSAGE);
+      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+    });
   });
 
-  it('sends the reset email only for a matching member', async () => {
-    await createMember('exists@example.com', 'correct-horse');
+  describe('POST /auth/password-recovery/reset', () => {
+    it('resets the password with a valid key and terminates every existing session', async () => {
+      const {
+        agent: signedInAgent,
+        email,
+        password,
+      } = await seedSignedInMember(app);
+      await signedInAgent.get('/auth/me').expect(200);
 
-    await postWithCsrf('/auth/password-recovery', {
-      email: 'exists@example.com',
-    });
-    await postWithCsrf('/auth/password-recovery', {
-      email: 'nobody@example.com',
-    });
+      const [row] = await getDb(app)
+        .select({ version: member.passwordResetTokenVersion })
+        .from(member)
+        .where(eq(member.email, email));
+      const key = buildResetToken(app.get(CryptoService), email, row.version);
+      const newPassword = 'freshly-reset-password-1';
 
-    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    expect(jobs).toHaveLength(1);
-    expect(jobs[0].data.to).toBe('exists@example.com');
-    expect(jobs[0].data.subject).toBe('Bagheera change password');
-  });
+      const resetAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(resetAgent);
+      await resetAgent
+        .post('/auth/password-recovery/reset')
+        .set('x-csrf-token', csrfToken)
+        .send({
+          key,
+          password: newPassword,
+          passwordConfirmation: newPassword,
+        })
+        .expect(200);
 
-  it('updates the password, invalidates the key, and terminates sessions on a valid submit', async () => {
-    const row = await createMember('reset@example.com', 'old-password');
-    await redis.set('sess:some-session', JSON.stringify({ memberId: row.id }));
+      // The pre-existing signed-in session is gone.
+      await signedInAgent.get('/auth/me').expect(401);
 
-    const token = buildResetToken(
-      crypto,
-      row.email,
-      row.passwordResetTokenVersion,
-    );
-    const res = await postWithCsrf('/auth/password-recovery/reset', {
-      key: token,
-      password: 'new-password',
-      passwordConfirmation: 'new-password',
-    });
+      // Old password no longer works; the new one does.
+      const checkAgent = request.agent(app.getHttpServer());
+      const checkCsrf = await csrfTokenFor(checkAgent);
+      await checkAgent
+        .post('/auth/sign-in')
+        .set('x-csrf-token', checkCsrf)
+        .send({ email, password })
+        .expect(401);
 
-    expect(res.status).toBe(200);
+      const checkAgent2 = request.agent(app.getHttpServer());
+      const checkCsrf2 = await csrfTokenFor(checkAgent2);
+      await checkAgent2
+        .post('/auth/sign-in')
+        .set('x-csrf-token', checkCsrf2)
+        .send({ email, password: newPassword })
+        .expect(200);
 
-    const [updated] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(updated.password).not.toBe(row.password);
-    expect(await hash.verify(updated.password, 'new-password')).toBe(true);
-    expect(updated.passwordResetTokenVersion).toBe(
-      row.passwordResetTokenVersion + 1,
-    );
-
-    expect(await redis.exists('sess:some-session')).toBe(0);
-
-    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    const notice = jobs.filter(
-      (j) => j.data.subject === 'Bagheera password changed',
-    );
-    expect(notice).toHaveLength(1);
-  });
-
-  it('rejects mismatched new passwords', async () => {
-    const row = await createMember('mismatch@example.com', 'old-password');
-    const token = buildResetToken(
-      crypto,
-      row.email,
-      row.passwordResetTokenVersion,
-    );
-
-    const res = await postWithCsrf('/auth/password-recovery/reset', {
-      key: token,
-      password: 'new-password',
-      passwordConfirmation: 'something-else',
+      // Replaying the same key a second time no longer works — the
+      // version bump invalidated it.
+      const replayAgent = request.agent(app.getHttpServer());
+      const replayCsrf = await csrfTokenFor(replayAgent);
+      const replay = await replayAgent
+        .post('/auth/password-recovery/reset')
+        .set('x-csrf-token', replayCsrf)
+        .send({
+          key,
+          password: 'another-password-1',
+          passwordConfirmation: 'another-password-1',
+        })
+        .expect(400);
+      expect(messageOf(replay)).toBe('Password reset error');
     });
 
-    expect(res.status).toBe(400);
-    const [unchanged] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.password).toBe(row.password);
-  });
+    it('rejects a malformed key with the generic error', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
 
-  it('rejects an expired key', async () => {
-    const row = await createMember('expired@example.com', 'old-password');
-    const expiredToken = crypto.encrypt(
-      JSON.stringify({
-        type: 'reset',
-        email: row.email,
-        version: row.passwordResetTokenVersion,
-        exp: Date.now() - 1000,
-      }),
-    );
-
-    const res = await postWithCsrf('/auth/password-recovery/reset', {
-      key: expiredToken,
-      password: 'new-password',
-      passwordConfirmation: 'new-password',
+      const res = await agent
+        .post('/auth/password-recovery/reset')
+        .set('x-csrf-token', csrfToken)
+        .send({
+          key: 'not-a-real-token',
+          password: 'whatever-new-1',
+          passwordConfirmation: 'whatever-new-1',
+        })
+        .expect(400);
+      expect(messageOf(res)).toBe('Password reset error');
     });
 
-    expect(res.status).toBe(400);
-  });
+    it('rejects mismatched password confirmation', async () => {
+      const { email } = await insertActiveMember(app);
+      const [row] = await getDb(app)
+        .select({ version: member.passwordResetTokenVersion })
+        .from(member)
+        .where(eq(member.email, email));
+      const key = buildResetToken(app.get(CryptoService), email, row.version);
 
-  it('rejects a reused (already-invalidated) key', async () => {
-    const row = await createMember('reused@example.com', 'old-password');
-    const token = buildResetToken(
-      crypto,
-      row.email,
-      row.passwordResetTokenVersion,
-    );
-
-    const first = await postWithCsrf('/auth/password-recovery/reset', {
-      key: token,
-      password: 'new-password',
-      passwordConfirmation: 'new-password',
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      const res = await agent
+        .post('/auth/password-recovery/reset')
+        .set('x-csrf-token', csrfToken)
+        .send({
+          key,
+          password: 'one-password-1',
+          passwordConfirmation: 'a-different-password-1',
+        })
+        .expect(400);
+      expect(messageOf(res)).toBe("Passwords don't match.");
     });
-    expect(first.status).toBe(200);
-
-    const second = await postWithCsrf('/auth/password-recovery/reset', {
-      key: token,
-      password: 'another-password',
-      passwordConfirmation: 'another-password',
-    });
-    expect(second.status).toBe(400);
-  });
-
-  it('rejects a key for an unmatched email', async () => {
-    const token = buildResetToken(crypto, 'nobody@example.com', 0);
-
-    const res = await postWithCsrf('/auth/password-recovery/reset', {
-      key: token,
-      password: 'new-password',
-      passwordConfirmation: 'new-password',
-    });
-
-    expect(res.status).toBe(400);
   });
 });

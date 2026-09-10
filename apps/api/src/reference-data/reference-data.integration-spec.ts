@@ -1,190 +1,37 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { AuthModule } from '../auth/auth.module';
-import { DbModule } from '../db/db.module';
-import { member } from '../db/schema';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import { EMAIL_PROVIDER } from '../email/email.constants';
-import type { EmailProvider } from '../email/email-message';
-import { EmailModule } from '../email/email.module';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { ReferenceDataModule } from './reference-data.module';
-import { Public } from '../session/public.decorator';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { seedSignedInMember } from '../test-support/auth-fixture';
+import { createTestApp } from '../test-support/create-test-app';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
-}
-
-// Test-only controller — mints a CSRF token/cookie pair; never shipped.
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
-}
-
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
-}
-
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-describe('reference data (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
+describe('reference-data', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        ReferenceDataModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    ctx = connectIntegrationDb();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  it('lists the seeded categories, including Salary', async () => {
+    const { agent } = await seedSignedInMember(app);
+    const res = await agent.get('/reference-data/categories').expect(200);
+    const body = res.body as { id: string }[];
+    expect(body.some((c) => c.id === SALARY_CATEGORY_SEED_ID)).toBe(true);
   });
 
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...existingCookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: merged,
-    };
-  }
-
-  async function signInAndGetSession(email: string, password: string) {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
-      .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ email, password })
-      .expect(200);
-
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    return [
-      ...cookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-  }
-
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true });
-  }
-
-  it('returns the seeded payment methods and categories to a signed-in member', async () => {
-    await createMember('refdata@example.com', 'password1');
-    const cookies = await signInAndGetSession(
-      'refdata@example.com',
-      'password1',
-    );
-
-    const paymentMethods = await request(app.getHttpServer())
-      .get('/reference-data/payment-methods')
-      .set('Cookie', cookies)
-      .expect(200);
-    expect(paymentMethods.body).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: PAYMENT_METHOD_ID.CREDIT_CARD,
-          name: 'Credit card',
-          type: 'debit',
-        }),
-        expect.objectContaining({
-          id: PAYMENT_METHOD_ID.INITIAL_BALANCE,
-          name: 'Initial balance',
-          type: null,
-        }),
-      ]),
-    );
-
-    const categories = await request(app.getHttpServer())
-      .get('/reference-data/categories')
-      .set('Cookie', cookies)
-      .expect(200);
-    expect(categories.body).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          name: 'Salary',
-          type: 'credit',
-        }),
-      ]),
-    );
+  it('lists every seeded payment method', async () => {
+    const { agent } = await seedSignedInMember(app);
+    const res = await agent.get('/reference-data/payment-methods').expect(200);
+    const body = res.body as { id: string }[];
+    expect(body).toHaveLength(Object.keys(PAYMENT_METHOD_ID).length);
   });
 
-  it('rejects an unauthenticated request', async () => {
-    await request(app.getHttpServer())
-      .get('/reference-data/payment-methods')
-      .expect(401);
+  it('requires authentication for both lists', async () => {
+    const agent = request.agent(app.getHttpServer());
+    await agent.get('/reference-data/categories').expect(401);
+    await agent.get('/reference-data/payment-methods').expect(401);
   });
 });

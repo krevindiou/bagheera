@@ -1,60 +1,68 @@
-import { sql } from 'drizzle-orm';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../test-utils/integration-db';
-import { member } from './member';
+import { randomUUID } from 'node:crypto';
+import { INestApplication } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { createTestApp, getDb } from '../../test-support/create-test-app';
+import { insertMember } from '../../test-support/db-fixtures';
+import * as schema from './index';
 import { securityEvent } from './security-event';
 
+type Db = NodePgDatabase<typeof schema>;
+
+function insertSecurityEvent(
+  db: Db,
+  overrides: Partial<typeof securityEvent.$inferInsert> = {},
+) {
+  return db
+    .insert(securityEvent)
+    .values({
+      eventType: 'sign_in_success',
+      sourceAddress: '127.0.0.1',
+      ...overrides,
+    })
+    .returning();
+}
+
 describe('security_event schema', () => {
-  let ctx: IntegrationDb;
+  let app: INestApplication;
 
-  beforeAll(() => {
-    ctx = connectIntegrationDb();
-  });
-
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${securityEvent}, ${member} restart identity cascade`,
-    );
+  beforeAll(async () => {
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
+    await app.close();
   });
 
-  it('inserts an event row with timestamp, member, source address and type', async () => {
-    const [memberRow] = await ctx.db
-      .insert(member)
-      .values({ email: 'owner@example.com', password: 'hash', country: 'FR' })
-      .returning({ id: member.id });
-
-    const [eventRow] = await ctx.db
-      .insert(securityEvent)
-      .values({
-        memberId: memberRow.id,
-        eventType: 'sign_in_success',
-        sourceAddress: '203.0.113.42',
-      })
-      .returning();
-
-    expect(eventRow).toMatchObject({
-      memberId: memberRow.id,
-      eventType: 'sign_in_success',
-      sourceAddress: '203.0.113.42',
+  describe('memberId (nullable — some events have no resolvable member)', () => {
+    it('accepts a null memberId', async () => {
+      const [row] = await insertSecurityEvent(getDb(app), {
+        memberId: null,
+      });
+      expect(row.memberId).toBeNull();
     });
-    expect(eventRow.createdAt).toBeInstanceOf(Date);
+
+    it('rejects a memberId pointing at a member that does not exist', async () => {
+      await expect(
+        insertSecurityEvent(getDb(app), { memberId: randomUUID() }),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
+
+    it('accepts a memberId pointing at a real member', async () => {
+      const member = await insertMember(getDb(app));
+      const [row] = await insertSecurityEvent(getDb(app), {
+        memberId: member.id,
+      });
+      expect(row.memberId).toBe(member.id);
+    });
   });
 
-  it('allows a null member (e.g. sign-in failure against an unknown email)', async () => {
-    const [eventRow] = await ctx.db
-      .insert(securityEvent)
-      .values({
-        eventType: 'sign_in_failure',
-        sourceAddress: '203.0.113.42',
-      })
-      .returning();
-
-    expect(eventRow.memberId).toBeNull();
+  describe('eventType enum', () => {
+    it('rejects a value outside the security_event_type enum', async () => {
+      await expect(
+        insertSecurityEvent(getDb(app), {
+          eventType: 'not_a_real_event',
+        } as unknown as Partial<typeof securityEvent.$inferInsert>),
+      ).rejects.toMatchObject({ cause: { code: '22P02' } });
+    });
   });
 });

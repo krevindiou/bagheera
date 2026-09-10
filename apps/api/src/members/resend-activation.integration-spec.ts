@@ -1,161 +1,117 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { Test } from '@nestjs/testing';
-import { Queue } from 'bullmq';
-import { sql } from 'drizzle-orm';
+import { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
 import request from 'supertest';
-import type { App } from 'supertest/types';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
 import { member } from '../db/schema';
-import { EmailModule } from '../email/email.module';
-import { EMAIL_PROVIDER, EMAIL_QUEUE } from '../email/email.constants';
-import type { EmailMessage, EmailProvider } from '../email/email-message';
 import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { MembersModule } from './members.module';
+import { csrfTokenFor, uniqueEmail } from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+function messageOf(res: request.Response): string {
+  return (res.body as { message: string }).message;
 }
 
-describe('resend-activation (integration)', () => {
-  let app: INestApplication<App>;
-  let ctx: IntegrationDb;
-  let hash: HashService;
-  let emailQueue: Queue<EmailMessage>;
+async function insertInactiveMember(app: INestApplication) {
+  const email = uniqueEmail();
+  const password = 'inactive-member-pw-1';
+  const hash = await app.get(HashService).hash(password);
+  const [row] = await getDb(app)
+    .insert(member)
+    .values({ email, password: hash, country: 'FR', active: false })
+    .returning();
+  return { email, password, row };
+}
+
+describe('POST /members/resend-activation', () => {
+  let app: INestApplication;
+  let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        EmailModule,
-        MembersModule,
-      ],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    emailQueue = moduleRef.get<Queue<EmailMessage>>(EMAIL_QUEUE);
-    ctx = connectIntegrationDb();
+    ({ app, fakeEmailQueue } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await emailQueue.drain();
-    await emailQueue.clean(0, 1000, 'completed');
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  beforeEach(() => {
+    fakeEmailQueue.enqueue.mockClear();
   });
 
-  async function createMember(opts: {
-    email: string;
-    password: string;
-    active: boolean;
-  }) {
-    const passwordHash = await hash.hash(opts.password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({
-        email: opts.email,
-        password: passwordHash,
-        country: 'FR',
-        active: opts.active,
-      })
-      .returning();
-    return row;
-  }
+  it('reissues an activation email, bumping the token version, for a correct inactive-member login', async () => {
+    const { email, password, row } = await insertInactiveMember(app);
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
 
-  it('reissues the activation token for correct credentials against an inactive member', async () => {
-    const row = await createMember({
-      email: 'inactive@example.com',
-      password: 'correct-horse',
-      active: false,
-    });
-
-    const res = await request(app.getHttpServer())
+    const res = await agent
       .post('/members/resend-activation')
-      .send({ email: 'inactive@example.com', password: 'correct-horse' });
+      .set('x-csrf-token', csrfToken)
+      .send({ email, password })
+      .expect(200);
 
-    expect(res.status).toBe(200);
-    const [updated] = await ctx.db
-      .select()
+    expect(messageOf(res)).toBe('A new activation email has been sent.');
+    expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({ to: email }),
+    );
+
+    const [updated] = await getDb(app)
+      .select({ activationTokenVersion: member.activationTokenVersion })
       .from(member)
-      .where(sql`${member.id} = ${row.id}`);
+      .where(eq(member.id, row.id));
     expect(updated.activationTokenVersion).toBe(row.activationTokenVersion + 1);
-
-    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    expect(
-      jobs.filter((j) => j.data.to === 'inactive@example.com'),
-    ).toHaveLength(1);
   });
 
-  it('rejects the wrong password without reissuing anything', async () => {
-    const row = await createMember({
-      email: 'wrongpass@example.com',
-      password: 'correct-horse',
-      active: false,
-    });
+  it('rejects a wrong password with the generic message and queues nothing', async () => {
+    const { email } = await insertInactiveMember(app);
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
 
-    const res = await request(app.getHttpServer())
+    const res = await agent
       .post('/members/resend-activation')
-      .send({ email: 'wrongpass@example.com', password: 'wrong-password' });
+      .set('x-csrf-token', csrfToken)
+      .send({ email, password: 'not-the-password' })
+      .expect(401);
 
-    expect(res.status).toBe(401);
-    const [unchanged] = await ctx.db
-      .select()
+    expect(messageOf(res)).toBe('Invalid email or password');
+    expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('rejects an unknown email with the same generic message', async () => {
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+
+    const res = await agent
+      .post('/members/resend-activation')
+      .set('x-csrf-token', csrfToken)
+      .send({ email: uniqueEmail('nobody'), password: 'whatever12' })
+      .expect(401);
+
+    expect(messageOf(res)).toBe('Invalid email or password');
+  });
+
+  it('no-ops silently for an already-active member (correct credentials, no email queued)', async () => {
+    const email = uniqueEmail();
+    const password = 'already-active-pw-1';
+    const hash = await app.get(HashService).hash(password);
+    const [row] = await getDb(app)
+      .insert(member)
+      .values({ email, password: hash, country: 'FR', active: true })
+      .returning();
+
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+    const res = await agent
+      .post('/members/resend-activation')
+      .set('x-csrf-token', csrfToken)
+      .send({ email, password })
+      .expect(200);
+
+    expect(messageOf(res)).toBe('A new activation email has been sent.');
+    expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+
+    const [updated] = await getDb(app)
+      .select({ activationTokenVersion: member.activationTokenVersion })
       .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.activationTokenVersion).toBe(row.activationTokenVersion);
-  });
-
-  it('rejects an unknown email with the identical generic error', async () => {
-    const wrongPassword = await request(app.getHttpServer())
-      .post('/members/resend-activation')
-      .send({ email: 'nobody@example.com', password: 'whatever123' });
-
-    expect(wrongPassword.status).toBe(401);
-    expect((wrongPassword.body as { message: string }).message).toBe(
-      'Invalid email or password',
-    );
-  });
-
-  it('no-ops for correct credentials against an already-active member', async () => {
-    const row = await createMember({
-      email: 'active@example.com',
-      password: 'correct-horse',
-      active: true,
-    });
-
-    const res = await request(app.getHttpServer())
-      .post('/members/resend-activation')
-      .send({ email: 'active@example.com', password: 'correct-horse' });
-
-    expect(res.status).toBe(200);
-    const [unchanged] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.activationTokenVersion).toBe(row.activationTokenVersion);
+      .where(eq(member.id, row.id));
+    expect(updated.activationTokenVersion).toBe(row.activationTokenVersion);
   });
 });

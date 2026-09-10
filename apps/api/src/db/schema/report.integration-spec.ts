@@ -1,77 +1,90 @@
-import { sql } from 'drizzle-orm';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../test-utils/integration-db';
-import { account } from './account';
-import { bank } from './bank';
-import { member } from './member';
+import { randomUUID } from 'node:crypto';
+import { INestApplication } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { createTestApp, getDb } from '../../test-support/create-test-app';
+import { insertMemberBankAccount } from '../../test-support/db-fixtures';
+import * as schema from './index';
 import { report, reportAccount } from './report';
 
+type Db = NodePgDatabase<typeof schema>;
+
+function insertReport(
+  db: Db,
+  memberId: string,
+  overrides: Partial<typeof report.$inferInsert> = {},
+) {
+  return db
+    .insert(report)
+    .values({
+      memberId,
+      type: 'sum',
+      title: 'Test report',
+      periodGrouping: 'month',
+      ...overrides,
+    })
+    .returning();
+}
+
 describe('report schema', () => {
-  let ctx: IntegrationDb;
-  let memberId: string;
-  let accountId: string;
+  let app: INestApplication;
 
-  beforeAll(() => {
-    ctx = connectIntegrationDb();
-  });
-
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${reportAccount}, ${report}, ${account}, ${bank}, ${member} restart identity cascade`,
-    );
-    const [memberRow] = await ctx.db
-      .insert(member)
-      .values({ email: 'owner@example.com', password: 'hash', country: 'FR' })
-      .returning({ id: member.id });
-    memberId = memberRow.id;
-    const [bankRow] = await ctx.db
-      .insert(bank)
-      .values({ memberId, name: 'Some Bank' })
-      .returning({ id: bank.id });
-    const [accountRow] = await ctx.db
-      .insert(account)
-      .values({ bankId: bankRow.id, name: 'Checking', currency: 'EUR' })
-      .returning({ id: account.id });
-    accountId = accountRow.id;
+  beforeAll(async () => {
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
+    await app.close();
   });
 
-  it('inserts a report with linked accounts', async () => {
-    const [reportRow] = await ctx.db
-      .insert(report)
-      .values({
-        memberId,
-        type: 'sum',
-        title: 'Monthly overview',
-        periodGrouping: 'month',
-      })
-      .returning();
-    expect(reportRow).toMatchObject({ homepage: false, type: 'sum' });
-
-    await ctx.db.insert(reportAccount).values({
-      reportId: reportRow.id,
-      accountId,
+  describe('report.memberId FK', () => {
+    it('rejects a report pointing at a member that does not exist', async () => {
+      await expect(
+        insertReport(getDb(app), randomUUID()),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
     });
 
-    const links = await ctx.db
-      .select()
-      .from(reportAccount)
-      .where(sql`${reportAccount.reportId} = ${reportRow.id}`);
-    expect(links).toHaveLength(1);
+    it('accepts a report pointing at a real member', async () => {
+      const { member } = await insertMemberBankAccount(getDb(app));
+      const [row] = await insertReport(getDb(app), member.id);
+      expect(row.memberId).toBe(member.id);
+    });
   });
 
-  it('rejects a report account link with no matching report', async () => {
-    // Well-formed UUIDv7 that matches no row.
-    const nonexistentReportId = '00000000-0000-7000-8000-00000000ffff';
-    await expect(
-      ctx.db
+  describe('report_account join table', () => {
+    it('rejects a (reportId, accountId) pair pointing at a report that does not exist', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
+
+      await expect(
+        getDb(app)
+          .insert(reportAccount)
+          .values({ reportId: randomUUID(), accountId: account.id }),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
+
+    it('rejects a (reportId, accountId) pair pointing at an account that does not exist', async () => {
+      const { member } = await insertMemberBankAccount(getDb(app));
+      const [reportRow] = await insertReport(getDb(app), member.id);
+
+      await expect(
+        getDb(app)
+          .insert(reportAccount)
+          .values({ reportId: reportRow.id, accountId: randomUUID() }),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
+
+    it('accepts a real pair and rejects inserting the exact same pair twice', async () => {
+      const { member, account } = await insertMemberBankAccount(getDb(app));
+      const [reportRow] = await insertReport(getDb(app), member.id);
+
+      await getDb(app)
         .insert(reportAccount)
-        .values({ reportId: nonexistentReportId, accountId }),
-    ).rejects.toMatchObject({ cause: { code: '23503' } });
+        .values({ reportId: reportRow.id, accountId: account.id });
+
+      await expect(
+        getDb(app)
+          .insert(reportAccount)
+          .values({ reportId: reportRow.id, accountId: account.id }),
+      ).rejects.toMatchObject({ cause: { code: '23505' } });
+    });
   });
 });

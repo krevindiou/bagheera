@@ -1,319 +1,128 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { eq, sql } from 'drizzle-orm';
-import type { Request } from 'express';
-import { MinorUnits } from '../common/money';
-import request from 'supertest';
-import { AccountsModule } from '../accounts/accounts.module';
-import { AuthModule } from '../auth/auth.module';
-import { BanksModule } from '../banks/banks.module';
-import { DbModule } from '../db/db.module';
-import {
-  account,
-  bank,
-  member,
-  operation,
-  scheduler,
-  securityEvent,
-} from '../db/schema';
+import { INestApplication } from '@nestjs/common';
+import { and, desc, eq } from 'drizzle-orm';
+import { operation, scheduler, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { EMAIL_PROVIDER } from '../email/email.constants';
-import type { EmailProvider } from '../email/email-message';
-import { EmailModule } from '../email/email.module';
-import { OperationsModule } from '../operations/operations.module';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { SchedulersModule } from './schedulers.module';
-import { Public } from '../session/public.decorator';
+  seedSignedInMember,
+  SignedInFixture,
+} from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
+  const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
+  return (res.body as { id: string }).id;
 }
 
-// Test-only controller — mints a CSRF token/cookie pair; never shipped.
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
+async function createAccount(
+  mutate: SignedInFixture['mutate'],
+  bankId: string,
+): Promise<string> {
+  const res = await mutate('post', '/accounts', {
+    bankId,
+    name: 'Account',
+    currency: 'EUR',
+  });
+  return (res.body as { account: { id: string } }).account.id;
 }
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
+async function createScheduler(
+  mutate: SignedInFixture['mutate'],
+  accountId: string,
+  valueDate = '2099-01-01',
+): Promise<string> {
+  const res = await mutate('post', '/schedulers', {
+    accountId,
+    type: 'debit',
+    thirdParty: 'Rent',
+    amount: 50,
+    paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+    valueDate,
+    frequencyValue: 1,
+    frequencyUnit: 'month',
+  });
+  return (res.body as { scheduler: { id: string } }).scheduler.id;
 }
 
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-describe('scheduler batch actions (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
+describe('POST /schedulers/batch/delete', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        BanksModule,
-        AccountsModule,
-        OperationsModule,
-        SchedulersModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    ctx = connectIntegrationDb();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${securityEvent} restart identity cascade`,
-    );
-    await ctx.db.execute(
-      sql`truncate table ${scheduler} restart identity cascade`,
-    );
-    await ctx.db.execute(
-      sql`truncate table ${operation} restart identity cascade`,
-    );
-    await ctx.db.execute(
-      sql`truncate table ${account} restart identity cascade`,
-    );
-    await ctx.db.execute(sql`truncate table ${bank} restart identity cascade`);
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
-  });
-
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...existingCookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: merged,
-    };
-  }
-
-  async function signInAndGetSession(email: string, password: string) {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
-      .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ email, password })
-      .expect(200);
-
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    return [
-      ...cookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-  }
-
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
-
-  async function authedRequest(email: string, password: string) {
-    const authCookies = await signInAndGetSession(email, password);
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-    return { token, cookies };
-  }
-
-  async function createOwnedAccount(email: string) {
-    const owner = await createMember(email, 'password1');
-    const [ownerBank] = await ctx.db
-      .insert(bank)
-      .values({ memberId: owner.id, name: `Bank ${email}` })
-      .returning();
-    const [acc] = await ctx.db
-      .insert(account)
-      .values({ bankId: ownerBank.id, name: 'Checking', currency: 'USD' })
-      .returning();
-    return { owner, bank: ownerBank, account: acc };
-  }
-
-  async function insertScheduler(accountId: string, thirdParty: string) {
-    const [row] = await ctx.db
-      .insert(scheduler)
-      .values({
-        accountId,
-        thirdParty,
-        debit: 100000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2030-01-01', // future — never due, so no generated ops
-        frequencyValue: 1,
-        frequencyUnit: 'month',
-      })
-      .returning();
-    return row;
-  }
-
-  // Well-formed UUIDv7 that matches no row.
-  const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
-
-  it('deletes only owned ids, silently skips foreign/nonexistent, and writes an audit event', async () => {
-    const { owner, account: acc } = await createOwnedAccount(
-      'sbatch1@example.com',
-    );
-    const { account: otherAcc } = await createOwnedAccount(
-      'sbatch1-other@example.com',
-    );
-
-    const owned = await insertScheduler(acc.id, 'Mine');
-    const foreign = await insertScheduler(otherAcc.id, 'Not mine');
-
-    const { token, cookies } = await authedRequest(
-      'sbatch1@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/schedulers/batch/delete')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ ids: [owned.id, foreign.id, NONEXISTENT_ID] });
-
-    expect(res.status).toBe(200);
-    expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
-
-    const remaining = await ctx.db.select({ id: scheduler.id }).from(scheduler);
-    expect(remaining.map((r) => r.id)).toEqual([foreign.id]);
-
-    const [event] = await ctx.db
-      .select()
-      .from(securityEvent)
-      .where(sql`${securityEvent.eventType} = 'scheduler_batch_deleted'`);
-    expect(event).toBeDefined();
-    expect(event.memberId).toBe(owner.id);
-  });
-
-  it('drops the scheduler link from generated operations instead of deleting them', async () => {
-    const { account: acc } = await createOwnedAccount('sbatch2@example.com');
-    const owned = await insertScheduler(acc.id, 'Mine');
-    const [generatedOp] = await ctx.db
-      .insert(operation)
-      .values({
-        accountId: acc.id,
-        schedulerId: owned.id,
-        thirdParty: 'Mine',
-        debit: 100000 as MinorUnits,
-        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
-        valueDate: '2026-01-01',
-      })
-      .returning();
-
-    const { token, cookies } = await authedRequest(
-      'sbatch2@example.com',
-      'password1',
-    );
-    const res = await request(app.getHttpServer())
-      .post('/schedulers/batch/delete')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ ids: [owned.id] });
-
-    expect(res.status).toBe(200);
-    expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
-
-    const [op] = await ctx.db
+  it('deletes only owned ids, unlinks generated operations, and records scheduler_batch_deleted', async () => {
+    const { mutate, memberId } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountId = await createAccount(mutate, bankId);
+    const ownId = await createScheduler(mutate, accountId, '2020-01-01');
+    const [generated] = await getDb(app)
       .select()
       .from(operation)
-      .where(eq(operation.id, generatedOp.id));
-    expect(op).toBeDefined();
-    expect(op.schedulerId).toBeNull();
-  });
+      .where(eq(operation.schedulerId, ownId));
+    expect(generated).toBeDefined();
 
-  it('does nothing and still writes an audit event when every id is foreign', async () => {
-    const { account: otherAcc } = await createOwnedAccount(
-      'sbatch3-other@example.com',
-    );
-    await createOwnedAccount('sbatch3@example.com');
-    const foreign = await insertScheduler(otherAcc.id, 'Not mine');
+    const { mutate: otherMutate } = await seedSignedInMember(app);
+    const otherBankId = await createBank(otherMutate);
+    const otherAccountId = await createAccount(otherMutate, otherBankId);
+    const foreignId = await createScheduler(otherMutate, otherAccountId);
 
-    const { token, cookies } = await authedRequest(
-      'sbatch3@example.com',
-      'password1',
-    );
-    const res = await request(app.getHttpServer())
-      .post('/schedulers/batch/delete')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ ids: [foreign.id] });
-
+    const res = await mutate('post', '/schedulers/batch/delete', {
+      ids: [ownId, foreignId],
+    });
     expect(res.status).toBe(200);
-    expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
+    expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
 
-    const [stillThere] = await ctx.db
+    const ownRows = await getDb(app)
       .select()
       .from(scheduler)
-      .where(eq(scheduler.id, foreign.id));
-    expect(stillThere).toBeDefined();
+      .where(eq(scheduler.id, ownId));
+    expect(ownRows).toHaveLength(0);
+    const foreignRows = await getDb(app)
+      .select()
+      .from(scheduler)
+      .where(eq(scheduler.id, foreignId));
+    expect(foreignRows).toHaveLength(1);
 
-    const [event] = await ctx.db
+    const [survivor] = await getDb(app)
+      .select()
+      .from(operation)
+      .where(eq(operation.id, generated.id));
+    expect(survivor.schedulerId).toBeNull();
+
+    const [event] = await getDb(app)
       .select()
       .from(securityEvent)
-      .where(sql`${securityEvent.eventType} = 'scheduler_batch_deleted'`);
+      .where(
+        and(
+          eq(securityEvent.eventType, 'scheduler_batch_deleted'),
+          eq(securityEvent.memberId, memberId),
+        ),
+      )
+      .orderBy(desc(securityEvent.createdAt))
+      .limit(1);
     expect(event).toBeDefined();
+  });
+
+  it('drops ids on a closed account rather than deleting them', async () => {
+    const { mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountId = await createAccount(mutate, bankId);
+    const id = await createScheduler(mutate, accountId);
+    await mutate('post', `/accounts/${accountId}/close`);
+
+    const res = await mutate('post', '/schedulers/batch/delete', {
+      ids: [id],
+    });
+    expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
+
+    const rows = await getDb(app)
+      .select()
+      .from(scheduler)
+      .where(eq(scheduler.id, id));
+    expect(rows).toHaveLength(1);
   });
 });

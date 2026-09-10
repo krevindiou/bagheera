@@ -1,76 +1,71 @@
-import { sql } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { createTestApp, getDb } from '../../test-support/create-test-app';
 import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../test-utils/integration-db';
-import { account } from './account';
+  insertAccount,
+  insertBank,
+  insertMember,
+} from '../../test-support/db-fixtures';
 import { bank } from './bank';
 import { member } from './member';
 
-describe('bank + account schema', () => {
-  let ctx: IntegrationDb;
+describe('bank/account schema', () => {
+  let app: INestApplication;
 
-  beforeAll(() => {
-    ctx = connectIntegrationDb();
-  });
-
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${account}, ${bank}, ${member} restart identity cascade`,
-    );
+  beforeAll(async () => {
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
+    await app.close();
   });
 
-  async function seedMember(): Promise<string> {
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email: 'owner@example.com', password: 'hash', country: 'FR' })
-      .returning({ id: member.id });
-    return row.id;
-  }
+  describe('bank.memberId FK', () => {
+    it('rejects a bank pointing at a member that does not exist', async () => {
+      await expect(insertBank(getDb(app), randomUUID())).rejects.toMatchObject({
+        cause: { code: '23503' },
+      });
+    });
 
-  // Well-formed UUIDv7 that matches no row — used to trigger FK violations.
-  const NONEXISTENT_ID = '00000000-0000-7000-8000-00000000ffff';
+    it('accepts a bank pointing at a real member', async () => {
+      const memberRow = await insertMember(getDb(app));
+      const row = await insertBank(getDb(app), memberRow.id);
+      expect(row.memberId).toBe(memberRow.id);
+    });
 
-  it('rejects a bank with no matching member', async () => {
-    await expect(
-      ctx.db
-        .insert(bank)
-        .values({ memberId: NONEXISTENT_ID, name: 'Some Bank' }),
-    ).rejects.toMatchObject({ cause: { code: '23503' } }); // foreign_key_violation
+    it('refuses to delete a member that still owns a bank (no cascade declared)', async () => {
+      const memberRow = await insertMember(getDb(app));
+      await insertBank(getDb(app), memberRow.id);
+
+      await expect(
+        getDb(app).delete(member).where(eq(member.id, memberRow.id)),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
   });
 
-  it('rejects an account with no matching bank', async () => {
-    await expect(
-      ctx.db.insert(account).values({
-        bankId: NONEXISTENT_ID,
-        name: 'Checking',
-        currency: 'EUR',
-      }),
-    ).rejects.toMatchObject({ cause: { code: '23503' } });
-  });
+  describe('account.bankId FK', () => {
+    it('rejects an account pointing at a bank that does not exist', async () => {
+      await expect(
+        insertAccount(getDb(app), randomUUID()),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
 
-  it('accepts an account whose bank exists, with correct closed/deleted defaults', async () => {
-    const memberId = await seedMember();
-    const [bankRow] = await ctx.db
-      .insert(bank)
-      .values({ memberId, name: 'Some Bank' })
-      .returning({ id: bank.id });
+    it('accepts an account pointing at a real bank', async () => {
+      const memberRow = await insertMember(getDb(app));
+      const bankRow = await insertBank(getDb(app), memberRow.id);
+      const row = await insertAccount(getDb(app), bankRow.id);
+      expect(row.bankId).toBe(bankRow.id);
+    });
 
-    const [accountRow] = await ctx.db
-      .insert(account)
-      .values({ bankId: bankRow.id, name: 'Checking', currency: 'EUR' })
-      .returning();
+    it('refuses to delete a bank that still owns an account (no cascade declared)', async () => {
+      const memberRow = await insertMember(getDb(app));
+      const bankRow = await insertBank(getDb(app), memberRow.id);
+      await insertAccount(getDb(app), bankRow.id);
 
-    expect(accountRow).toMatchObject({ closed: false, deleted: false });
-
-    const [fullBankRow] = await ctx.db
-      .select()
-      .from(bank)
-      .where(sql`${bank.id} = ${bankRow.id}`);
-    expect(fullBankRow).toMatchObject({ closed: false, deleted: false });
+      await expect(
+        getDb(app).delete(bank).where(eq(bank.id, bankRow.id)),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
   });
 });

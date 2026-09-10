@@ -1,105 +1,125 @@
-import { sql } from 'drizzle-orm';
-import { MinorUnits } from '../../common/money';
-import { PAYMENT_METHOD_ID } from '../seed-data';
+import { randomUUID } from 'node:crypto';
+import { INestApplication } from '@nestjs/common';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { toMinorUnits } from '../../common/money';
+import { createTestApp, getDb } from '../../test-support/create-test-app';
 import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../test-utils/integration-db';
-import { account } from './account';
-import { bank } from './bank';
-import { member } from './member';
-import { operation } from './operation';
-import { paymentMethod } from './payment-method';
+  ANY_PAYMENT_METHOD_ID,
+  insertMemberBankAccount,
+} from '../../test-support/db-fixtures';
+import * as schema from './index';
 import { scheduler } from './scheduler';
 
-// Test fixtures write already-minor-units literals straight into insert
-// calls; brand them so they satisfy debit/credit's MinorUnits type.
-const asMinorUnits = (value: number) => value as MinorUnits;
+type Db = NodePgDatabase<typeof schema>;
+
+// Arbitrary — these specs only care that debit/credit holds *some* valid
+// MinorUnits value, never about the actual amount.
+const AMOUNT = toMinorUnits(10);
+const OTHER_AMOUNT = toMinorUnits(5);
+
+function insertScheduler(
+  db: Db,
+  accountId: string,
+  overrides: Partial<typeof scheduler.$inferInsert> = {},
+) {
+  return db
+    .insert(scheduler)
+    .values({
+      accountId,
+      paymentMethodId: ANY_PAYMENT_METHOD_ID,
+      thirdParty: 'Test third party',
+      valueDate: '2026-01-01',
+      frequencyValue: 1,
+      debit: AMOUNT,
+      ...overrides,
+    })
+    .returning();
+}
 
 describe('scheduler schema', () => {
-  let ctx: IntegrationDb;
-  let accountId: string;
+  let app: INestApplication;
 
   beforeAll(async () => {
-    ctx = connectIntegrationDb();
-    await ctx.db
-      .insert(paymentMethod)
-      .values({
-        id: PAYMENT_METHOD_ID.CREDIT_CARD,
-        name: 'Credit card',
-        type: 'debit',
-      })
-      .onConflictDoNothing();
-  });
-
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${operation}, ${scheduler}, ${account}, ${bank}, ${member} restart identity cascade`,
-    );
-    const [memberRow] = await ctx.db
-      .insert(member)
-      .values({ email: 'owner@example.com', password: 'hash', country: 'FR' })
-      .returning({ id: member.id });
-    const [bankRow] = await ctx.db
-      .insert(bank)
-      .values({ memberId: memberRow.id, name: 'Some Bank' })
-      .returning({ id: bank.id });
-    const [accountRow] = await ctx.db
-      .insert(account)
-      .values({ bankId: bankRow.id, name: 'Checking', currency: 'EUR' })
-      .returning({ id: account.id });
-    accountId = accountRow.id;
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
+    await app.close();
   });
 
-  const base = () => ({
-    accountId,
-    paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-    thirdParty: 'Rent',
-    valueDate: '2026-01-01',
-    frequencyValue: 1,
-  });
+  describe('debit/credit exclusivity CHECK', () => {
+    it('rejects a row with both debit and credit set', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
 
-  it('rejects a row with both debit and credit set', async () => {
-    await expect(
-      ctx.db.insert(scheduler).values({
-        ...base(),
-        debit: asMinorUnits(1000),
-        credit: asMinorUnits(1000),
-      }),
-    ).rejects.toMatchObject({ cause: { code: '23514' } }); // check_violation
-  });
-
-  it('rejects a row with neither debit nor credit set', async () => {
-    await expect(
-      ctx.db.insert(scheduler).values({ ...base() }),
-    ).rejects.toMatchObject({ cause: { code: '23514' } });
-  });
-
-  it('inserts a scheduler and an operation linked via scheduler_id', async () => {
-    const [schedulerRow] = await ctx.db
-      .insert(scheduler)
-      .values({ ...base(), debit: asMinorUnits(5000) })
-      .returning();
-    expect(schedulerRow).toMatchObject({
-      active: true,
-      frequencyUnit: 'month',
+      await expect(
+        insertScheduler(getDb(app), account.id, {
+          debit: AMOUNT,
+          credit: OTHER_AMOUNT,
+        }),
+      ).rejects.toMatchObject({ cause: { code: '23514' } });
     });
 
-    const [operationRow] = await ctx.db
-      .insert(operation)
-      .values({
-        accountId,
-        schedulerId: schedulerRow.id,
-        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-        thirdParty: 'Rent',
-        debit: asMinorUnits(5000),
-      })
-      .returning();
+    it('rejects a row with neither debit nor credit set', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
 
-    expect(operationRow.schedulerId).toBe(schedulerRow.id);
+      await expect(
+        insertScheduler(getDb(app), account.id, {
+          debit: null,
+          credit: null,
+        }),
+      ).rejects.toMatchObject({ cause: { code: '23514' } });
+    });
+
+    it('accepts a credit-only row', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
+
+      const [row] = await insertScheduler(getDb(app), account.id, {
+        debit: null,
+        credit: OTHER_AMOUNT,
+      });
+      expect(row.credit).toBe(OTHER_AMOUNT);
+      expect(row.debit).toBeNull();
+    });
+  });
+
+  describe('required FKs', () => {
+    it('rejects a scheduler pointing at an account that does not exist', async () => {
+      await expect(
+        insertScheduler(getDb(app), randomUUID()),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
+
+    it('rejects a scheduler pointing at a payment method that does not exist', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
+
+      await expect(
+        insertScheduler(getDb(app), account.id, {
+          paymentMethodId: randomUUID(),
+        }),
+      ).rejects.toMatchObject({ cause: { code: '23503' } });
+    });
+  });
+
+  describe('frequencyValue (smallint)', () => {
+    it('accepts the smallint upper bound', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
+
+      const [row] = await insertScheduler(getDb(app), account.id, {
+        frequencyValue: 32767,
+      });
+      expect(row.frequencyValue).toBe(32767);
+    });
+
+    // The real DB-level ceiling behind schedulers/generation/interval.ts's
+    // application-level cap (see 726f0aed) — that fix stops a too-large
+    // frequencyValue from ever reaching this column; this proves the
+    // column itself would refuse one anyway if something bypassed the cap.
+    it('rejects a value beyond the smallint range', async () => {
+      const { account } = await insertMemberBankAccount(getDb(app));
+
+      await expect(
+        insertScheduler(getDb(app), account.id, { frequencyValue: 32768 }),
+      ).rejects.toMatchObject({ cause: { code: '22003' } });
+    });
   });
 });

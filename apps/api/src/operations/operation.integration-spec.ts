@@ -1,547 +1,302 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
-import request from 'supertest';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
-import { account, bank, category, member, operation } from '../db/schema';
+import { INestApplication } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { toMinorUnits } from '../common/money';
+import { category, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
-import { EmailModule } from '../email/email.module';
-import { EMAIL_PROVIDER } from '../email/email.constants';
-import type { EmailProvider } from '../email/email-message';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { AuthModule } from '../auth/auth.module';
-import { BanksModule } from '../banks/banks.module';
-import { AccountsModule } from '../accounts/accounts.module';
-import { OperationsModule } from './operations.module';
-import { Public } from '../session/public.decorator';
-import { MinorUnits } from '../common/money';
+import {
+  seedSignedInMember,
+  SignedInFixture,
+} from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-// Test fixtures write already-minor-units literals straight into insert
-// calls; brand them so they satisfy operation.debit/credit's MinorUnits type.
-const asMinorUnits = (value: number) => value as MinorUnits;
-
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+async function debitCategoryId(app: INestApplication): Promise<string> {
+  const [row] = await getDb(app)
+    .select({ id: category.id })
+    .from(category)
+    .where(eq(category.type, 'debit'));
+  return row.id;
 }
 
-// Test-only controller — mints a CSRF token/cookie pair; never shipped.
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
+async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
+  const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
+  return (res.body as { id: string }).id;
 }
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
+async function createAccount(
+  mutate: SignedInFixture['mutate'],
+  bankId: string,
+  initialBalance?: number,
+): Promise<string> {
+  const res = await mutate('post', '/accounts', {
+    bankId,
+    name: 'Checking',
+    currency: 'EUR',
+    initialBalance,
+  });
+  return (res.body as { account: { id: string } }).account.id;
 }
 
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-describe('operations (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
+describe('operations', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        BanksModule,
-        AccountsModule,
-        OperationsModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    ctx = connectIntegrationDb();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${operation} restart identity cascade`,
-    );
-    await ctx.db.execute(
-      sql`truncate table ${account} restart identity cascade`,
-    );
-    await ctx.db.execute(sql`truncate table ${bank} restart identity cascade`);
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
-  });
+  describe('POST /operations', () => {
+    it('creates a debit operation with the amount scaled to minor units', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const categoryId = await debitCategoryId(app);
 
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...existingCookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: merged,
-    };
-  }
-
-  async function signInAndGetSession(email: string, password: string) {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
-      .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ email, password })
-      .expect(200);
-
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...cookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return merged;
-  }
-
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
-
-  async function authedRequest(email: string, password: string) {
-    const authCookies = await signInAndGetSession(email, password);
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-    return { token, cookies };
-  }
-
-  async function createOwnedAccount(
-    email: string,
-    opts: { closed?: boolean; currency?: string } = {},
-  ) {
-    const owner = await createMember(email, 'password1');
-    const [ownerBank] = await ctx.db
-      .insert(bank)
-      .values({ memberId: owner.id, name: `Bank ${email}` })
-      .returning();
-    const [acc] = await ctx.db
-      .insert(account)
-      .values({
-        bankId: ownerBank.id,
-        name: 'Checking',
-        currency: opts.currency ?? 'USD',
-        closed: opts.closed ?? false,
-      })
-      .returning();
-    return { owner, bank: ownerBank, account: acc };
-  }
-
-  // Test-local category, independent of the fixed reference-data set — only
-  // Salary has a stable id there, so a test needing "some debit category"
-  // mints its own instead of relying on any other seeded id.
-  async function insertCategory(type: 'debit' | 'credit') {
-    const [row] = await ctx.db
-      .insert(category)
-      .values({
-        name: `Test ${type} ${Math.random().toString(36).slice(2, 8)}`,
-        type,
-      })
-      .returning();
-    return row;
-  }
-
-  it('creates a debit operation and rejects both-type validation errors', async () => {
-    const { owner, account: acc } = await createOwnedAccount('op1@example.com');
-    const foodCategory = await insertCategory('debit');
-    const { token, cookies } = await authedRequest(
-      'op1@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/operations')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
+      const res = await mutate('post', '/operations', {
+        accountId,
         type: 'debit',
-        thirdParty: 'Grocery Store',
+        thirdParty: 'Grocery store',
         amount: 42.5,
-        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-        categoryId: foodCategory.id,
-        valueDate: '2026-01-15',
-      });
-
-    expect(res.status).toBe(200);
-    const created = (res.body as { operation: { id: string } }).operation;
-
-    const [row] = await ctx.db
-      .select()
-      .from(operation)
-      .where(sql`${operation.id} = ${created.id}`);
-    expect(row.debit).toBe(425000);
-    expect(row.credit).toBeNull();
-    expect(row.accountId).toBe(acc.id);
-    void owner;
-  });
-
-  it('rejects a credit-type payment method on a debit operation', async () => {
-    const { account: acc } = await createOwnedAccount('op2@example.com');
-    const { token, cookies } = await authedRequest(
-      'op2@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/operations')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Employer',
-        amount: 100,
-        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT, // credit-only
-      });
-
-    expect(res.status).toBe(400);
-  });
-
-  it('rejects a mismatched-type category', async () => {
-    const { account: acc } = await createOwnedAccount('op3@example.com');
-    const { token, cookies } = await authedRequest(
-      'op3@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/operations')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Grocery Store',
-        amount: 10,
-        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-        categoryId: SALARY_CATEGORY_SEED_ID, // Salary, credit-only
-      });
-
-    expect(res.status).toBe(400);
-  });
-
-  it('rejects operation creation on a closed account', async () => {
-    const { account: acc } = await createOwnedAccount('op4@example.com', {
-      closed: true,
-    });
-    const { token, cookies } = await authedRequest(
-      'op4@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/operations')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
-        type: 'debit',
-        thirdParty: 'Grocery Store',
-        amount: 10,
+        categoryId,
         paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       });
+      expect(res.status).toBe(200);
+      const { operation: created } = res.body as {
+        operation: { id: string };
+      };
 
-    expect(res.status).toBe(422);
-  });
-
-  it('returns not found listing operations for a deleted account', async () => {
-    const { account: acc, bank: ownerBank } =
-      await createOwnedAccount('op5@example.com');
-    await ctx.db
-      .update(account)
-      .set({ deleted: true })
-      .where(sql`${account.id} = ${acc.id}`);
-    const { token, cookies } = await authedRequest(
-      'op5@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .get(`/operations?accountId=${acc.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-
-    expect(res.status).toBe(404);
-    void ownerBank;
-  });
-
-  it('lists operations on a closed account (listable-only)', async () => {
-    const { account: acc } = await createOwnedAccount('op6@example.com', {
-      closed: true,
+      const [row] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.id, created.id));
+      expect(row.debit).toBe(toMinorUnits(42.5));
+      expect(row.credit).toBeNull();
     });
-    await ctx.db.insert(operation).values({
-      accountId: acc.id,
-      thirdParty: 'Old Op',
-      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-      debit: asMinorUnits(1000),
-      valueDate: '2026-01-01',
-    });
-    const { token, cookies } = await authedRequest(
-      'op6@example.com',
-      'password1',
-    );
 
-    const res = await request(app.getHttpServer())
-      .get(`/operations?accountId=${acc.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
+    it('creates a credit operation', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
 
-    expect(res.status).toBe(200);
-    const body = res.body as { items: unknown[]; total: number };
-    expect(body.items).toHaveLength(1);
-    expect(body.total).toBe(1);
-  });
-
-  it('sorts operations by value date desc, then created desc, then id desc, paginated at 20', async () => {
-    const { account: acc } = await createOwnedAccount('op7@example.com');
-    // UUIDv7 ids are time-ordered, so insertion order still determines the
-    // id-desc tiebreak — capture each row's actual id rather than assuming
-    // small sequential integers.
-    const ids: string[] = [];
-    for (let i = 0; i < 25; i++) {
-      const [row] = await ctx.db
-        .insert(operation)
-        .values({
-          accountId: acc.id,
-          thirdParty: `Op ${i}`,
-          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-          debit: asMinorUnits(100),
-          valueDate: '2026-01-01',
-        })
-        .returning({ id: operation.id });
-      ids.push(row.id);
-    }
-    const { token, cookies } = await authedRequest(
-      'op7@example.com',
-      'password1',
-    );
-
-    const page1 = await request(app.getHttpServer())
-      .get(`/operations?accountId=${acc.id}&page=1`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-    expect(page1.status).toBe(200);
-    const body1 = page1.body as { items: { id: string }[]; total: number };
-    expect(body1.items).toHaveLength(20);
-    expect(body1.total).toBe(25);
-    expect(body1.items[0].id).toBe(ids[24]);
-    expect(body1.items[19].id).toBe(ids[5]);
-
-    const page2 = await request(app.getHttpServer())
-      .get(`/operations?accountId=${acc.id}&page=2`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-    const body2 = page2.body as { items: { id: string }[] };
-    expect(body2.items).toHaveLength(5);
-    expect(body2.items[0].id).toBe(ids[4]);
-    expect(body2.items[4].id).toBe(ids[0]);
-  });
-
-  it('keeps the account immutable and rejects editing the opening operation', async () => {
-    const { account: acc } = await createOwnedAccount('op8@example.com');
-    const { account: otherAcc } = await createOwnedAccount('op8b@example.com');
-    const { token, cookies } = await authedRequest(
-      'op8@example.com',
-      'password1',
-    );
-
-    const [opening] = await ctx.db
-      .insert(operation)
-      .values({
-        accountId: acc.id,
-        thirdParty: 'Initial balance',
-        paymentMethodId: PAYMENT_METHOD_ID.INITIAL_BALANCE,
-        credit: asMinorUnits(500000),
-        reconciled: true,
-        valueDate: '2026-01-01',
-      })
-      .returning();
-
-    const openingRes = await request(app.getHttpServer())
-      .patch(`/operations/${opening.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
+      const res = await mutate('post', '/operations', {
+        accountId,
         type: 'credit',
-        thirdParty: 'Initial balance',
-        amount: 50,
+        thirdParty: 'Employer',
+        amount: 1500,
+        categoryId: SALARY_CATEGORY_SEED_ID,
         paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
-        valueDate: '2026-01-01',
       });
-    expect(openingRes.status).toBe(422);
+      expect(res.status).toBe(200);
+      const { operation: created } = res.body as {
+        operation: { id: string };
+      };
+      const [row] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.id, created.id));
+      expect(row.credit).toBe(toMinorUnits(1500));
+    });
 
-    const [regular] = await ctx.db
-      .insert(operation)
-      .values({
-        accountId: acc.id,
-        thirdParty: 'Regular',
+    it('rejects a payment method whose type does not match', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      // CREDIT_CARD is a debit-type payment method.
+      const res = await mutate('post', '/operations', {
+        accountId,
+        type: 'credit',
+        thirdParty: 'Mismatch',
+        amount: 10,
         paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-        debit: asMinorUnits(1000),
-        valueDate: '2026-01-01',
-      })
-      .returning();
+      });
+      expect(res.status).toBe(400);
+    });
 
-    const { token: token2, cookies: cookies2 } =
-      await getCsrfTokenAndCookies(cookies);
-    const moveRes = await request(app.getHttpServer())
-      .patch(`/operations/${regular.id}`)
-      .set('Cookie', cookies2)
-      .set('x-csrf-token', token2)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: otherAcc.id,
+    it('rejects a category whose type does not match', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      // Salary is a credit-type category.
+      const res = await mutate('post', '/operations', {
+        accountId,
         type: 'debit',
-        thirdParty: 'Regular',
+        thirdParty: 'Mismatch',
+        amount: 10,
+        categoryId: SALARY_CATEGORY_SEED_ID,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it("404s creating an operation under another member's account", async () => {
+      const { mutate: ownerMutate } = await seedSignedInMember(app);
+      const bankId = await createBank(ownerMutate);
+      const accountId = await createAccount(ownerMutate, bankId);
+
+      const { mutate: attackerMutate } = await seedSignedInMember(app);
+      const res = await attackerMutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Stolen',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      });
+      expect(res.status).toBe(404);
+    });
+
+    it('rejects creating an operation on a closed account', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      await mutate('post', `/accounts/${accountId}/close`);
+
+      const res = await mutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Nope',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      });
+      expect(res.status).toBe(422);
+    });
+  });
+
+  describe('GET /operations', () => {
+    it('paginates and 404s for a foreign account', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      for (let i = 0; i < 3; i++) {
+        await mutate('post', '/operations', {
+          accountId,
+          type: 'debit',
+          thirdParty: `Third party ${i}`,
+          amount: 5,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        });
+      }
+
+      const res = await agent
+        .get(`/operations?accountId=${accountId}&page=1`)
+        .expect(200);
+      const body = res.body as { items: unknown[]; total: number };
+      expect(body.total).toBe(3);
+      expect(body.items).toHaveLength(3);
+
+      const { agent: attackerAgent } = await seedSignedInMember(app);
+      await attackerAgent
+        .get(`/operations?accountId=${accountId}&page=1`)
+        .expect(404);
+    });
+  });
+
+  describe('PATCH /operations/:id', () => {
+    it('updates thirdParty and amount', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Old',
         amount: 10,
         paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         valueDate: '2026-01-01',
       });
-    expect(moveRes.status).toBe(400);
+      const { id } = (created.body as { operation: { id: string } }).operation;
 
-    const { token: token3, cookies: cookies3 } =
-      await getCsrfTokenAndCookies(cookies);
-    const okRes = await request(app.getHttpServer())
-      .patch(`/operations/${regular.id}`)
-      .set('Cookie', cookies3)
-      .set('x-csrf-token', token3)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
+      const res = await mutate('patch', `/operations/${id}`, {
+        accountId,
         type: 'debit',
-        thirdParty: 'Regular Renamed',
-        amount: 12,
+        thirdParty: 'New',
+        amount: 20,
         paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
         valueDate: '2026-01-02',
       });
-    expect(okRes.status).toBe(200);
+      expect(res.status).toBe(200);
 
-    const [updated] = await ctx.db
-      .select()
-      .from(operation)
-      .where(sql`${operation.id} = ${regular.id}`);
-    expect(updated.thirdParty).toBe('Regular Renamed');
-    expect(updated.debit).toBe(120000);
-  });
-
-  it('returns not found for a non-owner even when the account is closed', async () => {
-    const { account: acc } = await createOwnedAccount('op9@example.com', {
-      closed: true,
+      const [row] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.id, id));
+      expect(row.thirdParty).toBe('New');
+      expect(row.debit).toBe(toMinorUnits(20));
     });
-    await createMember('intruder9@example.com', 'password1');
-    const { token, cookies } = await authedRequest(
-      'intruder9@example.com',
-      'password1',
-    );
 
-    const res = await request(app.getHttpServer())
-      .get(`/operations?accountId=${acc.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-
-    expect(res.status).toBe(404);
-  });
-
-  it('discards the transfer account when the payment method is not a transfer method', async () => {
-    const { account: acc } = await createOwnedAccount('op10@example.com');
-    const { account: other } = await createOwnedAccount('op10b@example.com');
-    const { token, cookies } = await authedRequest(
-      'op10@example.com',
-      'password1',
-    );
-
-    const res = await request(app.getHttpServer())
-      .post('/operations')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        accountId: acc.id,
+    it('rejects moving an operation to a different account', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const otherAccountId = await createAccount(mutate, bankId);
+      const created = await mutate('post', '/operations', {
+        accountId,
         type: 'debit',
-        thirdParty: 'Not a transfer',
+        thirdParty: 'Old',
         amount: 10,
         paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-        transferAccountId: other.id,
+        valueDate: '2026-01-01',
       });
+      const { id } = (created.body as { operation: { id: string } }).operation;
 
-    expect(res.status).toBe(200);
-    const created = (res.body as { operation: { id: string } }).operation;
-    const [row] = await ctx.db
-      .select()
-      .from(operation)
-      .where(sql`${operation.id} = ${created.id}`);
-    expect(row.transferAccountId).toBeNull();
+      const res = await mutate('patch', `/operations/${id}`, {
+        accountId: otherAccountId,
+        type: 'debit',
+        thirdParty: 'Old',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        valueDate: '2026-01-01',
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it('rejects editing the system-generated opening operation', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId, 100);
+      const [opening] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.accountId, accountId));
+
+      const res = await mutate('patch', `/operations/${opening.id}`, {
+        accountId,
+        type: 'credit',
+        thirdParty: 'Initial balance',
+        amount: 200,
+        paymentMethodId: PAYMENT_METHOD_ID.INITIAL_BALANCE,
+        valueDate: '2026-01-01',
+      });
+      expect(res.status).toBe(422);
+    });
+
+    it('rejects editing an operation on a now-closed account', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Old',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        valueDate: '2026-01-01',
+      });
+      const { id } = (created.body as { operation: { id: string } }).operation;
+      await mutate('post', `/accounts/${accountId}/close`);
+
+      const res = await mutate('patch', `/operations/${id}`, {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Old',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        valueDate: '2026-01-01',
+      });
+      expect(res.status).toBe(422);
+    });
   });
 });

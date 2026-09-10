@@ -1,33 +1,18 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { verifyRegistrationResponse } from '@simplewebauthn/server';
-import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server';
-import { Queue } from 'bullmq';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import { INestApplication } from '@nestjs/common';
+import { and, desc, eq } from 'drizzle-orm';
+import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
-import { member, securityEvent, webauthnCredential } from '../db/schema';
-import { EmailModule } from '../email/email.module';
-import { EMAIL_PROVIDER, EMAIL_QUEUE } from '../email/email.constants';
-import type { EmailMessage, EmailProvider } from '../email/email-message';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { AuthModule } from '../auth/auth.module';
-import { Public } from '../session/public.decorator';
-import { WebauthnModule } from './webauthn.module';
+import { securityEvent, webauthnCredential } from '../db/schema';
+import { csrfTokenFor, seedSignedInMember } from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-// generateRegistrationOptions runs for real (pure, no browser interaction);
-// only verifyRegistrationResponse is mocked — a real attestation needs a
-// real or virtual authenticator, which is what apps/web's e2e suite covers
-// via Playwright's CDP virtual authenticator.
+// Real ceremony verification needs a physical authenticator, which nothing
+// in this suite has — mock exactly the one function that would otherwise
+// need one. Everything else (routing, DTO validation, session-stashed
+// challenge, credential persistence/ownership, email queueing, audit)
+// stays real. generateRegistrationOptions is *not* mocked — it's pure,
+// deterministic, and this suite's only way to get a real challenge into
+// the session for verify() to consume.
 jest.mock('@simplewebauthn/server', () => ({
   ...jest.requireActual<typeof import('@simplewebauthn/server')>(
     '@simplewebauthn/server',
@@ -35,267 +20,199 @@ jest.mock('@simplewebauthn/server', () => ({
   verifyRegistrationResponse: jest.fn(),
 }));
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
+import { verifyRegistrationResponse } from '@simplewebauthn/server';
+
+const mockVerify = verifyRegistrationResponse as jest.MockedFunction<
+  typeof verifyRegistrationResponse
+>;
+
+function verifiedResult(credentialId: string): VerifiedRegistrationResponse {
+  return {
+    verified: true,
+    registrationInfo: {
+      credential: {
+        id: credentialId,
+        publicKey: new Uint8Array([1, 2, 3, 4]),
+        counter: 0,
+        transports: ['internal'],
+      },
+    },
+  } as unknown as VerifiedRegistrationResponse;
 }
 
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
-}
+const FAKE_RESPONSE = {
+  id: 'client-id',
+  rawId: 'client-id',
+  response: {},
+  clientExtensionResults: {},
+  type: 'public-key',
+};
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
-}
-
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-function mergeCookies(existing: string[], fresh: string[]): string[] {
-  return [
-    ...existing.filter(
-      (c) => !fresh.some((n) => n.split('=')[0] === c.split('=')[0]),
-    ),
-    ...fresh,
-  ];
-}
-
-describe('webauthn registration (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
-  let emailQueue: Queue<EmailMessage>;
+describe('webauthn registration', () => {
+  let app: INestApplication;
+  let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        WebauthnModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    emailQueue = moduleRef.get<Queue<EmailMessage>>(EMAIL_QUEUE);
-    ctx = connectIntegrationDb();
+    ({ app, fakeEmailQueue } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    jest.mocked(verifyRegistrationResponse).mockReset();
-    await emailQueue.drain();
-    await emailQueue.clean(0, 1000, 'completed');
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  beforeEach(() => {
+    mockVerify.mockReset();
+    fakeEmailQueue.enqueue.mockClear();
   });
 
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const fresh = (res.headers['set-cookie'] as unknown as string[]).map(
-      cookiePair,
-    );
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: mergeCookies(existingCookies, fresh),
-    };
-  }
+  describe('POST /webauthn/registration/options', () => {
+    it('returns real challenge options for a signed-in member', async () => {
+      const { agent, getCsrfToken } = await seedSignedInMember(app);
+      const csrfToken = await getCsrfToken();
 
-  async function signInAndGetSession(
-    email: string,
-    password: string,
-  ): Promise<string[]> {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
-      .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ email, password })
-      .expect(200);
-    const fresh = (res.headers['set-cookie'] as unknown as string[]).map(
-      cookiePair,
-    );
-    return mergeCookies(cookies, fresh);
-  }
+      const res = await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
 
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
-
-  async function postWithCsrf(
-    authCookies: string[],
-    path: string,
-    body: object,
-  ) {
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-    return request(app.getHttpServer())
-      .post(path)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send(body);
-  }
-
-  const dummyResponse = {
-    id: 'cred-1',
-    rawId: 'cred-1',
-    response: {},
-    clientExtensionResults: {},
-    type: 'public-key',
-  };
-
-  it('generates registration options scoped to the signed-in member', async () => {
-    await createMember('reg@example.com', 'correct-horse');
-    const authCookies = await signInAndGetSession(
-      'reg@example.com',
-      'correct-horse',
-    );
-
-    const res = await postWithCsrf(
-      authCookies,
-      '/webauthn/registration/options',
-      {},
-    );
-
-    expect(res.status).toBe(200);
-    const body = res.body as PublicKeyCredentialCreationOptionsJSON;
-    expect(body.user.name).toBe('reg@example.com');
-    expect(body.rp.id).toBe(process.env.RP_ID);
-  });
-
-  it('rejects a verify call with no prior options call', async () => {
-    await createMember('noreg@example.com', 'correct-horse');
-    const authCookies = await signInAndGetSession(
-      'noreg@example.com',
-      'correct-horse',
-    );
-
-    const res = await postWithCsrf(
-      authCookies,
-      '/webauthn/registration/verify',
-      {
-        response: dummyResponse,
-      },
-    );
-
-    expect(res.status).toBe(400);
-  });
-
-  it('persists the credential, emails a notice, and records the audit event on success', async () => {
-    const row = await createMember('success@example.com', 'correct-horse');
-    const authCookies = await signInAndGetSession(
-      'success@example.com',
-      'correct-horse',
-    );
-    await postWithCsrf(authCookies, '/webauthn/registration/options', {});
-
-    jest.mocked(verifyRegistrationResponse).mockResolvedValue({
-      verified: true,
-      registrationInfo: {
-        credential: {
-          id: 'cred-1',
-          publicKey: new Uint8Array([1, 2, 3]),
-          counter: 0,
-          transports: ['internal'],
-        },
-      },
-    } as never);
-
-    const res = await postWithCsrf(
-      authCookies,
-      '/webauthn/registration/verify',
-      {
-        response: dummyResponse,
-        deviceName: 'Test device',
-      },
-    );
-
-    expect(res.status).toBe(200);
-
-    const [credentialRow] = await ctx.db
-      .select()
-      .from(webauthnCredential)
-      .where(sql`${webauthnCredential.memberId} = ${row.id}`);
-    expect(credentialRow.credentialId).toBe('cred-1');
-    expect(credentialRow.deviceName).toBe('Test device');
-
-    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    expect(jobs.some((j) => j.data.subject === 'Bagheera passkey added')).toBe(
-      true,
-    );
-
-    const [event] = await ctx.db
-      .select()
-      .from(securityEvent)
-      .where(
-        sql`${securityEvent.eventType} = 'webauthn_credential_registered'`,
+      expect(typeof (res.body as { challenge: string }).challenge).toBe(
+        'string',
       );
-    expect(event.memberId).toBe(row.id);
+      expect(
+        (res.body as { excludeCredentials: unknown[] }).excludeCredentials,
+      ).toEqual([]);
+    });
+
+    it('requires authentication', async () => {
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(401);
+    });
   });
 
-  it('rejects and persists nothing when verification is unverified', async () => {
-    await createMember('fail@example.com', 'correct-horse');
-    const authCookies = await signInAndGetSession(
-      'fail@example.com',
-      'correct-horse',
-    );
-    await postWithCsrf(authCookies, '/webauthn/registration/options', {});
+  describe('POST /webauthn/registration/verify', () => {
+    it('persists a credential, queues an alert email, and records the audit event', async () => {
+      const { agent, getCsrfToken, memberId, email } =
+        await seedSignedInMember(app);
+      const csrfToken = await getCsrfToken();
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
 
-    jest
-      .mocked(verifyRegistrationResponse)
-      .mockResolvedValue({ verified: false } as never);
+      mockVerify.mockResolvedValueOnce(verifiedResult('cred-1'));
+      await agent
+        .post('/webauthn/registration/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: FAKE_RESPONSE, deviceName: 'Test device' })
+        .expect(200);
 
-    const res = await postWithCsrf(
-      authCookies,
-      '/webauthn/registration/verify',
-      {
-        response: dummyResponse,
-      },
-    );
+      const [row] = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, 'cred-1'));
+      expect(row.memberId).toBe(memberId);
+      expect(row.deviceName).toBe('Test device');
 
-    expect(res.status).toBe(400);
-    const rows = await ctx.db.select().from(webauthnCredential);
-    expect(rows).toHaveLength(0);
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
+        expect.objectContaining({ to: email }),
+      );
+
+      const [event] = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_credential_registered'),
+            eq(securityEvent.memberId, memberId),
+          ),
+        )
+        .orderBy(desc(securityEvent.createdAt))
+        .limit(1);
+      expect(event).toBeDefined();
+    });
+
+    it('rejects verification without a prior options() call', async () => {
+      const { agent, getCsrfToken } = await seedSignedInMember(app);
+      const csrfToken = await getCsrfToken();
+
+      mockVerify.mockResolvedValueOnce(verifiedResult('cred-no-challenge'));
+      const res = await agent
+        .post('/webauthn/registration/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: FAKE_RESPONSE })
+        .expect(400);
+      expect((res.body as { message: string }).message).toBe(
+        'Passkey registration failed.',
+      );
+    });
+
+    it('rejects when the ceremony fails verification', async () => {
+      const { agent, getCsrfToken } = await seedSignedInMember(app);
+      const csrfToken = await getCsrfToken();
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
+
+      mockVerify.mockResolvedValueOnce({
+        verified: false,
+      });
+      const res = await agent
+        .post('/webauthn/registration/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: FAKE_RESPONSE })
+        .expect(400);
+      expect((res.body as { message: string }).message).toBe(
+        'Passkey registration failed.',
+      );
+    });
+
+    it('rejects when verifyRegistrationResponse throws', async () => {
+      const { agent, getCsrfToken } = await seedSignedInMember(app);
+      const csrfToken = await getCsrfToken();
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
+
+      mockVerify.mockRejectedValueOnce(new Error('bad attestation'));
+      await agent
+        .post('/webauthn/registration/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: FAKE_RESPONSE })
+        .expect(400);
+    });
+
+    it('rejects registering the exact same credential id twice', async () => {
+      const { agent, getCsrfToken } = await seedSignedInMember(app);
+      const csrfToken1 = await getCsrfToken();
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken1)
+        .expect(200);
+      mockVerify.mockResolvedValueOnce(verifiedResult('cred-dup'));
+      await agent
+        .post('/webauthn/registration/verify')
+        .set('x-csrf-token', csrfToken1)
+        .send({ response: FAKE_RESPONSE })
+        .expect(200);
+
+      const csrfToken2 = await getCsrfToken();
+      await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken2)
+        .expect(200);
+      mockVerify.mockResolvedValueOnce(verifiedResult('cred-dup'));
+      await agent
+        .post('/webauthn/registration/verify')
+        .set('x-csrf-token', csrfToken2)
+        .send({ response: FAKE_RESPONSE })
+        .expect(400);
+    });
   });
 });

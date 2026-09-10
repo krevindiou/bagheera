@@ -1,458 +1,148 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { createClient, type RedisClientType } from 'redis';
+import { INestApplication } from '@nestjs/common';
+import { desc, eq } from 'drizzle-orm';
 import request from 'supertest';
-import { SessionModule } from '../session/session.module';
-import { DEFAULT_RATE_LIMIT } from './rate-limit.constants';
-import { RateLimit } from './rate-limit.decorator';
-import { SecurityModule } from './security.module';
-import { SkipRateLimit } from './skip-rate-limit.decorator';
+import { securityEvent } from '../db/schema';
+import {
+  csrfTokenFor,
+  seedSignedInMember,
+  uniqueEmail,
+} from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-// Test-only controller — exists solely to exercise RateLimitGuard from
-// outside; never registered in the real app. No @UseGuards(RateLimitGuard)
-// on any handler below: importing SecurityModule alone makes it global
-// (APP_GUARD) here exactly as it is in the real app — adding it back per
-// handler would run the guard twice per request.
-@Controller('__test-rate-limit')
-class TestRateLimitController {
-  @Post('attempt')
-  @HttpCode(200)
-  @RateLimit({ points: 3, durationSeconds: 60, identifierField: 'email' })
-  attempt(@Body() body: { email?: string }) {
-    return { ok: true, email: body.email ?? null };
-  }
-
-  @Get('unannotated-read')
-  unannotatedRead() {
-    return { ok: true };
-  }
-
-  @Get('explicit-read')
-  @RateLimit({ points: 1, durationSeconds: 60 })
-  explicitRead() {
-    return { ok: true };
-  }
-
-  @Post('skipped')
-  @HttpCode(200)
-  @SkipRateLimit()
-  skipped() {
-    return { ok: true };
-  }
-
-  @Post('unannotated-write')
-  @HttpCode(200)
-  unannotatedWrite() {
-    return { ok: true };
-  }
+async function attemptSignIn(
+  agent: ReturnType<typeof request.agent>,
+  csrfToken: string,
+  email: string,
+): Promise<number> {
+  const res = await agent
+    .post('/auth/sign-in')
+    .set('x-csrf-token', csrfToken)
+    .send({ email, password: 'wrong-password-1' });
+  return res.status;
 }
 
-// Test-only controller — exists solely to exercise the relative order
-// RateLimitGuard and SessionAuthGuard run in as real global APP_GUARDs;
-// never registered in the real app. Deliberately carries no guard-related
-// decorator of its own.
-@Controller('__test-guard-order')
-class TestGuardOrderController {
-  @Get('attempt')
-  @RateLimit({ points: 1, durationSeconds: 60 })
-  attempt() {
-    return { ok: true };
-  }
+async function latestSignInThrottledEvent(app: INestApplication) {
+  const [event] = await getDb(app)
+    .select()
+    .from(securityEvent)
+    .where(eq(securityEvent.eventType, 'sign_in_throttled'))
+    .orderBy(desc(securityEvent.createdAt))
+    .limit(1);
+  return event;
 }
 
-describe('RateLimitGuard (integration)', () => {
-  let app: NestExpressApplication;
-  let redis: RedisClientType;
+describe('rate limiting', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true }), SecurityModule],
-      controllers: [TestRateLimitController],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    await app.init();
-
-    redis = createClient({ url: process.env.VALKEY_URL });
-    await redis.connect();
-  });
-
-  afterAll(async () => {
-    await redis.quit();
-    await app.close();
-  });
-
-  beforeEach(async () => {
-    const keys = await redis.keys('rl:*');
-    if (keys.length > 0) {
-      await redis.del(keys);
-    }
-  });
-
-  it('throttles the (N+1)th request within the window for a given key', async () => {
-    const email = 'throttle-me@example.com';
-
-    for (let i = 0; i < 3; i++) {
-      await request(app.getHttpServer())
-        .post('/__test-rate-limit/attempt')
-        .send({ email })
-        .expect(200);
-    }
-
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .send({ email })
-      .expect(429);
-  });
-
-  it('tracks distinct identifiers independently (same source IP throttled per-account, other accounts unaffected)', async () => {
-    const exhausted = 'exhausted@example.com';
-    const fresh = 'fresh@example.com';
-
-    // Distinct source IPs so this test isolates the identifier dimension
-    // from the IP dimension (both are checked — see the IP-dimension test
-    // below for the complementary case).
-    for (let i = 0; i < 3; i++) {
-      await request(app.getHttpServer())
-        .post('/__test-rate-limit/attempt')
-        .set('X-Forwarded-For', '10.0.0.1')
-        .send({ email: exhausted })
-        .expect(200);
-    }
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', '10.0.0.1')
-      .send({ email: exhausted })
-      .expect(429);
-
-    // A different identifier still has its own untouched budget, even from
-    // the very same source IP that just got locked out above.
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', '10.0.0.1')
-      .send({ email: fresh })
-      .expect(200);
-  });
-
-  it('treats an identifier as case-insensitive (mirrors the case-insensitive email lookup every auth flow uses)', async () => {
-    const email = 'Case-Me@Example.com';
-
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .send({ email: email.toLowerCase() })
-      .expect(200);
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .send({ email: email.toUpperCase() })
-      .expect(200);
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .send({ email })
-      .expect(200);
-
-    // Budget is 3 — a 4th attempt under yet another casing must still land
-    // on the same dimension, not mint a fresh one.
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .send({ email: 'CASE-ME@EXAMPLE.COM' })
-      .expect(429);
-  });
-
-  it('tracks distinct source IPs independently (account-level throttling alone is not enough)', async () => {
-    const email = 'shared-account@example.com';
-
-    for (let i = 0; i < 3; i++) {
-      await request(app.getHttpServer())
-        .post('/__test-rate-limit/attempt')
-        .set('X-Forwarded-For', '10.0.0.2')
-        .send({ email })
-        .expect(200);
-    }
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', '10.0.0.2')
-      .send({ email })
-      .expect(429);
-
-    // Same account, different source IP: still throttled independently —
-    // an attacker can't dodge the account-level limit by rotating IPs,
-    // but a fresh IP against the same account has its own IP-dimension
-    // budget (the account dimension is what's exhausted here).
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', '10.0.0.3')
-      .send({ email })
-      .expect(429);
-  });
-
-  it('escalates the lockout duration on repeated violations of the same dimension', async () => {
-    const email = 'repeat-offender@example.com';
-
-    const exhaust = () =>
-      request(app.getHttpServer())
-        .post('/__test-rate-limit/attempt')
-        .set('X-Forwarded-For', '10.0.0.4')
-        .send({ email });
-
-    for (let i = 0; i < 3; i++) {
-      await exhaust().expect(200);
-    }
-    // First violation: locked out, base window (60s) applies.
-    await exhaust().expect(429);
-    const strikeKey =
-      'rl:strikes:TestRateLimitController#attempt:id:repeat-offender@example.com';
-    const blockKey =
-      'rl:block:TestRateLimitController#attempt:id:repeat-offender@example.com';
-    expect(await redis.get(strikeKey)).toBe('1');
-    const firstBlockTtl = await redis.ttl(blockKey);
-    expect(firstBlockTtl).toBeGreaterThan(0);
-    expect(firstBlockTtl).toBeLessThanOrEqual(60);
-
-    // Simulate that lockout having expired (rather than waiting 60s for
-    // real): clear the block and the underlying consume-counter, but keep
-    // the strike count, exactly as if the dimension came back and violated
-    // the limit again before its strikes decayed.
-    await redis.del(blockKey);
-    await redis.del(
-      'rl:TestRateLimitController#attempt:id:repeat-offender@example.com',
-    );
-    for (let i = 0; i < 3; i++) {
-      await exhaust().expect(200);
-    }
-    await exhaust().expect(429);
-
-    // Second violation: the strike count doubled the block duration.
-    expect(await redis.get(strikeKey)).toBe('2');
-    const secondBlockTtl = await redis.ttl(blockKey);
-    expect(secondBlockTtl).toBeGreaterThan(60);
-    expect(secondBlockTtl).toBeLessThanOrEqual(120);
-  });
-
-  it('lets an unannotated GET through untouched, no matter how many times it repeats', async () => {
-    for (let i = 0; i < DEFAULT_RATE_LIMIT.points + 2; i++) {
-      await request(app.getHttpServer())
-        .get('/__test-rate-limit/unannotated-read')
-        .expect(200);
-    }
-  });
-
-  it('still applies an explicit @RateLimit budget to a GET, not just mutating verbs', async () => {
-    await request(app.getHttpServer())
-      .get('/__test-rate-limit/explicit-read')
-      .expect(200);
-    await request(app.getHttpServer())
-      .get('/__test-rate-limit/explicit-read')
-      .expect(429);
-  });
-
-  it('lets @SkipRateLimit through untouched on a mutating route, past what the default budget would allow', async () => {
-    for (let i = 0; i < DEFAULT_RATE_LIMIT.points + 2; i++) {
-      await request(app.getHttpServer())
-        .post('/__test-rate-limit/skipped')
-        .expect(200);
-    }
-  });
-
-  it("keeps the IP dimension isolated per route — a busy route can't exhaust an unrelated route's budget", async () => {
-    const ip = '10.0.0.9';
-    // unannotated-write falls back to DEFAULT_RATE_LIMIT (5 points/60s, IP-only).
-    for (let i = 0; i < DEFAULT_RATE_LIMIT.points; i++) {
-      await request(app.getHttpServer())
-        .post('/__test-rate-limit/unannotated-write')
-        .set('X-Forwarded-For', ip)
-        .expect(200);
-    }
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/unannotated-write')
-      .set('X-Forwarded-For', ip)
-      .expect(429);
-
-    // A different route, same source IP, still has its own untouched
-    // budget — before routeKey scoping, both shared one bare "ip:<ip>"
-    // Valkey key, so exhausting one silently tripped the other too.
-    await request(app.getHttpServer())
-      .get('/__test-rate-limit/explicit-read')
-      .set('X-Forwarded-For', ip)
-      .expect(200);
-  });
-
-  it('falls back to DEFAULT_RATE_LIMIT for a mutating route with neither decorator', async () => {
-    for (let i = 0; i < DEFAULT_RATE_LIMIT.points; i++) {
-      await request(app.getHttpServer())
-        .post('/__test-rate-limit/unannotated-write')
-        .expect(200);
-    }
-    await request(app.getHttpServer())
-      .post('/__test-rate-limit/unannotated-write')
-      .expect(429);
-  });
-});
-
-// Pins the assumption main.ts's `app.set('trust proxy', N)` depends on:
-// production sits behind TWO real reverse-proxy hops (Kamal's own
-// TLS-terminating edge proxy, then the Caddy container it forwards to —
-// see main.ts's own comment), each of which appends its observed peer to
-// X-Forwarded-For, as such proxies normally do. Getting the hop count
-// wrong there previously made every request's req.ip resolve to an
-// intermediate proxy's own address instead of the real client's — which
-// silently collapsed RateLimitGuard's per-IP dimension into one bucket
-// shared by every caller on the whole site. This builds one app at the
-// wrong (regression) hop count and one at the real one, and asserts they
-// resolve a realistic chained X-Forwarded-For differently — so a future
-// change to either main.ts's setting or this assumption about the
-// deployed topology has to break a test, not just production.
-describe("RateLimitGuard's req.ip resolution across a two-hop proxy chain (integration)", () => {
-  let wrongHopCountApp: NestExpressApplication;
-  let realHopCountApp: NestExpressApplication;
-  let redis: RedisClientType;
-
-  // Simulates the exact header shape a real request carries by the time it
-  // reaches the api container: whatever the client itself sent (leftmost,
-  // attacker-controlled — here a deliberately spoofed decoy), then the real
-  // client IP appended by hop 1 (Kamal's edge proxy), then hop 1's own
-  // address as seen and appended by hop 2 (Caddy — rightmost, closest to
-  // this app).
-  const chainedForwardedFor = (realClientIp: string) =>
-    `spoofed-decoy, ${realClientIp}, 10.10.10.10`;
-
-  const ipKeysFor = (redisClient: RedisClientType) =>
-    redisClient.keys('rl:TestRateLimitController#attempt:ip:*');
-
-  beforeAll(async () => {
-    const buildApp = async () => {
-      const moduleRef = await Test.createTestingModule({
-        imports: [ConfigModule.forRoot({ isGlobal: true }), SecurityModule],
-        controllers: [TestRateLimitController],
-      }).compile();
-      const testApp = moduleRef.createNestApplication<NestExpressApplication>();
-      return testApp;
-    };
-
-    wrongHopCountApp = await buildApp();
-    // The regression this guards against: trusting only 1 hop when 2 real
-    // proxies actually sit in front of the app.
-    wrongHopCountApp.set('trust proxy', 1);
-    await wrongHopCountApp.init();
-
-    realHopCountApp = await buildApp();
-    // Matches main.ts's real setting.
-    realHopCountApp.set('trust proxy', 2);
-    await realHopCountApp.init();
-
-    redis = createClient({ url: process.env.VALKEY_URL });
-    await redis.connect();
-  });
-
-  afterAll(async () => {
-    await redis.quit();
-    await wrongHopCountApp.close();
-    await realHopCountApp.close();
-  });
-
-  beforeEach(async () => {
-    const keys = await redis.keys('rl:*');
-    if (keys.length > 0) {
-      await redis.del(keys);
-    }
-  });
-
-  it('at the real hop count (2), resolves to the real client — the middle entry — ignoring the decoy ahead of it and the proxies behind it', async () => {
-    const realClientIp = '203.0.113.5';
-
-    await request(realHopCountApp.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', chainedForwardedFor(realClientIp))
-      .send({ email: 'two-hop-correct@example.com' })
-      .expect(200);
-
-    expect(await ipKeysFor(redis)).toEqual([
-      `rl:TestRateLimitController#attempt:ip:${realClientIp}`,
-    ]);
-  });
-
-  it('still tells two different real clients apart behind an identical decoy and identical proxy address', async () => {
-    const clientA = '203.0.113.5';
-    const clientB = '203.0.113.9';
-
-    await request(realHopCountApp.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', chainedForwardedFor(clientA))
-      .send({ email: 'two-hop-client-a@example.com' })
-      .expect(200);
-    await request(realHopCountApp.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', chainedForwardedFor(clientB))
-      .send({ email: 'two-hop-client-b@example.com' })
-      .expect(200);
-
-    const keys = await ipKeysFor(redis);
-    expect(keys.sort()).toEqual(
-      [
-        `rl:TestRateLimitController#attempt:ip:${clientA}`,
-        `rl:TestRateLimitController#attempt:ip:${clientB}`,
-      ].sort(),
-    );
-  });
-
-  it('at the wrong hop count (1, the regressed setting), instead resolves to a proxy address — never the real client, and shared by every caller', async () => {
-    const clientA = '203.0.113.5';
-    const clientB = '203.0.113.9';
-
-    await request(wrongHopCountApp.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', chainedForwardedFor(clientA))
-      .send({ email: 'two-hop-wrong-a@example.com' })
-      .expect(200);
-    await request(wrongHopCountApp.getHttpServer())
-      .post('/__test-rate-limit/attempt')
-      .set('X-Forwarded-For', chainedForwardedFor(clientB))
-      .send({ email: 'two-hop-wrong-b@example.com' })
-      .expect(200);
-
-    // Both distinct real clients collapse onto the exact same key — the
-    // rightmost proxy-appended address, not either client's own — which in
-    // production means every visitor shares one IP-dimension budget.
-    expect(await ipKeysFor(redis)).toEqual([
-      'rl:TestRateLimitController#attempt:ip:10.10.10.10',
-    ]);
-  });
-});
-
-describe('RateLimitGuard vs SessionAuthGuard ordering (integration)', () => {
-  let app: NestExpressApplication;
-
-  beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        // Mirrors app.module.ts's import order deliberately — see the
-        // comment there and on RateLimitGuard for why it matters.
-        SessionModule,
-        SecurityModule,
-      ],
-      controllers: [TestGuardOrderController],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    await app.init();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  it('rejects an unauthenticated request with 401 before RateLimitGuard ever runs, however many times it repeats', async () => {
-    // budget is 1 — if RateLimitGuard ran first, the 2nd request onward
-    // would come back 429 instead of 401, proving SessionAuthGuard runs
-    // first rather than both merely rejecting it independently.
-    for (let i = 0; i < 3; i++) {
-      await request(app.getHttpServer())
-        .get('/__test-guard-order/attempt')
-        .expect(401);
+  // Sign-in's SignInThrottleAuditFilter deliberately masks a throttled
+  // attempt as the same generic 401 a wrong password produces (anti-
+  // enumeration: a caller must not be able to tell "you're locked out"
+  // from "wrong password") — it still records a distinct sign_in_throttled
+  // audit event, which is what these sign-in-specific tests check instead
+  // of the (intentionally invisible) HTTP status.
+  it('locks out the identifier dimension once its budget is exhausted', async () => {
+    const email = uniqueEmail('ratelimit');
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+    const before = await latestSignInThrottledEvent(app);
+
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      statuses.push(await attemptSignIn(agent, csrfToken, email));
     }
+    // Every attempt looks like an ordinary wrong-password failure —
+    // sign-in's own @RateLimit is { points: 5, identifierField: 'email' },
+    // so the 6th silently trips the budget behind that same 401.
+    expect(statuses).toEqual([401, 401, 401, 401, 401, 401]);
+
+    const after = await latestSignInThrottledEvent(app);
+    expect(after?.id).not.toBe(before?.id);
+  });
+
+  it('shares the identifier lockout across letter case (cbab0fd6 regression)', async () => {
+    const label = `CaseTest-${Date.now()}`;
+    const upper = `${label}@Example.Test`;
+    const lower = upper.toLowerCase();
+
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+    for (let i = 0; i < 6; i++) {
+      await attemptSignIn(agent, csrfToken, upper);
+    }
+    const throttledOnUpper = await latestSignInThrottledEvent(app);
+    expect(throttledOnUpper).toBeDefined();
+
+    // A different case variant of the same email is blocked immediately —
+    // one more throttled event, not a fresh ordinary failure — proving both
+    // share one normalized dimension key, not two independent ones an
+    // attacker could rotate between.
+    await attemptSignIn(agent, csrfToken, lower);
+    const throttledOnLower = await latestSignInThrottledEvent(app);
+    expect(throttledOnLower).toBeDefined();
+    expect(throttledOnLower.id).not.toBe(throttledOnUpper.id);
+  });
+
+  it('applies an explicit @RateLimit override distinct from the default budget', async () => {
+    // WebauthnRegistrationController.options() declares
+    // @RateLimit({ points: 10, durationSeconds: 60 }), no identifierField —
+    // only the IP dimension applies, budget 10 (not ipPointsFor's ×4
+    // multiplier, which only kicks in when identifierField is set). No
+    // masking filter here, so a real 429 surfaces once exhausted.
+    const { agent, getCsrfToken } = await seedSignedInMember(app);
+
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++) {
+      const csrfToken = await getCsrfToken();
+      const res = await agent
+        .post('/webauthn/registration/options')
+        .set('x-csrf-token', csrfToken);
+      statuses.push(res.status);
+    }
+    expect(statuses.slice(0, 10).every((s) => s === 200)).toBe(true);
+    expect(statuses[10]).toBe(429);
+  });
+
+  it('never throttles a route marked @SkipRateLimit, however many times it is called', async () => {
+    const { agent, getCsrfToken } = await seedSignedInMember(app);
+
+    for (let i = 0; i < 15; i++) {
+      const csrfToken = await getCsrfToken();
+      await agent
+        .post('/banks/choice')
+        .set('x-csrf-token', csrfToken)
+        .send({ name: `Bank ${i}` })
+        .expect(200);
+    }
+  });
+
+  it("scopes the identifier dimension to its own route — exhausting sign-in's budget doesn't affect registration", async () => {
+    const email = uniqueEmail('scoped');
+    const signInAgent = request.agent(app.getHttpServer());
+    const signInCsrf = await csrfTokenFor(signInAgent);
+    for (let i = 0; i < 6; i++) {
+      await attemptSignIn(signInAgent, signInCsrf, email);
+    }
+    expect(await latestSignInThrottledEvent(app)).toBeDefined();
+
+    const registerAgent = request.agent(app.getHttpServer());
+    const registerCsrf = await csrfTokenFor(registerAgent);
+    const res = await registerAgent
+      .post('/members/register')
+      .set('x-csrf-token', registerCsrf)
+      .send({
+        email,
+        password: 'a-real-password-1',
+        passwordConfirmation: 'a-real-password-1',
+        country: 'FR',
+      });
+    expect(res.status).toBe(201);
   });
 });

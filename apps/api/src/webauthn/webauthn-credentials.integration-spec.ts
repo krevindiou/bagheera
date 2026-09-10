@@ -1,223 +1,129 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import { randomUUID } from 'node:crypto';
+import { INestApplication } from '@nestjs/common';
+import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
-import { member, securityEvent, webauthnCredential } from '../db/schema';
-import { EmailModule } from '../email/email.module';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { AuthModule } from '../auth/auth.module';
-import { Public } from '../session/public.decorator';
-import { WebauthnModule } from './webauthn.module';
+import { securityEvent, webauthnCredential } from '../db/schema';
+import { seedSignedInMember } from '../test-support/auth-fixture';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
+// Every :id path param in this API goes through ParseUuidV7Pipe, which
+// checks the version nibble — a plain (v4) randomUUID() would 400 before
+// ever reaching the "does it exist" check this test wants. Force the
+// version nibble to look like a real (but nonexistent) v7 id instead.
+function nonexistentV7Id(): string {
+  const v4 = randomUUID();
+  return `${v4.slice(0, 14)}7${v4.slice(15)}`;
 }
 
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
+async function insertCredential(
+  app: INestApplication,
+  memberId: string,
+  deviceName: string,
+) {
+  const [row] = await getDb(app)
+    .insert(webauthnCredential)
+    .values({
+      memberId,
+      credentialId: `cred-${randomUUID()}`,
+      publicKey: Buffer.from([1, 2, 3]).toString('base64'),
+      deviceName,
+    })
+    .returning();
+  return row;
 }
 
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-function mergeCookies(existing: string[], fresh: string[]): string[] {
-  return [
-    ...existing.filter(
-      (c) => !fresh.some((n) => n.split('=')[0] === c.split('=')[0]),
-    ),
-    ...fresh,
-  ];
-}
-
-describe('webauthn credentials management (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
+describe('webauthn credentials', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-        WebauthnModule,
-      ],
-      controllers: [TestCsrfController],
-    }).compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    ctx = connectIntegrationDb();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  describe('GET /webauthn/credentials', () => {
+    it("lists only the caller's own credentials, without exposing the public key or counter", async () => {
+      const { agent, memberId } = await seedSignedInMember(app);
+      await insertCredential(app, memberId, 'My laptop');
+      const { memberId: otherMemberId } = await seedSignedInMember(app);
+      await insertCredential(app, otherMemberId, "Someone else's phone");
+
+      const res = await agent.get('/webauthn/credentials').expect(200);
+      const body = res.body as { deviceName: string | null }[];
+      expect(body).toHaveLength(1);
+      expect(body[0].deviceName).toBe('My laptop');
+      expect(body[0]).not.toHaveProperty('publicKey');
+      expect(body[0]).not.toHaveProperty('counter');
+      expect(body[0]).not.toHaveProperty('credentialId');
+    });
+
+    it('requires authentication', async () => {
+      const agent = request.agent(app.getHttpServer());
+      await agent.get('/webauthn/credentials').expect(401);
+    });
   });
 
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const fresh = (res.headers['set-cookie'] as unknown as string[]).map(
-      cookiePair,
-    );
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: mergeCookies(existingCookies, fresh),
-    };
-  }
+  describe('DELETE /webauthn/credentials/:id', () => {
+    it('removes the credential and records webauthn_credential_removed', async () => {
+      const { agent, getCsrfToken, memberId } = await seedSignedInMember(app);
+      const credential = await insertCredential(app, memberId, 'To delete');
 
-  async function signInAndGetSession(
-    email: string,
-    password: string,
-  ): Promise<string[]> {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
-      .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({ email, password })
-      .expect(200);
-    const fresh = (res.headers['set-cookie'] as unknown as string[]).map(
-      cookiePair,
-    );
-    return mergeCookies(cookies, fresh);
-  }
+      const csrfToken = await getCsrfToken();
+      const res = await agent
+        .delete(`/webauthn/credentials/${credential.id}`)
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
+      expect((res.body as { message: string }).message).toBe('ok');
 
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
+      const rows = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.id, credential.id));
+      expect(rows).toHaveLength(0);
 
-  async function addCredential(
-    memberId: string,
-    credentialId: string,
-    deviceName?: string,
-  ) {
-    const [row] = await ctx.db
-      .insert(webauthnCredential)
-      .values({
-        memberId,
-        credentialId,
-        publicKey: Buffer.from([1, 2, 3]).toString('base64'),
-        counter: 0,
-        deviceName,
-      })
-      .returning();
-    return row;
-  }
+      const [event] = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_credential_removed'),
+            eq(securityEvent.memberId, memberId),
+          ),
+        )
+        .orderBy(desc(securityEvent.createdAt))
+        .limit(1);
+      expect(event).toBeDefined();
+    });
 
-  it("lists only the signed-in member's own credentials, without the public key", async () => {
-    const mine = await createMember('mine@example.com', 'correct-horse');
-    const other = await createMember('other@example.com', 'correct-horse');
-    await addCredential(mine.id, 'cred-mine', 'My laptop');
-    await addCredential(other.id, 'cred-other');
+    it("404s on another member's credential and leaves it untouched", async () => {
+      const { memberId: ownerId } = await seedSignedInMember(app);
+      const credential = await insertCredential(app, ownerId, 'Not yours');
+      const { agent: attackerAgent, getCsrfToken } =
+        await seedSignedInMember(app);
 
-    const authCookies = await signInAndGetSession(
-      'mine@example.com',
-      'correct-horse',
-    );
-    const res = await request(app.getHttpServer())
-      .get('/webauthn/credentials')
-      .set('Cookie', authCookies)
-      .set('X-Forwarded-Proto', 'https');
+      const csrfToken = await getCsrfToken();
+      await attackerAgent
+        .delete(`/webauthn/credentials/${credential.id}`)
+        .set('x-csrf-token', csrfToken)
+        .expect(404);
 
-    expect(res.status).toBe(200);
-    const body = res.body as Array<Record<string, unknown>>;
-    expect(body).toHaveLength(1);
-    expect(body[0].deviceName).toBe('My laptop');
-    expect(body[0].publicKey).toBeUndefined();
-    expect(body[0].counter).toBeUndefined();
-  });
+      const rows = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.id, credential.id));
+      expect(rows).toHaveLength(1);
+    });
 
-  it("deletes only the signed-in member's own credential and records the audit event", async () => {
-    const mine = await createMember('del@example.com', 'correct-horse');
-    const credential = await addCredential(mine.id, 'cred-del');
-    const authCookies = await signInAndGetSession(
-      'del@example.com',
-      'correct-horse',
-    );
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
+    it('404s on a credential id that does not exist', async () => {
+      const { agent, getCsrfToken } = await seedSignedInMember(app);
+      const csrfToken = await getCsrfToken();
 
-    const res = await request(app.getHttpServer())
-      .delete(`/webauthn/credentials/${credential.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-
-    expect(res.status).toBe(200);
-    const rows = await ctx.db.select().from(webauthnCredential);
-    expect(rows).toHaveLength(0);
-
-    const [event] = await ctx.db
-      .select()
-      .from(securityEvent)
-      .where(sql`${securityEvent.eventType} = 'webauthn_credential_removed'`);
-    expect(event.memberId).toBe(mine.id);
-  });
-
-  it("404s deleting another member's credential and leaves it untouched", async () => {
-    await createMember('attacker@example.com', 'correct-horse');
-    const other = await createMember('victim@example.com', 'correct-horse');
-    const victimCredential = await addCredential(other.id, 'cred-victim');
-    const authCookies = await signInAndGetSession(
-      'attacker@example.com',
-      'correct-horse',
-    );
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-
-    const res = await request(app.getHttpServer())
-      .delete(`/webauthn/credentials/${victimCredential.id}`)
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https');
-
-    expect(res.status).toBe(404);
-    const rows = await ctx.db.select().from(webauthnCredential);
-    expect(rows).toHaveLength(1);
+      await agent
+        .delete(`/webauthn/credentials/${nonexistentV7Id()}`)
+        .set('x-csrf-token', csrfToken)
+        .expect(404);
+    });
   });
 });

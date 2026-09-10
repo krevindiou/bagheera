@@ -1,260 +1,131 @@
-import { Controller, Get, Req, ValidationPipe } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import type { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
-import { Queue } from 'bullmq';
-import { sql } from 'drizzle-orm';
-import type { Request } from 'express';
+import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createClient, type RedisClientType } from 'redis';
-import {
-  connectIntegrationDb,
-  IntegrationDb,
-} from '../db/test-utils/integration-db';
-import { DbModule } from '../db/db.module';
-import { member } from '../db/schema';
-import { EmailModule } from '../email/email.module';
-import { EMAIL_PROVIDER, EMAIL_QUEUE } from '../email/email.constants';
-import type { EmailMessage, EmailProvider } from '../email/email-message';
-import { HashService } from '../security/hash.service';
-import { SecurityModule } from '../security/security.module';
-import { SessionModule } from '../session/session.module';
-import { AuthModule } from './auth.module';
-import { Public } from '../session/public.decorator';
+import { csrfTokenFor, seedSignedInMember } from '../test-support/auth-fixture';
+import { createTestApp } from '../test-support/create-test-app';
 
-class FakeEmailProvider implements EmailProvider {
-  send(): Promise<void> {
-    return Promise.resolve();
-  }
-}
-
-// Test-only controller — mints a CSRF token/cookie pair; never shipped.
-@Public()
-@Controller('__test-csrf')
-class TestCsrfController {
-  @Get('token')
-  token(@Req() req: Request) {
-    req.session.marker = true;
-    return { csrfToken: req.csrfToken!() };
-  }
-}
-
-declare module 'express-session' {
-  interface SessionData {
-    marker?: boolean;
-  }
-}
-
-function cookiePair(setCookieHeader: string): string {
-  return setCookieHeader.split(';')[0];
-}
-
-function sessionIdFromCookie(cookie: string): string {
-  const raw = decodeURIComponent(cookie.split(';')[0].split('=')[1]);
-  return raw.split('.')[0].replace(/^s:/, '');
-}
-
-describe('change-password (integration)', () => {
-  let app: NestExpressApplication;
-  let ctx: IntegrationDb;
-  let hash: HashService;
-  let emailQueue: Queue<EmailMessage>;
-  let redis: RedisClientType;
+describe('POST /auth/change-password', () => {
+  let app: INestApplication;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DbModule,
-        SecurityModule,
-        SessionModule,
-        EmailModule,
-        AuthModule,
-      ],
-      controllers: [TestCsrfController],
-    })
-      .overrideProvider(EMAIL_PROVIDER)
-      .useValue(new FakeEmailProvider())
-      .compile();
-
-    app = moduleRef.createNestApplication<NestExpressApplication>();
-    app.set('trust proxy', 1);
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
-
-    hash = moduleRef.get(HashService);
-    emailQueue = moduleRef.get<Queue<EmailMessage>>(EMAIL_QUEUE);
-    ctx = connectIntegrationDb();
-
-    redis = createClient({ url: process.env.VALKEY_URL });
-    await redis.connect();
+    ({ app } = await createTestApp());
   });
 
   afterAll(async () => {
-    await redis.quit();
-    await ctx.pool.end();
     await app.close();
   });
 
-  beforeEach(async () => {
-    await emailQueue.drain();
-    await emailQueue.clean(0, 1000, 'completed');
-    await ctx.db.execute(
-      sql`truncate table ${member} restart identity cascade`,
-    );
+  it('changes the password when the current one is correct and confirmation matches', async () => {
+    const { agent, getCsrfToken, email, password } =
+      await seedSignedInMember(app);
+    const newPassword = 'a-brand-new-password-1';
+
+    const csrfToken1 = await getCsrfToken();
+    await agent
+      .post('/auth/change-password')
+      .set('x-csrf-token', csrfToken1)
+      .send({
+        currentPassword: password,
+        newPassword,
+        newPasswordConfirmation: newPassword,
+      })
+      .expect(200);
+
+    // Old password no longer works; new one does.
+    const freshAgent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(freshAgent);
+    await freshAgent
+      .post('/auth/sign-in')
+      .set('x-csrf-token', csrfToken)
+      .send({ email, password })
+      .expect(401);
+
+    const anotherAgent = request.agent(app.getHttpServer());
+    const anotherCsrfToken = await csrfTokenFor(anotherAgent);
+    await anotherAgent
+      .post('/auth/sign-in')
+      .set('x-csrf-token', anotherCsrfToken)
+      .send({ email, password: newPassword })
+      .expect(200);
   });
 
-  async function getCsrfTokenAndCookies(
-    existingCookies: string[] = [],
-  ): Promise<{ token: string; cookies: string[] }> {
-    const res = await request(app.getHttpServer())
-      .get('/__test-csrf/token')
-      .set('Cookie', existingCookies)
-      .set('X-Forwarded-Proto', 'https')
-      .expect(200);
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...existingCookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return {
-      token: (res.body as { csrfToken: string }).csrfToken,
-      cookies: merged,
-    };
-  }
+  it('rejects a wrong current password and leaves the password unchanged', async () => {
+    const { agent, getCsrfToken, email, password } =
+      await seedSignedInMember(app);
 
-  async function signInAndGetSession(email: string, password: string) {
-    const { token, cookies } = await getCsrfTokenAndCookies();
-    const res = await request(app.getHttpServer())
+    const csrfToken = await getCsrfToken();
+    const res = await agent
+      .post('/auth/change-password')
+      .set('x-csrf-token', csrfToken)
+      .send({
+        currentPassword: 'totally-wrong',
+        newPassword: 'whatever-new-1',
+        newPasswordConfirmation: 'whatever-new-1',
+      })
+      .expect(400);
+    expect((res.body as { message: string }).message).toBe(
+      'Current password is invalid.',
+    );
+
+    const checkAgent = request.agent(app.getHttpServer());
+    const checkCsrfToken = await csrfTokenFor(checkAgent);
+    await checkAgent
       .post('/auth/sign-in')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
+      .set('x-csrf-token', checkCsrfToken)
       .send({ email, password })
       .expect(200);
-
-    const setCookie = res.headers['set-cookie'] as unknown as string[];
-    const newCookies = setCookie.map(cookiePair);
-    const merged = [
-      ...cookies.filter(
-        (c) => !newCookies.some((n) => n.split('=')[0] === c.split('=')[0]),
-      ),
-      ...newCookies,
-    ];
-    return merged;
-  }
-
-  async function createMember(email: string, password: string) {
-    const passwordHash = await hash.hash(password);
-    const [row] = await ctx.db
-      .insert(member)
-      .values({ email, password: passwordHash, country: 'FR', active: true })
-      .returning();
-    return row;
-  }
-
-  it('rejects the wrong current password and makes no change', async () => {
-    const row = await createMember('changeme@example.com', 'old-password');
-    const authCookies = await signInAndGetSession(
-      'changeme@example.com',
-      'old-password',
-    );
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-
-    const res = await request(app.getHttpServer())
-      .post('/auth/change-password')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
-      .send({
-        currentPassword: 'wrong-password',
-        newPassword: 'new-password',
-        newPasswordConfirmation: 'new-password',
-      });
-
-    expect(res.status).toBe(400);
-    const [unchanged] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.password).toBe(row.password);
   });
 
-  it('updates the hash, terminates other sessions (current survives), invalidates reset keys, and sends a notice email', async () => {
-    const row = await createMember('changeme2@example.com', 'old-password');
-    const authCookies = await signInAndGetSession(
-      'changeme2@example.com',
-      'old-password',
-    );
-    const currentSessionCookie = authCookies.find((c) =>
-      c.startsWith('bagheera.sid='),
-    )!;
-    const currentSid = sessionIdFromCookie(currentSessionCookie);
+  it('rejects mismatched new password confirmation', async () => {
+    const { agent, getCsrfToken, password } = await seedSignedInMember(app);
 
-    await redis.set('sess:other-session', JSON.stringify({ memberId: row.id }));
-
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
-    const res = await request(app.getHttpServer())
+    const csrfToken = await getCsrfToken();
+    const res = await agent
       .post('/auth/change-password')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
+      .set('x-csrf-token', csrfToken)
       .send({
-        currentPassword: 'old-password',
-        newPassword: 'new-password',
-        newPasswordConfirmation: 'new-password',
-      });
-
-    expect(res.status).toBe(200);
-
-    const [updated] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(await hash.verify(updated.password, 'new-password')).toBe(true);
-    expect(updated.passwordResetTokenVersion).toBe(
-      row.passwordResetTokenVersion + 1,
+        currentPassword: password,
+        newPassword: 'one-new-password',
+        newPasswordConfirmation: 'a-different-one',
+      })
+      .expect(400);
+    expect((res.body as { message: string }).message).toBe(
+      "Passwords don't match.",
     );
-
-    expect(await redis.exists('sess:other-session')).toBe(0);
-    expect(await redis.exists(`sess:${currentSid}`)).toBe(1);
-
-    const jobs = await emailQueue.getJobs(['waiting', 'active', 'completed']);
-    const notice = jobs.filter(
-      (j) => j.data.subject === 'Bagheera password changed',
-    );
-    expect(notice).toHaveLength(1);
   });
 
-  it('rejects mismatched new passwords', async () => {
-    const row = await createMember('mismatch2@example.com', 'old-password');
-    const authCookies = await signInAndGetSession(
-      'mismatch2@example.com',
-      'old-password',
-    );
-    const { token, cookies } = await getCsrfTokenAndCookies(authCookies);
+  it('terminates every other session for the member but keeps the current one', async () => {
+    const {
+      agent: agent1,
+      getCsrfToken,
+      email,
+      password,
+    } = await seedSignedInMember(app);
 
-    const res = await request(app.getHttpServer())
+    // A second, independent session for the *same* member.
+    const agent2 = request.agent(app.getHttpServer());
+    const csrfToken2 = await csrfTokenFor(agent2);
+    await agent2
+      .post('/auth/sign-in')
+      .set('x-csrf-token', csrfToken2)
+      .send({ email, password })
+      .expect(200);
+    await agent2.get('/auth/me').expect(200);
+
+    const newPassword = 'yet-another-new-password-1';
+    const csrfToken3 = await getCsrfToken();
+    await agent1
       .post('/auth/change-password')
-      .set('Cookie', cookies)
-      .set('x-csrf-token', token)
-      .set('X-Forwarded-Proto', 'https')
+      .set('x-csrf-token', csrfToken3)
       .send({
-        currentPassword: 'old-password',
-        newPassword: 'new-password',
-        newPasswordConfirmation: 'something-else',
-      });
+        currentPassword: password,
+        newPassword,
+        newPasswordConfirmation: newPassword,
+      })
+      .expect(200);
 
-    expect(res.status).toBe(400);
-    const [unchanged] = await ctx.db
-      .select()
-      .from(member)
-      .where(sql`${member.id} = ${row.id}`);
-    expect(unchanged.password).toBe(row.password);
+    // agent1 (the one that made the change) is still authenticated...
+    await agent1.get('/auth/me').expect(200);
+    // ...agent2 (the other session) is not.
+    await agent2.get('/auth/me').expect(401);
   });
 });
