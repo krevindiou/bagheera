@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { report, reportAccount } from '../db/schema';
 import {
@@ -34,7 +35,7 @@ function reportPayload(overrides: Record<string, unknown> = {}) {
 }
 
 describe('reports', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

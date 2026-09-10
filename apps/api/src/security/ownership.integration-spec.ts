@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   seedSignedInMember,
@@ -67,7 +68,7 @@ async function createScheduler(
 }
 
 describe('cross-resource ownership sweep (mutating a foreign, already-existing id)', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let owner: SignedInFixture;
   let attacker: SignedInFixture;
   let bankId: string;

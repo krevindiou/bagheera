@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
@@ -11,7 +12,7 @@ import {
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 describe('security audit log', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

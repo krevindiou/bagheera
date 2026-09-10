@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member, securityEvent } from '../db/schema';
@@ -6,7 +7,7 @@ import { seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 describe('GET /auth/me', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

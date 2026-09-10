@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { bank, securityEvent } from '../db/schema';
 import { seedSignedInMember } from '../test-support/auth-fixture';
@@ -9,7 +10,7 @@ function messageOf(res: { body: unknown }): string {
 }
 
 describe('banks', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

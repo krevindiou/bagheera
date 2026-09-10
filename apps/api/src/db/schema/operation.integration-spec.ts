@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { toMinorUnits } from '../../common/money';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
@@ -35,7 +36,7 @@ function insertOperation(
 }
 
 describe('operation schema', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

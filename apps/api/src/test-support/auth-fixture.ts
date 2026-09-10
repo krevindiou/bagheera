@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
+import type { Server } from 'http';
 import request from 'supertest';
 import { member } from '../db/schema';
 import { buildActivationToken } from '../members/activation-token';
@@ -99,7 +100,7 @@ interface FixtureOverrides {
  * getting an already-authenticated agent back.
  */
 export async function insertActiveMember(
-  app: INestApplication,
+  app: INestApplication<Server>,
   overrides: FixtureOverrides = {},
 ): Promise<{ email: string; password: string; memberId: string }> {
   const email = overrides.email ?? uniqueEmail();
@@ -122,7 +123,7 @@ export async function insertActiveMember(
  * `seedSignedInMember` instead.
  */
 export async function registerActivateAndSignIn(
-  app: INestApplication,
+  app: INestApplication<Server>,
   overrides: FixtureOverrides = {},
 ): Promise<SignedInFixture> {
   const email = overrides.email ?? uniqueEmail();
@@ -179,7 +180,7 @@ export async function registerActivateAndSignIn(
  * sign-in call for a real cookie/session.
  */
 export async function seedSignedInMember(
-  app: INestApplication,
+  app: INestApplication<Server>,
   overrides: FixtureOverrides = {},
 ): Promise<SignedInFixture> {
   const { email, password, memberId } = await insertActiveMember(

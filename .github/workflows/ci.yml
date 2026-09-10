@@ -19,6 +19,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm format
       - run: pnpm --filter api exec tsc -p tsconfig.json --noEmit
+      - run: node scripts/check-integration-spec-coverage.mjs
 
   build:
     name: Build

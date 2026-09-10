@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
@@ -48,7 +49,7 @@ function fakeResponseFor(credentialId: string) {
 }
 
 async function insertCredential(
-  app: INestApplication,
+  app: INestApplication<Server>,
   memberId: string,
   credentialId: string,
 ) {
@@ -66,7 +67,7 @@ async function insertCredential(
 
 /** A member with no password/session concerns, just a fixed active state and one passkey — for tests that never need to sign in with a password. */
 async function insertMemberWithCredential(
-  app: INestApplication,
+  app: INestApplication<Server>,
   credentialId: string,
   overrides: { active?: boolean } = {},
 ) {
@@ -85,7 +86,7 @@ async function insertMemberWithCredential(
 }
 
 describe('webauthn authentication', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

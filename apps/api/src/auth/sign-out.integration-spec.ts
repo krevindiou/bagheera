@@ -1,10 +1,11 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import request from 'supertest';
 import { csrfTokenFor, seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
 describe('POST /auth/sign-out', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

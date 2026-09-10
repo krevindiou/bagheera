@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member } from '../db/schema';
@@ -20,7 +21,7 @@ const REQUEST_MESSAGE =
   'If an account exists for this address, a password reset link has been sent.';
 
 describe('POST /auth/password-recovery', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {

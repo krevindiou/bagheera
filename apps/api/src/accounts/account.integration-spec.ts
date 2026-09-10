@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
 import { account, operation, securityEvent } from '../db/schema';
@@ -36,7 +37,7 @@ async function createAccount(
 }
 
 describe('accounts', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

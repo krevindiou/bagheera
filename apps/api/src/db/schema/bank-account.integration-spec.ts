@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
 import {
@@ -11,7 +12,7 @@ import { bank } from './bank';
 import { member } from './member';
 
 describe('bank/account schema', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

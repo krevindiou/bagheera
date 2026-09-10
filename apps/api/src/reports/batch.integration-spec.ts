@@ -1,11 +1,12 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { report, securityEvent } from '../db/schema';
 import { seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 describe('POST /reports/batch/delete', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
@@ -21,7 +22,7 @@ async function attemptSignIn(
   return res.status;
 }
 
-async function latestSignInThrottledEvent(app: INestApplication) {
+async function latestSignInThrottledEvent(app: INestApplication<Server>) {
   const [event] = await getDb(app)
     .select()
     .from(securityEvent)
@@ -32,7 +33,7 @@ async function latestSignInThrottledEvent(app: INestApplication) {
 }
 
 describe('rate limiting', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

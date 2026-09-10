@@ -1,11 +1,12 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import request from 'supertest';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
 describe('reference-data', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

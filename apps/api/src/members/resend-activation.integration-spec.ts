@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member } from '../db/schema';
@@ -10,7 +11,7 @@ function messageOf(res: request.Response): string {
   return (res.body as { message: string }).message;
 }
 
-async function insertInactiveMember(app: INestApplication) {
+async function insertInactiveMember(app: INestApplication<Server>) {
   const email = uniqueEmail();
   const password = 'inactive-member-pw-1';
   const hash = await app.get(HashService).hash(password);
@@ -22,7 +23,7 @@ async function insertInactiveMember(app: INestApplication) {
 }
 
 describe('POST /members/resend-activation', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {

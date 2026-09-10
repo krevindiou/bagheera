@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
 import { operation } from '../db/schema';
@@ -51,7 +52,7 @@ async function createOperation(
   return (res.body as { operation: { id: string } }).operation.id;
 }
 
-async function opRow(app: INestApplication, id: string) {
+async function opRow(app: INestApplication<Server>, id: string) {
   const [row] = await getDb(app)
     .select()
     .from(operation)
@@ -60,7 +61,7 @@ async function opRow(app: INestApplication, id: string) {
 }
 
 describe('operation transfer pairing', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

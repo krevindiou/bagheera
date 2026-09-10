@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member } from '../db/schema';
@@ -20,7 +21,7 @@ const UPDATE_MESSAGE =
   "If this email isn't already registered to another account, check it for a link to confirm the change.";
 
 describe('POST /members/profile', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {

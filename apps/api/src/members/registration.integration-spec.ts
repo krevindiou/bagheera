@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member, securityEvent } from '../db/schema';
@@ -13,7 +14,7 @@ const REGISTER_MESSAGE =
   "If this email isn't already registered, you'll receive a link to activate your account.";
 
 describe('POST /members/register', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {

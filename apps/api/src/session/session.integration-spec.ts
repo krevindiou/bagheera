@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import request from 'supertest';
 import type { RedisClientType } from 'redis';
 import {
@@ -34,7 +35,7 @@ async function findSessionKey(
 }
 
 describe('session lifecycle', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

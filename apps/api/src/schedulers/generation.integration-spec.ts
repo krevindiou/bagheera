@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { toMinorUnits } from '../common/money';
@@ -31,7 +32,7 @@ async function createAccount(
 }
 
 describe('scheduler occurrence generation', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

@@ -1,10 +1,11 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
 import { uniqueEmail } from '../../test-support/auth-fixture';
 import { insertMember } from '../../test-support/db-fixtures';
 
 describe('member schema', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

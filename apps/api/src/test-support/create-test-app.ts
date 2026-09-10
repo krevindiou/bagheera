@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { NextFunction, Request, Response } from 'express';
+import type { Server } from 'http';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from '../app.module';
 import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
@@ -88,7 +89,7 @@ export interface FakeEmailQueue {
 }
 
 export interface TestApp {
-  app: INestApplication;
+  app: INestApplication<Server>;
   fakeEmailQueue: FakeEmailQueue;
 }
 
@@ -104,7 +105,7 @@ export async function createTestApp(): Promise<TestApp> {
     .useValue(fakeEmailQueue)
     .compile();
 
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication<INestApplication<Server>>();
   // Without this, Nest's internal Logger (GlobalExceptionFilter's own
   // error log, AuditService's best-effort-write log, etc.) falls back to
   // Nest's default console logger instead of the app's real pino instance
@@ -124,6 +125,8 @@ export async function createTestApp(): Promise<TestApp> {
 }
 
 /** The same Drizzle instance the running app uses — for fixture setup and asserting persisted state directly. */
-export function getDb(app: INestApplication): NodePgDatabase<typeof schema> {
+export function getDb(
+  app: INestApplication<Server>,
+): NodePgDatabase<typeof schema> {
   return app.get(DRIZZLE);
 }

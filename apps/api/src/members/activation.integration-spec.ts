@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member, securityEvent } from '../db/schema';
@@ -18,7 +19,7 @@ function messageOf(res: request.Response): string {
 const ACTIVATION_ERROR = 'Activation error (Already activated?)';
 
 async function insertMemberRow(
-  app: INestApplication,
+  app: INestApplication<Server>,
   overrides: { active?: boolean; activationTokenVersion?: number } = {},
 ) {
   const email = uniqueEmail();
@@ -36,7 +37,7 @@ async function insertMemberRow(
   return row;
 }
 
-async function post(app: INestApplication, key: string) {
+async function post(app: INestApplication<Server>, key: string) {
   const agent = request.agent(app.getHttpServer());
   const csrfToken = await csrfTokenFor(agent);
   return agent
@@ -46,7 +47,7 @@ async function post(app: INestApplication, key: string) {
 }
 
 describe('POST /members/activate', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

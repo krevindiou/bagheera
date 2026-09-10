@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member, securityEvent } from '../db/schema';
@@ -16,7 +17,7 @@ function messageOf(res: request.Response): string {
 }
 
 async function lastEvent(
-  app: INestApplication,
+  app: INestApplication<Server>,
   eventType: (typeof securityEvent.$inferSelect)['eventType'],
   memberId: string | null,
 ) {
@@ -38,7 +39,7 @@ async function lastEvent(
 }
 
 describe('POST /auth/sign-in', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

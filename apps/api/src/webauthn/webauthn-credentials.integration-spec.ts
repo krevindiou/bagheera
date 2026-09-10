@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent, webauthnCredential } from '../db/schema';
@@ -16,7 +17,7 @@ function nonexistentV7Id(): string {
 }
 
 async function insertCredential(
-  app: INestApplication,
+  app: INestApplication<Server>,
   memberId: string,
   deviceName: string,
 ) {
@@ -33,7 +34,7 @@ async function insertCredential(
 }
 
 describe('webauthn credentials', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

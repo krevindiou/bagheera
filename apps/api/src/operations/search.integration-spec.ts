@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   seedSignedInMember,
@@ -59,7 +60,7 @@ interface SearchResult {
 }
 
 describe('operations search', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

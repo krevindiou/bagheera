@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
 import { category, operation } from '../db/schema';
@@ -9,7 +10,7 @@ import {
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
-async function debitCategoryId(app: INestApplication): Promise<string> {
+async function debitCategoryId(app: INestApplication<Server>): Promise<string> {
   const [row] = await getDb(app)
     .select({ id: category.id })
     .from(category)
@@ -37,7 +38,7 @@ async function createAccount(
 }
 
 describe('operations', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

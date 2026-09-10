@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
 import { insertMember } from '../../test-support/db-fixtures';
@@ -23,7 +24,7 @@ function insertSecurityEvent(
 }
 
 describe('security_event schema', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());

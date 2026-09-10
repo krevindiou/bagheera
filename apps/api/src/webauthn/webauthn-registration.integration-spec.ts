@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
@@ -49,7 +50,7 @@ const FAKE_RESPONSE = {
 };
 
 describe('webauthn registration', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {

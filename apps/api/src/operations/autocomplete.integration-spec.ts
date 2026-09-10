@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { category } from '../db/schema';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
@@ -25,7 +26,7 @@ async function createAccount(
   return (res.body as { account: { id: string } }).account.id;
 }
 
-async function debitCategoryId(app: INestApplication): Promise<string> {
+async function debitCategoryId(app: INestApplication<Server>): Promise<string> {
   const [row] = await getDb(app)
     .select({ id: category.id })
     .from(category)
@@ -34,7 +35,7 @@ async function debitCategoryId(app: INestApplication): Promise<string> {
 }
 
 describe('GET /operations/autocomplete', () => {
-  let app: INestApplication;
+  let app: INestApplication<Server>;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
