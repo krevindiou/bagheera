@@ -1,19 +1,22 @@
-import { expect, test } from "@playwright/test";
-import { registerActivateSignIn } from "../support/auth-helpers";
+import en from "../../src/i18n/locales/en";
+import { expect, test } from "../support/fixtures";
 
-// `make e2e` runs with a short SESSION_IDLE_TTL_SECONDS (see
-// docker/compose.e2e.yml) so this doesn't have to wait out the real
-// 30-minute default.
-test("an idle session redirects to sign-in on the next request", async ({ page }) => {
-  await registerActivateSignIn(page);
+// docker/compose.e2e.yml sets SESSION_IDLE_TTL_SECONDS=8 for exactly this
+// test (see its comment, which names this file) — short enough to exercise
+// a real server-side expiry without waiting out the 30-minute production
+// default.
+test("an idle session expires server-side and bounces the next navigation to sign-in", async ({
+  signedInMember,
+}) => {
+  const { page, email } = signedInMember;
 
-  await page.waitForTimeout(9_000);
+  await page.goto("/en/home");
+  await expect(page.getByText(en.home.signedInAs.replace("{email}", email))).toBeVisible();
 
-  // In-app navigation (not a full reload) so the client-side "signed in"
-  // flag stays put and this genuinely exercises the server session
-  // expiring underneath it — the accounts data fetch 401s, which the API
-  // client's response handler turns into a bounce to sign-in.
-  await page.getByRole("button", { name: "Settings" }).click();
-  await page.getByRole("link", { name: "Accounts", exact: true }).click();
+  // Genuinely waiting for a real idle TTL to elapse server-side — nothing
+  // to poll on instead.
+  await page.waitForTimeout(10_000);
+
+  await page.reload();
   await expect(page).toHaveURL(/\/en\/sign-in$/);
 });

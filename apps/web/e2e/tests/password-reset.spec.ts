@@ -1,31 +1,61 @@
-import { expect, test } from "@playwright/test";
-import { registerActivateSignIn } from "../support/auth-helpers";
-import { latestEmailLink } from "../support/mailpit";
+import en from "../../src/i18n/locales/en";
+import { alertWithText, expect, registerAndActivate, test } from "../support/fixtures";
+import { existingMessageIds, waitForEmailLink } from "../support/mailpit";
 
-test("a member can reset their password via the emailed link", async ({ page }) => {
-  const { email } = await registerActivateSignIn(page);
-  const newPassword = "a-brand-new-password";
+test("forgot-password → emailed link → reset → sign in with the new password", async ({ page }) => {
+  const { email } = await registerAndActivate(page);
+  const newPassword = "A-Brand-New-Passw0rd!";
 
-  await page.getByRole("button", { name: "Logout" }).click();
+  await page.goto("/en/forgot-password");
+  await page.getByLabel(en.auth.forgotPassword.email, { exact: true }).fill(email);
+  // registerAndActivate already left an activation email in this same
+  // inbox — waitForEmailLink needs to know to ignore it, or it can return
+  // that stale email instead of the one this request is about to queue.
+  const seenBefore = await existingMessageIds(email);
+  await page.getByRole("button", { name: en.auth.forgotPassword.submit, exact: true }).click();
+  await expect(alertWithText(page, en.auth.forgotPassword.requestSent)).toBeVisible();
+
+  const resetLink = await waitForEmailLink(email, { excludeIds: seenBefore });
+  await page.goto(resetLink);
+  await page.getByLabel(en.auth.resetPassword.password, { exact: true }).fill(newPassword);
+  await page
+    .getByLabel(en.auth.resetPassword.passwordConfirmation, { exact: true })
+    .fill(newPassword);
+  await page.getByRole("button", { name: en.auth.resetPassword.submit, exact: true }).click();
+  await expect(alertWithText(page, en.auth.resetPassword.success)).toBeVisible();
   await expect(page).toHaveURL(/\/en\/sign-in$/);
 
-  await page.getByRole("link", { name: "Forgot your password?" }).click();
-  await page.locator("#forgot-password-email").fill(email);
-  await page.getByRole("button", { name: "Send reset link" }).click();
-  await expect(
-    page.getByText("a password reset link has been sent", { exact: false }),
-  ).toBeVisible();
-
-  const link = await latestEmailLink(email);
-  await page.goto(link);
-  await page.locator("#reset-password-password").fill(newPassword);
-  await page.locator("#reset-password-password-confirmation").fill(newPassword);
-  await page.getByRole("button", { name: "Update password" }).click();
-  await expect(page.getByText("Your password has been updated.", { exact: false })).toBeVisible();
-
-  await page.goto("/en/sign-in");
-  await page.locator("#sign-in-email").fill(email);
-  await page.locator("#sign-in-password").fill(newPassword);
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
+  await page.getByLabel(en.auth.signIn.password, { exact: true }).fill(newPassword);
+  await page.getByRole("button", { name: en.auth.signIn.submit, exact: true }).click();
   await expect(page).toHaveURL(/\/en\/home$/);
+});
+
+test("a reset link is single-use", async ({ page }) => {
+  const { email } = await registerAndActivate(page);
+
+  await page.goto("/en/forgot-password");
+  await page.getByLabel(en.auth.forgotPassword.email, { exact: true }).fill(email);
+  const seenBefore = await existingMessageIds(email);
+  await page.getByRole("button", { name: en.auth.forgotPassword.submit, exact: true }).click();
+
+  const resetLink = await waitForEmailLink(email, { excludeIds: seenBefore });
+  await page.goto(resetLink);
+  await page.getByLabel(en.auth.resetPassword.password, { exact: true }).fill("First-Reset-1!");
+  await page
+    .getByLabel(en.auth.resetPassword.passwordConfirmation, { exact: true })
+    .fill("First-Reset-1!");
+  await page.getByRole("button", { name: en.auth.resetPassword.submit, exact: true }).click();
+  await expect(alertWithText(page, en.auth.resetPassword.success)).toBeVisible();
+
+  // Same link again: the app can't tell the visitor why, so it's a silent
+  // bounce back to sign-in rather than a visible error (see
+  // ResetPasswordPage.vue's own comment on this).
+  await page.goto(resetLink);
+  await page.getByLabel(en.auth.resetPassword.password, { exact: true }).fill("Second-Reset-1!");
+  await page
+    .getByLabel(en.auth.resetPassword.passwordConfirmation, { exact: true })
+    .fill("Second-Reset-1!");
+  await page.getByRole("button", { name: en.auth.resetPassword.submit, exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/sign-in$/);
 });

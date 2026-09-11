@@ -1,43 +1,32 @@
-import { expect, test } from "@playwright/test";
-import { registerActivateSignIn, signIn } from "../support/auth-helpers";
+import en from "../../src/i18n/locales/en";
+import { PAYMENT_METHOD_ID } from "../../src/pages/operations/operations.types";
+import { alertWithText, expect, test } from "../support/fixtures";
 
-test("a due scheduler generates an operation once the member signs back in", async ({ page }) => {
-  const { email, password } = await registerActivateSignIn(page);
+test("create, pause, then batch-delete a recurring scheduler", async ({ accountWithBank }) => {
+  const { page, accountId } = accountWithBank;
 
-  await page.getByRole("button", { name: "Settings" }).click();
-  await page.getByRole("link", { name: "Accounts", exact: true }).click();
-  await page.getByRole("button", { name: "New account" }).click();
-  await page.locator("#account-bank-name").fill("First National");
-  await page.getByRole("button", { name: "Save" }).click();
-  await page.locator("#account-name").fill("Checking");
-  await page.locator("#account-currency").selectOption("USD");
-  await page.getByRole("button", { name: "Save" }).click();
-  // Saving an account redirects straight into its operations page — no
-  // accounts-list row to click through first.
-  await expect(page).toHaveURL(/\/operations$/);
+  await page.goto(`/en/accounts/${accountId}/schedulers`);
+  await page.getByRole("button", { name: en.schedulers.addScheduler, exact: true }).click();
+  await page.getByLabel(en.operations.thirdParty, { exact: true }).fill("Rent");
+  await page.getByLabel(en.operations.amount, { exact: true }).fill("800");
+  await page
+    .getByLabel(en.operations.paymentMethod, { exact: true })
+    .selectOption(PAYMENT_METHOD_ID.DIRECT_DEBIT);
+  await page.getByRole("button", { name: en.operations.submit, exact: true }).click();
+  await expect(alertWithText(page, en.schedulers.created)).toBeVisible();
 
-  await page.getByRole("link", { name: "Scheduled operations" }).click();
-  await expect(page).toHaveURL(/\/schedulers$/);
+  const row = page.getByTestId("scheduler-row").filter({ hasText: "Rent" });
+  await expect(row.getByTitle(en.schedulers.active)).toBeVisible();
 
-  await page.getByRole("button", { name: "New scheduler" }).click();
-  await page.locator("#scheduler-type-debit").check();
-  await page.locator("#scheduler-third-party").fill("Rent");
-  await page.locator("#scheduler-amount").fill("900");
-  await page.locator("#scheduler-payment-method").selectOption({ label: "Direct debit" });
-  // Already due as of today — the first pass at save time generates the
-  // first occurrence, and this asserts sign-in catch-up finds it too.
-  const today = new Date().toISOString().slice(0, 10);
-  await page.locator("#scheduler-value-date").fill(today);
-  await page.getByRole("button", { name: "Save" }).click();
-  await expect(page.getByTestId("scheduler-row").filter({ hasText: "Rent" })).toBeVisible();
+  await row.getByRole("button", { name: en.operations.edit, exact: true }).click();
+  await page.getByLabel(en.schedulers.active, { exact: true }).uncheck();
+  await page.getByRole("button", { name: en.operations.submit, exact: true }).click();
+  await expect(alertWithText(page, en.schedulers.updated)).toBeVisible();
+  await expect(row.getByTitle(en.schedulers.paused)).toBeVisible();
 
-  await page.getByRole("link", { name: "Bagheera" }).click();
-  await page.getByRole("button", { name: "Logout" }).click();
-  await expect(page).toHaveURL(/\/en\/sign-in$/);
-  await signIn(page, email, password);
-
-  await page.getByRole("button", { name: "Settings" }).click();
-  await page.getByRole("link", { name: "Accounts", exact: true }).click();
-  await page.getByTestId("account-row").filter({ hasText: "Checking" }).getByRole("link").click();
-  await expect(page.getByTestId("operation-row").filter({ hasText: "Rent" })).toBeVisible();
+  await row.locator('input[type="checkbox"]').check();
+  await page.getByRole("button", { name: en.schedulers.batch.delete, exact: true }).click();
+  await page.getByRole("button", { name: en.common.ok, exact: true }).click();
+  await expect(alertWithText(page, en.schedulers.batch.deleted)).toBeVisible();
+  await expect(page.getByTestId("scheduler-row").filter({ hasText: "Rent" })).toHaveCount(0);
 });
