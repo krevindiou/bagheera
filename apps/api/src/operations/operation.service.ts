@@ -15,10 +15,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
-import {
-  TRANSFER_PAYMENT_METHOD_IDS,
-  TransferService,
-} from './transfer.service';
+import { TRANSFER_PAYMENT_METHOD_IDS, TransferService } from './transfer.service';
 
 // The "Initial balance" payment method, reserved for the system-generated
 // opening operation — non-editable.
@@ -43,12 +40,7 @@ export class OperationService {
     account: { closed: boolean; deleted: boolean };
     bank: { closed: boolean; deleted: boolean };
   }): void {
-    if (
-      row.account.closed ||
-      row.account.deleted ||
-      row.bank.closed ||
-      row.bank.deleted
-    ) {
+    if (row.account.closed || row.account.deleted || row.bank.closed || row.bank.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
   }
@@ -68,10 +60,7 @@ export class OperationService {
       throw new BadRequestException('Invalid payment method for this type.');
     }
     if (categoryId !== undefined) {
-      const [cat] = await this.db
-        .select()
-        .from(category)
-        .where(eq(category.id, categoryId));
+      const [cat] = await this.db.select().from(category).where(eq(category.id, categoryId));
       if (!cat || cat.type !== type) {
         throw new BadRequestException('Invalid category for this type.');
       }
@@ -88,10 +77,7 @@ export class OperationService {
       : { debit: null, credit: minorUnits };
   }
 
-  private transferAccountId(
-    paymentMethodId: string,
-    transferAccountId?: string,
-  ): string | null {
+  private transferAccountId(paymentMethodId: string, transferAccountId?: string): string | null {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId)
       ? (transferAccountId ?? null)
       : null;
@@ -106,11 +92,7 @@ export class OperationService {
       .select()
       .from(operation)
       .where(eq(operation.accountId, accountId))
-      .orderBy(
-        desc(operation.valueDate),
-        desc(operation.createdAt),
-        desc(operation.id),
-      )
+      .orderBy(desc(operation.valueDate), desc(operation.createdAt), desc(operation.id))
       .limit(PAGE_SIZE)
       .offset((pageNumber - 1) * PAGE_SIZE);
 
@@ -124,16 +106,15 @@ export class OperationService {
 
   async create(req: Request, dto: CreateOperationDto) {
     const memberId = requireMemberId(req);
-    const { account: acc, bank: accBank } =
-      await this.ownership.requireOwnedAccount(dto.accountId, memberId);
+    const { account: acc, bank: accBank } = await this.ownership.requireOwnedAccount(
+      dto.accountId,
+      memberId,
+    );
     this.requireFullyActive({ account: acc, bank: accBank });
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
     const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const transferAccountId = this.transferAccountId(
-      dto.paymentMethodId,
-      dto.transferAccountId,
-    );
+    const transferAccountId = this.transferAccountId(dto.paymentMethodId, dto.transferAccountId);
 
     return this.db.transaction(async (tx) => {
       const [created] = await tx
@@ -148,9 +129,7 @@ export class OperationService {
           transferAccountId,
           ...(dto.valueDate ? { valueDate: dto.valueDate } : {}),
           ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
-          ...(dto.reconciled !== undefined
-            ? { reconciled: dto.reconciled }
-            : {}),
+          ...(dto.reconciled !== undefined ? { reconciled: dto.reconciled } : {}),
         })
         .returning();
 
@@ -178,10 +157,7 @@ export class OperationService {
             schedulerId: created.schedulerId,
           },
         );
-        await tx
-          .update(operation)
-          .set({ transferOperationId })
-          .where(eq(operation.id, created.id));
+        await tx.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
         created.transferOperationId = transferOperationId;
       }
 
@@ -189,11 +165,7 @@ export class OperationService {
     });
   }
 
-  async update(
-    req: Request,
-    id: string,
-    dto: UpdateOperationDto,
-  ): Promise<void> {
+  async update(req: Request, id: string, dto: UpdateOperationDto): Promise<void> {
     const memberId = requireMemberId(req);
     const {
       operation: row,
@@ -205,9 +177,7 @@ export class OperationService {
       throw new BadRequestException('Account cannot be changed.');
     }
     if (row.paymentMethodId === OPENING_BALANCE_PAYMENT_METHOD_ID) {
-      throw new UnprocessableEntityException(
-        'Opening operation cannot be edited.',
-      );
+      throw new UnprocessableEntityException('Opening operation cannot be edited.');
     }
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 

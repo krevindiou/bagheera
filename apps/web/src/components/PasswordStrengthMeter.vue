@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { getPasswordStrength } from "../composables/usePasswordStrength";
+import { computed } from 'vue';
+import { getPasswordStrength } from '../composables/usePasswordStrength';
 
 const { password } = defineProps<{ password: string }>();
 
@@ -9,10 +9,10 @@ const widthPercent = computed(() => (strength.value.score + 1) * 20);
 const barClass = computed(
   () =>
     ({
-      weak: "bg-danger",
-      fair: "bg-warning",
-      good: "bg-info",
-      strong: "bg-success",
+      weak: 'bg-danger',
+      fair: 'bg-warning',
+      good: 'bg-info',
+      strong: 'bg-success',
     })[strength.value.label],
 );
 </script>

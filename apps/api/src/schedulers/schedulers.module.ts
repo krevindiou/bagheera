@@ -9,11 +9,7 @@ import { SchedulerService } from './scheduler.service';
 @Module({
   imports: [OperationsModule],
   controllers: [SchedulerController, SchedulerBatchController],
-  providers: [
-    SchedulerService,
-    SchedulerGenerationService,
-    SchedulerBatchService,
-  ],
+  providers: [SchedulerService, SchedulerGenerationService, SchedulerBatchService],
   exports: [SchedulerService, SchedulerGenerationService],
 })
 export class SchedulersModule {}

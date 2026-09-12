@@ -6,11 +6,7 @@
 
 import { AxisBounds, computeAxisBounds } from './chart-axis';
 import { MinorUnits, toMajorUnits } from './money';
-import {
-  addMonths,
-  fillPeriodGaps,
-  periodStart,
-} from '../reports/chart/period';
+import { addMonths, fillPeriodGaps, periodStart } from '../reports/chart/period';
 
 const WINDOW_MONTHS = 12;
 
@@ -53,10 +49,7 @@ export function computeSynthesisChart(
   // Per currency: `before` carries every operation dated strictly before
   // the window (the "carried-over balance from before the window"),
   // `byMonth` holds each in-window month's own net movement.
-  const byCurrency = new Map<
-    string,
-    { before: number; byMonth: Map<string, number> }
-  >();
+  const byCurrency = new Map<string, { before: number; byMonth: Map<string, number> }>();
   for (const row of rows) {
     let entry = byCurrency.get(row.currency);
     if (!entry) {

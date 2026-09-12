@@ -40,22 +40,13 @@ export class WebauthnCredentialsService {
     const memberId = requireMemberId(req);
     const result = await this.db
       .delete(webauthnCredential)
-      .where(
-        and(
-          eq(webauthnCredential.id, id),
-          eq(webauthnCredential.memberId, memberId),
-        ),
-      )
+      .where(and(eq(webauthnCredential.id, id), eq(webauthnCredential.memberId, memberId)))
       .returning({ id: webauthnCredential.id });
 
     if (result.length === 0) {
       throw new NotFoundException();
     }
 
-    await this.audit.record(
-      'webauthn_credential_removed',
-      memberId,
-      req.ip ?? 'unknown',
-    );
+    await this.audit.record('webauthn_credential_removed', memberId, req.ip ?? 'unknown');
   }
 }

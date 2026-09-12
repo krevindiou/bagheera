@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { Controller, Get, Inject, ServiceUnavailableException } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';

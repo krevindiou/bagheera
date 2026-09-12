@@ -4,11 +4,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
 import { AuditService, SecurityEventType } from './audit.service';
-import {
-  csrfTokenFor,
-  insertActiveMember,
-  uniqueEmail,
-} from '../test-support/auth-fixture';
+import { csrfTokenFor, insertActiveMember, uniqueEmail } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 describe('security audit log', () => {
@@ -36,10 +32,7 @@ describe('security audit log', () => {
       .select()
       .from(securityEvent)
       .where(
-        and(
-          eq(securityEvent.eventType, 'sign_in_failure'),
-          eq(securityEvent.memberId, memberId),
-        ),
+        and(eq(securityEvent.eventType, 'sign_in_failure'), eq(securityEvent.memberId, memberId)),
       )
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
@@ -60,12 +53,7 @@ describe('security audit log', () => {
     const [event] = await getDb(app)
       .select()
       .from(securityEvent)
-      .where(
-        and(
-          eq(securityEvent.eventType, 'sign_in_failure'),
-          isNull(securityEvent.memberId),
-        ),
-      )
+      .where(and(eq(securityEvent.eventType, 'sign_in_failure'), isNull(securityEvent.memberId)))
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
     expect(event).toBeDefined();
@@ -74,11 +62,7 @@ describe('security audit log', () => {
   it('is best-effort: a write that violates the schema is swallowed, not thrown', async () => {
     const audit = app.get(AuditService);
     await expect(
-      audit.record(
-        'not_a_real_event_type' as SecurityEventType,
-        null,
-        '127.0.0.1',
-      ),
+      audit.record('not_a_real_event_type' as SecurityEventType, null, '127.0.0.1'),
     ).resolves.toBeUndefined();
   });
 });

@@ -42,9 +42,7 @@ export async function raceSafeUniqueEmail<T>(
     const value = await write();
     return { ok: true, value };
   } catch (err) {
-    if (
-      (err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION
-    ) {
+    if ((err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION) {
       return { ok: false };
     }
     throw err;

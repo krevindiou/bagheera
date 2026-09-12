@@ -39,9 +39,9 @@ describe('report schema', () => {
 
   describe('report.memberId FK', () => {
     it('rejects a report pointing at a member that does not exist', async () => {
-      await expect(
-        insertReport(getDb(app), randomUUID()),
-      ).rejects.toMatchObject({ cause: { code: '23503' } });
+      await expect(insertReport(getDb(app), randomUUID())).rejects.toMatchObject({
+        cause: { code: '23503' },
+      });
     });
 
     it('accepts a report pointing at a real member', async () => {
@@ -56,9 +56,7 @@ describe('report schema', () => {
       const { account } = await insertMemberBankAccount(getDb(app));
 
       await expect(
-        getDb(app)
-          .insert(reportAccount)
-          .values({ reportId: randomUUID(), accountId: account.id }),
+        getDb(app).insert(reportAccount).values({ reportId: randomUUID(), accountId: account.id }),
       ).rejects.toMatchObject({ cause: { code: '23503' } });
     });
 
@@ -82,9 +80,7 @@ describe('report schema', () => {
         .values({ reportId: reportRow.id, accountId: account.id });
 
       await expect(
-        getDb(app)
-          .insert(reportAccount)
-          .values({ reportId: reportRow.id, accountId: account.id }),
+        getDb(app).insert(reportAccount).values({ reportId: reportRow.id, accountId: account.id }),
       ).rejects.toMatchObject({ cause: { code: '23505' } });
     });
   });

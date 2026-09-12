@@ -50,9 +50,7 @@ describe('POST /auth/password-recovery', () => {
 
       expect(messageOf(res)).toBe(REQUEST_MESSAGE);
       expect(fakeEmailQueue.enqueue).toHaveBeenCalledTimes(1);
-      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
-        expect.objectContaining({ to: email }),
-      );
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
     });
 
     it('returns the exact same message for an unknown email and queues nothing', async () => {
@@ -72,11 +70,7 @@ describe('POST /auth/password-recovery', () => {
 
   describe('POST /auth/password-recovery/reset', () => {
     it('resets the password with a valid key and terminates every existing session', async () => {
-      const {
-        agent: signedInAgent,
-        email,
-        password,
-      } = await seedSignedInMember(app);
+      const { agent: signedInAgent, email, password } = await seedSignedInMember(app);
       await signedInAgent.get('/auth/me').expect(200);
 
       const [row] = await getDb(app)

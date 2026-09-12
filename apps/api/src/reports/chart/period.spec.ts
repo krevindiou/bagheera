@@ -1,9 +1,4 @@
-import {
-  addMonths,
-  fillPeriodGaps,
-  nextPeriodStart,
-  periodStart,
-} from './period';
+import { addMonths, fillPeriodGaps, nextPeriodStart, periodStart } from './period';
 
 describe('periodStart', () => {
   it('floors a date to the first of its month', () => {
@@ -61,9 +56,7 @@ describe('addMonths', () => {
 
 describe('fillPeriodGaps', () => {
   it('returns a single entry when first equals last', () => {
-    expect(fillPeriodGaps('2026-01-01', '2026-01-01', 'month')).toEqual([
-      '2026-01-01',
-    ]);
+    expect(fillPeriodGaps('2026-01-01', '2026-01-01', 'month')).toEqual(['2026-01-01']);
   });
 
   it('zero-fills every month between first and last, inclusive', () => {

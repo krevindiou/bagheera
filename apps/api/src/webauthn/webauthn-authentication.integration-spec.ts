@@ -5,19 +5,13 @@ import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
 import { HashService } from '../security/hash.service';
-import {
-  csrfTokenFor,
-  insertActiveMember,
-  uniqueEmail,
-} from '../test-support/auth-fixture';
+import { csrfTokenFor, insertActiveMember, uniqueEmail } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 // Same reasoning as webauthn-registration.integration-spec.ts: mock only
 // the one function a real authenticator would otherwise be needed for.
 jest.mock('@simplewebauthn/server', () => ({
-  ...jest.requireActual<typeof import('@simplewebauthn/server')>(
-    '@simplewebauthn/server',
-  ),
+  ...jest.requireActual<typeof import('@simplewebauthn/server')>('@simplewebauthn/server'),
   verifyAuthenticationResponse: jest.fn(),
 }));
 
@@ -113,9 +107,7 @@ describe('webauthn authentication', () => {
         .send({ email })
         .expect(200);
 
-      expect(
-        (res.body as { allowCredentials: unknown[] }).allowCredentials,
-      ).toHaveLength(1);
+      expect((res.body as { allowCredentials: unknown[] }).allowCredentials).toHaveLength(1);
     });
 
     it('returns the same shape with empty allowCredentials for an unknown email (anti-enumeration)', async () => {
@@ -127,9 +119,7 @@ describe('webauthn authentication', () => {
         .send({ email: uniqueEmail('nobody') })
         .expect(200);
 
-      expect(
-        (res.body as { allowCredentials: unknown[] }).allowCredentials,
-      ).toEqual([]);
+      expect((res.body as { allowCredentials: unknown[] }).allowCredentials).toEqual([]);
     });
   });
 

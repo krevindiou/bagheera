@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { useConfirm } from "./useConfirm";
+import { beforeEach, describe, expect, it } from 'vitest';
+import { useConfirm } from './useConfirm';
 
-describe("useConfirm", () => {
+describe('useConfirm', () => {
   // Module-singleton state (one dialog for the whole app) — drain any
   // pending confirmation left over from a previous test before each one.
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe("useConfirm", () => {
     state.visible = false;
   });
 
-  it("shows the dialog and resolves true once confirmed", async () => {
+  it('shows the dialog and resolves true once confirmed', async () => {
     const { state, confirm, settle } = useConfirm();
     const pending = confirm();
     expect(state.visible).toBe(true);
@@ -19,14 +19,14 @@ describe("useConfirm", () => {
     expect(state.visible).toBe(false);
   });
 
-  it("resolves false once cancelled", async () => {
+  it('resolves false once cancelled', async () => {
     const { confirm, settle } = useConfirm();
     const pending = confirm();
     settle(false);
     await expect(pending).resolves.toBe(false);
   });
 
-  it("shares one dialog instance across every caller", () => {
+  it('shares one dialog instance across every caller', () => {
     const first = useConfirm();
     const second = useConfirm();
     first.confirm();

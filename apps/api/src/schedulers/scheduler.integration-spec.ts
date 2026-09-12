@@ -3,10 +3,7 @@ import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -14,10 +11,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
@@ -26,10 +20,7 @@ async function createAccount(
   return (res.body as { account: { id: string } }).account.id;
 }
 
-function schedulerPayload(
-  accountId: string,
-  overrides: Record<string, unknown> = {},
-) {
+function schedulerPayload(accountId: string, overrides: Record<string, unknown> = {}) {
   return {
     accountId,
     type: 'debit',
@@ -60,11 +51,7 @@ describe('schedulers', () => {
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
 
-      const res = await mutate(
-        'post',
-        '/schedulers',
-        schedulerPayload(accountId),
-      );
+      const res = await mutate('post', '/schedulers', schedulerPayload(accountId));
       expect(res.status).toBe(200);
       const { scheduler: created } = res.body as {
         scheduler: { id: string };
@@ -133,11 +120,7 @@ describe('schedulers', () => {
       const accountId = await createAccount(ownerMutate, bankId);
 
       const { mutate: attackerMutate } = await seedSignedInMember(app);
-      const res = await attackerMutate(
-        'post',
-        '/schedulers',
-        schedulerPayload(accountId),
-      );
+      const res = await attackerMutate('post', '/schedulers', schedulerPayload(accountId));
       expect(res.status).toBe(404);
     });
   });
@@ -149,16 +132,12 @@ describe('schedulers', () => {
       const accountId = await createAccount(mutate, bankId);
       await mutate('post', '/schedulers', schedulerPayload(accountId));
 
-      const res = await agent
-        .get(`/schedulers?accountId=${accountId}&page=1`)
-        .expect(200);
+      const res = await agent.get(`/schedulers?accountId=${accountId}&page=1`).expect(200);
       const body = res.body as { total: number };
       expect(body.total).toBe(1);
 
       const { agent: attackerAgent } = await seedSignedInMember(app);
-      await attackerAgent
-        .get(`/schedulers?accountId=${accountId}&page=1`)
-        .expect(404);
+      await attackerAgent.get(`/schedulers?accountId=${accountId}&page=1`).expect(404);
     });
   });
 
@@ -167,17 +146,10 @@ describe('schedulers', () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
-      const created = await mutate(
-        'post',
-        '/schedulers',
-        schedulerPayload(accountId),
-      );
+      const created = await mutate('post', '/schedulers', schedulerPayload(accountId));
       const { id } = (created.body as { scheduler: { id: string } }).scheduler;
 
-      const before = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.schedulerId, id));
+      const before = await getDb(app).select().from(operation).where(eq(operation.schedulerId, id));
       expect(before).toHaveLength(0);
 
       const res = await mutate(
@@ -187,10 +159,7 @@ describe('schedulers', () => {
       );
       expect(res.status).toBe(200);
 
-      const after = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.schedulerId, id));
+      const after = await getDb(app).select().from(operation).where(eq(operation.schedulerId, id));
       expect(after.length).toBeGreaterThan(0);
     });
 
@@ -199,18 +168,10 @@ describe('schedulers', () => {
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
       const otherAccountId = await createAccount(mutate, bankId);
-      const created = await mutate(
-        'post',
-        '/schedulers',
-        schedulerPayload(accountId),
-      );
+      const created = await mutate('post', '/schedulers', schedulerPayload(accountId));
       const { id } = (created.body as { scheduler: { id: string } }).scheduler;
 
-      const res = await mutate(
-        'patch',
-        `/schedulers/${id}`,
-        schedulerPayload(otherAccountId),
-      );
+      const res = await mutate('patch', `/schedulers/${id}`, schedulerPayload(otherAccountId));
       expect(res.status).toBe(400);
     });
   });
@@ -235,10 +196,7 @@ describe('schedulers', () => {
       const res = await mutate('delete', `/schedulers/${id}`);
       expect(res.status).toBe(200);
 
-      const schedulerRows = await getDb(app)
-        .select()
-        .from(scheduler)
-        .where(eq(scheduler.id, id));
+      const schedulerRows = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
       expect(schedulerRows).toHaveLength(0);
 
       const [survivor] = await getDb(app)

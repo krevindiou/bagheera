@@ -3,11 +3,7 @@ import type { Server } from 'http';
 import { desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
-import {
-  csrfTokenFor,
-  seedSignedInMember,
-  uniqueEmail,
-} from '../test-support/auth-fixture';
+import { csrfTokenFor, seedSignedInMember, uniqueEmail } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function attemptSignIn(
@@ -102,9 +98,7 @@ describe('rate limiting', () => {
     const statuses: number[] = [];
     for (let i = 0; i < 11; i++) {
       const csrfToken = await getCsrfToken();
-      const res = await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken);
+      const res = await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken);
       statuses.push(res.status);
     }
     expect(statuses.slice(0, 10).every((s) => s === 200)).toBe(true);

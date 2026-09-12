@@ -35,41 +35,34 @@ describe.each([
   it('rejects frequencyValue above the 100 cap', async () => {
     const dto = plainToInstance(Dto, base(101, 'month'));
     const errors = await validate(dto);
-    expect(
-      errors.find((e) => e.property === 'frequencyValue')?.constraints,
-    ).toHaveProperty('max');
+    expect(errors.find((e) => e.property === 'frequencyValue')?.constraints).toHaveProperty('max');
   });
 
   it('rejects a zero frequencyValue — it must be strictly positive', async () => {
     const dto = plainToInstance(Dto, base(0, 'month'));
     const errors = await validate(dto);
-    expect(
-      errors.find((e) => e.property === 'frequencyValue')?.constraints,
-    ).toHaveProperty('isPositive');
+    expect(errors.find((e) => e.property === 'frequencyValue')?.constraints).toHaveProperty(
+      'isPositive',
+    );
   });
 
   it('rejects a non-integer frequencyValue', async () => {
     const dto = plainToInstance(Dto, base(1.5, 'month'));
     const errors = await validate(dto);
-    expect(
-      errors.find((e) => e.property === 'frequencyValue')?.constraints,
-    ).toHaveProperty('isInt');
+    expect(errors.find((e) => e.property === 'frequencyValue')?.constraints).toHaveProperty(
+      'isInt',
+    );
   });
 
-  it.each(['day', 'week', 'month', 'year'])(
-    'accepts frequencyUnit %s',
-    async (unit) => {
-      const dto = plainToInstance(Dto, base(1, unit));
-      expect(await validate(dto)).toEqual([]);
-    },
-  );
+  it.each(['day', 'week', 'month', 'year'])('accepts frequencyUnit %s', async (unit) => {
+    const dto = plainToInstance(Dto, base(1, unit));
+    expect(await validate(dto)).toEqual([]);
+  });
 
   it('rejects a frequencyUnit outside day/week/month/year', async () => {
     const dto = plainToInstance(Dto, base(1, 'decade'));
     const errors = await validate(dto);
-    expect(
-      errors.find((e) => e.property === 'frequencyUnit')?.constraints,
-    ).toHaveProperty('isIn');
+    expect(errors.find((e) => e.property === 'frequencyUnit')?.constraints).toHaveProperty('isIn');
   });
 
   it('allows frequencyUnit to be omitted — a scheduler need not repeat', async () => {

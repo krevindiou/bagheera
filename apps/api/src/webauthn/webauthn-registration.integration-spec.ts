@@ -15,9 +15,7 @@ import { createTestApp, getDb } from '../test-support/create-test-app';
 // deterministic, and this suite's only way to get a real challenge into
 // the session for verify() to consume.
 jest.mock('@simplewebauthn/server', () => ({
-  ...jest.requireActual<typeof import('@simplewebauthn/server')>(
-    '@simplewebauthn/server',
-  ),
+  ...jest.requireActual<typeof import('@simplewebauthn/server')>('@simplewebauthn/server'),
   verifyRegistrationResponse: jest.fn(),
 }));
 
@@ -76,34 +74,23 @@ describe('webauthn registration', () => {
         .set('x-csrf-token', csrfToken)
         .expect(200);
 
-      expect(typeof (res.body as { challenge: string }).challenge).toBe(
-        'string',
-      );
-      expect(
-        (res.body as { excludeCredentials: unknown[] }).excludeCredentials,
-      ).toEqual([]);
+      expect(typeof (res.body as { challenge: string }).challenge).toBe('string');
+      expect((res.body as { excludeCredentials: unknown[] }).excludeCredentials).toEqual([]);
     });
 
     it('requires authentication', async () => {
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
 
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken)
-        .expect(401);
+      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(401);
     });
   });
 
   describe('POST /webauthn/registration/verify', () => {
     it('persists a credential, queues an alert email, and records the audit event', async () => {
-      const { agent, getCsrfToken, memberId, email } =
-        await seedSignedInMember(app);
+      const { agent, getCsrfToken, memberId, email } = await seedSignedInMember(app);
       const csrfToken = await getCsrfToken();
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken)
-        .expect(200);
+      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(200);
 
       mockVerify.mockResolvedValueOnce(verifiedResult('cred-1'));
       await agent
@@ -119,9 +106,7 @@ describe('webauthn registration', () => {
       expect(row.memberId).toBe(memberId);
       expect(row.deviceName).toBe('Test device');
 
-      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
-        expect.objectContaining({ to: email }),
-      );
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
 
       const [event] = await getDb(app)
         .select()
@@ -147,18 +132,13 @@ describe('webauthn registration', () => {
         .set('x-csrf-token', csrfToken)
         .send({ response: FAKE_RESPONSE })
         .expect(400);
-      expect((res.body as { message: string }).message).toBe(
-        'Passkey registration failed.',
-      );
+      expect((res.body as { message: string }).message).toBe('Passkey registration failed.');
     });
 
     it('rejects when the ceremony fails verification', async () => {
       const { agent, getCsrfToken } = await seedSignedInMember(app);
       const csrfToken = await getCsrfToken();
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken)
-        .expect(200);
+      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(200);
 
       mockVerify.mockResolvedValueOnce({
         verified: false,
@@ -168,18 +148,13 @@ describe('webauthn registration', () => {
         .set('x-csrf-token', csrfToken)
         .send({ response: FAKE_RESPONSE })
         .expect(400);
-      expect((res.body as { message: string }).message).toBe(
-        'Passkey registration failed.',
-      );
+      expect((res.body as { message: string }).message).toBe('Passkey registration failed.');
     });
 
     it('rejects when verifyRegistrationResponse throws', async () => {
       const { agent, getCsrfToken } = await seedSignedInMember(app);
       const csrfToken = await getCsrfToken();
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken)
-        .expect(200);
+      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(200);
 
       mockVerify.mockRejectedValueOnce(new Error('bad attestation'));
       await agent

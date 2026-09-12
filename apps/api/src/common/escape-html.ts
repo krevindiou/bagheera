@@ -32,13 +32,9 @@ function escapeHtml(value: string): string {
  * — there's no single banned identifier to flag; a plain untagged template
  * literal in email/i18n/*.ts stays possible, caught by review, not the build.
  */
-export function safeHtml(
-  strings: TemplateStringsArray,
-  ...values: string[]
-): string {
+export function safeHtml(strings: TemplateStringsArray, ...values: string[]): string {
   return strings.reduce(
-    (result, part, i) =>
-      result + part + (i < values.length ? escapeHtml(values[i]) : ''),
+    (result, part, i) => result + part + (i < values.length ? escapeHtml(values[i]) : ''),
     '',
   );
 }

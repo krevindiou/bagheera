@@ -7,5 +7,4 @@ import { SetMetadata } from '@nestjs/common';
  * activation, password recovery, the CSRF token mint, and health.
  */
 export const IS_PUBLIC_KEY = 'isPublic';
-export const Public = (): MethodDecorator & ClassDecorator =>
-  SetMetadata(IS_PUBLIC_KEY, true);
+export const Public = (): MethodDecorator & ClassDecorator => SetMetadata(IS_PUBLIC_KEY, true);

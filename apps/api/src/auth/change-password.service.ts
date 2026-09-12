@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -37,10 +32,7 @@ export class ChangePasswordService {
       throw new BadRequestException("Passwords don't match.");
     }
 
-    const [row] = await this.db
-      .select()
-      .from(member)
-      .where(eq(member.id, memberId));
+    const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
       throw new UnauthorizedException();
     }
@@ -62,10 +54,7 @@ export class ChangePasswordService {
       })
       .where(eq(member.id, row.id));
 
-    await this.sessionTermination.terminateOtherSessions(
-      row.id,
-      req.session.id,
-    );
+    await this.sessionTermination.terminateOtherSessions(row.id, req.session.id);
     await this.emailQueue.enqueue(passwordChangedEmail(row.email));
     await this.audit.record('password_changed', row.id, req.ip ?? 'unknown');
   }

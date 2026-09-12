@@ -13,9 +13,7 @@ type BankRow = typeof bank.$inferSelect;
 // Same executor-or-transaction surface as TransferService, so generation
 // can run inside a caller-owned transaction (post-save) or standalone
 // (sign-in catch-up, one transaction per scheduler).
-type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (
-  tx: infer T,
-) => unknown
+type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (tx: infer T) => unknown
   ? T
   : never;
 type Db = NodePgDatabase | Executor;
@@ -68,18 +66,12 @@ export class SchedulerGenerationService {
     const [latest] = await db
       .select({ valueDate: operation.valueDate })
       .from(operation)
-      .where(
-        and(
-          eq(operation.schedulerId, row.id),
-          eq(operation.accountId, row.accountId),
-        ),
-      )
+      .where(and(eq(operation.schedulerId, row.id), eq(operation.accountId, row.accountId)))
       .orderBy(desc(operation.valueDate), desc(operation.id))
       .limit(1);
 
     const today = todayIsoDate();
-    const horizon =
-      row.limitDate !== null && row.limitDate < today ? row.limitDate : today;
+    const horizon = row.limitDate !== null && row.limitDate < today ? row.limitDate : today;
 
     const dates = dueOccurrences({
       valueDate: row.valueDate,
@@ -130,10 +122,7 @@ export class SchedulerGenerationService {
             schedulerId: created.schedulerId,
           },
         );
-        await db
-          .update(operation)
-          .set({ transferOperationId })
-          .where(eq(operation.id, created.id));
+        await db.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
       }
     }
   }
@@ -151,13 +140,7 @@ export class SchedulerGenerationService {
 
     for (const row of rows) {
       await this.db.transaction((tx) =>
-        this.generateForScheduler(
-          tx,
-          memberId,
-          row.scheduler,
-          row.account,
-          row.bank,
-        ),
+        this.generateForScheduler(tx, memberId, row.scheduler, row.account, row.bank),
       );
     }
   }

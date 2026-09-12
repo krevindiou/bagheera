@@ -13,9 +13,7 @@ interface StoredSessionData {
  */
 @Injectable()
 export class SessionTerminationService {
-  constructor(
-    @Inject(VALKEY_CLIENT) private readonly valkeyClient: RedisClientType,
-  ) {}
+  constructor(@Inject(VALKEY_CLIENT) private readonly valkeyClient: RedisClientType) {}
 
   /**
    * Deletes every stored session belonging to `memberId` other than
@@ -32,10 +30,7 @@ export class SessionTerminationService {
     await this.terminateOtherSessions(memberId, null);
   }
 
-  async terminateOtherSessions(
-    memberId: string,
-    exceptSessionId: string | null,
-  ): Promise<void> {
+  async terminateOtherSessions(memberId: string, exceptSessionId: string | null): Promise<void> {
     const exceptKey = exceptSessionId ? `sess:${exceptSessionId}` : null;
     for await (const batch of this.valkeyClient.scanIterator({
       MATCH: 'sess:*',

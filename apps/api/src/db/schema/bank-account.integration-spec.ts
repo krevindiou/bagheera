@@ -3,11 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
-import {
-  insertAccount,
-  insertBank,
-  insertMember,
-} from '../../test-support/db-fixtures';
+import { insertAccount, insertBank, insertMember } from '../../test-support/db-fixtures';
 import { bank } from './bank';
 import { member } from './member';
 
@@ -47,9 +43,9 @@ describe('bank/account schema', () => {
 
   describe('account.bankId FK', () => {
     it('rejects an account pointing at a bank that does not exist', async () => {
-      await expect(
-        insertAccount(getDb(app), randomUUID()),
-      ).rejects.toMatchObject({ cause: { code: '23503' } });
+      await expect(insertAccount(getDb(app), randomUUID())).rejects.toMatchObject({
+        cause: { code: '23503' },
+      });
     });
 
     it('accepts an account pointing at a real bank', async () => {
@@ -64,9 +60,9 @@ describe('bank/account schema', () => {
       const bankRow = await insertBank(getDb(app), memberRow.id);
       await insertAccount(getDb(app), bankRow.id);
 
-      await expect(
-        getDb(app).delete(bank).where(eq(bank.id, bankRow.id)),
-      ).rejects.toMatchObject({ cause: { code: '23503' } });
+      await expect(getDb(app).delete(bank).where(eq(bank.id, bankRow.id))).rejects.toMatchObject({
+        cause: { code: '23503' },
+      });
     });
   });
 });

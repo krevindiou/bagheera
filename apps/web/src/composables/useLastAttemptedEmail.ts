@@ -2,13 +2,13 @@
 // one (e.g. sign-in after a failed registration, or forgot-password after
 // a failed sign-in) starts prefilled instead of empty. Session-scoped —
 // cleared when the tab closes.
-const STORAGE_KEY = "bagheera.lastAttemptedEmail";
+const STORAGE_KEY = 'bagheera.lastAttemptedEmail';
 
 export function readLastAttemptedEmail(): string {
   try {
-    return window.sessionStorage.getItem(STORAGE_KEY) ?? "";
+    return window.sessionStorage.getItem(STORAGE_KEY) ?? '';
   } catch {
-    return "";
+    return '';
   }
 }
 

@@ -18,11 +18,7 @@ export class ResendActivationService {
     private readonly activation: ActivationService,
   ) {}
 
-  async resend(
-    email: string,
-    password: string,
-    sourceAddress = 'unknown',
-  ): Promise<void> {
+  async resend(email: string, password: string, sourceAddress = 'unknown'): Promise<void> {
     const [row] = await this.db
       .select()
       .from(member)
@@ -30,10 +26,7 @@ export class ResendActivationService {
 
     // Verify against a hash even for an unknown email, so response timing
     // doesn't leak whether the address exists.
-    const passwordOk = await this.hash.verify(
-      row?.password ?? DUMMY_HASH,
-      password,
-    );
+    const passwordOk = await this.hash.verify(row?.password ?? DUMMY_HASH, password);
     if (!row || !passwordOk) {
       throw new UnauthorizedException(INVALID_CREDENTIALS);
     }

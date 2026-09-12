@@ -25,10 +25,7 @@ async function lastEvent(
   const conditions =
     memberId === null
       ? eq(securityEvent.eventType, eventType)
-      : and(
-          eq(securityEvent.eventType, eventType),
-          eq(securityEvent.memberId, memberId),
-        );
+      : and(eq(securityEvent.eventType, eventType), eq(securityEvent.memberId, memberId));
   const [row] = await db
     .select()
     .from(securityEvent)

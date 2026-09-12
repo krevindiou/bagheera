@@ -26,10 +26,7 @@ export class SchedulerBatchService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async batchDelete(
-    req: Request,
-    ids: string[],
-  ): Promise<{ deletedCount: number }> {
+  async batchDelete(req: Request, ids: string[]): Promise<{ deletedCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedSchedulerIds(ids, memberId);
     if (owned.length > 0) {
@@ -43,11 +40,7 @@ export class SchedulerBatchService {
         await tx.delete(scheduler).where(inArray(scheduler.id, owned));
       });
     }
-    await this.audit.record(
-      'scheduler_batch_deleted',
-      memberId,
-      req.ip ?? 'unknown',
-    );
+    await this.audit.record('scheduler_batch_deleted', memberId, req.ip ?? 'unknown');
     return { deletedCount: owned.length };
   }
 }

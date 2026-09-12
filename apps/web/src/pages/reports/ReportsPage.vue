@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
-import { apiClient } from "../../api/client";
-import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
-import { useSelection } from "../../composables/useSelection";
-import type { Account } from "../accounts/accounts.types";
-import BatchActions from "./batch.vue";
-import { toChartSeries } from "./chartSeries";
-import ReportForm from "./ReportForm.vue";
-import type { Report, ReportChart } from "./reports.types";
-import ToastContainer from "../../components/ToastContainer.vue";
+import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { apiClient } from '../../api/client';
+import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import { useSelection } from '../../composables/useSelection';
+import type { Account } from '../accounts/accounts.types';
+import BatchActions from './batch.vue';
+import { toChartSeries } from './chartSeries';
+import ReportForm from './ReportForm.vue';
+import type { Report, ReportChart } from './reports.types';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const { t } = useI18n();
 
 const queryClient = useQueryClient();
 
 const reportsQuery = useQuery({
-  queryKey: ["reports"],
+  queryKey: ['reports'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/reports");
+    const { data } = await apiClient.GET('/reports');
     return (data as Report[] | undefined) ?? [];
   },
 });
 const reports = computed(() => reportsQuery.data.value ?? []);
 
 const accountsQuery = useQuery({
-  queryKey: ["accounts"],
+  queryKey: ['accounts'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/accounts");
+    const { data } = await apiClient.GET('/accounts');
     return (data as Account[] | undefined) ?? [];
   },
 });
 const accounts = computed(() => accountsQuery.data.value ?? []);
 
 async function reloadReports() {
-  await queryClient.invalidateQueries({ queryKey: ["reports"] });
+  await queryClient.invalidateQueries({ queryKey: ['reports'] });
 }
 
 const showForm = ref(false);
-const createType = ref<"sum" | "average">("sum");
+const createType = ref<'sum' | 'average'>('sum');
 const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<string | null>(null);
 const { selectedIds, selectedIdList, toggleSelected } = useSelection();
@@ -51,7 +51,7 @@ watch(
   },
 );
 
-function startCreate(type: "sum" | "average") {
+function startCreate(type: 'sum' | 'average') {
   createType.value = type;
   editingReport.value = null;
   showForm.value = true;
@@ -74,9 +74,9 @@ async function onBatchDeleted() {
 }
 
 const chartQuery = useQuery({
-  queryKey: computed(() => ["report-chart", viewingReportId.value]),
+  queryKey: computed(() => ['report-chart', viewingReportId.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET("/reports/{id}/chart", {
+    const { data } = await apiClient.GET('/reports/{id}/chart', {
       params: { path: { id: viewingReportId.value! } },
     });
     return (data as ReportChart | undefined) ?? null;
@@ -99,10 +99,10 @@ function toggleView(report: Report) {
 
 <template>
   <div class="container py-5">
-    <h1>{{ $t("reports.title") }}</h1>
+    <h1>{{ $t('reports.title') }}</h1>
     <ToastContainer />
 
-    <p v-if="reports.length === 0" class="text-muted">{{ $t("reports.empty") }}</p>
+    <p v-if="reports.length === 0" class="text-muted">{{ $t('reports.empty') }}</p>
 
     <template v-else>
       <BatchActions :selected-ids="selectedIdList" @done="onBatchDeleted" />
@@ -112,8 +112,8 @@ function toggleView(report: Report) {
           <thead>
             <tr>
               <th></th>
-              <th>{{ $t("reports.type") }}</th>
-              <th>{{ $t("reports.reportTitle") }}</th>
+              <th>{{ $t('reports.type') }}</th>
+              <th>{{ $t('reports.reportTitle') }}</th>
               <th></th>
             </tr>
           </thead>
@@ -139,7 +139,7 @@ function toggleView(report: Report) {
                 <td>
                   {{ report.title }}
                   <span v-if="report.homepage" class="badge text-bg-info">{{
-                    $t("reports.homepage")
+                    $t('reports.homepage')
                   }}</span>
                 </td>
                 <td @click.stop>
@@ -151,8 +151,8 @@ function toggleView(report: Report) {
                     >
                       {{
                         viewingReportId === report.id
-                          ? $t("reports.hideChart")
-                          : $t("reports.viewChart")
+                          ? $t('reports.hideChart')
+                          : $t('reports.viewChart')
                       }}
                     </button>
                     <button
@@ -160,7 +160,7 @@ function toggleView(report: Report) {
                       class="btn btn-sm btn-outline-secondary"
                       @click="startEdit(report)"
                     >
-                      {{ $t("operations.edit") }}
+                      {{ $t('operations.edit') }}
                     </button>
                   </div>
                 </td>
@@ -186,10 +186,10 @@ function toggleView(report: Report) {
     />
     <div v-else class="d-flex gap-2">
       <button type="button" class="btn btn-primary" @click="startCreate('sum')">
-        {{ $t("reports.newSumReport") }}
+        {{ $t('reports.newSumReport') }}
       </button>
       <button type="button" class="btn btn-primary" @click="startCreate('average')">
-        {{ $t("reports.newAverageReport") }}
+        {{ $t('reports.newAverageReport') }}
       </button>
     </div>
   </div>

@@ -45,10 +45,7 @@ export function fakeResponse(): FakeResponse {
 }
 
 /** Wraps a request/response pair as the `ArgumentsHost` an exception filter receives. */
-export function fakeArgumentsHost(
-  req: Request,
-  res: FakeResponse,
-): ArgumentsHost {
+export function fakeArgumentsHost(req: Request, res: FakeResponse): ArgumentsHost {
   return {
     switchToHttp: () => ({
       getRequest: () => req,

@@ -29,7 +29,7 @@ export interface OperationList {
 export interface Category {
   id: string;
   parentId: string | null;
-  type: "debit" | "credit";
+  type: 'debit' | 'credit';
   name: string;
 }
 
@@ -75,22 +75,22 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
 export interface PaymentMethod {
   id: string;
   name: string;
-  type: "debit" | "credit" | null;
+  type: 'debit' | 'credit' | null;
 }
 
 // Mirrors apps/api/src/db/seed-data.ts's PAYMENT_METHOD_ID — the same fixed
 // UUID literals, not DB-generated. Named lookup, not array position, is
 // what business logic (icons, the transfer-method check below) keys off.
 export const PAYMENT_METHOD_ID = {
-  CREDIT_CARD: "00000000-0000-7000-8000-000000000001",
-  CHECK_DEBIT: "00000000-0000-7000-8000-000000000002",
-  CASH_WITHDRAWAL: "00000000-0000-7000-8000-000000000003",
-  TRANSFER_DEBIT: "00000000-0000-7000-8000-000000000004",
-  CHECK_CREDIT: "00000000-0000-7000-8000-000000000005",
-  TRANSFER_CREDIT: "00000000-0000-7000-8000-000000000006",
-  DEPOSIT: "00000000-0000-7000-8000-000000000007",
-  DIRECT_DEBIT: "00000000-0000-7000-8000-000000000008",
-  INITIAL_BALANCE: "00000000-0000-7000-8000-000000000009",
+  CREDIT_CARD: '00000000-0000-7000-8000-000000000001',
+  CHECK_DEBIT: '00000000-0000-7000-8000-000000000002',
+  CASH_WITHDRAWAL: '00000000-0000-7000-8000-000000000003',
+  TRANSFER_DEBIT: '00000000-0000-7000-8000-000000000004',
+  CHECK_CREDIT: '00000000-0000-7000-8000-000000000005',
+  TRANSFER_CREDIT: '00000000-0000-7000-8000-000000000006',
+  DEPOSIT: '00000000-0000-7000-8000-000000000007',
+  DIRECT_DEBIT: '00000000-0000-7000-8000-000000000008',
+  INITIAL_BALANCE: '00000000-0000-7000-8000-000000000009',
 } as const;
 
 export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): string {
@@ -101,19 +101,19 @@ export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): 
 // list, cash withdrawal/deposit = money, transfer/direct debit =
 // exchange arrows. Web-only — no equivalent column server-side.
 export const PAYMENT_METHOD_ICONS: Record<string, string> = {
-  [PAYMENT_METHOD_ID.CREDIT_CARD]: "💳",
-  [PAYMENT_METHOD_ID.CHECK_DEBIT]: "📋",
-  [PAYMENT_METHOD_ID.CASH_WITHDRAWAL]: "💵",
-  [PAYMENT_METHOD_ID.TRANSFER_DEBIT]: "🔁",
-  [PAYMENT_METHOD_ID.CHECK_CREDIT]: "📋",
-  [PAYMENT_METHOD_ID.TRANSFER_CREDIT]: "🔁",
-  [PAYMENT_METHOD_ID.DEPOSIT]: "💵",
-  [PAYMENT_METHOD_ID.DIRECT_DEBIT]: "🔁",
-  [PAYMENT_METHOD_ID.INITIAL_BALANCE]: "🎚️",
+  [PAYMENT_METHOD_ID.CREDIT_CARD]: '💳',
+  [PAYMENT_METHOD_ID.CHECK_DEBIT]: '📋',
+  [PAYMENT_METHOD_ID.CASH_WITHDRAWAL]: '💵',
+  [PAYMENT_METHOD_ID.TRANSFER_DEBIT]: '🔁',
+  [PAYMENT_METHOD_ID.CHECK_CREDIT]: '📋',
+  [PAYMENT_METHOD_ID.TRANSFER_CREDIT]: '🔁',
+  [PAYMENT_METHOD_ID.DEPOSIT]: '💵',
+  [PAYMENT_METHOD_ID.DIRECT_DEBIT]: '🔁',
+  [PAYMENT_METHOD_ID.INITIAL_BALANCE]: '🎚️',
 };
 
 export function paymentMethodIcon(id: string): string {
-  return PAYMENT_METHOD_ICONS[id] ?? "";
+  return PAYMENT_METHOD_ICONS[id] ?? '';
 }
 
 // The "Transfer" debit/credit payment methods — the only two that can carry
@@ -125,7 +125,7 @@ export const TRANSFER_PAYMENT_METHOD_IDS: readonly string[] = [
   PAYMENT_METHOD_ID.TRANSFER_CREDIT,
 ];
 
-export type AmountComparatorOperator = "gt" | "gte" | "lt" | "lte" | "eq";
+export type AmountComparatorOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq';
 
 export interface AmountComparator {
   operator: AmountComparatorOperator;
@@ -135,7 +135,7 @@ export interface AmountComparator {
 // Mirrors apps/api/src/operations/dto/search-operations.dto.ts, minus
 // accountId (that's the recall key's scope, carried separately).
 export interface SearchCriteria {
-  type?: "debit" | "credit";
+  type?: 'debit' | 'credit';
   thirdParty?: string;
   categoryIds?: string[];
   paymentMethodIds?: string[];

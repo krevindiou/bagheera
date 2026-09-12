@@ -1,6 +1,6 @@
-import { reactive } from "vue";
+import { reactive } from 'vue';
 
-export type ToastVariant = "success" | "error" | "info";
+export type ToastVariant = 'success' | 'error' | 'info';
 
 export interface ToastMessage {
   id: number;
@@ -17,7 +17,7 @@ function dismiss(id: number) {
   if (index !== -1) toasts.splice(index, 1);
 }
 
-function push(text: string, variant: ToastVariant = "info", durationMs = 5000) {
+function push(text: string, variant: ToastVariant = 'info', durationMs = 5000) {
   const id = nextId++;
   toasts.push({ id, text, variant });
   setTimeout(() => dismiss(id), durationMs);

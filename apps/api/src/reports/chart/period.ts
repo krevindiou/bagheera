@@ -33,10 +33,7 @@ export function periodStart(date: string, grouping: PeriodGrouping): string {
 // The next period's start date, one step after `key` (itself a period
 // start returned by `periodStart`).
 export function nextPeriodStart(key: string, grouping: PeriodGrouping): string {
-  return addMonths(
-    key,
-    grouping === 'year' ? 12 : grouping === 'quarter' ? 3 : 1,
-  );
+  return addMonths(key, grouping === 'year' ? 12 : grouping === 'quarter' ? 3 : 1);
 }
 
 // `key` (a month-period start, 'YYYY-MM-01') shifted by `months` steps —
@@ -53,11 +50,7 @@ export function addMonths(key: string, months: number): string {
 
 // Every period-start key from `first` to `last` inclusive — zero-fills the
 // gaps between the populated periods present in a series.
-export function fillPeriodGaps(
-  first: string,
-  last: string,
-  grouping: PeriodGrouping,
-): string[] {
+export function fillPeriodGaps(first: string, last: string, grouping: PeriodGrouping): string[] {
   const keys: string[] = [];
   for (let key = first; key <= last; key = nextPeriodStart(key, grouping)) {
     keys.push(key);

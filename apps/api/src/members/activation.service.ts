@@ -39,10 +39,7 @@ export class ActivationService {
       throw new BadRequestException(ACTIVATION_ERROR);
     }
 
-    await this.db
-      .update(member)
-      .set({ active: true })
-      .where(eq(member.id, row.id));
+    await this.db.update(member).set({ active: true }).where(eq(member.id, row.id));
     await this.audit.record('activation_used', row.id, sourceAddress);
   }
 

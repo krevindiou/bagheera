@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 // docker/compose.yml's `playwright` service shares the `web` container's
 // network namespace specifically so this resolves to a genuine localhost
@@ -6,10 +6,10 @@ import { defineConfig, devices } from "@playwright/test";
 // Secure-flagged session/CSRF cookies to be stored at all, and for
 // fixtures.ts's `page.request` calls to land on the exact same origin a
 // browser navigation would, through Vite's dev-server API proxy.
-const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:5173";
+const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:5173';
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: './tests',
   timeout: 30_000,
   expect: { timeout: 10_000 },
   // Every spec shares one Postgres/Valkey pair *and* one source IP for the
@@ -25,11 +25,11 @@ export default defineConfig({
   // matching docker/compose.yml's playwright service, which only forwards
   // a real CI=true from an actual CI run, not from a plain local
   // `make test-e2e`.
-  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL,
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

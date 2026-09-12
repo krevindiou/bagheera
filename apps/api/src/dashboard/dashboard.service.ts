@@ -4,10 +4,7 @@ import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMajorUnits } from '../common/money';
-import {
-  computeSynthesisChart,
-  SynthesisChart,
-} from '../common/synthesis-chart';
+import { computeSynthesisChart, SynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
 import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
@@ -58,22 +55,12 @@ const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
 
 function previousCalendarMonthRange(): { start: string; end: string } {
   const now = new Date();
-  const firstOfCurrentMonth = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
-  );
+  const firstOfCurrentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const start = new Date(
-    Date.UTC(
-      firstOfCurrentMonth.getUTCFullYear(),
-      firstOfCurrentMonth.getUTCMonth() - 1,
-      1,
-    ),
+    Date.UTC(firstOfCurrentMonth.getUTCFullYear(), firstOfCurrentMonth.getUTCMonth() - 1, 1),
   );
   const end = new Date(
-    Date.UTC(
-      firstOfCurrentMonth.getUTCFullYear(),
-      firstOfCurrentMonth.getUTCMonth(),
-      0,
-    ),
+    Date.UTC(firstOfCurrentMonth.getUTCFullYear(), firstOfCurrentMonth.getUTCMonth(), 0),
   );
   return { start: isoDate(start), end: isoDate(end) };
 }
@@ -90,9 +77,7 @@ export class DashboardService {
     private readonly config: ConfigService,
   ) {}
 
-  private async balancesByAccount(
-    accountIds: string[],
-  ): Promise<Map<string, MinorUnits>> {
+  private async balancesByAccount(accountIds: string[]): Promise<Map<string, MinorUnits>> {
     if (accountIds.length === 0) {
       return new Map();
     }
@@ -106,10 +91,7 @@ export class DashboardService {
       .where(inArray(operation.accountId, accountIds))
       .groupBy(operation.accountId);
     return new Map(
-      rows.map((row) => [
-        row.accountId,
-        (Number(row.credit) - Number(row.debit)) as MinorUnits,
-      ]),
+      rows.map((row) => [row.accountId, (Number(row.credit) - Number(row.debit)) as MinorUnits]),
     );
   }
 
@@ -139,8 +121,7 @@ export class DashboardService {
       .from(account)
       .where(and(inArray(account.bankId, bankIds), eq(account.deleted, false)));
 
-    const onboarding: OnboardingTip =
-      accounts.length === 0 && hasActiveBank ? 'no-account' : null;
+    const onboarding: OnboardingTip = accounts.length === 0 && hasActiveBank ? 'no-account' : null;
 
     const balances = await this.balancesByAccount(accounts.map((a) => a.id));
 
@@ -165,9 +146,7 @@ export class DashboardService {
       }));
 
     // "Fully active" scope — the bank itself must also be non-closed.
-    const activeBankIds = new Set(
-      banks.filter((b) => !b.closed).map((b) => b.id),
-    );
+    const activeBankIds = new Set(banks.filter((b) => !b.closed).map((b) => b.id));
     const fullyActiveAccountIds = accounts
       .filter((a) => !a.closed && activeBankIds.has(a.bankId))
       .map((a) => a.id);
@@ -220,9 +199,7 @@ export class DashboardService {
     if (accounts.length === 0) {
       return EMPTY_SYNTHESIS_CHART;
     }
-    const currencyByAccount = new Map(
-      accounts.map((a) => [a.id, a.currency] as const),
-    );
+    const currencyByAccount = new Map(accounts.map((a) => [a.id, a.currency] as const));
     const rows = await this.db
       .select({
         accountId: operation.accountId,
@@ -254,10 +231,7 @@ export class DashboardService {
     if (fullyActiveAccountIds.length === 0) {
       return null;
     }
-    const salaryCategoryId = this.config.get<string>(
-      'SALARY_CATEGORY_ID',
-      SALARY_CATEGORY_SEED_ID,
-    );
+    const salaryCategoryId = this.config.get<string>('SALARY_CATEGORY_ID', SALARY_CATEGORY_SEED_ID);
     const [salaryCategory] = await this.db
       .select()
       .from(category)
@@ -327,9 +301,7 @@ export class DashboardService {
     };
   }
 
-  private async getHomepageReports(
-    memberId: string,
-  ): Promise<HomepageReportChart[]> {
+  private async getHomepageReports(memberId: string): Promise<HomepageReportChart[]> {
     const homepageReports = await this.db
       .select()
       .from(report)

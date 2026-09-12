@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Field rules mirror the API DTOs (apps/api/src/{banks,accounts}/dto/*).
 const accountName = z.string().trim().min(1).max(64);
@@ -23,8 +23,8 @@ export const bankChoiceSchema = z
     bankName: z.string().trim().max(32).optional(),
   })
   .refine((form) => Boolean(form.bankId) !== Boolean(form.bankName), {
-    message: "bankChoiceRequired",
-    path: ["bankName"],
+    message: 'bankChoiceRequired',
+    path: ['bankName'],
   });
 export type BankChoiceForm = z.infer<typeof bankChoiceSchema>;
 
@@ -32,11 +32,11 @@ export type BankChoiceForm = z.infer<typeof bankChoiceSchema>;
 // bank field stays editable — a dropdown of the member's active banks —
 // but starts pre-selected to that bank).
 export const createAccountSchema = z.object({
-  bankId: z.string().min(1, "required"),
+  bankId: z.string().min(1, 'required'),
   name: accountName,
   currency,
   initialBalance: z.preprocess(
-    (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
+    (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),
     z.number().optional(),
   ),
 });

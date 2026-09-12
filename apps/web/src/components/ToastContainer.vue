@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useToast } from "../composables/useToast";
+import { useToast } from '../composables/useToast';
 
 const { toasts, dismiss } = useToast();
 
 const variantClass: Record<string, string> = {
-  success: "text-bg-success",
-  error: "text-bg-danger",
-  info: "text-bg-secondary",
+  success: 'text-bg-success',
+  error: 'text-bg-danger',
+  info: 'text-bg-secondary',
 };
 </script>
 

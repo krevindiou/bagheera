@@ -1,8 +1,4 @@
-import {
-  dueOccurrences,
-  MAX_OCCURRENCES_PER_RUN,
-  occurrenceDate,
-} from './interval';
+import { dueOccurrences, MAX_OCCURRENCES_PER_RUN, occurrenceDate } from './interval';
 
 describe('occurrenceDate', () => {
   it('occurrence 0 is the value date itself, for any unit', () => {
@@ -100,8 +96,7 @@ describe('dueOccurrences', () => {
       expect(dates[i] > dates[i - 1]).toBe(true);
     }
     const spanDays =
-      (new Date(dates[dates.length - 1]).getTime() -
-        new Date(dates[0]).getTime()) /
+      (new Date(dates[dates.length - 1]).getTime() - new Date(dates[0]).getTime()) /
       (24 * 60 * 60 * 1000);
     expect(spanDays).toBe(MAX_OCCURRENCES_PER_RUN - 1);
   });

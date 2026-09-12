@@ -3,10 +3,7 @@ import type { RedisClientType } from 'redis';
 import { RateLimitGuard } from './rate-limit.guard';
 import { RATE_LIMIT_OPTIONS, RateLimitOptions } from './rate-limit.constants';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
-import {
-  fakeExecutionContext,
-  fakeRequest,
-} from '../test-support/fake-http-context';
+import { fakeExecutionContext, fakeRequest } from '../test-support/fake-http-context';
 
 // Every `new RateLimiterRedis()` the guard creates internally shares this
 // one mocked consume() — the guard caches at most one limiter per
@@ -17,15 +14,11 @@ import {
 // out as `[string][]` rather than `any[][]`.
 const mockConsume = jest.fn<Promise<void>, [string]>();
 jest.mock('rate-limiter-flexible', () => ({
-  RateLimiterRedis: jest
-    .fn()
-    .mockImplementation(() => ({ consume: mockConsume })),
+  RateLimiterRedis: jest.fn().mockImplementation(() => ({ consume: mockConsume })),
 }));
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 
-function fakeValkeyClient(
-  overrides: Partial<RedisClientType> = {},
-): RedisClientType {
+function fakeValkeyClient(overrides: Partial<RedisClientType> = {}): RedisClientType {
   return {
     exists: jest.fn().mockResolvedValue(0),
     incr: jest.fn().mockResolvedValue(1),
@@ -37,9 +30,7 @@ function fakeValkeyClient(
   } as unknown as RedisClientType;
 }
 
-function fakeReflector(
-  opts: { skip?: boolean; options?: RateLimitOptions } = {},
-): Reflector {
+function fakeReflector(opts: { skip?: boolean; options?: RateLimitOptions } = {}): Reflector {
   return {
     get: jest.fn((key: string | symbol) => {
       if (key === SKIP_RATE_LIMIT_KEY) return opts.skip;
@@ -86,21 +77,15 @@ describe('RateLimitGuard', () => {
     const guard = new RateLimitGuard(valkey, fakeReflector());
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(mockConsume).toHaveBeenCalledWith(
-      expect.stringContaining(':ip:127.0.0.1'),
-    );
+    expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:127.0.0.1'));
   });
 
   it('falls back to "unknown" for the IP dimension when the request has no IP', async () => {
     const valkey = fakeValkeyClient();
     const guard = new RateLimitGuard(valkey, fakeReflector());
-    const ctx = fakeExecutionContext(
-      fakeRequest({ method: 'POST', ip: undefined }),
-    );
+    const ctx = fakeExecutionContext(fakeRequest({ method: 'POST', ip: undefined }));
     await expect(guard.canActivate(ctx)).resolves.toBe(true);
-    expect(mockConsume).toHaveBeenCalledWith(
-      expect.stringContaining(':ip:unknown'),
-    );
+    expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:unknown'));
   });
 
   it('scopes the dimension key per route, so two handlers never share a counter', async () => {
@@ -114,18 +99,10 @@ describe('RateLimitGuard', () => {
     class RegistrationController {}
 
     await guard.canActivate(
-      fakeExecutionContext(
-        fakeRequest({ method: 'POST' }),
-        signIn,
-        SignInController,
-      ),
+      fakeExecutionContext(fakeRequest({ method: 'POST' }), signIn, SignInController),
     );
     await guard.canActivate(
-      fakeExecutionContext(
-        fakeRequest({ method: 'POST' }),
-        register,
-        RegistrationController,
-      ),
+      fakeExecutionContext(fakeRequest({ method: 'POST' }), register, RegistrationController),
     );
 
     const keys = mockConsume.mock.calls.map((call) => call[0]);
@@ -144,9 +121,7 @@ describe('RateLimitGuard', () => {
     const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
 
     await guard.canActivate(
-      fakeExecutionContext(
-        fakeRequest({ method: 'POST', body: { email: 'Foo@Bar.com' } }),
-      ),
+      fakeExecutionContext(fakeRequest({ method: 'POST', body: { email: 'Foo@Bar.com' } })),
     );
     const firstIdKey = mockConsume.mock.calls
       .map((call) => call[0])
@@ -154,9 +129,7 @@ describe('RateLimitGuard', () => {
 
     mockConsume.mockClear();
     await guard.canActivate(
-      fakeExecutionContext(
-        fakeRequest({ method: 'POST', body: { email: 'foo@bar.com' } }),
-      ),
+      fakeExecutionContext(fakeRequest({ method: 'POST', body: { email: 'foo@bar.com' } })),
     );
     const secondIdKey = mockConsume.mock.calls
       .map((call) => call[0])
@@ -229,12 +202,8 @@ describe('RateLimitGuard', () => {
     const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
     function routeA() {}
     function routeB() {}
-    await guard.canActivate(
-      fakeExecutionContext(fakeRequest({ method: 'POST' }), routeA),
-    );
-    await guard.canActivate(
-      fakeExecutionContext(fakeRequest({ method: 'POST' }), routeB),
-    );
+    await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeA));
+    await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeB));
     expect((RateLimiterRedis as jest.Mock).mock.calls).toHaveLength(1);
   });
 

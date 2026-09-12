@@ -1,10 +1,4 @@
-import {
-  Global,
-  Inject,
-  Module,
-  OnModuleDestroy,
-  Provider,
-} from '@nestjs/common';
+import { Global, Inject, Module, OnModuleDestroy, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
@@ -25,8 +19,7 @@ import { SmtpEmailProvider } from './smtp-email.provider';
 const emailQueueProvider: Provider = {
   provide: EMAIL_QUEUE,
   inject: [BULLMQ_CONNECTION],
-  useFactory: (connection: IORedis): Queue =>
-    new Queue(EMAIL_QUEUE_NAME, { connection }),
+  useFactory: (connection: IORedis): Queue => new Queue(EMAIL_QUEUE_NAME, { connection }),
 };
 
 @Global()

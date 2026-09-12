@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
-import { apiClient } from "../../api/client";
-import SynthesisChart, { type SynthesisChartSeries } from "../../components/SynthesisChart.vue";
-import { useSelection } from "../../composables/useSelection";
-import type { Account, Bank } from "../accounts/accounts.types";
-import { formatDate, formatMoney } from "./money";
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+import { apiClient } from '../../api/client';
+import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import { useSelection } from '../../composables/useSelection';
+import type { Account, Bank } from '../accounts/accounts.types';
+import { formatDate, formatMoney } from './money';
 import {
   categoryLabel,
   PAYMENT_METHOD_ID,
   paymentMethodIcon,
   paymentMethodName,
-} from "./operations.types";
+} from './operations.types';
 import type {
   Category,
   Operation,
   OperationList,
   PaymentMethod,
   SearchCriteria,
-} from "./operations.types";
-import OperationForm from "./OperationForm.vue";
-import BatchActions from "./batch.vue";
-import SearchPanel from "./search.vue";
-import ToastContainer from "../../components/ToastContainer.vue";
+} from './operations.types';
+import OperationForm from './OperationForm.vue';
+import BatchActions from './batch.vue';
+import SearchPanel from './search.vue';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -43,9 +43,9 @@ const hasActiveSearch = ref(false);
 const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
 
 const accountsQuery = useQuery({
-  queryKey: ["accounts"],
+  queryKey: ['accounts'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/accounts");
+    const { data } = await apiClient.GET('/accounts');
     return (data as Account[] | undefined) ?? [];
   },
 });
@@ -53,36 +53,36 @@ const accounts = computed(() => accountsQuery.data.value ?? []);
 const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
 
 const banksQuery = useQuery({
-  queryKey: ["banks"],
+  queryKey: ['banks'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/banks");
+    const { data } = await apiClient.GET('/banks');
     return (data as Bank[] | undefined) ?? [];
   },
 });
 const banks = computed(() => banksQuery.data.value ?? []);
 
 const categoriesQuery = useQuery({
-  queryKey: ["categories"],
+  queryKey: ['categories'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/reference-data/categories");
+    const { data } = await apiClient.GET('/reference-data/categories');
     return (data as Category[] | undefined) ?? [];
   },
 });
 const categories = computed(() => categoriesQuery.data.value ?? []);
 
 const paymentMethodsQuery = useQuery({
-  queryKey: ["payment-methods"],
+  queryKey: ['payment-methods'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/reference-data/payment-methods");
+    const { data } = await apiClient.GET('/reference-data/payment-methods');
     return (data as PaymentMethod[] | undefined) ?? [];
   },
 });
 const paymentMethods = computed(() => paymentMethodsQuery.data.value ?? []);
 
 const balanceQuery = useQuery({
-  queryKey: computed(() => ["balance", accountId.value]),
+  queryKey: computed(() => ['balance', accountId.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET("/accounts/{id}/balance", {
+    const { data } = await apiClient.GET('/accounts/{id}/balance', {
       params: { path: { id: accountId.value } },
     });
     return (data as { balance: number; reconciledBalance: number } | undefined) ?? null;
@@ -91,9 +91,9 @@ const balanceQuery = useQuery({
 const balance = computed(() => balanceQuery.data.value ?? null);
 
 const chartQuery = useQuery({
-  queryKey: computed(() => ["chart", accountId.value]),
+  queryKey: computed(() => ['chart', accountId.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET("/accounts/{id}/chart", {
+    const { data } = await apiClient.GET('/accounts/{id}/chart', {
       params: { path: { id: accountId.value } },
     });
     return (
@@ -110,7 +110,7 @@ const chartQuery = useQuery({
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;
   if (!chart || chart.points.length === 0) return [];
-  return [{ label: chart.currency, color: "#0d6efd", points: chart.points }];
+  return [{ label: chart.currency, color: '#0d6efd', points: chart.points }];
 });
 const chartAxisBounds = computed(() => chartQuery.data.value?.axisBounds ?? null);
 
@@ -120,9 +120,9 @@ const chartAxisBounds = computed(() => chartQuery.data.value?.axisBounds ?? null
 // recalled search is active, the panel is restored docked open and
 // hydrated with its criteria.
 const operationsQuery = useQuery({
-  queryKey: computed(() => ["operations", accountId.value, page.value]),
+  queryKey: computed(() => ['operations', accountId.value, page.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET("/operations/search", {
+    const { data } = await apiClient.GET('/operations/search', {
       params: { query: { accountId: accountId.value, page: String(page.value) } },
     });
     return (
@@ -167,15 +167,15 @@ const isAccountFullyActive = computed(
 
 const searchMutation = useMutation({
   mutationFn: async (criteria: SearchCriteria) => {
-    const { data } = await apiClient.POST("/operations/search", {
-      params: { query: { page: "1" } },
+    const { data } = await apiClient.POST('/operations/search', {
+      params: { query: { page: '1' } },
       body: { accountId: accountId.value, ...criteria },
     });
     return (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
   },
   onSuccess(data) {
     page.value = 1;
-    queryClient.setQueryData(["operations", accountId.value, 1], data);
+    queryClient.setQueryData(['operations', accountId.value, 1], data);
     selectedIds.value = new Set();
     hasActiveSearch.value = true;
   },
@@ -186,14 +186,14 @@ function runSearch(criteria: SearchCriteria) {
 
 const clearSearchMutation = useMutation({
   mutationFn: async () => {
-    await apiClient.DELETE("/operations/search", {
+    await apiClient.DELETE('/operations/search', {
       params: { query: { accountId: accountId.value } },
     });
   },
   async onSuccess() {
     hasActiveSearch.value = false;
     page.value = 1;
-    await queryClient.invalidateQueries({ queryKey: ["operations", accountId.value] });
+    await queryClient.invalidateQueries({ queryKey: ['operations', accountId.value] });
   },
 });
 function clearSearch() {
@@ -207,22 +207,22 @@ function goToPage(newPage: number) {
 
 async function refreshAfterSave() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ["operations", accountId.value, page.value] }),
-    queryClient.invalidateQueries({ queryKey: ["chart", accountId.value] }),
-    queryClient.invalidateQueries({ queryKey: ["balance", accountId.value] }),
+    queryClient.invalidateQueries({ queryKey: ['operations', accountId.value, page.value] }),
+    queryClient.invalidateQueries({ queryKey: ['chart', accountId.value] }),
+    queryClient.invalidateQueries({ queryKey: ['balance', accountId.value] }),
   ]);
 }
 
 async function refreshAfterBatch() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ["operations", accountId.value, page.value] }),
-    queryClient.invalidateQueries({ queryKey: ["balance", accountId.value] }),
+    queryClient.invalidateQueries({ queryKey: ['operations', accountId.value, page.value] }),
+    queryClient.invalidateQueries({ queryKey: ['balance', accountId.value] }),
   ]);
 }
 
 function amountLabel(operation: Operation): string {
   const minorUnits = operation.debit ?? operation.credit ?? 0;
-  return formatMoney(minorUnits, account.value?.currency ?? "USD");
+  return formatMoney(minorUnits, account.value?.currency ?? 'USD');
 }
 
 function startCreate() {
@@ -254,20 +254,20 @@ function isEditable(operation: Operation): boolean {
 <template>
   <div class="container py-5">
     <h1 v-if="account">{{ accountBank?.name }} − {{ account.name }}</h1>
-    <h1 v-else>{{ $t("operations.title") }}</h1>
+    <h1 v-else>{{ $t('operations.title') }}</h1>
     <ToastContainer />
 
     <div v-if="balance" class="d-flex gap-4 mb-3" data-testid="account-balances">
       <span
-        >{{ $t("operations.balance") }}:
+        >{{ $t('operations.balance') }}:
         <strong :class="balance.balance >= 0 ? 'text-success' : 'text-danger'">{{
-          formatMoney(balance.balance, account?.currency ?? "USD", true)
+          formatMoney(balance.balance, account?.currency ?? 'USD', true)
         }}</strong></span
       >
       <span
-        >{{ $t("operations.reconciledBalance") }}:
+        >{{ $t('operations.reconciledBalance') }}:
         <strong :class="balance.reconciledBalance >= 0 ? 'text-success' : 'text-danger'">{{
-          formatMoney(balance.reconciledBalance, account?.currency ?? "USD", true)
+          formatMoney(balance.reconciledBalance, account?.currency ?? 'USD', true)
         }}</strong></span
       >
     </div>
@@ -281,7 +281,7 @@ function isEditable(operation: Operation): boolean {
         class="text-muted mb-1"
         data-testid="onboarding-tip"
       >
-        {{ $t("operations.firstOperationTip") }}
+        {{ $t('operations.firstOperationTip') }}
       </p>
       <div class="d-flex flex-wrap gap-2">
         <button
@@ -290,7 +290,7 @@ function isEditable(operation: Operation): boolean {
           class="btn btn-primary"
           @click="startCreate"
         >
-          {{ $t("operations.addOperation") }}
+          {{ $t('operations.addOperation') }}
         </button>
         <button
           type="button"
@@ -298,13 +298,13 @@ function isEditable(operation: Operation): boolean {
           data-testid="toggle-search"
           @click="showSearch = !showSearch"
         >
-          {{ showSearch ? $t("operations.search.hide") : $t("operations.search.show") }}
+          {{ showSearch ? $t('operations.search.hide') : $t('operations.search.show') }}
         </button>
         <router-link
           :to="{ name: 'schedulers', params: { accountId } }"
           class="btn btn-outline-secondary"
         >
-          {{ $t("operations.schedulersLink") }}
+          {{ $t('operations.schedulersLink') }}
         </router-link>
       </div>
     </div>
@@ -320,7 +320,7 @@ function isEditable(operation: Operation): boolean {
         />
 
         <div v-if="list.items.length === 0" class="mb-3">
-          <p class="text-muted">{{ $t("operations.empty") }}</p>
+          <p class="text-muted">{{ $t('operations.empty') }}</p>
         </div>
 
         <div v-else class="table-responsive">
@@ -329,11 +329,11 @@ function isEditable(operation: Operation): boolean {
               <tr>
                 <th v-if="isAccountFullyActive"></th>
                 <th></th>
-                <th>{{ $t("operations.thirdParty") }}</th>
-                <th class="text-end">{{ $t("operations.amount") }}</th>
-                <th>{{ $t("operations.paymentMethod") }}</th>
-                <th>{{ $t("operations.category") }}</th>
-                <th>{{ $t("operations.valueDate") }}</th>
+                <th>{{ $t('operations.thirdParty') }}</th>
+                <th class="text-end">{{ $t('operations.amount') }}</th>
+                <th>{{ $t('operations.paymentMethod') }}</th>
+                <th>{{ $t('operations.category') }}</th>
+                <th>{{ $t('operations.valueDate') }}</th>
                 <th></th>
               </tr>
             </thead>
@@ -369,12 +369,12 @@ function isEditable(operation: Operation): boolean {
                 </td>
                 <td>{{ operation.thirdParty }}</td>
                 <td class="text-end" :class="operation.debit ? 'text-danger' : 'text-success'">
-                  {{ operation.debit ? "-" : "+" }}{{ amountLabel(operation) }}
+                  {{ operation.debit ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
                 <td :title="paymentMethodName(operation.paymentMethodId, paymentMethods)">
                   {{ paymentMethodIcon(operation.paymentMethodId) }}
                 </td>
-                <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : "" }}</td>
+                <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : '' }}</td>
                 <td>{{ formatDate(operation.valueDate) }}</td>
                 <td @click.stop>
                   <button
@@ -383,7 +383,7 @@ function isEditable(operation: Operation): boolean {
                     class="btn btn-sm btn-outline-secondary"
                     @click="startEdit(operation)"
                   >
-                    {{ $t("operations.edit") }}
+                    {{ $t('operations.edit') }}
                   </button>
                 </td>
               </tr>
@@ -397,16 +397,16 @@ function isEditable(operation: Operation): boolean {
               :disabled="list.page <= 1"
               @click="goToPage(list.page - 1)"
             >
-              {{ $t("operations.previous") }}
+              {{ $t('operations.previous') }}
             </button>
-            <span>{{ $t("operations.pageStatus", { page: list.page, pageCount }) }}</span>
+            <span>{{ $t('operations.pageStatus', { page: list.page, pageCount }) }}</span>
             <button
               type="button"
               class="btn btn-sm btn-outline-secondary"
               :disabled="list.page >= pageCount"
               @click="goToPage(list.page + 1)"
             >
-              {{ $t("operations.next") }}
+              {{ $t('operations.next') }}
             </button>
           </nav>
         </div>

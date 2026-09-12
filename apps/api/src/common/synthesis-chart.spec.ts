@@ -43,9 +43,7 @@ describe('computeSynthesisChart', () => {
       { currency: 'USD', debit: null, credit: null, valueDate: '2026-01-15' },
     ];
     const chart = computeSynthesisChart(rows, TODAY);
-    expect(chart.series[0].points.map((p) => p.value)).toEqual(
-      Array(12).fill(0),
-    );
+    expect(chart.series[0].points.map((p) => p.value)).toEqual(Array(12).fill(0));
   });
 
   it('folds a row dated before the window into the carried-forward starting balance', () => {

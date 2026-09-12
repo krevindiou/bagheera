@@ -36,9 +36,7 @@ export function ipPointsFor(options: RateLimitOptions): number {
   if (options.ipPoints !== undefined) {
     return options.ipPoints;
   }
-  return options.identifierField
-    ? options.points * DEFAULT_IP_BUDGET_MULTIPLIER
-    : options.points;
+  return options.identifierField ? options.points * DEFAULT_IP_BUDGET_MULTIPLIER : options.points;
 }
 
 export const DEFAULT_RATE_LIMIT: RateLimitOptions = {

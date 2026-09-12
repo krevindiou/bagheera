@@ -11,7 +11,5 @@ export const securityEvent = pgTable('security_event', {
   memberId: uuid('member_id').references(() => member.id),
   eventType: securityEventTypeEnum('event_type').notNull(),
   sourceAddress: varchar('source_address', { length: 45 }).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

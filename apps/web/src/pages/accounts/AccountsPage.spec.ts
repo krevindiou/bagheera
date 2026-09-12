@@ -1,17 +1,17 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
-import { createMemoryHistory, createRouter, type Router } from "vue-router";
-import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
-import { submitAndSettle } from "../../test-support/submitAndSettle";
-import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
+import { createMemoryHistory, createRouter, type Router } from 'vue-router';
+import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
+import { submitAndSettle } from '../../test-support/submitAndSettle';
+import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
-vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
-import { apiClient as realApiClient } from "../../api/client";
-import { useConfirm } from "../../composables/useConfirm";
-import { useToast } from "../../composables/useToast";
-import type { Account, Bank } from "./accounts.types";
-import AccountsPage from "./AccountsPage.vue";
+import { apiClient as realApiClient } from '../../api/client';
+import { useConfirm } from '../../composables/useConfirm';
+import { useToast } from '../../composables/useToast';
+import type { Account, Bank } from './accounts.types';
+import AccountsPage from './AccountsPage.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
@@ -20,12 +20,12 @@ const apiClient = asMockedApiClient(realApiClient);
 // authenticated session would silently redirect to sign-in via the real
 // guard — this component only needs "accounts"/"operations" to resolve.
 function createTestRouter(): Router {
-  const stub = { template: "<div />" };
+  const stub = { template: '<div />' };
   return createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: "/accounts", name: "accounts", component: stub },
-      { path: "/accounts/:accountId/operations", name: "operations", component: stub },
+      { path: '/accounts', name: 'accounts', component: stub },
+      { path: '/accounts/:accountId/operations', name: 'operations', component: stub },
     ],
   });
 }
@@ -40,20 +40,20 @@ const account = (
   id: string,
   bankId: string,
   name: string,
-  currency = "USD",
+  currency = 'USD',
   closed = false,
   deleted = false,
 ): Account => ({ id, bankId, name, currency, closed, deleted });
 
 function mockData(banks: Bank[], accounts: Account[]) {
   apiClient.GET.mockImplementation(async (path: string) => {
-    if (path === "/banks") return { data: banks, error: undefined, response: new Response() };
-    if (path === "/accounts") return { data: accounts, error: undefined, response: new Response() };
+    if (path === '/banks') return { data: banks, error: undefined, response: new Response() };
+    if (path === '/accounts') return { data: accounts, error: undefined, response: new Response() };
     return { data: undefined, error: undefined, response: new Response() };
   });
 }
 
-describe("AccountsPage", () => {
+describe('AccountsPage', () => {
   let router: Router;
 
   beforeEach(() => {
@@ -68,149 +68,149 @@ describe("AccountsPage", () => {
     state.visible = false;
   });
 
-  it("shows the empty state and a New account button when there are no banks", async () => {
+  it('shows the empty state and a New account button when there are no banks', async () => {
     mockData([], []);
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     expect(wrapper.text()).toContain("You don't have any bank yet.");
-    expect(wrapper.find("button.btn-primary").text()).toBe("New account");
+    expect(wrapper.find('button.btn-primary').text()).toBe('New account');
   });
 
-  it("lists banks and accounts, with closed badges and a no-accounts message", async () => {
+  it('lists banks and accounts, with closed badges and a no-accounts message', async () => {
     mockData(
-      [bank("b1", "Chase"), bank("b2", "Old Bank", true)],
-      [account("a1", "b1", "Checking")],
+      [bank('b1', 'Chase'), bank('b2', 'Old Bank', true)],
+      [account('a1', 'b1', 'Checking')],
     );
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const rows = wrapper.findAll('[data-testid="bank-row"]');
     expect(rows).toHaveLength(2);
-    expect(rows[0].text()).toContain("Chase");
-    expect(rows[0].find('[data-testid="account-row"]').text()).toContain("Checking (USD)");
-    expect(rows[1].text()).toContain("Old Bank");
-    expect(rows[1].find(".badge").text()).toBe("Closed");
-    expect(rows[1].text()).toContain("No account");
+    expect(rows[0].text()).toContain('Chase');
+    expect(rows[0].find('[data-testid="account-row"]').text()).toContain('Checking (USD)');
+    expect(rows[1].text()).toContain('Old Bank');
+    expect(rows[1].find('.badge').text()).toBe('Closed');
+    expect(rows[1].text()).toContain('No account');
   });
 
-  it("shows the bank-choice step, then account creation scoped to the chosen bank; cancel returns to the button", async () => {
-    mockData([bank("b1", "Chase")], []);
-    await router.push({ name: "accounts" });
+  it('shows the bank-choice step, then account creation scoped to the chosen bank; cancel returns to the button', async () => {
+    mockData([bank('b1', 'Chase')], []);
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    await wrapper.find("button.btn-primary").trigger("click");
-    expect(wrapper.find("#account-bank-id").exists()).toBe(true);
+    await wrapper.find('button.btn-primary').trigger('click');
+    expect(wrapper.find('#account-bank-id').exists()).toBe(true);
 
-    await wrapper.find("#account-bank-id").setValue("b1");
+    await wrapper.find('#account-bank-id').setValue('b1');
     await submitAndSettle(wrapper);
     await flushPromises();
 
-    expect((wrapper.find("#account-bank").element as HTMLSelectElement).value).toBe("b1");
+    expect((wrapper.find('#account-bank').element as HTMLSelectElement).value).toBe('b1');
 
     // Scoped to the form: bank rows also carry a "btn-outline-secondary"
     // Edit button, so an unscoped selector would hit that one first.
-    await wrapper.find("form button.btn-outline-secondary").trigger("click");
-    expect(wrapper.find("#account-name").exists()).toBe(false);
-    expect(wrapper.find("button.btn-primary").exists()).toBe(true);
+    await wrapper.find('form button.btn-outline-secondary').trigger('click');
+    expect(wrapper.find('#account-name').exists()).toBe(false);
+    expect(wrapper.find('button.btn-primary').exists()).toBe(true);
   });
 
-  it("opens the bank-choice step via the ?start=bank-choice deep link", async () => {
-    mockData([bank("b1", "Chase")], []);
-    await router.push({ name: "accounts", query: { start: "bank-choice" } });
+  it('opens the bank-choice step via the ?start=bank-choice deep link', async () => {
+    mockData([bank('b1', 'Chase')], []);
+    await router.push({ name: 'accounts', query: { start: 'bank-choice' } });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
 
     // The deep-link watch only fires once banksQuery.data actually resolves,
     // which takes more hops than a single flushPromises() round — poll
     // instead (same reasoning as elsewhere in this suite).
     await vi.waitFor(() => {
-      if (!wrapper.find("#account-bank-id").exists()) throw new Error("not opened yet");
+      if (!wrapper.find('#account-bank-id').exists()) throw new Error('not opened yet');
     });
   });
 
-  it("opens account creation for the first active bank via the ?start=new-account deep link, and navigates on success", async () => {
-    mockData([bank("b1", "Chase")], []);
+  it('opens account creation for the first active bank via the ?start=new-account deep link, and navigates on success', async () => {
+    mockData([bank('b1', 'Chase')], []);
     apiClient.POST.mockResolvedValueOnce({
-      data: { account: { id: "new-account" } },
+      data: { account: { id: 'new-account' } },
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts", query: { start: "new-account" } });
+    await router.push({ name: 'accounts', query: { start: 'new-account' } });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await vi.waitFor(() => {
-      if (!wrapper.find("#account-bank").exists()) throw new Error("not opened yet");
+      if (!wrapper.find('#account-bank').exists()) throw new Error('not opened yet');
     });
 
-    expect((wrapper.find("#account-bank").element as HTMLSelectElement).value).toBe("b1");
+    expect((wrapper.find('#account-bank').element as HTMLSelectElement).value).toBe('b1');
 
-    await wrapper.find("#account-name").setValue("Checking");
-    await wrapper.find("#account-currency").setValue("USD");
-    const pushSpy = vi.spyOn(router, "push").mockResolvedValue(undefined);
+    await wrapper.find('#account-name').setValue('Checking');
+    await wrapper.find('#account-currency').setValue('USD');
+    const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
     await submitAndSettle(wrapper);
 
     expect(pushSpy).toHaveBeenCalledWith({
-      name: "operations",
-      params: { accountId: "new-account" },
+      name: 'operations',
+      params: { accountId: 'new-account' },
     });
   });
 
   it("edits a bank's name", async () => {
-    mockData([bank("b1", "Chase")], []);
+    mockData([bank('b1', 'Chase')], []);
     apiClient.PATCH.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.find("button").trigger("click"); // Edit is listed first
-    await chaseRow.find("input").setValue("Chase Bank");
+    await chaseRow.find('button').trigger('click'); // Edit is listed first
+    await chaseRow.find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
-    expect(apiClient.PATCH).toHaveBeenCalledWith("/banks/{id}", {
-      params: { path: { id: "b1" } },
-      body: { name: "Chase Bank" },
+    expect(apiClient.PATCH).toHaveBeenCalledWith('/banks/{id}', {
+      params: { path: { id: 'b1' } },
+      body: { name: 'Chase Bank' },
     });
-    expect(wrapper.text()).toContain("Bank saved");
-    expect(chaseRow.find("input").exists()).toBe(false);
+    expect(wrapper.text()).toContain('Bank saved');
+    expect(chaseRow.find('input').exists()).toBe(false);
   });
 
-  it("closes a bank once the confirmation is accepted", async () => {
-    mockData([bank("b1", "Chase")], []);
+  it('closes a bank once the confirmation is accepted', async () => {
+    mockData([bank('b1', 'Chase')], []);
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.findAll("button")[1].trigger("click"); // Edit, Close, Delete
+    await chaseRow.findAll('button')[1].trigger('click'); // Edit, Close, Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/banks/{id}/close", {
-      params: { path: { id: "b1" } },
+    expect(apiClient.POST).toHaveBeenCalledWith('/banks/{id}/close', {
+      params: { path: { id: 'b1' } },
     });
-    expect(wrapper.text()).toContain("Bank closed");
+    expect(wrapper.text()).toContain('Bank closed');
   });
 
   it("doesn't delete a bank when the confirmation is cancelled", async () => {
-    mockData([bank("b1", "Chase")], []);
-    await router.push({ name: "accounts" });
+    mockData([bank('b1', 'Chase')], []);
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.findAll("button")[2].trigger("click"); // Edit, Close, Delete
+    await chaseRow.findAll('button')[2].trigger('click'); // Edit, Close, Delete
     useConfirm().settle(false);
     await flushPromises();
 
@@ -218,257 +218,257 @@ describe("AccountsPage", () => {
   });
 
   it("navigates to an account's operations when its row is clicked", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
-    await router.push({ name: "accounts" });
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
-    const pushSpy = vi.spyOn(router, "push").mockResolvedValue(undefined);
+    const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
     // The click handler is on the row's inner div, not the <li> itself —
     // a click dispatched on the <li> wouldn't bubble down to it.
-    await wrapper.find('[data-testid="account-row"] > div').trigger("click");
-    expect(pushSpy).toHaveBeenCalledWith({ name: "operations", params: { accountId: "a1" } });
+    await wrapper.find('[data-testid="account-row"] > div').trigger('click');
+    expect(pushSpy).toHaveBeenCalledWith({ name: 'operations', params: { accountId: 'a1' } });
   });
 
   it("shows the API's error message when editing a bank's name fails", async () => {
-    mockData([bank("b1", "Chase")], []);
+    mockData([bank('b1', 'Chase')], []);
     apiClient.PATCH.mockResolvedValueOnce({
       data: undefined,
-      error: { message: "Name already used" },
+      error: { message: 'Name already used' },
       response: new Response(null, { status: 400 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.find("button").trigger("click"); // Edit
-    await chaseRow.find("input").setValue("Chase Bank");
+    await chaseRow.find('button').trigger('click'); // Edit
+    await chaseRow.find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Name already used");
-    expect(chaseRow.find("input").exists()).toBe(true); // stays in edit mode
+    expect(wrapper.text()).toContain('Name already used');
+    expect(chaseRow.find('input').exists()).toBe(true); // stays in edit mode
   });
 
-  it("falls back to a generic error toast when editing a bank fails without a message", async () => {
-    mockData([bank("b1", "Chase")], []);
+  it('falls back to a generic error toast when editing a bank fails without a message', async () => {
+    mockData([bank('b1', 'Chase')], []);
     apiClient.PATCH.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 500 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.find("button").trigger("click"); // Edit
-    await chaseRow.find("input").setValue("Chase Bank");
+    await chaseRow.find('button').trigger('click'); // Edit
+    await chaseRow.find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
   });
 
   it("cancels editing a bank's name without saving", async () => {
-    mockData([bank("b1", "Chase")], []);
-    await router.push({ name: "accounts" });
+    mockData([bank('b1', 'Chase')], []);
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.find("button").trigger("click"); // Edit
-    await chaseRow.find("button.btn-outline-secondary").trigger("click"); // Cancel
-    expect(chaseRow.find("input").exists()).toBe(false);
+    await chaseRow.find('button').trigger('click'); // Edit
+    await chaseRow.find('button.btn-outline-secondary').trigger('click'); // Cancel
+    expect(chaseRow.find('input').exists()).toBe(false);
     expect(apiClient.PATCH).not.toHaveBeenCalled();
   });
 
-  it("shows an error toast when closing a bank fails", async () => {
-    mockData([bank("b1", "Chase")], []);
+  it('shows an error toast when closing a bank fails', async () => {
+    mockData([bank('b1', 'Chase')], []);
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 500 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.findAll("button")[1].trigger("click"); // Edit, Close, Delete
+    await chaseRow.findAll('button')[1].trigger('click'); // Edit, Close, Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
   });
 
-  it("deletes a bank once the confirmation is accepted", async () => {
-    mockData([bank("b1", "Chase")], []);
+  it('deletes a bank once the confirmation is accepted', async () => {
+    mockData([bank('b1', 'Chase')], []);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.findAll("button")[2].trigger("click"); // Edit, Close, Delete
+    await chaseRow.findAll('button')[2].trigger('click'); // Edit, Close, Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(apiClient.DELETE).toHaveBeenCalledWith("/banks/{id}", {
-      params: { path: { id: "b1" } },
+    expect(apiClient.DELETE).toHaveBeenCalledWith('/banks/{id}', {
+      params: { path: { id: 'b1' } },
     });
-    expect(wrapper.text()).toContain("Bank deleted");
+    expect(wrapper.text()).toContain('Bank deleted');
   });
 
-  it("shows an error toast when deleting a bank fails", async () => {
-    mockData([bank("b1", "Chase")], []);
+  it('shows an error toast when deleting a bank fails', async () => {
+    mockData([bank('b1', 'Chase')], []);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 500 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
-    await chaseRow.findAll("button")[2].trigger("click"); // Edit, Close, Delete
+    await chaseRow.findAll('button')[2].trigger('click'); // Edit, Close, Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
   });
 
-  it("edits an account and closes the edit form once the update completes", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
+  it('edits an account and closes the edit form once the update completes', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.PATCH.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger("click"); // Edit
-    await wrapper.find("#account-name").setValue("Checking Plus");
+    await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger('click'); // Edit
+    await wrapper.find('#account-name').setValue('Checking Plus');
     await submitAndSettle(wrapper);
 
-    expect(apiClient.PATCH).toHaveBeenCalledWith("/accounts/{id}", {
-      params: { path: { id: "a1" } },
-      body: { name: "Checking Plus", bankId: "b1", currency: "USD" },
+    expect(apiClient.PATCH).toHaveBeenCalledWith('/accounts/{id}', {
+      params: { path: { id: 'a1' } },
+      body: { name: 'Checking Plus', bankId: 'b1', currency: 'USD' },
     });
-    expect(wrapper.find("#account-name").exists()).toBe(false); // edit form closed
+    expect(wrapper.find('#account-name').exists()).toBe(false); // edit form closed
   });
 
-  it("cancels editing an account without saving", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
-    await router.push({ name: "accounts" });
+  it('cancels editing an account without saving', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger("click"); // Edit
-    expect(wrapper.find("#account-name").exists()).toBe(true);
+    await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger('click'); // Edit
+    expect(wrapper.find('#account-name').exists()).toBe(true);
 
-    await wrapper.find(".account-edit-form button.btn-outline-secondary").trigger("click"); // Cancel
-    expect(wrapper.find("#account-name").exists()).toBe(false);
+    await wrapper.find('.account-edit-form button.btn-outline-secondary').trigger('click'); // Cancel
+    expect(wrapper.find('#account-name').exists()).toBe(false);
     expect(apiClient.PATCH).not.toHaveBeenCalled();
   });
 
-  it("closes an account once the confirmation is accepted", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
+  it('closes an account once the confirmation is accepted', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const buttons = wrapper.findAll('[data-testid="account-row"] button');
-    await buttons[1].trigger("click"); // Edit, Close, Delete
+    await buttons[1].trigger('click'); // Edit, Close, Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/accounts/{id}/close", {
-      params: { path: { id: "a1" } },
+    expect(apiClient.POST).toHaveBeenCalledWith('/accounts/{id}/close', {
+      params: { path: { id: 'a1' } },
     });
-    expect(wrapper.text()).toContain("Account closed");
+    expect(wrapper.text()).toContain('Account closed');
   });
 
-  it("shows an error toast when closing an account fails", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
+  it('shows an error toast when closing an account fails', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 500 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const buttons = wrapper.findAll('[data-testid="account-row"] button');
-    await buttons[1].trigger("click"); // Close
+    await buttons[1].trigger('click'); // Close
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
   });
 
-  it("deletes an account once the confirmation is accepted", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
+  it('deletes an account once the confirmation is accepted', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const buttons = wrapper.findAll('[data-testid="account-row"] button');
-    await buttons[2].trigger("click"); // Delete
+    await buttons[2].trigger('click'); // Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(apiClient.DELETE).toHaveBeenCalledWith("/accounts/{id}", {
-      params: { path: { id: "a1" } },
+    expect(apiClient.DELETE).toHaveBeenCalledWith('/accounts/{id}', {
+      params: { path: { id: 'a1' } },
     });
-    expect(wrapper.text()).toContain("Account deleted");
+    expect(wrapper.text()).toContain('Account deleted');
   });
 
-  it("shows an error toast when deleting an account fails", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
+  it('shows an error toast when deleting an account fails', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
       response: new Response(null, { status: 500 }),
     });
-    await router.push({ name: "accounts" });
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
 
     const buttons = wrapper.findAll('[data-testid="account-row"] button');
-    await buttons[2].trigger("click"); // Delete
+    await buttons[2].trigger('click'); // Delete
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
   });
 
   it("doesn't navigate when a control inside the account row is clicked", async () => {
-    mockData([bank("b1", "Chase")], [account("a1", "b1", "Checking")]);
-    await router.push({ name: "accounts" });
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    await router.push({ name: 'accounts' });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
     await flushPromises();
-    const pushSpy = vi.spyOn(router, "push").mockResolvedValue(undefined);
+    const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
     // This is the row's Edit button — clicking it must not also navigate.
-    await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger("click");
-    expect(pushSpy).not.toHaveBeenCalledWith({ name: "operations", params: { accountId: "a1" } });
+    await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger('click');
+    expect(pushSpy).not.toHaveBeenCalledWith({ name: 'operations', params: { accountId: 'a1' } });
   });
 });

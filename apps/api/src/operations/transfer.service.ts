@@ -8,10 +8,8 @@ import { PAYMENT_METHOD_ID } from '../db/seed-data';
 // The "Transfer" debit/credit payment methods — the only two that can carry
 // a pairing; flipping between them mirrors a transfer from one side to the
 // other.
-export const TRANSFER_DEBIT_PAYMENT_METHOD_ID: string =
-  PAYMENT_METHOD_ID.TRANSFER_DEBIT;
-export const TRANSFER_CREDIT_PAYMENT_METHOD_ID: string =
-  PAYMENT_METHOD_ID.TRANSFER_CREDIT;
+export const TRANSFER_DEBIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_DEBIT;
+export const TRANSFER_CREDIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_CREDIT;
 export const TRANSFER_PAYMENT_METHOD_IDS: string[] = [
   TRANSFER_DEBIT_PAYMENT_METHOD_ID,
   TRANSFER_CREDIT_PAYMENT_METHOD_ID,
@@ -20,9 +18,7 @@ export const TRANSFER_PAYMENT_METHOD_IDS: string[] = [
 // Any object exposing the query-builder surface: the plain db handle or an
 // open transaction — every method below accepts either so callers can chain
 // pairing side effects into their own transaction.
-type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (
-  tx: infer T,
-) => unknown
+type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (tx: infer T) => unknown
   ? T
   : never;
 type Db = NodePgDatabase | Executor;
@@ -86,10 +82,7 @@ export function classifyPairingEdit(
       ? { action: 'detach', mirrorOperationId: previous.mirrorOperationId }
       : { action: 'none' };
   }
-  if (
-    previous.mirrorOperationId !== null &&
-    previous.targetAccountId === desiredTargetAccountId
-  ) {
+  if (previous.mirrorOperationId !== null && previous.targetAccountId === desiredTargetAccountId) {
     return { action: 'refresh', mirrorOperationId: previous.mirrorOperationId };
   }
   return previous.mirrorOperationId !== null
@@ -134,12 +127,7 @@ export class TransferService {
     if (!row || row.bank.memberId !== source.memberId) {
       throw new BadRequestException('Invalid transfer account.');
     }
-    if (
-      row.bank.deleted ||
-      row.account.deleted ||
-      row.bank.closed ||
-      row.account.closed
-    ) {
+    if (row.bank.deleted || row.account.deleted || row.bank.closed || row.account.closed) {
       throw new BadRequestException('Transfer account is not active.');
     }
     if (row.account.currency !== source.sourceCurrency) {
@@ -213,9 +201,7 @@ export class TransferService {
           .update(operation)
           .set({ transferOperationId: null, transferAccountId: null })
           .where(eq(operation.id, source.sourceOperationId));
-        await db
-          .delete(operation)
-          .where(eq(operation.id, edit.mirrorOperationId));
+        await db.delete(operation).where(eq(operation.id, edit.mirrorOperationId));
         return null;
 
       case 'refresh':
@@ -256,10 +242,7 @@ export class TransferService {
     previous: Pick<PreviousPairing, 'targetAccountId'>,
     desiredTargetAccountId: string | null,
   ): Promise<void> {
-    if (
-      desiredTargetAccountId === null ||
-      desiredTargetAccountId === previous.targetAccountId
-    ) {
+    if (desiredTargetAccountId === null || desiredTargetAccountId === previous.targetAccountId) {
       return;
     }
     await this.requireEligibleTarget(db, desiredTargetAccountId, source);
@@ -292,10 +275,7 @@ export class TransferService {
   // Soft-deleting an account converts every transfer reference pointing at
   // it — on other accounts' operations and schedulers — to the External
   // placeholder: a one-time, irreversible conversion at deletion time.
-  async convertAccountReferencesToExternal(
-    db: Db,
-    accountId: string,
-  ): Promise<void> {
+  async convertAccountReferencesToExternal(db: Db, accountId: string): Promise<void> {
     await db
       .update(operation)
       .set({ transferAccountId: null, transferOperationId: null })

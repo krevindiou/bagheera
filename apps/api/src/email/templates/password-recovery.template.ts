@@ -2,10 +2,7 @@ import { EmailMessage } from '../email-message';
 import { emailCatalog } from '../i18n';
 
 /** Forgot-password email. */
-export function passwordRecoveryEmail(
-  to: string,
-  changePasswordLink: string,
-): EmailMessage {
+export function passwordRecoveryEmail(to: string, changePasswordLink: string): EmailMessage {
   const t = emailCatalog().passwordRecovery;
   return {
     to,

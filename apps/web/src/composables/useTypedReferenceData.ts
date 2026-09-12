@@ -1,9 +1,9 @@
-import { computed, watch, type Ref } from "vue";
+import { computed, watch, type Ref } from 'vue';
 import {
   groupCategories,
   type Category,
   type PaymentMethod,
-} from "../pages/operations/operations.types";
+} from '../pages/operations/operations.types';
 
 /**
  * Category/payment-method choices filtered to the selected debit/credit
@@ -20,7 +20,7 @@ import {
  * its own array selections down instead.
  */
 export function useTypedReferenceData(
-  type: Ref<"debit" | "credit">,
+  type: Ref<'debit' | 'credit'>,
   categories: () => Category[],
   paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {

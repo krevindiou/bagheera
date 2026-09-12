@@ -13,11 +13,7 @@ declare module 'express-session' {
  * stamps `createdAt`; once that's more than 24h in the past the session is
  * destroyed regardless of recent activity.
  */
-export function absoluteSessionTtl(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
+export function absoluteSessionTtl(req: Request, res: Response, next: NextFunction): void {
   if (!req.session) {
     next();
     return;

@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Patch,
-  Post,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
@@ -30,10 +20,7 @@ export class BankController {
 
   @Post('choice')
   @HttpCode(200)
-  choose(
-    @Req() req: Request,
-    @Body() dto: ChooseBankDto,
-  ): Promise<ChooseBankResult> {
+  choose(@Req() req: Request, @Body() dto: ChooseBankDto): Promise<ChooseBankResult> {
     return this.banks.choose(req, dto);
   }
 

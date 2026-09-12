@@ -1,5 +1,4 @@
-export type ErrorCategory =
-  'validation_error' | 'access_denied' | 'not_found' | 'error';
+export type ErrorCategory = 'validation_error' | 'access_denied' | 'not_found' | 'error';
 
 export interface ErrorResponseBody {
   statusCode: number;

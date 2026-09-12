@@ -10,10 +10,7 @@ type Db = ReturnType<typeof drizzle>;
 // Idempotent: re-running the seed leaves existing rows (matched by
 // name + parent) untouched instead of duplicating them.
 export async function seedDatabase(db: Db): Promise<void> {
-  await db
-    .insert(paymentMethod)
-    .values(paymentMethodSeeds)
-    .onConflictDoNothing();
+  await db.insert(paymentMethod).values(paymentMethodSeeds).onConflictDoNothing();
 
   await insertCategories(db, categorySeeds, null);
 }
@@ -30,9 +27,7 @@ async function insertCategories(
       .where(
         and(
           eq(category.name, seed.name),
-          parentId === null
-            ? isNull(category.parentId)
-            : eq(category.parentId, parentId),
+          parentId === null ? isNull(category.parentId) : eq(category.parentId, parentId),
         ),
       )
       .limit(1);

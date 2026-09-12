@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { Line } from "vue-chartjs";
+import { computed } from 'vue';
+import { Line } from 'vue-chartjs';
 import {
   CategoryScale,
   Chart as ChartJS,
@@ -13,7 +13,7 @@ import {
   type ChartData,
   type ChartOptions,
   type TooltipItem,
-} from "chart.js";
+} from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Legend, Tooltip);
 
@@ -45,7 +45,7 @@ const props = defineProps<{
 const hasData = computed(() => props.series.some((series) => series.points.length > 0));
 
 function formatPeriodLabel(period: string): string {
-  const [year, month] = period.split("-");
+  const [year, month] = period.split('-');
   return `${year}-${Number(month)}`;
 }
 
@@ -57,7 +57,7 @@ const labels = computed(() => {
   return reference ? reference.points.map((point) => formatPeriodLabel(point.period)) : [];
 });
 
-const chartData = computed<ChartData<"line">>(() => ({
+const chartData = computed<ChartData<'line'>>(() => ({
   labels: labels.value,
   datasets: props.series.map((series) => ({
     label: series.label,
@@ -69,7 +69,7 @@ const chartData = computed<ChartData<"line">>(() => ({
   })),
 }));
 
-const chartOptions = computed<ChartOptions<"line">>(() => ({
+const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   scales: {
@@ -82,7 +82,7 @@ const chartOptions = computed<ChartOptions<"line">>(() => ({
     legend: { display: true },
     tooltip: {
       callbacks: {
-        label: (item: TooltipItem<"line">) => `${item.formattedValue} (${item.label})`,
+        label: (item: TooltipItem<'line'>) => `${item.formattedValue} (${item.label})`,
       },
     },
   },

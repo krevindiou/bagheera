@@ -1,7 +1,7 @@
-import { randomUUID } from "node:crypto";
-import { test as base, expect, type Locator, type Page } from "@playwright/test";
-import { addVirtualAuthenticator } from "./webauthn";
-import { keyFromLink, waitForEmailLink } from "./mailpit";
+import { randomUUID } from 'node:crypto';
+import { test as base, expect, type Locator, type Page } from '@playwright/test';
+import { addVirtualAuthenticator } from './webauthn';
+import { keyFromLink, waitForEmailLink } from './mailpit';
 
 export { expect };
 
@@ -12,7 +12,7 @@ export { expect };
 // on rendered text alone, which nests inside a few wrapping elements for a
 // toast) can't accidentally match more than one real element.
 export function alertWithText(page: Page, text: string): Locator {
-  return page.getByRole("alert").filter({ hasText: text });
+  return page.getByRole('alert').filter({ hasText: text });
 }
 
 // One randomized identifier per test, never a fixed literal — the whole
@@ -23,10 +23,10 @@ export function randomEmail(): string {
   return `e2e-${randomUUID()}@example.test`;
 }
 
-export const TEST_PASSWORD = "Correct-Horse-Battery-Staple-1!";
+export const TEST_PASSWORD = 'Correct-Horse-Battery-Staple-1!';
 // Registration needs a 2-letter country code (see auth.schemas.ts); the
 // actual country has no bearing on anything under test.
-export const REGISTER_COUNTRY = "US";
+export const REGISTER_COUNTRY = 'US';
 
 /**
  * The API's CSRF protection (double-submit, apps/api/src/session/csrf.ts)
@@ -37,7 +37,7 @@ export const REGISTER_COUNTRY = "US";
  * the same way it does.
  */
 export async function fetchCsrfToken(page: Page): Promise<string> {
-  const res = await page.request.get("/auth/csrf-token");
+  const res = await page.request.get('/auth/csrf-token');
   const body = (await res.json()) as { csrfToken: string };
   return body.csrfToken;
 }
@@ -65,14 +65,14 @@ export async function registerAndActivate(
   const email = randomEmail();
   const password = TEST_PASSWORD;
 
-  await page.request.post("/members/register", {
-    headers: { "x-csrf-token": await fetchCsrfToken(page) },
+  await page.request.post('/members/register', {
+    headers: { 'x-csrf-token': await fetchCsrfToken(page) },
     data: { email, country: REGISTER_COUNTRY, password, passwordConfirmation: password },
   });
 
   const activationLink = await waitForEmailLink(email);
-  await page.request.post("/members/activate", {
-    headers: { "x-csrf-token": await fetchCsrfToken(page) },
+  await page.request.post('/members/activate', {
+    headers: { 'x-csrf-token': await fetchCsrfToken(page) },
     data: { key: keyFromLink(activationLink) },
   });
 
@@ -81,8 +81,8 @@ export async function registerAndActivate(
 
 async function signInAsFreshMember(page: Page): Promise<{ email: string; password: string }> {
   const member = await registerAndActivate(page);
-  await page.request.post("/auth/sign-in", {
-    headers: { "x-csrf-token": await fetchCsrfToken(page) },
+  await page.request.post('/auth/sign-in', {
+    headers: { 'x-csrf-token': await fetchCsrfToken(page) },
     data: { email: member.email, password: member.password },
   });
   return member;
@@ -100,17 +100,17 @@ interface AccountWithBank {
  * that UI is accounts.spec.ts's own subject; every other domain spec just
  * needs an account to already exist. */
 async function createAccountWithBank(page: Page): Promise<AccountWithBank> {
-  const currency = "USD";
+  const currency = 'USD';
   const csrf1 = await fetchCsrfToken(page);
-  const bankRes = await page.request.post("/banks/choice", {
-    headers: { "x-csrf-token": csrf1 },
+  const bankRes = await page.request.post('/banks/choice', {
+    headers: { 'x-csrf-token': csrf1 },
     data: { name: `E2E bank ${randomUUID().slice(0, 8)}` },
   });
   const bank = (await bankRes.json()) as { id: string };
 
   const csrf2 = await fetchCsrfToken(page);
-  const accountRes = await page.request.post("/accounts", {
-    headers: { "x-csrf-token": csrf2 },
+  const accountRes = await page.request.post('/accounts', {
+    headers: { 'x-csrf-token': csrf2 },
     data: {
       bankId: bank.id,
       name: `E2E account ${randomUUID().slice(0, 8)}`,

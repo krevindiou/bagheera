@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { useConfirm } from "../../composables/useConfirm";
-import { useToast } from "../../composables/useToast";
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { useConfirm } from '../../composables/useConfirm';
+import { useToast } from '../../composables/useToast';
 
 const props = defineProps<{ selectedIds: string[] }>();
 const emit = defineEmits<{ done: [] }>();
@@ -15,15 +15,15 @@ async function batchDelete() {
   if (props.selectedIds.length === 0) return;
   if (!(await confirm())) return;
 
-  const { response } = await apiClient.POST("/reports/batch/delete", {
+  const { response } = await apiClient.POST('/reports/batch/delete', {
     body: { ids: props.selectedIds },
   });
   if (!response.ok) {
-    toast(t("reports.genericError"), "error");
+    toast(t('reports.genericError'), 'error');
     return;
   }
-  toast(t("reports.batch.deleted"), "success");
-  emit("done");
+  toast(t('reports.batch.deleted'), 'success');
+  emit('done');
 }
 </script>
 
@@ -35,7 +35,7 @@ async function batchDelete() {
       data-testid="report-batch-delete"
       @click="batchDelete"
     >
-      {{ $t("reports.batch.delete") }}
+      {{ $t('reports.batch.delete') }}
     </button>
   </div>
 </template>

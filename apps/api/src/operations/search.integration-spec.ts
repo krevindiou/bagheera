@@ -1,10 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -44,10 +41,7 @@ async function createOperation(
     type,
     thirdParty: overrides.thirdParty ?? 'X',
     amount: overrides.amount ?? 10,
-    paymentMethodId:
-      type === 'debit'
-        ? PAYMENT_METHOD_ID.CREDIT_CARD
-        : PAYMENT_METHOD_ID.DEPOSIT,
+    paymentMethodId: type === 'debit' ? PAYMENT_METHOD_ID.CREDIT_CARD : PAYMENT_METHOD_ID.DEPOSIT,
     valueDate: overrides.valueDate ?? '2026-01-01',
     reconciled: overrides.reconciled,
   });
@@ -106,10 +100,7 @@ describe('operations search', () => {
     expect(recallBody.criteria.thirdParty).toBe('grocery');
 
     // Clear: recall now returns everything, unfiltered.
-    const clearRes = await mutate(
-      'delete',
-      `/operations/search?accountId=${accountId}`,
-    );
+    const clearRes = await mutate('delete', `/operations/search?accountId=${accountId}`);
     expect(clearRes.status).toBe(200);
 
     const afterClear = await agent
@@ -154,22 +145,16 @@ describe('operations search', () => {
     const { mutate: ownerMutate } = await seedSignedInMember(app);
     const { accountId } = await createAccount(ownerMutate);
 
-    const { agent: attackerAgent, mutate: attackerMutate } =
-      await seedSignedInMember(app);
+    const { agent: attackerAgent, mutate: attackerMutate } = await seedSignedInMember(app);
 
     const searchRes = await attackerMutate('post', '/operations/search', {
       accountId,
     });
     expect(searchRes.status).toBe(404);
 
-    await attackerAgent
-      .get(`/operations/search?accountId=${accountId}`)
-      .expect(404);
+    await attackerAgent.get(`/operations/search?accountId=${accountId}`).expect(404);
 
-    const clearRes = await attackerMutate(
-      'delete',
-      `/operations/search?accountId=${accountId}`,
-    );
+    const clearRes = await attackerMutate('delete', `/operations/search?accountId=${accountId}`);
     expect(clearRes.status).toBe(404);
   });
 });

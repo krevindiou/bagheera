@@ -1,10 +1,4 @@
-import {
-  Global,
-  Inject,
-  Logger,
-  Module,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { Global, Inject, Logger, Module, OnModuleDestroy } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
@@ -26,17 +20,14 @@ const logger = new Logger('DbModule');
         });
         // Idle-client errors (e.g. DB restart) are otherwise unhandled and
         // crash the process; log and let the pool recycle the connection.
-        pool.on('error', (err) =>
-          logger.error('Idle Postgres client error', err),
-        );
+        pool.on('error', (err) => logger.error('Idle Postgres client error', err));
         return pool;
       },
     },
     {
       provide: DRIZZLE,
       inject: [PG_POOL],
-      useFactory: (pool: Pool): NodePgDatabase<typeof schema> =>
-        drizzle(pool, { schema }),
+      useFactory: (pool: Pool): NodePgDatabase<typeof schema> => drizzle(pool, { schema }),
     },
   ],
   exports: [DRIZZLE],

@@ -25,12 +25,8 @@ describe('GET /auth/csrf-token', () => {
     // exists).
     const res = await request(app.getHttpServer()).get('/auth/csrf-token');
     expect(res.status).toBe(200);
-    expect(typeof (res.body as { csrfToken?: unknown }).csrfToken).toBe(
-      'string',
-    );
-    expect(
-      (res.body as { csrfToken: string }).csrfToken.length,
-    ).toBeGreaterThan(0);
+    expect(typeof (res.body as { csrfToken?: unknown }).csrfToken).toBe('string');
+    expect((res.body as { csrfToken: string }).csrfToken.length).toBeGreaterThan(0);
   });
 
   it("keeps a fresh agent's very first-ever session alive for the next request (csrfIssued persistence)", async () => {

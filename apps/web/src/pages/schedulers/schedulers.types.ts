@@ -15,7 +15,7 @@ export interface Scheduler {
   reconciled: boolean;
   notes: string;
   limitDate: string | null;
-  frequencyUnit: "day" | "week" | "month" | "year";
+  frequencyUnit: 'day' | 'week' | 'month' | 'year';
   frequencyValue: number;
   active: boolean;
 }

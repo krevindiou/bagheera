@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { errorMessage } from "../../api/errorMessage";
-import { useToast } from "../../composables/useToast";
-import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
-import PasswordInput from "../../components/PasswordInput.vue";
-import { changePasswordSchema, type ChangePasswordForm } from "./settings.schemas";
-import ToastContainer from "../../components/ToastContainer.vue";
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
+import { useToast } from '../../composables/useToast';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
+import PasswordInput from '../../components/PasswordInput.vue';
+import { changePasswordSchema, type ChangePasswordForm } from './settings.schemas';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -17,45 +17,45 @@ const { defineField, handleSubmit, errors, isSubmitting, resetForm, setFieldErro
   useForm<ChangePasswordForm>({
     validationSchema: toTypedSchema(changePasswordSchema),
     initialValues: {
-      currentPassword: "",
-      newPassword: "",
-      newPasswordConfirmation: "",
+      currentPassword: '',
+      newPassword: '',
+      newPasswordConfirmation: '',
     },
   });
-const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
-const [newPassword, newPasswordAttrs] = defineField("newPassword");
+const [currentPassword, currentPasswordAttrs] = defineField('currentPassword');
+const [newPassword, newPasswordAttrs] = defineField('newPassword');
 const [newPasswordConfirmation, newPasswordConfirmationAttrs] =
-  defineField("newPasswordConfirmation");
+  defineField('newPasswordConfirmation');
 
 const onSubmit = handleSubmit(async (values) => {
-  const { error, response } = await apiClient.POST("/auth/change-password", {
+  const { error, response } = await apiClient.POST('/auth/change-password', {
     body: values,
   });
 
   if (!response.ok) {
-    const message = errorMessage(error) ?? t("settings.password.genericError");
-    if (message === "Current password is invalid.") {
-      setFieldError("currentPassword", message);
+    const message = errorMessage(error) ?? t('settings.password.genericError');
+    if (message === 'Current password is invalid.') {
+      setFieldError('currentPassword', message);
       return;
     }
-    toast(message, "error");
+    toast(message, 'error');
     return;
   }
 
   resetForm();
-  toast(t("settings.password.success"), "success");
+  toast(t('settings.password.success'), 'success');
 });
 </script>
 
 <template>
   <div class="container py-5" style="max-width: 480px">
-    <h1>{{ $t("settings.password.title") }}</h1>
+    <h1>{{ $t('settings.password.title') }}</h1>
     <ToastContainer />
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="password-current">{{
-          $t("settings.password.currentPassword")
+          $t('settings.password.currentPassword')
         }}</label>
         <PasswordInput
           id="password-current"
@@ -66,16 +66,16 @@ const onSubmit = handleSubmit(async (values) => {
         />
         <div v-if="errors.currentPassword" class="invalid-feedback">
           {{
-            errors.currentPassword === "Current password is invalid."
+            errors.currentPassword === 'Current password is invalid.'
               ? errors.currentPassword
-              : $t("auth.validation.required")
+              : $t('auth.validation.required')
           }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="password-new">{{
-          $t("settings.password.newPassword")
+          $t('settings.password.newPassword')
         }}</label>
         <PasswordInput
           id="password-new"
@@ -85,13 +85,13 @@ const onSubmit = handleSubmit(async (values) => {
         />
         <PasswordStrengthMeter :password="newPassword ?? ''" />
         <div v-if="errors.newPassword" class="invalid-feedback">
-          {{ $t("auth.validation.passwordLength") }}
+          {{ $t('auth.validation.passwordLength') }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="password-new-confirmation">
-          {{ $t("settings.password.newPasswordConfirmation") }}
+          {{ $t('settings.password.newPasswordConfirmation') }}
         </label>
         <PasswordInput
           id="password-new-confirmation"
@@ -100,12 +100,12 @@ const onSubmit = handleSubmit(async (values) => {
           :class="{ 'is-invalid': errors.newPasswordConfirmation }"
         />
         <div v-if="errors.newPasswordConfirmation" class="invalid-feedback">
-          {{ $t("auth.validation.passwordMismatch") }}
+          {{ $t('auth.validation.passwordMismatch') }}
         </div>
       </div>
 
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
-        {{ $t("settings.password.submit") }}
+        {{ $t('settings.password.submit') }}
       </button>
     </form>
   </div>

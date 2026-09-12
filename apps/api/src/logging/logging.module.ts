@@ -17,11 +17,7 @@ import { LoggerModule } from 'nestjs-pino';
             ? { target: 'pino-pretty', options: { singleLine: true } }
             : undefined,
         redact: {
-          paths: [
-            'req.headers.cookie',
-            'req.headers.authorization',
-            'res.headers["set-cookie"]',
-          ],
+          paths: ['req.headers.cookie', 'req.headers.authorization', 'res.headers["set-cookie"]'],
           remove: true,
         },
         autoLogging: { ignore: (req) => req.url === '/health' },

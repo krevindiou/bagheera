@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
-import { apiClient } from "../../api/client";
-import { useSelection } from "../../composables/useSelection";
-import type { Account, Bank } from "../accounts/accounts.types";
-import { formatMoney } from "../operations/money";
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { apiClient } from '../../api/client';
+import { useSelection } from '../../composables/useSelection';
+import type { Account, Bank } from '../accounts/accounts.types';
+import { formatMoney } from '../operations/money';
 import {
   categoryLabel,
   paymentMethodIcon,
   paymentMethodName,
-} from "../operations/operations.types";
-import type { Category, PaymentMethod } from "../operations/operations.types";
-import SchedulerForm from "./SchedulerForm.vue";
-import BatchActions from "./batch.vue";
-import type { Scheduler, SchedulerList } from "./schedulers.types";
-import ToastContainer from "../../components/ToastContainer.vue";
+} from '../operations/operations.types';
+import type { Category, PaymentMethod } from '../operations/operations.types';
+import SchedulerForm from './SchedulerForm.vue';
+import BatchActions from './batch.vue';
+import type { Scheduler, SchedulerList } from './schedulers.types';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -32,9 +32,9 @@ const editingScheduler = ref<Scheduler | null>(null);
 const { selectedIds, selectedIdList, toggleSelected } = useSelection();
 
 const accountsQuery = useQuery({
-  queryKey: ["accounts"],
+  queryKey: ['accounts'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/accounts");
+    const { data } = await apiClient.GET('/accounts');
     return (data as Account[] | undefined) ?? [];
   },
 });
@@ -42,9 +42,9 @@ const accounts = computed(() => accountsQuery.data.value ?? []);
 const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
 
 const banksQuery = useQuery({
-  queryKey: ["banks"],
+  queryKey: ['banks'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/banks");
+    const { data } = await apiClient.GET('/banks');
     return (data as Bank[] | undefined) ?? [];
   },
 });
@@ -59,27 +59,27 @@ const isAccountFullyActive = computed(
 );
 
 const categoriesQuery = useQuery({
-  queryKey: ["categories"],
+  queryKey: ['categories'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/reference-data/categories");
+    const { data } = await apiClient.GET('/reference-data/categories');
     return (data as Category[] | undefined) ?? [];
   },
 });
 const categories = computed(() => categoriesQuery.data.value ?? []);
 
 const paymentMethodsQuery = useQuery({
-  queryKey: ["payment-methods"],
+  queryKey: ['payment-methods'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/reference-data/payment-methods");
+    const { data } = await apiClient.GET('/reference-data/payment-methods');
     return (data as PaymentMethod[] | undefined) ?? [];
   },
 });
 const paymentMethods = computed(() => paymentMethodsQuery.data.value ?? []);
 
 const schedulersQuery = useQuery({
-  queryKey: computed(() => ["schedulers", accountId.value, page.value]),
+  queryKey: computed(() => ['schedulers', accountId.value, page.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET("/schedulers", {
+    const { data } = await apiClient.GET('/schedulers', {
       params: { query: { accountId: accountId.value, page: String(page.value) } },
     });
     return (data as SchedulerList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
@@ -101,12 +101,12 @@ const categoryNames = computed(
 );
 
 async function reloadSchedulers() {
-  await queryClient.invalidateQueries({ queryKey: ["schedulers", accountId.value, page.value] });
+  await queryClient.invalidateQueries({ queryKey: ['schedulers', accountId.value, page.value] });
 }
 
 function amountLabel(scheduler: Scheduler): string {
   const minorUnits = scheduler.debit ?? scheduler.credit ?? 0;
-  return formatMoney(minorUnits, account.value?.currency ?? "USD");
+  return formatMoney(minorUnits, account.value?.currency ?? 'USD');
 }
 
 function startCreate() {
@@ -134,13 +134,13 @@ function goToPage(newPage: number) {
 <template>
   <div class="container py-5">
     <h1>
-      {{ $t("schedulers.title") }}<span v-if="account"> — {{ account.name }}</span>
+      {{ $t('schedulers.title') }}<span v-if="account"> — {{ account.name }}</span>
     </h1>
     <ToastContainer />
 
     <BatchActions :selected-ids="selectedIdList" @done="reloadSchedulers" />
 
-    <p v-if="list.items.length === 0" class="text-muted">{{ $t("schedulers.empty") }}</p>
+    <p v-if="list.items.length === 0" class="text-muted">{{ $t('schedulers.empty') }}</p>
 
     <div v-else class="table-responsive">
       <table class="table" data-testid="schedulers-table">
@@ -148,12 +148,12 @@ function goToPage(newPage: number) {
           <tr>
             <th></th>
             <th></th>
-            <th>{{ $t("operations.thirdParty") }}</th>
-            <th class="text-end">{{ $t("operations.amount") }}</th>
-            <th>{{ $t("operations.paymentMethod") }}</th>
-            <th>{{ $t("operations.category") }}</th>
-            <th class="text-end">{{ $t("schedulers.every") }}</th>
-            <th>{{ $t("schedulers.frequencyUnit") }}</th>
+            <th>{{ $t('operations.thirdParty') }}</th>
+            <th class="text-end">{{ $t('operations.amount') }}</th>
+            <th>{{ $t('operations.paymentMethod') }}</th>
+            <th>{{ $t('operations.category') }}</th>
+            <th class="text-end">{{ $t('schedulers.every') }}</th>
+            <th>{{ $t('schedulers.frequencyUnit') }}</th>
             <th></th>
           </tr>
         </thead>
@@ -175,17 +175,17 @@ function goToPage(newPage: number) {
             </td>
             <td>
               <span :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')">{{
-                scheduler.active ? "▶" : "⏸"
+                scheduler.active ? '▶' : '⏸'
               }}</span>
             </td>
             <td>{{ scheduler.thirdParty }}</td>
             <td class="text-end" :class="scheduler.debit ? 'text-danger' : 'text-success'">
-              {{ scheduler.debit ? "-" : "+" }}{{ amountLabel(scheduler) }}
+              {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
             </td>
             <td :title="paymentMethodName(scheduler.paymentMethodId, paymentMethods)">
               {{ paymentMethodIcon(scheduler.paymentMethodId) }}
             </td>
-            <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : "" }}</td>
+            <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}</td>
             <td class="text-end">{{ scheduler.frequencyValue }}</td>
             <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
             <td @click.stop>
@@ -194,7 +194,7 @@ function goToPage(newPage: number) {
                 class="btn btn-sm btn-outline-secondary"
                 @click="startEdit(scheduler)"
               >
-                {{ $t("operations.edit") }}
+                {{ $t('operations.edit') }}
               </button>
             </td>
           </tr>
@@ -208,16 +208,16 @@ function goToPage(newPage: number) {
           :disabled="list.page <= 1"
           @click="goToPage(list.page - 1)"
         >
-          {{ $t("operations.previous") }}
+          {{ $t('operations.previous') }}
         </button>
-        <span>{{ $t("operations.pageStatus", { page: list.page, pageCount }) }}</span>
+        <span>{{ $t('operations.pageStatus', { page: list.page, pageCount }) }}</span>
         <button
           type="button"
           class="btn btn-sm btn-outline-secondary"
           :disabled="list.page >= pageCount"
           @click="goToPage(list.page + 1)"
         >
-          {{ $t("operations.next") }}
+          {{ $t('operations.next') }}
         </button>
       </nav>
     </div>
@@ -239,7 +239,7 @@ function goToPage(newPage: number) {
       class="btn btn-primary mt-3"
       @click="startCreate"
     >
-      {{ $t("schedulers.addScheduler") }}
+      {{ $t('schedulers.addScheduler') }}
     </button>
   </div>
 </template>

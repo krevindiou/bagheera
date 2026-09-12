@@ -75,9 +75,7 @@ export function parseEmailChangeToken(
   return parsed;
 }
 
-function isEmailChangeTokenPayload(
-  value: unknown,
-): value is EmailChangeTokenPayload {
+function isEmailChangeTokenPayload(value: unknown): value is EmailChangeTokenPayload {
   if (typeof value !== 'object' || value === null) {
     return false;
   }

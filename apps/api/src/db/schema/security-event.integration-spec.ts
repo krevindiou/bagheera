@@ -9,10 +9,7 @@ import { securityEvent } from './security-event';
 
 type Db = NodePgDatabase<typeof schema>;
 
-function insertSecurityEvent(
-  db: Db,
-  overrides: Partial<typeof securityEvent.$inferInsert> = {},
-) {
+function insertSecurityEvent(db: Db, overrides: Partial<typeof securityEvent.$inferInsert> = {}) {
   return db
     .insert(securityEvent)
     .values({

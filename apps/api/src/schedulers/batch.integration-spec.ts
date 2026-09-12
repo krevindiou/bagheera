@@ -3,10 +3,7 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { operation, scheduler, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -14,10 +11,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
@@ -77,10 +71,7 @@ describe('POST /schedulers/batch/delete', () => {
     expect(res.status).toBe(200);
     expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
 
-    const ownRows = await getDb(app)
-      .select()
-      .from(scheduler)
-      .where(eq(scheduler.id, ownId));
+    const ownRows = await getDb(app).select().from(scheduler).where(eq(scheduler.id, ownId));
     expect(ownRows).toHaveLength(0);
     const foreignRows = await getDb(app)
       .select()
@@ -120,10 +111,7 @@ describe('POST /schedulers/batch/delete', () => {
     });
     expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
 
-    const rows = await getDb(app)
-      .select()
-      .from(scheduler)
-      .where(eq(scheduler.id, id));
+    const rows = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
     expect(rows).toHaveLength(1);
   });
 });

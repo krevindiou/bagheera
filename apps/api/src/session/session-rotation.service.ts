@@ -20,9 +20,7 @@ export class SessionRotationService {
         Object.assign(req.session, data);
         req.session.save((saveErr) => {
           if (saveErr) {
-            reject(
-              saveErr instanceof Error ? saveErr : new Error(String(saveErr)),
-            );
+            reject(saveErr instanceof Error ? saveErr : new Error(String(saveErr)));
             return;
           }
           resolve();

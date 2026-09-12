@@ -1,5 +1,5 @@
-import { nextTick } from "vue";
-import { flushPromises, type VueWrapper } from "@vue/test-utils";
+import { nextTick } from 'vue';
+import { flushPromises, type VueWrapper } from '@vue/test-utils';
 
 /**
  * VeeValidate's zod validation resolves through several chained
@@ -9,7 +9,7 @@ import { flushPromises, type VueWrapper } from "@vue/test-utils";
  * flush + tick instead.
  */
 export async function submitAndSettle(wrapper: VueWrapper): Promise<void> {
-  await wrapper.find("form").trigger("submit");
+  await wrapper.find('form').trigger('submit');
   for (let i = 0; i < 5; i++) {
     await flushPromises();
     await new Promise((resolve) => setTimeout(resolve, 0));

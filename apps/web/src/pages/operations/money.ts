@@ -1,4 +1,4 @@
-import { toMajorUnits, type MinorUnits } from "@bagheera/money";
+import { toMajorUnits, type MinorUnits } from '@bagheera/money';
 
 // Mirrors apps/api/src/common/money.ts's scale, via the shared
 // @bagheera/money package both apps depend on — the API always returns
@@ -10,14 +10,14 @@ export function toDisplayAmount(minorUnits: number): number {
 
 // Only English (`en`) is enabled currently — currency/date formatting
 // follows the active locale, which is `en` for now.
-const LOCALE = "en";
+const LOCALE = 'en';
 
 // Money inputs display the account currency symbol as an input add-on.
 export function currencySymbol(currency: string): string {
   try {
-    const part = new Intl.NumberFormat(LOCALE, { style: "currency", currency })
+    const part = new Intl.NumberFormat(LOCALE, { style: 'currency', currency })
       .formatToParts(0)
-      .find((p) => p.type === "currency");
+      .find((p) => p.type === 'currency');
     return part?.value ?? currency;
   } catch {
     return currency;
@@ -43,7 +43,7 @@ export function formatMoney(
 ): string {
   const value = alreadyDisplayAmount ? amount : toDisplayAmount(amount);
   try {
-    return new Intl.NumberFormat(LOCALE, { style: "currency", currency }).format(value);
+    return new Intl.NumberFormat(LOCALE, { style: 'currency', currency }).format(value);
   } catch {
     // Unknown/invalid currency code — fall back to a plain decimal so the
     // page doesn't crash.

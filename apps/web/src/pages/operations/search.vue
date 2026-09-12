@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { AMOUNT_CEILING } from "@bagheera/money";
-import { ref, watch } from "vue";
-import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
-import { categoryLabel } from "./operations.types";
+import { AMOUNT_CEILING } from '@bagheera/money';
+import { ref, watch } from 'vue';
+import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
+import { categoryLabel } from './operations.types';
 import type {
   AmountComparatorOperator,
   Category,
   PaymentMethod,
   SearchCriteria,
-} from "./operations.types";
+} from './operations.types';
 
 const props = defineProps<{
   categories: Category[];
@@ -17,43 +17,43 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
 
-const type = ref<"debit" | "credit">("debit");
-const thirdParty = ref("");
+const type = ref<'debit' | 'credit'>('debit');
+const thirdParty = ref('');
 const categoryIds = ref<string[]>([]);
 const paymentMethodIds = ref<string[]>([]);
-const amountOperator1 = ref<"" | AmountComparatorOperator>("");
+const amountOperator1 = ref<'' | AmountComparatorOperator>('');
 const amountValue1 = ref<number | undefined>(undefined);
-const amountOperator2 = ref<"" | AmountComparatorOperator>("");
+const amountOperator2 = ref<'' | AmountComparatorOperator>('');
 const amountValue2 = ref<number | undefined>(undefined);
-const dateFrom = ref("");
-const dateTo = ref("");
-const notes = ref("");
+const dateFrom = ref('');
+const dateTo = ref('');
+const notes = ref('');
 // Three-state, default "Reconciled & not reconciled" (no filter).
-const reconciled = ref<"" | "true" | "false">("");
+const reconciled = ref<'' | 'true' | 'false'>('');
 
 // Hydrate the panel's fields from a remembered search recalled by the
 // parent (e.g. on mount/navigate-back), so a docked-open panel reflects
 // the criteria that are actually applied.
 function hydrate(criteria: SearchCriteria | undefined) {
   if (!criteria) return;
-  type.value = criteria.type ?? "debit";
-  thirdParty.value = criteria.thirdParty ?? "";
+  type.value = criteria.type ?? 'debit';
+  thirdParty.value = criteria.thirdParty ?? '';
   categoryIds.value = criteria.categoryIds ?? [];
   paymentMethodIds.value = criteria.paymentMethodIds ?? [];
-  amountOperator1.value = criteria.amountComparators?.[0]?.operator ?? "";
+  amountOperator1.value = criteria.amountComparators?.[0]?.operator ?? '';
   amountValue1.value = criteria.amountComparators?.[0]?.value;
-  amountOperator2.value = criteria.amountComparators?.[1]?.operator ?? "";
+  amountOperator2.value = criteria.amountComparators?.[1]?.operator ?? '';
   amountValue2.value = criteria.amountComparators?.[1]?.value;
-  dateFrom.value = criteria.dateFrom ?? "";
-  dateTo.value = criteria.dateTo ?? "";
-  notes.value = criteria.notes ?? "";
+  dateFrom.value = criteria.dateFrom ?? '';
+  dateTo.value = criteria.dateTo ?? '';
+  notes.value = criteria.notes ?? '';
   reconciled.value =
-    criteria.reconciled === undefined ? "" : criteria.reconciled ? "true" : "false";
+    criteria.reconciled === undefined ? '' : criteria.reconciled ? 'true' : 'false';
 }
 
 watch(() => props.initialCriteria, hydrate, { immediate: true });
 
-const AMOUNT_OPERATORS: AmountComparatorOperator[] = ["gt", "gte", "lt", "lte", "eq"];
+const AMOUNT_OPERATORS: AmountComparatorOperator[] = ['gt', 'gte', 'lt', 'lte', 'eq'];
 
 // Selecting the type rebuilds the category/payment-method choices to
 // show only entries of that type (previous selection preserved when
@@ -65,7 +65,7 @@ const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTyp
 );
 
 function buildCriteria(): SearchCriteria {
-  const amountComparators: SearchCriteria["amountComparators"] = [];
+  const amountComparators: SearchCriteria['amountComparators'] = [];
   // The second row is ignored unless the first has a value.
   if (amountOperator1.value && amountValue1.value !== undefined) {
     amountComparators.push({ operator: amountOperator1.value, value: amountValue1.value });
@@ -82,7 +82,7 @@ function buildCriteria(): SearchCriteria {
     dateFrom: dateFrom.value || undefined,
     dateTo: dateTo.value || undefined,
     notes: notes.value.trim() || undefined,
-    reconciled: reconciled.value === "" ? undefined : reconciled.value === "true",
+    reconciled: reconciled.value === '' ? undefined : reconciled.value === 'true',
   };
 }
 
@@ -96,36 +96,36 @@ watch(type, () => {
 });
 
 function onSubmit() {
-  emit("submit", buildCriteria());
+  emit('submit', buildCriteria());
 }
 
 function reset() {
-  type.value = "debit";
-  thirdParty.value = "";
+  type.value = 'debit';
+  thirdParty.value = '';
   categoryIds.value = [];
   paymentMethodIds.value = [];
-  amountOperator1.value = "";
+  amountOperator1.value = '';
   amountValue1.value = undefined;
-  amountOperator2.value = "";
+  amountOperator2.value = '';
   amountValue2.value = undefined;
-  dateFrom.value = "";
-  dateTo.value = "";
-  notes.value = "";
-  reconciled.value = "";
+  dateFrom.value = '';
+  dateTo.value = '';
+  notes.value = '';
+  reconciled.value = '';
 }
 
 function onClear() {
   reset();
-  emit("clear");
+  emit('clear');
 }
 </script>
 
 <template>
   <form data-testid="search-form" class="border rounded p-3 mb-3" @submit.prevent="onSubmit">
-    <h2 class="h6">{{ $t("operations.search.title") }}</h2>
+    <h2 class="h6">{{ $t('operations.search.title') }}</h2>
 
     <div class="mb-3">
-      <div class="form-label">{{ $t("operations.search.type") }}</div>
+      <div class="form-label">{{ $t('operations.search.type') }}</div>
       <div class="form-check form-check-inline">
         <input
           id="search-type-debit"
@@ -135,7 +135,7 @@ function onClear() {
           value="debit"
           autofocus
         />
-        <label class="form-check-label" for="search-type-debit">{{ $t("operations.debit") }}</label>
+        <label class="form-check-label" for="search-type-debit">{{ $t('operations.debit') }}</label>
       </div>
       <div class="form-check form-check-inline">
         <input
@@ -146,13 +146,13 @@ function onClear() {
           value="credit"
         />
         <label class="form-check-label" for="search-type-credit">{{
-          $t("operations.credit")
+          $t('operations.credit')
         }}</label>
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="search-third-party">{{ $t("operations.thirdParty") }}</label>
+      <label class="form-label" for="search-third-party">{{ $t('operations.thirdParty') }}</label>
       <input
         id="search-third-party"
         v-model="thirdParty"
@@ -163,7 +163,7 @@ function onClear() {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="search-categories">{{ $t("operations.category") }}</label>
+      <label class="form-label" for="search-categories">{{ $t('operations.category') }}</label>
       <select id="search-categories" v-model="categoryIds" multiple class="form-select">
         <template v-for="group in groupedCategories" :key="group.label ?? '_'">
           <template v-if="group.label === null">
@@ -182,7 +182,7 @@ function onClear() {
 
     <div class="mb-3">
       <label class="form-label" for="search-payment-methods">{{
-        $t("operations.paymentMethod")
+        $t('operations.paymentMethod')
       }}</label>
       <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
         <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
@@ -194,10 +194,10 @@ function onClear() {
     <div class="row mb-3">
       <div class="col">
         <label class="form-label" for="search-amount-operator-1">{{
-          $t("operations.search.amount")
+          $t('operations.search.amount')
         }}</label>
         <select id="search-amount-operator-1" v-model="amountOperator1" class="form-select">
-          <option value="">{{ $t("operations.search.any") }}</option>
+          <option value="">{{ $t('operations.search.any') }}</option>
           <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
             {{ $t(`operations.search.operators.${op}`) }}
           </option>
@@ -219,7 +219,7 @@ function onClear() {
     <div class="row mb-3">
       <div class="col">
         <select id="search-amount-operator-2" v-model="amountOperator2" class="form-select">
-          <option value="">{{ $t("operations.search.any") }}</option>
+          <option value="">{{ $t('operations.search.any') }}</option>
           <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
             {{ $t(`operations.search.operators.${op}`) }}
           </option>
@@ -241,34 +241,34 @@ function onClear() {
     <div class="row mb-3">
       <div class="col">
         <label class="form-label" for="search-date-from">{{
-          $t("operations.search.dateFrom")
+          $t('operations.search.dateFrom')
         }}</label>
         <input id="search-date-from" v-model="dateFrom" type="date" class="form-control" />
       </div>
       <div class="col">
-        <label class="form-label" for="search-date-to">{{ $t("operations.search.dateTo") }}</label>
+        <label class="form-label" for="search-date-to">{{ $t('operations.search.dateTo') }}</label>
         <input id="search-date-to" v-model="dateTo" type="date" class="form-control" />
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="search-notes">{{ $t("operations.notes") }}</label>
+      <label class="form-label" for="search-notes">{{ $t('operations.notes') }}</label>
       <input id="search-notes" v-model="notes" type="text" maxlength="128" class="form-control" />
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="search-reconciled">{{ $t("operations.reconciled") }}</label>
+      <label class="form-label" for="search-reconciled">{{ $t('operations.reconciled') }}</label>
       <select id="search-reconciled" v-model="reconciled" class="form-select">
-        <option value="">{{ $t("operations.search.both") }}</option>
-        <option value="true">{{ $t("operations.search.yes") }}</option>
-        <option value="false">{{ $t("operations.search.no") }}</option>
+        <option value="">{{ $t('operations.search.both') }}</option>
+        <option value="true">{{ $t('operations.search.yes') }}</option>
+        <option value="false">{{ $t('operations.search.no') }}</option>
       </select>
     </div>
 
     <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary">{{ $t("operations.search.submit") }}</button>
+      <button type="submit" class="btn btn-primary">{{ $t('operations.search.submit') }}</button>
       <button type="button" class="btn btn-outline-secondary" @click="onClear">
-        {{ $t("operations.search.clear") }}
+        {{ $t('operations.search.clear') }}
       </button>
     </div>
   </form>

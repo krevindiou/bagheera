@@ -7,10 +7,7 @@ import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import { csrfTokenFor, uniqueEmail } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
-import {
-  ActivationTokenPayload,
-  buildActivationToken,
-} from './activation-token';
+import { ActivationTokenPayload, buildActivationToken } from './activation-token';
 
 function messageOf(res: request.Response): string {
   return (res.body as { message: string }).message;
@@ -40,10 +37,7 @@ async function insertMemberRow(
 async function post(app: INestApplication<Server>, key: string) {
   const agent = request.agent(app.getHttpServer());
   const csrfToken = await csrfTokenFor(agent);
-  return agent
-    .post('/members/activate')
-    .set('x-csrf-token', csrfToken)
-    .send({ key });
+  return agent.post('/members/activate').set('x-csrf-token', csrfToken).send({ key });
 }
 
 describe('POST /members/activate', () => {
@@ -59,11 +53,7 @@ describe('POST /members/activate', () => {
 
   it('activates the member and records activation_used for a valid key', async () => {
     const row = await insertMemberRow(app);
-    const key = buildActivationToken(
-      app.get(CryptoService),
-      row.email,
-      row.activationTokenVersion,
-    );
+    const key = buildActivationToken(app.get(CryptoService), row.email, row.activationTokenVersion);
 
     const res = await post(app, key);
     expect(res.status).toBe(200);
@@ -79,10 +69,7 @@ describe('POST /members/activate', () => {
       .select()
       .from(securityEvent)
       .where(
-        and(
-          eq(securityEvent.eventType, 'activation_used'),
-          eq(securityEvent.memberId, row.id),
-        ),
+        and(eq(securityEvent.eventType, 'activation_used'), eq(securityEvent.memberId, row.id)),
       )
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
@@ -122,11 +109,7 @@ describe('POST /members/activate', () => {
 
   it('rejects a key for a member that is already active', async () => {
     const row = await insertMemberRow(app, { active: true });
-    const key = buildActivationToken(
-      app.get(CryptoService),
-      row.email,
-      row.activationTokenVersion,
-    );
+    const key = buildActivationToken(app.get(CryptoService), row.email, row.activationTokenVersion);
 
     const res = await post(app, key);
     expect(res.status).toBe(400);

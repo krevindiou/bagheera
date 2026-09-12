@@ -64,9 +64,7 @@ describe('buildCsrf', () => {
     const config = fakeConfig(jest.fn().mockReturnValue('a-csrf-secret'));
     buildCsrf(config as unknown as ConfigService);
     const { getSessionIdentifier } = lastConfigOptions();
-    expect(getSessionIdentifier({ session: { id: 'sess-1' } } as never)).toBe(
-      'sess-1',
-    );
+    expect(getSessionIdentifier({ session: { id: 'sess-1' } } as never)).toBe('sess-1');
   });
 
   it('returns the DoubleCsrfUtilities surface every caller relies on', () => {

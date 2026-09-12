@@ -1,6 +1,6 @@
-import { computed } from "vue";
-import { currencySymbol } from "../pages/operations/money";
-import type { Account, Bank } from "../pages/accounts/accounts.types";
+import { computed } from 'vue';
+import { currencySymbol } from '../pages/operations/money';
+import type { Account, Bank } from '../pages/accounts/accounts.types';
 
 /**
  * Transfer-target choices for an operation-like form: the member's other
@@ -34,7 +34,7 @@ export function useTransferTargets(
     return eligible;
   });
   const amountCurrencySymbol = computed(() =>
-    sourceCurrency.value ? currencySymbol(sourceCurrency.value) : "",
+    sourceCurrency.value ? currencySymbol(sourceCurrency.value) : '',
   );
 
   return { sourceCurrency, transferTargets, amountCurrencySymbol };

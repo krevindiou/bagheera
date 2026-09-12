@@ -1,9 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
-} from '@simplewebauthn/server';
+import { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server';
 import type {
   PublicKeyCredentialCreationOptionsJSON,
   VerifiedRegistrationResponse,
@@ -41,14 +38,9 @@ export class WebauthnRegistrationService {
     private readonly audit: AuditService,
   ) {}
 
-  async generateOptions(
-    req: Request,
-  ): Promise<PublicKeyCredentialCreationOptionsJSON> {
+  async generateOptions(req: Request): Promise<PublicKeyCredentialCreationOptionsJSON> {
     const memberId = requireMemberId(req);
-    const [row] = await this.db
-      .select()
-      .from(member)
-      .where(eq(member.id, memberId));
+    const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
       throw new BadRequestException(REGISTRATION_FAILED);
     }
@@ -127,10 +119,6 @@ export class WebauthnRegistrationService {
     if (row) {
       await this.emailQueue.enqueue(passkeyRegisteredEmail(row.email));
     }
-    await this.audit.record(
-      'webauthn_credential_registered',
-      memberId,
-      req.ip ?? 'unknown',
-    );
+    await this.audit.record('webauthn_credential_registered', memberId, req.ip ?? 'unknown');
   }
 }

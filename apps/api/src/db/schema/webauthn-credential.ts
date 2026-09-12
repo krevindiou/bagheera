@@ -33,15 +33,11 @@ export const webauthnCredential = pgTable(
     transports: jsonb('transports').$type<string[]>(),
     // User-supplied label (e.g. "MacBook Touch ID"), shown in the settings list.
     deviceName: varchar('device_name', { length: 100 }),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex('webauthn_credential_credential_id_unique').on(
-      table.credentialId,
-    ),
+    uniqueIndex('webauthn_credential_credential_id_unique').on(table.credentialId),
     index('webauthn_credential_member_id_idx').on(table.memberId),
   ],
 );

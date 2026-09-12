@@ -41,9 +41,7 @@ export class ReportService {
     return rows.map((row) => row.id);
   }
 
-  private async accountIdsByReport(
-    reportIds: string[],
-  ): Promise<Map<string, string[]>> {
+  private async accountIdsByReport(reportIds: string[]): Promise<Map<string, string[]>> {
     const map = new Map<string, string[]>();
     if (reportIds.length === 0) {
       return map;
@@ -82,10 +80,7 @@ export class ReportService {
 
   async create(req: Request, dto: CreateReportDto) {
     const memberId = requireMemberId(req);
-    const accountIds = await this.filterOwnedActiveAccountIds(
-      dto.accountIds ?? [],
-      memberId,
-    );
+    const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
 
     const created = await this.db.transaction(async (tx) => {
       const [row] = await tx
@@ -105,9 +100,7 @@ export class ReportService {
       if (accountIds.length > 0) {
         await tx
           .insert(reportAccount)
-          .values(
-            accountIds.map((accountId) => ({ reportId: row.id, accountId })),
-          );
+          .values(accountIds.map((accountId) => ({ reportId: row.id, accountId })));
       }
       return row;
     });
@@ -118,10 +111,7 @@ export class ReportService {
   async update(req: Request, id: string, dto: UpdateReportDto): Promise<void> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedReport(id, memberId);
-    const accountIds = await this.filterOwnedActiveAccountIds(
-      dto.accountIds ?? [],
-      memberId,
-    );
+    const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
 
     await this.db.transaction(async (tx) => {
       await tx

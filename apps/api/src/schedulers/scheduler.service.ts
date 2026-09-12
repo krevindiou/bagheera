@@ -10,10 +10,7 @@ import type { Request } from 'express';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { category, operation, paymentMethod, scheduler } from '../db/schema';
-import {
-  TRANSFER_PAYMENT_METHOD_IDS,
-  TransferService,
-} from '../operations/transfer.service';
+import { TRANSFER_PAYMENT_METHOD_IDS, TransferService } from '../operations/transfer.service';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
@@ -38,12 +35,7 @@ export class SchedulerService {
     account: { closed: boolean; deleted: boolean };
     bank: { closed: boolean; deleted: boolean };
   }): void {
-    if (
-      row.account.closed ||
-      row.account.deleted ||
-      row.bank.closed ||
-      row.bank.deleted
-    ) {
+    if (row.account.closed || row.account.deleted || row.bank.closed || row.bank.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
   }
@@ -63,10 +55,7 @@ export class SchedulerService {
       throw new BadRequestException('Invalid payment method for this type.');
     }
     if (categoryId !== undefined) {
-      const [cat] = await this.db
-        .select()
-        .from(category)
-        .where(eq(category.id, categoryId));
+      const [cat] = await this.db.select().from(category).where(eq(category.id, categoryId));
       if (!cat || cat.type !== type) {
         throw new BadRequestException('Invalid category for this type.');
       }
@@ -83,10 +72,7 @@ export class SchedulerService {
       : { debit: null, credit: minorUnits };
   }
 
-  private transferAccountId(
-    paymentMethodId: string,
-    transferAccountId?: string,
-  ): string | null {
+  private transferAccountId(paymentMethodId: string, transferAccountId?: string): string | null {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId)
       ? (transferAccountId ?? null)
       : null;
@@ -115,18 +101,12 @@ export class SchedulerService {
 
   async create(req: Request, dto: CreateSchedulerDto) {
     const memberId = requireMemberId(req);
-    const owned = await this.ownership.requireOwnedAccount(
-      dto.accountId,
-      memberId,
-    );
+    const owned = await this.ownership.requireOwnedAccount(dto.accountId, memberId);
     this.requireFullyActive(owned);
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
     const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const transferAccountId = this.transferAccountId(
-      dto.paymentMethodId,
-      dto.transferAccountId,
-    );
+    const transferAccountId = this.transferAccountId(dto.paymentMethodId, dto.transferAccountId);
     await this.transfers.validateSchedulerTarget(
       this.db,
       {
@@ -171,11 +151,7 @@ export class SchedulerService {
     return created;
   }
 
-  async update(
-    req: Request,
-    id: string,
-    dto: UpdateSchedulerDto,
-  ): Promise<void> {
+  async update(req: Request, id: string, dto: UpdateSchedulerDto): Promise<void> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.requireOwnedScheduler(id, memberId);
     this.requireFullyActive(owned);
@@ -185,10 +161,7 @@ export class SchedulerService {
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
     const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const transferAccountId = this.transferAccountId(
-      dto.paymentMethodId,
-      dto.transferAccountId,
-    );
+    const transferAccountId = this.transferAccountId(dto.paymentMethodId, dto.transferAccountId);
     await this.transfers.validateSchedulerTarget(
       this.db,
       {
@@ -240,10 +213,7 @@ export class SchedulerService {
     await this.db.transaction(async (tx) => {
       // Already-generated operations survive deletion; only their link to
       // this scheduler is dropped.
-      await tx
-        .update(operation)
-        .set({ schedulerId: null })
-        .where(eq(operation.schedulerId, id));
+      await tx.update(operation).set({ schedulerId: null }).where(eq(operation.schedulerId, id));
       await tx.delete(scheduler).where(eq(scheduler.id, id));
     });
   }

@@ -17,11 +17,7 @@ function res(): Response {
 describe('absoluteSessionTtl', () => {
   it('calls next() untouched when the request has no session', () => {
     const next = jest.fn();
-    absoluteSessionTtl(
-      fakeRequest({ session: undefined as never }),
-      res(),
-      next,
-    );
+    absoluteSessionTtl(fakeRequest({ session: undefined as never }), res(), next);
     expect(next).toHaveBeenCalledWith();
   });
 

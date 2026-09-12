@@ -1,9 +1,4 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -38,16 +33,9 @@ export class SignInService {
 
     // Verify against a hash even for an unknown email, so response timing
     // doesn't leak whether the address exists.
-    const passwordOk = await this.hash.verify(
-      row?.password ?? DUMMY_HASH,
-      dto.password,
-    );
+    const passwordOk = await this.hash.verify(row?.password ?? DUMMY_HASH, dto.password);
     if (!row || !passwordOk) {
-      await this.audit.record(
-        'sign_in_failure',
-        row?.id ?? null,
-        sourceAddress,
-      );
+      await this.audit.record('sign_in_failure', row?.id ?? null, sourceAddress);
       throw new UnauthorizedException(INVALID_CREDENTIALS);
     }
 
@@ -61,10 +49,7 @@ export class SignInService {
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
 
-    await this.db
-      .update(member)
-      .set({ loggedAt: new Date() })
-      .where(eq(member.id, row.id));
+    await this.db.update(member).set({ loggedAt: new Date() }).where(eq(member.id, row.id));
 
     await this.schedulerCatchUp.catchUp(row.id);
     await this.audit.record('sign_in_success', row.id, sourceAddress);

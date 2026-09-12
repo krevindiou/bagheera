@@ -1,10 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -12,10 +9,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
@@ -36,10 +30,7 @@ async function createOperation(
     type,
     thirdParty: 'X',
     amount,
-    paymentMethodId:
-      type === 'debit'
-        ? PAYMENT_METHOD_ID.CREDIT_CARD
-        : PAYMENT_METHOD_ID.DEPOSIT,
+    paymentMethodId: type === 'debit' ? PAYMENT_METHOD_ID.CREDIT_CARD : PAYMENT_METHOD_ID.DEPOSIT,
     valueDate,
   });
   expect(res.status).toBe(200);

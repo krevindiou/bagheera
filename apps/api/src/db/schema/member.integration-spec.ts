@@ -29,9 +29,9 @@ describe('member schema', () => {
       const email = uniqueEmail();
       await insertMember(getDb(app), { email });
 
-      await expect(
-        insertMember(getDb(app), { email: email.toUpperCase() }),
-      ).rejects.toMatchObject({ cause: { code: '23505' } });
+      await expect(insertMember(getDb(app), { email: email.toUpperCase() })).rejects.toMatchObject({
+        cause: { code: '23505' },
+      });
     });
 
     it('allows two members with genuinely distinct emails', async () => {

@@ -10,9 +10,7 @@ describe('HashService', () => {
 
   it('verifies a hash against the password it was made from', async () => {
     const hash = await service.hash('correct horse battery staple');
-    await expect(
-      service.verify(hash, 'correct horse battery staple'),
-    ).resolves.toBe(true);
+    await expect(service.verify(hash, 'correct horse battery staple')).resolves.toBe(true);
   });
 
   it('rejects an incorrect password', async () => {
@@ -21,8 +19,6 @@ describe('HashService', () => {
   });
 
   it('returns false, rather than throwing, for a malformed/foreign hash string', async () => {
-    await expect(
-      service.verify('not-a-real-argon2-hash', 'anything'),
-    ).resolves.toBe(false);
+    await expect(service.verify('not-a-real-argon2-hash', 'anything')).resolves.toBe(false);
   });
 });

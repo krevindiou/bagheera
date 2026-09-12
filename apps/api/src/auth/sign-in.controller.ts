@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  Req,
-  UseFilters,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req, UseFilters } from '@nestjs/common';
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { Public } from '../session/public.decorator';
@@ -22,10 +15,7 @@ export class SignInController {
   @Public()
   @UseFilters(SignInThrottleAuditFilter)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
-  async signIn(
-    @Req() req: Request,
-    @Body() dto: SignInDto,
-  ): Promise<{ message: string }> {
+  async signIn(@Req() req: Request, @Body() dto: SignInDto): Promise<{ message: string }> {
     return this.signInService.signIn(req, dto);
   }
 }

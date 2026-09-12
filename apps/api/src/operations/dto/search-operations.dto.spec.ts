@@ -69,9 +69,7 @@ describe('SearchOperationsDto', () => {
     // children[0] is the per-array-index wrapper (property '0'); its own
     // children[0] is where the nested AmountComparatorDto's own field
     // errors land.
-    expect(nested?.children?.[0]?.children?.[0]?.constraints).toHaveProperty(
-      'isIn',
-    );
+    expect(nested?.children?.[0]?.children?.[0]?.constraints).toHaveProperty('isIn');
   });
 
   it('validates nested amountComparators, rejecting a value above AMOUNT_CEILING', async () => {
@@ -81,9 +79,7 @@ describe('SearchOperationsDto', () => {
     });
     const errors = await validate(dto);
     const nested = errors.find((e) => e.property === 'amountComparators');
-    expect(nested?.children?.[0]?.children?.[0]?.constraints).toHaveProperty(
-      'max',
-    );
+    expect(nested?.children?.[0]?.children?.[0]?.constraints).toHaveProperty('max');
   });
 
   it('accepts a fully populated, valid search', async () => {

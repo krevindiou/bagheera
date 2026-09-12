@@ -22,10 +22,7 @@ export class OperationAutocompleteService {
   // ones included). Each returned category is the one used on the latest
   // (by value date, then id) operation bearing that name; a category whose
   // type doesn't match the requested type is dropped, the third party stays.
-  async search(
-    req: Request,
-    dto: AutocompleteThirdPartyDto,
-  ): Promise<ThirdPartySuggestion[]> {
+  async search(req: Request, dto: AutocompleteThirdPartyDto): Promise<ThirdPartySuggestion[]> {
     const memberId = requireMemberId(req);
     const lowerThirdParty = sql<string>`lower(${operation.thirdParty})`;
 
@@ -52,9 +49,7 @@ export class OperationAutocompleteService {
     return rows.map((row) => ({
       thirdParty: row.thirdParty,
       categoryId:
-        dto.type && row.categoryType && row.categoryType !== dto.type
-          ? null
-          : row.categoryId,
+        dto.type && row.categoryType && row.categoryType !== dto.type ? null : row.categoryId,
     }));
   }
 }

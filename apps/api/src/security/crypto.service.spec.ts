@@ -1,8 +1,5 @@
 import { CryptoService } from './crypto.service';
-import {
-  TEST_CRYPTO_KEYS,
-  testCryptoService,
-} from '../test-support/test-crypto-service';
+import { TEST_CRYPTO_KEYS, testCryptoService } from '../test-support/test-crypto-service';
 
 describe('CryptoService', () => {
   it('throws when encrypt() is called before any keys are loaded', () => {
@@ -34,16 +31,12 @@ describe('CryptoService', () => {
 
   it('throws for ciphertext with the wrong number of parts', () => {
     const crypto = testCryptoService();
-    expect(() => crypto.decrypt('only:three:parts')).toThrow(
-      'Malformed ciphertext',
-    );
+    expect(() => crypto.decrypt('only:three:parts')).toThrow('Malformed ciphertext');
   });
 
   it('throws for an unknown or retired key id', () => {
     const crypto = testCryptoService();
-    expect(() => crypto.decrypt('unknown-id:AAAA:AAAA:AAAA')).toThrow(
-      /Unknown or retired key id/,
-    );
+    expect(() => crypto.decrypt('unknown-id:AAAA:AAAA:AAAA')).toThrow(/Unknown or retired key id/);
   });
 
   it('throws when the auth tag has been tampered with', () => {
@@ -54,24 +47,22 @@ describe('CryptoService', () => {
     // decoded bytes genuinely change — a real GCM tag mismatch at
     // decipher.final(), not just a malformed-length error at setAuthTag().
     const tamperedAuthTag = (authTag[0] === 'A' ? 'B' : 'A') + authTag.slice(1);
-    expect(() =>
-      crypto.decrypt(`${keyId}:${iv}:${tamperedAuthTag}:${body}`),
-    ).toThrow();
+    expect(() => crypto.decrypt(`${keyId}:${iv}:${tamperedAuthTag}:${body}`)).toThrow();
   });
 
   it('loadKeys rejects a key that does not decode to 32 bytes', () => {
     const crypto = new CryptoService({} as never);
     const shortKey = Buffer.from('too-short').toString('base64');
-    expect(() =>
-      crypto.loadKeys(JSON.stringify({ '1': shortKey }), '1'),
-    ).toThrow(/key "1" must decode to 32 bytes/);
+    expect(() => crypto.loadKeys(JSON.stringify({ '1': shortKey }), '1')).toThrow(
+      /key "1" must decode to 32 bytes/,
+    );
   });
 
   it('loadKeys rejects an active key id absent from the keys map', () => {
     const crypto = new CryptoService({} as never);
-    expect(() =>
-      crypto.loadKeys(JSON.stringify(TEST_CRYPTO_KEYS), '9'),
-    ).toThrow(/not present in CRYPTO_KEYS/);
+    expect(() => crypto.loadKeys(JSON.stringify(TEST_CRYPTO_KEYS), '9')).toThrow(
+      /not present in CRYPTO_KEYS/,
+    );
   });
 });
 

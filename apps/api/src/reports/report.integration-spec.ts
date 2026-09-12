@@ -2,10 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { report, reportAccount } from '../db/schema';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -13,10 +10,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
@@ -56,10 +50,7 @@ describe('reports', () => {
       };
       expect(created.accountIds).toEqual([]);
 
-      const [row] = await getDb(app)
-        .select()
-        .from(report)
-        .where(eq(report.id, created.id));
+      const [row] = await getDb(app).select().from(report).where(eq(report.id, created.id));
       expect(row.memberId).toBe(memberId);
     });
 
@@ -95,18 +86,10 @@ describe('reports', () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
-      await mutate(
-        'post',
-        '/reports',
-        reportPayload({ accountIds: [accountId] }),
-      );
+      await mutate('post', '/reports', reportPayload({ accountIds: [accountId] }));
 
       const { mutate: otherMutate } = await seedSignedInMember(app);
-      await otherMutate(
-        'post',
-        '/reports',
-        reportPayload({ title: "Other's" }),
-      );
+      await otherMutate('post', '/reports', reportPayload({ title: "Other's" }));
 
       const res = await agent.get('/reports').expect(200);
       const body = res.body as { title: string; accountIds: string[] }[];
@@ -121,11 +104,7 @@ describe('reports', () => {
       const bankId = await createBank(mutate);
       const accountA = await createAccount(mutate, bankId);
       const accountB = await createAccount(mutate, bankId);
-      const created = await mutate(
-        'post',
-        '/reports',
-        reportPayload({ accountIds: [accountA] }),
-      );
+      const created = await mutate('post', '/reports', reportPayload({ accountIds: [accountA] }));
       const { id } = (created.body as { report: { id: string } }).report;
 
       const res = await mutate(
@@ -162,20 +141,13 @@ describe('reports', () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
-      const created = await mutate(
-        'post',
-        '/reports',
-        reportPayload({ accountIds: [accountId] }),
-      );
+      const created = await mutate('post', '/reports', reportPayload({ accountIds: [accountId] }));
       const { id } = (created.body as { report: { id: string } }).report;
 
       const res = await mutate('delete', `/reports/${id}`);
       expect(res.status).toBe(200);
 
-      const rows = await getDb(app)
-        .select()
-        .from(report)
-        .where(eq(report.id, id));
+      const rows = await getDb(app).select().from(report).where(eq(report.id, id));
       expect(rows).toHaveLength(0);
       const links = await getDb(app)
         .select()

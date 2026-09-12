@@ -1,29 +1,29 @@
-import { describe, expect, it } from "vitest";
-import { getPasswordStrength } from "./usePasswordStrength";
+import { describe, expect, it } from 'vitest';
+import { getPasswordStrength } from './usePasswordStrength';
 
-describe("getPasswordStrength", () => {
-  it("scores an empty/very short password as weak (0)", () => {
-    expect(getPasswordStrength("")).toEqual({ score: 0, label: "weak" });
+describe('getPasswordStrength', () => {
+  it('scores an empty/very short password as weak (0)', () => {
+    expect(getPasswordStrength('')).toEqual({ score: 0, label: 'weak' });
   });
 
-  it("scores an 8+ char, single-character-class password as weak (1)", () => {
-    expect(getPasswordStrength("abcdefgh")).toEqual({ score: 1, label: "weak" });
+  it('scores an 8+ char, single-character-class password as weak (1)', () => {
+    expect(getPasswordStrength('abcdefgh')).toEqual({ score: 1, label: 'weak' });
   });
 
-  it("scores an 8+ char password with 2 character classes as fair (2)", () => {
-    expect(getPasswordStrength("abcdefgH")).toEqual({ score: 2, label: "fair" });
+  it('scores an 8+ char password with 2 character classes as fair (2)', () => {
+    expect(getPasswordStrength('abcdefgH')).toEqual({ score: 2, label: 'fair' });
   });
 
-  it("scores a 12+ char password with 3 character classes as good (3)", () => {
-    expect(getPasswordStrength("abcdefghijA1")).toEqual({ score: 3, label: "good" });
+  it('scores a 12+ char password with 3 character classes as good (3)', () => {
+    expect(getPasswordStrength('abcdefghijA1')).toEqual({ score: 3, label: 'good' });
   });
 
-  it("scores a 16+ char password with all 4 character classes as strong (4)", () => {
-    expect(getPasswordStrength("aA1!aA1!aA1!aA1!")).toEqual({ score: 4, label: "strong" });
+  it('scores a 16+ char password with all 4 character classes as strong (4)', () => {
+    expect(getPasswordStrength('aA1!aA1!aA1!aA1!')).toEqual({ score: 4, label: 'strong' });
   });
 
-  it("requires both the length and variety threshold together for a given score", () => {
+  it('requires both the length and variety threshold together for a given score', () => {
     // 16 chars, but only 2 character classes — capped at score 2, not 4.
-    expect(getPasswordStrength("aaaaaaaaaaaaaaaA")).toEqual({ score: 2, label: "fair" });
+    expect(getPasswordStrength('aaaaaaaaaaaaaaaA')).toEqual({ score: 2, label: 'fair' });
   });
 });

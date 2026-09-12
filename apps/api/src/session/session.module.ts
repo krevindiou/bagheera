@@ -1,10 +1,4 @@
-import {
-  Inject,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { Inject, MiddlewareConsumer, Module, NestModule, OnModuleDestroy } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { RedisStore } from 'connect-redis';
@@ -17,11 +11,7 @@ import { CsrfTokenController } from './csrf-token.controller';
 import { SessionAuthGuard } from './session-auth.guard';
 import { SessionRotationService } from './session-rotation.service';
 import { SessionTerminationService } from './session-termination.service';
-import {
-  SESSION_COOKIE_NAME,
-  SESSION_IDLE_TTL_SECONDS,
-  VALKEY_CLIENT,
-} from './session.constants';
+import { SESSION_COOKIE_NAME, SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from './session.constants';
 import { valkeyClientProvider } from './valkey-client.provider';
 
 @Module({
@@ -72,12 +62,7 @@ export class SessionModule implements NestModule, OnModuleDestroy {
     const { doubleCsrfProtection } = buildCsrf(this.config);
 
     consumer
-      .apply(
-        cookieParser(),
-        sessionMiddleware,
-        absoluteSessionTtl,
-        doubleCsrfProtection,
-      )
+      .apply(cookieParser(), sessionMiddleware, absoluteSessionTtl, doubleCsrfProtection)
       .forRoutes('*');
   }
 }

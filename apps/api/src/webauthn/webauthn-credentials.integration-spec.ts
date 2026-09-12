@@ -101,8 +101,7 @@ describe('webauthn credentials', () => {
     it("404s on another member's credential and leaves it untouched", async () => {
       const { memberId: ownerId } = await seedSignedInMember(app);
       const credential = await insertCredential(app, ownerId, 'Not yours');
-      const { agent: attackerAgent, getCsrfToken } =
-        await seedSignedInMember(app);
+      const { agent: attackerAgent, getCsrfToken } = await seedSignedInMember(app);
 
       const csrfToken = await getCsrfToken();
       await attackerAgent

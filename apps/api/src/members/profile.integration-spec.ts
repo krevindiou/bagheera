@@ -38,8 +38,7 @@ describe('POST /members/profile', () => {
 
   describe('POST /members/profile (start an email change)', () => {
     it('sets pendingEmail and queues a confirmation to the new address, leaving email unchanged', async () => {
-      const { agent, getCsrfToken, password, memberId } =
-        await seedSignedInMember(app);
+      const { agent, getCsrfToken, password, memberId } = await seedSignedInMember(app);
       const newEmail = uniqueEmail('new-address');
 
       const csrfToken = await getCsrfToken();
@@ -50,10 +49,7 @@ describe('POST /members/profile', () => {
         .expect(200);
       expect(messageOf(res)).toBe(UPDATE_MESSAGE);
 
-      const [row] = await getDb(app)
-        .select()
-        .from(member)
-        .where(eq(member.id, memberId));
+      const [row] = await getDb(app).select().from(member).where(eq(member.id, memberId));
       expect(row.email).not.toBe(newEmail);
       expect(row.pendingEmail).toBe(newEmail);
       expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
@@ -85,8 +81,7 @@ describe('POST /members/profile', () => {
     });
 
     it('no-ops when the "new" email is the same as the current one', async () => {
-      const { agent, getCsrfToken, password, email, memberId } =
-        await seedSignedInMember(app);
+      const { agent, getCsrfToken, password, email, memberId } = await seedSignedInMember(app);
 
       const csrfToken = await getCsrfToken();
       await agent
@@ -105,8 +100,7 @@ describe('POST /members/profile', () => {
 
     it('returns the same generic message and changes nothing when the new email is already taken', async () => {
       const other = await insertActiveMember(app);
-      const { agent, getCsrfToken, password, memberId } =
-        await seedSignedInMember(app);
+      const { agent, getCsrfToken, password, memberId } = await seedSignedInMember(app);
 
       const csrfToken = await getCsrfToken();
       const res = await agent
@@ -127,8 +121,7 @@ describe('POST /members/profile', () => {
 
   describe('POST /members/profile/confirm-email-change', () => {
     it('completes a pending change and notifies the old address', async () => {
-      const { agent, getCsrfToken, password, memberId } =
-        await seedSignedInMember(app);
+      const { agent, getCsrfToken, password, memberId } = await seedSignedInMember(app);
       const newEmail = uniqueEmail('confirmed');
       const startCsrfToken = await getCsrfToken();
       await agent
@@ -142,12 +135,7 @@ describe('POST /members/profile', () => {
         .select({ version: member.emailChangeTokenVersion })
         .from(member)
         .where(eq(member.id, memberId));
-      const key = buildEmailChangeToken(
-        app.get(CryptoService),
-        memberId,
-        newEmail,
-        row.version,
-      );
+      const key = buildEmailChangeToken(app.get(CryptoService), memberId, newEmail, row.version);
 
       const confirmAgent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(confirmAgent);
@@ -157,10 +145,7 @@ describe('POST /members/profile', () => {
         .send({ key })
         .expect(200);
 
-      const [updated] = await getDb(app)
-        .select()
-        .from(member)
-        .where(eq(member.id, memberId));
+      const [updated] = await getDb(app).select().from(member).where(eq(member.id, memberId));
       expect(updated.email).toBe(newEmail);
       expect(updated.pendingEmail).toBeNull();
 
@@ -172,9 +157,7 @@ describe('POST /members/profile', () => {
         .set('x-csrf-token', replayCsrf)
         .send({ key })
         .expect(400);
-      expect(messageOf(replay)).toBe(
-        'Email change error (link expired or already used?)',
-      );
+      expect(messageOf(replay)).toBe('Email change error (link expired or already used?)');
     });
 
     it('rejects a malformed key', async () => {
@@ -186,9 +169,7 @@ describe('POST /members/profile', () => {
         .set('x-csrf-token', csrfToken)
         .send({ key: 'not-a-real-token' })
         .expect(400);
-      expect(messageOf(res)).toBe(
-        'Email change error (link expired or already used?)',
-      );
+      expect(messageOf(res)).toBe('Email change error (link expired or already used?)');
     });
   });
 });

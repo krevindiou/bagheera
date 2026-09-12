@@ -1,4 +1,4 @@
-import en from "../../src/i18n/locales/en";
+import en from '../../src/i18n/locales/en';
 import {
   alertWithText,
   expect,
@@ -7,23 +7,23 @@ import {
   registerAndActivate,
   test,
   TEST_PASSWORD,
-} from "../support/fixtures";
-import { existingMessageIds, keyFromLink, waitForEmailLink } from "../support/mailpit";
+} from '../support/fixtures';
+import { existingMessageIds, keyFromLink, waitForEmailLink } from '../support/mailpit';
 
-test.describe("registration, activation, sign-in, sign-out", () => {
-  test("registers, activates via the emailed link, signs in, and signs out — all through the real UI", async ({
+test.describe('registration, activation, sign-in, sign-out', () => {
+  test('registers, activates via the emailed link, signs in, and signs out — all through the real UI', async ({
     page,
   }) => {
     const email = randomEmail();
 
-    await page.goto("/en/register");
+    await page.goto('/en/register');
     await page.getByLabel(en.auth.register.email, { exact: true }).fill(email);
     await page.getByLabel(en.auth.register.country, { exact: true }).selectOption(REGISTER_COUNTRY);
     await page.getByLabel(en.auth.register.password, { exact: true }).fill(TEST_PASSWORD);
     await page
       .getByLabel(en.auth.register.passwordConfirmation, { exact: true })
       .fill(TEST_PASSWORD);
-    await page.getByRole("button", { name: en.auth.register.submit, exact: true }).click();
+    await page.getByRole('button', { name: en.auth.register.submit, exact: true }).click();
     await expect(page).toHaveURL(/\/en\/sign-in$/);
 
     const activationLink = await waitForEmailLink(email);
@@ -33,15 +33,15 @@ test.describe("registration, activation, sign-in, sign-out", () => {
 
     await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
     await page.getByLabel(en.auth.signIn.password, { exact: true }).fill(TEST_PASSWORD);
-    await page.getByRole("button", { name: en.auth.signIn.submit, exact: true }).click();
+    await page.getByRole('button', { name: en.auth.signIn.submit, exact: true }).click();
     await expect(page).toHaveURL(/\/en\/home$/);
-    await expect(page.getByText(en.home.signedInAs.replace("{email}", email))).toBeVisible();
+    await expect(page.getByText(en.home.signedInAs.replace('{email}', email))).toBeVisible();
 
-    await page.getByRole("button", { name: en.home.signOut, exact: true }).click();
+    await page.getByRole('button', { name: en.home.signOut, exact: true }).click();
     await expect(page).toHaveURL(/\/en\/sign-in$/);
   });
 
-  test("a second activation attempt on an already-used link fails without revealing why", async ({
+  test('a second activation attempt on an already-used link fails without revealing why', async ({
     page,
   }) => {
     const { email } = await registerAndActivate(page);
@@ -51,22 +51,22 @@ test.describe("registration, activation, sign-in, sign-out", () => {
     await expect(alertWithText(page, en.auth.activate.error)).toBeVisible();
   });
 
-  test("wrong password and an unknown email both show the same generic error", async ({ page }) => {
+  test('wrong password and an unknown email both show the same generic error', async ({ page }) => {
     const { email } = await registerAndActivate(page);
 
-    await page.goto("/en/sign-in");
+    await page.goto('/en/sign-in');
     await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
-    await page.getByLabel(en.auth.signIn.password, { exact: true }).fill("not-the-password-1!");
-    await page.getByRole("button", { name: en.auth.signIn.submit, exact: true }).click();
+    await page.getByLabel(en.auth.signIn.password, { exact: true }).fill('not-the-password-1!');
+    await page.getByRole('button', { name: en.auth.signIn.submit, exact: true }).click();
     await expect(alertWithText(page, en.auth.signIn.invalidCredentials)).toBeVisible();
 
     await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(randomEmail());
     await page.getByLabel(en.auth.signIn.password, { exact: true }).fill(TEST_PASSWORD);
-    await page.getByRole("button", { name: en.auth.signIn.submit, exact: true }).click();
+    await page.getByRole('button', { name: en.auth.signIn.submit, exact: true }).click();
     await expect(alertWithText(page, en.auth.signIn.invalidCredentials)).toBeVisible();
   });
 
-  test("an inactive account shows a dedicated banner and can resend its activation email", async ({
+  test('an inactive account shows a dedicated banner and can resend its activation email', async ({
     page,
   }) => {
     const email = randomEmail();
@@ -75,10 +75,10 @@ test.describe("registration, activation, sign-in, sign-out", () => {
     // registerAndActivate's own activation step. `page.request` mints its
     // own anonymous session/CSRF cookie via the csrf-token GET below,
     // independent of whatever `page` currently shows.
-    const csrfRes = await page.request.get("/auth/csrf-token");
+    const csrfRes = await page.request.get('/auth/csrf-token');
     const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
-    await page.request.post("/members/register", {
-      headers: { "x-csrf-token": csrfToken },
+    await page.request.post('/members/register', {
+      headers: { 'x-csrf-token': csrfToken },
       data: {
         email,
         country: REGISTER_COUNTRY,
@@ -89,16 +89,16 @@ test.describe("registration, activation, sign-in, sign-out", () => {
 
     const originalKey = keyFromLink(await waitForEmailLink(email));
 
-    await page.goto("/en/sign-in");
+    await page.goto('/en/sign-in');
     await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
     await page.getByLabel(en.auth.signIn.password, { exact: true }).fill(TEST_PASSWORD);
-    await page.getByRole("button", { name: en.auth.signIn.submit, exact: true }).click();
+    await page.getByRole('button', { name: en.auth.signIn.submit, exact: true }).click();
     await expect(alertWithText(page, en.auth.signIn.inactiveAccount)).toBeVisible();
 
     // Captured before resending — the original registration email is still
     // in this inbox, so waitForEmailLink needs to know to ignore it.
     const seenBefore = await existingMessageIds(email);
-    await page.getByRole("button", { name: en.auth.signIn.resendActivation, exact: true }).click();
+    await page.getByRole('button', { name: en.auth.signIn.resendActivation, exact: true }).click();
     await expect(alertWithText(page, en.auth.signIn.resendSent)).toBeVisible();
 
     // The resend really did send a usable, fresh (different) activation link.

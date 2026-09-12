@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref } from 'vue';
 
 defineProps<{ id: string; modelValue: string | undefined }>();
-defineEmits<{ "update:modelValue": [value: string] }>();
+defineEmits<{ 'update:modelValue': [value: string] }>();
 defineOptions({ inheritAttrs: false });
 
 const visible = ref(false);

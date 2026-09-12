@@ -1,9 +1,6 @@
 import { Controller, Get, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import {
-  OperationAutocompleteService,
-  ThirdPartySuggestion,
-} from './autocomplete.service';
+import { OperationAutocompleteService, ThirdPartySuggestion } from './autocomplete.service';
 import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
 
 @Controller('operations/autocomplete')

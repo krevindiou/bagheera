@@ -10,7 +10,7 @@ export interface CountryOption {
   name: string;
 }
 
-const FALLBACK_COUNTRY = "US";
+const FALLBACK_COUNTRY = 'US';
 
 // prettier-ignore
 const ISO_3166_1_ALPHA_2 = [
@@ -33,7 +33,7 @@ const ISO_3166_1_ALPHA_2 = [
 ];
 
 export function getCountryOptions(): CountryOption[] {
-  const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+  const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 
   return ISO_3166_1_ALPHA_2.map((code) => ({
     code,

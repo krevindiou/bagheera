@@ -9,10 +9,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
-import {
-  SESSION_IDLE_TTL_SECONDS,
-  VALKEY_CLIENT,
-} from '../session/session.constants';
+import { SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from '../session/session.constants';
 import { SearchOperationsDto } from './dto/search-operations.dto';
 
 const PAGE_SIZE = 20;
@@ -46,17 +43,12 @@ export class OperationSearchService {
     accountId: string,
     criteria: SearchCriteria,
   ): Promise<void> {
-    await this.valkey.set(
-      this.key(memberId, accountId),
-      JSON.stringify(criteria),
-      { EX: SESSION_IDLE_TTL_SECONDS },
-    );
+    await this.valkey.set(this.key(memberId, accountId), JSON.stringify(criteria), {
+      EX: SESSION_IDLE_TTL_SECONDS,
+    });
   }
 
-  private async recall(
-    memberId: string,
-    accountId: string,
-  ): Promise<SearchCriteria> {
+  private async recall(memberId: string, accountId: string): Promise<SearchCriteria> {
     const raw = await this.valkey.get(this.key(memberId, accountId));
     return raw ? (JSON.parse(raw) as SearchCriteria) : {};
   }
@@ -98,9 +90,7 @@ export class OperationSearchService {
 
     if (criteria.type) {
       conditions.push(
-        criteria.type === 'debit'
-          ? isNotNull(operation.debit)
-          : isNotNull(operation.credit),
+        criteria.type === 'debit' ? isNotNull(operation.debit) : isNotNull(operation.credit),
       );
     }
     if (criteria.thirdParty) {
@@ -110,9 +100,7 @@ export class OperationSearchService {
       conditions.push(inArray(operation.categoryId, criteria.categoryIds));
     }
     if (criteria.paymentMethodIds?.length) {
-      conditions.push(
-        inArray(operation.paymentMethodId, criteria.paymentMethodIds),
-      );
+      conditions.push(inArray(operation.paymentMethodId, criteria.paymentMethodIds));
     }
     for (const comparator of criteria.amountComparators ?? []) {
       const op = AMOUNT_OPERATORS[comparator.operator];
@@ -140,11 +128,7 @@ export class OperationSearchService {
       .select()
       .from(operation)
       .where(where)
-      .orderBy(
-        desc(operation.valueDate),
-        desc(operation.createdAt),
-        desc(operation.id),
-      )
+      .orderBy(desc(operation.valueDate), desc(operation.createdAt), desc(operation.id))
       .limit(PAGE_SIZE)
       .offset((pageNumber - 1) * PAGE_SIZE);
 

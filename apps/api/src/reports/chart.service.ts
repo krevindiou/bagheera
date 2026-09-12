@@ -79,11 +79,7 @@ export class ReportChartService {
         .from(account)
         .innerJoin(bank, eq(account.bankId, bank.id))
         .where(
-          and(
-            eq(bank.memberId, memberId),
-            eq(account.deleted, false),
-            eq(bank.deleted, false),
-          ),
+          and(eq(bank.memberId, memberId), eq(account.deleted, false), eq(bank.deleted, false)),
         );
     }
 
@@ -110,10 +106,7 @@ export class ReportChartService {
   // Split out from `getChart` so the dashboard's homepage-report section
   // (step 37) can reuse the aggregation for reports it already fetched and
   // owns, without a second ownership round-trip.
-  async computeChart(
-    rpt: typeof report.$inferSelect,
-    memberId: string,
-  ): Promise<ReportChart> {
+  async computeChart(rpt: typeof report.$inferSelect, memberId: string): Promise<ReportChart> {
     const accounts = await this.effectiveAccounts(rpt.id, memberId);
     if (accounts.length === 0) {
       return { hidden: true, axisBounds: null, series: [] };
@@ -174,11 +167,7 @@ export class ReportChartService {
       // function"). Ordinal position always refers back to the same
       // already-computed SELECT-list expression. For 'all' grouping,
       // `period` is a constant (`null`), which needs no GROUP BY entry.
-      .groupBy(
-        ...(grouping === 'all'
-          ? [account.currency]
-          : [account.currency, sql`2`]),
-      );
+      .groupBy(...(grouping === 'all' ? [account.currency] : [account.currency, sql`2`]));
 
     const byCurrency = new Map<string, Map<string, Bucket>>();
     for (const row of aggregated) {
@@ -189,13 +178,9 @@ export class ReportChartService {
         byCurrency.set(row.currency, periods);
       }
       periods.set(key, {
-        debitSum: (row.debitSum === null
-          ? 0
-          : Number(row.debitSum)) as MinorUnits,
+        debitSum: (row.debitSum === null ? 0 : Number(row.debitSum)) as MinorUnits,
         debitCount: Number(row.debitCount),
-        creditSum: (row.creditSum === null
-          ? 0
-          : Number(row.creditSum)) as MinorUnits,
+        creditSum: (row.creditSum === null ? 0 : Number(row.creditSum)) as MinorUnits,
         creditCount: Number(row.creditCount),
       });
     }

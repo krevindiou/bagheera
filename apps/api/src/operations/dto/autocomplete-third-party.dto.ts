@@ -1,10 +1,4 @@
-import {
-  IsIn,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class AutocompleteThirdPartyDto {
   // Same 64 cap as ThirdPartyField (the third_party column width) — but not

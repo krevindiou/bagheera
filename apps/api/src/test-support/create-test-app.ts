@@ -63,11 +63,7 @@ import { EmailQueueService } from '../email/email-queue.service';
  * Both are test-harness-only compensations — nothing about how the real
  * app sets or checks cookies outside this harness changes.
  */
-function fixSecureCookiesForPlainHttp(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void {
+function fixSecureCookiesForPlainHttp(req: Request, res: Response, next: NextFunction): void {
   Object.defineProperty(req, 'secure', { value: true, configurable: true });
 
   const originalSetHeader = res.setHeader.bind(res) as (
@@ -125,8 +121,6 @@ export async function createTestApp(): Promise<TestApp> {
 }
 
 /** The same Drizzle instance the running app uses — for fixture setup and asserting persisted state directly. */
-export function getDb(
-  app: INestApplication<Server>,
-): NodePgDatabase<typeof schema> {
+export function getDb(app: INestApplication<Server>): NodePgDatabase<typeof schema> {
   return app.get(DRIZZLE);
 }

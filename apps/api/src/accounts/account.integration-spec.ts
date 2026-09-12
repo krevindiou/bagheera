@@ -4,20 +4,14 @@ import { and, desc, eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
 import { account, operation, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 function messageOf(res: { body: unknown }): string {
   return (res.body as { message: string }).message;
 }
 
-async function createBank(
-  mutate: SignedInFixture['mutate'],
-  name = 'Test bank',
-): Promise<string> {
+async function createBank(mutate: SignedInFixture['mutate'], name = 'Test bank'): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name });
   return (res.body as { id: string }).id;
 }
@@ -60,9 +54,7 @@ describe('accounts', () => {
       const all = await agent.get('/accounts').expect(200);
       expect(all.body).toHaveLength(1);
 
-      const filtered = await agent
-        .get(`/accounts?bankId=${bankId}`)
-        .expect(200);
+      const filtered = await agent.get(`/accounts?bankId=${bankId}`).expect(200);
       expect(filtered.body).toHaveLength(1);
     });
   });
@@ -221,10 +213,7 @@ describe('accounts', () => {
       expect(res.status).toBe(200);
       expect(messageOf(res)).toBe('Account saved');
 
-      const [row] = await getDb(app)
-        .select()
-        .from(account)
-        .where(eq(account.id, accountId));
+      const [row] = await getDb(app).select().from(account).where(eq(account.id, accountId));
       expect(row.name).toBe('New name');
     });
 
@@ -253,20 +242,14 @@ describe('accounts', () => {
       expect(res.status).toBe(200);
       expect(messageOf(res)).toBe('Account closed');
 
-      const [row] = await getDb(app)
-        .select()
-        .from(account)
-        .where(eq(account.id, accountId));
+      const [row] = await getDb(app).select().from(account).where(eq(account.id, accountId));
       expect(row.closed).toBe(true);
 
       const [event] = await getDb(app)
         .select()
         .from(securityEvent)
         .where(
-          and(
-            eq(securityEvent.eventType, 'account_closed'),
-            eq(securityEvent.memberId, memberId),
-          ),
+          and(eq(securityEvent.eventType, 'account_closed'), eq(securityEvent.memberId, memberId)),
         )
         .orderBy(desc(securityEvent.createdAt))
         .limit(1);
@@ -282,10 +265,7 @@ describe('accounts', () => {
       expect(res.status).toBe(200);
       expect(messageOf(res)).toBe('Account deleted');
 
-      const [row] = await getDb(app)
-        .select()
-        .from(account)
-        .where(eq(account.id, accountId));
+      const [row] = await getDb(app).select().from(account).where(eq(account.id, accountId));
       expect(row.deleted).toBe(true);
     });
 

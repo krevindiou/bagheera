@@ -1,9 +1,9 @@
-import type { ReportChart } from "../reports/reports.types";
+import type { ReportChart } from '../reports/reports.types';
 
 // The dashboard controller returns a plain object (no @ApiOkResponse DTO),
 // so the generated API client types its body as `Record<string, never>`.
 // This mirrors the actual shape (apps/api/src/dashboard/dashboard.service.ts).
-export type OnboardingTip = "no-bank" | "no-account" | null;
+export type OnboardingTip = 'no-bank' | 'no-account' | null;
 
 export interface TotalBalance {
   currency: string;

@@ -16,9 +16,7 @@ export class SmtpEmailProvider implements EmailProvider {
   private readonly from: string;
 
   constructor(private readonly config: ConfigService) {
-    this.transport = nodemailer.createTransport(
-      this.config.getOrThrow<string>('EMAIL_SMTP_URL'),
-    );
+    this.transport = nodemailer.createTransport(this.config.getOrThrow<string>('EMAIL_SMTP_URL'));
     this.from = this.config.getOrThrow<string>('EMAIL_FROM');
   }
 
@@ -31,9 +29,7 @@ export class SmtpEmailProvider implements EmailProvider {
         html: message.html,
       });
     } catch (err) {
-      this.logger.error(
-        `Failed to send email to ${message.to}: ${(err as Error).message}`,
-      );
+      this.logger.error(`Failed to send email to ${message.to}: ${(err as Error).message}`);
     }
   }
 }

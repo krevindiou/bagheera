@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { errorMessage } from "../../api/errorMessage";
-import { useThirdPartyAutocomplete } from "../../composables/useThirdPartyAutocomplete";
-import { useToast } from "../../composables/useToast";
-import { useTransferTargets } from "../../composables/useTransferTargets";
-import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
-import type { Account, Bank } from "../accounts/accounts.types";
-import { toDisplayAmount } from "../operations/money";
+import { computed, nextTick, ref } from 'vue';
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
+import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutocomplete';
+import { useToast } from '../../composables/useToast';
+import { useTransferTargets } from '../../composables/useTransferTargets';
+import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
+import type { Account, Bank } from '../accounts/accounts.types';
+import { toDisplayAmount } from '../operations/money';
 import {
   categoryLabel,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
   type PaymentMethod,
-} from "../operations/operations.types";
-import { schedulerSchema, type SchedulerForm } from "./schedulers.schemas";
-import type { Scheduler } from "./schedulers.types";
+} from '../operations/operations.types';
+import { schedulerSchema, type SchedulerForm } from './schedulers.schemas';
+import type { Scheduler } from './schedulers.types';
 
 const props = withDefaults(
   defineProps<{
@@ -44,23 +44,23 @@ function initialValues(): SchedulerForm {
   const s = props.scheduler;
   if (!s) {
     return {
-      type: "debit",
-      thirdParty: "",
+      type: 'debit',
+      thirdParty: '',
       amount: undefined as unknown as number,
       categoryId: undefined,
       paymentMethodId: undefined as unknown as string,
       transferAccountId: undefined,
       valueDate: today(),
-      notes: "",
+      notes: '',
       reconciled: false,
       limitDate: undefined,
-      frequencyUnit: "month",
+      frequencyUnit: 'month',
       frequencyValue: 1,
       active: true,
     };
   }
   return {
-    type: s.debit !== null ? "debit" : "credit",
+    type: s.debit !== null ? 'debit' : 'credit',
     thirdParty: s.thirdParty,
     amount: toDisplayAmount((s.debit ?? s.credit)!),
     categoryId: s.categoryId ?? undefined,
@@ -80,19 +80,19 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<SchedulerFor
   validationSchema: toTypedSchema(schedulerSchema),
   initialValues: initialValues(),
 });
-const [type, typeAttrs] = defineField("type");
-const [thirdParty, thirdPartyAttrs] = defineField("thirdParty");
-const [amount, amountAttrs] = defineField("amount");
-const [categoryId, categoryIdAttrs] = defineField("categoryId");
-const [paymentMethodId, paymentMethodIdAttrs] = defineField("paymentMethodId");
-const [transferAccountId, transferAccountIdAttrs] = defineField("transferAccountId");
-const [valueDate, valueDateAttrs] = defineField("valueDate");
-const [notes, notesAttrs] = defineField("notes");
-const [reconciled, reconciledAttrs] = defineField("reconciled");
-const [limitDate, limitDateAttrs] = defineField("limitDate");
-const [frequencyUnit, frequencyUnitAttrs] = defineField("frequencyUnit");
-const [frequencyValue, frequencyValueAttrs] = defineField("frequencyValue");
-const [active, activeAttrs] = defineField("active");
+const [type, typeAttrs] = defineField('type');
+const [thirdParty, thirdPartyAttrs] = defineField('thirdParty');
+const [amount, amountAttrs] = defineField('amount');
+const [categoryId, categoryIdAttrs] = defineField('categoryId');
+const [paymentMethodId, paymentMethodIdAttrs] = defineField('paymentMethodId');
+const [transferAccountId, transferAccountIdAttrs] = defineField('transferAccountId');
+const [valueDate, valueDateAttrs] = defineField('valueDate');
+const [notes, notesAttrs] = defineField('notes');
+const [reconciled, reconciledAttrs] = defineField('reconciled');
+const [limitDate, limitDateAttrs] = defineField('limitDate');
+const [frequencyUnit, frequencyUnitAttrs] = defineField('frequencyUnit');
+const [frequencyValue, frequencyValueAttrs] = defineField('frequencyValue');
+const [active, activeAttrs] = defineField('active');
 
 // Same field logic as the operation form and the search panel:
 // category/payment-method choices only ever show options matching the
@@ -152,26 +152,26 @@ const onSubmit = handleSubmit(async (submitted) => {
   };
 
   const { error, response } = props.scheduler
-    ? await apiClient.PATCH("/schedulers/{id}", {
+    ? await apiClient.PATCH('/schedulers/{id}', {
         params: { path: { id: props.scheduler.id } },
         body,
       })
-    : await apiClient.POST("/schedulers", { body });
+    : await apiClient.POST('/schedulers', { body });
 
   if (!response.ok) {
-    toast(errorMessage(error) ?? t("schedulers.genericError"), "error");
+    toast(errorMessage(error) ?? t('schedulers.genericError'), 'error');
     return;
   }
 
-  toast(t(props.scheduler ? "schedulers.updated" : "schedulers.created"), "success");
-  emit("saved");
+  toast(t(props.scheduler ? 'schedulers.updated' : 'schedulers.created'), 'success');
+  emit('saved');
 });
 </script>
 
 <template>
   <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
     <h2 class="h5">
-      {{ $t(props.scheduler ? "schedulers.editTitle" : "schedulers.createTitle") }}
+      {{ $t(props.scheduler ? 'schedulers.editTitle' : 'schedulers.createTitle') }}
     </h2>
 
     <div class="mb-3">
@@ -186,7 +186,7 @@ const onSubmit = handleSubmit(async (submitted) => {
           autofocus
         />
         <label class="form-check-label" for="scheduler-type-debit">{{
-          $t("operations.debit")
+          $t('operations.debit')
         }}</label>
       </div>
       <div class="form-check form-check-inline">
@@ -199,14 +199,14 @@ const onSubmit = handleSubmit(async (submitted) => {
           value="credit"
         />
         <label class="form-check-label" for="scheduler-type-credit">{{
-          $t("operations.credit")
+          $t('operations.credit')
         }}</label>
       </div>
     </div>
 
     <div class="mb-3 position-relative">
       <label class="form-label" for="scheduler-third-party">{{
-        $t("operations.thirdParty")
+        $t('operations.thirdParty')
       }}</label>
       <input
         id="scheduler-third-party"
@@ -223,12 +223,12 @@ const onSubmit = handleSubmit(async (submitted) => {
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
       </datalist>
       <div v-if="errors.thirdParty" class="invalid-feedback">
-        {{ $t("auth.validation.required") }}
+        {{ $t('auth.validation.required') }}
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-amount">{{ $t("operations.amount") }}</label>
+      <label class="form-label" for="scheduler-amount">{{ $t('operations.amount') }}</label>
       <div class="input-group">
         <span class="input-group-text">{{ amountCurrencySymbol }}</span>
         <input
@@ -244,19 +244,19 @@ const onSubmit = handleSubmit(async (submitted) => {
         />
       </div>
       <div v-if="errors.amount" class="invalid-feedback d-block">
-        {{ $t("operations.validation.amount") }}
+        {{ $t('operations.validation.amount') }}
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-category">{{ $t("operations.category") }}</label>
+      <label class="form-label" for="scheduler-category">{{ $t('operations.category') }}</label>
       <select
         id="scheduler-category"
         v-model="categoryId"
         v-bind="categoryIdAttrs"
         class="form-select"
       >
-        <option value="">{{ $t("operations.noCategory") }}</option>
+        <option value="">{{ $t('operations.noCategory') }}</option>
         <template v-for="group in groupedCategories" :key="group.label ?? '_'">
           <template v-if="group.label === null">
             <option v-for="c in group.categories" :key="c.id" :value="c.id">
@@ -274,7 +274,7 @@ const onSubmit = handleSubmit(async (submitted) => {
 
     <div class="mb-3">
       <label class="form-label" for="scheduler-payment-method">{{
-        $t("operations.paymentMethod")
+        $t('operations.paymentMethod')
       }}</label>
       <select
         id="scheduler-payment-method"
@@ -283,19 +283,19 @@ const onSubmit = handleSubmit(async (submitted) => {
         class="form-select"
         :class="{ 'is-invalid': errors.paymentMethodId }"
       >
-        <option value="">{{ $t("operations.choosePaymentMethod") }}</option>
+        <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
         <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
           {{ pm.name }}
         </option>
       </select>
       <div v-if="errors.paymentMethodId" class="invalid-feedback">
-        {{ $t("auth.validation.required") }}
+        {{ $t('auth.validation.required') }}
       </div>
     </div>
 
     <div v-if="showTransferAccount" class="mb-3">
       <label class="form-label" for="scheduler-transfer-account">
-        {{ $t("operations.transferAccount") }}
+        {{ $t('operations.transferAccount') }}
       </label>
       <select
         id="scheduler-transfer-account"
@@ -304,17 +304,17 @@ const onSubmit = handleSubmit(async (submitted) => {
         class="form-select"
         :class="{ 'is-invalid': errors.transferAccountId }"
       >
-        <option value="">{{ $t("operations.chooseTransferAccount") }}</option>
+        <option value="">{{ $t('operations.chooseTransferAccount') }}</option>
         <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
       <div v-if="errors.transferAccountId" class="invalid-feedback">
-        {{ $t("auth.validation.required") }}
+        {{ $t('auth.validation.required') }}
       </div>
     </div>
 
     <div class="mb-3">
       <label class="form-label" for="scheduler-value-date">{{
-        $t("schedulers.firstOccurrence")
+        $t('schedulers.firstOccurrence')
       }}</label>
       <input
         id="scheduler-value-date"
@@ -328,7 +328,7 @@ const onSubmit = handleSubmit(async (submitted) => {
     <div class="row mb-3">
       <div class="col">
         <label class="form-label" for="scheduler-frequency-value">{{
-          $t("schedulers.every")
+          $t('schedulers.every')
         }}</label>
         <input
           id="scheduler-frequency-value"
@@ -341,12 +341,12 @@ const onSubmit = handleSubmit(async (submitted) => {
           :class="{ 'is-invalid': errors.frequencyValue }"
         />
         <div v-if="errors.frequencyValue" class="invalid-feedback">
-          {{ $t("schedulers.validation.frequencyValue") }}
+          {{ $t('schedulers.validation.frequencyValue') }}
         </div>
       </div>
       <div class="col">
         <label class="form-label" for="scheduler-frequency-unit">{{
-          $t("schedulers.frequencyUnit")
+          $t('schedulers.frequencyUnit')
         }}</label>
         <select
           id="scheduler-frequency-unit"
@@ -354,16 +354,16 @@ const onSubmit = handleSubmit(async (submitted) => {
           v-bind="frequencyUnitAttrs"
           class="form-select"
         >
-          <option value="day">{{ $t("schedulers.units.day") }}</option>
-          <option value="week">{{ $t("schedulers.units.week") }}</option>
-          <option value="month">{{ $t("schedulers.units.month") }}</option>
-          <option value="year">{{ $t("schedulers.units.year") }}</option>
+          <option value="day">{{ $t('schedulers.units.day') }}</option>
+          <option value="week">{{ $t('schedulers.units.week') }}</option>
+          <option value="month">{{ $t('schedulers.units.month') }}</option>
+          <option value="year">{{ $t('schedulers.units.year') }}</option>
         </select>
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-limit-date">{{ $t("schedulers.limitDate") }}</label>
+      <label class="form-label" for="scheduler-limit-date">{{ $t('schedulers.limitDate') }}</label>
       <input
         id="scheduler-limit-date"
         v-model="limitDate"
@@ -374,7 +374,7 @@ const onSubmit = handleSubmit(async (submitted) => {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="scheduler-notes">{{ $t("operations.notes") }}</label>
+      <label class="form-label" for="scheduler-notes">{{ $t('operations.notes') }}</label>
       <textarea
         id="scheduler-notes"
         v-model="notes"
@@ -392,7 +392,7 @@ const onSubmit = handleSubmit(async (submitted) => {
         class="form-check-input"
       />
       <label class="form-check-label" for="scheduler-reconciled">{{
-        $t("operations.reconciled")
+        $t('operations.reconciled')
       }}</label>
     </div>
 
@@ -404,15 +404,15 @@ const onSubmit = handleSubmit(async (submitted) => {
         type="checkbox"
         class="form-check-input"
       />
-      <label class="form-check-label" for="scheduler-active">{{ $t("schedulers.active") }}</label>
+      <label class="form-check-label" for="scheduler-active">{{ $t('schedulers.active') }}</label>
     </div>
 
     <div class="d-flex gap-2">
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-        {{ $t("operations.submit") }}
+        {{ $t('operations.submit') }}
       </button>
       <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-        {{ $t("common.cancel") }}
+        {{ $t('common.cancel') }}
       </button>
     </div>
   </form>

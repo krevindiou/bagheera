@@ -23,25 +23,16 @@ export class ReportBatchService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async batchDelete(
-    req: Request,
-    ids: string[],
-  ): Promise<{ deletedCount: number }> {
+  async batchDelete(req: Request, ids: string[]): Promise<{ deletedCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedReportIds(ids, memberId);
     if (owned.length > 0) {
       await this.db.transaction(async (tx) => {
-        await tx
-          .delete(reportAccount)
-          .where(inArray(reportAccount.reportId, owned));
+        await tx.delete(reportAccount).where(inArray(reportAccount.reportId, owned));
         await tx.delete(report).where(inArray(report.id, owned));
       });
     }
-    await this.audit.record(
-      'report_batch_deleted',
-      memberId,
-      req.ip ?? 'unknown',
-    );
+    await this.audit.record('report_batch_deleted', memberId, req.ip ?? 'unknown');
     return { deletedCount: owned.length };
   }
 }

@@ -1,10 +1,6 @@
 import { BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './global-exception.filter';
-import {
-  fakeArgumentsHost,
-  fakeRequest,
-  fakeResponse,
-} from '../../test-support/fake-http-context';
+import { fakeArgumentsHost, fakeRequest, fakeResponse } from '../../test-support/fake-http-context';
 
 // @sentry/node's named exports aren't spy-able in place (frozen/read-only
 // bindings) — a full module mock sidesteps that instead of fighting it.
@@ -20,9 +16,7 @@ describe('GlobalExceptionFilter', () => {
   let errorSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    errorSpy = jest
-      .spyOn(Logger.prototype, 'error')
-      .mockImplementation(() => undefined);
+    errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
     (Sentry.captureException as jest.Mock).mockReturnValue('event-id');
   });
 
@@ -65,25 +59,17 @@ describe('GlobalExceptionFilter', () => {
         super({ notMessage: 'x' }, 400);
       }
     }
-    await filter.catch(
-      new NoBodyException(),
-      fakeArgumentsHost(fakeRequest(), res),
-    );
+    await filter.catch(new NoBodyException(), fakeArgumentsHost(fakeRequest(), res));
     // Nest's HttpException.message defaults to the status text when the
     // response body carries no usable message of its own.
     /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.any() is untyped (any) in @types/jest */
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.any(String) }),
-    );
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
     /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   });
 
   it('logs and reports to Sentry, then returns a generic 500 body, for a plain Error', async () => {
     const res = fakeResponse();
-    await filter.catch(
-      new Error('boom'),
-      fakeArgumentsHost(fakeRequest(), res),
-    );
+    await filter.catch(new Error('boom'), fakeArgumentsHost(fakeRequest(), res));
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -137,10 +123,7 @@ describe('GlobalExceptionFilter', () => {
   // currently dead code, not exercised by this or any other case.
   it('reports a generic "Internal server error", not the raw value, for a thrown non-Error', async () => {
     const res = fakeResponse();
-    await filter.catch(
-      'a raw string throw',
-      fakeArgumentsHost(fakeRequest(), res),
-    );
+    await filter.catch('a raw string throw', fakeArgumentsHost(fakeRequest(), res));
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({ message: 'Internal server error' }),

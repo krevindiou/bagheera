@@ -33,12 +33,7 @@ describe('activation-token', () => {
   });
 
   it('returns null for a token minted for a different purpose (type confusion)', () => {
-    const emailChangeToken = buildEmailChangeToken(
-      crypto,
-      'member-id',
-      'new@example.com',
-      1,
-    );
+    const emailChangeToken = buildEmailChangeToken(crypto, 'member-id', 'new@example.com', 1);
     expect(parseActivationToken(crypto, emailChangeToken)).toBeNull();
   });
 });

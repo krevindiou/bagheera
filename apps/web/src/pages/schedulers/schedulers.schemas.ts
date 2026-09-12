@@ -1,9 +1,9 @@
-import { AMOUNT_CEILING } from "@bagheera/money";
-import { z } from "zod";
-import { TRANSFER_PAYMENT_METHOD_IDS } from "../operations/operations.types";
+import { AMOUNT_CEILING } from '@bagheera/money';
+import { z } from 'zod';
+import { TRANSFER_PAYMENT_METHOD_IDS } from '../operations/operations.types';
 
 const optionalId = z.preprocess(
-  (value) => (value === "" || value === undefined || value === null ? undefined : value),
+  (value) => (value === '' || value === undefined || value === null ? undefined : value),
   z.string().uuid().optional(),
 );
 
@@ -12,11 +12,11 @@ const optionalId = z.preprocess(
 // plus the recurrence config (limitDate/frequencyUnit/frequencyValue/active).
 export const schedulerSchema = z
   .object({
-    type: z.enum(["debit", "credit"]),
+    type: z.enum(['debit', 'credit']),
     thirdParty: z.string().trim().min(1).max(64),
     amount: z.preprocess(
       (value) =>
-        value === "" || value === undefined || value === null ? undefined : Number(value),
+        value === '' || value === undefined || value === null ? undefined : Number(value),
       z.number().positive().max(AMOUNT_CEILING),
     ),
     categoryId: optionalId,
@@ -25,11 +25,11 @@ export const schedulerSchema = z
     valueDate: z.string().min(1),
     notes: z.string().max(4096).optional(),
     reconciled: z.boolean().optional(),
-    limitDate: z.preprocess((value) => (value === "" ? undefined : value), z.string().optional()),
-    frequencyUnit: z.enum(["day", "week", "month", "year"]),
+    limitDate: z.preprocess((value) => (value === '' ? undefined : value), z.string().optional()),
+    frequencyUnit: z.enum(['day', 'week', 'month', 'year']),
     frequencyValue: z.preprocess(
       (value) =>
-        value === "" || value === undefined || value === null ? undefined : Number(value),
+        value === '' || value === undefined || value === null ? undefined : Number(value),
       z.number().int().positive(),
     ),
     active: z.boolean().optional(),
@@ -38,6 +38,6 @@ export const schedulerSchema = z
     (form) =>
       !TRANSFER_PAYMENT_METHOD_IDS.includes(form.paymentMethodId) ||
       Boolean(form.transferAccountId),
-    { message: "transferAccountRequired", path: ["transferAccountId"] },
+    { message: 'transferAccountRequired', path: ['transferAccountId'] },
   );
 export type SchedulerForm = z.infer<typeof schedulerSchema>;

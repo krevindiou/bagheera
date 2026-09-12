@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Field rules mirror the API DTOs (apps/api/src/{members,auth}/dto/*) so
 // invalid submissions are caught client-side before hitting the network.
@@ -20,8 +20,8 @@ export const registerSchema = z
     passwordConfirmation: z.string(),
   })
   .refine((form) => form.password === form.passwordConfirmation, {
-    message: "passwordMismatch",
-    path: ["passwordConfirmation"],
+    message: 'passwordMismatch',
+    path: ['passwordConfirmation'],
   });
 export type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -34,7 +34,7 @@ export const resetPasswordSchema = z
     passwordConfirmation: z.string(),
   })
   .refine((form) => form.password === form.passwordConfirmation, {
-    message: "passwordMismatch",
-    path: ["passwordConfirmation"],
+    message: 'passwordMismatch',
+    path: ['passwordConfirmation'],
   });
 export type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;

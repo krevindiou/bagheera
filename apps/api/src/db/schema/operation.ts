@@ -32,9 +32,7 @@ export const operation = pgTable(
     schedulerId: uuid('scheduler_id').references(() => scheduler.id),
     // Mirror of a transfer pair; nullable + unique so at most one operation
     // points back to any given counterpart.
-    transferOperationId: uuid('transfer_operation_id').references(
-      (): AnyPgColumn => operation.id,
-    ),
+    transferOperationId: uuid('transfer_operation_id').references((): AnyPgColumn => operation.id),
     transferAccountId: uuid('transfer_account_id').references(() => account.id),
     categoryId: uuid('category_id').references(() => category.id),
     paymentMethodId: uuid('payment_method_id')
@@ -46,18 +44,14 @@ export const operation = pgTable(
     valueDate: date('value_date').notNull().defaultNow(),
     reconciled: boolean('reconciled').notNull().default(false),
     notes: text('notes').notNull().default(''),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    uniqueIndex('operation_transfer_operation_id_unique').on(
-      table.transferOperationId,
-    ),
+    uniqueIndex('operation_transfer_operation_id_unique').on(table.transferOperationId),
     check(
       'operation_debit_credit_exclusive',
       sql`(${table.debit} is null) <> (${table.credit} is null)`,

@@ -17,11 +17,7 @@ export class ResendActivationController {
     @Req() req: Request,
     @Body() dto: ResendActivationDto,
   ): Promise<{ message: string }> {
-    await this.resendActivation.resend(
-      dto.email,
-      dto.password,
-      req.ip ?? 'unknown',
-    );
+    await this.resendActivation.resend(dto.email, dto.password, req.ip ?? 'unknown');
     return {
       message: 'A new activation email has been sent.',
     };

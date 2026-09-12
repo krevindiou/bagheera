@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { errorMessage } from "../../api/errorMessage";
-import { useSessionStore } from "../../stores/session.store";
-import { useToast } from "../../composables/useToast";
-import PasswordInput from "../../components/PasswordInput.vue";
-import { profileSchema, type ProfileForm } from "./settings.schemas";
-import ToastContainer from "../../components/ToastContainer.vue";
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
+import { useSessionStore } from '../../stores/session.store';
+import { useToast } from '../../composables/useToast';
+import PasswordInput from '../../components/PasswordInput.vue';
+import { profileSchema, type ProfileForm } from './settings.schemas';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const session = useSessionStore();
 const { push: toast } = useToast();
@@ -17,42 +17,42 @@ const { t } = useI18n();
 const { defineField, handleSubmit, errors, isSubmitting, resetField, setFieldError } =
   useForm<ProfileForm>({
     validationSchema: toTypedSchema(profileSchema),
-    initialValues: { email: session.member?.email ?? "", currentPassword: "" },
+    initialValues: { email: session.member?.email ?? '', currentPassword: '' },
   });
-const [email, emailAttrs] = defineField("email");
-const [currentPassword, currentPasswordAttrs] = defineField("currentPassword");
+const [email, emailAttrs] = defineField('email');
+const [currentPassword, currentPasswordAttrs] = defineField('currentPassword');
 
 const onSubmit = handleSubmit(async (values) => {
-  const { error, response } = await apiClient.POST("/members/profile", {
+  const { error, response } = await apiClient.POST('/members/profile', {
     body: values,
   });
 
   if (!response.ok) {
-    const message = errorMessage(error) ?? t("settings.profile.genericError");
-    if (message === "Current password is invalid.") {
-      setFieldError("currentPassword", message);
+    const message = errorMessage(error) ?? t('settings.profile.genericError');
+    if (message === 'Current password is invalid.') {
+      setFieldError('currentPassword', message);
       return;
     }
-    toast(message, "error");
+    toast(message, 'error');
     return;
   }
 
   // The address on file doesn't change yet — only once the confirmation
   // link just emailed to it is clicked — so the session's email stays as
   // it was.
-  resetField("currentPassword");
-  toast(t("settings.profile.success"), "success");
+  resetField('currentPassword');
+  toast(t('settings.profile.success'), 'success');
 });
 </script>
 
 <template>
   <div class="container py-5" style="max-width: 480px">
-    <h1>{{ $t("settings.profile.title") }}</h1>
+    <h1>{{ $t('settings.profile.title') }}</h1>
     <ToastContainer />
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="profile-email">{{ $t("settings.profile.email") }}</label>
+        <label class="form-label" for="profile-email">{{ $t('settings.profile.email') }}</label>
         <input
           id="profile-email"
           v-model="email"
@@ -65,13 +65,13 @@ const onSubmit = handleSubmit(async (values) => {
           :class="{ 'is-invalid': errors.email }"
         />
         <div v-if="errors.email" class="invalid-feedback">
-          {{ $t("auth.validation.email") }}
+          {{ $t('auth.validation.email') }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="profile-current-password">
-          {{ $t("settings.profile.currentPassword") }}
+          {{ $t('settings.profile.currentPassword') }}
         </label>
         <PasswordInput
           id="profile-current-password"
@@ -81,15 +81,15 @@ const onSubmit = handleSubmit(async (values) => {
         />
         <div v-if="errors.currentPassword" class="invalid-feedback">
           {{
-            errors.currentPassword === "Current password is invalid."
+            errors.currentPassword === 'Current password is invalid.'
               ? errors.currentPassword
-              : $t("auth.validation.required")
+              : $t('auth.validation.required')
           }}
         </div>
       </div>
 
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
-        {{ $t("settings.profile.submit") }}
+        {{ $t('settings.profile.submit') }}
       </button>
     </form>
   </div>

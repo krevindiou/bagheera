@@ -4,10 +4,7 @@ import type { Server } from 'http';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { toMinorUnits } from '../../common/money';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
-import {
-  ANY_PAYMENT_METHOD_ID,
-  insertMemberBankAccount,
-} from '../../test-support/db-fixtures';
+import { ANY_PAYMENT_METHOD_ID, insertMemberBankAccount } from '../../test-support/db-fixtures';
 import * as schema from './index';
 import { operation } from './operation';
 
@@ -94,9 +91,9 @@ describe('operation schema', () => {
 
   describe('required FKs', () => {
     it('rejects an operation pointing at an account that does not exist', async () => {
-      await expect(
-        insertOperation(getDb(app), randomUUID()),
-      ).rejects.toMatchObject({ cause: { code: '23503' } });
+      await expect(insertOperation(getDb(app), randomUUID())).rejects.toMatchObject({
+        cause: { code: '23503' },
+      });
     });
 
     it('rejects an operation pointing at a payment method that does not exist', async () => {

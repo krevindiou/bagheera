@@ -57,11 +57,7 @@ export interface SignedInFixture {
    * is thenable and would otherwise auto-flatten to a Response the
    * moment it crosses this function's own `await` boundary anyway.
    */
-  mutate: (
-    method: MutateMethod,
-    url: string,
-    body?: object,
-  ) => Promise<SupertestResponse>;
+  mutate: (method: MutateMethod, url: string, body?: object) => Promise<SupertestResponse>;
 }
 
 /** Exposed for specs that drive their own raw supertest calls (e.g. sign-in's own failure-mode cases) instead of going through a fixture above. */
@@ -73,11 +69,7 @@ export async function csrfTokenFor(agent: Agent): Promise<string> {
 function buildMutate(
   agent: Agent,
   getCsrfToken: () => Promise<string>,
-): (
-  method: MutateMethod,
-  url: string,
-  body?: object,
-) => Promise<SupertestResponse> {
+): (method: MutateMethod, url: string, body?: object) => Promise<SupertestResponse> {
   return async (method, url, body) => {
     const token = await getCsrfToken();
     const req = agent[method](url).set('x-csrf-token', token);
@@ -147,16 +139,8 @@ export async function registerActivateAndSignIn(
 
   const db = getDb(app);
   const [row] = await db.select().from(member).where(eq(member.email, email));
-  const key = buildActivationToken(
-    app.get(CryptoService),
-    email,
-    row.activationTokenVersion,
-  );
-  await agent
-    .post('/members/activate')
-    .set('x-csrf-token', csrfToken)
-    .send({ key })
-    .expect(200);
+  const key = buildActivationToken(app.get(CryptoService), email, row.activationTokenVersion);
+  await agent.post('/members/activate').set('x-csrf-token', csrfToken).send({ key }).expect(200);
   await agent
     .post('/auth/sign-in')
     .set('x-csrf-token', csrfToken)
@@ -183,10 +167,7 @@ export async function seedSignedInMember(
   app: INestApplication<Server>,
   overrides: FixtureOverrides = {},
 ): Promise<SignedInFixture> {
-  const { email, password, memberId } = await insertActiveMember(
-    app,
-    overrides,
-  );
+  const { email, password, memberId } = await insertActiveMember(app, overrides);
 
   const agent = request.agent(app.getHttpServer());
   const csrfToken = await csrfTokenFor(agent);

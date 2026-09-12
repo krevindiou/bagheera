@@ -13,8 +13,6 @@ describe('HealthController', () => {
       execute: jest.fn().mockRejectedValue(new Error('connection refused')),
     };
     const controller = new HealthController(db as never);
-    await expect(controller.check()).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
+    await expect(controller.check()).rejects.toBeInstanceOf(ServiceUnavailableException);
   });
 });

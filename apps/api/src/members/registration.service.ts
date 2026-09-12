@@ -61,10 +61,6 @@ export class RegistrationService {
       dto.email,
       result.value.activationTokenVersion,
     );
-    await this.audit.record(
-      'activation_issued',
-      result.value.id,
-      sourceAddress,
-    );
+    await this.audit.record('activation_issued', result.value.id, sourceAddress);
   }
 }

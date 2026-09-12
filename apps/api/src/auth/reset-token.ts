@@ -15,11 +15,7 @@ export interface ResetTokenPayload {
   exp: number;
 }
 
-export function buildResetToken(
-  crypto: CryptoService,
-  email: string,
-  version: number,
-): string {
+export function buildResetToken(crypto: CryptoService, email: string, version: number): string {
   const payload: ResetTokenPayload = {
     type: 'reset',
     email,
@@ -34,10 +30,7 @@ export function buildResetToken(
  * for anything wrong with the token itself — tampered/malformed
  * ciphertext, bad JSON, wrong shape, expired — never throws.
  */
-export function parseResetToken(
-  crypto: CryptoService,
-  key: string,
-): ResetTokenPayload | null {
+export function parseResetToken(crypto: CryptoService, key: string): ResetTokenPayload | null {
   let decrypted: string;
   try {
     decrypted = crypto.decrypt(key);

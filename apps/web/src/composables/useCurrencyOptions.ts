@@ -9,13 +9,13 @@ export interface CurrencyOption {
 }
 
 export function getCurrencyOptions(): CurrencyOption[] {
-  const currencyNames = new Intl.DisplayNames(["en"], { type: "currency" });
+  const currencyNames = new Intl.DisplayNames(['en'], { type: 'currency' });
   const toOption = (code: string): CurrencyOption => ({
     code,
     name: currencyNames.of(code) ?? code,
   });
 
-  return Intl.supportedValuesOf("currency")
+  return Intl.supportedValuesOf('currency')
     .map(toOption)
     .sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -71,5 +71,5 @@ export function getGuessedCurrency(options: CurrencyOption[]): string {
     // Unparsable/unsupported locale — no guess, field stays blank.
   }
 
-  return "";
+  return '';
 }

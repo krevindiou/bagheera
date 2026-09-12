@@ -9,14 +9,10 @@ import {
 // class-validator isn't pulled in here — this only checks the version/variant
 // nibbles the app actually relies on (IsUUID('7') elsewhere checks the same
 // shape), via a plain regex rather than adding a test dependency on it.
-const UUID_V7_SHAPE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_V7_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function flattenCategories(seeds: CategorySeed[]): CategorySeed[] {
-  return seeds.flatMap((seed) => [
-    seed,
-    ...flattenCategories(seed.children ?? []),
-  ]);
+  return seeds.flatMap((seed) => [seed, ...flattenCategories(seed.children ?? [])]);
 }
 
 describe('paymentMethodSeeds', () => {
@@ -40,18 +36,12 @@ describe('paymentMethodSeeds', () => {
 
   it('only INITIAL_BALANCE is untyped — every other payment method is pinned debit or credit', () => {
     const untyped = paymentMethodSeeds.filter((s) => s.type === null);
-    expect(untyped.map((s) => s.id)).toEqual([
-      PAYMENT_METHOD_ID.INITIAL_BALANCE,
-    ]);
+    expect(untyped.map((s) => s.id)).toEqual([PAYMENT_METHOD_ID.INITIAL_BALANCE]);
   });
 
   it('pins the Transfer debit/credit pair — transfer.service.ts keys off these exact ids', () => {
-    expect(PAYMENT_METHOD_ID.TRANSFER_DEBIT).toBe(
-      '00000000-0000-7000-8000-000000000004',
-    );
-    expect(PAYMENT_METHOD_ID.TRANSFER_CREDIT).toBe(
-      '00000000-0000-7000-8000-000000000006',
-    );
+    expect(PAYMENT_METHOD_ID.TRANSFER_DEBIT).toBe('00000000-0000-7000-8000-000000000004');
+    expect(PAYMENT_METHOD_ID.TRANSFER_CREDIT).toBe('00000000-0000-7000-8000-000000000006');
   });
 });
 

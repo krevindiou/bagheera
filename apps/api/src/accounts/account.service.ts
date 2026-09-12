@@ -101,10 +101,7 @@ export class AccountService {
   // itself in that case.
   async chart(req: Request, id: string): Promise<AccountChart> {
     const memberId = requireMemberId(req);
-    const { account: acc } = await this.ownership.requireOwnedAccount(
-      id,
-      memberId,
-    );
+    const { account: acc } = await this.ownership.requireOwnedAccount(id, memberId);
 
     const rows = await this.db
       .select({
@@ -135,10 +132,7 @@ export class AccountService {
   // Balance: sum of credits minus sum of debits over all the account's
   // operations. Reconciled balance: same computation restricted to
   // reconciled operations.
-  async balance(
-    req: Request,
-    id: string,
-  ): Promise<{ balance: number; reconciledBalance: number }> {
+  async balance(req: Request, id: string): Promise<{ balance: number; reconciledBalance: number }> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(id, memberId);
 
@@ -157,56 +151,38 @@ export class AccountService {
       // is only unwrapping the string node-postgres hands back for a
       // NUMERIC/bigint aggregate — the subtraction itself always widens to
       // plain `number`, hence the cast on the finished total.
-      balance: toMajorUnits(
-        (Number(row.credit) - Number(row.debit)) as MinorUnits,
-      ),
+      balance: toMajorUnits((Number(row.credit) - Number(row.debit)) as MinorUnits),
       reconciledBalance: toMajorUnits(
-        (Number(row.reconciledCredit) -
-          Number(row.reconciledDebit)) as MinorUnits,
+        (Number(row.reconciledCredit) - Number(row.reconciledDebit)) as MinorUnits,
       ),
     };
   }
 
   async update(req: Request, id: string, dto: UpdateAccountDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const { account: row } = await this.ownership.requireOwnedAccount(
-      id,
-      memberId,
-    );
+    const { account: row } = await this.ownership.requireOwnedAccount(id, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
     if (dto.bankId !== row.bankId || dto.currency !== row.currency) {
       throw new BadRequestException('Bank and currency cannot be changed.');
     }
-    await this.db
-      .update(account)
-      .set({ name: dto.name })
-      .where(eq(account.id, id));
+    await this.db.update(account).set({ name: dto.name }).where(eq(account.id, id));
   }
 
   async close(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const { account: row } = await this.ownership.requireOwnedAccount(
-      id,
-      memberId,
-    );
+    const { account: row } = await this.ownership.requireOwnedAccount(id, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
-    await this.db
-      .update(account)
-      .set({ closed: true })
-      .where(eq(account.id, id));
+    await this.db.update(account).set({ closed: true }).where(eq(account.id, id));
     await this.audit.record('account_closed', memberId, req.ip ?? 'unknown');
   }
 
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const { account: row } = await this.ownership.requireOwnedAccount(
-      id,
-      memberId,
-    );
+    const { account: row } = await this.ownership.requireOwnedAccount(id, memberId);
     if (row.deleted) {
       throw new UnprocessableEntityException('Account is already deleted.');
     }

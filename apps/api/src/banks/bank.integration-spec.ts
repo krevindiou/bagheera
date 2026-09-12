@@ -38,10 +38,7 @@ describe('banks', () => {
       expect(body.created).toBe(true);
       expect(body.name).toBe('My Bank');
 
-      const [row] = await getDb(app)
-        .select()
-        .from(bank)
-        .where(eq(bank.id, body.id));
+      const [row] = await getDb(app).select().from(bank).where(eq(bank.id, body.id));
       expect(row.memberId).toBe(memberId);
     });
 
@@ -151,18 +148,13 @@ describe('banks', () => {
 
       // Closed stays reachable/listable — never folded into ownership checks.
       const list = await agent.get('/banks').expect(200);
-      expect((list.body as { id: string }[]).some((b) => b.id === id)).toBe(
-        true,
-      );
+      expect((list.body as { id: string }[]).some((b) => b.id === id)).toBe(true);
 
       const [event] = await getDb(app)
         .select()
         .from(securityEvent)
         .where(
-          and(
-            eq(securityEvent.eventType, 'bank_closed'),
-            eq(securityEvent.memberId, memberId),
-          ),
+          and(eq(securityEvent.eventType, 'bank_closed'), eq(securityEvent.memberId, memberId)),
         )
         .orderBy(desc(securityEvent.createdAt))
         .limit(1);
@@ -184,18 +176,13 @@ describe('banks', () => {
       expect(row.deleted).toBe(true);
 
       const list = await agent.get('/banks').expect(200);
-      expect((list.body as { id: string }[]).some((b) => b.id === id)).toBe(
-        false,
-      );
+      expect((list.body as { id: string }[]).some((b) => b.id === id)).toBe(false);
 
       const [event] = await getDb(app)
         .select()
         .from(securityEvent)
         .where(
-          and(
-            eq(securityEvent.eventType, 'bank_deleted'),
-            eq(securityEvent.memberId, memberId),
-          ),
+          and(eq(securityEvent.eventType, 'bank_deleted'), eq(securityEvent.memberId, memberId)),
         )
         .orderBy(desc(securityEvent.createdAt))
         .limit(1);

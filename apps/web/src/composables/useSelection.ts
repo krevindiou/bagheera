@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, ref } from 'vue';
 
 /**
  * Row-selection state for a batch-actions table (operations/reports/

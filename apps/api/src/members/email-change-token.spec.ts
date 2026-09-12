@@ -1,20 +1,12 @@
 import { testCryptoService } from '../test-support/test-crypto-service';
-import {
-  buildEmailChangeToken,
-  parseEmailChangeToken,
-} from './email-change-token';
+import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { buildResetToken } from '../auth/reset-token';
 
 describe('email-change-token', () => {
   const crypto = testCryptoService();
 
   it('round-trips memberId/newEmail/version through build and parse', () => {
-    const token = buildEmailChangeToken(
-      crypto,
-      'member-42',
-      'new@example.com',
-      1,
-    );
+    const token = buildEmailChangeToken(crypto, 'member-42', 'new@example.com', 1);
     const payload = parseEmailChangeToken(crypto, token);
     expect(payload).toMatchObject({
       type: 'email_change',
@@ -27,12 +19,7 @@ describe('email-change-token', () => {
   it('returns null for an expired token', () => {
     const realNow = Date.now;
     Date.now = () => 0;
-    const token = buildEmailChangeToken(
-      crypto,
-      'member-42',
-      'new@example.com',
-      1,
-    );
+    const token = buildEmailChangeToken(crypto, 'member-42', 'new@example.com', 1);
     Date.now = realNow;
     expect(parseEmailChangeToken(crypto, token)).toBeNull();
   });

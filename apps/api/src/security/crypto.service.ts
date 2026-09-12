@@ -1,11 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-  timingSafeEqual,
-} from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, timingSafeEqual } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
@@ -42,16 +37,12 @@ export class CryptoService implements OnModuleInit {
     for (const [id, base64Key] of Object.entries(parsed)) {
       const key = Buffer.from(base64Key, 'base64');
       if (key.length !== KEY_LENGTH) {
-        throw new Error(
-          `CRYPTO_KEYS: key "${id}" must decode to ${KEY_LENGTH} bytes`,
-        );
+        throw new Error(`CRYPTO_KEYS: key "${id}" must decode to ${KEY_LENGTH} bytes`);
       }
       keys.set(id, key);
     }
     if (!keys.has(activeKeyId)) {
-      throw new Error(
-        `CRYPTO_ACTIVE_KEY_ID "${activeKeyId}" not present in CRYPTO_KEYS`,
-      );
+      throw new Error(`CRYPTO_ACTIVE_KEY_ID "${activeKeyId}" not present in CRYPTO_KEYS`);
     }
     this.keys = keys;
     this.activeKeyId = activeKeyId;
@@ -64,10 +55,7 @@ export class CryptoService implements OnModuleInit {
     }
     const iv = randomBytes(IV_LENGTH);
     const cipher = createCipheriv(ALGORITHM, key, iv);
-    const ciphertext = Buffer.concat([
-      cipher.update(plain, 'utf8'),
-      cipher.final(),
-    ]);
+    const ciphertext = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
     return [
       this.activeKeyId,
@@ -92,10 +80,7 @@ export class CryptoService implements OnModuleInit {
     const ciphertext = Buffer.from(ciphertextB64, 'base64');
     const decipher = createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);
-    return Buffer.concat([
-      decipher.update(ciphertext),
-      decipher.final(),
-    ]).toString('utf8');
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
   }
 
   /** Constant-time comparison for callers that need to compare secrets directly. */

@@ -31,9 +31,7 @@ describe('POST /reports/batch/delete', () => {
       title: 'Not mine',
       periodGrouping: 'month',
     });
-    const { id: foreignId } = (
-      foreignCreated.body as { report: { id: string } }
-    ).report;
+    const { id: foreignId } = (foreignCreated.body as { report: { id: string } }).report;
 
     const res = await mutate('post', '/reports/batch/delete', {
       ids: [ownId, foreignId],
@@ -41,15 +39,9 @@ describe('POST /reports/batch/delete', () => {
     expect(res.status).toBe(200);
     expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
 
-    const ownRows = await getDb(app)
-      .select()
-      .from(report)
-      .where(eq(report.id, ownId));
+    const ownRows = await getDb(app).select().from(report).where(eq(report.id, ownId));
     expect(ownRows).toHaveLength(0);
-    const foreignRows = await getDb(app)
-      .select()
-      .from(report)
-      .where(eq(report.id, foreignId));
+    const foreignRows = await getDb(app).select().from(report).where(eq(report.id, foreignId));
     expect(foreignRows).toHaveLength(1);
 
     const [event] = await getDb(app)

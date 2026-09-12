@@ -1,9 +1,5 @@
 import path from 'node:path';
-import {
-  GenericContainer,
-  Wait,
-  type StartedTestContainer,
-} from 'testcontainers';
+import { GenericContainer, Wait, type StartedTestContainer } from 'testcontainers';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
@@ -30,9 +26,7 @@ export async function startIntegrationInfra(): Promise<void> {
       POSTGRES_DB,
     })
     .withExposedPorts(5432)
-    .withWaitStrategy(
-      Wait.forLogMessage(/database system is ready to accept connections/, 2),
-    )
+    .withWaitStrategy(Wait.forLogMessage(/database system is ready to accept connections/, 2))
     .start();
 
   valkeyContainer = await new GenericContainer(VALKEY_IMAGE)

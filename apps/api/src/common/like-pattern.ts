@@ -19,9 +19,6 @@ function escapeLikePattern(value: string): string {
  * Enforced by the `no-restricted-imports` rule in eslint.config.mjs, which
  * bans importing `ilike` from `drizzle-orm` anywhere outside this file.
  */
-export function ilikeContains(
-  column: Parameters<typeof ilike>[0],
-  term: string,
-): SQL {
+export function ilikeContains(column: Parameters<typeof ilike>[0], term: string): SQL {
   return ilike(column, `%${escapeLikePattern(term)}%`);
 }

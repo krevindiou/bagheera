@@ -1,5 +1,5 @@
-import { vi } from "vitest";
-import type { Router } from "vue-router";
+import { vi } from 'vitest';
+import type { Router } from 'vue-router';
 
 // A redirect resolves through vue-router's async route-component import,
 // which takes real wall-clock time (and varies run to run depending on

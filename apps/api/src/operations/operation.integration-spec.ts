@@ -4,10 +4,7 @@ import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
 import { category, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function debitCategoryId(app: INestApplication<Server>): Promise<string> {
@@ -68,10 +65,7 @@ describe('operations', () => {
         operation: { id: string };
       };
 
-      const [row] = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, created.id));
+      const [row] = await getDb(app).select().from(operation).where(eq(operation.id, created.id));
       expect(row.debit).toBe(toMinorUnits(42.5));
       expect(row.credit).toBeNull();
     });
@@ -93,10 +87,7 @@ describe('operations', () => {
       const { operation: created } = res.body as {
         operation: { id: string };
       };
-      const [row] = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, created.id));
+      const [row] = await getDb(app).select().from(operation).where(eq(operation.id, created.id));
       expect(row.credit).toBe(toMinorUnits(1500));
     });
 
@@ -181,17 +172,13 @@ describe('operations', () => {
         });
       }
 
-      const res = await agent
-        .get(`/operations?accountId=${accountId}&page=1`)
-        .expect(200);
+      const res = await agent.get(`/operations?accountId=${accountId}&page=1`).expect(200);
       const body = res.body as { items: unknown[]; total: number };
       expect(body.total).toBe(3);
       expect(body.items).toHaveLength(3);
 
       const { agent: attackerAgent } = await seedSignedInMember(app);
-      await attackerAgent
-        .get(`/operations?accountId=${accountId}&page=1`)
-        .expect(404);
+      await attackerAgent.get(`/operations?accountId=${accountId}&page=1`).expect(404);
     });
   });
 
@@ -220,10 +207,7 @@ describe('operations', () => {
       });
       expect(res.status).toBe(200);
 
-      const [row] = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, id));
+      const [row] = await getDb(app).select().from(operation).where(eq(operation.id, id));
       expect(row.thirdParty).toBe('New');
       expect(row.debit).toBe(toMinorUnits(20));
     });

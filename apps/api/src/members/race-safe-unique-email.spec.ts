@@ -23,12 +23,7 @@ describe('raceSafeUniqueEmail', () => {
   it("proceeds to write when the only existing row is the caller's own (excludeId)", async () => {
     const db = fakeDb([{ id: 'member-1' }]);
     const write = jest.fn().mockResolvedValue('written');
-    const result = await raceSafeUniqueEmail(
-      db,
-      'own@example.com',
-      write,
-      'member-1',
-    );
+    const result = await raceSafeUniqueEmail(db, 'own@example.com', write, 'member-1');
     expect(result).toEqual({ ok: true, value: 'written' });
     expect(write).toHaveBeenCalled();
   });
@@ -44,9 +39,7 @@ describe('raceSafeUniqueEmail', () => {
     const db = fakeDb([]);
     const write = jest
       .fn()
-      .mockRejectedValue(
-        Object.assign(new Error('duplicate key'), { cause: { code: '23505' } }),
-      );
+      .mockRejectedValue(Object.assign(new Error('duplicate key'), { cause: { code: '23505' } }));
     const result = await raceSafeUniqueEmail(db, 'raced@example.com', write);
     expect(result).toEqual({ ok: false });
   });
@@ -54,8 +47,8 @@ describe('raceSafeUniqueEmail', () => {
   it('rethrows a write failure unrelated to the unique index', async () => {
     const db = fakeDb([]);
     const write = jest.fn().mockRejectedValue(new Error('connection lost'));
-    await expect(
-      raceSafeUniqueEmail(db, 'x@example.com', write),
-    ).rejects.toThrow('connection lost');
+    await expect(raceSafeUniqueEmail(db, 'x@example.com', write)).rejects.toThrow(
+      'connection lost',
+    );
   });
 });

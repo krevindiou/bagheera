@@ -8,11 +8,7 @@ import {
   IsUUID,
   Max,
 } from 'class-validator';
-import {
-  AmountField,
-  NotesField,
-  ThirdPartyField,
-} from '../../common/dto-fields';
+import { AmountField, NotesField, ThirdPartyField } from '../../common/dto-fields';
 
 export class CreateSchedulerDto {
   @IsUUID('7')

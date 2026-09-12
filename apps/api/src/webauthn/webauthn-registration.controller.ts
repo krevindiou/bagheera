@@ -14,9 +14,7 @@ export class WebauthnRegistrationController {
   @Post('options')
   @HttpCode(200)
   @RateLimit({ points: 10, durationSeconds: 60 })
-  async options(
-    @Req() req: Request,
-  ): Promise<PublicKeyCredentialCreationOptionsJSON> {
+  async options(@Req() req: Request): Promise<PublicKeyCredentialCreationOptionsJSON> {
     return this.registration.generateOptions(req);
   }
 

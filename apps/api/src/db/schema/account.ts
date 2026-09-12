@@ -1,10 +1,4 @@
-import {
-  boolean,
-  pgTable,
-  timestamp,
-  uuid,
-  varchar,
-} from 'drizzle-orm/pg-core';
+import { boolean, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { bank } from './bank';
 import { uuidPk } from './id';
 
@@ -19,9 +13,7 @@ export const account = pgTable('account', {
   currency: varchar('currency', { length: 3 }).notNull(),
   closed: boolean('closed').notNull().default(false),
   deleted: boolean('deleted').notNull().default(false),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()
     .defaultNow()

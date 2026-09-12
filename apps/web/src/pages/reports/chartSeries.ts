@@ -1,7 +1,7 @@
-import type { SynthesisChartSeries } from "../../components/SynthesisChart.vue";
-import type { ReportChart } from "./reports.types";
+import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import type { ReportChart } from './reports.types';
 
-const CHART_COLORS = { debit: "#dc3545", credit: "#198754" };
+const CHART_COLORS = { debit: '#dc3545', credit: '#198754' };
 
 /**
  * A report/dashboard chart is per-currency, each with a separate debit and
@@ -22,14 +22,14 @@ export function toChartSeries(
   for (const s of chart.series) {
     if (s.debit.length > 0) {
       series.push({
-        label: `${s.currency} ${t("operations.debit")}`,
+        label: `${s.currency} ${t('operations.debit')}`,
         color: CHART_COLORS.debit,
         points: s.debit,
       });
     }
     if (s.credit.length > 0) {
       series.push({
-        label: `${s.currency} ${t("operations.credit")}`,
+        label: `${s.currency} ${t('operations.credit')}`,
         color: CHART_COLORS.credit,
         points: s.credit,
       });

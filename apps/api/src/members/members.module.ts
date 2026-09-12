@@ -15,12 +15,7 @@ import { ResendActivationService } from './resend-activation.service';
     ResendActivationController,
     ProfileController,
   ],
-  providers: [
-    RegistrationService,
-    ActivationService,
-    ResendActivationService,
-    ProfileService,
-  ],
+  providers: [RegistrationService, ActivationService, ResendActivationService, ProfileService],
   exports: [RegistrationService, ActivationService, ProfileService],
 })
 export class MembersModule {}

@@ -19,10 +19,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',

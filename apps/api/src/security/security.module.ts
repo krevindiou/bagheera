@@ -31,13 +31,7 @@ import { RateLimitGuard } from './rate-limit.guard';
     AuditService,
     OwnershipService,
   ],
-  exports: [
-    HashService,
-    CryptoService,
-    RATE_LIMIT_VALKEY_CLIENT,
-    AuditService,
-    OwnershipService,
-  ],
+  exports: [HashService, CryptoService, RATE_LIMIT_VALKEY_CLIENT, AuditService, OwnershipService],
 })
 export class SecurityModule implements OnModuleDestroy {
   constructor(

@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Inject,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Get, Inject, Req, UnauthorizedException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';

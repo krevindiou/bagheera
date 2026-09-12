@@ -1,8 +1,8 @@
-import { AMOUNT_CEILING } from "@bagheera/money";
-import { z } from "zod";
+import { AMOUNT_CEILING } from '@bagheera/money';
+import { z } from 'zod';
 
 const optionalId = z.preprocess(
-  (value) => (value === "" || value === undefined || value === null ? undefined : value),
+  (value) => (value === '' || value === undefined || value === null ? undefined : value),
   z.string().uuid().optional(),
 );
 
@@ -11,10 +11,10 @@ const optionalId = z.preprocess(
 // it empty means the "External account" placeholder (a plain transfer with
 // no mirrored operation on another of the member's accounts).
 export const operationSchema = z.object({
-  type: z.enum(["debit", "credit"]),
+  type: z.enum(['debit', 'credit']),
   thirdParty: z.string().trim().min(1).max(64),
   amount: z.preprocess(
-    (value) => (value === "" || value === undefined || value === null ? undefined : Number(value)),
+    (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),
     z.number().positive().max(AMOUNT_CEILING),
   ),
   categoryId: optionalId,

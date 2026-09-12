@@ -13,10 +13,7 @@ export class RegistrationController {
   @Post('register')
   @HttpCode(201)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
-  async register(
-    @Req() req: Request,
-    @Body() dto: RegisterDto,
-  ): Promise<{ message: string }> {
+  async register(@Req() req: Request, @Body() dto: RegisterDto): Promise<{ message: string }> {
     await this.registration.register(dto, req.ip ?? 'unknown');
     // Identical response whether or not the email was already registered —
     // see the service's own doc for why.

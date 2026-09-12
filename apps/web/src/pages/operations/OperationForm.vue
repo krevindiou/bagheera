@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { errorMessage } from "../../api/errorMessage";
-import { useThirdPartyAutocomplete } from "../../composables/useThirdPartyAutocomplete";
-import { useToast } from "../../composables/useToast";
-import { useTransferTargets } from "../../composables/useTransferTargets";
-import { useTypedReferenceData } from "../../composables/useTypedReferenceData";
-import type { Account, Bank } from "../accounts/accounts.types";
-import { toDisplayAmount } from "./money";
-import { operationSchema, type OperationForm } from "./operations.schemas";
+import { computed, nextTick, ref } from 'vue';
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
+import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutocomplete';
+import { useToast } from '../../composables/useToast';
+import { useTransferTargets } from '../../composables/useTransferTargets';
+import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
+import type { Account, Bank } from '../accounts/accounts.types';
+import { toDisplayAmount } from './money';
+import { operationSchema, type OperationForm } from './operations.schemas';
 import {
   categoryLabel,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
   type Operation,
   type PaymentMethod,
-} from "./operations.types";
+} from './operations.types';
 
 const props = withDefaults(
   defineProps<{
@@ -44,19 +44,19 @@ function initialValues(): OperationForm {
   const op = props.operation;
   if (!op) {
     return {
-      type: "debit",
-      thirdParty: "",
+      type: 'debit',
+      thirdParty: '',
       amount: undefined as unknown as number,
       categoryId: undefined,
       paymentMethodId: undefined as unknown as string,
       transferAccountId: undefined,
       valueDate: today(),
-      notes: "",
+      notes: '',
       reconciled: false,
     };
   }
   return {
-    type: op.debit !== null ? "debit" : "credit",
+    type: op.debit !== null ? 'debit' : 'credit',
     thirdParty: op.thirdParty,
     amount: toDisplayAmount((op.debit ?? op.credit)!),
     categoryId: op.categoryId ?? undefined,
@@ -72,15 +72,15 @@ const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<O
   validationSchema: toTypedSchema(operationSchema),
   initialValues: initialValues(),
 });
-const [type, typeAttrs] = defineField("type");
-const [thirdParty, thirdPartyAttrs] = defineField("thirdParty");
-const [amount, amountAttrs] = defineField("amount");
-const [categoryId, categoryIdAttrs] = defineField("categoryId");
-const [paymentMethodId, paymentMethodIdAttrs] = defineField("paymentMethodId");
-const [transferAccountId, transferAccountIdAttrs] = defineField("transferAccountId");
-const [valueDate, valueDateAttrs] = defineField("valueDate");
-const [notes, notesAttrs] = defineField("notes");
-const [reconciled, reconciledAttrs] = defineField("reconciled");
+const [type, typeAttrs] = defineField('type');
+const [thirdParty, thirdPartyAttrs] = defineField('thirdParty');
+const [amount, amountAttrs] = defineField('amount');
+const [categoryId, categoryIdAttrs] = defineField('categoryId');
+const [paymentMethodId, paymentMethodIdAttrs] = defineField('paymentMethodId');
+const [transferAccountId, transferAccountIdAttrs] = defineField('transferAccountId');
+const [valueDate, valueDateAttrs] = defineField('valueDate');
+const [notes, notesAttrs] = defineField('notes');
+const [reconciled, reconciledAttrs] = defineField('reconciled');
 
 // Same field logic as the search panel: category/payment-method choices
 // only ever show options matching the selected debit/credit type; a
@@ -133,24 +133,24 @@ async function submitForm(submitted: OperationForm): Promise<boolean> {
   };
 
   const { error, response } = props.operation
-    ? await apiClient.PATCH("/operations/{id}", {
+    ? await apiClient.PATCH('/operations/{id}', {
         params: { path: { id: props.operation.id } },
         body,
       })
-    : await apiClient.POST("/operations", { body });
+    : await apiClient.POST('/operations', { body });
 
   if (!response.ok) {
-    toast(errorMessage(error) ?? t("operations.genericError"), "error");
+    toast(errorMessage(error) ?? t('operations.genericError'), 'error');
     return false;
   }
 
-  toast(t("operations.saved"), "success");
+  toast(t('operations.saved'), 'success');
   return true;
 }
 
 const onSubmit = handleSubmit(async (submitted) => {
   if (await submitForm(submitted)) {
-    emit("saved");
+    emit('saved');
   }
 });
 
@@ -159,7 +159,7 @@ const onSubmit = handleSubmit(async (submitted) => {
 const onSubmitAndNew = handleSubmit(async (submitted) => {
   if (await submitForm(submitted)) {
     resetForm({ values: initialValues() });
-    emit("savedAndNew");
+    emit('savedAndNew');
   }
 });
 </script>
@@ -167,7 +167,7 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
 <template>
   <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
     <h2 class="h5">
-      {{ $t(props.operation ? "operations.editTitle" : "operations.createTitle") }}
+      {{ $t(props.operation ? 'operations.editTitle' : 'operations.createTitle') }}
     </h2>
 
     <div class="mb-3">
@@ -182,7 +182,7 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
           autofocus
         />
         <label class="form-check-label" for="operation-type-debit">{{
-          $t("operations.debit")
+          $t('operations.debit')
         }}</label>
       </div>
       <div class="form-check form-check-inline">
@@ -195,14 +195,14 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
           value="credit"
         />
         <label class="form-check-label" for="operation-type-credit">{{
-          $t("operations.credit")
+          $t('operations.credit')
         }}</label>
       </div>
     </div>
 
     <div class="mb-3 position-relative">
       <label class="form-label" for="operation-third-party">{{
-        $t("operations.thirdParty")
+        $t('operations.thirdParty')
       }}</label>
       <input
         id="operation-third-party"
@@ -219,12 +219,12 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
       </datalist>
       <div v-if="errors.thirdParty" class="invalid-feedback">
-        {{ $t("auth.validation.required") }}
+        {{ $t('auth.validation.required') }}
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="operation-amount">{{ $t("operations.amount") }}</label>
+      <label class="form-label" for="operation-amount">{{ $t('operations.amount') }}</label>
       <div class="input-group">
         <span class="input-group-text">{{ amountCurrencySymbol }}</span>
         <input
@@ -240,19 +240,19 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         />
       </div>
       <div v-if="errors.amount" class="invalid-feedback d-block">
-        {{ $t("operations.validation.amount") }}
+        {{ $t('operations.validation.amount') }}
       </div>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="operation-category">{{ $t("operations.category") }}</label>
+      <label class="form-label" for="operation-category">{{ $t('operations.category') }}</label>
       <select
         id="operation-category"
         v-model="categoryId"
         v-bind="categoryIdAttrs"
         class="form-select"
       >
-        <option value="">{{ $t("operations.noCategory") }}</option>
+        <option value="">{{ $t('operations.noCategory') }}</option>
         <template v-for="group in groupedCategories" :key="group.label ?? '_'">
           <template v-if="group.label === null">
             <option v-for="c in group.categories" :key="c.id" :value="c.id">
@@ -270,7 +270,7 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
 
     <div class="mb-3">
       <label class="form-label" for="operation-payment-method">{{
-        $t("operations.paymentMethod")
+        $t('operations.paymentMethod')
       }}</label>
       <select
         id="operation-payment-method"
@@ -279,19 +279,19 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         class="form-select"
         :class="{ 'is-invalid': errors.paymentMethodId }"
       >
-        <option value="">{{ $t("operations.choosePaymentMethod") }}</option>
+        <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
         <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
           {{ pm.name }}
         </option>
       </select>
       <div v-if="errors.paymentMethodId" class="invalid-feedback">
-        {{ $t("auth.validation.required") }}
+        {{ $t('auth.validation.required') }}
       </div>
     </div>
 
     <div v-if="showTransferAccount" class="mb-3">
       <label class="form-label" for="operation-transfer-account">
-        {{ $t("operations.transferAccount") }}
+        {{ $t('operations.transferAccount') }}
       </label>
       <select
         id="operation-transfer-account"
@@ -300,13 +300,13 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         class="form-select"
         :class="{ 'is-invalid': errors.transferAccountId }"
       >
-        <option value="">{{ $t("operations.externalAccount") }}</option>
+        <option value="">{{ $t('operations.externalAccount') }}</option>
         <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="operation-value-date">{{ $t("operations.valueDate") }}</label>
+      <label class="form-label" for="operation-value-date">{{ $t('operations.valueDate') }}</label>
       <input
         id="operation-value-date"
         v-model="valueDate"
@@ -317,7 +317,7 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
     </div>
 
     <div class="mb-3">
-      <label class="form-label" for="operation-notes">{{ $t("operations.notes") }}</label>
+      <label class="form-label" for="operation-notes">{{ $t('operations.notes') }}</label>
       <textarea
         id="operation-notes"
         v-model="notes"
@@ -335,13 +335,13 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         class="form-check-input"
       />
       <label class="form-check-label" for="operation-reconciled">{{
-        $t("operations.reconciled")
+        $t('operations.reconciled')
       }}</label>
     </div>
 
     <div class="d-flex gap-2">
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-        {{ $t("operations.submit") }}
+        {{ $t('operations.submit') }}
       </button>
       <button
         v-if="!props.operation"
@@ -350,10 +350,10 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         :disabled="isSubmitting"
         @click="onSubmitAndNew"
       >
-        {{ $t("operations.submitAndNew") }}
+        {{ $t('operations.submitAndNew') }}
       </button>
       <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-        {{ $t("common.cancel") }}
+        {{ $t('common.cancel') }}
       </button>
     </div>
   </form>

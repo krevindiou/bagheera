@@ -46,26 +46,18 @@ describe('POST /members/register', () => {
       .expect(201);
     expect(messageOf(res)).toBe(REGISTER_MESSAGE);
 
-    const [row] = await getDb(app)
-      .select()
-      .from(member)
-      .where(eq(member.email, email));
+    const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
     expect(row).toBeDefined();
     expect(row.active).toBe(false);
     // Normalized to uppercase, per RegistrationService.
     expect(row.country).toBe('FR');
-    expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
-      expect.objectContaining({ to: email }),
-    );
+    expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
 
     const [event] = await getDb(app)
       .select()
       .from(securityEvent)
       .where(
-        and(
-          eq(securityEvent.eventType, 'activation_issued'),
-          eq(securityEvent.memberId, row.id),
-        ),
+        and(eq(securityEvent.eventType, 'activation_issued'), eq(securityEvent.memberId, row.id)),
       )
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
@@ -96,10 +88,7 @@ describe('POST /members/register', () => {
     expect(messageOf(second)).toBe(REGISTER_MESSAGE);
     expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
 
-    const rows = await getDb(app)
-      .select()
-      .from(member)
-      .where(eq(member.email, email));
+    const rows = await getDb(app).select().from(member).where(eq(member.email, email));
     expect(rows).toHaveLength(1);
   });
 
@@ -119,10 +108,7 @@ describe('POST /members/register', () => {
       })
       .expect(400);
 
-    const rows = await getDb(app)
-      .select()
-      .from(member)
-      .where(eq(member.email, email));
+    const rows = await getDb(app).select().from(member).where(eq(member.email, email));
     expect(rows).toHaveLength(0);
   });
 

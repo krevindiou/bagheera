@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Post,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
@@ -24,11 +15,7 @@ export class OperationSearchController {
 
   @Post()
   @HttpCode(200)
-  run(
-    @Req() req: Request,
-    @Body() dto: SearchOperationsDto,
-    @Query('page') page?: string,
-  ) {
+  run(@Req() req: Request, @Body() dto: SearchOperationsDto, @Query('page') page?: string) {
     return this.search.search(req, dto, page ? Number(page) : 1);
   }
 

@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useI18n } from "vue-i18n";
-import { useRoute, useRouter } from "vue-router";
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
-import { apiClient } from "../../api/client";
-import { errorMessage } from "../../api/errorMessage";
-import { useToast } from "../../composables/useToast";
-import { useConfirm } from "../../composables/useConfirm";
-import { editBankSchema } from "./accounts.schemas";
-import type { Bank, Account } from "./accounts.types";
-import BankChoiceForm from "./BankChoiceForm.vue";
-import CreateAccountForm from "./CreateAccountForm.vue";
-import ToastContainer from "../../components/ToastContainer.vue";
+import { computed, ref, watch } from 'vue';
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
+import { useToast } from '../../composables/useToast';
+import { useConfirm } from '../../composables/useConfirm';
+import { editBankSchema } from './accounts.schemas';
+import type { Bank, Account } from './accounts.types';
+import BankChoiceForm from './BankChoiceForm.vue';
+import CreateAccountForm from './CreateAccountForm.vue';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
@@ -24,18 +24,18 @@ const route = useRoute();
 const queryClient = useQueryClient();
 
 const banksQuery = useQuery({
-  queryKey: ["banks"],
+  queryKey: ['banks'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/banks");
+    const { data } = await apiClient.GET('/banks');
     return (data as Bank[] | undefined) ?? [];
   },
 });
 const banks = computed(() => banksQuery.data.value ?? []);
 
 const accountsQuery = useQuery({
-  queryKey: ["accounts"],
+  queryKey: ['accounts'],
   queryFn: async () => {
-    const { data } = await apiClient.GET("/accounts");
+    const { data } = await apiClient.GET('/accounts');
     return (data as Account[] | undefined) ?? [];
   },
 });
@@ -43,20 +43,20 @@ const accounts = computed(() => accountsQuery.data.value ?? []);
 
 async function reload() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ["banks"] }),
-    queryClient.invalidateQueries({ queryKey: ["accounts"] }),
+    queryClient.invalidateQueries({ queryKey: ['banks'] }),
+    queryClient.invalidateQueries({ queryKey: ['accounts'] }),
   ]);
 }
 
 // "New account" starts with a bank-choice step; only once a bank is
 // chosen/created does account creation, pre-scoped to it, show.
-const creationStep = ref<"closed" | "bank-choice" | "account">("closed");
+const creationStep = ref<'closed' | 'bank-choice' | 'account'>('closed');
 const chosenBankId = ref<string | null>(null);
 const editingBankId = ref<string | null>(null);
 const editingAccountId = ref<string | null>(null);
 
 function startCreateAccount() {
-  creationStep.value = "bank-choice";
+  creationStep.value = 'bank-choice';
 }
 
 async function onBankChosen(bankId: string) {
@@ -64,11 +64,11 @@ async function onBankChosen(bankId: string) {
   // account form's bank dropdown) before pre-selecting it.
   await reload();
   chosenBankId.value = bankId;
-  creationStep.value = "account";
+  creationStep.value = 'account';
 }
 
 function cancelCreateAccount() {
-  creationStep.value = "closed";
+  creationStep.value = 'closed';
   chosenBankId.value = null;
 }
 
@@ -81,11 +81,11 @@ watch(
   (data) => {
     if (startedFromQuery.value || !data) return;
     startedFromQuery.value = true;
-    if (route.query.start === "bank-choice") {
-      creationStep.value = "bank-choice";
-    } else if (route.query.start === "new-account" && activeBanks.value.length > 0) {
+    if (route.query.start === 'bank-choice') {
+      creationStep.value = 'bank-choice';
+    } else if (route.query.start === 'new-account' && activeBanks.value.length > 0) {
       chosenBankId.value = activeBanks.value[0]!.id;
-      creationStep.value = "account";
+      creationStep.value = 'account';
     }
   },
   { immediate: true },
@@ -104,7 +104,7 @@ const {
   errors: bankErrors,
   setValues: setBankValues,
 } = useForm({ validationSchema: toTypedSchema(editBankSchema) });
-const [editBankName, editBankNameAttrs] = defineBankField("name");
+const [editBankName, editBankNameAttrs] = defineBankField('name');
 
 function startEditBank(bank: Bank) {
   editingBankId.value = bank.id;
@@ -114,40 +114,40 @@ function startEditBank(bank: Bank) {
 const submitEditBank = handleBankSubmit(async (values) => {
   const id = editingBankId.value;
   if (id === null) return;
-  const { error, response } = await apiClient.PATCH("/banks/{id}", {
+  const { error, response } = await apiClient.PATCH('/banks/{id}', {
     params: { path: { id } },
     body: values,
   });
   if (!response.ok) {
-    toast(errorMessage(error) ?? t("accounts.genericError"), "error");
+    toast(errorMessage(error) ?? t('accounts.genericError'), 'error');
     return;
   }
   editingBankId.value = null;
-  toast(t("accounts.bankSaved"), "success");
+  toast(t('accounts.bankSaved'), 'success');
   await reload();
 });
 
 async function closeBank(bank: Bank) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.POST("/banks/{id}/close", {
+  const { response } = await apiClient.POST('/banks/{id}/close', {
     params: { path: { id: bank.id } },
   });
   if (!response.ok) {
-    toast(t("accounts.genericError"), "error");
+    toast(t('accounts.genericError'), 'error');
     return;
   }
-  toast(t("accounts.bankClosed"), "success");
+  toast(t('accounts.bankClosed'), 'success');
   await reload();
 }
 
 async function deleteBank(bank: Bank) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.DELETE("/banks/{id}", { params: { path: { id: bank.id } } });
+  const { response } = await apiClient.DELETE('/banks/{id}', { params: { path: { id: bank.id } } });
   if (!response.ok) {
-    toast(t("accounts.genericError"), "error");
+    toast(t('accounts.genericError'), 'error');
     return;
   }
-  toast(t("accounts.bankDeleted"), "success");
+  toast(t('accounts.bankDeleted'), 'success');
   await reload();
 }
 
@@ -164,49 +164,49 @@ async function onAccountUpdated() {
 
 async function closeAccount(account: Account) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.POST("/accounts/{id}/close", {
+  const { response } = await apiClient.POST('/accounts/{id}/close', {
     params: { path: { id: account.id } },
   });
   if (!response.ok) {
-    toast(t("accounts.genericError"), "error");
+    toast(t('accounts.genericError'), 'error');
     return;
   }
-  toast(t("accounts.accountClosed"), "success");
+  toast(t('accounts.accountClosed'), 'success');
   await reload();
 }
 
 async function deleteAccount(account: Account) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.DELETE("/accounts/{id}", {
+  const { response } = await apiClient.DELETE('/accounts/{id}', {
     params: { path: { id: account.id } },
   });
   if (!response.ok) {
-    toast(t("accounts.genericError"), "error");
+    toast(t('accounts.genericError'), 'error');
     return;
   }
-  toast(t("accounts.accountDeleted"), "success");
+  toast(t('accounts.accountDeleted'), 'success');
   await reload();
 }
 
 // Clicking anywhere in a row (outside its checkbox/controls) opens the
 // row's primary destination — here, the account's operations.
 function goToAccount(account: Account) {
-  router.push({ name: "operations", params: { accountId: account.id } });
+  router.push({ name: 'operations', params: { accountId: account.id } });
 }
 
 async function onAccountCreated(accountId: string) {
-  creationStep.value = "closed";
+  creationStep.value = 'closed';
   chosenBankId.value = null;
-  router.push({ name: "operations", params: { accountId } });
+  router.push({ name: 'operations', params: { accountId } });
 }
 </script>
 
 <template>
   <div class="container py-5" style="max-width: 720px">
-    <h1>{{ $t("accounts.title") }}</h1>
+    <h1>{{ $t('accounts.title') }}</h1>
     <ToastContainer />
 
-    <p v-if="banks.length === 0" class="text-muted">{{ $t("accounts.empty") }}</p>
+    <p v-if="banks.length === 0" class="text-muted">{{ $t('accounts.empty') }}</p>
 
     <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
       <div class="d-flex align-items-center gap-2">
@@ -225,23 +225,23 @@ async function onAccountCreated(accountId: string) {
               :class="{ 'is-invalid': bankErrors.name }"
             />
             <button type="submit" class="btn btn-sm btn-primary">
-              {{ $t("accounts.submit") }}
+              {{ $t('accounts.submit') }}
             </button>
             <button
               type="button"
               class="btn btn-sm btn-outline-secondary"
               @click="editingBankId = null"
             >
-              {{ $t("common.cancel") }}
+              {{ $t('common.cancel') }}
             </button>
           </form>
         </template>
         <template v-else>
           <h2 class="h5 mb-0">{{ bank.name }}</h2>
           <span v-if="bank.closed" class="badge text-bg-secondary">{{
-            $t("accounts.closed")
+            $t('accounts.closed')
           }}</span>
-          <span v-if="bank.deleted" class="badge text-bg-danger">{{ $t("accounts.deleted") }}</span>
+          <span v-if="bank.deleted" class="badge text-bg-danger">{{ $t('accounts.deleted') }}</span>
           <div class="ms-auto d-flex gap-2">
             <button
               v-if="!bank.closed && !bank.deleted"
@@ -249,7 +249,7 @@ async function onAccountCreated(accountId: string) {
               class="btn btn-sm btn-outline-secondary"
               @click="startEditBank(bank)"
             >
-              {{ $t("accounts.edit") }}
+              {{ $t('accounts.edit') }}
             </button>
             <button
               v-if="!bank.closed && !bank.deleted"
@@ -257,7 +257,7 @@ async function onAccountCreated(accountId: string) {
               class="btn btn-sm btn-outline-secondary"
               @click="closeBank(bank)"
             >
-              {{ $t("accounts.close") }}
+              {{ $t('accounts.close') }}
             </button>
             <button
               v-if="!bank.deleted"
@@ -265,14 +265,14 @@ async function onAccountCreated(accountId: string) {
               class="btn btn-sm btn-outline-danger"
               @click="deleteBank(bank)"
             >
-              {{ $t("accounts.delete") }}
+              {{ $t('accounts.delete') }}
             </button>
           </div>
         </template>
       </div>
 
       <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-3 mt-2 mb-0">
-        {{ $t("accounts.noAccountsForBank") }}
+        {{ $t('accounts.noAccountsForBank') }}
       </p>
       <ul v-else class="list-unstyled ms-3 mt-2">
         <li
@@ -303,10 +303,10 @@ async function onAccountCreated(accountId: string) {
               {{ account.name }} ({{ account.currency }})
             </router-link>
             <span v-if="account.closed" class="badge text-bg-secondary">
-              {{ $t("accounts.closed") }}
+              {{ $t('accounts.closed') }}
             </span>
             <span v-if="account.deleted" class="badge text-bg-danger">
-              {{ $t("accounts.deleted") }}
+              {{ $t('accounts.deleted') }}
             </span>
             <div class="ms-auto d-flex gap-2" @click.stop>
               <button
@@ -315,7 +315,7 @@ async function onAccountCreated(accountId: string) {
                 class="btn btn-sm btn-outline-secondary"
                 @click="startEditAccount(account)"
               >
-                {{ $t("accounts.edit") }}
+                {{ $t('accounts.edit') }}
               </button>
               <button
                 v-if="!account.closed && !account.deleted"
@@ -323,7 +323,7 @@ async function onAccountCreated(accountId: string) {
                 class="btn btn-sm btn-outline-secondary"
                 @click="closeAccount(account)"
               >
-                {{ $t("accounts.close") }}
+                {{ $t('accounts.close') }}
               </button>
               <button
                 v-if="!account.deleted"
@@ -331,7 +331,7 @@ async function onAccountCreated(accountId: string) {
                 class="btn btn-sm btn-outline-danger"
                 @click="deleteAccount(account)"
               >
-                {{ $t("accounts.delete") }}
+                {{ $t('accounts.delete') }}
               </button>
             </div>
           </div>
@@ -353,7 +353,7 @@ async function onAccountCreated(accountId: string) {
       @cancel="cancelCreateAccount"
     />
     <button v-else type="button" class="btn btn-primary" @click="startCreateAccount">
-      {{ $t("accounts.addAccount") }}
+      {{ $t('accounts.addAccount') }}
     </button>
   </div>
 </template>

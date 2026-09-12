@@ -13,10 +13,7 @@ export class ActivationController {
   @Post('activate')
   @HttpCode(200)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'key' })
-  async activate(
-    @Req() req: Request,
-    @Body() dto: ActivateDto,
-  ): Promise<{ message: string }> {
+  async activate(@Req() req: Request, @Body() dto: ActivateDto): Promise<{ message: string }> {
     await this.activation.activate(dto.key, req.ip ?? 'unknown');
     return { message: 'Account activated. You can now sign in.' };
   }

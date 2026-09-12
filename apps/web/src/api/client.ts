@@ -1,23 +1,23 @@
-import createClient from "openapi-fetch";
-import { router } from "../router";
-import { useSessionStore } from "../stores/session.store";
-import type { paths } from "./schema";
+import createClient from 'openapi-fetch';
+import { router } from '../router';
+import { useSessionStore } from '../stores/session.store';
+import type { paths } from './schema';
 
 // Same-origin in production (Caddy proxies API requests to the API
 // service); local dev talks to the API dev server via Vite's dev proxy.
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? "/";
+const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
 
 export const apiClient = createClient<paths>({
   baseUrl,
-  credentials: "include",
+  credentials: 'include',
 });
 
-const CSRF_HEADER = "x-csrf-token";
-const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const CSRF_HEADER = 'x-csrf-token';
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 async function fetchCsrfToken(): Promise<string> {
-  const res = await fetch(new URL("auth/csrf-token", new URL(baseUrl, window.location.origin)), {
-    credentials: "include",
+  const res = await fetch(new URL('auth/csrf-token', new URL(baseUrl, window.location.origin)), {
+    credentials: 'include',
   });
   const body = (await res.json()) as { csrfToken: string };
   return body.csrfToken;
@@ -54,8 +54,8 @@ apiClient.use({
       // No active Pinia instance (e.g. a bare fetch outside app context) —
       // nothing to clear.
     }
-    if (router.currentRoute.value.name !== "sign-in") {
-      void router.push({ name: "sign-in" });
+    if (router.currentRoute.value.name !== 'sign-in') {
+      void router.push({ name: 'sign-in' });
     }
     return response;
   },

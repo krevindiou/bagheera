@@ -28,9 +28,7 @@ describe('reset-token', () => {
   });
 
   it('returns null for a well-formed-but-foreign ciphertext (decrypts to unrelated JSON)', () => {
-    const foreignCiphertext = crypto.encrypt(
-      JSON.stringify({ some: 'other shape' }),
-    );
+    const foreignCiphertext = crypto.encrypt(JSON.stringify({ some: 'other shape' }));
     expect(parseResetToken(crypto, foreignCiphertext)).toBeNull();
   });
 
@@ -43,11 +41,7 @@ describe('reset-token', () => {
     // An activation token, fed to the reset parser, must not be accepted —
     // each token type carries its own `type` tag specifically to prevent
     // cross-purpose replay.
-    const activationToken = buildActivationToken(
-      crypto,
-      'member@example.com',
-      1,
-    );
+    const activationToken = buildActivationToken(crypto, 'member@example.com', 1);
     expect(parseResetToken(crypto, activationToken)).toBeNull();
   });
 });

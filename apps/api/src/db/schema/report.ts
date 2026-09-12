@@ -1,12 +1,4 @@
-import {
-  boolean,
-  date,
-  pgTable,
-  primaryKey,
-  timestamp,
-  uuid,
-  varchar,
-} from 'drizzle-orm/pg-core';
+import { boolean, date, pgTable, primaryKey, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { account } from './account';
 import { uuidPk } from './id';
 import { member } from './member';
@@ -27,9 +19,7 @@ export const report = pgTable('report', {
   thirdParties: varchar('third_parties', { length: 255 }),
   reconciledOnly: boolean('reconciled_only'),
   periodGrouping: periodGroupingEnum('period_grouping').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()
     .defaultNow()

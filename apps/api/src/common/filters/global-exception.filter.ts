@@ -30,13 +30,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const statusCode = this.statusCodeOf(exception);
     const message = this.extractMessage(exception, statusCode);
 
-    if (
-      !(exception instanceof HttpException) &&
-      !this.isExposedHttpError(exception)
-    ) {
-      this.logger.error(
-        exception instanceof Error ? exception.stack : exception,
-      );
+    if (!(exception instanceof HttpException) && !this.isExposedHttpError(exception)) {
+      this.logger.error(exception instanceof Error ? exception.stack : exception);
       Sentry.captureException(exception);
     }
 
@@ -69,9 +64,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   // 4xx, false for 5xx) — trust that flag rather than a bare numeric
   // `statusCode`, so an unrelated object that merely happens to carry a
   // `statusCode` property doesn't get misread as a deliberate HTTP error.
-  private isExposedHttpError(
-    exception: unknown,
-  ): exception is Error & { statusCode: number } {
+  private isExposedHttpError(exception: unknown): exception is Error & { statusCode: number } {
     return (
       exception instanceof Error &&
       'statusCode' in exception &&
@@ -80,20 +73,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     );
   }
 
-  private extractMessage(
-    exception: unknown,
-    statusCode: number,
-  ): string | string[] {
+  private extractMessage(exception: unknown, statusCode: number): string | string[] {
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       if (typeof response === 'string') {
         return response;
       }
-      if (
-        typeof response === 'object' &&
-        response !== null &&
-        'message' in response
-      ) {
+      if (typeof response === 'object' && response !== null && 'message' in response) {
         const { message } = response as { message: string | string[] };
         return message;
       }

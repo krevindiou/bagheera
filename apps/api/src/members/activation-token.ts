@@ -61,9 +61,7 @@ export function parseActivationToken(
   return parsed;
 }
 
-function isActivationTokenPayload(
-  value: unknown,
-): value is ActivationTokenPayload {
+function isActivationTokenPayload(value: unknown): value is ActivationTokenPayload {
   if (typeof value !== 'object' || value === null) {
     return false;
   }

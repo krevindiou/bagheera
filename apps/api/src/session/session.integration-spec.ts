@@ -2,11 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import request from 'supertest';
 import type { RedisClientType } from 'redis';
-import {
-  csrfTokenFor,
-  insertActiveMember,
-  seedSignedInMember,
-} from '../test-support/auth-fixture';
+import { csrfTokenFor, insertActiveMember, seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 import { SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
 
@@ -16,10 +12,7 @@ interface StoredSession {
   [key: string]: unknown;
 }
 
-async function findSessionKey(
-  valkey: RedisClientType,
-  memberId: string,
-): Promise<string> {
+async function findSessionKey(valkey: RedisClientType, memberId: string): Promise<string> {
   for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
     const keys = Array.isArray(batch) ? batch : [batch];
     for (const key of keys) {
@@ -95,22 +88,19 @@ describe('session lifecycle', () => {
   // crosses the absolute TTL 500s instead of 401ing. One-line fix:
   // `req.session?.memberId` in current-session.controller.ts. Flagged for
   // the user rather than fixed here — out of scope for a test-writing pass.
-  it.failing(
-    'force-expires a session past the absolute TTL, regardless of activity',
-    async () => {
-      const { agent, memberId } = await seedSignedInMember(app);
-      await agent.get('/auth/me').expect(200);
+  it.failing('force-expires a session past the absolute TTL, regardless of activity', async () => {
+    const { agent, memberId } = await seedSignedInMember(app);
+    await agent.get('/auth/me').expect(200);
 
-      const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
-      const key = await findSessionKey(valkey, memberId);
-      const raw = await valkey.get(key);
-      const data = JSON.parse(raw!) as StoredSession;
-      data.createdAt = Date.now() - SESSION_MAX_AGE_MS - 1000;
-      await valkey.set(key, JSON.stringify(data));
+    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const key = await findSessionKey(valkey, memberId);
+    const raw = await valkey.get(key);
+    const data = JSON.parse(raw!) as StoredSession;
+    data.createdAt = Date.now() - SESSION_MAX_AGE_MS - 1000;
+    await valkey.set(key, JSON.stringify(data));
 
-      await agent.get('/auth/me').expect(401);
-    },
-  );
+    await agent.get('/auth/me').expect(401);
+  });
 
   it("lets SessionAuthGuard reject an unauthenticated request before RateLimitGuard ever runs (app.module.ts's SessionModule-before-SecurityModule ordering)", async () => {
     // webauthn/registration/options requires auth and carries its own
@@ -120,10 +110,7 @@ describe('session lifecycle', () => {
     const csrfToken = await csrfTokenFor(agent);
 
     for (let i = 0; i < 15; i++) {
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken)
-        .expect(401);
+      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(401);
     }
   });
 });

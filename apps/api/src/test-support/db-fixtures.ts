@@ -25,10 +25,7 @@ export const ANY_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 // other category gets a DB-generated id.
 export const ANY_CATEGORY_ID = SALARY_CATEGORY_SEED_ID;
 
-export async function insertMember(
-  db: Db,
-  overrides: Partial<typeof member.$inferInsert> = {},
-) {
+export async function insertMember(db: Db, overrides: Partial<typeof member.$inferInsert> = {}) {
   const [row] = await db
     .insert(member)
     .values({

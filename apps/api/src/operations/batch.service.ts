@@ -28,10 +28,7 @@ export class OperationBatchService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async batchDelete(
-    req: Request,
-    ids: string[],
-  ): Promise<{ deletedCount: number }> {
+  async batchDelete(req: Request, ids: string[]): Promise<{ deletedCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedOperationIds(ids, memberId);
     if (owned.length > 0) {
@@ -42,31 +39,17 @@ export class OperationBatchService {
         await tx.delete(operation).where(inArray(operation.id, owned));
       });
     }
-    await this.audit.record(
-      'operation_batch_deleted',
-      memberId,
-      req.ip ?? 'unknown',
-    );
+    await this.audit.record('operation_batch_deleted', memberId, req.ip ?? 'unknown');
     return { deletedCount: owned.length };
   }
 
-  async batchReconcile(
-    req: Request,
-    ids: string[],
-  ): Promise<{ reconciledCount: number }> {
+  async batchReconcile(req: Request, ids: string[]): Promise<{ reconciledCount: number }> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.filterOwnedOperationIds(ids, memberId);
     if (owned.length > 0) {
-      await this.db
-        .update(operation)
-        .set({ reconciled: true })
-        .where(inArray(operation.id, owned));
+      await this.db.update(operation).set({ reconciled: true }).where(inArray(operation.id, owned));
     }
-    await this.audit.record(
-      'operation_batch_reconciled',
-      memberId,
-      req.ip ?? 'unknown',
-    );
+    await this.audit.record('operation_batch_reconciled', memberId, req.ip ?? 'unknown');
     return { reconciledCount: owned.length };
   }
 }

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { useConfirm } from "../../composables/useConfirm";
-import { useToast } from "../../composables/useToast";
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { useConfirm } from '../../composables/useConfirm';
+import { useToast } from '../../composables/useToast';
 
 const props = defineProps<{ selectedIds: string[] }>();
 const emit = defineEmits<{ done: [] }>();
@@ -15,11 +15,11 @@ async function batchDelete() {
   if (props.selectedIds.length === 0) return;
   if (!(await confirm())) return;
 
-  const { data, response } = await apiClient.POST("/operations/batch/delete", {
+  const { data, response } = await apiClient.POST('/operations/batch/delete', {
     body: { ids: props.selectedIds },
   });
   if (!response.ok) {
-    toast(t("operations.genericError"), "error");
+    toast(t('operations.genericError'), 'error');
     return;
   }
   // The server silently skips ids it won't touch (foreign, closed-account,
@@ -27,33 +27,33 @@ async function batchDelete() {
   // means nothing was actually deleted, so don't claim success.
   const deletedCount = (data as { deletedCount?: number } | undefined)?.deletedCount ?? 0;
   if (deletedCount === 0) {
-    toast(t("operations.genericError"), "error");
-    emit("done");
+    toast(t('operations.genericError'), 'error');
+    emit('done');
     return;
   }
-  toast(t("operations.batch.deleted"), "success");
-  emit("done");
+  toast(t('operations.batch.deleted'), 'success');
+  emit('done');
 }
 
 async function batchReconcile() {
   if (props.selectedIds.length === 0) return;
   if (!(await confirm())) return;
 
-  const { data, response } = await apiClient.POST("/operations/batch/reconcile", {
+  const { data, response } = await apiClient.POST('/operations/batch/reconcile', {
     body: { ids: props.selectedIds },
   });
   if (!response.ok) {
-    toast(t("operations.genericError"), "error");
+    toast(t('operations.genericError'), 'error');
     return;
   }
   const reconciledCount = (data as { reconciledCount?: number } | undefined)?.reconciledCount ?? 0;
   if (reconciledCount === 0) {
-    toast(t("operations.genericError"), "error");
-    emit("done");
+    toast(t('operations.genericError'), 'error');
+    emit('done');
     return;
   }
-  toast(t("operations.batch.reconciled"), "success");
-  emit("done");
+  toast(t('operations.batch.reconciled'), 'success');
+  emit('done');
 }
 </script>
 
@@ -65,7 +65,7 @@ async function batchReconcile() {
       data-testid="batch-delete"
       @click="batchDelete"
     >
-      {{ $t("operations.batch.delete") }}
+      {{ $t('operations.batch.delete') }}
     </button>
     <button
       type="button"
@@ -73,7 +73,7 @@ async function batchReconcile() {
       data-testid="batch-reconcile"
       @click="batchReconcile"
     >
-      {{ $t("operations.batch.reconcile") }}
+      {{ $t('operations.batch.reconcile') }}
     </button>
   </div>
 </template>

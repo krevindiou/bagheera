@@ -34,10 +34,7 @@ export class SignInThrottleAuditFilter extends GlobalExceptionFilter {
   }
 
   async catch(exception: unknown, host: ArgumentsHost): Promise<void> {
-    if (
-      exception instanceof HttpException &&
-      exception.getStatus() === TOO_MANY_REQUESTS_STATUS
-    ) {
+    if (exception instanceof HttpException && exception.getStatus() === TOO_MANY_REQUESTS_STATUS) {
       const req = host.switchToHttp().getRequest<Request>();
       await this.audit.record('sign_in_throttled', null, req.ip ?? 'unknown');
       await super.catch(new UnauthorizedException(INVALID_CREDENTIALS), host);

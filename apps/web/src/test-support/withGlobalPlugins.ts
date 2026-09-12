@@ -1,9 +1,9 @@
-import { createPinia, setActivePinia } from "pinia";
-import { QueryClient, VueQueryPlugin } from "@tanstack/vue-query";
-import type { Plugin } from "vue";
-import type { Router } from "vue-router";
-import { i18n } from "../i18n";
-import { router as appRouter } from "../router";
+import { createPinia, setActivePinia } from 'pinia';
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
+import type { Plugin } from 'vue';
+import type { Router } from 'vue-router';
+import { i18n } from '../i18n';
+import { router as appRouter } from '../router';
 
 /**
  * Standard `global:` option for `mount()`/`shallowMount()`: a fresh Pinia

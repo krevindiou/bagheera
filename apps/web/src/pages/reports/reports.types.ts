@@ -5,7 +5,7 @@
 export interface Report {
   id: string;
   memberId: string;
-  type: "sum" | "average";
+  type: 'sum' | 'average';
   title: string;
   homepage: boolean;
   valueDateStart: string | null;
@@ -13,7 +13,7 @@ export interface Report {
   thirdParties: string | null;
   accountIds: string[];
   reconciledOnly: boolean | null;
-  periodGrouping: "month" | "quarter" | "year" | "all";
+  periodGrouping: 'month' | 'quarter' | 'year' | 'all';
 }
 
 export interface ReportChartPoint {

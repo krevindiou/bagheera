@@ -1,6 +1,6 @@
-import type { App } from "vue";
-import * as Sentry from "@sentry/vue";
-import { router } from "./router";
+import type { App } from 'vue';
+import * as Sentry from '@sentry/vue';
+import { router } from './router';
 
 /**
  * No-ops when VITE_SENTRY_DSN isn't set (local dev, CI, e2e), so this is

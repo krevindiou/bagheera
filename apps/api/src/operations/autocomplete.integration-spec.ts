@@ -3,10 +3,7 @@ import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { category } from '../db/schema';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -14,10 +11,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
@@ -96,9 +90,7 @@ describe('GET /operations/autocomplete', () => {
       valueDate: '2026-01-01',
     });
 
-    const res = await agent
-      .get('/operations/autocomplete?q=land&type=credit')
-      .expect(200);
+    const res = await agent.get('/operations/autocomplete?q=land&type=credit').expect(200);
     const body = res.body as {
       thirdParty: string;
       categoryId: string | null;
@@ -127,9 +119,7 @@ describe('GET /operations/autocomplete', () => {
     });
 
     const { agent } = await seedSignedInMember(app);
-    const res = await agent
-      .get('/operations/autocomplete?q=zzzpriv')
-      .expect(200);
+    const res = await agent.get('/operations/autocomplete?q=zzzpriv').expect(200);
     expect(res.body).toEqual([]);
   });
 });

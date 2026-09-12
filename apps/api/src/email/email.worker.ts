@@ -1,11 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import IORedis from 'ioredis';
 import { Job, Worker } from 'bullmq';
-import {
-  EMAIL_PROVIDER,
-  EMAIL_QUEUE_NAME,
-  WORKER_BULLMQ_CONNECTION,
-} from './email.constants';
+import { EMAIL_PROVIDER, EMAIL_QUEUE_NAME, WORKER_BULLMQ_CONNECTION } from './email.constants';
 import { EmailMessage, type EmailProvider } from './email-message';
 
 /** Consumes jobs enqueued by `EmailQueueService` and hands them to the configured `EmailProvider`. */

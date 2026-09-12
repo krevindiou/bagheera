@@ -21,10 +21,7 @@ describe('POST /auth/sign-out', () => {
 
     // Resolve before .post() — see getCsrfToken's doc comment.
     const csrfToken = await getCsrfToken();
-    await agent
-      .post('/auth/sign-out')
-      .set('x-csrf-token', csrfToken)
-      .expect(200);
+    await agent.post('/auth/sign-out').set('x-csrf-token', csrfToken).expect(200);
 
     await agent.get('/auth/me').expect(401);
   });
@@ -32,9 +29,6 @@ describe('POST /auth/sign-out', () => {
   it('succeeds even when nothing was ever signed in', async () => {
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
-    await agent
-      .post('/auth/sign-out')
-      .set('x-csrf-token', csrfToken)
-      .expect(200);
+    await agent.post('/auth/sign-out').set('x-csrf-token', csrfToken).expect(200);
   });
 });

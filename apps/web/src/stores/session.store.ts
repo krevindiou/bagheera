@@ -1,11 +1,11 @@
-import { defineStore } from "pinia";
-import { apiClient } from "../api/client";
+import { defineStore } from 'pinia';
+import { apiClient } from '../api/client';
 
 export interface SessionMember {
   email: string;
 }
 
-export const useSessionStore = defineStore("session", {
+export const useSessionStore = defineStore('session', {
   state: () => ({
     member: null as SessionMember | null,
     // The httpOnly session cookie survives a page refresh but this store
@@ -30,7 +30,7 @@ export const useSessionStore = defineStore("session", {
     restore(): Promise<void> {
       if (this.restorePromise) return this.restorePromise;
       this.restorePromise = apiClient
-        .GET("/auth/me")
+        .GET('/auth/me')
         .then(({ data }) => {
           // The Swagger plugin can't infer a body schema from this
           // controller's plain-interface return type (see DashboardPage.vue

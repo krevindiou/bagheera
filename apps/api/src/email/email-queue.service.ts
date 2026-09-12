@@ -11,9 +11,7 @@ import { EmailMessage } from './email-message';
  */
 @Injectable()
 export class EmailQueueService {
-  constructor(
-    @Inject(EMAIL_QUEUE) private readonly queue: Queue<EmailMessage>,
-  ) {}
+  constructor(@Inject(EMAIL_QUEUE) private readonly queue: Queue<EmailMessage>) {}
 
   async enqueue(message: EmailMessage): Promise<void> {
     await this.queue.add('send', message, {

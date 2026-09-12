@@ -50,9 +50,7 @@ describe('POST /members/resend-activation', () => {
       .expect(200);
 
     expect(messageOf(res)).toBe('A new activation email has been sent.');
-    expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
-      expect.objectContaining({ to: email }),
-    );
+    expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
 
     const [updated] = await getDb(app)
       .select({ activationTokenVersion: member.activationTokenVersion })

@@ -1,10 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
 /**
@@ -23,10 +20,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Owner account',
@@ -153,8 +147,6 @@ describe('cross-resource ownership sweep (mutating a foreign, already-existing i
   // Confirms the sweep above actually exercised live, still-owned
   // resources — a false pass from IDs already gone would be worthless.
   it('sanity check: the owner can still act on every resource above', async () => {
-    expect((await owner.mutate('post', `/banks/${bankId}/close`)).status).toBe(
-      200,
-    );
+    expect((await owner.mutate('post', `/banks/${bankId}/close`)).status).toBe(200);
   });
 });

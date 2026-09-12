@@ -55,10 +55,7 @@ export class BankService {
       return { id: row.id, name: row.name, created: false };
     }
 
-    const [created] = await this.db
-      .insert(bank)
-      .values({ memberId, name: dto.name! })
-      .returning();
+    const [created] = await this.db.insert(bank).values({ memberId, name: dto.name! }).returning();
     return { id: created.id, name: created.name, created: true };
   }
 

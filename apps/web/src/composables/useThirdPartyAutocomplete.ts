@@ -1,5 +1,5 @@
-import { ref, watch, type Ref } from "vue";
-import { apiClient } from "../api/client";
+import { ref, watch, type Ref } from 'vue';
+import { apiClient } from '../api/client';
 
 export interface ThirdPartySuggestion {
   thirdParty: string;
@@ -16,7 +16,7 @@ export interface ThirdPartySuggestion {
  */
 export function useThirdPartyAutocomplete(
   thirdParty: Ref<string | undefined>,
-  type: Ref<"debit" | "credit">,
+  type: Ref<'debit' | 'credit'>,
   onExactMatch: (categoryId: string) => void,
 ) {
   const suggestions = ref<ThirdPartySuggestion[]>([]);
@@ -24,13 +24,13 @@ export function useThirdPartyAutocomplete(
 
   watch(thirdParty, (value) => {
     if (debounceHandle) clearTimeout(debounceHandle);
-    const query = value?.trim() ?? "";
+    const query = value?.trim() ?? '';
     if (query.length < 2) {
       suggestions.value = [];
       return;
     }
     debounceHandle = setTimeout(async () => {
-      const { data } = await apiClient.GET("/operations/autocomplete", {
+      const { data } = await apiClient.GET('/operations/autocomplete', {
         params: { query: { q: query, type: type.value } },
       });
       suggestions.value = (data as ThirdPartySuggestion[] | undefined) ?? [];

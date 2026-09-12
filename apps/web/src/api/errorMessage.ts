@@ -5,7 +5,7 @@
 // (a raw 4xx/5xx with no body, or an unexpected shape) is the caller's job,
 // via `errorMessage(error) ?? t("...genericError")`.
 export function errorMessage(error: unknown): string | undefined {
-  if (error && typeof error === "object" && "message" in error) {
+  if (error && typeof error === 'object' && 'message' in error) {
     const { message } = error as { message: string | string[] };
     return Array.isArray(message) ? message[0] : message;
   }

@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { useForm } from "vee-validate";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
-import { apiClient } from "../../api/client";
-import { rememberAttemptedEmail } from "../../composables/useLastAttemptedEmail";
-import { getCountryOptions, getDefaultCountry } from "../../composables/useCountryOptions";
-import { useToast } from "../../composables/useToast";
-import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
-import PasswordInput from "../../components/PasswordInput.vue";
-import { registerSchema, type RegisterForm } from "./auth.schemas";
-import ToastContainer from "../../components/ToastContainer.vue";
+import { ref } from 'vue';
+import { useForm } from 'vee-validate';
+import { toTypedSchema } from '@vee-validate/zod';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { apiClient } from '../../api/client';
+import { rememberAttemptedEmail } from '../../composables/useLastAttemptedEmail';
+import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';
+import { useToast } from '../../composables/useToast';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
+import PasswordInput from '../../components/PasswordInput.vue';
+import { registerSchema, type RegisterForm } from './auth.schemas';
+import ToastContainer from '../../components/ToastContainer.vue';
 
 const router = useRouter();
 const { push: toast } = useToast();
@@ -22,16 +22,16 @@ const countryOptions = getCountryOptions();
 const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<RegisterForm>({
   validationSchema: toTypedSchema(registerSchema),
   initialValues: {
-    email: "",
+    email: '',
     country: getDefaultCountry(countryOptions),
-    password: "",
-    passwordConfirmation: "",
+    password: '',
+    passwordConfirmation: '',
   },
 });
-const [email, emailAttrs] = defineField("email");
-const [country, countryAttrs] = defineField("country");
-const [password, passwordAttrs] = defineField("password");
-const [passwordConfirmation, passwordConfirmationAttrs] = defineField("passwordConfirmation");
+const [email, emailAttrs] = defineField('email');
+const [country, countryAttrs] = defineField('country');
+const [password, passwordAttrs] = defineField('password');
+const [passwordConfirmation, passwordConfirmationAttrs] = defineField('passwordConfirmation');
 
 const genericError = ref(false);
 
@@ -39,7 +39,7 @@ const onSubmit = handleSubmit(async (values) => {
   genericError.value = false;
   rememberAttemptedEmail(values.email);
 
-  const { response } = await apiClient.POST("/members/register", {
+  const { response } = await apiClient.POST('/members/register', {
     body: { ...values, country: values.country.toUpperCase() },
   });
 
@@ -49,23 +49,23 @@ const onSubmit = handleSubmit(async (values) => {
   }
 
   resetForm();
-  toast(t("auth.register.success"), "info");
-  router.push({ name: "sign-in" });
+  toast(t('auth.register.success'), 'info');
+  router.push({ name: 'sign-in' });
 });
 </script>
 
 <template>
   <div class="container py-5" style="max-width: 480px">
-    <h1>{{ $t("auth.register.title") }}</h1>
+    <h1>{{ $t('auth.register.title') }}</h1>
     <ToastContainer />
 
     <div v-if="genericError" class="alert alert-danger" role="alert">
-      {{ $t("auth.register.genericError") }}
+      {{ $t('auth.register.genericError') }}
     </div>
 
     <form novalidate @submit="onSubmit">
       <div class="mb-3">
-        <label class="form-label" for="register-email">{{ $t("auth.register.email") }}</label>
+        <label class="form-label" for="register-email">{{ $t('auth.register.email') }}</label>
         <input
           id="register-email"
           v-model="email"
@@ -78,12 +78,12 @@ const onSubmit = handleSubmit(async (values) => {
           :class="{ 'is-invalid': errors.email }"
         />
         <div v-if="errors.email" class="invalid-feedback">
-          {{ $t("auth.validation.email") }}
+          {{ $t('auth.validation.email') }}
         </div>
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="register-country">{{ $t("auth.register.country") }}</label>
+        <label class="form-label" for="register-country">{{ $t('auth.register.country') }}</label>
         <select
           id="register-country"
           v-model="country"
@@ -96,12 +96,12 @@ const onSubmit = handleSubmit(async (values) => {
           </option>
         </select>
         <div v-if="errors.country" class="invalid-feedback">
-          {{ $t("auth.validation.country") }}
+          {{ $t('auth.validation.country') }}
         </div>
       </div>
 
       <div class="mb-3">
-        <label class="form-label" for="register-password">{{ $t("auth.register.password") }}</label>
+        <label class="form-label" for="register-password">{{ $t('auth.register.password') }}</label>
         <PasswordInput
           id="register-password"
           v-model="password"
@@ -110,13 +110,13 @@ const onSubmit = handleSubmit(async (values) => {
         />
         <PasswordStrengthMeter :password="password ?? ''" />
         <div v-if="errors.password" class="invalid-feedback">
-          {{ $t("auth.validation.passwordLength") }}
+          {{ $t('auth.validation.passwordLength') }}
         </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label" for="register-password-confirmation">
-          {{ $t("auth.register.passwordConfirmation") }}
+          {{ $t('auth.register.passwordConfirmation') }}
         </label>
         <PasswordInput
           id="register-password-confirmation"
@@ -125,20 +125,20 @@ const onSubmit = handleSubmit(async (values) => {
           :class="{ 'is-invalid': errors.passwordConfirmation }"
         />
         <div v-if="errors.passwordConfirmation" class="invalid-feedback">
-          {{ $t("auth.validation.passwordMismatch") }}
+          {{ $t('auth.validation.passwordMismatch') }}
         </div>
       </div>
 
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
-        {{ $t("auth.register.submit") }}
+        {{ $t('auth.register.submit') }}
       </button>
     </form>
 
     <div class="mt-3">
-      <router-link :to="{ name: 'sign-in' }">{{ $t("auth.register.signInLink") }}</router-link>
+      <router-link :to="{ name: 'sign-in' }">{{ $t('auth.register.signInLink') }}</router-link>
     </div>
     <div class="mt-2">
-      <router-link :to="{ name: 'sign-in' }">{{ $t("common.cancel") }}</router-link>
+      <router-link :to="{ name: 'sign-in' }">{{ $t('common.cancel') }}</router-link>
     </div>
   </div>
 </template>

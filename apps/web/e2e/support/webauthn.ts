@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Page } from '@playwright/test';
 
 /**
  * Adds a resident-key-capable virtual authenticator to `page` via Chrome
@@ -15,11 +15,11 @@ export async function addVirtualAuthenticator(
   page: Page,
 ): Promise<{ authenticatorId: string; remove: () => Promise<void> }> {
   const client = await page.context().newCDPSession(page);
-  await client.send("WebAuthn.enable");
-  const { authenticatorId } = await client.send("WebAuthn.addVirtualAuthenticator", {
+  await client.send('WebAuthn.enable');
+  const { authenticatorId } = await client.send('WebAuthn.addVirtualAuthenticator', {
     options: {
-      protocol: "ctap2",
-      transport: "internal",
+      protocol: 'ctap2',
+      transport: 'internal',
       hasResidentKey: true,
       hasUserVerification: true,
       isUserVerified: true,
@@ -30,7 +30,7 @@ export async function addVirtualAuthenticator(
   return {
     authenticatorId,
     remove: async () => {
-      await client.send("WebAuthn.removeVirtualAuthenticator", { authenticatorId });
+      await client.send('WebAuthn.removeVirtualAuthenticator', { authenticatorId });
     },
   };
 }

@@ -39,14 +39,10 @@ export const scheduler = pgTable(
     reconciled: boolean('reconciled').notNull().default(false),
     notes: text('notes').notNull().default(''),
     limitDate: date('limit_date'),
-    frequencyUnit: frequencyUnitEnum('frequency_unit')
-      .notNull()
-      .default('month'),
+    frequencyUnit: frequencyUnitEnum('frequency_unit').notNull().default('month'),
     frequencyValue: smallint('frequency_value').notNull(),
     active: boolean('active').notNull().default(true),
-    createdAt: timestamp('created_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
       .defaultNow()

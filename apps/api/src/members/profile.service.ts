@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -17,10 +12,7 @@ import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import '../session/session-data';
-import {
-  buildEmailChangeToken,
-  parseEmailChangeToken,
-} from './email-change-token';
+import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { raceSafeUniqueEmail } from './race-safe-unique-email';
 
@@ -63,18 +55,12 @@ export class ProfileService {
       throw new UnauthorizedException();
     }
 
-    const [row] = await this.db
-      .select()
-      .from(member)
-      .where(eq(member.id, memberId));
+    const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
       throw new UnauthorizedException();
     }
 
-    const passwordOk = await this.hash.verify(
-      row.password,
-      dto.currentPassword,
-    );
+    const passwordOk = await this.hash.verify(row.password, dto.currentPassword);
     if (!passwordOk) {
       throw new BadRequestException('Current password is invalid.');
     }
@@ -102,22 +88,11 @@ export class ProfileService {
       return;
     }
 
-    const token = buildEmailChangeToken(
-      this.crypto,
-      row.id,
-      dto.email,
-      nextVersion,
-    );
+    const token = buildEmailChangeToken(this.crypto, row.id, dto.email, nextVersion);
     const appUrl = this.config.getOrThrow<string>('APP_URL');
     const confirmLink = `${appUrl}/en/confirm-email-change?key=${encodeURIComponent(token)}`;
-    await this.emailQueue.enqueue(
-      confirmEmailChangeEmail(dto.email, confirmLink),
-    );
-    await this.audit.record(
-      'email_change_requested',
-      row.id,
-      req.ip ?? 'unknown',
-    );
+    await this.emailQueue.enqueue(confirmEmailChangeEmail(dto.email, confirmLink));
+    await this.audit.record('email_change_requested', row.id, req.ip ?? 'unknown');
   }
 
   /**
@@ -132,19 +107,13 @@ export class ProfileService {
    * whether the token is still live, not which email currently identifies
    * the row.
    */
-  async confirmEmailChange(
-    key: string,
-    sourceAddress = 'unknown',
-  ): Promise<void> {
+  async confirmEmailChange(key: string, sourceAddress = 'unknown'): Promise<void> {
     const payload = parseEmailChangeToken(this.crypto, key);
     if (!payload) {
       throw new BadRequestException(EMAIL_CHANGE_ERROR);
     }
 
-    const [row] = await this.db
-      .select()
-      .from(member)
-      .where(eq(member.id, payload.memberId));
+    const [row] = await this.db.select().from(member).where(eq(member.id, payload.memberId));
 
     if (
       !row ||
@@ -178,9 +147,7 @@ export class ProfileService {
       throw new BadRequestException(EMAIL_CHANGE_ERROR);
     }
 
-    await this.emailQueue.enqueue(
-      emailChangedEmail(previousEmail, payload.newEmail),
-    );
+    await this.emailQueue.enqueue(emailChangedEmail(previousEmail, payload.newEmail));
     await this.audit.record('email_changed', row.id, sourceAddress);
   }
 }

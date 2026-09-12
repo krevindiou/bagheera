@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Field rules mirror the API DTOs (apps/api/src/{members,auth}/dto/*).
 const password = z.string().min(8).max(4096);
@@ -16,7 +16,7 @@ export const changePasswordSchema = z
     newPasswordConfirmation: z.string(),
   })
   .refine((form) => form.newPassword === form.newPasswordConfirmation, {
-    message: "passwordMismatch",
-    path: ["newPasswordConfirmation"],
+    message: 'passwordMismatch',
+    path: ['newPasswordConfirmation'],
   });
 export type ChangePasswordForm = z.infer<typeof changePasswordSchema>;

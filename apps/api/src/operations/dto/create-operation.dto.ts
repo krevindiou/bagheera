@@ -1,15 +1,5 @@
-import {
-  IsBoolean,
-  IsDateString,
-  IsIn,
-  IsOptional,
-  IsUUID,
-} from 'class-validator';
-import {
-  AmountField,
-  NotesField,
-  ThirdPartyField,
-} from '../../common/dto-fields';
+import { IsBoolean, IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { AmountField, NotesField, ThirdPartyField } from '../../common/dto-fields';
 
 export class CreateOperationDto {
   @IsUUID('7')

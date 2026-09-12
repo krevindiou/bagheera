@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useI18n } from "vue-i18n";
-import { apiClient } from "../../api/client";
-import { useConfirm } from "../../composables/useConfirm";
-import { useToast } from "../../composables/useToast";
+import { useI18n } from 'vue-i18n';
+import { apiClient } from '../../api/client';
+import { useConfirm } from '../../composables/useConfirm';
+import { useToast } from '../../composables/useToast';
 
 const props = defineProps<{ selectedIds: string[] }>();
 const emit = defineEmits<{ done: [] }>();
@@ -15,15 +15,15 @@ async function batchDelete() {
   if (props.selectedIds.length === 0) return;
   if (!(await confirm())) return;
 
-  const { response } = await apiClient.POST("/schedulers/batch/delete", {
+  const { response } = await apiClient.POST('/schedulers/batch/delete', {
     body: { ids: props.selectedIds },
   });
   if (!response.ok) {
-    toast(t("schedulers.genericError"), "error");
+    toast(t('schedulers.genericError'), 'error');
     return;
   }
-  toast(t("schedulers.batch.deleted"), "success");
-  emit("done");
+  toast(t('schedulers.batch.deleted'), 'success');
+  emit('done');
 }
 </script>
 
@@ -39,7 +39,7 @@ async function batchDelete() {
       data-testid="scheduler-batch-delete"
       @click="batchDelete"
     >
-      {{ $t("schedulers.batch.delete") }}
+      {{ $t('schedulers.batch.delete') }}
     </button>
   </div>
 </template>

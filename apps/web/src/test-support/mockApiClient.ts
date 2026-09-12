@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 /**
  * Stand-in for the `apiClient` singleton (openapi-fetch): every HTTP method

@@ -4,10 +4,7 @@ import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
 import { operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -43,8 +40,7 @@ async function createOperation(
     type: 'debit',
     thirdParty: overrides.thirdParty ?? 'Transfer',
     amount: overrides.amount ?? 100,
-    paymentMethodId:
-      overrides.paymentMethodId ?? PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+    paymentMethodId: overrides.paymentMethodId ?? PAYMENT_METHOD_ID.TRANSFER_DEBIT,
     transferAccountId: overrides.transferAccountId,
     valueDate: '2026-01-01',
   });
@@ -53,10 +49,7 @@ async function createOperation(
 }
 
 async function opRow(app: INestApplication<Server>, id: string) {
-  const [row] = await getDb(app)
-    .select()
-    .from(operation)
-    .where(eq(operation.id, id));
+  const [row] = await getDb(app).select().from(operation).where(eq(operation.id, id));
   return row;
 }
 
@@ -238,10 +231,7 @@ describe('operation transfer pairing', () => {
     expect(after.transferOperationId).toBeNull();
     expect(after.transferAccountId).toBeNull();
 
-    const mirrorRows = await getDb(app)
-      .select()
-      .from(operation)
-      .where(eq(operation.id, mirrorId));
+    const mirrorRows = await getDb(app).select().from(operation).where(eq(operation.id, mirrorId));
     expect(mirrorRows).toHaveLength(0);
   });
 

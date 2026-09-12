@@ -31,8 +31,8 @@ export const AMOUNT_CEILING = 999_999_999.9999;
 // be named in a generated .d.ts (TS4053) once it shows up in a public
 // method's inferred return type, which every service method touching a
 // debit/credit column does.
-export type MinorUnits = number & { readonly __brand: "MinorUnits" };
-export type MajorUnits = number & { readonly __brand: "MajorUnits" };
+export type MinorUnits = number & { readonly __brand: 'MinorUnits' };
+export type MajorUnits = number & { readonly __brand: 'MajorUnits' };
 
 export function toMinorUnits(value: number): MinorUnits {
   return Math.round(value * MONEY_SCALE) as MinorUnits;

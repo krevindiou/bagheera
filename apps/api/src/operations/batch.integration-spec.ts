@@ -3,10 +3,7 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { operation, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import {
-  seedSignedInMember,
-  SignedInFixture,
-} from '../test-support/auth-fixture';
+import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -14,10 +11,7 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(
-  mutate: SignedInFixture['mutate'],
-  bankId: string,
-): Promise<string> {
+async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
@@ -74,10 +68,7 @@ describe('operations batch actions', () => {
       expect(res.status).toBe(200);
       expect((res.body as { deletedCount: number }).deletedCount).toBe(1);
 
-      const remaining = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, ownId));
+      const remaining = await getDb(app).select().from(operation).where(eq(operation.id, ownId));
       expect(remaining).toHaveLength(0);
       const foreignStillThere = await getDb(app)
         .select()
@@ -107,18 +98,12 @@ describe('operations batch actions', () => {
       const sourceId = await createOperation(mutate, accountA, {
         transferAccountId: accountB,
       });
-      const [source] = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, sourceId));
+      const [source] = await getDb(app).select().from(operation).where(eq(operation.id, sourceId));
       const mirrorId = source.transferOperationId!;
 
       await mutate('post', '/operations/batch/delete', { ids: [sourceId] });
 
-      const [mirror] = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, mirrorId));
+      const [mirror] = await getDb(app).select().from(operation).where(eq(operation.id, mirrorId));
       expect(mirror).toBeDefined();
       expect(mirror.transferAccountId).toBeNull();
       expect(mirror.transferOperationId).toBeNull();
@@ -136,10 +121,7 @@ describe('operations batch actions', () => {
       });
       expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
 
-      const stillThere = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, opId));
+      const stillThere = await getDb(app).select().from(operation).where(eq(operation.id, opId));
       expect(stillThere).toHaveLength(1);
     });
   });
@@ -157,10 +139,7 @@ describe('operations batch actions', () => {
       expect(res.status).toBe(200);
       expect((res.body as { reconciledCount: number }).reconciledCount).toBe(1);
 
-      const [row] = await getDb(app)
-        .select()
-        .from(operation)
-        .where(eq(operation.id, opId));
+      const [row] = await getDb(app).select().from(operation).where(eq(operation.id, opId));
       expect(row.reconciled).toBe(true);
 
       const [event] = await getDb(app)

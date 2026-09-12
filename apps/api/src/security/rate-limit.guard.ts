@@ -93,14 +93,8 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     }
 
     const explicitOptions =
-      this.reflector.get<RateLimitOptions>(
-        RATE_LIMIT_OPTIONS,
-        context.getHandler(),
-      ) ??
-      this.reflector.get<RateLimitOptions>(
-        RATE_LIMIT_OPTIONS,
-        context.getClass(),
-      );
+      this.reflector.get<RateLimitOptions>(RATE_LIMIT_OPTIONS, context.getHandler()) ??
+      this.reflector.get<RateLimitOptions>(RATE_LIMIT_OPTIONS, context.getClass());
 
     const req = context.switchToHttp().getRequest<Request>();
     if (!explicitOptions && !MUTATING_METHODS.has(req.method)) {
@@ -143,9 +137,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
       },
     ];
     const rawIdentifier = options.identifierField
-      ? (req.body as Record<string, unknown> | undefined)?.[
-          options.identifierField
-        ]
+      ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]
       : undefined;
     if (typeof rawIdentifier === 'string' && rawIdentifier.length > 0) {
       // Normalized the same way every auth flow looks the value up
@@ -186,19 +178,13 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   // The limiter budget was exhausted: escalate this dimension's lockout.
   // Strike 1 blocks for one base window, strike 2 doubles it, and so on
   // up to the cap; strikes decay if the dimension stays quiet for a while.
-  private async lockOut(
-    dimensionKey: string,
-    durationSeconds: number,
-  ): Promise<void> {
+  private async lockOut(dimensionKey: string, durationSeconds: number): Promise<void> {
     const strikeKey = `rl:strikes:${dimensionKey}`;
     const strikes = await this.valkeyClient.incr(strikeKey);
     if (strikes === 1) {
       await this.valkeyClient.expire(strikeKey, STRIKE_RESET_SECONDS);
     }
-    const blockSeconds = Math.min(
-      MAX_BLOCK_SECONDS,
-      durationSeconds * 2 ** (strikes - 1),
-    );
+    const blockSeconds = Math.min(MAX_BLOCK_SECONDS, durationSeconds * 2 ** (strikes - 1));
     await this.valkeyClient.set(`rl:block:${dimensionKey}`, '1', {
       EX: blockSeconds,
     });
@@ -208,10 +194,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     return new HttpException('Too many requests', HttpStatus.TOO_MANY_REQUESTS);
   }
 
-  private limiterFor(
-    points: number,
-    durationSeconds: number,
-  ): RateLimiterRedis {
+  private limiterFor(points: number, durationSeconds: number): RateLimiterRedis {
     const cacheKey = `${points}:${durationSeconds}`;
     let limiter = this.limiters.get(cacheKey);
     if (!limiter) {

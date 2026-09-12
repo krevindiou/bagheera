@@ -84,10 +84,7 @@ export class WebauthnAuthenticationService {
     return options;
   }
 
-  async verify(
-    req: Request,
-    dto: VerifyAuthenticationDto,
-  ): Promise<{ message: string }> {
+  async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const sourceAddress = req.ip ?? 'unknown';
     const expectedChallenge = req.session.webauthnChallenge;
     const memberId = req.session.webauthnMemberId ?? null;
@@ -95,11 +92,7 @@ export class WebauthnAuthenticationService {
     delete req.session.webauthnMemberId;
 
     if (!expectedChallenge || !memberId) {
-      await this.audit.record(
-        'webauthn_sign_in_failure',
-        memberId,
-        sourceAddress,
-      );
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
 
@@ -108,11 +101,7 @@ export class WebauthnAuthenticationService {
       .from(webauthnCredential)
       .where(eq(webauthnCredential.credentialId, dto.response.id));
     if (!credentialRow || credentialRow.memberId !== memberId) {
-      await this.audit.record(
-        'webauthn_sign_in_failure',
-        memberId,
-        sourceAddress,
-      );
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
 
@@ -131,33 +120,18 @@ export class WebauthnAuthenticationService {
         },
       });
     } catch {
-      await this.audit.record(
-        'webauthn_sign_in_failure',
-        memberId,
-        sourceAddress,
-      );
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
 
     if (!verification.verified) {
-      await this.audit.record(
-        'webauthn_sign_in_failure',
-        memberId,
-        sourceAddress,
-      );
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
 
-    const [row] = await this.db
-      .select()
-      .from(member)
-      .where(eq(member.id, memberId));
+    const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row || !row.active) {
-      await this.audit.record(
-        'webauthn_sign_in_failure',
-        memberId,
-        sourceAddress,
-      );
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
 
@@ -172,10 +146,7 @@ export class WebauthnAuthenticationService {
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
 
-    await this.db
-      .update(member)
-      .set({ loggedAt: new Date() })
-      .where(eq(member.id, row.id));
+    await this.db.update(member).set({ loggedAt: new Date() }).where(eq(member.id, row.id));
 
     await this.schedulerCatchUp.catchUp(row.id);
     await this.audit.record('webauthn_sign_in_success', row.id, sourceAddress);

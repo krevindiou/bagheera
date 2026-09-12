@@ -16,8 +16,7 @@ describe('POST /auth/change-password', () => {
   });
 
   it('changes the password when the current one is correct and confirmation matches', async () => {
-    const { agent, getCsrfToken, email, password } =
-      await seedSignedInMember(app);
+    const { agent, getCsrfToken, email, password } = await seedSignedInMember(app);
     const newPassword = 'a-brand-new-password-1';
 
     const csrfToken1 = await getCsrfToken();
@@ -50,8 +49,7 @@ describe('POST /auth/change-password', () => {
   });
 
   it('rejects a wrong current password and leaves the password unchanged', async () => {
-    const { agent, getCsrfToken, email, password } =
-      await seedSignedInMember(app);
+    const { agent, getCsrfToken, email, password } = await seedSignedInMember(app);
 
     const csrfToken = await getCsrfToken();
     const res = await agent
@@ -63,9 +61,7 @@ describe('POST /auth/change-password', () => {
         newPasswordConfirmation: 'whatever-new-1',
       })
       .expect(400);
-    expect((res.body as { message: string }).message).toBe(
-      'Current password is invalid.',
-    );
+    expect((res.body as { message: string }).message).toBe('Current password is invalid.');
 
     const checkAgent = request.agent(app.getHttpServer());
     const checkCsrfToken = await csrfTokenFor(checkAgent);
@@ -89,18 +85,11 @@ describe('POST /auth/change-password', () => {
         newPasswordConfirmation: 'a-different-one',
       })
       .expect(400);
-    expect((res.body as { message: string }).message).toBe(
-      "Passwords don't match.",
-    );
+    expect((res.body as { message: string }).message).toBe("Passwords don't match.");
   });
 
   it('terminates every other session for the member but keeps the current one', async () => {
-    const {
-      agent: agent1,
-      getCsrfToken,
-      email,
-      password,
-    } = await seedSignedInMember(app);
+    const { agent: agent1, getCsrfToken, email, password } = await seedSignedInMember(app);
 
     // A second, independent session for the *same* member.
     const agent2 = request.agent(app.getHttpServer());

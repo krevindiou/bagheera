@@ -9,7 +9,7 @@
 // real link is part of what's under test) and from fixtures.ts's fast-path
 // setup helpers, so a plain importable function is the simpler shape.
 
-const MAILPIT_URL = process.env.E2E_MAILPIT_HTTP_URL ?? "http://localhost:8025";
+const MAILPIT_URL = process.env.E2E_MAILPIT_HTTP_URL ?? 'http://localhost:8025';
 
 interface MailpitMessageSummary {
   ID: string;
@@ -93,14 +93,14 @@ export async function waitForEmailLink(
   if (!match) {
     throw new Error(`No link found in the email sent to ${toAddress}`);
   }
-  return match[1].replace(/&amp;/g, "&");
+  return match[1].replace(/&amp;/g, '&');
 }
 
 /** Every emailed link here (activate / password-recovery/reset /
  * confirm-email-change) is a single-use `?key=` token — see the matching
  * onMounted() in each page under apps/web/src/pages/auth/. */
 export function keyFromLink(link: string): string {
-  const key = new URL(link).searchParams.get("key");
+  const key = new URL(link).searchParams.get('key');
   if (!key) {
     throw new Error(`Link has no ?key= param: ${link}`);
   }

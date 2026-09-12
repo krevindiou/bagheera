@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
-import { asMockedApiClient, mockApiClient } from "../../test-support/mockApiClient";
-import { submitAndSettle } from "../../test-support/submitAndSettle";
-import { withGlobalPlugins } from "../../test-support/withGlobalPlugins";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
+import { submitAndSettle } from '../../test-support/submitAndSettle';
+import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
-vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
+vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
-import { apiClient as realApiClient } from "../../api/client";
-import { useToast } from "../../composables/useToast";
-import { useSessionStore } from "../../stores/session.store";
-import ProfilePage from "./ProfilePage.vue";
+import { apiClient as realApiClient } from '../../api/client';
+import { useToast } from '../../composables/useToast';
+import { useSessionStore } from '../../stores/session.store';
+import ProfilePage from './ProfilePage.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
@@ -27,69 +27,69 @@ function mountWithSession(email: string) {
   return mount(ProfilePage, plugins);
 }
 
-describe("ProfilePage", () => {
+describe('ProfilePage', () => {
   beforeEach(() => {
     apiClient.POST.mockReset();
     useToast().toasts.splice(0);
   });
 
-  it("prefills the email from the signed-in member", () => {
-    const wrapper = mountWithSession("member@example.com");
-    expect((wrapper.find("#profile-email").element as HTMLInputElement).value).toBe(
-      "member@example.com",
+  it('prefills the email from the signed-in member', () => {
+    const wrapper = mountWithSession('member@example.com');
+    expect((wrapper.find('#profile-email').element as HTMLInputElement).value).toBe(
+      'member@example.com',
     );
   });
 
-  it("submits the change, clears the password field, and shows a success toast", async () => {
+  it('submits the change, clears the password field, and shows a success toast', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
-    const wrapper = mountWithSession("member@example.com");
-    await wrapper.find("#profile-current-password").setValue("hunter2");
+    const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
-    expect(apiClient.POST).toHaveBeenCalledWith("/members/profile", {
-      body: { email: "member@example.com", currentPassword: "hunter2" },
+    expect(apiClient.POST).toHaveBeenCalledWith('/members/profile', {
+      body: { email: 'member@example.com', currentPassword: 'hunter2' },
     });
-    expect((wrapper.find("#profile-current-password").element as HTMLInputElement).value).toBe("");
+    expect((wrapper.find('#profile-current-password').element as HTMLInputElement).value).toBe('');
     expect(wrapper.text()).toContain("If this email isn't already registered to another account");
   });
 
-  it("shows an inline field error (not a toast) for an invalid current password", async () => {
+  it('shows an inline field error (not a toast) for an invalid current password', async () => {
     apiClient.POST.mockResolvedValueOnce(
-      jsonResult(400, { message: "Current password is invalid." }),
+      jsonResult(400, { message: 'Current password is invalid.' }),
     );
-    const wrapper = mountWithSession("member@example.com");
-    await wrapper.find("#profile-current-password").setValue("wrong");
+    const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-current-password').setValue('wrong');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Current password is invalid.");
+    expect(wrapper.text()).toContain('Current password is invalid.');
     expect(useToast().toasts).toHaveLength(0);
   });
 
-  it("shows a toast for any other failure", async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: "Email already taken" }));
-    const wrapper = mountWithSession("member@example.com");
-    await wrapper.find("#profile-current-password").setValue("hunter2");
+  it('shows a toast for any other failure', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: 'Email already taken' }));
+    const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Email already taken");
+    expect(wrapper.text()).toContain('Email already taken');
   });
 
-  it("falls back to a generic error toast when the update fails without a message", async () => {
+  it('falls back to a generic error toast when the update fails without a message', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(500));
-    const wrapper = mountWithSession("member@example.com");
-    await wrapper.find("#profile-current-password").setValue("hunter2");
+    const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Something went wrong. Please try again.");
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
   });
 
   it("shows a validation error and doesn't submit for an invalid email", async () => {
-    const wrapper = mountWithSession("member@example.com");
-    await wrapper.find("#profile-email").setValue("not-an-email");
-    await wrapper.find("#profile-current-password").setValue("hunter2");
+    const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('not-an-email');
+    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain("Enter a valid email address.");
+    expect(wrapper.text()).toContain('Enter a valid email address.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 });

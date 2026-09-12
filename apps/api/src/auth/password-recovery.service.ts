@@ -43,21 +43,11 @@ export class PasswordRecoveryService {
       return;
     }
 
-    const token = buildResetToken(
-      this.crypto,
-      row.email,
-      row.passwordResetTokenVersion,
-    );
+    const token = buildResetToken(this.crypto, row.email, row.passwordResetTokenVersion);
     const appUrl = this.config.getOrThrow<string>('APP_URL');
     const changePasswordLink = `${appUrl}/en/reset-password?key=${encodeURIComponent(token)}`;
-    await this.emailQueue.enqueue(
-      passwordRecoveryEmail(row.email, changePasswordLink),
-    );
-    await this.audit.record(
-      'password_recovery_requested',
-      row.id,
-      sourceAddress,
-    );
+    await this.emailQueue.enqueue(passwordRecoveryEmail(row.email, changePasswordLink));
+    await this.audit.record('password_recovery_requested', row.id, sourceAddress);
   }
 
   async resetPassword(
@@ -95,10 +85,6 @@ export class PasswordRecoveryService {
 
     await this.sessionTermination.terminateAllSessions(row.id);
     await this.emailQueue.enqueue(passwordChangedEmail(row.email));
-    await this.audit.record(
-      'password_recovery_completed',
-      row.id,
-      sourceAddress,
-    );
+    await this.audit.record('password_recovery_completed', row.id, sourceAddress);
   }
 }

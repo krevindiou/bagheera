@@ -8,11 +8,7 @@ import {
   IsUUID,
   Max,
 } from 'class-validator';
-import {
-  AmountField,
-  NotesField,
-  ThirdPartyField,
-} from '../../common/dto-fields';
+import { AmountField, NotesField, ThirdPartyField } from '../../common/dto-fields';
 
 // accountId is shown read-only on the edit form but still submitted — the
 // server rejects any attempt to actually move the scheduler to another
