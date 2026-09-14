@@ -132,76 +132,97 @@ function goToPage(newPage: number) {
 </script>
 
 <template>
-  <div class="container py-5">
-    <h1>
-      {{ $t('schedulers.title') }}<span v-if="account"> — {{ account.name }}</span>
-    </h1>
+  <div>
+    <router-link
+      v-if="account"
+      :to="{ name: 'operations', params: { accountId } }"
+      class="back-link"
+    >
+      ← {{ account.name }} · {{ $t('operations.title') }}
+    </router-link>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-0" style="font-size: 24px">
+        {{ $t('schedulers.title') }}<span v-if="account"> — {{ account.name }}</span>
+      </h1>
+      <button
+        v-if="isAccountFullyActive"
+        type="button"
+        class="btn btn-primary"
+        @click="startCreate"
+      >
+        {{ $t('schedulers.addScheduler') }}
+      </button>
+    </div>
     <ToastContainer />
 
     <BatchActions :selected-ids="selectedIdList" @done="reloadSchedulers" />
 
     <p v-if="list.items.length === 0" class="text-muted">{{ $t('schedulers.empty') }}</p>
 
-    <div v-else class="table-responsive">
-      <table class="table" data-testid="schedulers-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th>{{ $t('operations.thirdParty') }}</th>
-            <th class="text-end">{{ $t('operations.amount') }}</th>
-            <th>{{ $t('operations.paymentMethod') }}</th>
-            <th>{{ $t('operations.category') }}</th>
-            <th class="text-end">{{ $t('schedulers.every') }}</th>
-            <th>{{ $t('schedulers.frequencyUnit') }}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="scheduler in list.items"
-            :key="scheduler.id"
-            data-testid="scheduler-row"
-            :class="{ 'table-active': selectedIds.has(scheduler.id) }"
-            style="cursor: pointer"
-            @click="startEdit(scheduler)"
-          >
-            <td @click.stop>
-              <input
-                type="checkbox"
-                :checked="selectedIds.has(scheduler.id)"
-                @change="toggleSelected(scheduler.id)"
-              />
-            </td>
-            <td>
-              <span :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')">{{
-                scheduler.active ? '▶' : '⏸'
-              }}</span>
-            </td>
-            <td>{{ scheduler.thirdParty }}</td>
-            <td class="text-end" :class="scheduler.debit ? 'text-danger' : 'text-success'">
-              {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
-            </td>
-            <td :title="paymentMethodName(scheduler.paymentMethodId, paymentMethods)">
-              {{ paymentMethodIcon(scheduler.paymentMethodId) }}
-            </td>
-            <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}</td>
-            <td class="text-end">{{ scheduler.frequencyValue }}</td>
-            <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
-            <td @click.stop>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                @click="startEdit(scheduler)"
-              >
-                {{ $t('operations.edit') }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div v-else>
+      <div class="table-responsive">
+        <table class="table" data-testid="schedulers-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th>{{ $t('operations.thirdParty') }}</th>
+              <th class="text-end">{{ $t('operations.amount') }}</th>
+              <th>{{ $t('operations.paymentMethod') }}</th>
+              <th>{{ $t('operations.category') }}</th>
+              <th class="text-end">{{ $t('schedulers.every') }}</th>
+              <th>{{ $t('schedulers.frequencyUnit') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="scheduler in list.items"
+              :key="scheduler.id"
+              data-testid="scheduler-row"
+              :class="{ 'table-active': selectedIds.has(scheduler.id) }"
+              style="cursor: pointer"
+              @click="startEdit(scheduler)"
+            >
+              <td @click.stop>
+                <input
+                  type="checkbox"
+                  :checked="selectedIds.has(scheduler.id)"
+                  @change="toggleSelected(scheduler.id)"
+                />
+              </td>
+              <td>
+                <span
+                  class="dot"
+                  :class="{ 'dot-active': scheduler.active }"
+                  :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')"
+                ></span>
+              </td>
+              <td>{{ scheduler.thirdParty }}</td>
+              <td class="text-end amount" :class="scheduler.debit ? 'text-danger' : 'text-success'">
+                {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
+              </td>
+              <td :title="paymentMethodName(scheduler.paymentMethodId, paymentMethods)">
+                {{ paymentMethodIcon(scheduler.paymentMethodId) }}
+              </td>
+              <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}</td>
+              <td class="text-end">{{ scheduler.frequencyValue }}</td>
+              <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
+              <td @click.stop>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary btn-text"
+                  @click="startEdit(scheduler)"
+                >
+                  {{ $t('operations.edit') }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <nav class="d-flex align-items-center gap-2" aria-label="pagination">
+      <nav class="pager d-flex align-items-center gap-2 mt-3" aria-label="pagination">
         <button
           type="button"
           class="btn btn-sm btn-outline-secondary"
@@ -233,13 +254,5 @@ function goToPage(newPage: number) {
       @saved="onSaved"
       @cancel="showForm = false"
     />
-    <button
-      v-else-if="isAccountFullyActive"
-      type="button"
-      class="btn btn-primary mt-3"
-      @click="startCreate"
-    >
-      {{ $t('schedulers.addScheduler') }}
-    </button>
   </div>
 </template>

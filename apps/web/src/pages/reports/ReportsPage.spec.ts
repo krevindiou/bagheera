@@ -68,6 +68,7 @@ describe('ReportsPage', () => {
     await router.push({ name: 'reports' });
     apiClient.GET.mockReset();
     apiClient.POST.mockReset();
+    apiClient.DELETE.mockReset();
     mockGet([]);
     const { state, settle } = useConfirm();
     settle(false);
@@ -98,7 +99,7 @@ describe('ReportsPage', () => {
     expect(rows[0].text()).toContain('Sum');
     expect(rows[0].text()).toContain('Rent');
     expect(rows[0].text()).not.toContain('Shown on the homepage');
-    expect(rows[1].find('.badge.text-bg-info').exists()).toBe(true);
+    expect(rows[1].find('.pill-violet').exists()).toBe(true);
   });
 
   it('toggles the chart when View chart is clicked, showing debit and credit as separate series', async () => {
@@ -116,16 +117,21 @@ describe('ReportsPage', () => {
     wrapper = mount(ReportsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    await wrapper.find('button.btn-outline-secondary').trigger('click');
+    // Scoped to the row: the header also carries a "New average report"
+    // btn-outline-secondary button, which an unscoped selector would hit
+    // first.
+    const rowButton = () =>
+      wrapper!.find('[data-testid="report-row"] button.btn-outline-secondary');
+    await rowButton().trigger('click');
     await flushPromises();
     expect(wrapper.text()).toContain('Hide chart');
     expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
     expect(wrapper.findComponent(SynthesisChart).props('series')).toEqual([
-      { label: 'USD Debit', color: '#dc3545', points: [{ period: '2026-01', value: 10 }] },
-      { label: 'USD Credit', color: '#198754', points: [{ period: '2026-01', value: 5 }] },
+      { label: 'USD Debit', color: '#e8697a', points: [{ period: '2026-01', value: 10 }] },
+      { label: 'USD Credit', color: '#5fd98d', points: [{ period: '2026-01', value: 5 }] },
     ]);
 
-    await wrapper.find('button.btn-outline-secondary').trigger('click');
+    await rowButton().trigger('click');
     expect(wrapper.text()).toContain('View chart');
   });
 
@@ -176,13 +182,14 @@ describe('ReportsPage', () => {
     wrapper = mount(ReportsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    await wrapper.findAll('button.btn-primary')[0].trigger('click');
+    await wrapper.find('button.btn-primary').trigger('click');
     expect(wrapper.find('h2').text()).toBe('New report');
     expect(wrapper.find('#report-title').exists()).toBe(true);
 
     await wrapper.find('button.btn-outline-secondary').trigger('click');
     expect(wrapper.find('#report-title').exists()).toBe(false);
-    expect(wrapper.findAll('button.btn-primary')).toHaveLength(2);
+    expect(wrapper.find('button.btn-primary').exists()).toBe(true);
+    expect(wrapper.find('button.btn-outline-secondary').exists()).toBe(true);
   });
 
   it("opens a new average report form, submitting with type 'average'", async () => {
@@ -194,7 +201,7 @@ describe('ReportsPage', () => {
     wrapper = mount(ReportsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    await wrapper.findAll('button.btn-primary')[1].trigger('click');
+    await wrapper.find('button.btn-outline-secondary').trigger('click');
     await wrapper.find('#report-title').setValue('Average spend');
     await submitAndSettle(wrapper);
 
@@ -202,6 +209,67 @@ describe('ReportsPage', () => {
       '/reports',
       expect.objectContaining({ body: expect.objectContaining({ type: 'average' }) }),
     );
+  });
+
+  it('deletes a single report once the confirmation is accepted', async () => {
+    mockGet([report({ id: 'r1', title: 'Rent' })]);
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"] button.btn-outline-danger').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(apiClient.DELETE).toHaveBeenCalledWith('/reports/{id}', {
+      params: { path: { id: 'r1' } },
+    });
+    expect(wrapper.text()).toContain('Report deleted');
+  });
+
+  it("doesn't delete a report when the confirmation is cancelled", async () => {
+    mockGet([report()]);
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"] button.btn-outline-danger').trigger('click');
+    useConfirm().settle(false);
+    await flushPromises();
+
+    expect(apiClient.DELETE).not.toHaveBeenCalled();
+  });
+
+  it('shows an error toast when deleting a report fails', async () => {
+    mockGet([report()]);
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 500 }),
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"] button.btn-outline-danger').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+  });
+
+  it("doesn't toggle the row's chart when its delete button is clicked", async () => {
+    mockGet([report()]);
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"] button.btn-outline-danger').trigger('click');
+    useConfirm().settle(false);
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain('Hide chart');
   });
 
   it('opens the edit form for a report and reloads once saved', async () => {

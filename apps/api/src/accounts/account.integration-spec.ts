@@ -57,6 +57,42 @@ describe('accounts', () => {
       const filtered = await agent.get(`/accounts?bankId=${bankId}`).expect(200);
       expect(filtered.body).toHaveLength(1);
     });
+
+    it('includes each account balance', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      await createAccount(mutate, bankId, { name: 'Checking', initialBalance: 100 });
+      await createAccount(mutate, bankId, { name: 'Savings', initialBalance: -25 });
+
+      const res = await agent.get('/accounts').expect(200);
+      const body = res.body as { name: string; balance: number }[];
+      expect(body.find((a) => a.name === 'Checking')?.balance).toBe(100);
+      expect(body.find((a) => a.name === 'Savings')?.balance).toBe(-25);
+    });
+
+    it('also includes each account reconciled balance, excluding unreconciled operations', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId, {
+        name: 'Checking',
+        initialBalance: 100,
+      });
+      await mutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Unreconciled',
+        amount: 20,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        valueDate: '2026-01-01',
+        reconciled: false,
+      });
+
+      const res = await agent.get('/accounts').expect(200);
+      const body = res.body as { name: string; balance: number; reconciledBalance: number }[];
+      const checking = body.find((a) => a.name === 'Checking');
+      expect(checking?.balance).toBe(80);
+      expect(checking?.reconciledBalance).toBe(100);
+    });
   });
 
   describe('POST /accounts', () => {

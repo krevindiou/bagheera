@@ -4,7 +4,9 @@ import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import { useConfirm } from '../../composables/useConfirm';
 import { useSelection } from '../../composables/useSelection';
+import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import BatchActions from './batch.vue';
 import { toChartSeries } from './chartSeries';
@@ -13,6 +15,8 @@ import type { Report, ReportChart } from './reports.types';
 import ToastContainer from '../../components/ToastContainer.vue';
 
 const { t } = useI18n();
+const { confirm } = useConfirm();
+const { push: toast } = useToast();
 
 const queryClient = useQueryClient();
 
@@ -73,6 +77,20 @@ async function onBatchDeleted() {
   await reloadReports();
 }
 
+async function deleteReport(report: Report) {
+  if (!(await confirm())) return;
+  const { response } = await apiClient.DELETE('/reports/{id}', {
+    params: { path: { id: report.id } },
+  });
+  if (!response.ok) {
+    toast(t('reports.genericError'), 'error');
+    return;
+  }
+  if (viewingReportId.value === report.id) viewingReportId.value = null;
+  toast(t('reports.deleted'), 'success');
+  await reloadReports();
+}
+
 const chartQuery = useQuery({
   queryKey: computed(() => ['report-chart', viewingReportId.value]),
   queryFn: async () => {
@@ -98,8 +116,18 @@ function toggleView(report: Report) {
 </script>
 
 <template>
-  <div class="container py-5">
-    <h1>{{ $t('reports.title') }}</h1>
+  <div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <h1 class="mb-0">{{ $t('reports.title') }}</h1>
+      <div v-if="!showForm" class="d-flex gap-2">
+        <button type="button" class="btn btn-primary" @click="startCreate('sum')">
+          {{ $t('reports.newSumReport') }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @click="startCreate('average')">
+          {{ $t('reports.newAverageReport') }}
+        </button>
+      </div>
+    </div>
     <ToastContainer />
 
     <p v-if="reports.length === 0" class="text-muted">{{ $t('reports.empty') }}</p>
@@ -134,19 +162,19 @@ function toggleView(report: Report) {
                   />
                 </td>
                 <td>
-                  <span class="badge text-bg-secondary">{{ $t(`reports.${report.type}`) }}</span>
+                  <span class="pill">{{ $t(`reports.${report.type}`) }}</span>
                 </td>
                 <td>
                   {{ report.title }}
-                  <span v-if="report.homepage" class="badge text-bg-info">{{
+                  <span v-if="report.homepage" class="pill pill-violet">{{
                     $t('reports.homepage')
                   }}</span>
                 </td>
                 <td @click.stop>
-                  <div class="d-flex gap-2">
+                  <div class="d-flex justify-content-end gap-2">
                     <button
                       type="button"
-                      class="btn btn-sm btn-outline-secondary"
+                      class="btn btn-sm btn-outline-secondary btn-text"
                       @click="toggleView(report)"
                     >
                       {{
@@ -157,10 +185,17 @@ function toggleView(report: Report) {
                     </button>
                     <button
                       type="button"
-                      class="btn btn-sm btn-outline-secondary"
+                      class="btn btn-sm btn-outline-secondary btn-text"
                       @click="startEdit(report)"
                     >
                       {{ $t('operations.edit') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+                      @click="deleteReport(report)"
+                    >
+                      {{ $t('accounts.delete') }}
                     </button>
                   </div>
                 </td>
@@ -184,13 +219,5 @@ function toggleView(report: Report) {
       @saved="onSaved"
       @cancel="showForm = false"
     />
-    <div v-else class="d-flex gap-2">
-      <button type="button" class="btn btn-primary" @click="startCreate('sum')">
-        {{ $t('reports.newSumReport') }}
-      </button>
-      <button type="button" class="btn btn-primary" @click="startCreate('average')">
-        {{ $t('reports.newAverageReport') }}
-      </button>
-    </div>
   </div>
 </template>

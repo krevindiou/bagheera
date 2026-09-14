@@ -18,7 +18,8 @@ test.describe('dashboard', () => {
     await expect(page.getByTestId('total-balance')).toContainText(
       formatMoney(1000, currency, true),
     );
-    await expect(page.getByTestId('overview-bank')).toBeVisible();
+    // Bank name is folded into the tile's own label now (see
+    // DashboardPage.vue) rather than a separate heading above it.
     await expect(page.getByTestId('overview-account')).toBeVisible();
   });
 });

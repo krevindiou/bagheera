@@ -12,6 +12,7 @@ import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
 import PasswordInput from '../../components/PasswordInput.vue';
 import { registerSchema, type RegisterForm } from './auth.schemas';
 import ToastContainer from '../../components/ToastContainer.vue';
+import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
 const { push: toast } = useToast();
@@ -55,7 +56,7 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 480px">
+  <AuthLayout>
     <h1>{{ $t('auth.register.title') }}</h1>
     <ToastContainer />
 
@@ -134,11 +135,10 @@ const onSubmit = handleSubmit(async (values) => {
       </button>
     </form>
 
-    <div class="mt-3">
-      <router-link :to="{ name: 'sign-in' }">{{ $t('auth.register.signInLink') }}</router-link>
-    </div>
-    <div class="mt-2">
-      <router-link :to="{ name: 'sign-in' }">{{ $t('common.cancel') }}</router-link>
-    </div>
-  </div>
+    <p class="text-center mt-4 mb-0" style="font-size: 14px; color: var(--paper-dim)">
+      <router-link :to="{ name: 'sign-in' }" style="font-weight: 600">{{
+        $t('auth.register.signInLink')
+      }}</router-link>
+    </p>
+  </AuthLayout>
 </template>

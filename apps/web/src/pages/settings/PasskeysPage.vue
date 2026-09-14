@@ -8,6 +8,7 @@ import { apiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import ToastContainer from '../../components/ToastContainer.vue';
+import SettingsTabs from './SettingsTabs.vue';
 
 // Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
 // (they carry no Nest/class-validator decorators of their own), so the
@@ -95,61 +96,65 @@ async function removePasskey(id: string) {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 640px">
-    <h1>{{ $t('settings.passkeys.title') }}</h1>
-    <p class="text-muted">{{ $t('settings.passkeys.intro') }}</p>
+  <div>
+    <SettingsTabs />
+    <p class="text-muted" style="max-width: 460px">{{ $t('settings.passkeys.intro') }}</p>
     <ToastContainer />
 
-    <table v-if="credentials.length > 0" class="table align-middle">
-      <thead>
-        <tr>
-          <th>{{ $t('settings.passkeys.device') }}</th>
-          <th>{{ $t('settings.passkeys.createdAt') }}</th>
-          <th>{{ $t('settings.passkeys.lastUsedAt') }}</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="credential in credentials" :key="credential.id">
-          <td>{{ credential.deviceName || $t('settings.passkeys.unnamed') }}</td>
-          <td>{{ new Date(credential.createdAt).toLocaleDateString() }}</td>
-          <td>
-            {{
-              credential.lastUsedAt
-                ? new Date(credential.lastUsedAt).toLocaleDateString()
-                : $t('settings.passkeys.neverUsed')
-            }}
-          </td>
-          <td class="text-end">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-danger"
-              @click="removePasskey(credential.id)"
-            >
-              {{ $t('settings.passkeys.remove') }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p v-else class="text-muted">{{ $t('settings.passkeys.empty') }}</p>
-
-    <div class="d-flex gap-2 align-items-end">
-      <div class="flex-grow-1">
-        <label class="form-label" for="passkey-device-name">
-          {{ $t('settings.passkeys.deviceNameLabel') }}
-        </label>
-        <input
-          id="passkey-device-name"
-          v-model="deviceName"
-          type="text"
-          class="form-control"
-          :placeholder="$t('settings.passkeys.deviceNamePlaceholder')"
-        />
+    <div style="max-width: 460px">
+      <div class="d-flex gap-2 align-items-end mb-3">
+        <div class="flex-grow-1">
+          <label class="form-label" for="passkey-device-name">
+            {{ $t('settings.passkeys.deviceNameLabel') }}
+          </label>
+          <input
+            id="passkey-device-name"
+            v-model="deviceName"
+            type="text"
+            class="form-control"
+            :placeholder="$t('settings.passkeys.deviceNamePlaceholder')"
+          />
+        </div>
+        <button type="button" class="btn btn-primary" :disabled="adding" @click="addPasskey">
+          + {{ $t('settings.passkeys.add') }}
+        </button>
       </div>
-      <button type="button" class="btn btn-primary" :disabled="adding" @click="addPasskey">
-        {{ $t('settings.passkeys.add') }}
-      </button>
+
+      <div v-if="credentials.length > 0" class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>{{ $t('settings.passkeys.device') }}</th>
+              <th>{{ $t('settings.passkeys.createdAt') }}</th>
+              <th>{{ $t('settings.passkeys.lastUsedAt') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="credential in credentials" :key="credential.id">
+              <td>{{ credential.deviceName || $t('settings.passkeys.unnamed') }}</td>
+              <td>{{ new Date(credential.createdAt).toLocaleDateString() }}</td>
+              <td>
+                {{
+                  credential.lastUsedAt
+                    ? new Date(credential.lastUsedAt).toLocaleDateString()
+                    : $t('settings.passkeys.neverUsed')
+                }}
+              </td>
+              <td class="text-end">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+                  @click="removePasskey(credential.id)"
+                >
+                  {{ $t('settings.passkeys.remove') }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p v-else class="text-muted">{{ $t('settings.passkeys.empty') }}</p>
     </div>
   </div>
 </template>

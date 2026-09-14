@@ -21,21 +21,21 @@ describe('ToastContainer', () => {
     useToast().push('Oops', 'error');
     const wrapper = mount(ToastContainer, withGlobalPlugins());
 
-    const toasts = wrapper.findAll('.toast');
+    const toasts = wrapper.findAll('.toast-item');
     expect(toasts).toHaveLength(2);
     expect(toasts[0].text()).toContain('Saved');
-    expect(toasts[0].classes()).toContain('text-bg-success');
+    expect(toasts[0].classes()).toContain('toast-success');
     expect(toasts[1].text()).toContain('Oops');
-    expect(toasts[1].classes()).toContain('text-bg-danger');
+    expect(toasts[1].classes()).toContain('toast-error');
   });
 
   it('dismisses a toast when its close button is clicked', async () => {
     useToast().push('Bye');
     const wrapper = mount(ToastContainer, withGlobalPlugins());
 
-    await wrapper.find('.btn-close').trigger('click');
+    await wrapper.find('.toast-close').trigger('click');
 
-    expect(wrapper.findAll('.toast')).toHaveLength(0);
+    expect(wrapper.findAll('.toast-item')).toHaveLength(0);
     expect(useToast().toasts).toHaveLength(0);
   });
 });

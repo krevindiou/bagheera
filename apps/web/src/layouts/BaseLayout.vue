@@ -1,73 +1,39 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../api/client';
-import type { Account, Bank } from '../pages/accounts/accounts.types';
 import ConfirmModal from '../components/ConfirmModal.vue';
 import { useSessionStore } from '../stores/session.store';
 
 const session = useSessionStore();
 const router = useRouter();
-const queryClient = useQueryClient();
+const route = useRoute();
+const { t } = useI18n();
 
 const isAuthenticated = computed(() => session.isAuthenticated);
 
-const banksQuery = useQuery({
-  queryKey: ['banks'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/banks');
-    return (data as Bank[] | undefined) ?? [];
+// The sidebar is a flat 4-item nav (Dashboard/Accounts/Reports/Settings —
+// see docs/design_handoff_fintech_noir_theme/README.md). Operations and
+// Schedulers are reached *through* Accounts (click a row), so they count
+// as "Accounts" for the active-item dot; the 3 settings routes all count
+// as "Settings".
+const navItems = computed(() => [
+  { label: t('nav.home'), to: { name: 'home' }, active: route.name === 'home' },
+  {
+    label: t('nav.accounts'),
+    to: { name: 'accounts' },
+    active: ['accounts', 'operations', 'schedulers'].includes(String(route.name)),
   },
-  enabled: isAuthenticated,
-});
-const banks = computed(() => banksQuery.data.value ?? []);
-
-const accountsQuery = useQuery({
-  queryKey: ['accounts'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/accounts');
-    return (data as Account[] | undefined) ?? [];
+  { label: t('nav.reports'), to: { name: 'reports' }, active: route.name === 'reports' },
+  {
+    label: t('nav.settings'),
+    to: { name: 'settings-profile' },
+    active: String(route.name).startsWith('settings'),
   },
-  enabled: isAuthenticated,
-});
-const accounts = computed(() => accountsQuery.data.value ?? []);
+]);
 
-const accountsMenuOpen = ref(false);
-const settingsMenuOpen = ref(false);
-
-// Bank/account rows can be created, renamed, closed or deleted from other
-// pages — refresh the menu on every navigation so it never goes stale.
-// This also keeps any other page's ["banks"]/["accounts"] queries in sync.
-const stopAfterEach = router.afterEach(() => {
-  if (!session.isAuthenticated) return;
-  void queryClient.invalidateQueries({ queryKey: ['banks'] });
-  void queryClient.invalidateQueries({ queryKey: ['accounts'] });
-});
-onBeforeUnmount(stopAfterEach);
-
-// Menus are day-to-day navigation, so closed/deleted banks and accounts are
-// hidden here even though the accounts management screen still lists them.
-function accountsForBank(bankId: string) {
-  return accounts.value.filter(
-    (account) => account.bankId === bankId && !account.closed && !account.deleted,
-  );
-}
-
-function closeMenus() {
-  accountsMenuOpen.value = false;
-  settingsMenuOpen.value = false;
-}
-
-function onDocumentClick(event: MouseEvent) {
-  const target = event.target as HTMLElement;
-  if (!target.closest('[data-nav-dropdown]')) {
-    closeMenus();
-  }
-}
-
-onMounted(() => document.addEventListener('click', onDocumentClick));
-onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick));
+const initials = computed(() => (session.member?.email ?? '??').slice(0, 2).toUpperCase());
 
 async function signOut() {
   await apiClient.POST('/auth/sign-out');
@@ -77,109 +43,48 @@ async function signOut() {
 </script>
 
 <template>
-  <div id="app-root">
-    <nav class="navbar navbar-expand navbar-dark bg-dark">
-      <div class="container-fluid">
-        <router-link v-if="session.isAuthenticated" :to="{ name: 'home' }" class="navbar-brand">
-          {{ $t('app.brand') }}
-        </router-link>
-        <span v-else class="navbar-brand">{{ $t('app.brand') }}</span>
+  <div v-if="isAuthenticated" class="app-shell">
+    <div class="app-glow"></div>
+    <aside class="sidebar">
+      <router-link :to="{ name: 'home' }" class="side-brand">
+        <span class="logo-mark">B</span>
+        <span class="side-brand-name">{{ $t('app.brand') }}</span>
+      </router-link>
 
-        <template v-if="session.isAuthenticated">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <router-link :to="{ name: 'home' }" class="nav-link">
-                {{ $t('nav.home') }}
-              </router-link>
-            </li>
-            <li class="nav-item dropdown" data-nav-dropdown>
-              <button
-                type="button"
-                class="nav-link dropdown-toggle btn btn-link"
-                :class="{ show: accountsMenuOpen }"
-                @click="
-                  accountsMenuOpen = !accountsMenuOpen;
-                  settingsMenuOpen = false;
-                "
-              >
-                {{ $t('nav.accounts') }}
-              </button>
-              <ul class="dropdown-menu" :class="{ show: accountsMenuOpen }" @click="closeMenus">
-                <template v-for="bank in banks" :key="bank.id">
-                  <li v-if="!bank.closed && !bank.deleted">
-                    <h6 class="dropdown-header">{{ bank.name }}</h6>
-                    <router-link
-                      v-for="account in accountsForBank(bank.id)"
-                      :key="account.id"
-                      :to="{ name: 'operations', params: { accountId: account.id } }"
-                      class="dropdown-item"
-                    >
-                      {{ account.name }}
-                    </router-link>
-                    <router-link
-                      v-if="accountsForBank(bank.id).length === 0"
-                      :to="{ name: 'accounts' }"
-                      class="dropdown-item"
-                    >
-                      {{ $t('accounts.addAccount') }}
-                    </router-link>
-                  </li>
-                </template>
-              </ul>
-            </li>
-            <li class="nav-item dropdown" data-nav-dropdown>
-              <button
-                type="button"
-                class="nav-link dropdown-toggle btn btn-link"
-                :class="{ show: settingsMenuOpen }"
-                @click="
-                  settingsMenuOpen = !settingsMenuOpen;
-                  accountsMenuOpen = false;
-                "
-              >
-                {{ $t('nav.settings') }}
-              </button>
-              <ul class="dropdown-menu" :class="{ show: settingsMenuOpen }" @click="closeMenus">
-                <li>
-                  <router-link :to="{ name: 'accounts' }" class="dropdown-item">
-                    {{ $t('home.accountsLink') }}
-                  </router-link>
-                </li>
-                <li>
-                  <router-link :to="{ name: 'reports' }" class="dropdown-item">
-                    {{ $t('dashboard.reportsLink') }}
-                  </router-link>
-                </li>
-                <li>
-                  <router-link :to="{ name: 'settings-profile' }" class="dropdown-item">
-                    {{ $t('home.profileLink') }}
-                  </router-link>
-                </li>
-                <li>
-                  <router-link :to="{ name: 'settings-password' }" class="dropdown-item">
-                    {{ $t('home.passwordLink') }}
-                  </router-link>
-                </li>
-                <li>
-                  <router-link :to="{ name: 'settings-passkeys' }" class="dropdown-item">
-                    {{ $t('home.passkeysLink') }}
-                  </router-link>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          <span class="navbar-text text-light me-3">
-            {{ $t('home.signedInAs', { email: session.member?.email }) }}
-          </span>
-          <button type="button" class="btn btn-outline-light btn-sm" @click="signOut">
+      <nav class="side-nav">
+        <router-link
+          v-for="item in navItems"
+          :key="item.label"
+          :to="item.to"
+          class="side-nav-item"
+          :class="{ active: item.active }"
+        >
+          <span class="dot" :class="{ 'dot-active': item.active }"></span>
+          {{ item.label }}
+        </router-link>
+      </nav>
+
+      <div class="side-foot">
+        <span class="avatar-chip">{{ initials }}</span>
+        <div class="flex-grow-1 min-w-0">
+          <div class="side-foot-name" :title="session.member?.email">
+            {{ session.member?.email }}
+          </div>
+          <button type="button" class="side-foot-logout" @click="signOut">
             {{ $t('home.signOut') }}
           </button>
-        </template>
+        </div>
       </div>
-    </nav>
-    <main>
-      <router-view />
-    </main>
-    <ConfirmModal />
+    </aside>
+
+    <div class="main">
+      <div class="main-inner">
+        <router-view />
+      </div>
+    </div>
   </div>
+
+  <router-view v-else />
+
+  <ConfirmModal />
 </template>

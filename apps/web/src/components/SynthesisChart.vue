@@ -17,6 +17,24 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Legend, Tooltip);
 
+// Dark "FinTech-Noir" theme — Chart.js defaults to black-on-transparent,
+// which is unreadable against the app's near-black background.
+ChartJS.defaults.font.family = "'Archivo', sans-serif";
+ChartJS.defaults.color = 'rgba(242, 239, 233, 0.62)'; // --paper-dim: ticks/legend text
+ChartJS.defaults.borderColor = 'rgba(242, 239, 233, 0.1)'; // --hair: gridlines
+
+// A translucent fill under a solid line (rather than a flat, opaque one)
+// matches the design's "abstract filled line-chart" look.
+function withAlpha(hex: string, alpha: number): string {
+  const match = /^#([0-9a-f]{6})$/i.exec(hex);
+  if (!match) return hex;
+  const value = parseInt(match[1], 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export interface SynthesisChartPoint {
   // Period start as an ISO date string ('YYYY-MM-DD') or any parseable
   // 'YYYY-MM...' string — only the year/month are used for the label.
@@ -63,7 +81,7 @@ const chartData = computed<ChartData<'line'>>(() => ({
     label: series.label,
     data: series.points.map((point) => point.value),
     borderColor: series.color,
-    backgroundColor: series.color,
+    backgroundColor: withAlpha(series.color, 0.18),
     fill: true,
     tension: 0.2,
   })),

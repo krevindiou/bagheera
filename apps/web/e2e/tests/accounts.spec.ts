@@ -14,7 +14,7 @@ test('create a bank and an account, then edit the bank and close the account', a
   await page.goto('/en/accounts');
   await expect(page.getByText(en.accounts.empty)).toBeVisible();
 
-  await page.getByRole('button', { name: en.accounts.addAccount, exact: true }).click();
+  await page.getByRole('button', { name: `+ ${en.accounts.addAccount}`, exact: true }).click();
   await page.getByLabel(en.accounts.newBankName, { exact: true }).fill(bankName);
   await page.getByRole('button', { name: en.accounts.submit, exact: true }).click();
   await expect(alertWithText(page, en.accounts.bankSaved)).toBeVisible();
@@ -32,20 +32,18 @@ test('create a bank and an account, then edit the bank and close the account', a
   await expect(page.getByTestId('account-balances')).toContainText(formatMoney(1000, 'USD', true));
 
   await page.goto('/en/accounts');
-  // Only one bank exists in this test, so a plain, unfiltered locator stays
-  // valid across the upcoming edit — unlike a `hasText: bankName` filter,
-  // which would stop matching the instant the name's rendered text is
-  // replaced by the (input-value-only) edit form below.
-  const bankRow = page.getByTestId('bank-row');
+  const bankRow = page.getByTestId('bank-row').filter({ hasText: bankName });
   await expect(bankRow.getByText(accountName)).toBeVisible();
 
   // The bank's own controls render before its nested account list in the
-  // DOM, so .first() is the bank's "Edit", not the account row's.
+  // DOM, so .first() is the bank's "Edit", not the account row's. Editing
+  // now opens a page-level drawer rather than replacing the row inline.
   await bankRow.getByRole('button', { name: en.accounts.edit, exact: true }).first().click();
-  await bankRow.locator('input[type=text]').fill(renamedBankName);
-  await bankRow.getByRole('button', { name: en.accounts.submit, exact: true }).click();
+  const editBankDrawer = page.locator('.drawer-backdrop');
+  await editBankDrawer.getByLabel(en.accounts.bankNameLabel, { exact: true }).fill(renamedBankName);
+  await editBankDrawer.getByRole('button', { name: en.accounts.submit, exact: true }).click();
   await expect(alertWithText(page, en.accounts.bankSaved)).toBeVisible();
-  await expect(bankRow).toContainText(renamedBankName);
+  await expect(page.getByTestId('bank-row').filter({ hasText: renamedBankName })).toBeVisible();
 
   const accountRow = page.getByTestId('account-row').filter({ hasText: accountName });
   await accountRow.getByRole('button', { name: en.accounts.close, exact: true }).click();

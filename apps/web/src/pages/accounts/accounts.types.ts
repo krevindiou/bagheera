@@ -15,4 +15,9 @@ export interface Account {
   currency: string;
   closed: boolean;
   deleted: boolean;
+  // Only present on the `GET /accounts` list response (AccountService.list
+  // attaches these as display-only fields for the accounts screen) —
+  // omitted from fixtures/props elsewhere, hence optional.
+  balance?: number;
+  reconciledBalance?: number;
 }

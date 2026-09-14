@@ -8,6 +8,7 @@ import { rememberAttemptedEmail } from '../../composables/useLastAttemptedEmail'
 import { useToast } from '../../composables/useToast';
 import { forgotPasswordSchema, type ForgotPasswordForm } from './auth.schemas';
 import ToastContainer from '../../components/ToastContainer.vue';
+import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
 const { push: toast } = useToast();
@@ -30,7 +31,7 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 480px">
+  <AuthLayout>
     <h1>{{ $t('auth.forgotPassword.title') }}</h1>
     <ToastContainer />
 
@@ -60,10 +61,10 @@ const onSubmit = handleSubmit(async (values) => {
       </button>
     </form>
 
-    <div class="mt-3">
-      <router-link :to="{ name: 'sign-in' }">{{
+    <p class="text-center mt-4 mb-0" style="font-size: 14px; color: var(--paper-dim)">
+      <router-link :to="{ name: 'sign-in' }" style="font-weight: 600">{{
         $t('auth.forgotPassword.signInLink')
       }}</router-link>
-    </div>
-  </div>
+    </p>
+  </AuthLayout>
 </template>

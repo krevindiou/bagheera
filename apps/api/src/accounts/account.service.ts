@@ -4,7 +4,7 @@ import {
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds } from '../common/chart-axis';
@@ -60,7 +60,50 @@ export class AccountService {
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(and(...conditions))
       .orderBy(asc(account.name));
-    return rows.map((r) => r.account);
+    const accounts = rows.map((r) => r.account);
+
+    // The accounts screen shows each account's running balance (and its
+    // reconciled counterpart, muted/smaller — see AccountsPage.vue) next to
+    // its name — one bulk aggregate query for the whole list rather than N
+    // calls to the single-account `balance()` below.
+    const balances = await this.balancesByAccount(accounts.map((a) => a.id));
+    return accounts.map((a) => {
+      const entry = balances.get(a.id);
+      return {
+        ...a,
+        balance: toMajorUnits((entry?.balance ?? 0) as MinorUnits),
+        reconciledBalance: toMajorUnits((entry?.reconciledBalance ?? 0) as MinorUnits),
+      };
+    });
+  }
+
+  private async balancesByAccount(
+    accountIds: string[],
+  ): Promise<Map<string, { balance: MinorUnits; reconciledBalance: MinorUnits }>> {
+    if (accountIds.length === 0) {
+      return new Map();
+    }
+    const rows = await this.db
+      .select({
+        accountId: operation.accountId,
+        credit: sql<string>`coalesce(sum(${operation.credit}), 0)`,
+        debit: sql<string>`coalesce(sum(${operation.debit}), 0)`,
+        reconciledCredit: sql<string>`coalesce(sum(${operation.credit}) filter (where ${operation.reconciled}), 0)`,
+        reconciledDebit: sql<string>`coalesce(sum(${operation.debit}) filter (where ${operation.reconciled}), 0)`,
+      })
+      .from(operation)
+      .where(inArray(operation.accountId, accountIds))
+      .groupBy(operation.accountId);
+    return new Map(
+      rows.map((row) => [
+        row.accountId,
+        {
+          balance: (Number(row.credit) - Number(row.debit)) as MinorUnits,
+          reconciledBalance: (Number(row.reconciledCredit) -
+            Number(row.reconciledDebit)) as MinorUnits,
+        },
+      ]),
+    );
   }
 
   async create(req: Request, dto: CreateAccountDto) {

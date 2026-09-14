@@ -17,6 +17,7 @@ export type OnboardingTip = 'no-bank' | 'no-account' | null;
 export interface TotalBalance {
   currency: string;
   amount: number;
+  reconciledAmount: number;
 }
 
 export interface DashboardIndicator {
@@ -28,7 +29,13 @@ export interface DashboardIndicator {
 export interface AccountsOverviewBank {
   id: string;
   name: string;
-  accounts: { id: string; name: string; currency: string; balance: number }[];
+  accounts: {
+    id: string;
+    name: string;
+    currency: string;
+    balance: number;
+    reconciledBalance: number;
+  }[];
 }
 
 export interface HomepageReportChart {
@@ -77,7 +84,9 @@ export class DashboardService {
     private readonly config: ConfigService,
   ) {}
 
-  private async balancesByAccount(accountIds: string[]): Promise<Map<string, MinorUnits>> {
+  private async balancesByAccount(
+    accountIds: string[],
+  ): Promise<Map<string, { balance: MinorUnits; reconciledBalance: MinorUnits }>> {
     if (accountIds.length === 0) {
       return new Map();
     }
@@ -86,12 +95,21 @@ export class DashboardService {
         accountId: operation.accountId,
         credit: sql<string>`coalesce(sum(${operation.credit}), 0)`,
         debit: sql<string>`coalesce(sum(${operation.debit}), 0)`,
+        reconciledCredit: sql<string>`coalesce(sum(${operation.credit}) filter (where ${operation.reconciled}), 0)`,
+        reconciledDebit: sql<string>`coalesce(sum(${operation.debit}) filter (where ${operation.reconciled}), 0)`,
       })
       .from(operation)
       .where(inArray(operation.accountId, accountIds))
       .groupBy(operation.accountId);
     return new Map(
-      rows.map((row) => [row.accountId, (Number(row.credit) - Number(row.debit)) as MinorUnits]),
+      rows.map((row) => [
+        row.accountId,
+        {
+          balance: (Number(row.credit) - Number(row.debit)) as MinorUnits,
+          reconciledBalance: (Number(row.reconciledCredit) -
+            Number(row.reconciledDebit)) as MinorUnits,
+        },
+      ]),
     );
   }
 
@@ -127,11 +145,20 @@ export class DashboardService {
 
     // Total balance per currency — closed accounts/banks count here, only
     // deleted ones are excluded; ordered by the raw stored integer sum,
-    // largest first, no currency conversion across the tie-break.
+    // largest first, no currency conversion across the tie-break. The
+    // reconciled total is the same sum restricted to reconciled operations
+    // (see AccountService.balance's identical per-account computation).
     const rawTotals = new Map<string, number>();
+    const rawReconciledTotals = new Map<string, number>();
     for (const acc of accounts) {
-      const balance = balances.get(acc.id) ?? 0;
+      const entry = balances.get(acc.id);
+      const balance = entry?.balance ?? 0;
+      const reconciledBalance = entry?.reconciledBalance ?? 0;
       rawTotals.set(acc.currency, (rawTotals.get(acc.currency) ?? 0) + balance);
+      rawReconciledTotals.set(
+        acc.currency,
+        (rawReconciledTotals.get(acc.currency) ?? 0) + reconciledBalance,
+      );
     }
     const totalBalances: TotalBalance[] = [...rawTotals.entries()]
       .sort(([currencyA, a], [currencyB, b]) =>
@@ -143,6 +170,7 @@ export class DashboardService {
         // the comment on synthesis-chart.ts's `running` for why `+=`
         // always drops the brand even though every addend was MinorUnits.
         amount: toMajorUnits(amount as MinorUnits),
+        reconciledAmount: toMajorUnits((rawReconciledTotals.get(currency) ?? 0) as MinorUnits),
       }));
 
     // "Fully active" scope — the bank itself must also be non-closed.
@@ -173,7 +201,10 @@ export class DashboardService {
             // The `?? 0` fallback is an unbranded literal, so the whole
             // expression reads as plain `number` even on the found-in-map
             // branch.
-            balance: toMajorUnits((balances.get(a.id) ?? 0) as MinorUnits),
+            balance: toMajorUnits((balances.get(a.id)?.balance ?? 0) as MinorUnits),
+            reconciledBalance: toMajorUnits(
+              (balances.get(a.id)?.reconciledBalance ?? 0) as MinorUnits,
+            ),
           })),
       }));
 

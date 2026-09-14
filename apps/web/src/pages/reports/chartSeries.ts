@@ -1,7 +1,7 @@
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import type { ReportChart } from './reports.types';
 
-const CHART_COLORS = { debit: '#dc3545', credit: '#198754' };
+const CHART_COLORS = { debit: '#e8697a', credit: '#5fd98d' };
 
 /**
  * A report/dashboard chart is per-currency, each with a separate debit and

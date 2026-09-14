@@ -16,6 +16,7 @@ import {
 import PasswordInput from '../../components/PasswordInput.vue';
 import { signInSchema, type SignInForm } from './auth.schemas';
 import ToastContainer from '../../components/ToastContainer.vue';
+import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
 const session = useSessionStore();
@@ -122,17 +123,21 @@ async function signInWithPasskey() {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 480px">
+  <AuthLayout>
     <h1>{{ $t('auth.signIn.title') }}</h1>
     <ToastContainer />
 
-    <div v-if="banner === 'invalid-credentials'" class="alert alert-danger" role="alert">
+    <div v-if="banner === 'invalid-credentials'" class="alert alert-danger mt-3" role="alert">
       {{ $t('auth.signIn.invalidCredentials') }}
     </div>
-    <div v-else-if="banner === 'passkey-email-required'" class="alert alert-danger" role="alert">
+    <div
+      v-else-if="banner === 'passkey-email-required'"
+      class="alert alert-danger mt-3"
+      role="alert"
+    >
       {{ $t('auth.signIn.passkeyEmailRequired') }}
     </div>
-    <div v-else-if="banner === 'inactive'" class="alert alert-warning" role="alert">
+    <div v-else-if="banner === 'inactive'" class="alert alert-warning mt-3" role="alert">
       <p class="mb-2">{{ $t('auth.signIn.inactiveAccount') }}</p>
       <p v-if="resendSent" class="mb-0 text-success">
         {{ $t('auth.signIn.resendSent') }}
@@ -148,7 +153,7 @@ async function signInWithPasskey() {
       </button>
     </div>
 
-    <form novalidate @submit="onSubmit">
+    <form novalidate class="mt-4" @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="sign-in-email">{{ $t('auth.signIn.email') }}</label>
         <input
@@ -180,25 +185,39 @@ async function signInWithPasskey() {
         </div>
       </div>
 
+      <div class="text-end mb-3">
+        <router-link :to="{ name: 'forgot-password' }" style="font-size: 13.5px">
+          {{ $t('auth.signIn.forgotPasswordLink') }}
+        </router-link>
+      </div>
+
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t('auth.signIn.submit') }}
       </button>
-      <button
-        v-if="passkeysSupported"
-        type="button"
-        class="btn btn-outline-secondary w-100 mt-2"
-        :disabled="passkeySubmitting"
-        @click="signInWithPasskey"
-      >
-        {{ $t('auth.signIn.passkeySubmit') }}
-      </button>
+
+      <template v-if="passkeysSupported">
+        <div class="d-flex align-items-center gap-2 my-3">
+          <span class="flex-grow-1" style="height: 1px; background: var(--hair-strong)"></span>
+          <span style="font-size: 12px; color: var(--paper-faint); letter-spacing: 0.04em">{{
+            $t('common.or')
+          }}</span>
+          <span class="flex-grow-1" style="height: 1px; background: var(--hair-strong)"></span>
+        </div>
+        <button
+          type="button"
+          class="btn btn-outline-secondary w-100"
+          :disabled="passkeySubmitting"
+          @click="signInWithPasskey"
+        >
+          {{ $t('auth.signIn.passkeySubmit') }}
+        </button>
+      </template>
     </form>
 
-    <div class="d-flex justify-content-between mt-3">
-      <router-link :to="{ name: 'forgot-password' }">{{
-        $t('auth.signIn.forgotPasswordLink')
+    <p class="text-center mt-4 mb-0" style="font-size: 14px; color: var(--paper-dim)">
+      <router-link :to="{ name: 'register' }" style="font-weight: 600">{{
+        $t('auth.signIn.registerLink')
       }}</router-link>
-      <router-link :to="{ name: 'register' }">{{ $t('auth.signIn.registerLink') }}</router-link>
-    </div>
-  </div>
+    </p>
+  </AuthLayout>
 </template>

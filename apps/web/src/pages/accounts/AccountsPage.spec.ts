@@ -12,6 +12,8 @@ import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from './accounts.types';
 import AccountsPage from './AccountsPage.vue';
+import CreateAccountForm from './CreateAccountForm.vue';
+import EditBankForm from './EditBankForm.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
@@ -43,7 +45,9 @@ const account = (
   currency = 'USD',
   closed = false,
   deleted = false,
-): Account => ({ id, bankId, name, currency, closed, deleted });
+  balance = 0,
+  reconciledBalance = 0,
+): Account => ({ id, bankId, name, currency, closed, deleted, balance, reconciledBalance });
 
 function mockData(banks: Bank[], accounts: Account[]) {
   apiClient.GET.mockImplementation(async (path: string) => {
@@ -75,7 +79,7 @@ describe('AccountsPage', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("You don't have any bank yet.");
-    expect(wrapper.find('button.btn-primary').text()).toBe('New account');
+    expect(wrapper.find('button.btn-primary').text()).toBe('+ New account');
   });
 
   it('lists banks and accounts, with closed badges and a no-accounts message', async () => {
@@ -92,8 +96,30 @@ describe('AccountsPage', () => {
     expect(rows[0].text()).toContain('Chase');
     expect(rows[0].find('[data-testid="account-row"]').text()).toContain('Checking (USD)');
     expect(rows[1].text()).toContain('Old Bank');
-    expect(rows[1].find('.badge').text()).toBe('Closed');
+    expect(rows[1].find('.pill').text()).toBe('Closed');
     expect(rows[1].text()).toContain('No account');
+  });
+
+  it("shows each account's balance", async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking', 'USD', false, false, 1200.4)]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="account-balance"]').text()).toBe('$1,200.40');
+  });
+
+  it("shows each account's reconciled balance as a muted footnote under the balance", async () => {
+    mockData(
+      [bank('b1', 'Chase')],
+      [account('a1', 'b1', 'Checking', 'USD', false, false, 1200.4, 1000)],
+    );
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="account-balance"]').text()).toBe('$1,200.40');
+    expect(wrapper.find('[data-testid="account-reconciled-balance"]').text()).toBe('$1,000.00');
   });
 
   it('shows the bank-choice step, then account creation scoped to the chosen bank; cancel returns to the button', async () => {
@@ -170,7 +196,9 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.find('button').trigger('click'); // Edit is listed first
-    await chaseRow.find('input').setValue('Chase Bank');
+    // The edit form now renders as a page-level drawer rather than inline
+    // in the row — scope to the component instance rather than the row.
+    await wrapper.findComponent(EditBankForm).find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
     expect(apiClient.PATCH).toHaveBeenCalledWith('/banks/{id}', {
@@ -178,7 +206,7 @@ describe('AccountsPage', () => {
       body: { name: 'Chase Bank' },
     });
     expect(wrapper.text()).toContain('Bank saved');
-    expect(chaseRow.find('input').exists()).toBe(false);
+    expect(wrapper.findComponent(EditBankForm).exists()).toBe(false);
   });
 
   it('closes a bank once the confirmation is accepted', async () => {
@@ -243,11 +271,11 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.find('button').trigger('click'); // Edit
-    await chaseRow.find('input').setValue('Chase Bank');
+    await wrapper.findComponent(EditBankForm).find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Name already used');
-    expect(chaseRow.find('input').exists()).toBe(true); // stays in edit mode
+    expect(wrapper.findComponent(EditBankForm).exists()).toBe(true); // stays in edit mode
   });
 
   it('falls back to a generic error toast when editing a bank fails without a message', async () => {
@@ -263,7 +291,7 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.find('button').trigger('click'); // Edit
-    await chaseRow.find('input').setValue('Chase Bank');
+    await wrapper.findComponent(EditBankForm).find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Something went wrong. Please try again.');
@@ -277,8 +305,8 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.find('button').trigger('click'); // Edit
-    await chaseRow.find('button.btn-outline-secondary').trigger('click'); // Cancel
-    expect(chaseRow.find('input').exists()).toBe(false);
+    await wrapper.findComponent(EditBankForm).find('button.btn-outline-secondary').trigger('click'); // Cancel
+    expect(wrapper.findComponent(EditBankForm).exists()).toBe(false);
     expect(apiClient.PATCH).not.toHaveBeenCalled();
   });
 
@@ -373,7 +401,12 @@ describe('AccountsPage', () => {
     await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger('click'); // Edit
     expect(wrapper.find('#account-name').exists()).toBe(true);
 
-    await wrapper.find('.account-edit-form button.btn-outline-secondary').trigger('click'); // Cancel
+    // The edit form now renders as a page-level drawer rather than inline
+    // in the row — scope to the component instance rather than a class.
+    await wrapper
+      .findComponent(CreateAccountForm)
+      .find('button.btn-outline-secondary')
+      .trigger('click'); // Cancel
     expect(wrapper.find('#account-name').exists()).toBe(false);
     expect(apiClient.PATCH).not.toHaveBeenCalled();
   });

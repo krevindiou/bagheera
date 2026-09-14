@@ -53,7 +53,7 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         onboarding: 'no-account',
-        totalBalances: [{ currency: 'USD', amount: 100 }],
+        totalBalances: [{ currency: 'USD', amount: 100, reconciledAmount: 100 }],
       }),
     );
     expect(wrapper.find('[data-testid="onboarding-tip"]').text()).toContain(
@@ -62,20 +62,41 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="total-balance"]').exists()).toBe(true);
   });
 
-  it('shows a colored total balance per currency', async () => {
+  it('shows the total balance per currency, white when positive and red when negative', async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         totalBalances: [
-          { currency: 'USD', amount: 12345 },
-          { currency: 'EUR', amount: -500 },
+          { currency: 'USD', amount: 12345, reconciledAmount: 12000 },
+          { currency: 'EUR', amount: -500, reconciledAmount: -400 },
         ],
       }),
     );
     const balances = wrapper.findAll('[data-testid="total-balance"]');
     expect(balances[0].text()).toBe('$12,345.00');
-    expect(balances[0].classes()).toContain('text-success');
+    expect(balances[0].classes()).not.toContain('text-danger');
     expect(balances[1].text()).toBe('-€500.00');
     expect(balances[1].classes()).toContain('text-danger');
+  });
+
+  it('shows the total reconciled balance as a muted footnote in the same card, never colored by sign', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        totalBalances: [
+          { currency: 'USD', amount: 12345, reconciledAmount: 12000 },
+          { currency: 'EUR', amount: -500, reconciledAmount: -400 },
+        ],
+      }),
+    );
+    const balanceCard = wrapper.find('[data-testid="total-balance"]').element.closest('.stat-card');
+    const reconciled = wrapper.findAll('[data-testid="total-reconciled"]');
+    expect(balanceCard?.contains(reconciled[0].element)).toBe(true);
+    expect(reconciled[0].text()).toBe('$12,000.00');
+    expect(reconciled[0].classes()).not.toContain('text-danger');
+    // Unlike the total balance above it, the reconciled footnote stays
+    // muted even when negative — it's a quiet detail, not a second figure
+    // competing for the same red/white treatment.
+    expect(reconciled[1].text()).toBe('-€400.00');
+    expect(reconciled[1].classes()).not.toContain('text-danger');
   });
 
   it('shows the empty-balances message when there are no accounts', async () => {
@@ -108,7 +129,7 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(true);
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: '#0d6efd', points: [{ period: '2026-01', value: 100 }] },
+      { label: 'USD', color: '#9a72e8', points: [{ period: '2026-01', value: 100 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
   });
@@ -118,22 +139,41 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(false);
   });
 
-  it('groups the accounts overview by bank with a cycling badge color', async () => {
+  it("shows each account's tile labeled with its bank name, balance, and a muted reconciled footnote, flattened across banks", async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         accountsOverview: [
           {
             id: 'b1',
             name: 'Chase',
-            accounts: [{ id: 'a1', name: 'Checking', currency: 'USD', balance: 500 }],
+            accounts: [
+              { id: 'a1', name: 'Checking', currency: 'USD', balance: 500, reconciledBalance: 450 },
+            ],
+          },
+          {
+            id: 'b2',
+            name: 'Ally',
+            accounts: [
+              {
+                id: 'a2',
+                name: 'Savings',
+                currency: 'USD',
+                balance: 1200,
+                reconciledBalance: 1200,
+              },
+            ],
           },
         ],
       }),
     );
-    expect(wrapper.find('[data-testid="bank-badge"]').text()).toBe('Chase');
-    expect(wrapper.find('[data-testid="bank-badge"]').classes()).toContain('bg-primary');
-    expect(wrapper.find('[data-testid="overview-account"]').text()).toContain('Checking');
-    expect(wrapper.find('[data-testid="overview-account"]').text()).toContain('$500.00');
+    const tiles = wrapper.findAll('[data-testid="overview-account"]');
+    expect(tiles).toHaveLength(2);
+    expect(tiles[0]!.text()).toContain('Chase — Checking');
+    expect(tiles[0]!.text()).toContain('$500.00');
+    expect(tiles[0]!.find('.stat-value-primary').exists()).toBe(true);
+    expect(tiles[0]!.text()).toContain('$450.00');
+    expect(tiles[1]!.text()).toContain('Ally — Savings');
+    expect(tiles[1]!.text()).toContain('$1,200.00');
   });
 
   it('shows homepage report charts when present, with debit and credit as separate series', async () => {
@@ -161,8 +201,8 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="homepage-report"]').text()).toContain('Monthly spend');
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD Debit', color: '#dc3545', points: [{ period: '2026-01', value: 50 }] },
-      { label: 'USD Credit', color: '#198754', points: [{ period: '2026-01', value: 20 }] },
+      { label: 'USD Debit', color: '#e8697a', points: [{ period: '2026-01', value: 50 }] },
+      { label: 'USD Credit', color: '#5fd98d', points: [{ period: '2026-01', value: 20 }] },
     ]);
   });
 
@@ -184,7 +224,7 @@ describe('DashboardPage', () => {
     );
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD Debit', color: '#dc3545', points: [{ period: '2026-01', value: 50 }] },
+      { label: 'USD Debit', color: '#e8697a', points: [{ period: '2026-01', value: 50 }] },
     ]);
   });
 });

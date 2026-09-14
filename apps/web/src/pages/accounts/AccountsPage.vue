@@ -1,18 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import { errorMessage } from '../../api/errorMessage';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
-import { editBankSchema } from './accounts.schemas';
+import { formatMoney } from '../operations/money';
 import type { Bank, Account } from './accounts.types';
 import BankChoiceForm from './BankChoiceForm.vue';
 import CreateAccountForm from './CreateAccountForm.vue';
+import EditBankForm from './EditBankForm.vue';
 import ToastContainer from '../../components/ToastContainer.vue';
 
 const { push: toast } = useToast();
@@ -98,34 +96,15 @@ function accountsForBank(bankId: string) {
 const activeBanks = computed(() => banks.value.filter((bank) => !bank.closed && !bank.deleted));
 
 // -- Edit bank name --
-const {
-  defineField: defineBankField,
-  handleSubmit: handleBankSubmit,
-  errors: bankErrors,
-  setValues: setBankValues,
-} = useForm({ validationSchema: toTypedSchema(editBankSchema) });
-const [editBankName, editBankNameAttrs] = defineBankField('name');
-
 function startEditBank(bank: Bank) {
   editingBankId.value = bank.id;
-  setBankValues({ name: bank.name });
 }
+const editingBank = computed(() => banks.value.find((b) => b.id === editingBankId.value) ?? null);
 
-const submitEditBank = handleBankSubmit(async (values) => {
-  const id = editingBankId.value;
-  if (id === null) return;
-  const { error, response } = await apiClient.PATCH('/banks/{id}', {
-    params: { path: { id } },
-    body: values,
-  });
-  if (!response.ok) {
-    toast(errorMessage(error) ?? t('accounts.genericError'), 'error');
-    return;
-  }
+async function onBankSaved() {
   editingBankId.value = null;
-  toast(t('accounts.bankSaved'), 'success');
   await reload();
-});
+}
 
 async function closeBank(bank: Bank) {
   if (!(await confirm())) return;
@@ -156,6 +135,9 @@ async function deleteBank(bank: Bank) {
 function startEditAccount(account: Account) {
   editingAccountId.value = account.id;
 }
+const editingAccount = computed(
+  () => accounts.value.find((a) => a.id === editingAccountId.value) ?? null,
+);
 
 async function onAccountUpdated() {
   editingAccountId.value = null;
@@ -202,96 +184,66 @@ async function onAccountCreated(accountId: string) {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 720px">
-    <h1>{{ $t('accounts.title') }}</h1>
+  <div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="mb-0">{{ $t('accounts.title') }}</h1>
+      <button
+        v-if="creationStep === 'closed'"
+        type="button"
+        class="btn btn-primary"
+        @click="startCreateAccount"
+      >
+        + {{ $t('accounts.addAccount') }}
+      </button>
+    </div>
     <ToastContainer />
 
     <p v-if="banks.length === 0" class="text-muted">{{ $t('accounts.empty') }}</p>
 
     <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
-      <div class="d-flex align-items-center gap-2">
-        <template v-if="editingBankId === bank.id">
-          <form
-            novalidate
-            class="d-flex align-items-center gap-2 flex-grow-1"
-            @submit="submitEditBank"
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <h2 class="h6 mb-0" style="font-size: 15px">{{ bank.name }}</h2>
+        <span v-if="bank.closed" class="pill">{{ $t('accounts.closed') }}</span>
+        <span v-if="bank.deleted" class="pill pill-danger">{{ $t('accounts.deleted') }}</span>
+        <div class="ms-auto d-flex gap-2">
+          <button
+            v-if="!bank.closed && !bank.deleted"
+            type="button"
+            class="btn btn-sm btn-outline-secondary btn-text"
+            @click="startEditBank(bank)"
           >
-            <input
-              v-model="editBankName"
-              v-bind="editBankNameAttrs"
-              type="text"
-              autofocus
-              class="form-control form-control-sm w-auto"
-              :class="{ 'is-invalid': bankErrors.name }"
-            />
-            <button type="submit" class="btn btn-sm btn-primary">
-              {{ $t('accounts.submit') }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              @click="editingBankId = null"
-            >
-              {{ $t('common.cancel') }}
-            </button>
-          </form>
-        </template>
-        <template v-else>
-          <h2 class="h5 mb-0">{{ bank.name }}</h2>
-          <span v-if="bank.closed" class="badge text-bg-secondary">{{
-            $t('accounts.closed')
-          }}</span>
-          <span v-if="bank.deleted" class="badge text-bg-danger">{{ $t('accounts.deleted') }}</span>
-          <div class="ms-auto d-flex gap-2">
-            <button
-              v-if="!bank.closed && !bank.deleted"
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              @click="startEditBank(bank)"
-            >
-              {{ $t('accounts.edit') }}
-            </button>
-            <button
-              v-if="!bank.closed && !bank.deleted"
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              @click="closeBank(bank)"
-            >
-              {{ $t('accounts.close') }}
-            </button>
-            <button
-              v-if="!bank.deleted"
-              type="button"
-              class="btn btn-sm btn-outline-danger"
-              @click="deleteBank(bank)"
-            >
-              {{ $t('accounts.delete') }}
-            </button>
-          </div>
-        </template>
+            {{ $t('accounts.edit') }}
+          </button>
+          <button
+            v-if="!bank.closed && !bank.deleted"
+            type="button"
+            class="btn btn-sm btn-outline-secondary btn-text"
+            @click="closeBank(bank)"
+          >
+            {{ $t('accounts.close') }}
+          </button>
+          <button
+            v-if="!bank.deleted"
+            type="button"
+            class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+            @click="deleteBank(bank)"
+          >
+            {{ $t('accounts.delete') }}
+          </button>
+        </div>
       </div>
 
-      <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-3 mt-2 mb-0">
+      <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-1 mb-0">
         {{ $t('accounts.noAccountsForBank') }}
       </p>
-      <ul v-else class="list-unstyled ms-3 mt-2">
-        <li
+      <div v-else class="panel">
+        <div
           v-for="account in accountsForBank(bank.id)"
           :key="account.id"
-          class="py-1"
+          class="panel-row"
           data-testid="account-row"
         >
-          <div v-if="editingAccountId === account.id" class="account-edit-form" @click.stop>
-            <CreateAccountForm
-              mode="edit"
-              :banks="banks"
-              :account="account"
-              @updated="onAccountUpdated"
-              @cancel="editingAccountId = null"
-            />
-          </div>
           <div
-            v-else
             class="d-flex align-items-center gap-2"
             style="cursor: pointer"
             @click="goToAccount(account)"
@@ -302,17 +254,24 @@ async function onAccountCreated(accountId: string) {
             >
               {{ account.name }} ({{ account.currency }})
             </router-link>
-            <span v-if="account.closed" class="badge text-bg-secondary">
-              {{ $t('accounts.closed') }}
-            </span>
-            <span v-if="account.deleted" class="badge text-bg-danger">
-              {{ $t('accounts.deleted') }}
-            </span>
-            <div class="ms-auto d-flex gap-2" @click.stop>
+            <span v-if="account.closed" class="pill">{{ $t('accounts.closed') }}</span>
+            <span v-if="account.deleted" class="pill pill-danger">{{
+              $t('accounts.deleted')
+            }}</span>
+            <div class="ms-auto d-flex align-items-center gap-2" @click.stop>
+              <span class="amount" data-testid="account-balance">{{
+                formatMoney(account.balance ?? 0, account.currency, true)
+              }}</span>
+              <div class="stat-footnote stat-footnote-inline">
+                <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
+                <span class="stat-footnote-value" data-testid="account-reconciled-balance">
+                  {{ formatMoney(account.reconciledBalance ?? 0, account.currency, true) }}
+                </span>
+              </div>
               <button
                 v-if="!account.closed && !account.deleted"
                 type="button"
-                class="btn btn-sm btn-outline-secondary"
+                class="btn btn-sm btn-outline-secondary btn-text"
                 @click="startEditAccount(account)"
               >
                 {{ $t('accounts.edit') }}
@@ -320,7 +279,7 @@ async function onAccountCreated(accountId: string) {
               <button
                 v-if="!account.closed && !account.deleted"
                 type="button"
-                class="btn btn-sm btn-outline-secondary"
+                class="btn btn-sm btn-outline-secondary btn-text"
                 @click="closeAccount(account)"
               >
                 {{ $t('accounts.close') }}
@@ -328,15 +287,15 @@ async function onAccountCreated(accountId: string) {
               <button
                 v-if="!account.deleted"
                 type="button"
-                class="btn btn-sm btn-outline-danger"
+                class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
                 @click="deleteAccount(account)"
               >
                 {{ $t('accounts.delete') }}
               </button>
             </div>
           </div>
-        </li>
-      </ul>
+        </div>
+      </div>
     </section>
 
     <BankChoiceForm
@@ -352,8 +311,21 @@ async function onAccountCreated(accountId: string) {
       @created="onAccountCreated"
       @cancel="cancelCreateAccount"
     />
-    <button v-else type="button" class="btn btn-primary" @click="startCreateAccount">
-      {{ $t('accounts.addAccount') }}
-    </button>
+
+    <CreateAccountForm
+      v-if="editingAccount"
+      mode="edit"
+      :banks="banks"
+      :account="editingAccount"
+      @updated="onAccountUpdated"
+      @cancel="editingAccountId = null"
+    />
+
+    <EditBankForm
+      v-if="editingBank"
+      :bank="editingBank"
+      @saved="onBankSaved"
+      @cancel="editingBankId = null"
+    />
   </div>
 </template>

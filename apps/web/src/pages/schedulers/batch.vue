@@ -28,11 +28,7 @@ async function batchDelete() {
 </script>
 
 <template>
-  <div
-    v-if="selectedIds.length > 0"
-    class="d-flex gap-2 mb-3"
-    data-testid="scheduler-batch-actions"
-  >
+  <div v-if="selectedIds.length > 0" class="batch-bar" data-testid="scheduler-batch-actions">
     <button
       type="button"
       class="btn btn-sm btn-outline-danger"

@@ -20,12 +20,12 @@ describe('toChartSeries', () => {
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.debit',
-        color: '#dc3545',
+        color: '#e8697a',
         points: [{ period: '2026-01', value: 50 }],
       },
       {
         label: 'USD operations.credit',
-        color: '#198754',
+        color: '#5fd98d',
         points: [{ period: '2026-01', value: 20 }],
       },
     ]);
@@ -40,7 +40,7 @@ describe('toChartSeries', () => {
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.credit',
-        color: '#198754',
+        color: '#5fd98d',
         points: [{ period: '2026-01', value: 20 }],
       },
     ]);
@@ -55,7 +55,7 @@ describe('toChartSeries', () => {
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.debit',
-        color: '#dc3545',
+        color: '#e8697a',
         points: [{ period: '2026-01', value: 50 }],
       },
     ]);
@@ -77,12 +77,12 @@ describe('toChartSeries', () => {
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.debit',
-        color: '#dc3545',
+        color: '#e8697a',
         points: [{ period: '2026-01', value: 50 }],
       },
       {
         label: 'EUR operations.credit',
-        color: '#198754',
+        color: '#5fd98d',
         points: [{ period: '2026-01', value: 30 }],
       },
     ]);

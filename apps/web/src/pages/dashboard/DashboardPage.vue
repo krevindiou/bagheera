@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
@@ -19,22 +20,10 @@ const { data: dashboard } = useQuery({
 });
 
 // Cycled by currency index — the synthesis chart is one line per currency
-// (not a fixed debit/credit pair), so it needs its own small palette.
-const SYNTHESIS_COLORS = ['#0d6efd', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6610f2'];
-
-// Accounts-overview bank badge cycles through a fixed color palette, one
-// color per bank (by position in the list).
-const BANK_BADGE_CLASSES = [
-  'bg-primary',
-  'bg-success',
-  'bg-warning text-dark',
-  'bg-info text-dark',
-  'bg-secondary',
-  'bg-danger',
-];
-function bankBadgeClass(index: number): string {
-  return BANK_BADGE_CLASSES[index % BANK_BADGE_CLASSES.length];
-}
+// (not a fixed debit/credit pair), so it needs its own small palette. Led
+// by the theme's violet so a single-currency member (the common case) gets
+// the "real Chart.js series in the same violet" the design calls for.
+const SYNTHESIS_COLORS = ['#9a72e8', '#5fd98d', '#e8697a', '#c4a8f2', '#e0a94c', '#7c4fd1'];
 
 function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
   return chart.series.map((s, i) => ({
@@ -43,11 +32,22 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
     points: s.points,
   }));
 }
+
+// Flattened across every bank — the mock shows one grid of account tiles
+// (each labeled "Bank — Account"), not a grid per bank.
+const accountTiles = computed(() =>
+  (dashboard.value?.accountsOverview ?? []).flatMap((bank) =>
+    bank.accounts.map((account) => ({ ...account, bankName: bank.name })),
+  ),
+);
 </script>
 
 <template>
-  <div v-if="dashboard" class="container py-5">
-    <h1 class="mb-4">{{ $t('dashboard.title') }}</h1>
+  <div v-if="dashboard">
+    <h1 class="mb-1" style="font-size: 28px">{{ $t('dashboard.title') }}</h1>
+    <p class="mb-4" style="color: var(--paper-dim); font-size: 15px">
+      {{ $t('dashboard.subtitle') }}
+    </p>
     <ToastContainer />
 
     <div
@@ -73,48 +73,65 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
 
     <template v-if="dashboard.onboarding !== 'no-bank'">
       <section class="mb-4">
-        <h2 class="h5">{{ $t('dashboard.totalBalances') }}</h2>
         <p v-if="dashboard.totalBalances.length === 0" class="text-muted">
           {{ $t('dashboard.noBalances') }}
         </p>
-        <ul v-else class="list-unstyled d-flex flex-wrap gap-3">
-          <li
-            v-for="balance in dashboard.totalBalances"
-            :key="balance.currency"
-            data-testid="total-balance"
-            class="fs-4"
-            :class="balance.amount >= 0 ? 'text-success' : 'text-danger'"
+        <div class="stat-grid">
+          <div v-for="balance in dashboard.totalBalances" :key="balance.currency" class="stat-card">
+            <div class="stat-label">
+              {{ $t('dashboard.totalBalances') }} ({{ balance.currency }})
+            </div>
+            <div
+              class="stat-value stat-value-primary"
+              data-testid="total-balance"
+              :class="{ 'text-danger': balance.amount < 0 }"
+            >
+              {{ formatMoney(balance.amount, balance.currency, true) }}
+            </div>
+            <div class="stat-footnote">
+              <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
+              <span class="stat-footnote-value" data-testid="total-reconciled">
+                {{ formatMoney(balance.reconciledAmount, balance.currency, true) }}
+              </span>
+            </div>
+          </div>
+          <div v-if="dashboard.lastSalary" class="stat-card" data-testid="last-salary">
+            <div class="stat-label">{{ $t('dashboard.lastSalary') }}</div>
+            <div class="stat-value text-success">
+              {{ formatMoney(dashboard.lastSalary.amount, dashboard.lastSalary.currency, true) }}
+            </div>
+            <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
+              {{ formatDate(dashboard.lastSalary.valueDate) }}
+            </div>
+          </div>
+          <div
+            v-if="dashboard.lastBiggestExpense"
+            class="stat-card"
+            data-testid="last-biggest-expense"
           >
-            {{ formatMoney(balance.amount, balance.currency, true) }}
-          </li>
-        </ul>
-      </section>
-
-      <section class="mb-4 d-flex gap-4">
-        <div v-if="dashboard.lastSalary" data-testid="last-salary">
-          <h2 class="h6">{{ $t('dashboard.lastSalary') }}</h2>
-          <p class="text-success fs-5 mb-0">
-            {{ formatMoney(dashboard.lastSalary.amount, dashboard.lastSalary.currency, true) }}
-          </p>
-          <p class="text-muted small">{{ formatDate(dashboard.lastSalary.valueDate) }}</p>
-        </div>
-        <div v-if="dashboard.lastBiggestExpense" data-testid="last-biggest-expense">
-          <h2 class="h6">{{ $t('dashboard.lastBiggestExpense') }}</h2>
-          <p class="text-danger fs-5 mb-0">
-            {{
-              formatMoney(
-                dashboard.lastBiggestExpense.amount,
-                dashboard.lastBiggestExpense.currency,
-                true,
-              )
-            }}
-          </p>
-          <p class="text-muted small">{{ formatDate(dashboard.lastBiggestExpense.valueDate) }}</p>
+            <div class="stat-label">{{ $t('dashboard.lastBiggestExpense') }}</div>
+            <div class="stat-value text-danger">
+              {{
+                formatMoney(
+                  dashboard.lastBiggestExpense.amount,
+                  dashboard.lastBiggestExpense.currency,
+                  true,
+                )
+              }}
+            </div>
+            <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
+              {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}
+            </div>
+          </div>
         </div>
       </section>
 
-      <section v-if="!dashboard.synthesisChart.hidden" class="mb-4" data-testid="synthesis-chart">
-        <h2 class="h5">{{ $t('dashboard.synthesisChart') }}</h2>
+      <section
+        v-if="!dashboard.synthesisChart.hidden"
+        class="panel panel-lg mb-4 p-4"
+        data-testid="synthesis-chart"
+      >
+        <h2 class="h6 mb-3">{{ $t('dashboard.synthesisChart') }}</h2>
         <SynthesisChart
           :series="toSynthesisSeries(dashboard.synthesisChart)"
           :axis-bounds="dashboard.synthesisChart.axisBounds"
@@ -122,44 +139,48 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
       </section>
 
       <section class="mb-4">
-        <h2 class="h5">{{ $t('dashboard.accountsOverview') }}</h2>
-        <p v-if="dashboard.accountsOverview.length === 0" class="text-muted">
+        <h2 class="h6 mb-3">{{ $t('dashboard.accountsOverview') }}</h2>
+        <p v-if="accountTiles.length === 0" class="text-muted">
           {{ $t('dashboard.noAccounts') }}
         </p>
-        <div
-          v-for="(bank, bankIndex) in dashboard.accountsOverview"
-          :key="bank.id"
-          class="mb-3"
-          data-testid="overview-bank"
-        >
-          <h3 class="h6">
-            <span class="badge me-2" :class="bankBadgeClass(bankIndex)" data-testid="bank-badge">{{
-              bank.name
-            }}</span>
-          </h3>
-          <ul class="list-unstyled ms-3">
-            <li v-for="account in bank.accounts" :key="account.id" data-testid="overview-account">
-              <router-link :to="{ name: 'operations', params: { accountId: account.id } }">
-                {{ account.name }}
-              </router-link>
-              —
-              <span :class="account.balance >= 0 ? 'text-success' : 'text-danger'">{{
-                formatMoney(account.balance, account.currency, true)
-              }}</span>
-            </li>
-          </ul>
+        <!-- One flat grid across every bank's accounts (see the mock: 3
+             tiles side by side, each labeled "Bank — Account") — not
+             grouped per bank, which left a lone single-account bank
+             stretching its one tile across the full row width. -->
+        <div v-else class="tile-grid">
+          <router-link
+            v-for="account in accountTiles"
+            :key="account.id"
+            :to="{ name: 'operations', params: { accountId: account.id } }"
+            class="stat-card acct-tile"
+            data-testid="overview-account"
+          >
+            <div class="stat-label">{{ account.bankName }} — {{ account.name }}</div>
+            <div
+              class="stat-value stat-value-primary"
+              :class="{ 'text-danger': account.balance < 0 }"
+            >
+              {{ formatMoney(account.balance, account.currency, true) }}
+            </div>
+            <div class="stat-footnote">
+              <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
+              <span class="stat-footnote-value">
+                {{ formatMoney(account.reconciledBalance, account.currency, true) }}
+              </span>
+            </div>
+          </router-link>
         </div>
       </section>
 
       <section v-if="dashboard.homepageReports.length > 0">
-        <h2 class="h5">{{ $t('dashboard.reportCharts') }}</h2>
+        <h2 class="h6 mb-3">{{ $t('dashboard.reportCharts') }}</h2>
         <div
           v-for="entry in dashboard.homepageReports"
           :key="entry.id"
-          class="mb-4"
+          class="panel panel-lg mb-4 p-4"
           data-testid="homepage-report"
         >
-          <h3 class="h6">{{ entry.title }}</h3>
+          <h3 class="h6 mb-3">{{ entry.title }}</h3>
           <SynthesisChart
             :series="toChartSeries(entry.chart, t)"
             :axis-bounds="entry.chart.axisBounds"

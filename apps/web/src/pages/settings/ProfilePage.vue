@@ -9,6 +9,7 @@ import { useToast } from '../../composables/useToast';
 import PasswordInput from '../../components/PasswordInput.vue';
 import { profileSchema, type ProfileForm } from './settings.schemas';
 import ToastContainer from '../../components/ToastContainer.vue';
+import SettingsTabs from './SettingsTabs.vue';
 
 const session = useSessionStore();
 const { push: toast } = useToast();
@@ -46,11 +47,11 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 480px">
-    <h1>{{ $t('settings.profile.title') }}</h1>
+  <div>
+    <SettingsTabs />
     <ToastContainer />
 
-    <form novalidate @submit="onSubmit">
+    <form novalidate style="max-width: 380px" @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="profile-email">{{ $t('settings.profile.email') }}</label>
         <input

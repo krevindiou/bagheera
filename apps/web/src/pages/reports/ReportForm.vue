@@ -4,6 +4,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import { useEscapeKey } from '../../composables/useEscapeKey';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import { reportSchema, type ReportForm } from './reports.schemas';
@@ -18,6 +19,8 @@ const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
+
+useEscapeKey(() => emit('cancel'));
 
 function initialValues(): ReportForm {
   const r = props.report;
@@ -91,119 +94,137 @@ const onSubmit = handleSubmit(async (submitted) => {
 </script>
 
 <template>
-  <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
-    <h2 class="h5">{{ $t(props.report ? 'reports.editTitle' : 'reports.createTitle') }}</h2>
+  <div class="drawer-backdrop" @click="emit('cancel')">
+    <form novalidate class="drawer" @click.stop @submit="onSubmit">
+      <div class="drawer-header">
+        <h2 class="mb-0" style="font-size: 20px">
+          {{ $t(props.report ? 'reports.editTitle' : 'reports.createTitle') }}
+        </h2>
+        <button
+          type="button"
+          class="drawer-close"
+          :aria-label="$t('common.cancel')"
+          @click="emit('cancel')"
+        >
+          ×
+        </button>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-title">{{ $t('reports.reportTitle') }}</label>
-      <input
-        id="report-title"
-        v-model="title"
-        v-bind="titleAttrs"
-        type="text"
-        autofocus
-        class="form-control"
-        :class="{ 'is-invalid': errors.title }"
-      />
-      <div v-if="errors.title" class="invalid-feedback">{{ $t('auth.validation.required') }}</div>
-    </div>
-
-    <div class="mb-3 form-check">
-      <input
-        id="report-homepage"
-        v-model="homepage"
-        v-bind="homepageAttrs"
-        type="checkbox"
-        class="form-check-input"
-      />
-      <label class="form-check-label" for="report-homepage">{{ $t('reports.homepage') }}</label>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col">
-        <label class="form-label" for="report-value-date-start">{{ $t('reports.dateFrom') }}</label>
+      <div class="mb-3">
+        <label class="form-label" for="report-title">{{ $t('reports.reportTitle') }}</label>
         <input
-          id="report-value-date-start"
-          v-model="valueDateStart"
-          v-bind="valueDateStartAttrs"
-          type="date"
+          id="report-title"
+          v-model="title"
+          v-bind="titleAttrs"
+          v-autofocus
+          type="text"
+          class="form-control"
+          :class="{ 'is-invalid': errors.title }"
+        />
+        <div v-if="errors.title" class="invalid-feedback">{{ $t('auth.validation.required') }}</div>
+      </div>
+
+      <div class="mb-3 form-check">
+        <input
+          id="report-homepage"
+          v-model="homepage"
+          v-bind="homepageAttrs"
+          type="checkbox"
+          class="form-check-input"
+        />
+        <label class="form-check-label" for="report-homepage">{{ $t('reports.homepage') }}</label>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label" for="report-value-date-start">{{
+            $t('reports.dateFrom')
+          }}</label>
+          <input
+            id="report-value-date-start"
+            v-model="valueDateStart"
+            v-bind="valueDateStartAttrs"
+            type="date"
+            class="form-control"
+          />
+        </div>
+        <div class="col">
+          <label class="form-label" for="report-value-date-end">{{ $t('reports.dateTo') }}</label>
+          <input
+            id="report-value-date-end"
+            v-model="valueDateEnd"
+            v-bind="valueDateEndAttrs"
+            type="date"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="report-third-parties">{{
+          $t('operations.thirdParty')
+        }}</label>
+        <input
+          id="report-third-parties"
+          v-model="thirdParties"
+          v-bind="thirdPartiesAttrs"
+          type="text"
           class="form-control"
         />
       </div>
-      <div class="col">
-        <label class="form-label" for="report-value-date-end">{{ $t('reports.dateTo') }}</label>
-        <input
-          id="report-value-date-end"
-          v-model="valueDateEnd"
-          v-bind="valueDateEndAttrs"
-          type="date"
-          class="form-control"
-        />
+
+      <div class="mb-3">
+        <label class="form-label" for="report-accounts">{{ $t('reports.accounts') }}</label>
+        <select
+          id="report-accounts"
+          v-model="accountIds"
+          v-bind="accountIdsAttrs"
+          multiple
+          class="form-select"
+        >
+          <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
+        </select>
+        <div class="form-text">{{ $t('reports.accountsHint') }}</div>
       </div>
-    </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-third-parties">{{ $t('operations.thirdParty') }}</label>
-      <input
-        id="report-third-parties"
-        v-model="thirdParties"
-        v-bind="thirdPartiesAttrs"
-        type="text"
-        class="form-control"
-      />
-    </div>
+      <div class="mb-3 form-check">
+        <input
+          id="report-reconciled"
+          v-model="reconciledOnly"
+          v-bind="reconciledOnlyAttrs"
+          type="checkbox"
+          class="form-check-input"
+        />
+        <label class="form-check-label" for="report-reconciled">{{
+          $t('reports.reconciledOnly')
+        }}</label>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-accounts">{{ $t('reports.accounts') }}</label>
-      <select
-        id="report-accounts"
-        v-model="accountIds"
-        v-bind="accountIdsAttrs"
-        multiple
-        class="form-select"
-      >
-        <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
-      </select>
-      <div class="form-text">{{ $t('reports.accountsHint') }}</div>
-    </div>
+      <div class="mb-3">
+        <label class="form-label" for="report-period-grouping">{{
+          $t('reports.periodGrouping')
+        }}</label>
+        <select
+          id="report-period-grouping"
+          v-model="periodGrouping"
+          v-bind="periodGroupingAttrs"
+          class="form-select"
+        >
+          <option value="month">{{ $t('reports.periods.month') }}</option>
+          <option value="quarter">{{ $t('reports.periods.quarter') }}</option>
+          <option value="year">{{ $t('reports.periods.year') }}</option>
+          <option value="all">{{ $t('reports.periods.all') }}</option>
+        </select>
+      </div>
 
-    <div class="mb-3 form-check">
-      <input
-        id="report-reconciled"
-        v-model="reconciledOnly"
-        v-bind="reconciledOnlyAttrs"
-        type="checkbox"
-        class="form-check-input"
-      />
-      <label class="form-check-label" for="report-reconciled">{{
-        $t('reports.reconciledOnly')
-      }}</label>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="report-period-grouping">{{
-        $t('reports.periodGrouping')
-      }}</label>
-      <select
-        id="report-period-grouping"
-        v-model="periodGrouping"
-        v-bind="periodGroupingAttrs"
-        class="form-select"
-      >
-        <option value="month">{{ $t('reports.periods.month') }}</option>
-        <option value="quarter">{{ $t('reports.periods.quarter') }}</option>
-        <option value="year">{{ $t('reports.periods.year') }}</option>
-        <option value="all">{{ $t('reports.periods.all') }}</option>
-      </select>
-    </div>
-
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-        {{ $t('operations.submit') }}
-      </button>
-      <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-        {{ $t('common.cancel') }}
-      </button>
-    </div>
-  </form>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+          {{ $t('operations.submit') }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+          {{ $t('common.cancel') }}
+        </button>
+      </div>
+    </form>
+  </div>
 </template>

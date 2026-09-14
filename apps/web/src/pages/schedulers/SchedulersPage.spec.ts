@@ -23,11 +23,16 @@ const CATEGORY_FOOD = '00000000-0000-7000-8000-000000000301';
 // "schedulers" carries meta.requiresAuth on the real route table — a
 // dedicated guard-free stub avoids the real guard redirecting every push to
 // sign-in (see the AccountsPage/OperationsPage specs for the same reasoning).
+// "operations" is also registered: the page's "← back to Operations" link
+// resolves that route name even though these tests never navigate to it.
 function createTestRouter(): Router {
   const stub = { template: '<div />' };
   return createRouter({
     history: createMemoryHistory(),
-    routes: [{ path: '/accounts/:accountId/schedulers', name: 'schedulers', component: stub }],
+    routes: [
+      { path: '/accounts/:accountId/schedulers', name: 'schedulers', component: stub },
+      { path: '/accounts/:accountId/operations', name: 'operations', component: stub },
+    ],
   });
 }
 
@@ -142,7 +147,7 @@ describe('SchedulersPage', () => {
     expect(wrapper.text()).toContain('No scheduled operations yet.');
   });
 
-  it('lists schedulers with an active/paused icon and signed, formatted amounts', async () => {
+  it('lists schedulers with an active/paused dot and signed, formatted amounts', async () => {
     mockGet({
       schedulers: {
         items: [
@@ -166,9 +171,9 @@ describe('SchedulersPage', () => {
 
     const rows = wrapper.findAll('[data-testid="scheduler-row"]');
     expect(rows).toHaveLength(2);
-    expect(rows[0].text()).toContain('▶');
+    expect(rows[0].find('.dot').classes()).toContain('dot-active');
     expect(rows[0].text()).toContain('-$50.00');
-    expect(rows[1].text()).toContain('⏸');
+    expect(rows[1].find('.dot').classes()).not.toContain('dot-active');
     expect(rows[1].text()).toContain('+$25.00');
     expect(rows[1].text()).toContain('week(s)');
   });

@@ -35,7 +35,7 @@ test.describe('registration, activation, sign-in, sign-out', () => {
     await page.getByLabel(en.auth.signIn.password, { exact: true }).fill(TEST_PASSWORD);
     await page.getByRole('button', { name: en.auth.signIn.submit, exact: true }).click();
     await expect(page).toHaveURL(/\/en\/home$/);
-    await expect(page.getByText(en.home.signedInAs.replace('{email}', email))).toBeVisible();
+    await expect(page.getByText(email, { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: en.home.signOut, exact: true }).click();
     await expect(page).toHaveURL(/\/en\/sign-in$/);

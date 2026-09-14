@@ -1,35 +1,40 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { useToast } from '../composables/useToast';
 
 const { toasts, dismiss } = useToast();
+const { t } = useI18n();
 
 const variantClass: Record<string, string> = {
-  success: 'text-bg-success',
-  error: 'text-bg-danger',
-  info: 'text-bg-secondary',
+  success: 'toast-success',
+  error: 'toast-error',
+  info: 'toast-info',
 };
 </script>
 
 <template>
-  <!-- Toasts render in the normal document flow, placed by each page
-       directly under its own title, rather than as a fixed
-       viewport-corner overlay. -->
-  <div v-if="toasts.length > 0" class="toast-container container py-2 d-flex flex-column gap-2">
+  <!-- Fixed to the viewport corner rather than the page's own document
+       flow — the old in-flow placement pushed page content down whenever
+       a toast fired, and sat *behind* an open drawer's backdrop (a plain
+       block has no stacking priority over a position:fixed one), making it
+       invisible for anything triggered from inside a form drawer. -->
+  <div v-if="toasts.length > 0" class="toast-container">
     <div
       v-for="toast in toasts"
       :key="toast.id"
-      class="toast show"
+      class="toast-item"
       :class="variantClass[toast.variant]"
       role="alert"
     >
-      <div class="d-flex">
-        <div class="toast-body">{{ toast.text }}</div>
-        <button
-          type="button"
-          class="btn-close btn-close-white me-2 m-auto"
-          @click="dismiss(toast.id)"
-        ></button>
-      </div>
+      <span class="toast-text">{{ toast.text }}</span>
+      <button
+        type="button"
+        class="toast-close"
+        :aria-label="t('common.cancel')"
+        @click="dismiss(toast.id)"
+      >
+        ×
+      </button>
     </div>
   </div>
 </template>

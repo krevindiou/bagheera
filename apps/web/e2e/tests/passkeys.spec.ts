@@ -18,7 +18,7 @@ test('register a passkey, sign in with it instead of a password, then remove it'
   await page
     .getByLabel(en.settings.passkeys.deviceNameLabel, { exact: true })
     .fill('E2E test device');
-  await page.getByRole('button', { name: en.settings.passkeys.add, exact: true }).click();
+  await page.getByRole('button', { name: `+ ${en.settings.passkeys.add}`, exact: true }).click();
   await expect(alertWithText(page, en.settings.passkeys.added)).toBeVisible();
   await expect(page.getByRole('cell', { name: 'E2E test device', exact: true })).toBeVisible();
 
@@ -28,7 +28,7 @@ test('register a passkey, sign in with it instead of a password, then remove it'
   await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
   await page.getByRole('button', { name: en.auth.signIn.passkeySubmit, exact: true }).click();
   await expect(page).toHaveURL(/\/en\/home$/);
-  await expect(page.getByText(en.home.signedInAs.replace('{email}', email))).toBeVisible();
+  await expect(page.getByText(email, { exact: true })).toBeVisible();
 
   await page.goto('/en/settings/passkeys');
   await page.getByRole('button', { name: en.settings.passkeys.remove, exact: true }).click();

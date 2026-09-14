@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
+import { useEscapeKey } from '../../composables/useEscapeKey';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
 import { categoryLabel } from './operations.types';
 import type {
@@ -15,7 +16,9 @@ const props = defineProps<{
   paymentMethods: PaymentMethod[];
   initialCriteria?: SearchCriteria;
 }>();
-const emit = defineEmits<{ submit: [SearchCriteria]; clear: [] }>();
+const emit = defineEmits<{ submit: [SearchCriteria]; clear: []; cancel: [] }>();
+
+useEscapeKey(() => emit('cancel'));
 
 const type = ref<'debit' | 'credit'>('debit');
 const thirdParty = ref('');
@@ -121,155 +124,176 @@ function onClear() {
 </script>
 
 <template>
-  <form data-testid="search-form" class="border rounded p-3 mb-3" @submit.prevent="onSubmit">
-    <h2 class="h6">{{ $t('operations.search.title') }}</h2>
-
-    <div class="mb-3">
-      <div class="form-label">{{ $t('operations.search.type') }}</div>
-      <div class="form-check form-check-inline">
-        <input
-          id="search-type-debit"
-          v-model="type"
-          class="form-check-input"
-          type="radio"
-          value="debit"
-          autofocus
-        />
-        <label class="form-check-label" for="search-type-debit">{{ $t('operations.debit') }}</label>
+  <div class="drawer-backdrop" @click="emit('cancel')">
+    <form data-testid="search-form" class="drawer" @click.stop @submit.prevent="onSubmit">
+      <div class="drawer-header">
+        <h2 class="mb-0" style="font-size: 20px">{{ $t('operations.search.title') }}</h2>
+        <button
+          type="button"
+          class="drawer-close"
+          :aria-label="$t('common.cancel')"
+          @click="emit('cancel')"
+        >
+          ×
+        </button>
       </div>
-      <div class="form-check form-check-inline">
-        <input
-          id="search-type-credit"
-          v-model="type"
-          class="form-check-input"
-          type="radio"
-          value="credit"
-        />
-        <label class="form-check-label" for="search-type-credit">{{
-          $t('operations.credit')
-        }}</label>
+
+      <div class="mb-3">
+        <div class="form-label">{{ $t('operations.search.type') }}</div>
+        <div class="form-check form-check-inline">
+          <input
+            id="search-type-debit"
+            v-model="type"
+            v-autofocus
+            class="form-check-input"
+            type="radio"
+            value="debit"
+          />
+          <label class="form-check-label" for="search-type-debit">{{
+            $t('operations.debit')
+          }}</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            id="search-type-credit"
+            v-model="type"
+            class="form-check-input"
+            type="radio"
+            value="credit"
+          />
+          <label class="form-check-label" for="search-type-credit">{{
+            $t('operations.credit')
+          }}</label>
+        </div>
       </div>
-    </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-third-party">{{ $t('operations.thirdParty') }}</label>
-      <input
-        id="search-third-party"
-        v-model="thirdParty"
-        type="text"
-        maxlength="64"
-        class="form-control"
-      />
-    </div>
+      <div class="mb-3">
+        <label class="form-label" for="search-third-party">{{ $t('operations.thirdParty') }}</label>
+        <input
+          id="search-third-party"
+          v-model="thirdParty"
+          type="text"
+          maxlength="64"
+          class="form-control"
+        />
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-categories">{{ $t('operations.category') }}</label>
-      <select id="search-categories" v-model="categoryIds" multiple class="form-select">
-        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
-          <template v-if="group.label === null">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
+      <div class="mb-3">
+        <label class="form-label" for="search-categories">{{ $t('operations.category') }}</label>
+        <select id="search-categories" v-model="categoryIds" multiple class="form-select">
+          <template v-for="group in groupedCategories" :key="group.label ?? '_'">
+            <template v-if="group.label === null">
+              <option v-for="c in group.categories" :key="c.id" :value="c.id">
+                {{ categoryLabel(c, props.categories) }}
+              </option>
+            </template>
+            <optgroup v-else :label="group.label">
+              <option v-for="c in group.categories" :key="c.id" :value="c.id">
+                {{ categoryLabel(c, props.categories) }}
+              </option>
+            </optgroup>
           </template>
-          <optgroup v-else :label="group.label">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="search-payment-methods">{{
+          $t('operations.paymentMethod')
+        }}</label>
+        <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
+          <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
+            {{ pm.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="row mb-3 align-items-end">
+        <div class="col">
+          <label class="form-label" for="search-amount-operator-1">{{
+            $t('operations.search.amount')
+          }}</label>
+          <select id="search-amount-operator-1" v-model="amountOperator1" class="form-select">
+            <option value="">{{ $t('operations.search.any') }}</option>
+            <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
+              {{ $t(`operations.search.operators.${op}`) }}
             </option>
-          </optgroup>
-        </template>
-      </select>
-    </div>
+          </select>
+        </div>
+        <div class="col">
+          <input
+            v-model.number="amountValue1"
+            type="number"
+            inputmode="decimal"
+            step="0.01"
+            :max="AMOUNT_CEILING"
+            class="form-control"
+            :aria-label="$t('operations.search.amount')"
+          />
+        </div>
+      </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-payment-methods">{{
-        $t('operations.paymentMethod')
-      }}</label>
-      <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-          {{ pm.name }}
-        </option>
-      </select>
-    </div>
+      <div class="row mb-3">
+        <div class="col">
+          <select id="search-amount-operator-2" v-model="amountOperator2" class="form-select">
+            <option value="">{{ $t('operations.search.any') }}</option>
+            <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
+              {{ $t(`operations.search.operators.${op}`) }}
+            </option>
+          </select>
+        </div>
+        <div class="col">
+          <input
+            v-model.number="amountValue2"
+            type="number"
+            inputmode="decimal"
+            step="0.01"
+            :max="AMOUNT_CEILING"
+            class="form-control"
+            :aria-label="$t('operations.search.amount')"
+          />
+        </div>
+      </div>
 
-    <div class="row mb-3">
-      <div class="col">
-        <label class="form-label" for="search-amount-operator-1">{{
-          $t('operations.search.amount')
-        }}</label>
-        <select id="search-amount-operator-1" v-model="amountOperator1" class="form-select">
-          <option value="">{{ $t('operations.search.any') }}</option>
-          <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
-            {{ $t(`operations.search.operators.${op}`) }}
-          </option>
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label" for="search-date-from">{{
+            $t('operations.search.dateFrom')
+          }}</label>
+          <input id="search-date-from" v-model="dateFrom" type="date" class="form-control" />
+        </div>
+        <div class="col">
+          <label class="form-label" for="search-date-to">{{
+            $t('operations.search.dateTo')
+          }}</label>
+          <input id="search-date-to" v-model="dateTo" type="date" class="form-control" />
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="search-notes">{{ $t('operations.notes') }}</label>
+        <input id="search-notes" v-model="notes" type="text" maxlength="128" class="form-control" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="search-reconciled">{{ $t('operations.reconciled') }}</label>
+        <select id="search-reconciled" v-model="reconciled" class="form-select">
+          <option value="">{{ $t('operations.search.both') }}</option>
+          <option value="true">{{ $t('operations.search.yes') }}</option>
+          <option value="false">{{ $t('operations.search.no') }}</option>
         </select>
       </div>
-      <div class="col">
-        <input
-          v-model.number="amountValue1"
-          type="number"
-          inputmode="decimal"
-          step="0.01"
-          :max="AMOUNT_CEILING"
-          class="form-control"
-          :aria-label="$t('operations.search.amount')"
-        />
-      </div>
-    </div>
 
-    <div class="row mb-3">
-      <div class="col">
-        <select id="search-amount-operator-2" v-model="amountOperator2" class="form-select">
-          <option value="">{{ $t('operations.search.any') }}</option>
-          <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
-            {{ $t(`operations.search.operators.${op}`) }}
-          </option>
-        </select>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">{{ $t('operations.search.submit') }}</button>
+        <button type="button" class="btn btn-outline-secondary" @click="onClear">
+          {{ $t('operations.search.clear') }}
+        </button>
       </div>
-      <div class="col">
-        <input
-          v-model.number="amountValue2"
-          type="number"
-          inputmode="decimal"
-          step="0.01"
-          :max="AMOUNT_CEILING"
-          class="form-control"
-          :aria-label="$t('operations.search.amount')"
-        />
+      <div class="mt-2">
+        <button type="button" class="btn btn-outline-secondary w-100" @click="emit('cancel')">
+          {{ $t('common.cancel') }}
+        </button>
       </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col">
-        <label class="form-label" for="search-date-from">{{
-          $t('operations.search.dateFrom')
-        }}</label>
-        <input id="search-date-from" v-model="dateFrom" type="date" class="form-control" />
-      </div>
-      <div class="col">
-        <label class="form-label" for="search-date-to">{{ $t('operations.search.dateTo') }}</label>
-        <input id="search-date-to" v-model="dateTo" type="date" class="form-control" />
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="search-notes">{{ $t('operations.notes') }}</label>
-      <input id="search-notes" v-model="notes" type="text" maxlength="128" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="search-reconciled">{{ $t('operations.reconciled') }}</label>
-      <select id="search-reconciled" v-model="reconciled" class="form-select">
-        <option value="">{{ $t('operations.search.both') }}</option>
-        <option value="true">{{ $t('operations.search.yes') }}</option>
-        <option value="false">{{ $t('operations.search.no') }}</option>
-      </select>
-    </div>
-
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary">{{ $t('operations.search.submit') }}</button>
-      <button type="button" class="btn btn-outline-secondary" @click="onClear">
-        {{ $t('operations.search.clear') }}
-      </button>
-    </div>
-  </form>
+    </form>
+  </div>
 </template>

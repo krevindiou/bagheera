@@ -8,6 +8,7 @@ export type OnboardingTip = 'no-bank' | 'no-account' | null;
 export interface TotalBalance {
   currency: string;
   amount: number;
+  reconciledAmount: number;
 }
 
 export interface DashboardIndicator {
@@ -21,6 +22,7 @@ export interface AccountsOverviewAccount {
   name: string;
   currency: string;
   balance: number;
+  reconciledBalance: number;
 }
 
 export interface AccountsOverviewBank {

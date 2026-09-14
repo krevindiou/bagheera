@@ -1,4 +1,3 @@
-import en from '../../src/i18n/locales/en';
 import { expect, test } from '../support/fixtures';
 
 // docker/compose.e2e.yml sets SESSION_IDLE_TTL_SECONDS=8 for exactly this
@@ -11,7 +10,7 @@ test('an idle session expires server-side and bounces the next navigation to sig
   const { page, email } = signedInMember;
 
   await page.goto('/en/home');
-  await expect(page.getByText(en.home.signedInAs.replace('{email}', email))).toBeVisible();
+  await expect(page.getByText(email, { exact: true })).toBeVisible();
 
   // Genuinely waiting for a real idle TTL to elapse server-side — nothing
   // to poll on instead.

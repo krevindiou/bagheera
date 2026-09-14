@@ -32,12 +32,12 @@ function dayInPreviousCalendarMonth(): string {
 
 interface DashboardBody {
   onboarding: string | null;
-  totalBalances: { currency: string; amount: number }[];
+  totalBalances: { currency: string; amount: number; reconciledAmount: number }[];
   lastSalary: { amount: number; currency: string } | null;
   lastBiggestExpense: { amount: number; currency: string } | null;
   accountsOverview: {
     id: string;
-    accounts: { id: string; balance: number }[];
+    accounts: { id: string; balance: number; reconciledBalance: number }[];
   }[];
   homepageReports: { id: string; title: string }[];
 }
@@ -78,9 +78,52 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.onboarding).toBeNull();
-    expect(body.totalBalances).toEqual([{ currency: 'EUR', amount: 250 }]);
+    expect(body.totalBalances).toEqual([{ currency: 'EUR', amount: 250, reconciledAmount: 250 }]);
     expect(body.accountsOverview).toHaveLength(1);
     expect(body.accountsOverview[0].accounts[0].balance).toBe(250);
+  });
+
+  it('reports the total reconciled balance separately, excluding unreconciled operations', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    // The initial-balance opening operation is always reconciled (see
+    // AccountService.create) — a second, unreconciled operation is what
+    // makes the total and reconciled total actually diverge.
+    const accountId = await createAccount(mutate, bankId, 250);
+    await mutate('post', '/operations', {
+      accountId,
+      type: 'debit',
+      thirdParty: 'Unreconciled',
+      amount: 50,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2026-01-01',
+      reconciled: false,
+    });
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+    expect(body.totalBalances).toEqual([{ currency: 'EUR', amount: 200, reconciledAmount: 250 }]);
+  });
+
+  it("also reports each account overview tile's own reconciled balance, excluding unreconciled operations", async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountId = await createAccount(mutate, bankId, 250);
+    await mutate('post', '/operations', {
+      accountId,
+      type: 'debit',
+      thirdParty: 'Unreconciled',
+      amount: 50,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2026-01-01',
+      reconciled: false,
+    });
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+    const tile = body.accountsOverview[0].accounts[0];
+    expect(tile.balance).toBe(200);
+    expect(tile.reconciledBalance).toBe(250);
   });
 
   it('reports the last salary from a Salary-categorized credit', async () => {

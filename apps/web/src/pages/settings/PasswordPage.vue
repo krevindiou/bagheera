@@ -9,6 +9,7 @@ import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
 import PasswordInput from '../../components/PasswordInput.vue';
 import { changePasswordSchema, type ChangePasswordForm } from './settings.schemas';
 import ToastContainer from '../../components/ToastContainer.vue';
+import SettingsTabs from './SettingsTabs.vue';
 
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -48,11 +49,11 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="container py-5" style="max-width: 480px">
-    <h1>{{ $t('settings.password.title') }}</h1>
+  <div>
+    <SettingsTabs />
     <ToastContainer />
 
-    <form novalidate @submit="onSubmit">
+    <form novalidate style="max-width: 380px" @submit="onSubmit">
       <div class="mb-3">
         <label class="form-label" for="password-current">{{
           $t('settings.password.currentPassword')

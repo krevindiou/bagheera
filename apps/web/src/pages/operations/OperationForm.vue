@@ -5,6 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import { useEscapeKey } from '../../composables/useEscapeKey';
 import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutocomplete';
 import { useToast } from '../../composables/useToast';
 import { useTransferTargets } from '../../composables/useTransferTargets';
@@ -35,6 +36,8 @@ const emit = defineEmits<{ saved: []; savedAndNew: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
+
+useEscapeKey(() => emit('cancel'));
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -165,196 +168,214 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
 </script>
 
 <template>
-  <form novalidate class="border rounded p-3 mb-4" @submit="onSubmit">
-    <h2 class="h5">
-      {{ $t(props.operation ? 'operations.editTitle' : 'operations.createTitle') }}
-    </h2>
+  <div class="drawer-backdrop" @click="emit('cancel')">
+    <form novalidate class="drawer" @click.stop @submit="onSubmit">
+      <div class="drawer-header">
+        <h2 class="mb-0" style="font-size: 20px">
+          {{ $t(props.operation ? 'operations.editTitle' : 'operations.createTitle') }}
+        </h2>
+        <button
+          type="button"
+          class="drawer-close"
+          :aria-label="$t('common.cancel')"
+          @click="emit('cancel')"
+        >
+          ×
+        </button>
+      </div>
 
-    <div class="mb-3">
-      <div class="form-check form-check-inline">
-        <input
-          id="operation-type-debit"
-          v-model="type"
-          v-bind="typeAttrs"
-          class="form-check-input"
-          type="radio"
-          value="debit"
-          autofocus
-        />
-        <label class="form-check-label" for="operation-type-debit">{{
-          $t('operations.debit')
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input
+            id="operation-type-debit"
+            v-model="type"
+            v-bind="typeAttrs"
+            v-autofocus
+            class="form-check-input"
+            type="radio"
+            value="debit"
+          />
+          <label class="form-check-label" for="operation-type-debit">{{
+            $t('operations.debit')
+          }}</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            id="operation-type-credit"
+            v-model="type"
+            v-bind="typeAttrs"
+            class="form-check-input"
+            type="radio"
+            value="credit"
+          />
+          <label class="form-check-label" for="operation-type-credit">{{
+            $t('operations.credit')
+          }}</label>
+        </div>
+      </div>
+
+      <div class="mb-3 position-relative">
+        <label class="form-label" for="operation-third-party">{{
+          $t('operations.thirdParty')
         }}</label>
-      </div>
-      <div class="form-check form-check-inline">
         <input
-          id="operation-type-credit"
-          v-model="type"
-          v-bind="typeAttrs"
-          class="form-check-input"
-          type="radio"
-          value="credit"
-        />
-        <label class="form-check-label" for="operation-type-credit">{{
-          $t('operations.credit')
-        }}</label>
-      </div>
-    </div>
-
-    <div class="mb-3 position-relative">
-      <label class="form-label" for="operation-third-party">{{
-        $t('operations.thirdParty')
-      }}</label>
-      <input
-        id="operation-third-party"
-        v-model="thirdParty"
-        v-bind="thirdPartyAttrs"
-        type="text"
-        list="operation-third-party-suggestions"
-        autocomplete="off"
-        class="form-control"
-        :class="{ 'is-invalid': errors.thirdParty }"
-        @change="onThirdPartyChange"
-      />
-      <datalist id="operation-third-party-suggestions">
-        <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
-      </datalist>
-      <div v-if="errors.thirdParty" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="operation-amount">{{ $t('operations.amount') }}</label>
-      <div class="input-group">
-        <span class="input-group-text">{{ amountCurrencySymbol }}</span>
-        <input
-          id="operation-amount"
-          ref="amountInput"
-          v-model="amount"
-          v-bind="amountAttrs"
-          type="number"
-          inputmode="decimal"
-          step="0.01"
+          id="operation-third-party"
+          v-model="thirdParty"
+          v-bind="thirdPartyAttrs"
+          type="text"
+          list="operation-third-party-suggestions"
+          autocomplete="off"
           class="form-control"
-          :class="{ 'is-invalid': errors.amount }"
+          :class="{ 'is-invalid': errors.thirdParty }"
+          @change="onThirdPartyChange"
+        />
+        <datalist id="operation-third-party-suggestions">
+          <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
+        </datalist>
+        <div v-if="errors.thirdParty" class="invalid-feedback">
+          {{ $t('auth.validation.required') }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="operation-amount">{{ $t('operations.amount') }}</label>
+        <div class="input-group">
+          <span class="input-group-text">{{ amountCurrencySymbol }}</span>
+          <input
+            id="operation-amount"
+            ref="amountInput"
+            v-model="amount"
+            v-bind="amountAttrs"
+            type="number"
+            inputmode="decimal"
+            step="0.01"
+            class="form-control"
+            :class="{ 'is-invalid': errors.amount }"
+          />
+        </div>
+        <div v-if="errors.amount" class="invalid-feedback d-block">
+          {{ $t('operations.validation.amount') }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-3">
+        <div class="mb-3 flex-grow-1">
+          <label class="form-label" for="operation-category">{{ $t('operations.category') }}</label>
+          <select
+            id="operation-category"
+            v-model="categoryId"
+            v-bind="categoryIdAttrs"
+            class="form-select"
+          >
+            <option value="">{{ $t('operations.noCategory') }}</option>
+            <template v-for="group in groupedCategories" :key="group.label ?? '_'">
+              <template v-if="group.label === null">
+                <option v-for="c in group.categories" :key="c.id" :value="c.id">
+                  {{ categoryLabel(c, props.categories) }}
+                </option>
+              </template>
+              <optgroup v-else :label="group.label">
+                <option v-for="c in group.categories" :key="c.id" :value="c.id">
+                  {{ categoryLabel(c, props.categories) }}
+                </option>
+              </optgroup>
+            </template>
+          </select>
+        </div>
+
+        <div class="mb-3 flex-grow-1">
+          <label class="form-label" for="operation-payment-method">{{
+            $t('operations.paymentMethod')
+          }}</label>
+          <select
+            id="operation-payment-method"
+            v-model="paymentMethodId"
+            v-bind="paymentMethodIdAttrs"
+            class="form-select"
+            :class="{ 'is-invalid': errors.paymentMethodId }"
+          >
+            <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
+            <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
+              {{ pm.name }}
+            </option>
+          </select>
+          <div v-if="errors.paymentMethodId" class="invalid-feedback">
+            {{ $t('auth.validation.required') }}
+          </div>
+        </div>
+      </div>
+
+      <div v-if="showTransferAccount" class="mb-3 transfer-accent">
+        <label class="form-label" for="operation-transfer-account">
+          {{ $t('operations.transferAccount') }}
+        </label>
+        <select
+          id="operation-transfer-account"
+          v-model="transferAccountId"
+          v-bind="transferAccountIdAttrs"
+          class="form-select"
+          :class="{ 'is-invalid': errors.transferAccountId }"
+        >
+          <option value="">{{ $t('operations.externalAccount') }}</option>
+          <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="operation-value-date">{{
+          $t('operations.valueDate')
+        }}</label>
+        <input
+          id="operation-value-date"
+          v-model="valueDate"
+          v-bind="valueDateAttrs"
+          type="date"
+          class="form-control"
         />
       </div>
-      <div v-if="errors.amount" class="invalid-feedback d-block">
-        {{ $t('operations.validation.amount') }}
+
+      <div class="mb-3">
+        <label class="form-label" for="operation-notes">{{ $t('operations.notes') }}</label>
+        <textarea
+          id="operation-notes"
+          v-model="notes"
+          v-bind="notesAttrs"
+          class="form-control"
+        ></textarea>
       </div>
-    </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="operation-category">{{ $t('operations.category') }}</label>
-      <select
-        id="operation-category"
-        v-model="categoryId"
-        v-bind="categoryIdAttrs"
-        class="form-select"
-      >
-        <option value="">{{ $t('operations.noCategory') }}</option>
-        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
-          <template v-if="group.label === null">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
-          </template>
-          <optgroup v-else :label="group.label">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
-          </optgroup>
-        </template>
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="operation-payment-method">{{
-        $t('operations.paymentMethod')
-      }}</label>
-      <select
-        id="operation-payment-method"
-        v-model="paymentMethodId"
-        v-bind="paymentMethodIdAttrs"
-        class="form-select"
-        :class="{ 'is-invalid': errors.paymentMethodId }"
-      >
-        <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-          {{ pm.name }}
-        </option>
-      </select>
-      <div v-if="errors.paymentMethodId" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
+      <div class="mb-3 form-check">
+        <input
+          id="operation-reconciled"
+          v-model="reconciled"
+          v-bind="reconciledAttrs"
+          type="checkbox"
+          class="form-check-input"
+        />
+        <label class="form-check-label" for="operation-reconciled">{{
+          $t('operations.reconciled')
+        }}</label>
       </div>
-    </div>
 
-    <div v-if="showTransferAccount" class="mb-3">
-      <label class="form-label" for="operation-transfer-account">
-        {{ $t('operations.transferAccount') }}
-      </label>
-      <select
-        id="operation-transfer-account"
-        v-model="transferAccountId"
-        v-bind="transferAccountIdAttrs"
-        class="form-select"
-        :class="{ 'is-invalid': errors.transferAccountId }"
-      >
-        <option value="">{{ $t('operations.externalAccount') }}</option>
-        <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="operation-value-date">{{ $t('operations.valueDate') }}</label>
-      <input
-        id="operation-value-date"
-        v-model="valueDate"
-        v-bind="valueDateAttrs"
-        type="date"
-        class="form-control"
-      />
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label" for="operation-notes">{{ $t('operations.notes') }}</label>
-      <textarea
-        id="operation-notes"
-        v-model="notes"
-        v-bind="notesAttrs"
-        class="form-control"
-      ></textarea>
-    </div>
-
-    <div class="mb-3 form-check">
-      <input
-        id="operation-reconciled"
-        v-model="reconciled"
-        v-bind="reconciledAttrs"
-        type="checkbox"
-        class="form-check-input"
-      />
-      <label class="form-check-label" for="operation-reconciled">{{
-        $t('operations.reconciled')
-      }}</label>
-    </div>
-
-    <div class="d-flex gap-2">
-      <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-        {{ $t('operations.submit') }}
-      </button>
-      <button
-        v-if="!props.operation"
-        type="button"
-        class="btn btn-outline-primary"
-        :disabled="isSubmitting"
-        @click="onSubmitAndNew"
-      >
-        {{ $t('operations.submitAndNew') }}
-      </button>
-      <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-        {{ $t('common.cancel') }}
-      </button>
-    </div>
-  </form>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1" :disabled="isSubmitting">
+          {{ $t('operations.submit') }}
+        </button>
+        <button
+          v-if="!props.operation"
+          type="button"
+          class="btn btn-outline-primary flex-grow-1"
+          :disabled="isSubmitting"
+          @click="onSubmitAndNew"
+        >
+          {{ $t('operations.submitAndNew') }}
+        </button>
+      </div>
+      <div class="mt-2">
+        <button type="button" class="btn btn-outline-secondary w-100" @click="emit('cancel')">
+          {{ $t('common.cancel') }}
+        </button>
+      </div>
+    </form>
+  </div>
 </template>

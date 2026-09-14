@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { useConfirm } from '../composables/useConfirm';
+import { useEscapeKey } from '../composables/useEscapeKey';
 
 const { state, settle } = useConfirm();
+
+// Unlike the drawers, this component is always mounted (see BaseLayout) —
+// its own visibility toggles via state.visible, so the callback guards on
+// that instead of relying on mount/unmount.
+useEscapeKey(() => {
+  if (state.visible) settle(false);
+});
 </script>
 
 <template>

@@ -110,7 +110,7 @@ const chartQuery = useQuery({
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;
   if (!chart || chart.points.length === 0) return [];
-  return [{ label: chart.currency, color: '#0d6efd', points: chart.points }];
+  return [{ label: chart.currency, color: '#9a72e8', points: chart.points }];
 });
 const chartAxisBounds = computed(() => chartQuery.data.value?.axisBounds ?? null);
 
@@ -252,37 +252,19 @@ function isEditable(operation: Operation): boolean {
 </script>
 
 <template>
-  <div class="container py-5">
-    <h1 v-if="account">{{ accountBank?.name }} − {{ account.name }}</h1>
-    <h1 v-else>{{ $t('operations.title') }}</h1>
-    <ToastContainer />
-
-    <div v-if="balance" class="d-flex gap-4 mb-3" data-testid="account-balances">
-      <span
-        >{{ $t('operations.balance') }}:
-        <strong :class="balance.balance >= 0 ? 'text-success' : 'text-danger'">{{
-          formatMoney(balance.balance, account?.currency ?? 'USD', true)
-        }}</strong></span
-      >
-      <span
-        >{{ $t('operations.reconciledBalance') }}:
-        <strong :class="balance.reconciledBalance >= 0 ? 'text-success' : 'text-danger'">{{
-          formatMoney(balance.reconciledBalance, account?.currency ?? 'USD', true)
-        }}</strong></span
-      >
-    </div>
+  <div>
+    <router-link :to="{ name: 'accounts' }" class="back-link">
+      ← {{ $t('nav.accounts') }}
+    </router-link>
 
     <!-- Header action row: New operation, Search toggle, Schedulers link.
          The first-operation tip anchors right above "New operation",
          which is hidden on closed accounts. -->
-    <div class="mb-3">
-      <p
-        v-if="isAccountFullyActive && list.items.length === 0 && !hasActiveSearch"
-        class="text-muted mb-1"
-        data-testid="onboarding-tip"
-      >
-        {{ $t('operations.firstOperationTip') }}
-      </p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <h1 v-if="account" class="mb-0" style="font-size: 24px">
+        {{ accountBank?.name }} — {{ account.name }}
+      </h1>
+      <h1 v-else class="mb-0" style="font-size: 24px">{{ $t('operations.title') }}</h1>
       <div class="d-flex flex-wrap gap-2">
         <button
           v-if="isAccountFullyActive"
@@ -296,9 +278,9 @@ function isEditable(operation: Operation): boolean {
           type="button"
           class="btn btn-outline-secondary"
           data-testid="toggle-search"
-          @click="showSearch = !showSearch"
+          @click="showSearch = true"
         >
-          {{ showSearch ? $t('operations.search.hide') : $t('operations.search.show') }}
+          {{ $t('operations.search.show') }}
         </button>
         <router-link
           :to="{ name: 'schedulers', params: { accountId } }"
@@ -308,22 +290,48 @@ function isEditable(operation: Operation): boolean {
         </router-link>
       </div>
     </div>
+    <ToastContainer />
 
-    <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
+    <p
+      v-if="isAccountFullyActive && list.items.length === 0 && !hasActiveSearch"
+      class="text-muted mb-3"
+      data-testid="onboarding-tip"
+    >
+      {{ $t('operations.firstOperationTip') }}
+    </p>
 
-    <div class="d-flex gap-3 align-items-start">
-      <div class="flex-grow-1 min-w-0">
-        <BatchActions
-          v-if="isAccountFullyActive"
-          :selected-ids="selectedIdList"
-          @done="refreshAfterBatch"
-        />
-
-        <div v-if="list.items.length === 0" class="mb-3">
-          <p class="text-muted">{{ $t('operations.empty') }}</p>
+    <div v-if="balance" class="mb-4" data-testid="account-balances">
+      <div class="stat-chip">
+        <div class="stat-label">{{ $t('operations.balance') }}</div>
+        <div class="stat-value stat-value-primary" :class="{ 'text-danger': balance.balance < 0 }">
+          {{ formatMoney(balance.balance, account?.currency ?? 'USD', true) }}
         </div>
+        <div class="stat-footnote">
+          <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
+          <span class="stat-footnote-value">
+            {{ formatMoney(balance.reconciledBalance, account?.currency ?? 'USD', true) }}
+          </span>
+        </div>
+      </div>
+    </div>
 
-        <div v-else class="table-responsive">
+    <div class="panel panel-lg p-4 mb-4">
+      <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
+    </div>
+
+    <div>
+      <BatchActions
+        v-if="isAccountFullyActive"
+        :selected-ids="selectedIdList"
+        @done="refreshAfterBatch"
+      />
+
+      <div v-if="list.items.length === 0" class="mb-3">
+        <p class="text-muted">{{ $t('operations.empty') }}</p>
+      </div>
+
+      <div v-else>
+        <div class="table-responsive">
           <table class="table" data-testid="operations-table">
             <thead>
               <tr>
@@ -356,6 +364,7 @@ function isEditable(operation: Operation): boolean {
                 <td>
                   <span
                     v-if="operation.reconciled"
+                    class="reconciled-dot"
                     :title="$t('operations.reconciled')"
                     data-testid="reconciled-icon"
                     >✓</span
@@ -368,7 +377,10 @@ function isEditable(operation: Operation): boolean {
                   >
                 </td>
                 <td>{{ operation.thirdParty }}</td>
-                <td class="text-end" :class="operation.debit ? 'text-danger' : 'text-success'">
+                <td
+                  class="text-end amount"
+                  :class="operation.debit ? 'text-danger' : 'text-success'"
+                >
                   {{ operation.debit ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
                 <td :title="paymentMethodName(operation.paymentMethodId, paymentMethods)">
@@ -380,7 +392,7 @@ function isEditable(operation: Operation): boolean {
                   <button
                     v-if="isEditable(operation)"
                     type="button"
-                    class="btn btn-sm btn-outline-secondary"
+                    class="btn btn-sm btn-outline-secondary btn-text"
                     @click="startEdit(operation)"
                   >
                     {{ $t('operations.edit') }}
@@ -389,53 +401,50 @@ function isEditable(operation: Operation): boolean {
               </tr>
             </tbody>
           </table>
-
-          <nav class="d-flex align-items-center gap-2" aria-label="pagination">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              :disabled="list.page <= 1"
-              @click="goToPage(list.page - 1)"
-            >
-              {{ $t('operations.previous') }}
-            </button>
-            <span>{{ $t('operations.pageStatus', { page: list.page, pageCount }) }}</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              :disabled="list.page >= pageCount"
-              @click="goToPage(list.page + 1)"
-            >
-              {{ $t('operations.next') }}
-            </button>
-          </nav>
         </div>
 
-        <OperationForm
-          v-if="showForm"
-          :account-id="accountId"
-          :categories="categories"
-          :payment-methods="paymentMethods"
-          :accounts="accounts"
-          :banks="banks"
-          :operation="editingOperation"
-          @saved="onSavedAndClose"
-          @saved-and-new="onSaved"
-          @cancel="showForm = false"
-        />
+        <nav class="pager d-flex align-items-center gap-2 mt-3" aria-label="pagination">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            :disabled="list.page <= 1"
+            @click="goToPage(list.page - 1)"
+          >
+            {{ $t('operations.previous') }}
+          </button>
+          <span>{{ $t('operations.pageStatus', { page: list.page, pageCount }) }}</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            :disabled="list.page >= pageCount"
+            @click="goToPage(list.page + 1)"
+          >
+            {{ $t('operations.next') }}
+          </button>
+        </nav>
       </div>
 
-      <!-- While a search is active, the panel docks open beside the
-           (narrowed) list rather than stacking above it. -->
+      <OperationForm
+        v-if="showForm"
+        :account-id="accountId"
+        :categories="categories"
+        :payment-methods="paymentMethods"
+        :accounts="accounts"
+        :banks="banks"
+        :operation="editingOperation"
+        @saved="onSavedAndClose"
+        @saved-and-new="onSaved"
+        @cancel="showForm = false"
+      />
+
       <SearchPanel
         v-if="showSearch"
-        class="flex-shrink-0"
-        style="width: 320px"
         :categories="categories"
         :payment-methods="paymentMethods"
         :initial-criteria="recalledCriteria"
         @submit="runSearch"
         @clear="clearSearch"
+        @cancel="showSearch = false"
       />
     </div>
   </div>

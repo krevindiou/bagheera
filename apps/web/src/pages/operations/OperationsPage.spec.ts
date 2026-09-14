@@ -24,6 +24,8 @@ const CATEGORY_FOOD = '00000000-0000-7000-8000-000000000101';
 // "operations" carries meta.requiresAuth on the real route table (see the
 // AccountsPage/BaseLayout specs for the same reasoning) — a dedicated stub
 // avoids the real guard silently redirecting every push to sign-in.
+// "accounts" is also registered: the page's "← back to Accounts" link
+// resolves that route name even though these tests never navigate to it.
 function createTestRouter(): Router {
   const stub = { template: '<div />' };
   return createRouter({
@@ -31,6 +33,7 @@ function createTestRouter(): Router {
     routes: [
       { path: '/accounts/:accountId/operations', name: 'operations', component: stub },
       { path: '/accounts/:accountId/schedulers', name: 'schedulers', component: stub },
+      { path: '/accounts', name: 'accounts', component: stub },
     ],
   });
 }
@@ -151,14 +154,17 @@ describe('OperationsPage', () => {
     expect(wrapper.find('h1').text()).toBe('Operations');
   });
 
-  it('shows the balance and reconciled balance, colored by sign', async () => {
+  it('shows the balance as the primary figure (colored by sign) and reconciled balance as a muted footnote', async () => {
     mockGet({ balance: { balance: -500, reconciledBalance: 100 } });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
     const balances = wrapper.find('[data-testid="account-balances"]');
     expect(balances.text()).toContain('-$500.00');
     expect(balances.text()).toContain('$100.00');
-    expect(balances.find('.text-danger').exists()).toBe(true);
+    expect(balances.find('.stat-value-primary.text-danger').exists()).toBe(true);
+    // The footnote stays muted even though the account is overdrawn — only
+    // the primary balance above it gets the red treatment.
+    expect(balances.find('.stat-footnote-value.text-danger').exists()).toBe(false);
   });
 
   it('shows the onboarding tip only for a fully active account with no operations and no active search', async () => {
@@ -349,7 +355,7 @@ describe('OperationsPage', () => {
 
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: '#0d6efd', points: [{ period: '2026-01', value: 500 }] },
+      { label: 'USD', color: '#9a72e8', points: [{ period: '2026-01', value: 500 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
   });
