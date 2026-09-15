@@ -30,7 +30,7 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<SignInForm>(
 const [email, emailAttrs] = defineField('email');
 const [password, passwordAttrs] = defineField('password');
 
-type Banner = 'invalid-credentials' | 'inactive' | 'passkey-email-required' | null;
+type Banner = 'invalid-credentials' | 'inactive' | 'rate-limited' | 'passkey-email-required' | null;
 const banner = ref<Banner>(null);
 const resendSent = ref(false);
 const resending = ref(false);
@@ -60,6 +60,10 @@ const onSubmit = handleSubmit(async (values) => {
 
   if (response.status === 403) {
     banner.value = 'inactive';
+    return;
+  }
+  if (response.status === 429) {
+    banner.value = 'rate-limited';
     return;
   }
   if (!response.ok) {
@@ -137,6 +141,9 @@ async function signInWithPasskey() {
     >
       {{ $t('auth.signIn.passkeyEmailRequired') }}
     </div>
+    <div v-else-if="banner === 'rate-limited'" class="alert alert-warning mt-3" role="alert">
+      {{ $t('auth.signIn.tooManyAttempts') }}
+    </div>
     <div v-else-if="banner === 'inactive'" class="alert alert-warning mt-3" role="alert">
       <p class="mb-2">{{ $t('auth.signIn.inactiveAccount') }}</p>
       <p v-if="resendSent" class="mb-0 text-success">
@@ -180,7 +187,7 @@ async function signInWithPasskey() {
           v-bind="passwordAttrs"
           :class="{ 'is-invalid': errors.password }"
         />
-        <div v-if="errors.password" class="invalid-feedback">
+        <div v-if="errors.password" class="invalid-feedback d-block">
           {{ $t('auth.validation.required') }}
         </div>
       </div>

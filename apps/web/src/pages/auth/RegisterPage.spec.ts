@@ -83,6 +83,15 @@ describe('RegisterPage', () => {
     expect(wrapper.text()).toContain('Enter a valid email address.');
     expect(wrapper.text()).toContain('Password must be at least 8 characters.');
     expect(apiClient.POST).not.toHaveBeenCalled();
+
+    // PasswordInput wraps its <input> in its own .input-group, so its
+    // sibling .invalid-feedback needs d-block — Bootstrap's plain
+    // .is-invalid ~ .invalid-feedback rule never matches across that
+    // extra nesting level. wrapper.text() above would pass either way.
+    const passwordError = wrapper
+      .findAll('.invalid-feedback')
+      .find((el) => el.text() === 'Password must be at least 8 characters.');
+    expect(passwordError?.classes()).toContain('d-block');
   });
 
   it("shows a validation error and doesn't submit for mismatched passwords", async () => {
@@ -92,6 +101,25 @@ describe('RegisterPage', () => {
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain("Passwords don't match.");
+    expect(apiClient.POST).not.toHaveBeenCalled();
+
+    const confirmationError = wrapper
+      .findAll('.invalid-feedback')
+      .find((el) => el.text() === "Passwords don't match.");
+    expect(confirmationError?.classes()).toContain('d-block');
+  });
+
+  it('rejects an 8+ char password made of only one character class, with a distinct message', async () => {
+    const wrapper = mount(RegisterPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
+    await wrapper.find('#register-password').setValue('alllowercase');
+    await wrapper.find('#register-password-confirmation').setValue('alllowercase');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain(
+      'Use a mix of at least 2 of: lowercase, uppercase, numbers, symbols.',
+    );
+    expect(wrapper.text()).not.toContain('Password must be at least 8 characters.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 });

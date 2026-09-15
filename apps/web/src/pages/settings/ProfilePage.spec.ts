@@ -55,7 +55,7 @@ describe('ProfilePage', () => {
 
   it('shows an inline field error (not a toast) for an invalid current password', async () => {
     apiClient.POST.mockResolvedValueOnce(
-      jsonResult(400, { message: 'Current password is invalid.' }),
+      jsonResult(422, { message: 'Current password is invalid.' }),
     );
     const wrapper = mountWithSession('member@example.com');
     await wrapper.find('#profile-current-password').setValue('wrong');
@@ -63,6 +63,15 @@ describe('ProfilePage', () => {
 
     expect(wrapper.text()).toContain('Current password is invalid.');
     expect(useToast().toasts).toHaveLength(0);
+
+    // PasswordInput wraps its <input> in its own .input-group, so its
+    // sibling .invalid-feedback needs d-block — Bootstrap's plain
+    // .is-invalid ~ .invalid-feedback rule never matches across that
+    // extra nesting level. wrapper.text() above would pass either way.
+    const currentPasswordError = wrapper
+      .findAll('.invalid-feedback')
+      .find((el) => el.text() === 'Current password is invalid.');
+    expect(currentPasswordError?.classes()).toContain('d-block');
   });
 
   it('shows a toast for any other failure', async () => {

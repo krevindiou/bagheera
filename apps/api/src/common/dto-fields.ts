@@ -7,6 +7,7 @@ import {
   IsPositive,
   IsString,
   Length,
+  Matches,
   Max,
   MaxLength,
   MinLength,
@@ -41,13 +42,28 @@ export function SecretField(): PropertyDecorator {
   };
 }
 
+// Rejects a password made up of only one character class (all-lowercase,
+// all-uppercase, all-digit, or all-symbol) via four negative lookaheads —
+// one per class, each asserting the *whole* value isn't composed of that
+// class alone. Passes as soon as 2+ classes are mixed in. Mirrors the
+// client's getPasswordStrength() score >= 2 ("fair") gate — see
+// apps/web/src/composables/usePasswordStrength.ts and each Zod schema's
+// `password` refine — length is NewPasswordField's own separate Length()
+// check below, not this regex's concern.
+const MIN_TWO_CHARACTER_CLASSES = /^(?![a-z]+$)(?![A-Z]+$)(?!\d+$)(?![^a-zA-Z\d]+$).+$/;
+
 /**
  * A new password being set (registration, password reset/change) —
- * unlike SecretField, this enforces a minimum length, since the value is
- * being chosen here, not just checked.
+ * unlike SecretField, this enforces a minimum length and a minimum
+ * complexity, since the value is being chosen here, not just checked.
  */
 export function NewPasswordField(): PropertyDecorator {
-  return Length(8, 4096);
+  return function (target: object, propertyKey: string | symbol): void {
+    Length(8, 4096)(target, propertyKey);
+    Matches(MIN_TWO_CHARACTER_CLASSES, {
+      message: 'Password must use at least two of: lowercase, uppercase, numbers, symbols.',
+    })(target, propertyKey);
+  };
 }
 
 // Second wave: name-like and free-text fields, each capped to its own real

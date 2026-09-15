@@ -47,7 +47,7 @@ describe('PasswordPage', () => {
 
   it('shows an inline field error (not a toast) for an invalid current password', async () => {
     apiClient.POST.mockResolvedValueOnce(
-      jsonResult(400, { message: 'Current password is invalid.' }),
+      jsonResult(422, { message: 'Current password is invalid.' }),
     );
     const wrapper = mount(PasswordPage, withGlobalPlugins());
     await fillValidForm(wrapper);
@@ -55,6 +55,15 @@ describe('PasswordPage', () => {
 
     expect(wrapper.text()).toContain('Current password is invalid.');
     expect(useToast().toasts).toHaveLength(0);
+
+    // PasswordInput wraps its <input> in its own .input-group, so its
+    // sibling .invalid-feedback needs d-block — Bootstrap's plain
+    // .is-invalid ~ .invalid-feedback rule never matches across that
+    // extra nesting level. wrapper.text() above would pass either way.
+    const currentPasswordError = wrapper
+      .findAll('.invalid-feedback')
+      .find((el) => el.text() === 'Current password is invalid.');
+    expect(currentPasswordError?.classes()).toContain('d-block');
   });
 
   it('shows a toast for any other failure', async () => {
@@ -83,6 +92,25 @@ describe('PasswordPage', () => {
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain("Passwords don't match.");
+    expect(apiClient.POST).not.toHaveBeenCalled();
+
+    const confirmationError = wrapper
+      .findAll('.invalid-feedback')
+      .find((el) => el.text() === "Passwords don't match.");
+    expect(confirmationError?.classes()).toContain('d-block');
+  });
+
+  it('rejects an 8+ char new password made of only one character class, with a distinct message', async () => {
+    const wrapper = mount(PasswordPage, withGlobalPlugins());
+    await wrapper.find('#password-current').setValue('hunter2');
+    await wrapper.find('#password-new').setValue('alllowercase');
+    await wrapper.find('#password-new-confirmation').setValue('alllowercase');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain(
+      'Use a mix of at least 2 of: lowercase, uppercase, numbers, symbols.',
+    );
+    expect(wrapper.text()).not.toContain('Password must be at least 8 characters.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 

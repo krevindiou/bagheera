@@ -60,7 +60,7 @@ describe('POST /auth/change-password', () => {
         newPassword: 'whatever-new-1',
         newPasswordConfirmation: 'whatever-new-1',
       })
-      .expect(400);
+      .expect(422);
     expect((res.body as { message: string }).message).toBe('Current password is invalid.');
 
     const checkAgent = request.agent(app.getHttpServer());

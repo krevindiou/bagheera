@@ -41,6 +41,26 @@ test.describe('registration, activation, sign-in, sign-out', () => {
     await expect(page).toHaveURL(/\/en\/sign-in$/);
   });
 
+  test('a too-short password shows its validation message on screen, not just in the DOM', async ({
+    page,
+  }) => {
+    // PasswordInput.vue wraps its real <input> in its own .input-group (for
+    // the show/hide toggle), so the sibling .invalid-feedback div next to it
+    // needs an explicit d-block — Bootstrap's own
+    // ".is-invalid ~ .invalid-feedback" rule only fires between true
+    // siblings sharing a parent, and the input now sits one level deeper.
+    // A DOM-presence assertion alone can't catch a CSS-visibility
+    // regression here; this needs a real browser.
+    await page.goto('/en/register');
+    await page.getByLabel(en.auth.register.email, { exact: true }).fill(randomEmail());
+    await page.getByLabel(en.auth.register.country, { exact: true }).selectOption(REGISTER_COUNTRY);
+    await page.getByLabel(en.auth.register.password, { exact: true }).fill('short1');
+    await page.getByLabel(en.auth.register.passwordConfirmation, { exact: true }).fill('short1');
+    await page.getByRole('button', { name: en.auth.register.submit, exact: true }).click();
+
+    await expect(page.getByText(en.auth.validation.passwordLength)).toBeVisible();
+  });
+
   test('a second activation attempt on an already-used link fails without revealing why', async ({
     page,
   }) => {

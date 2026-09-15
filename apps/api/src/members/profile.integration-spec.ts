@@ -65,7 +65,7 @@ describe('POST /members/profile', () => {
         .post('/members/profile')
         .set('x-csrf-token', csrfToken)
         .send({ email: uniqueEmail(), currentPassword: 'wrong-password' })
-        .expect(400);
+        .expect(422);
       expect(messageOf(res)).toBe('Current password is invalid.');
     });
 

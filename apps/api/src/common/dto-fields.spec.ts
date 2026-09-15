@@ -87,8 +87,8 @@ describe('NewPasswordField', () => {
     expect(errors[0]?.constraints).toHaveProperty('isLength');
   });
 
-  it('accepts an 8-character password', async () => {
-    const dto = plainToInstance(NewPasswordFieldHost, { value: 'exactly8' });
+  it('accepts an 8-character password mixing 2 character classes', async () => {
+    const dto = plainToInstance(NewPasswordFieldHost, { value: 'Exactly8' });
     expect(await validate(dto)).toEqual([]);
   });
 
@@ -98,6 +98,28 @@ describe('NewPasswordField', () => {
     });
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('isLength');
+  });
+
+  it('rejects an 8+ char password made of only one character class', async () => {
+    for (const value of ['alllowercase', 'ALLUPPERCASE', '12345678', '!!!!!!!!']) {
+      const dto = plainToInstance(NewPasswordFieldHost, { value });
+      const errors = await validate(dto);
+      expect(errors[0]?.constraints).toHaveProperty('matches');
+    }
+  });
+
+  it('accepts an 8+ char password mixing any 2 of the 4 character classes', async () => {
+    for (const value of [
+      'lowerUPPER',
+      'lower1234',
+      'lower!!!!',
+      'UPPER1234',
+      'UPPER!!!!',
+      '1234!!!!',
+    ]) {
+      const dto = plainToInstance(NewPasswordFieldHost, { value });
+      expect(await validate(dto)).toEqual([]);
+    }
   });
 });
 

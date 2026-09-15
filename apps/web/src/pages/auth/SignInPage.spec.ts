@@ -53,6 +53,26 @@ describe('SignInPage', () => {
     );
   });
 
+  it('shows a validation error for a blank password field', async () => {
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+    await wrapper.find('#sign-in-email').setValue('member@example.com');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('This field is required.');
+    expect(apiClient.POST).not.toHaveBeenCalled();
+
+    // PasswordInput wraps its <input> in its own .input-group, so its
+    // sibling .invalid-feedback needs d-block — Bootstrap's plain
+    // .is-invalid ~ .invalid-feedback rule never matches across that
+    // extra nesting level. wrapper.text() above would pass either way.
+    // (Email is filled in above, so its own required-field error never
+    // renders — this is the only "This field is required." node.)
+    const passwordError = wrapper
+      .findAll('.invalid-feedback')
+      .find((el) => el.text() === 'This field is required.');
+    expect(passwordError?.classes()).toContain('d-block');
+  });
+
   it('signs in, remembers the email, shows a toast, and goes home', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     apiClient.GET.mockResolvedValue(jsonResult(200, { email: 'member@example.com' }));
@@ -88,6 +108,18 @@ describe('SignInPage', () => {
       body: { email: 'member@example.com', password: 'hunter2' },
     });
     expect(wrapper.text()).toContain('A new activation email has been sent.');
+  });
+
+  it('shows a rate-limit banner, distinct from invalid-credentials, on a 429', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(429));
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+    await wrapper.find('#sign-in-email').setValue('member@example.com');
+    await wrapper.find('#sign-in-password').setValue('wrong');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('Too many attempts. Please wait a minute and try again.');
+    expect(wrapper.text()).not.toContain('Invalid email or password');
+    expect(useSessionStore().isAuthenticated).toBe(false);
   });
 
   it('shows an invalid-credentials banner on any other sign-in failure', async () => {

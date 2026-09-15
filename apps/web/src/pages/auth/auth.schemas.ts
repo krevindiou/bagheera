@@ -1,9 +1,19 @@
 import { z } from 'zod';
+import { getPasswordStrength } from '../../composables/usePasswordStrength';
 
 // Field rules mirror the API DTOs (apps/api/src/{members,auth}/dto/*) so
 // invalid submissions are caught client-side before hitting the network.
 const email = z.string().trim().email().max(128);
-const password = z.string().min(8).max(4096);
+// Length first, then a minimum strength (score >= 2 / "fair" — at least 2
+// of lowercase/uppercase/digit/symbol) — mirrors NewPasswordField()'s
+// Matches() regex server-side (apps/api/src/common/dto-fields.ts). The
+// strength meter's own "Weak" tier and this gate are the same threshold on
+// purpose: the meter never shows red for a password that's still accepted.
+const password = z
+  .string()
+  .min(8)
+  .max(4096)
+  .refine((value) => getPasswordStrength(value).score >= 2, { message: 'passwordTooWeak' });
 const country = z.string().regex(/^[A-Za-z]{2}$/);
 
 export const signInSchema = z.object({

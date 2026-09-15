@@ -34,6 +34,7 @@ export default {
       success: 'Signed in.',
       passkeySubmit: 'Sign in with a passkey',
       passkeyEmailRequired: 'Enter your email address first.',
+      tooManyAttempts: 'Too many attempts. Please wait a minute and try again.',
     },
     register: {
       title: 'Create an account',
@@ -80,7 +81,9 @@ export default {
       email: 'Enter a valid email address.',
       country: 'Country must be a 2-letter code.',
       passwordLength: 'Password must be at least 8 characters.',
+      passwordWeak: 'Use a mix of at least 2 of: lowercase, uppercase, numbers, symbols.',
       passwordMismatch: "Passwords don't match.",
+      currentPasswordInvalid: 'Current password is invalid.',
     },
   },
   nav: {
@@ -165,6 +168,7 @@ export default {
     schedulersLink: 'Scheduled operations',
     validation: {
       amount: 'Enter an amount greater than zero.',
+      amountTooHigh: 'Enter a smaller amount.',
     },
     batch: {
       delete: 'Delete selected',

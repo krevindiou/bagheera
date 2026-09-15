@@ -7,6 +7,7 @@ import { useRouter } from 'vue-router';
 import { apiClient } from '../../api/client';
 import { rememberAttemptedEmail } from '../../composables/useLastAttemptedEmail';
 import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';
+import { passwordValidationKey } from '../../composables/usePasswordStrength';
 import { useToast } from '../../composables/useToast';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
 import PasswordInput from '../../components/PasswordInput.vue';
@@ -110,8 +111,8 @@ const onSubmit = handleSubmit(async (values) => {
           :class="{ 'is-invalid': errors.password }"
         />
         <PasswordStrengthMeter :password="password ?? ''" />
-        <div v-if="errors.password" class="invalid-feedback">
-          {{ $t('auth.validation.passwordLength') }}
+        <div v-if="errors.password" class="invalid-feedback d-block">
+          {{ $t(passwordValidationKey(password ?? '')) }}
         </div>
       </div>
 
@@ -125,7 +126,7 @@ const onSubmit = handleSubmit(async (values) => {
           v-bind="passwordConfirmationAttrs"
           :class="{ 'is-invalid': errors.passwordConfirmation }"
         />
-        <div v-if="errors.passwordConfirmation" class="invalid-feedback">
+        <div v-if="errors.passwordConfirmation" class="invalid-feedback d-block">
           {{ $t('auth.validation.passwordMismatch') }}
         </div>
       </div>

@@ -1,7 +1,15 @@
 import { z } from 'zod';
+import { getPasswordStrength } from '../../composables/usePasswordStrength';
 
 // Field rules mirror the API DTOs (apps/api/src/{members,auth}/dto/*).
-const password = z.string().min(8).max(4096);
+// Length first, then a minimum strength (score >= 2 / "fair") — see
+// auth.schemas.ts's matching `password` for the full rationale; mirrors
+// NewPasswordField()'s Matches() regex server-side.
+const password = z
+  .string()
+  .min(8)
+  .max(4096)
+  .refine((value) => getPasswordStrength(value).score >= 2, { message: 'passwordTooWeak' });
 
 export const profileSchema = z.object({
   email: z.string().trim().email().max(128),

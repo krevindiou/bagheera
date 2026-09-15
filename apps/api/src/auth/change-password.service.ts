@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -39,7 +45,12 @@ export class ChangePasswordService {
 
     const currentOk = await this.hash.verify(row.password, dto.currentPassword);
     if (!currentOk) {
-      throw new BadRequestException('Current password is invalid.');
+      // 422, not 400 — see ProfileService.updateEmail's matching comment:
+      // this is a credential-check denial, not malformed input, and must
+      // never collide with the reserved "no active session" meaning of a
+      // bare 401 (api/client.ts's onResponse). Gives PasswordPage.vue a
+      // status code to branch on instead of matching this exact sentence.
+      throw new UnprocessableEntityException('Current password is invalid.');
     }
 
     const newHash = await this.hash.hash(dto.newPassword);

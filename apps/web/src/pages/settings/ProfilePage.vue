@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
@@ -23,17 +24,28 @@ const { defineField, handleSubmit, errors, isSubmitting, resetField, setFieldErr
 const [email, emailAttrs] = defineField('email');
 const [currentPassword, currentPasswordAttrs] = defineField('currentPassword');
 
+// Distinguishes "the server rejected this specific credential" (show its
+// own translated message below) from vee-validate's own required-field
+// check on the same field (show the generic required message instead) —
+// a status code rather than matching the server's English text, which
+// used to break the moment that text was anything but exactly this
+// server's default English wording (see the 422 status this branches on,
+// apps/api/src/members/profile.service.ts).
+const currentPasswordServerError = ref(false);
+
 const onSubmit = handleSubmit(async (values) => {
+  currentPasswordServerError.value = false;
   const { error, response } = await apiClient.POST('/members/profile', {
     body: values,
   });
 
   if (!response.ok) {
-    const message = errorMessage(error) ?? t('settings.profile.genericError');
-    if (message === 'Current password is invalid.') {
-      setFieldError('currentPassword', message);
+    if (response.status === 422) {
+      currentPasswordServerError.value = true;
+      setFieldError('currentPassword', t('auth.validation.currentPasswordInvalid'));
       return;
     }
+    const message = errorMessage(error) ?? t('settings.profile.genericError');
     toast(message, 'error');
     return;
   }
@@ -80,12 +92,8 @@ const onSubmit = handleSubmit(async (values) => {
           v-bind="currentPasswordAttrs"
           :class="{ 'is-invalid': errors.currentPassword }"
         />
-        <div v-if="errors.currentPassword" class="invalid-feedback">
-          {{
-            errors.currentPassword === 'Current password is invalid.'
-              ? errors.currentPassword
-              : $t('auth.validation.required')
-          }}
+        <div v-if="errors.currentPassword" class="invalid-feedback d-block">
+          {{ currentPasswordServerError ? errors.currentPassword : $t('auth.validation.required') }}
         </div>
       </div>
 

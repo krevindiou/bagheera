@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -62,7 +68,15 @@ export class ProfileService {
 
     const passwordOk = await this.hash.verify(row.password, dto.currentPassword);
     if (!passwordOk) {
-      throw new BadRequestException('Current password is invalid.');
+      // 422, not 400: this isn't malformed input (that's what 400 means
+      // elsewhere on this endpoint/app — see error-response.ts), it's a
+      // credential check failing, the same bucket requireFullyActive()
+      // uses elsewhere for a business-rule denial. Gives the frontend a
+      // status code to branch on instead of matching this exact English
+      // sentence (see ProfilePage.vue) — and means this can never collide
+      // with the reserved "no active session" meaning of a bare 401 (see
+      // api/client.ts's onResponse).
+      throw new UnprocessableEntityException('Current password is invalid.');
     }
 
     // Nothing to change or confirm.

@@ -23,8 +23,8 @@ describe('registerSchema', () => {
   const base = {
     email: 'member@example.com',
     country: 'US',
-    password: 'longenough',
-    passwordConfirmation: 'longenough',
+    password: 'longenough1',
+    passwordConfirmation: 'longenough1',
   };
 
   it('accepts matching passwords and a 2-letter country', () => {
@@ -41,6 +41,16 @@ describe('registerSchema', () => {
     expect(
       registerSchema.safeParse({ ...base, password: 'short', passwordConfirmation: 'short' })
         .success,
+    ).toBe(false);
+  });
+
+  it('rejects an 8+ char password made of only one character class', () => {
+    expect(
+      registerSchema.safeParse({
+        ...base,
+        password: 'alllowercase',
+        passwordConfirmation: 'alllowercase',
+      }).success,
     ).toBe(false);
   });
 
@@ -63,7 +73,7 @@ describe('forgotPasswordSchema', () => {
 describe('resetPasswordSchema', () => {
   it('rejects a mismatched confirmation', () => {
     const result = resetPasswordSchema.safeParse({
-      password: 'longenough',
+      password: 'longenough1',
       passwordConfirmation: 'different',
     });
     expect(result.success).toBe(false);
@@ -71,8 +81,19 @@ describe('resetPasswordSchema', () => {
 
   it('accepts matching passwords', () => {
     expect(
-      resetPasswordSchema.safeParse({ password: 'longenough', passwordConfirmation: 'longenough' })
-        .success,
+      resetPasswordSchema.safeParse({
+        password: 'longenough1',
+        passwordConfirmation: 'longenough1',
+      }).success,
     ).toBe(true);
+  });
+
+  it('rejects an 8+ char password made of only one character class', () => {
+    expect(
+      resetPasswordSchema.safeParse({
+        password: 'alllowercase',
+        passwordConfirmation: 'alllowercase',
+      }).success,
+    ).toBe(false);
   });
 });

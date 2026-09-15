@@ -24,8 +24,8 @@ describe('profileSchema', () => {
 describe('changePasswordSchema', () => {
   const base = {
     currentPassword: 'x',
-    newPassword: 'longenough',
-    newPasswordConfirmation: 'longenough',
+    newPassword: 'longenough1',
+    newPasswordConfirmation: 'longenough1',
   };
 
   it('accepts matching new passwords', () => {
@@ -44,6 +44,16 @@ describe('changePasswordSchema', () => {
         ...base,
         newPassword: 'short',
         newPasswordConfirmation: 'short',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('rejects an 8+ char new password made of only one character class', () => {
+    expect(
+      changePasswordSchema.safeParse({
+        ...base,
+        newPassword: 'alllowercase',
+        newPasswordConfirmation: 'alllowercase',
       }).success,
     ).toBe(false);
   });
