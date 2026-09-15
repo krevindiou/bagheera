@@ -1,13 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { inArray } from 'drizzle-orm';
+import { and, inArray, ne } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { TransferService } from './transfer.service';
+
+// The "Initial balance" payment method, reserved for the system-generated
+// opening operation — excluded from batch actions the same way
+// OperationService.update() already blocks it from a single-item edit.
+const OPENING_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 /**
  * Batch delete/reconcile. Ownership is resolved per id via
@@ -17,7 +23,11 @@ import { TransferService } from './transfer.service';
  * rather than rejected — the caller never learns which of its ids were
  * foreign vs. simply didn't exist. Closed accounts are dropped too:
  * existing operations on closed accounts are listable only, so batch
- * delete/reconcile must reject them like any other edit attempt.
+ * delete/reconcile must reject them like any other edit attempt. The
+ * system-generated opening-balance operation is dropped the same way —
+ * it carries no individual Edit/Delete affordance of its own (see
+ * OperationsPage.vue's isEditable()) and must stay just as unreachable
+ * through a multi-select.
  */
 @Injectable()
 export class OperationBatchService {
@@ -28,9 +38,25 @@ export class OperationBatchService {
     private readonly ownership: OwnershipService,
   ) {}
 
+  private async excludeOpeningBalance(ids: string[]): Promise<string[]> {
+    if (ids.length === 0) return ids;
+    const rows = await this.db
+      .select({ id: operation.id })
+      .from(operation)
+      .where(
+        and(
+          inArray(operation.id, ids),
+          ne(operation.paymentMethodId, OPENING_BALANCE_PAYMENT_METHOD_ID),
+        ),
+      );
+    return rows.map((row) => row.id);
+  }
+
   async batchDelete(req: Request, ids: string[]): Promise<{ deletedCount: number }> {
     const memberId = requireMemberId(req);
-    const owned = await this.ownership.filterOwnedOperationIds(ids, memberId);
+    const owned = await this.excludeOpeningBalance(
+      await this.ownership.filterOwnedOperationIds(ids, memberId),
+    );
     if (owned.length > 0) {
       await this.db.transaction(async (tx) => {
         // A deleted operation's paired counterpart survives, converted to
@@ -45,7 +71,9 @@ export class OperationBatchService {
 
   async batchReconcile(req: Request, ids: string[]): Promise<{ reconciledCount: number }> {
     const memberId = requireMemberId(req);
-    const owned = await this.ownership.filterOwnedOperationIds(ids, memberId);
+    const owned = await this.excludeOpeningBalance(
+      await this.ownership.filterOwnedOperationIds(ids, memberId),
+    );
     if (owned.length > 0) {
       await this.db.update(operation).set({ reconciled: true }).where(inArray(operation.id, owned));
     }

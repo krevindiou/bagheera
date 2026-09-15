@@ -11,11 +11,16 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
+async function createAccount(
+  mutate: SignedInFixture['mutate'],
+  bankId: string,
+  initialBalance = 0,
+): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
     currency: 'EUR',
+    initialBalance,
   });
   return (res.body as { account: { id: string } }).account.id;
 }
@@ -124,6 +129,32 @@ describe('operations batch actions', () => {
       const stillThere = await getDb(app).select().from(operation).where(eq(operation.id, opId));
       expect(stillThere).toHaveLength(1);
     });
+
+    it('drops the system-generated opening-balance operation rather than deleting it', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId, 100);
+      const [opening] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(
+          and(
+            eq(operation.accountId, accountId),
+            eq(operation.paymentMethodId, PAYMENT_METHOD_ID.INITIAL_BALANCE),
+          ),
+        );
+
+      const res = await mutate('post', '/operations/batch/delete', {
+        ids: [opening.id],
+      });
+      expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
+
+      const stillThere = await getDb(app)
+        .select()
+        .from(operation)
+        .where(eq(operation.id, opening.id));
+      expect(stillThere).toHaveLength(1);
+    });
   });
 
   describe('POST /operations/batch/reconcile', () => {
@@ -154,6 +185,26 @@ describe('operations batch actions', () => {
         .orderBy(desc(securityEvent.createdAt))
         .limit(1);
       expect(event).toBeDefined();
+    });
+
+    it('drops the system-generated opening-balance operation rather than reconciling it', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId, 100);
+      const [opening] = await getDb(app)
+        .select()
+        .from(operation)
+        .where(
+          and(
+            eq(operation.accountId, accountId),
+            eq(operation.paymentMethodId, PAYMENT_METHOD_ID.INITIAL_BALANCE),
+          ),
+        );
+
+      const res = await mutate('post', '/operations/batch/reconcile', {
+        ids: [opening.id],
+      });
+      expect((res.body as { reconciledCount: number }).reconciledCount).toBe(0);
     });
   });
 });

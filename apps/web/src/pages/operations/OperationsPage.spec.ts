@@ -221,6 +221,11 @@ describe('OperationsPage', () => {
 
     const rows = wrapper.findAll('[data-testid="operation-row"]');
     expect(rows[1].find('button').exists()).toBe(false);
+    // Not batch-selectable either — it has no Delete/Reconcile affordance
+    // of its own, the same reason it has no Edit button (see batch.vue /
+    // OperationBatchService, which now drops it server-side too).
+    expect(rows[1].find('input[type="checkbox"]').exists()).toBe(false);
+    expect(rows[0].find('input[type="checkbox"]').exists()).toBe(true);
 
     await rows[0].trigger('click');
     expect(wrapper.find('#operation-third-party').exists()).toBe(true);

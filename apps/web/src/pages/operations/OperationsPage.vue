@@ -356,6 +356,7 @@ function isEditable(operation: Operation): boolean {
               >
                 <td v-if="isAccountFullyActive" @click.stop>
                   <input
+                    v-if="isEditable(operation)"
                     type="checkbox"
                     :checked="selectedIds.has(operation.id)"
                     @change="toggleSelected(operation.id)"
