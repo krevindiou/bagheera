@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
@@ -130,6 +131,24 @@ describe('SchedulerForm', () => {
     });
     expect(useToast().toasts[0]?.text).toBe('Scheduler saved');
     expect(wrapper.emitted('saved')).toHaveLength(1);
+  });
+
+  it('shows a distinct message for a zero amount vs. one over the ceiling', async () => {
+    const wrapper = mountForm();
+    await wrapper.find('#scheduler-third-party').setValue('Landlord');
+    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+
+    await wrapper.find('#scheduler-amount').setValue('0');
+    await submitAndSettle(wrapper);
+    expect(wrapper.text()).toContain('Enter an amount greater than zero.');
+    expect(wrapper.text()).not.toContain('Enter a smaller amount.');
+
+    await wrapper.find('#scheduler-amount').setValue(String(AMOUNT_CEILING + 1));
+    await submitAndSettle(wrapper);
+    expect(wrapper.text()).toContain('Enter a smaller amount.');
+    expect(wrapper.text()).not.toContain('Enter an amount greater than zero.');
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
   it('prefills from the scheduler being edited, converting the stored amount', () => {

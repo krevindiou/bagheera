@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
@@ -122,6 +123,24 @@ describe('OperationForm', () => {
     });
     expect(useToast().toasts[0]?.text).toBe('Operation saved');
     expect(wrapper.emitted('saved')).toHaveLength(1);
+  });
+
+  it('shows a distinct message for a zero amount vs. one over the ceiling', async () => {
+    const wrapper = mountForm();
+    await wrapper.find('#operation-third-party').setValue('Landlord');
+    await wrapper.find('#operation-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+
+    await wrapper.find('#operation-amount').setValue('0');
+    await submitAndSettle(wrapper);
+    expect(wrapper.text()).toContain('Enter an amount greater than zero.');
+    expect(wrapper.text()).not.toContain('Enter a smaller amount.');
+
+    await wrapper.find('#operation-amount').setValue(String(AMOUNT_CEILING + 1));
+    await submitAndSettle(wrapper);
+    expect(wrapper.text()).toContain('Enter a smaller amount.');
+    expect(wrapper.text()).not.toContain('Enter an amount greater than zero.');
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
   it("'Save & add another' resets the form and emits savedAndNew instead of closing", async () => {

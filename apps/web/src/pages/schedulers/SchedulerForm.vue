@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { computed, nextTick, ref } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
@@ -109,6 +110,15 @@ const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
 );
 const showTransferAccount = computed(() =>
   TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
+);
+// errors.amount fires for two different reasons — zero/negative, or over
+// AMOUNT_CEILING — that deserve different copy; decided from the actual
+// value rather than parsed out of zod's own issue, which the template
+// never inspects otherwise. Same as OperationForm.vue's amountErrorKey.
+const amountErrorKey = computed(() =>
+  Number(amount.value) > AMOUNT_CEILING
+    ? 'operations.validation.amountTooHigh'
+    : 'operations.validation.amount',
 );
 // Same choices/rules as the operation form (spec 4.9/4.12).
 const { transferTargets, amountCurrencySymbol } = useTransferTargets(
@@ -258,7 +268,7 @@ const onSubmit = handleSubmit(async (submitted) => {
           />
         </div>
         <div v-if="errors.amount" class="invalid-feedback d-block">
-          {{ $t('operations.validation.amount') }}
+          {{ $t(amountErrorKey) }}
         </div>
       </div>
 
