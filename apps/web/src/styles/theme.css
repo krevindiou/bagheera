@@ -329,8 +329,16 @@ input[type='radio'] {
 
 /* ---------- Toast (ToastContainer.vue) ---------- */
 .toast-container {
+  /* Bottom-right, not top-right: every page header lives in that same
+     top-right region (New operation / Search / Scheduled operations on
+     Operations, the sidebar's own top-right proximity on narrower
+     layouts, etc.), and a stack of toasts there visibly covered those
+     buttons. Bottom-right is clear on every page/viewport this app has.
+     Newest toast still ends up nearest the corner: items render in push
+     order (oldest first) inside a column that grows upward as the
+     bottom edge stays pinned. */
   position: fixed;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
   z-index: 1100;
   display: flex;

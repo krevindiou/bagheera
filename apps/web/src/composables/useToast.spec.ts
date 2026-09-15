@@ -55,4 +55,15 @@ describe('useToast', () => {
     expect(() => dismiss(999_999)).not.toThrow();
     expect(toasts).toHaveLength(1);
   });
+
+  it('caps the visible queue, evicting the oldest as new ones arrive', () => {
+    const { toasts, push } = useToast();
+    push('First');
+    push('Second');
+    push('Third');
+    push('Fourth');
+
+    expect(toasts).toHaveLength(3);
+    expect(toasts.map((t) => t.text)).toEqual(['Second', 'Third', 'Fourth']);
+  });
 });
