@@ -7,6 +7,7 @@ import { ilikeContains } from '../common/like-pattern';
 import { toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
+import { AccountId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from '../session/session.constants';
@@ -55,14 +56,14 @@ export class OperationSearchService {
 
   async clear(req: Request, accountId: string): Promise<void> {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedAccount(accountId, memberId);
+    await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
     await this.valkey.del(this.key(memberId, accountId));
   }
 
   // Runs a fresh search and remembers the criteria for this member+account.
   async search(req: Request, dto: SearchOperationsDto, page: number) {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedAccount(dto.accountId, memberId);
+    await this.ownership.requireOwnedAccount(dto.accountId as AccountId, memberId);
 
     const { accountId, ...criteria } = dto;
     await this.remember(memberId, accountId, criteria);
@@ -74,7 +75,7 @@ export class OperationSearchService {
   // restore the search panel's open/hydrated state on mount.
   async recallAndRun(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedAccount(accountId, memberId);
+    await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const criteria = await this.recall(memberId, accountId);
     const result = await this.run(accountId, criteria, page);

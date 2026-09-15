@@ -7,6 +7,7 @@ import { ilikeContains } from '../common/like-pattern';
 import { MinorUnits, toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, reportAccount } from '../db/schema';
+import { ReportId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { fillPeriodGaps } from './chart/period';
@@ -99,7 +100,7 @@ export class ReportChartService {
 
   async getChart(req: Request, id: string): Promise<ReportChart> {
     const memberId = requireMemberId(req);
-    const rpt = await this.ownership.requireOwnedReport(id, memberId);
+    const rpt = await this.ownership.requireOwnedReport(id as ReportId, memberId);
     return this.computeChart(rpt, memberId);
   }
 

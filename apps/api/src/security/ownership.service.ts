@@ -3,6 +3,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, scheduler } from '../db/schema';
+import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from './ids';
 
 /**
  * The bank→account(→operation/scheduler) ownership chain, and the flat
@@ -30,55 +31,70 @@ export class OwnershipService {
   // folded into the throw — a non-owner still 404s regardless, but the
   // owner sees the row and decides what a closed/deleted bank means for
   // their call (bank.service.ts rejects it; account creation does too).
-  async requireOwnedBank(id: string, memberId: string) {
+  async requireOwnedBank(id: BankId, memberId: MemberId) {
     const [row] = await this.db.select().from(bank).where(eq(bank.id, id));
-    if (!row || row.memberId !== memberId) {
+    if (!row || row.memberId !== (memberId as string)) {
       throw new NotFoundException();
     }
     return row;
   }
 
-  async requireOwnedAccount(id: string, memberId: string) {
+  async requireOwnedAccount(id: AccountId, memberId: MemberId) {
     const [row] = await this.db
       .select({ account, bank })
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(account.id, id));
-    if (!row || row.bank.memberId !== memberId || row.bank.deleted || row.account.deleted) {
+    if (
+      !row ||
+      row.bank.memberId !== (memberId as string) ||
+      row.bank.deleted ||
+      row.account.deleted
+    ) {
       throw new NotFoundException();
     }
     return row;
   }
 
-  async requireOwnedOperation(id: string, memberId: string) {
+  async requireOwnedOperation(id: OperationId, memberId: MemberId) {
     const [row] = await this.db
       .select({ operation, account, bank })
       .from(operation)
       .innerJoin(account, eq(operation.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(operation.id, id));
-    if (!row || row.bank.memberId !== memberId || row.bank.deleted || row.account.deleted) {
+    if (
+      !row ||
+      row.bank.memberId !== (memberId as string) ||
+      row.bank.deleted ||
+      row.account.deleted
+    ) {
       throw new NotFoundException();
     }
     return row;
   }
 
-  async requireOwnedScheduler(id: string, memberId: string) {
+  async requireOwnedScheduler(id: SchedulerId, memberId: MemberId) {
     const [row] = await this.db
       .select({ scheduler, account, bank })
       .from(scheduler)
       .innerJoin(account, eq(scheduler.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(scheduler.id, id));
-    if (!row || row.bank.memberId !== memberId || row.bank.deleted || row.account.deleted) {
+    if (
+      !row ||
+      row.bank.memberId !== (memberId as string) ||
+      row.bank.deleted ||
+      row.account.deleted
+    ) {
       throw new NotFoundException();
     }
     return row;
   }
 
-  async requireOwnedReport(id: string, memberId: string) {
+  async requireOwnedReport(id: ReportId, memberId: MemberId) {
     const [row] = await this.db.select().from(report).where(eq(report.id, id));
-    if (!row || row.memberId !== memberId) {
+    if (!row || row.memberId !== (memberId as string)) {
       throw new NotFoundException();
     }
     return row;
@@ -87,7 +103,7 @@ export class OwnershipService {
   // Silently drops ids belonging to another member, unknown ids, and ids
   // reachable only through a closed/deleted bank or account — the caller
   // never learns which of its ids were foreign vs. simply weren't usable.
-  async filterOwnedOperationIds(ids: string[], memberId: string): Promise<string[]> {
+  async filterOwnedOperationIds(ids: string[], memberId: MemberId): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -116,7 +132,7 @@ export class OwnershipService {
       .map((row) => row.id);
   }
 
-  async filterOwnedSchedulerIds(ids: string[], memberId: string): Promise<string[]> {
+  async filterOwnedSchedulerIds(ids: string[], memberId: MemberId): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -145,7 +161,7 @@ export class OwnershipService {
       .map((row) => row.id);
   }
 
-  async filterOwnedReportIds(ids: string[], memberId: string): Promise<string[]> {
+  async filterOwnedReportIds(ids: string[], memberId: MemberId): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }

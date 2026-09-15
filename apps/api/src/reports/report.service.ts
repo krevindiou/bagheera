@@ -4,6 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, report, reportAccount } from '../db/schema';
+import { ReportId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -110,7 +111,7 @@ export class ReportService {
 
   async update(req: Request, id: string, dto: UpdateReportDto): Promise<void> {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedReport(id, memberId);
+    await this.ownership.requireOwnedReport(id as ReportId, memberId);
     const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
 
     await this.db.transaction(async (tx) => {
@@ -141,7 +142,7 @@ export class ReportService {
 
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedReport(id, memberId);
+    await this.ownership.requireOwnedReport(id as ReportId, memberId);
 
     await this.db.transaction(async (tx) => {
       await tx.delete(reportAccount).where(eq(reportAccount.reportId, id));

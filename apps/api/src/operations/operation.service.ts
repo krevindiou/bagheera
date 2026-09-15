@@ -11,6 +11,7 @@ import { MinorUnits, toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { category, operation, paymentMethod } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { AccountId, OperationId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateOperationDto } from './dto/create-operation.dto';
@@ -85,7 +86,7 @@ export class OperationService {
 
   async list(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedAccount(accountId, memberId);
+    await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const pageNumber = page > 0 ? page : 1;
     const rows = await this.db
@@ -107,7 +108,7 @@ export class OperationService {
   async create(req: Request, dto: CreateOperationDto) {
     const memberId = requireMemberId(req);
     const { account: acc, bank: accBank } = await this.ownership.requireOwnedAccount(
-      dto.accountId,
+      dto.accountId as AccountId,
       memberId,
     );
     this.requireFullyActive({ account: acc, bank: accBank });
@@ -171,7 +172,7 @@ export class OperationService {
       operation: row,
       account: acc,
       bank: accBank,
-    } = await this.ownership.requireOwnedOperation(id, memberId);
+    } = await this.ownership.requireOwnedOperation(id as OperationId, memberId);
     this.requireFullyActive({ account: acc, bank: accBank });
     if (dto.accountId !== row.accountId) {
       throw new BadRequestException('Account cannot be changed.');

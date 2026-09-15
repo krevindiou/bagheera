@@ -11,6 +11,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
+import { BankId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { ChooseBankDto } from './dto/choose-bank.dto';
@@ -48,7 +49,7 @@ export class BankService {
     }
 
     if (dto.bankId) {
-      const row = await this.ownership.requireOwnedBank(dto.bankId, memberId);
+      const row = await this.ownership.requireOwnedBank(dto.bankId as BankId, memberId);
       if (row.closed || row.deleted) {
         throw new UnprocessableEntityException('Bank is not active.');
       }
@@ -61,7 +62,7 @@ export class BankService {
 
   async update(req: Request, id: string, dto: UpdateBankDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const row = await this.ownership.requireOwnedBank(id, memberId);
+    const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
@@ -70,7 +71,7 @@ export class BankService {
 
   async close(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const row = await this.ownership.requireOwnedBank(id, memberId);
+    const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
@@ -80,7 +81,7 @@ export class BankService {
 
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const row = await this.ownership.requireOwnedBank(id, memberId);
+    const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.deleted) {
       throw new UnprocessableEntityException('Bank is already deleted.');
     }

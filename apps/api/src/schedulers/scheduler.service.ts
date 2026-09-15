@@ -11,6 +11,7 @@ import { MinorUnits, toMinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { category, operation, paymentMethod, scheduler } from '../db/schema';
 import { TRANSFER_PAYMENT_METHOD_IDS, TransferService } from '../operations/transfer.service';
+import { AccountId, SchedulerId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
@@ -80,7 +81,7 @@ export class SchedulerService {
 
   async list(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedAccount(accountId, memberId);
+    await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const pageNumber = page > 0 ? page : 1;
     const rows = await this.db
@@ -101,7 +102,7 @@ export class SchedulerService {
 
   async create(req: Request, dto: CreateSchedulerDto) {
     const memberId = requireMemberId(req);
-    const owned = await this.ownership.requireOwnedAccount(dto.accountId, memberId);
+    const owned = await this.ownership.requireOwnedAccount(dto.accountId as AccountId, memberId);
     this.requireFullyActive(owned);
     await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
 
@@ -153,7 +154,7 @@ export class SchedulerService {
 
   async update(req: Request, id: string, dto: UpdateSchedulerDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const owned = await this.ownership.requireOwnedScheduler(id, memberId);
+    const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     this.requireFullyActive(owned);
     if (dto.accountId !== owned.scheduler.accountId) {
       throw new BadRequestException('Account cannot be changed.');
@@ -207,7 +208,7 @@ export class SchedulerService {
 
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const owned = await this.ownership.requireOwnedScheduler(id, memberId);
+    const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     this.requireFullyActive(owned);
 
     await this.db.transaction(async (tx) => {

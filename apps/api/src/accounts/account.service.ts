@@ -15,6 +15,7 @@ import { account, bank, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
+import { AccountId, BankId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -108,7 +109,7 @@ export class AccountService {
 
   async create(req: Request, dto: CreateAccountDto) {
     const memberId = requireMemberId(req);
-    const bankRow = await this.ownership.requireOwnedBank(dto.bankId, memberId);
+    const bankRow = await this.ownership.requireOwnedBank(dto.bankId as BankId, memberId);
     if (bankRow.closed || bankRow.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
@@ -144,7 +145,7 @@ export class AccountService {
   // itself in that case.
   async chart(req: Request, id: string): Promise<AccountChart> {
     const memberId = requireMemberId(req);
-    const { account: acc } = await this.ownership.requireOwnedAccount(id, memberId);
+    const { account: acc } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 
     const rows = await this.db
       .select({
@@ -177,7 +178,7 @@ export class AccountService {
   // reconciled operations.
   async balance(req: Request, id: string): Promise<{ balance: number; reconciledBalance: number }> {
     const memberId = requireMemberId(req);
-    await this.ownership.requireOwnedAccount(id, memberId);
+    await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 
     const [row] = await this.db
       .select({
@@ -203,7 +204,7 @@ export class AccountService {
 
   async update(req: Request, id: string, dto: UpdateAccountDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const { account: row } = await this.ownership.requireOwnedAccount(id, memberId);
+    const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
@@ -215,7 +216,7 @@ export class AccountService {
 
   async close(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const { account: row } = await this.ownership.requireOwnedAccount(id, memberId);
+    const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
@@ -225,7 +226,7 @@ export class AccountService {
 
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    const { account: row } = await this.ownership.requireOwnedAccount(id, memberId);
+    const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.deleted) {
       throw new UnprocessableEntityException('Account is already deleted.');
     }
