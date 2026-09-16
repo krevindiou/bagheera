@@ -63,6 +63,8 @@ const [accountIds, accountIdsAttrs] = defineField('accountIds');
 const [reconciledOnly, reconciledOnlyAttrs] = defineField('reconciledOnly');
 const [periodGrouping, periodGroupingAttrs] = defineField('periodGrouping');
 
+const reportType = props.report?.type ?? props.defaultType ?? 'sum';
+
 const onSubmit = handleSubmit(async (submitted) => {
   const body = {
     type: submitted.type,
@@ -97,9 +99,12 @@ const onSubmit = handleSubmit(async (submitted) => {
   <div class="drawer-backdrop" @click="emit('cancel')">
     <form novalidate class="drawer" @click.stop @submit="onSubmit">
       <div class="drawer-header">
-        <h2 class="mb-0" style="font-size: 20px">
-          {{ $t(props.report ? 'reports.editTitle' : 'reports.createTitle') }}
-        </h2>
+        <div>
+          <h2 class="mb-0" style="font-size: 20px">
+            {{ $t(props.report ? 'reports.editTitle' : 'reports.createTitle') }}
+          </h2>
+          <p class="form-text mb-0">{{ $t(`reports.typeHint.${reportType}`) }}</p>
+        </div>
         <button
           type="button"
           class="drawer-close"
@@ -198,6 +203,7 @@ const onSubmit = handleSubmit(async (submitted) => {
         <label class="form-check-label" for="report-reconciled">{{
           $t('reports.reconciledOnly')
         }}</label>
+        <div class="form-text">{{ $t('reports.reconciledOnlyHint') }}</div>
       </div>
 
       <div class="mb-3">
@@ -215,6 +221,7 @@ const onSubmit = handleSubmit(async (submitted) => {
           <option value="year">{{ $t('reports.periods.year') }}</option>
           <option value="all">{{ $t('reports.periods.all') }}</option>
         </select>
+        <div class="form-text">{{ $t('reports.periodGroupingHint') }}</div>
       </div>
 
       <div class="d-flex gap-2">

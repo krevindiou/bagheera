@@ -241,8 +241,13 @@ export default {
     newSumReport: 'New sum report',
     newAverageReport: 'New average report',
     type: 'Type',
+    typeHint: {
+      sum: 'Adds up credits and debits for each period.',
+      average: 'Averages credits and debits for each period.',
+    },
     reportTitle: 'Title',
     reconciledOnly: 'Reconciled only',
+    reconciledOnlyHint: 'Only include operations you have reconciled.',
     sum: 'Sum',
     average: 'Average',
     homepage: 'Show on the homepage',
@@ -251,6 +256,7 @@ export default {
     accounts: 'Accounts',
     accountsHint: 'Leave empty to include every account.',
     periodGrouping: 'Group by',
+    periodGroupingHint: '"Whole period" groups every matching operation into a single value.',
     periods: {
       month: 'Month',
       quarter: 'Quarter',
