@@ -130,7 +130,7 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(true);
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: '#9a72e8', points: [{ period: '2026-01', value: 100 }] },
+      { label: 'USD', color: '#af578c', points: [{ period: '2026-01', value: 100 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
   });
@@ -190,7 +190,7 @@ describe('DashboardPage', () => {
     expect(tiles[1]!.findComponent(AccountSparkline).props('values')).toEqual([]);
   });
 
-  it("colors each tile's sparkline by currency, matching the synthesis chart's own per-currency palette", async () => {
+  it("colors each tile's sparkline by currency, matching the synthesis chart's own per-currency colors", async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         synthesisChart: {
@@ -228,10 +228,20 @@ describe('DashboardPage', () => {
       }),
     );
     const tiles = wrapper.findAll('[data-testid="overview-account"]');
-    // Same colors, same order, as the synthesis chart series above — see
-    // DashboardPage.vue's SYNTHESIS_COLORS/currencyColors.
-    expect(tiles[0]!.findComponent(AccountSparkline).props('color')).toBe('#9a72e8');
-    expect(tiles[1]!.findComponent(AccountSparkline).props('color')).toBe('#5fd98d');
+    // Same colors as the synthesis chart series above — both derive from
+    // chartColors.ts's colorForCurrency, a pure function of the currency
+    // code, not from series order.
+    const synthesisChart = wrapper.findComponent(SynthesisChart);
+    const colorsByCurrency = new Map(synthesisChart.props('series').map((s) => [s.label, s.color]));
+    expect(tiles[0]!.findComponent(AccountSparkline).props('color')).toBe(
+      colorsByCurrency.get('EUR'),
+    );
+    expect(tiles[1]!.findComponent(AccountSparkline).props('color')).toBe(
+      colorsByCurrency.get('USD'),
+    );
+    // Pinned values so a change to the hash/palette doesn't silently pass.
+    expect(tiles[0]!.findComponent(AccountSparkline).props('color')).toBe('#916fd4');
+    expect(tiles[1]!.findComponent(AccountSparkline).props('color')).toBe('#af578c');
   });
 
   it('shows homepage report charts when present, with debit and credit as separate series', async () => {

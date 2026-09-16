@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
+import { colorForCurrency } from '../../components/chartColors';
 import { formatDate, formatMoney } from '../operations/money';
 import { toChartSeries } from '../reports/chartSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
@@ -20,34 +21,18 @@ const { data: dashboard } = useQuery({
   },
 });
 
-// Cycled by currency index — the synthesis chart is one line per currency
-// (not a fixed debit/credit pair), so it needs its own small palette. Led
-// by the theme's violet so a single-currency member (the common case) gets
-// the "real Chart.js series in the same violet" the design calls for.
-const SYNTHESIS_COLORS = ['#9a72e8', '#5fd98d', '#e8697a', '#c4a8f2', '#e0a94c', '#7c4fd1'];
-
+// The synthesis chart is one line per currency (not a fixed debit/credit
+// pair), colored by `colorForCurrency` — see chartColors.ts for why that's
+// a hash of the currency itself rather than "index among the currencies
+// on this page": every chart that colors by currency (this one, an
+// account tile's sparkline, a single account's own chart on
+// OperationsPage) needs to agree without knowing what the others show.
 function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
-  return chart.series.map((s, i) => ({
+  return chart.series.map((s) => ({
     label: s.currency,
-    color: SYNTHESIS_COLORS[i % SYNTHESIS_COLORS.length],
+    color: colorForCurrency(s.currency),
     points: s.points,
   }));
-}
-
-// Same currency → color assignment as the synthesis chart above (same
-// palette, same series order), so an account tile's sparkline reads as
-// "that currency's line" rather than picking its own meaning (trend
-// up/down) independent of the 12-month chart just above it.
-const currencyColors = computed(() => {
-  const map = new Map<string, string>();
-  (dashboard.value?.synthesisChart.series ?? []).forEach((s, i) => {
-    map.set(s.currency, SYNTHESIS_COLORS[i % SYNTHESIS_COLORS.length]!);
-  });
-  return map;
-});
-
-function colorForCurrency(currency: string): string {
-  return currencyColors.value.get(currency) ?? SYNTHESIS_COLORS[0]!;
 }
 
 // Flattened across every bank — the mock shows one grid of account tiles

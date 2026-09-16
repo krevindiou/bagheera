@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import { colorForCurrency } from '../../components/chartColors';
 import { useSelection } from '../../composables/useSelection';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { formatDate, formatMoney } from './money';
@@ -110,7 +111,7 @@ const chartQuery = useQuery({
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;
   if (!chart || chart.points.length === 0) return [];
-  return [{ label: chart.currency, color: '#9a72e8', points: chart.points }];
+  return [{ label: chart.currency, color: colorForCurrency(chart.currency), points: chart.points }];
 });
 const chartAxisBounds = computed(() => chartQuery.data.value?.axisBounds ?? null);
 

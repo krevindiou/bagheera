@@ -9,6 +9,7 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
 import SynthesisChart from '../../components/SynthesisChart.vue';
+import { colorForCurrency } from '../../components/chartColors';
 import { useConfirm } from '../../composables/useConfirm';
 import type { Account, Bank } from '../accounts/accounts.types';
 import OperationForm from './OperationForm.vue';
@@ -347,7 +348,7 @@ describe('OperationsPage', () => {
     expect(wrapper.find('[data-testid="batch-actions"]').exists()).toBe(false);
   });
 
-  it("shows the account's chart once it has data", async () => {
+  it("shows the account's chart once it has data, colored by the account's currency", async () => {
     mockGet({
       chart: {
         currency: 'USD',
@@ -359,10 +360,30 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     const chart = wrapper.findComponent(SynthesisChart);
+    // Not a hardcoded color — see chartColors.ts's colorForCurrency, the
+    // same function the dashboard's synthesis chart and account tiles use,
+    // so a USD account's chart doesn't read as an arbitrary color that
+    // happens to differ from what USD means elsewhere in the app.
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: '#9a72e8', points: [{ period: '2026-01', value: 500 }] },
+      { label: 'USD', color: colorForCurrency('USD'), points: [{ period: '2026-01', value: 500 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
+  });
+
+  it("colors a EUR account's chart differently than a USD one", async () => {
+    mockGet({
+      chart: {
+        currency: 'EUR',
+        axisBounds: { min: 0, max: 1000 },
+        points: [{ period: '2026-01', value: 500 }],
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const chart = wrapper.findComponent(SynthesisChart);
+    expect(chart.props('series')[0].color).toBe(colorForCurrency('EUR'));
+    expect(chart.props('series')[0].color).not.toBe(colorForCurrency('USD'));
   });
 
   it('resets to page 1 when navigating to a different account', async () => {
