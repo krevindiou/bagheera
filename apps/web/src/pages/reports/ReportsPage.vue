@@ -162,11 +162,11 @@ function toggleView(report: Report) {
                   />
                 </td>
                 <td>
-                  <span class="pill">{{ $t(`reports.${report.type}`) }}</span>
+                  {{ $t(`reports.${report.type}`) }}
                 </td>
                 <td>
                   {{ report.title }}
-                  <span v-if="report.homepage" class="pill pill-violet">{{
+                  <span v-if="report.homepage" class="pill pill-violet ms-2">{{
                     $t('reports.homepage')
                   }}</span>
                 </td>
