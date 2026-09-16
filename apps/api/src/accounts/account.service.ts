@@ -9,7 +9,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds } from '../common/chart-axis';
 import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
-import { computeSynthesisChart } from '../common/synthesis-chart';
+import { computeSynthesisChart, latestValueDate } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
@@ -140,9 +140,10 @@ export class AccountService {
 
   // Cumulative end-of-month balance for the last 12 months — the same
   // synthesis chart shown on the dashboard, scoped to this one account (and
-  // therefore its one currency). Empty (no operations at all, ever) is
-  // signalled by an empty `points` array; the chart component hides
-  // itself in that case.
+  // therefore its one currency). The window ends at this account's latest
+  // operation, not today (see synthesis-chart.ts's `latestValueDate`).
+  // Empty (no operations at all, ever) is signalled by an empty `points`
+  // array; the chart component hides itself in that case.
   async chart(req: Request, id: string): Promise<AccountChart> {
     const memberId = requireMemberId(req);
     const { account: acc } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
@@ -162,6 +163,7 @@ export class AccountService {
 
     const synthesis = computeSynthesisChart(
       rows.map((row) => ({ ...row, currency: acc.currency })),
+      latestValueDate(rows),
     );
     // Exactly one currency in scope, so exactly one series.
     const series = synthesis.series[0];

@@ -35,6 +35,7 @@ interface DashboardBody {
   totalBalances: { currency: string; amount: number; reconciledAmount: number }[];
   lastSalary: { amount: number; currency: string } | null;
   lastBiggestExpense: { amount: number; currency: string } | null;
+  synthesisChart: { series: { currency: string; points: { period: string; value: number }[] }[] };
   accountsOverview: {
     id: string;
     accounts: { id: string; balance: number; reconciledBalance: number; history: number[] }[];
@@ -93,6 +94,34 @@ describe('GET /dashboard', () => {
     const history = body.accountsOverview[0].accounts[0].history;
     expect(history.length).toBeGreaterThan(0);
     expect(history[history.length - 1]).toBe(250);
+  });
+
+  it("ends both the synthesis chart and each tile's sparkline at the latest operation, not today", async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    // No initial balance — that operation would be dated today (see
+    // `operation.valueDate`'s `defaultNow()`), defeating the point below.
+    const accountId = await createAccount(mutate, bankId);
+    // Dated years before "today" — if either window were anchored to the
+    // real current date, the last point's period would be this month.
+    await mutate('post', '/operations', {
+      accountId,
+      type: 'debit',
+      thirdParty: 'Old',
+      amount: 10,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2020-01-15',
+    });
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+    const synthesisPoints = body.synthesisChart.series[0].points;
+    expect(synthesisPoints[synthesisPoints.length - 1]).toEqual({
+      period: '2020-01-01',
+      value: -10,
+    });
+    const history = body.accountsOverview[0].accounts[0].history;
+    expect(history[history.length - 1]).toBe(-10);
   });
 
   it('reports the total reconciled balance separately, excluding unreconciled operations', async () => {

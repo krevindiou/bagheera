@@ -4,7 +4,7 @@ import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMajorUnits } from '../common/money';
-import { computeSynthesisChart, SynthesisChart } from '../common/synthesis-chart';
+import { computeSynthesisChart, latestValueDate, SynthesisChart } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
 import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
@@ -125,9 +125,10 @@ export class DashboardService {
   // Per-account cumulative balance history, last `SPARKLINE_MONTHS` months —
   // one `computeSynthesisChart` call per account (reusing the exact same
   // per-account scoping AccountService.chart uses for the full 12-month
-  // chart), just trimmed to a shorter trailing window for the tile
-  // sparkline. A single query fetches every account's operations up front
-  // so this stays one round trip regardless of account count.
+  // chart, including that each account's own window ends at its own latest
+  // operation, not today), just trimmed to a shorter trailing window for
+  // the tile sparkline. A single query fetches every account's operations
+  // up front so this stays one round trip regardless of account count.
   private async accountHistories(
     accounts: (typeof account.$inferSelect)[],
   ): Promise<Map<string, number[]>> {
@@ -173,6 +174,7 @@ export class DashboardService {
           valueDate: row.valueDate,
           currency: acc.currency,
         })),
+        latestValueDate(accRows),
       );
       const points = synthesis.series[0]?.points ?? [];
       histories.set(
@@ -295,7 +297,11 @@ export class DashboardService {
 
   // Cumulative end-of-month balance, last 12 months, one line per
   // currency — scoped to the same non-deleted-bank/non-deleted-account set
-  // as `accounts` above (closed included, deleted excluded, per 2.3).
+  // as `accounts` above (closed included, deleted excluded, per 2.3). The
+  // window ends at the latest operation across every account in scope, not
+  // today (see synthesis-chart.ts's `latestValueDate`) — one shared end
+  // date for the whole chart, since every series must share the same
+  // period labels.
   private async getSynthesisChart(
     accounts: (typeof account.$inferSelect)[],
   ): Promise<SynthesisChart> {
@@ -324,6 +330,7 @@ export class DashboardService {
         valueDate: row.valueDate,
         currency: currencyByAccount.get(row.accountId)!,
       })),
+      latestValueDate(rows),
     );
   }
 

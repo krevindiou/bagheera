@@ -231,6 +231,29 @@ describe('accounts', () => {
       const body = res.body as { points: unknown[] };
       expect(body.points.length).toBeGreaterThan(0);
     });
+
+    it("ends the 12-month window at the account's latest operation, not today", async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      // No initial balance — that operation would be dated today (see
+      // `operation.valueDate`'s `defaultNow()`), defeating the point below.
+      const accountId = await createAccount(mutate, bankId);
+      // Dated years before "today" — if the window were anchored to the
+      // real current date, the last point's period would be this month,
+      // not '2020-01-01'.
+      await mutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Old',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        valueDate: '2020-01-15',
+      });
+
+      const res = await agent.get(`/accounts/${accountId}/chart`).expect(200);
+      const body = res.body as { points: { period: string; value: number }[] };
+      expect(body.points[body.points.length - 1]).toEqual({ period: '2020-01-01', value: -10 });
+    });
   });
 
   describe('PATCH /accounts/:id', () => {

@@ -1,4 +1,4 @@
-import { computeSynthesisChart, SynthesisChartRow } from './synthesis-chart';
+import { computeSynthesisChart, latestValueDate, SynthesisChartRow } from './synthesis-chart';
 import { MinorUnits } from './money';
 
 // Fixed "today" so the 12-month trailing window is deterministic:
@@ -145,5 +145,32 @@ describe('computeSynthesisChart', () => {
     const chart = computeSynthesisChart(rows);
     expect(chart.hidden).toBe(false);
     expect(chart.series[0].points).toHaveLength(12);
+  });
+
+  it('ends the window at a `today` earlier than any row, without erroring', () => {
+    // Not a realistic caller (every row would fall after the window), but
+    // guards against an off-by-one blowing up `fillPeriodGaps`.
+    const rows: SynthesisChartRow[] = [
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2026-06-01' },
+    ];
+    const chart = computeSynthesisChart(rows, '2025-01-01');
+    expect(chart.series[0].points).toHaveLength(12);
+    expect(chart.series[0].points[11]?.period).toBe('2025-01-01');
+  });
+});
+
+describe('latestValueDate', () => {
+  it('is undefined for no rows', () => {
+    expect(latestValueDate([])).toBeUndefined();
+  });
+
+  it('picks the latest valueDate regardless of row order', () => {
+    expect(
+      latestValueDate([
+        { valueDate: '2026-01-15' },
+        { valueDate: '2020-06-01' },
+        { valueDate: '2026-03-02' },
+      ]),
+    ).toBe('2026-03-02');
   });
 });

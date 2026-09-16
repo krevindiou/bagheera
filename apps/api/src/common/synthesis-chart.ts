@@ -33,7 +33,22 @@ export interface SynthesisChartRow {
   valueDate: string;
 }
 
-// `today` is injectable for tests; defaults to the real current date.
+// The 12-month window ends at the latest operation actually in scope, not
+// at today's calendar date — a member who stopped recording a month ago
+// shouldn't see the chart trail off into empty recent months. Every
+// `computeSynthesisChart` caller derives its `today` from this rather than
+// letting the function's own real-date default apply (that default exists
+// only for direct/test callers that don't go through here). ISO
+// 'YYYY-MM-DD' strings compare correctly with plain `>`.
+export function latestValueDate(rows: { valueDate: string }[]): string | undefined {
+  return rows.reduce<string | undefined>(
+    (latest, row) => (!latest || row.valueDate > latest ? row.valueDate : latest),
+    undefined,
+  );
+}
+
+// `today` is injectable for tests; defaults to the real current date. Real
+// callers should pass `latestValueDate(rows)` instead — see above.
 export function computeSynthesisChart(
   rows: SynthesisChartRow[],
   today: string = new Date().toISOString().slice(0, 10),
