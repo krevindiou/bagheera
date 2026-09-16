@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { DashboardService } from './dashboard.service';
 
@@ -7,7 +7,7 @@ export class DashboardController {
   constructor(private readonly dashboard: DashboardService) {}
 
   @Get()
-  get(@Req() req: Request) {
-    return this.dashboard.getDashboard(req);
+  get(@Req() req: Request, @Query('range') range?: string) {
+    return this.dashboard.getDashboard(req, range);
   }
 }

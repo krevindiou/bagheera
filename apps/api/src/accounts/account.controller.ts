@@ -30,8 +30,12 @@ export class AccountController {
   }
 
   @Get(':id/chart')
-  chart(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
-    return this.accounts.chart(req, id);
+  chart(
+    @Req() req: Request,
+    @Param('id', ParseUuidV7Pipe) id: string,
+    @Query('range') range?: string,
+  ) {
+    return this.accounts.chart(req, id, range);
   }
 
   @Get(':id/balance')

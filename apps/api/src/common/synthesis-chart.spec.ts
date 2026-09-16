@@ -1,4 +1,10 @@
-import { computeSynthesisChart, latestValueDate, SynthesisChartRow } from './synthesis-chart';
+import {
+  computeSynthesisChart,
+  earliestValueDate,
+  latestValueDate,
+  parseSynthesisChartWindow,
+  SynthesisChartRow,
+} from './synthesis-chart';
 import { MinorUnits } from './money';
 
 // Fixed "today" so the 12-month trailing window is deterministic:
@@ -157,6 +163,30 @@ describe('computeSynthesisChart', () => {
     expect(chart.series[0].points).toHaveLength(12);
     expect(chart.series[0].points[11]?.period).toBe('2025-01-01');
   });
+
+  it('widens the window to 24 months when passed windowMonths=24', () => {
+    const rows: SynthesisChartRow[] = [
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2026-01-15' },
+    ];
+    const chart = computeSynthesisChart(rows, TODAY, 24);
+    expect(chart.series[0].points).toHaveLength(24);
+    // Window is 2024-04 .. 2026-03 (24 months ending at `currentMonth`).
+    expect(chart.series[0].points[0].period).toBe('2024-04-01');
+  });
+
+  it("spans the full history, anchored at the earliest row's month, when passed windowMonths='all'", () => {
+    const rows: SynthesisChartRow[] = [
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2018-06-15' },
+      { currency: 'USD', debit: minor(5000), credit: null, valueDate: '2026-01-01' },
+    ];
+    const chart = computeSynthesisChart(rows, TODAY, 'all');
+    const { points } = chart.series[0];
+    expect(points[0].period).toBe('2018-06-01');
+    expect(points[points.length - 1].period).toBe('2026-03-01');
+    // Every row folds into the window (nothing carried into `before`), so
+    // the earliest month already reflects the first credit.
+    expect(points[0].value).toBe(1);
+  });
 });
 
 describe('latestValueDate', () => {
@@ -172,5 +202,35 @@ describe('latestValueDate', () => {
         { valueDate: '2026-03-02' },
       ]),
     ).toBe('2026-03-02');
+  });
+});
+
+describe('earliestValueDate', () => {
+  it('is undefined for no rows', () => {
+    expect(earliestValueDate([])).toBeUndefined();
+  });
+
+  it('picks the earliest valueDate regardless of row order', () => {
+    expect(
+      earliestValueDate([
+        { valueDate: '2026-01-15' },
+        { valueDate: '2020-06-01' },
+        { valueDate: '2026-03-02' },
+      ]),
+    ).toBe('2020-06-01');
+  });
+});
+
+describe('parseSynthesisChartWindow', () => {
+  it('defaults to 12 for undefined/missing/unrecognized values', () => {
+    expect(parseSynthesisChartWindow(undefined)).toBe(12);
+    expect(parseSynthesisChartWindow('')).toBe(12);
+    expect(parseSynthesisChartWindow('bogus')).toBe(12);
+    expect(parseSynthesisChartWindow('12')).toBe(12);
+  });
+
+  it("parses '24' and 'all'", () => {
+    expect(parseSynthesisChartWindow('24')).toBe(24);
+    expect(parseSynthesisChartWindow('all')).toBe('all');
   });
 });

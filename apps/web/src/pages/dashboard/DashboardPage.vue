@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
 import { colorForCurrency } from '../../components/chartColors';
+import {
+  DEFAULT_SYNTHESIS_CHART_RANGE,
+  SYNTHESIS_CHART_RANGE_LABEL_KEYS,
+  SYNTHESIS_CHART_RANGES,
+  type SynthesisChartRange,
+} from '../../components/synthesisChartRange';
 import { formatDate, formatMoney } from '../operations/money';
 import { toChartSeries } from '../reports/chartSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
@@ -13,10 +19,14 @@ import ToastContainer from '../../components/ToastContainer.vue';
 
 const { t } = useI18n();
 
+const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
+
 const { data: dashboard } = useQuery({
-  queryKey: ['dashboard'],
+  queryKey: computed(() => ['dashboard', chartRange.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET('/dashboard');
+    const { data } = await apiClient.GET('/dashboard', {
+      params: { query: { range: chartRange.value } },
+    });
     return (data as DashboardResponse | undefined) ?? null;
   },
 });
@@ -133,7 +143,19 @@ const accountTiles = computed(() =>
         class="panel panel-lg mb-4 p-4"
         data-testid="synthesis-chart"
       >
-        <h2 class="h6 mb-3">{{ $t('dashboard.synthesisChart') }}</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h6 mb-0">{{ $t('dashboard.synthesisChart') }}</h2>
+          <select
+            v-model="chartRange"
+            class="form-select form-select-sm w-auto"
+            :aria-label="$t('chartRange.label')"
+            data-testid="synthesis-chart-range"
+          >
+            <option v-for="range in SYNTHESIS_CHART_RANGES" :key="range" :value="range">
+              {{ $t(SYNTHESIS_CHART_RANGE_LABEL_KEYS[range]) }}
+            </option>
+          </select>
+        </div>
         <SynthesisChart
           :series="toSynthesisSeries(dashboard.synthesisChart)"
           :axis-bounds="dashboard.synthesisChart.axisBounds"

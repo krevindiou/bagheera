@@ -386,6 +386,41 @@ describe('OperationsPage', () => {
     expect(chart.props('series')[0].color).not.toBe(colorForCurrency('USD'));
   });
 
+  it('hides the chart panel (and its range selector) when the account has no chart data', async () => {
+    mockGet({ chart: null });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
+    expect(wrapper.find('[data-testid="account-chart-range"]').exists()).toBe(false);
+  });
+
+  it('defaults the chart range to 12 months and refetches with the chosen range on change', async () => {
+    mockGet({
+      chart: {
+        currency: 'USD',
+        axisBounds: { min: 0, max: 1000 },
+        points: [{ period: '2026-01', value: 500 }],
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const select = wrapper.find('[data-testid="account-chart-range"]');
+    expect((select.element as HTMLSelectElement).value).toBe('12');
+
+    apiClient.GET.mockClear();
+    await select.setValue('all');
+    await flushPromises();
+
+    expect(apiClient.GET).toHaveBeenCalledWith(
+      '/accounts/{id}/chart',
+      expect.objectContaining({
+        params: { path: { id: ACCOUNT_ID }, query: { range: 'all' } },
+      }),
+    );
+  });
+
   it('resets to page 1 when navigating to a different account', async () => {
     const ACCOUNT_ID_2 = '00000000-0000-7000-8000-000000000202';
     mockGet({ operations: { items: [operation()], total: 45, page: 1, pageSize: 20 } });

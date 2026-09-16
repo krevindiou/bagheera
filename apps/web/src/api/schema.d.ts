@@ -1734,7 +1734,9 @@ export interface operations {
     };
     AccountController_chart: {
         parameters: {
-            query?: never;
+            query?: {
+                range?: string;
+            };
             header?: never;
             path: {
                 id: string;
@@ -1995,7 +1997,9 @@ export interface operations {
     };
     DashboardController_get: {
         parameters: {
-            query?: never;
+            query?: {
+                range?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

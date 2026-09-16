@@ -5,6 +5,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import { colorForCurrency } from '../../components/chartColors';
+import {
+  DEFAULT_SYNTHESIS_CHART_RANGE,
+  SYNTHESIS_CHART_RANGE_LABEL_KEYS,
+  SYNTHESIS_CHART_RANGES,
+  type SynthesisChartRange,
+} from '../../components/synthesisChartRange';
 import { useSelection } from '../../composables/useSelection';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { formatDate, formatMoney } from './money';
@@ -91,11 +97,13 @@ const balanceQuery = useQuery({
 });
 const balance = computed(() => balanceQuery.data.value ?? null);
 
+const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
+
 const chartQuery = useQuery({
-  queryKey: computed(() => ['chart', accountId.value]),
+  queryKey: computed(() => ['chart', accountId.value, chartRange.value]),
   queryFn: async () => {
     const { data } = await apiClient.GET('/accounts/{id}/chart', {
-      params: { path: { id: accountId.value } },
+      params: { path: { id: accountId.value }, query: { range: chartRange.value } },
     });
     return (
       (data as
@@ -316,7 +324,19 @@ function isEditable(operation: Operation): boolean {
       </div>
     </div>
 
-    <div class="panel panel-lg p-4 mb-4">
+    <div v-if="chartSeries.length > 0" class="panel panel-lg p-4 mb-4">
+      <div class="d-flex justify-content-end mb-3">
+        <select
+          v-model="chartRange"
+          class="form-select form-select-sm w-auto"
+          :aria-label="$t('chartRange.label')"
+          data-testid="account-chart-range"
+        >
+          <option v-for="range in SYNTHESIS_CHART_RANGES" :key="range" :value="range">
+            {{ $t(SYNTHESIS_CHART_RANGE_LABEL_KEYS[range]) }}
+          </option>
+        </select>
+      </div>
       <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
     </div>
 

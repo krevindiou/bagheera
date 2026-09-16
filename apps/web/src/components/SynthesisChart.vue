@@ -75,6 +75,16 @@ const labels = computed(() => {
   return reference ? reference.points.map((point) => formatPeriodLabel(point.period)) : [];
 });
 
+// Past a short window, a dot per point turns into visual noise once the
+// selector widens the range to 24 months or the account's whole history —
+// the line + fill alone carries the shape just as well. Hover targeting
+// stays intact via `pointHoverRadius` regardless.
+const DENSE_POINT_COUNT = 15;
+const pointRadius = computed(() => {
+  const longestSeries = Math.max(0, ...props.series.map((series) => series.points.length));
+  return longestSeries > DENSE_POINT_COUNT ? 0 : 3;
+});
+
 const chartData = computed<ChartData<'line'>>(() => ({
   labels: labels.value,
   datasets: props.series.map((series) => ({
@@ -84,6 +94,8 @@ const chartData = computed<ChartData<'line'>>(() => ({
     backgroundColor: withAlpha(series.color, 0.18),
     fill: true,
     tension: 0.2,
+    pointRadius: pointRadius.value,
+    pointHoverRadius: 4,
   })),
 }));
 
@@ -91,6 +103,12 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   scales: {
+    x: {
+      ticks: {
+        autoSkip: true,
+        maxRotation: 0,
+      },
+    },
     y: {
       suggestedMin: props.axisBounds?.min,
       suggestedMax: props.axisBounds?.max,

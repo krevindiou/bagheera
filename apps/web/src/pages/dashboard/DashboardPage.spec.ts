@@ -140,6 +140,29 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(false);
   });
 
+  it('defaults the chart range to 12 months and refetches with the chosen range on change', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        synthesisChart: {
+          hidden: false,
+          axisBounds: { min: 0, max: 1000 },
+          series: [{ currency: 'USD', points: [{ period: '2026-01', value: 100 }] }],
+        },
+      }),
+    );
+    const select = wrapper.find('[data-testid="synthesis-chart-range"]');
+    expect((select.element as HTMLSelectElement).value).toBe('12');
+
+    apiClient.GET.mockClear();
+    await select.setValue('24');
+    await flushPromises();
+
+    expect(apiClient.GET).toHaveBeenCalledWith(
+      '/dashboard',
+      expect.objectContaining({ params: { query: { range: '24' } } }),
+    );
+  });
+
   it("shows each account's tile labeled with its bank name, balance, and a muted reconciled footnote, flattened across banks", async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({

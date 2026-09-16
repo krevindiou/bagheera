@@ -124,6 +124,29 @@ describe('GET /dashboard', () => {
     expect(history[history.length - 1]).toBe(-10);
   });
 
+  it('widens the synthesis chart window with ?range=24 and ?range=all', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountId = await createAccount(mutate, bankId);
+    await mutate('post', '/operations', {
+      accountId,
+      type: 'debit',
+      thirdParty: 'Old',
+      amount: 10,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2020-01-15',
+    });
+
+    const res24 = await agent.get('/dashboard?range=24').expect(200);
+    const body24 = res24.body as DashboardBody;
+    expect(body24.synthesisChart.series[0].points).toHaveLength(24);
+
+    const resAll = await agent.get('/dashboard?range=all').expect(200);
+    const bodyAll = resAll.body as DashboardBody;
+    const allPoints = bodyAll.synthesisChart.series[0].points;
+    expect(allPoints[0].period).toBe('2020-01-01');
+  });
+
   it('reports the total reconciled balance separately, excluding unreconciled operations', async () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);

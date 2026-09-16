@@ -9,6 +9,12 @@ export default {
     cancel: 'Cancel',
     or: 'or',
   },
+  chartRange: {
+    label: 'Range',
+    months12: '12 months',
+    months24: '24 months',
+    all: 'All time',
+  },
   password: {
     show: 'Show password',
     hide: 'Hide password',
@@ -274,7 +280,7 @@ export default {
     noBalances: 'No accounts yet.',
     lastSalary: 'Last salary',
     lastBiggestExpense: 'Biggest expense last month',
-    synthesisChart: '12-month balance trend',
+    synthesisChart: 'Balance trend',
     accountsOverview: 'Accounts overview',
     noAccounts: 'No active accounts.',
     reportCharts: 'Reports',

@@ -254,6 +254,34 @@ describe('accounts', () => {
       const body = res.body as { points: { period: string; value: number }[] };
       expect(body.points[body.points.length - 1]).toEqual({ period: '2020-01-01', value: -10 });
     });
+
+    it('widens the window to 24 months with ?range=24', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId, { initialBalance: 100 });
+
+      const res = await agent.get(`/accounts/${accountId}/chart?range=24`).expect(200);
+      const body = res.body as { points: unknown[] };
+      expect(body.points).toHaveLength(24);
+    });
+
+    it("spans the account's whole history with ?range=all", async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      await mutate('post', '/operations', {
+        accountId,
+        type: 'debit',
+        thirdParty: 'Old',
+        amount: 10,
+        paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        valueDate: '2020-01-15',
+      });
+
+      const res = await agent.get(`/accounts/${accountId}/chart?range=all`).expect(200);
+      const body = res.body as { points: { period: string }[] };
+      expect(body.points[0].period).toBe('2020-01-01');
+    });
   });
 
   describe('PATCH /accounts/:id', () => {
