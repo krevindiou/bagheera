@@ -48,6 +48,11 @@ const { selectedIds, selectedIdList, toggleSelected } = useSelection();
 const showSearch = ref(false);
 const hasActiveSearch = ref(false);
 const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
+// Set right before a search/clear mutation writes its own result into the
+// `operations` query cache, so the watch below (which reruns off that same
+// write) doesn't mistake it for a page-load recall and pop the panel back
+// open right after the mutation closed it.
+const suppressRecallOpen = ref(false);
 
 const accountsQuery = useQuery({
   queryKey: ['accounts'],
@@ -153,10 +158,11 @@ watch(
   (result) => {
     selectedIds.value = new Set();
     hasActiveSearch.value = result?.active ?? false;
-    if (result?.active) {
+    if (result?.active && !suppressRecallOpen.value) {
       recalledCriteria.value = result.criteria;
       showSearch.value = true;
     }
+    suppressRecallOpen.value = false;
   },
 );
 
@@ -182,11 +188,24 @@ const searchMutation = useMutation({
     });
     return (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
   },
-  onSuccess(data) {
+  onSuccess(data, criteria) {
     page.value = 1;
-    queryClient.setQueryData(['operations', accountId.value, 1], data);
+    suppressRecallOpen.value = true;
+    // The watch's own hydration is skipped by the suppress guard above, so
+    // hydrate the panel's fields here from what was actually submitted —
+    // otherwise reopening "Search operation" later shows a blank form.
+    recalledCriteria.value = criteria;
+    // Mark the cached page as an active search, or the `operationsQuery.data`
+    // watch below (which reruns off this same write) sees no `active` flag
+    // and immediately flips hasActiveSearch back off.
+    queryClient.setQueryData(['operations', accountId.value, 1], {
+      ...data,
+      active: true,
+      criteria,
+    });
     selectedIds.value = new Set();
     hasActiveSearch.value = true;
+    showSearch.value = false;
   },
 });
 function runSearch(criteria: SearchCriteria) {
@@ -202,6 +221,7 @@ const clearSearchMutation = useMutation({
   async onSuccess() {
     hasActiveSearch.value = false;
     page.value = 1;
+    showSearch.value = false;
     await queryClient.invalidateQueries({ queryKey: ['operations', accountId.value] });
   },
 });
@@ -285,11 +305,17 @@ function isEditable(operation: Operation): boolean {
         </button>
         <button
           type="button"
-          class="btn btn-outline-secondary"
+          class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
           data-testid="toggle-search"
+          :title="hasActiveSearch ? $t('operations.search.activeHint') : undefined"
           @click="showSearch = true"
         >
           {{ $t('operations.search.show') }}
+          <span
+            v-if="hasActiveSearch"
+            class="dot dot-active"
+            data-testid="search-active-dot"
+          ></span>
         </button>
         <router-link
           :to="{ name: 'schedulers', params: { accountId } }"

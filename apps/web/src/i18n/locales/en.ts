@@ -185,6 +185,7 @@ export default {
     search: {
       title: 'Search operations',
       show: 'Search',
+      activeHint: 'A search filter is active',
       any: 'Any',
       yes: 'Reconciled only',
       no: 'Not reconciled only',

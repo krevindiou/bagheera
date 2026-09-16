@@ -269,13 +269,27 @@ describe('OperationsPage', () => {
     await wrapper.find('[data-testid="toggle-search"]').trigger('click');
     expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(true);
 
+    await wrapper.find('#search-third-party').setValue('Landlord');
     await wrapper.find('[data-testid="search-form"]').trigger('submit');
     await flushPromises();
 
     expect(apiClient.POST).toHaveBeenCalledWith('/operations/search', {
       params: { query: { page: '1' } },
-      body: expect.objectContaining({ accountId: ACCOUNT_ID }),
+      body: expect.objectContaining({ accountId: ACCOUNT_ID, thirdParty: 'Landlord' }),
     });
+    // Submitting closes the panel and shows the active-search dot, without
+    // waiting for a reload — regression test for both getting clobbered by
+    // the operationsQuery watch that reruns off the mutation's own cache write.
+    expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="search-active-dot"]').exists()).toBe(true);
+
+    // Reopening must show what was actually submitted, not a blank form —
+    // regression test for the panel being hydrated from the (suppressed)
+    // watch instead of from the mutation's own criteria.
+    await wrapper.find('[data-testid="toggle-search"]').trigger('click');
+    expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe(
+      'Landlord',
+    );
   });
 
   it('clears the search via the DELETE endpoint', async () => {

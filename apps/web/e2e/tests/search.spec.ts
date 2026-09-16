@@ -43,7 +43,8 @@ test('filtering operations by third-party text narrows the list, and clearing re
     page.getByTestId('operation-row').filter({ hasText: 'Electronics Store' }),
   ).toHaveCount(0);
 
-  await page.getByRole('button', { name: en.operations.search.clear, exact: true }).click();
+  await page.getByTestId('toggle-search').click();
+  await searchDrawer.getByRole('button', { name: en.operations.search.clear, exact: true }).click();
   await expect(
     page.getByTestId('operation-row').filter({ hasText: 'Electronics Store' }),
   ).toBeVisible();
