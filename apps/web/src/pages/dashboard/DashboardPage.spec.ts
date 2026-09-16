@@ -6,6 +6,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
+import { colorForCurrency } from '../../components/chartColors';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
 import DashboardPage from './DashboardPage.vue';
@@ -291,9 +292,15 @@ describe('DashboardPage', () => {
     );
     expect(wrapper.find('[data-testid="homepage-report"]').text()).toContain('Monthly spend');
     const chart = wrapper.findComponent(SynthesisChart);
+    const usdColor = colorForCurrency('USD');
     expect(chart.props('series')).toEqual([
-      { label: 'USD Debit', color: '#e8697a', points: [{ period: '2026-01', value: 50 }] },
-      { label: 'USD Credit', color: '#5fd98d', points: [{ period: '2026-01', value: 20 }] },
+      {
+        label: 'USD Debit',
+        color: usdColor,
+        dash: [8, 4],
+        points: [{ period: '2026-01', value: 50 }],
+      },
+      { label: 'USD Credit', color: usdColor, points: [{ period: '2026-01', value: 20 }] },
     ]);
   });
 
@@ -315,7 +322,12 @@ describe('DashboardPage', () => {
     );
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD Debit', color: '#e8697a', points: [{ period: '2026-01', value: 50 }] },
+      {
+        label: 'USD Debit',
+        color: colorForCurrency('USD'),
+        dash: [8, 4],
+        points: [{ period: '2026-01', value: 50 }],
+      },
     ]);
   });
 });

@@ -8,6 +8,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
+import { colorForCurrency } from '../../components/chartColors';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
 import type { Account } from '../accounts/accounts.types';
@@ -126,9 +127,15 @@ describe('ReportsPage', () => {
     await flushPromises();
     expect(wrapper.text()).toContain('Hide chart');
     expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
+    const usdColor = colorForCurrency('USD');
     expect(wrapper.findComponent(SynthesisChart).props('series')).toEqual([
-      { label: 'USD Debit', color: '#e8697a', points: [{ period: '2026-01', value: 10 }] },
-      { label: 'USD Credit', color: '#5fd98d', points: [{ period: '2026-01', value: 5 }] },
+      {
+        label: 'USD Debit',
+        color: usdColor,
+        dash: [8, 4],
+        points: [{ period: '2026-01', value: 10 }],
+      },
+      { label: 'USD Credit', color: usdColor, points: [{ period: '2026-01', value: 5 }] },
     ]);
 
     await rowButton().trigger('click');

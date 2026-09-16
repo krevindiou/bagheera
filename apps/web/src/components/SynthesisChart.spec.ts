@@ -38,6 +38,32 @@ describe('SynthesisChart', () => {
     });
   });
 
+  it('passes a series dash pattern through as borderDash, defaulting to solid', () => {
+    const wrapper = mount(SynthesisChart, {
+      ...withGlobalPlugins(),
+      props: {
+        series: [
+          {
+            label: 'Debit',
+            color: '#e8697a',
+            dash: [8, 4],
+            points: [{ period: '2026-01', value: 10 }],
+          },
+          {
+            label: 'Credit',
+            color: '#5fd98d',
+            points: [{ period: '2026-01', value: 20 }],
+          },
+        ],
+      },
+    });
+    const chart = wrapper.findComponent(Line);
+    expect(chart.props('data').datasets).toMatchObject([
+      { label: 'Debit', borderDash: [8, 4] },
+      { label: 'Credit', borderDash: [] },
+    ]);
+  });
+
   it('passes the optional axis bounds through to the y-scale options', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),

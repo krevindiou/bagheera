@@ -45,6 +45,11 @@ export interface SynthesisChartPoint {
 export interface SynthesisChartSeries {
   label: string;
   color: string;
+  // Chart.js dash pattern (e.g. [8, 4]) — a secondary, non-color channel for
+  // distinguishing series (debit vs credit on the reports chart) that must
+  // survive grayscale/CVD simulation, not just a distinct hue. Omitted/empty
+  // renders a solid line.
+  dash?: number[];
   points: SynthesisChartPoint[];
 }
 
@@ -92,6 +97,7 @@ const chartData = computed<ChartData<'line'>>(() => ({
     data: series.points.map((point) => point.value),
     borderColor: series.color,
     backgroundColor: withAlpha(series.color, 0.18),
+    borderDash: series.dash ?? [],
     fill: true,
     tension: 0.2,
     pointRadius: pointRadius.value,

@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { colorForCurrency } from '../../components/chartColors';
 import { toChartSeries } from './chartSeries';
 import type { ReportChart } from './reports.types';
 
 const t = (key: string) => key;
 
 describe('toChartSeries', () => {
-  it('returns a debit and a credit series for a currency with both', () => {
+  it('returns a debit and a credit series for a currency with both, same color, debit dashed', () => {
     const chart: ReportChart = {
       hidden: false,
       axisBounds: null,
@@ -17,15 +18,17 @@ describe('toChartSeries', () => {
         },
       ],
     };
+    const color = colorForCurrency('USD');
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.debit',
-        color: '#e8697a',
+        color,
+        dash: [8, 4],
         points: [{ period: '2026-01', value: 50 }],
       },
       {
         label: 'USD operations.credit',
-        color: '#5fd98d',
+        color,
         points: [{ period: '2026-01', value: 20 }],
       },
     ]);
@@ -40,7 +43,7 @@ describe('toChartSeries', () => {
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.credit',
-        color: '#5fd98d',
+        color: colorForCurrency('USD'),
         points: [{ period: '2026-01', value: 20 }],
       },
     ]);
@@ -55,7 +58,8 @@ describe('toChartSeries', () => {
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.debit',
-        color: '#e8697a',
+        color: colorForCurrency('USD'),
+        dash: [8, 4],
         points: [{ period: '2026-01', value: 50 }],
       },
     ]);
@@ -65,7 +69,7 @@ describe('toChartSeries', () => {
     expect(toChartSeries({ hidden: false, axisBounds: null, series: [] }, t)).toEqual([]);
   });
 
-  it('handles multiple currencies', () => {
+  it('gives each currency its own color, so two currencies stay distinguishable', () => {
     const chart: ReportChart = {
       hidden: false,
       axisBounds: null,
@@ -74,15 +78,19 @@ describe('toChartSeries', () => {
         { currency: 'EUR', debit: [], credit: [{ period: '2026-01', value: 30 }] },
       ],
     };
+    const usdColor = colorForCurrency('USD');
+    const eurColor = colorForCurrency('EUR');
+    expect(usdColor).not.toBe(eurColor);
     expect(toChartSeries(chart, t)).toEqual([
       {
         label: 'USD operations.debit',
-        color: '#e8697a',
+        color: usdColor,
+        dash: [8, 4],
         points: [{ period: '2026-01', value: 50 }],
       },
       {
         label: 'EUR operations.credit',
-        color: '#5fd98d',
+        color: eurColor,
         points: [{ period: '2026-01', value: 30 }],
       },
     ]);

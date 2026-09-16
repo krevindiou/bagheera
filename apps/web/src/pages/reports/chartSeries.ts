@@ -1,7 +1,17 @@
+import { colorForCurrency } from '../../components/chartColors';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import type { ReportChart } from './reports.types';
 
-const CHART_COLORS = { debit: '#e8697a', credit: '#5fd98d' };
+// Debit is dashed, credit solid — a report with a single currency already
+// reads fine on color alone, but two currencies each showing a debit+credit
+// pair used to collide: both debit lines were plain red and both credit
+// lines plain green, so the *currency* was unreadable. Color now carries
+// currency identity (colorForCurrency, same hash-based palette as every
+// other chart in the app — see chartColors.ts), and this dash pattern
+// carries debit/credit as an orthogonal channel, which also makes the
+// distinction survive grayscale/colorblind simulation rather than relying
+// on a red/green pair alone.
+const DEBIT_DASH = [8, 4];
 
 /**
  * A report/dashboard chart is per-currency, each with a separate debit and
@@ -20,17 +30,19 @@ export function toChartSeries(
 ): SynthesisChartSeries[] {
   const series: SynthesisChartSeries[] = [];
   for (const s of chart.series) {
+    const color = colorForCurrency(s.currency);
     if (s.debit.length > 0) {
       series.push({
         label: `${s.currency} ${t('operations.debit')}`,
-        color: CHART_COLORS.debit,
+        color,
+        dash: DEBIT_DASH,
         points: s.debit,
       });
     }
     if (s.credit.length > 0) {
       series.push({
         label: `${s.currency} ${t('operations.credit')}`,
-        color: CHART_COLORS.credit,
+        color,
         points: s.credit,
       });
     }
