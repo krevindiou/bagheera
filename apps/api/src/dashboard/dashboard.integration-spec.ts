@@ -37,7 +37,7 @@ interface DashboardBody {
   lastBiggestExpense: { amount: number; currency: string } | null;
   accountsOverview: {
     id: string;
-    accounts: { id: string; balance: number; reconciledBalance: number }[];
+    accounts: { id: string; balance: number; reconciledBalance: number; history: number[] }[];
   }[];
   homepageReports: { id: string; title: string }[];
 }
@@ -81,6 +81,18 @@ describe('GET /dashboard', () => {
     expect(body.totalBalances).toEqual([{ currency: 'EUR', amount: 250, reconciledAmount: 250 }]);
     expect(body.accountsOverview).toHaveLength(1);
     expect(body.accountsOverview[0].accounts[0].balance).toBe(250);
+  });
+
+  it("ends each account overview tile's sparkline history at its current balance", async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    await createAccount(mutate, bankId, 250);
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+    const history = body.accountsOverview[0].accounts[0].history;
+    expect(history.length).toBeGreaterThan(0);
+    expect(history[history.length - 1]).toBe(250);
   });
 
   it('reports the total reconciled balance separately, excluding unreconciled operations', async () => {

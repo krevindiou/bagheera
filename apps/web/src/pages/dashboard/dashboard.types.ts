@@ -23,6 +23,7 @@ export interface AccountsOverviewAccount {
   currency: string;
   balance: number;
   reconciledBalance: number;
+  history: number[];
 }
 
 export interface AccountsOverviewBank {

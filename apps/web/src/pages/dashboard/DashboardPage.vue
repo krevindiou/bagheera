@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/vue-query';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import AccountSparkline from '../../components/AccountSparkline.vue';
 import { formatDate, formatMoney } from '../operations/money';
 import { toChartSeries } from '../reports/chartSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
@@ -31,6 +32,22 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
     color: SYNTHESIS_COLORS[i % SYNTHESIS_COLORS.length],
     points: s.points,
   }));
+}
+
+// Same currency → color assignment as the synthesis chart above (same
+// palette, same series order), so an account tile's sparkline reads as
+// "that currency's line" rather than picking its own meaning (trend
+// up/down) independent of the 12-month chart just above it.
+const currencyColors = computed(() => {
+  const map = new Map<string, string>();
+  (dashboard.value?.synthesisChart.series ?? []).forEach((s, i) => {
+    map.set(s.currency, SYNTHESIS_COLORS[i % SYNTHESIS_COLORS.length]!);
+  });
+  return map;
+});
+
+function colorForCurrency(currency: string): string {
+  return currencyColors.value.get(currency) ?? SYNTHESIS_COLORS[0]!;
 }
 
 // Flattened across every bank — the mock shows one grid of account tiles
@@ -168,6 +185,11 @@ const accountTiles = computed(() =>
                 {{ formatMoney(account.reconciledBalance, account.currency, true) }}
               </span>
             </div>
+            <AccountSparkline
+              :values="account.history"
+              :color="colorForCurrency(account.currency)"
+              class="mt-2"
+            />
           </router-link>
         </div>
       </section>

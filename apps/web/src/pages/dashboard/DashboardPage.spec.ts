@@ -7,6 +7,7 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
 import SynthesisChart from '../../components/SynthesisChart.vue';
+import AccountSparkline from '../../components/AccountSparkline.vue';
 import DashboardPage from './DashboardPage.vue';
 import type { DashboardResponse } from './dashboard.types';
 
@@ -147,7 +148,14 @@ describe('DashboardPage', () => {
             id: 'b1',
             name: 'Chase',
             accounts: [
-              { id: 'a1', name: 'Checking', currency: 'USD', balance: 500, reconciledBalance: 450 },
+              {
+                id: 'a1',
+                name: 'Checking',
+                currency: 'USD',
+                balance: 500,
+                reconciledBalance: 450,
+                history: [400, 420, 500],
+              },
             ],
           },
           {
@@ -160,6 +168,7 @@ describe('DashboardPage', () => {
                 currency: 'USD',
                 balance: 1200,
                 reconciledBalance: 1200,
+                history: [],
               },
             ],
           },
@@ -174,6 +183,55 @@ describe('DashboardPage', () => {
     expect(tiles[0]!.text()).toContain('$450.00');
     expect(tiles[1]!.text()).toContain('Ally — Savings');
     expect(tiles[1]!.text()).toContain('$1,200.00');
+
+    // Each tile's sparkline gets that account's own history, unshared
+    // across tiles.
+    expect(tiles[0]!.findComponent(AccountSparkline).props('values')).toEqual([400, 420, 500]);
+    expect(tiles[1]!.findComponent(AccountSparkline).props('values')).toEqual([]);
+  });
+
+  it("colors each tile's sparkline by currency, matching the synthesis chart's own per-currency palette", async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        synthesisChart: {
+          hidden: false,
+          axisBounds: { min: 0, max: 1000 },
+          series: [
+            { currency: 'EUR', points: [{ period: '2026-01', value: 100 }] },
+            { currency: 'USD', points: [{ period: '2026-01', value: 200 }] },
+          ],
+        },
+        accountsOverview: [
+          {
+            id: 'b1',
+            name: 'Chase',
+            accounts: [
+              {
+                id: 'a1',
+                name: 'Checking EUR',
+                currency: 'EUR',
+                balance: 100,
+                reconciledBalance: 100,
+                history: [100, 100],
+              },
+              {
+                id: 'a2',
+                name: 'Checking USD',
+                currency: 'USD',
+                balance: 200,
+                reconciledBalance: 200,
+                history: [200, 200],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const tiles = wrapper.findAll('[data-testid="overview-account"]');
+    // Same colors, same order, as the synthesis chart series above — see
+    // DashboardPage.vue's SYNTHESIS_COLORS/currencyColors.
+    expect(tiles[0]!.findComponent(AccountSparkline).props('color')).toBe('#9a72e8');
+    expect(tiles[1]!.findComponent(AccountSparkline).props('color')).toBe('#5fd98d');
   });
 
   it('shows homepage report charts when present, with debit and credit as separate series', async () => {

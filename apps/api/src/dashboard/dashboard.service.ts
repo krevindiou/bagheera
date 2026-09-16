@@ -35,6 +35,10 @@ export interface AccountsOverviewBank {
     currency: string;
     balance: number;
     reconciledBalance: number;
+    // Cumulative end-of-month balance, oldest first, for the tile's
+    // minimalist sparkline — see `accountHistories` below. Empty when the
+    // account has no operations at all.
+    history: number[];
   }[];
 }
 
@@ -53,6 +57,11 @@ export interface DashboardResponse {
   accountsOverview: AccountsOverviewBank[];
   homepageReports: HomepageReportChart[];
 }
+
+// Sparkline tiles show only a short recent window — a fraction of the
+// synthesis chart's full 12-month one — since they carry no axis/labels to
+// orient a longer history against.
+const SPARKLINE_MONTHS = 6;
 
 const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
   hidden: true,
@@ -111,6 +120,67 @@ export class DashboardService {
         },
       ]),
     );
+  }
+
+  // Per-account cumulative balance history, last `SPARKLINE_MONTHS` months —
+  // one `computeSynthesisChart` call per account (reusing the exact same
+  // per-account scoping AccountService.chart uses for the full 12-month
+  // chart), just trimmed to a shorter trailing window for the tile
+  // sparkline. A single query fetches every account's operations up front
+  // so this stays one round trip regardless of account count.
+  private async accountHistories(
+    accounts: (typeof account.$inferSelect)[],
+  ): Promise<Map<string, number[]>> {
+    const histories = new Map<string, number[]>();
+    if (accounts.length === 0) {
+      return histories;
+    }
+    const rows = await this.db
+      .select({
+        accountId: operation.accountId,
+        debit: operation.debit,
+        credit: operation.credit,
+        valueDate: operation.valueDate,
+      })
+      .from(operation)
+      .where(
+        inArray(
+          operation.accountId,
+          accounts.map((a) => a.id),
+        ),
+      );
+
+    const rowsByAccount = new Map<string, typeof rows>();
+    for (const row of rows) {
+      const list = rowsByAccount.get(row.accountId);
+      if (list) {
+        list.push(row);
+      } else {
+        rowsByAccount.set(row.accountId, [row]);
+      }
+    }
+
+    for (const acc of accounts) {
+      const accRows = rowsByAccount.get(acc.id);
+      if (!accRows) {
+        histories.set(acc.id, []);
+        continue;
+      }
+      const synthesis = computeSynthesisChart(
+        accRows.map((row) => ({
+          debit: row.debit,
+          credit: row.credit,
+          valueDate: row.valueDate,
+          currency: acc.currency,
+        })),
+      );
+      const points = synthesis.series[0]?.points ?? [];
+      histories.set(
+        acc.id,
+        points.slice(-SPARKLINE_MONTHS).map((p) => p.value),
+      );
+    }
+    return histories;
   }
 
   async getDashboard(req: Request): Promise<DashboardResponse> {
@@ -179,10 +249,11 @@ export class DashboardService {
       .filter((a) => !a.closed && activeBankIds.has(a.bankId))
       .map((a) => a.id);
 
-    const [lastSalary, lastBiggestExpense, synthesisChart] = await Promise.all([
+    const [lastSalary, lastBiggestExpense, synthesisChart, histories] = await Promise.all([
       this.getLastSalary(fullyActiveAccountIds, accounts),
       this.getLastBiggestExpense(fullyActiveAccountIds, accounts),
       this.getSynthesisChart(accounts),
+      this.accountHistories(accounts),
     ]);
 
     const accountsOverview: AccountsOverviewBank[] = banks
@@ -205,6 +276,7 @@ export class DashboardService {
             reconciledBalance: toMajorUnits(
               (balances.get(a.id)?.reconciledBalance ?? 0) as MinorUnits,
             ),
+            history: histories.get(a.id) ?? [],
           })),
       }));
 
