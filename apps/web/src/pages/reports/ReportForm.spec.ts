@@ -131,6 +131,17 @@ describe('ReportForm', () => {
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
+  it("shows a validation error and doesn't submit for a backwards date range", async () => {
+    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts } });
+    await wrapper.find('#report-title').setValue('Rent');
+    await wrapper.find('#report-value-date-start').setValue('2026-02-01');
+    await wrapper.find('#report-value-date-end').setValue('2026-01-01');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('End date must be on or after the start date.');
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
   it("shows an error toast and doesn't emit saved when submission fails", async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: 'Bad request' }));
     const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts } });

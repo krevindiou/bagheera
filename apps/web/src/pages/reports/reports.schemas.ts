@@ -45,5 +45,15 @@ export const reportSchema = z
         ctx.addIssue({ code: 'custom', path: ['significantResultsNumber'], message: 'Required' });
       }
     }
+    // Mirrors the API's IsOnOrAfter check on valueDateEnd — an inverted
+    // range otherwise matches no operations and the report just renders
+    // empty, with nothing telling the member why.
+    if (value.valueDateStart && value.valueDateEnd && value.valueDateEnd < value.valueDateStart) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['valueDateEnd'],
+        message: 'End date must be on or after the start date',
+      });
+    }
   });
 export type ReportForm = z.infer<typeof reportSchema>;

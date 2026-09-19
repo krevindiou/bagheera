@@ -12,9 +12,41 @@ import {
   Max,
   MaxLength,
   Min,
+  registerDecorator,
   ValidateIf,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 import { ReportTitleField } from '../../common/dto-fields';
+
+// Both are optional independently, but when both are set the range has to
+// make sense — otherwise the operation query (valueDate >= start AND <= end)
+// silently matches nothing and the report just renders empty with no
+// indication why. String comparison is safe here: both are IsDateString
+// ('YYYY-MM-DD'), whose lexicographic order matches chronological order.
+function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string): void {
+    registerDecorator({
+      name: 'isOnOrAfter',
+      target: object.constructor,
+      propertyName,
+      constraints: [property],
+      options: validationOptions,
+      validator: {
+        validate(value: unknown, args: ValidationArguments) {
+          const [relatedPropertyName] = args.constraints as [string];
+          const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
+          if (typeof value !== 'string' || typeof relatedValue !== 'string') return true;
+          return value >= relatedValue;
+        },
+        defaultMessage(args: ValidationArguments) {
+          const [relatedPropertyName] = args.constraints as [string];
+          return `${args.property} must be on or after ${relatedPropertyName}`;
+        },
+      },
+    });
+  };
+}
 
 // A ranked distribution report shows at most this many individual buckets
 // before collapsing the remainder into "Other" — a real ceiling since it
@@ -38,6 +70,7 @@ export class CreateReportDto {
 
   @IsOptional()
   @IsDateString()
+  @IsOnOrAfter('valueDateStart', { message: 'valueDateEnd must be on or after valueDateStart' })
   valueDateEnd?: string;
 
   // A filter, not stored text — its own cap, unrelated to ReportTitleField's.

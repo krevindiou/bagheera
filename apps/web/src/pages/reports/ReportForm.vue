@@ -139,17 +139,6 @@ const onSubmit = handleSubmit(async (submitted) => {
         <div v-if="errors.title" class="invalid-feedback">{{ $t('auth.validation.required') }}</div>
       </div>
 
-      <div class="mb-3 form-check">
-        <input
-          id="report-homepage"
-          v-model="homepage"
-          v-bind="homepageAttrs"
-          type="checkbox"
-          class="form-check-input"
-        />
-        <label class="form-check-label" for="report-homepage">{{ $t('reports.homepage') }}</label>
-      </div>
-
       <div class="row mb-3">
         <div class="col">
           <label class="form-label" for="report-value-date-start">{{
@@ -171,7 +160,11 @@ const onSubmit = handleSubmit(async (submitted) => {
             v-bind="valueDateEndAttrs"
             type="date"
             class="form-control"
+            :class="{ 'is-invalid': errors.valueDateEnd }"
           />
+          <div v-if="errors.valueDateEnd" class="invalid-feedback">
+            {{ $t('reports.dateRangeInvalid') }}
+          </div>
         </div>
       </div>
 
@@ -186,6 +179,7 @@ const onSubmit = handleSubmit(async (submitted) => {
           type="text"
           class="form-control"
         />
+        <div class="form-text">{{ $t('reports.thirdPartiesHint') }}</div>
       </div>
 
       <div class="mb-3">
@@ -274,6 +268,17 @@ const onSubmit = handleSubmit(async (submitted) => {
               : $t('reports.periodGroupingHint')
           }}
         </div>
+      </div>
+
+      <div class="mb-3 form-check">
+        <input
+          id="report-homepage"
+          v-model="homepage"
+          v-bind="homepageAttrs"
+          type="checkbox"
+          class="form-check-input"
+        />
+        <label class="form-check-label" for="report-homepage">{{ $t('reports.homepage') }}</label>
       </div>
 
       <div class="d-flex gap-2">

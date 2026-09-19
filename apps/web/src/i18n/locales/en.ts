@@ -252,6 +252,7 @@ export default {
     reportTitle: 'Title',
     reconciledOnly: 'Reconciled only',
     reconciledOnlyHint: 'Only include operations you have reconciled.',
+    thirdPartiesHint: 'Matches any third party containing this text.',
     sum: 'Sum',
     average: 'Average',
     distribution: 'Distribution',
@@ -260,7 +261,8 @@ export default {
     dateTo: 'To date',
     accounts: 'Accounts',
     accountsHint: 'Leave empty to include every account.',
-    periodGrouping: 'Group by',
+    dateRangeInvalid: 'End date must be on or after the start date.',
+    periodGrouping: 'Break down over',
     periodGroupingHint: '"Whole period" groups every matching operation into a single value.',
     periodGroupingHintDistribution:
       '"Whole period" ranks once over the whole range. Month/quarter/year instead shows the same top results stacked over time.',

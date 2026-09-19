@@ -79,6 +79,28 @@ describe('reports', () => {
         .where(eq(reportAccount.reportId, created.id));
       expect(links).toHaveLength(1);
     });
+
+    it('rejects a value date range with the end before the start', async () => {
+      const { mutate } = await seedSignedInMember(app);
+
+      const res = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ valueDateStart: '2026-02-01', valueDateEnd: '2026-01-01' }),
+      );
+      expect(res.status).toBe(400);
+    });
+
+    it('accepts a value date range with the end equal to the start', async () => {
+      const { mutate } = await seedSignedInMember(app);
+
+      const res = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ valueDateStart: '2026-01-01', valueDateEnd: '2026-01-01' }),
+      );
+      expect(res.status).toBe(200);
+    });
   });
 
   describe('GET /reports', () => {

@@ -30,6 +30,27 @@ describe('reportSchema', () => {
     }
   });
 
+  it('rejects a date range with the end before the start', () => {
+    const result = reportSchema.safeParse({
+      ...base,
+      valueDateStart: '2026-02-01',
+      valueDateEnd: '2026-01-01',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts an equal start and end date', () => {
+    expect(
+      reportSchema.safeParse({ ...base, valueDateStart: '2026-01-01', valueDateEnd: '2026-01-01' })
+        .success,
+    ).toBe(true);
+  });
+
+  it('accepts a one-sided date range', () => {
+    expect(reportSchema.safeParse({ ...base, valueDateStart: '2026-01-01' }).success).toBe(true);
+    expect(reportSchema.safeParse({ ...base, valueDateEnd: '2026-01-01' }).success).toBe(true);
+  });
+
   it('treats an empty-string thirdParties filter as omitted', () => {
     const result = reportSchema.safeParse({ ...base, thirdParties: '' });
     expect(result.success).toBe(true);
