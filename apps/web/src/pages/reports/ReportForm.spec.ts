@@ -31,6 +31,8 @@ const report: Report = {
   accountIds: ['a2'],
   reconciledOnly: true,
   periodGrouping: 'quarter',
+  dataGrouping: null,
+  significantResultsNumber: null,
 };
 
 function jsonResult(status: number, error?: unknown) {
@@ -44,7 +46,7 @@ describe('ReportForm', () => {
     useToast().toasts.splice(0);
   });
 
-  it('shows the create title and defaults period grouping to month', () => {
+  it('shows the create title and defaults period grouping to year', () => {
     // No field lets the member change the type after opening — it's fixed
     // by whichever "New ... report" button was clicked (see defaultType,
     // verified via the submitted body in the next test).
@@ -54,7 +56,7 @@ describe('ReportForm', () => {
     });
     expect(wrapper.find('h2').text()).toBe('New report');
     expect((wrapper.find('#report-period-grouping').element as HTMLSelectElement).value).toBe(
-      'month',
+      'year',
     );
   });
 
@@ -77,7 +79,7 @@ describe('ReportForm', () => {
         thirdParties: undefined,
         accountIds: [],
         reconciledOnly: undefined,
-        periodGrouping: 'month',
+        periodGrouping: 'year',
       },
     });
     expect(useToast().toasts[0]?.text).toBe('Report saved');
@@ -177,6 +179,70 @@ describe('ReportForm', () => {
     await submitAndSettle(wrapper);
 
     expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
+  });
+
+  it('shows dataGrouping/significantResultsNumber alongside periodGrouping for a distribution report, defaulting period grouping to year', () => {
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, defaultType: 'distribution' },
+    });
+    expect((wrapper.find('#report-period-grouping').element as HTMLSelectElement).value).toBe(
+      'year',
+    );
+    expect((wrapper.find('#report-data-grouping').element as HTMLSelectElement).value).toBe(
+      'category',
+    );
+    expect(
+      (wrapper.find('#report-significant-results-number').element as HTMLInputElement).value,
+    ).toBe('5');
+  });
+
+  it('creates a distribution report with its own fields plus periodGrouping', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, defaultType: 'distribution' },
+    });
+    await wrapper.find('#report-title').setValue('Spending by third party');
+    await wrapper.find('#report-data-grouping').setValue('third_party');
+    await wrapper.find('#report-significant-results-number').setValue('10');
+    await wrapper.find('#report-period-grouping').setValue('month');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith(
+      '/reports',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          type: 'distribution',
+          dataGrouping: 'third_party',
+          significantResultsNumber: 10,
+          periodGrouping: 'month',
+        }),
+      }),
+    );
+  });
+
+  it('prefills dataGrouping/significantResultsNumber/periodGrouping when editing a distribution report', () => {
+    const distributionReport: Report = {
+      ...report,
+      type: 'distribution',
+      periodGrouping: 'quarter',
+      dataGrouping: 'payment_method',
+      significantResultsNumber: 8,
+    };
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, report: distributionReport },
+    });
+    expect((wrapper.find('#report-data-grouping').element as HTMLSelectElement).value).toBe(
+      'payment_method',
+    );
+    expect(
+      (wrapper.find('#report-significant-results-number').element as HTMLInputElement).value,
+    ).toBe('8');
+    expect((wrapper.find('#report-period-grouping').element as HTMLSelectElement).value).toBe(
+      'quarter',
+    );
   });
 
   it('emits cancel when the cancel button is clicked', async () => {

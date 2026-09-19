@@ -1,6 +1,6 @@
 import { colorForCurrency } from '../../components/chartColors';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
-import type { ReportChart } from './reports.types';
+import type { ReportSeries } from './reports.types';
 
 // Debit is dashed, credit solid — a report with a single currency already
 // reads fine on color alone, but two currencies each showing a debit+credit
@@ -14,9 +14,9 @@ import type { ReportChart } from './reports.types';
 const DEBIT_DASH = [8, 4];
 
 /**
- * A report/dashboard chart is per-currency, each with a separate debit and
- * credit series (apps/api/src/reports/chart.service.ts) — flattened here
- * into the shared chart component's series list, one entry per
+ * A report/dashboard series is per-currency, each with a separate debit and
+ * credit series (apps/api/src/reports/report-series.service.ts) — flattened
+ * here into the shared chart component's series list, one entry per
  * currency×type (a currency with no points on one side is omitted rather
  * than shown as an empty series). Shared by ReportsPage and DashboardPage,
  * which both render report charts. `t` is vue-i18n's translate function,
@@ -25,11 +25,11 @@ const DEBIT_DASH = [8, 4];
  * API itself.
  */
 export function toChartSeries(
-  chart: ReportChart,
+  reportSeries: ReportSeries,
   t: (key: string) => string,
 ): SynthesisChartSeries[] {
   const series: SynthesisChartSeries[] = [];
-  for (const s of chart.series) {
+  for (const s of reportSeries.series) {
     const color = colorForCurrency(s.currency);
     if (s.debit.length > 0) {
       series.push({

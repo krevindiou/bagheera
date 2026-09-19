@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
 import { useSelection } from '../../composables/useSelection';
@@ -10,8 +11,9 @@ import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import BatchActions from './batch.vue';
 import { toChartSeries } from './chartSeries';
+import { toDistributionFacets } from './distributionSeries';
 import ReportForm from './ReportForm.vue';
-import type { Report, ReportChart } from './reports.types';
+import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 import ToastContainer from '../../components/ToastContainer.vue';
 
 const { t } = useI18n();
@@ -43,10 +45,14 @@ async function reloadReports() {
 }
 
 const showForm = ref(false);
-const createType = ref<'sum' | 'average'>('sum');
+const createType = ref<'sum' | 'average' | 'distribution'>('sum');
 const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<string | null>(null);
 const { selectedIds, selectedIdList, toggleSelected } = useSelection();
+
+const viewingReport = computed(
+  () => reports.value.find((r) => r.id === viewingReportId.value) ?? null,
+);
 
 watch(
   () => reportsQuery.data.value,
@@ -55,7 +61,7 @@ watch(
   },
 );
 
-function startCreate(type: 'sum' | 'average') {
+function startCreate(type: 'sum' | 'average' | 'distribution') {
   createType.value = type;
   editingReport.value = null;
   showForm.value = true;
@@ -91,23 +97,42 @@ async function deleteReport(report: Report) {
   await reloadReports();
 }
 
-const chartQuery = useQuery({
-  queryKey: computed(() => ['report-chart', viewingReportId.value]),
+const seriesQuery = useQuery({
+  queryKey: computed(() => ['report-series', viewingReportId.value]),
   queryFn: async () => {
-    const { data } = await apiClient.GET('/reports/{id}/chart', {
+    const { data } = await apiClient.GET('/reports/{id}/series', {
       params: { path: { id: viewingReportId.value! } },
     });
-    return (data as ReportChart | undefined) ?? null;
+    return (data as ReportSeries | undefined) ?? null;
   },
-  enabled: computed(() => viewingReportId.value !== null),
+  enabled: computed(
+    () => viewingReportId.value !== null && viewingReport.value?.type !== 'distribution',
+  ),
 });
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
-  const chart = chartQuery.data.value;
-  return !chart || chart.hidden ? [] : toChartSeries(chart, t);
+  const series = seriesQuery.data.value;
+  return !series || series.hidden ? [] : toChartSeries(series, t);
 });
 const chartAxisBounds = computed(() => {
-  const chart = chartQuery.data.value;
-  return !chart || chart.hidden ? null : chart.axisBounds;
+  const series = seriesQuery.data.value;
+  return !series || series.hidden ? null : series.axisBounds;
+});
+
+const distributionQuery = useQuery({
+  queryKey: computed(() => ['report-distribution', viewingReportId.value]),
+  queryFn: async () => {
+    const { data } = await apiClient.GET('/reports/{id}/distribution', {
+      params: { path: { id: viewingReportId.value! } },
+    });
+    return (data as ReportDistribution | undefined) ?? null;
+  },
+  enabled: computed(
+    () => viewingReportId.value !== null && viewingReport.value?.type === 'distribution',
+  ),
+});
+const distributionFacets = computed(() => {
+  const distribution = distributionQuery.data.value;
+  return !distribution || distribution.hidden ? [] : toDistributionFacets(distribution, t);
 });
 
 function toggleView(report: Report) {
@@ -125,6 +150,13 @@ function toggleView(report: Report) {
         </button>
         <button type="button" class="btn btn-outline-secondary" @click="startCreate('average')">
           {{ $t('reports.newAverageReport') }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          @click="startCreate('distribution')"
+        >
+          {{ $t('reports.newDistributionReport') }}
         </button>
       </div>
     </div>
@@ -202,7 +234,8 @@ function toggleView(report: Report) {
               </tr>
               <tr v-if="viewingReportId === report.id">
                 <td colspan="4">
-                  <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
+                  <RankedChart v-if="report.type === 'distribution'" :facets="distributionFacets" />
+                  <SynthesisChart v-else :series="chartSeries" :axis-bounds="chartAxisBounds" />
                 </td>
               </tr>
             </template>

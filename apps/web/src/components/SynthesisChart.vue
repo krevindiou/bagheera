@@ -14,6 +14,7 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from 'chart.js';
+import { formatPeriodLabel } from './periodLabel';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Legend, Tooltip);
 
@@ -66,11 +67,6 @@ const props = defineProps<{
 // Hidden whenever every series has no data points, per the shared
 // hide-when-empty rule used by reports/dashboard/operation-list charts.
 const hasData = computed(() => props.series.some((series) => series.points.length > 0));
-
-function formatPeriodLabel(period: string): string {
-  const [year, month] = period.split('-');
-  return `${year}-${Number(month)}`;
-}
 
 // Every series is expected to share the same set of periods (callers
 // zero-fill gaps before passing data in), so labels come from the first

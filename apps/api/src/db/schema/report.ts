@@ -1,8 +1,17 @@
-import { boolean, date, pgTable, primaryKey, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  date,
+  integer,
+  pgTable,
+  primaryKey,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { account } from './account';
 import { uuidPk } from './id';
 import { member } from './member';
-import { periodGroupingEnum, reportTypeEnum } from './enums';
+import { dataGroupingEnum, periodGroupingEnum, reportTypeEnum } from './enums';
 
 // Account selection is a plain many-to-many join table — replaced wholesale
 // on save at the app layer.
@@ -18,7 +27,13 @@ export const report = pgTable('report', {
   valueDateEnd: date('value_date_end'),
   thirdParties: varchar('third_parties', { length: 255 }),
   reconciledOnly: boolean('reconciled_only'),
+  // Required for every report type — a 'distribution' report ranks *within*
+  // each period (defaulting to 'all', a single whole-range bucket) rather
+  // than needing no time axis at all.
   periodGrouping: periodGroupingEnum('period_grouping').notNull(),
+  // The next two are set for 'distribution' only.
+  dataGrouping: dataGroupingEnum('data_grouping'),
+  significantResultsNumber: integer('significant_results_number'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .notNull()

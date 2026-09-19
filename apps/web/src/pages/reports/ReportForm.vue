@@ -13,7 +13,7 @@ import type { Report } from './reports.types';
 const props = defineProps<{
   accounts: Account[];
   report?: Report | null;
-  defaultType?: 'sum' | 'average';
+  defaultType?: 'sum' | 'average' | 'distribution';
 }>();
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
@@ -34,7 +34,9 @@ function initialValues(): ReportForm {
       thirdParties: undefined,
       accountIds: [],
       reconciledOnly: undefined,
-      periodGrouping: 'month',
+      periodGrouping: 'year',
+      dataGrouping: props.defaultType === 'distribution' ? 'category' : undefined,
+      significantResultsNumber: props.defaultType === 'distribution' ? 5 : undefined,
     };
   }
   return {
@@ -46,7 +48,9 @@ function initialValues(): ReportForm {
     thirdParties: r.thirdParties ?? undefined,
     accountIds: r.accountIds,
     reconciledOnly: r.reconciledOnly ?? undefined,
-    periodGrouping: r.periodGrouping,
+    periodGrouping: r.periodGrouping ?? undefined,
+    dataGrouping: r.dataGrouping ?? undefined,
+    significantResultsNumber: r.significantResultsNumber ?? undefined,
   };
 }
 
@@ -62,6 +66,10 @@ const [thirdParties, thirdPartiesAttrs] = defineField('thirdParties');
 const [accountIds, accountIdsAttrs] = defineField('accountIds');
 const [reconciledOnly, reconciledOnlyAttrs] = defineField('reconciledOnly');
 const [periodGrouping, periodGroupingAttrs] = defineField('periodGrouping');
+const [dataGrouping, dataGroupingAttrs] = defineField('dataGrouping');
+const [significantResultsNumber, significantResultsNumberAttrs] = defineField(
+  'significantResultsNumber',
+);
 
 const reportType = props.report?.type ?? props.defaultType ?? 'sum';
 
@@ -76,6 +84,8 @@ const onSubmit = handleSubmit(async (submitted) => {
     accountIds: submitted.accountIds,
     reconciledOnly: submitted.reconciledOnly || undefined,
     periodGrouping: submitted.periodGrouping,
+    dataGrouping: submitted.dataGrouping,
+    significantResultsNumber: submitted.significantResultsNumber,
   };
 
   const { error, response } = props.report
@@ -206,6 +216,42 @@ const onSubmit = handleSubmit(async (submitted) => {
         <div class="form-text">{{ $t('reports.reconciledOnlyHint') }}</div>
       </div>
 
+      <div v-if="reportType === 'distribution'" class="mb-3">
+        <label class="form-label" for="report-data-grouping">{{
+          $t('reports.dataGrouping')
+        }}</label>
+        <select
+          id="report-data-grouping"
+          v-model="dataGrouping"
+          v-bind="dataGroupingAttrs"
+          class="form-select"
+        >
+          <option value="category">{{ $t('reports.dataGroupingOptions.category') }}</option>
+          <option value="third_party">{{ $t('reports.dataGroupingOptions.thirdParty') }}</option>
+          <option value="payment_method">
+            {{ $t('reports.dataGroupingOptions.paymentMethod') }}
+          </option>
+        </select>
+        <div class="form-text">{{ $t('reports.dataGroupingHint') }}</div>
+      </div>
+
+      <div v-if="reportType === 'distribution'" class="mb-3">
+        <label class="form-label" for="report-significant-results-number">{{
+          $t('reports.significantResultsNumber')
+        }}</label>
+        <input
+          id="report-significant-results-number"
+          v-model.number="significantResultsNumber"
+          v-bind="significantResultsNumberAttrs"
+          type="number"
+          min="1"
+          max="50"
+          class="form-control"
+          :class="{ 'is-invalid': errors.significantResultsNumber }"
+        />
+        <div class="form-text">{{ $t('reports.significantResultsNumberHint') }}</div>
+      </div>
+
       <div class="mb-3">
         <label class="form-label" for="report-period-grouping">{{
           $t('reports.periodGrouping')
@@ -221,7 +267,13 @@ const onSubmit = handleSubmit(async (submitted) => {
           <option value="year">{{ $t('reports.periods.year') }}</option>
           <option value="all">{{ $t('reports.periods.all') }}</option>
         </select>
-        <div class="form-text">{{ $t('reports.periodGroupingHint') }}</div>
+        <div class="form-text">
+          {{
+            reportType === 'distribution'
+              ? $t('reports.periodGroupingHintDistribution')
+              : $t('reports.periodGroupingHint')
+          }}
+        </div>
       </div>
 
       <div class="d-flex gap-2">

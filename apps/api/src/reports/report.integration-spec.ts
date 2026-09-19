@@ -98,6 +98,57 @@ describe('reports', () => {
     });
   });
 
+  describe('POST /reports — distribution fields', () => {
+    it('persists dataGrouping, significantResultsNumber and periodGrouping', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
+
+      const res = await mutate('post', '/reports', {
+        type: 'distribution',
+        title: 'Spending by category',
+        dataGrouping: 'category',
+        significantResultsNumber: 5,
+        periodGrouping: 'month',
+      });
+      expect(res.status).toBe(200);
+      const { report: created } = res.body as { report: { id: string } };
+
+      const [row] = await getDb(app).select().from(report).where(eq(report.id, created.id));
+      expect(row.memberId).toBe(memberId);
+      expect(row.dataGrouping).toBe('category');
+      expect(row.significantResultsNumber).toBe(5);
+      expect(row.periodGrouping).toBe('month');
+    });
+
+    it('rejects a distribution report missing dataGrouping/significantResultsNumber/periodGrouping', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const res = await mutate('post', '/reports', {
+        type: 'distribution',
+        title: 'Incomplete',
+      });
+      expect(res.status).toBe(400);
+    });
+
+    it('clears dataGrouping/significantResultsNumber when edited back to a sum report', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const created = await mutate('post', '/reports', {
+        type: 'distribution',
+        title: 'Was a distribution',
+        dataGrouping: 'category',
+        significantResultsNumber: 5,
+        periodGrouping: 'all',
+      });
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      const res = await mutate('patch', `/reports/${id}`, reportPayload({ title: 'Now a sum' }));
+      expect(res.status).toBe(200);
+
+      const [row] = await getDb(app).select().from(report).where(eq(report.id, id));
+      expect(row.dataGrouping).toBeNull();
+      expect(row.significantResultsNumber).toBeNull();
+      expect(row.periodGrouping).toBe('month');
+    });
+  });
+
   describe('PATCH /reports/:id', () => {
     it('replaces the account selection wholesale', async () => {
       const { mutate } = await seedSignedInMember(app);

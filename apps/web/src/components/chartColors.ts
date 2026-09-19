@@ -44,5 +44,15 @@ function hashCode(value: string): number {
 }
 
 export function colorForCurrency(currency: string): string {
-  return SYNTHESIS_COLORS[hashCode(currency) % SYNTHESIS_COLORS.length]!;
+  return colorForLabel(currency);
+}
+
+// Same hash-based deterministic assignment as colorForCurrency, generalized
+// to any categorical label — used by the distribution report's ranked bars,
+// which color by category/third-party/payment-method name rather than
+// currency. Kept as one function, not a fork per label kind: the hashing
+// has no currency-specific behavior, it's just the palette-lookup shared by
+// every chart in the app that colors series/bars by a categorical key.
+export function colorForLabel(label: string): string {
+  return SYNTHESIS_COLORS[hashCode(label) % SYNTHESIS_COLORS.length]!;
 }

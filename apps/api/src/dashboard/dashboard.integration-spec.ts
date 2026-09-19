@@ -40,7 +40,7 @@ interface DashboardBody {
     id: string;
     accounts: { id: string; balance: number; reconciledBalance: number; history: number[] }[];
   }[];
-  homepageReports: { id: string; title: string }[];
+  homepageReports: { id: string; title: string; kind: string }[];
 }
 
 describe('GET /dashboard', () => {
@@ -275,5 +275,34 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.homepageReports.map((r) => r.title)).toEqual(['On homepage']);
+  });
+
+  it('includes a non-empty homepage distribution report as its own kind', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountId = await createAccount(mutate, bankId);
+    await mutate('post', '/operations', {
+      accountId,
+      type: 'debit',
+      thirdParty: 'X',
+      amount: 10,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2026-01-01',
+    });
+    await mutate('post', '/reports', {
+      type: 'distribution',
+      title: 'By third party',
+      dataGrouping: 'third_party',
+      significantResultsNumber: 5,
+      periodGrouping: 'all',
+      homepage: true,
+      accountIds: [accountId],
+    });
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+    expect(body.homepageReports.map((r) => ({ title: r.title, kind: r.kind }))).toEqual([
+      { title: 'By third party', kind: 'distribution' },
+    ]);
   });
 });

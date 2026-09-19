@@ -9,11 +9,12 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
 import { colorForCurrency } from '../../components/chartColors';
+import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
 import type { Account } from '../accounts/accounts.types';
 import ReportsPage from './ReportsPage.vue';
-import type { Report, ReportChart } from './reports.types';
+import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 
 const apiClient = asMockedApiClient(realApiClient);
 
@@ -44,18 +45,26 @@ function report(overrides: Partial<Report> = {}): Report {
     accountIds: [],
     reconciledOnly: null,
     periodGrouping: 'month',
+    dataGrouping: null,
+    significantResultsNumber: null,
     ...overrides,
   };
 }
 
-const emptyChart: ReportChart = { hidden: false, axisBounds: null, series: [] };
+const emptySeries: ReportSeries = { hidden: false, axisBounds: null, series: [] };
+const emptyDistribution: ReportDistribution = { hidden: false, series: [] };
 
-function mockGet(reports: Report[], chart: ReportChart = emptyChart) {
+function mockGet(
+  reports: Report[],
+  series: ReportSeries = emptySeries,
+  distribution: ReportDistribution = emptyDistribution,
+) {
   apiClient.GET.mockImplementation(async (path: string) => {
     const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
     if (path === '/reports') return ok(reports);
     if (path === '/accounts') return ok(accounts);
-    if (path === '/reports/{id}/chart') return ok(chart);
+    if (path === '/reports/{id}/series') return ok(series);
+    if (path === '/reports/{id}/distribution') return ok(distribution);
     return ok(undefined);
   });
 }
@@ -277,6 +286,64 @@ describe('ReportsPage', () => {
     await flushPromises();
 
     expect(wrapper.text()).not.toContain('Hide chart');
+  });
+
+  it("opens a new distribution report form, submitting with type 'distribution'", async () => {
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.findAll('button.btn-outline-secondary')[1].trigger('click');
+    await wrapper.find('#report-title').setValue('Spending by category');
+    expect(wrapper.find('#report-data-grouping').exists()).toBe(true);
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith(
+      '/reports',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          type: 'distribution',
+          dataGrouping: 'category',
+          significantResultsNumber: 5,
+        }),
+      }),
+    );
+  });
+
+  it('shows a distribution chart instead of the time-series chart for a distribution report', async () => {
+    mockGet([report({ type: 'distribution', dataGrouping: 'category' })], emptySeries, {
+      hidden: false,
+      series: [
+        {
+          currency: 'USD',
+          debit: [
+            { label: 'Food', points: [{ period: '2026-01-01', value: 100 }] },
+            { label: null, points: [{ period: '2026-01-01', value: 10 }] },
+          ],
+          credit: [],
+        },
+      ],
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('.synthesis-chart').exists()).toBe(false);
+    expect(wrapper.findComponent(RankedChart).props('facets')).toMatchObject([
+      {
+        kind: 'snapshot',
+        bars: [
+          { label: 'Food', value: -100 },
+          { label: 'Other', value: -10 },
+        ],
+      },
+    ]);
   });
 
   it('opens the edit form for a report and reloads once saved', async () => {

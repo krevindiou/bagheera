@@ -645,14 +645,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/reports/{id}/chart": {
+    "/reports/{id}/series": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["ReportController_chart"];
+        get: operations["ReportController_series"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reports/{id}/distribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ReportController_distribution"];
         put?: never;
         post?: never;
         delete?: never;
@@ -885,7 +901,7 @@ export interface components {
         };
         CreateReportDto: {
             /** @enum {string} */
-            type: "sum" | "average";
+            type: "sum" | "average" | "distribution";
             title: string;
             homepage?: boolean;
             valueDateStart?: string;
@@ -895,10 +911,13 @@ export interface components {
             reconciledOnly?: boolean;
             /** @enum {string} */
             periodGrouping: "month" | "quarter" | "year" | "all";
+            /** @enum {string} */
+            dataGrouping?: "category" | "third_party" | "payment_method";
+            significantResultsNumber?: number;
         };
         UpdateReportDto: {
             /** @enum {string} */
-            type: "sum" | "average";
+            type: "sum" | "average" | "distribution";
             title: string;
             homepage?: boolean;
             valueDateStart?: string;
@@ -908,6 +927,9 @@ export interface components {
             reconciledOnly?: boolean;
             /** @enum {string} */
             periodGrouping: "month" | "quarter" | "year" | "all";
+            /** @enum {string} */
+            dataGrouping?: "category" | "third_party" | "payment_method";
+            significantResultsNumber?: number;
         };
     };
     responses: never;
@@ -1911,7 +1933,28 @@ export interface operations {
             };
         };
     };
-    ReportController_chart: {
+    ReportController_series: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    ReportController_distribution: {
         parameters: {
             query?: never;
             header?: never;

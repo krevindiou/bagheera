@@ -36,12 +36,12 @@ async function createOperation(
   expect(res.status).toBe(200);
 }
 
-interface ChartBody {
+interface SeriesBody {
   hidden: boolean;
   series: { currency: string; credit: unknown[]; debit: unknown[] }[];
 }
 
-describe('GET /reports/:id/chart', () => {
+describe('GET /reports/:id/series', () => {
   let app: INestApplication<Server>;
 
   beforeAll(async () => {
@@ -61,8 +61,8 @@ describe('GET /reports/:id/chart', () => {
     });
     const { id } = (created.body as { report: { id: string } }).report;
 
-    const res = await agent.get(`/reports/${id}/chart`).expect(200);
-    const body = res.body as ChartBody;
+    const res = await agent.get(`/reports/${id}/series`).expect(200);
+    const body = res.body as SeriesBody;
     expect(body.hidden).toBe(true);
   });
 
@@ -81,8 +81,8 @@ describe('GET /reports/:id/chart', () => {
     });
     const { id } = (created.body as { report: { id: string } }).report;
 
-    const res = await agent.get(`/reports/${id}/chart`).expect(200);
-    const body = res.body as ChartBody;
+    const res = await agent.get(`/reports/${id}/series`).expect(200);
+    const body = res.body as SeriesBody;
     expect(body.hidden).toBe(false);
     expect(body.series).toHaveLength(1);
     expect(body.series[0].currency).toBe('EUR');
@@ -103,8 +103,8 @@ describe('GET /reports/:id/chart', () => {
     });
     const { id } = (created.body as { report: { id: string } }).report;
 
-    const res = await agent.get(`/reports/${id}/chart`).expect(200);
-    const body = res.body as ChartBody & {
+    const res = await agent.get(`/reports/${id}/series`).expect(200);
+    const body = res.body as SeriesBody & {
       series: { debit: { period: string }[] }[];
     };
     expect(body.series[0].debit).toHaveLength(1);
@@ -123,12 +123,12 @@ describe('GET /reports/:id/chart', () => {
     });
     const { id } = (created.body as { report: { id: string } }).report;
 
-    const res = await agent.get(`/reports/${id}/chart`).expect(200);
-    const body = res.body as ChartBody;
+    const res = await agent.get(`/reports/${id}/series`).expect(200);
+    const body = res.body as SeriesBody;
     expect(body.hidden).toBe(true);
   });
 
-  it("404s reading another member's report chart", async () => {
+  it("404s reading another member's report series", async () => {
     const { mutate: ownerMutate } = await seedSignedInMember(app);
     const created = await ownerMutate('post', '/reports', {
       type: 'sum',
@@ -138,6 +138,6 @@ describe('GET /reports/:id/chart', () => {
     const { id } = (created.body as { report: { id: string } }).report;
 
     const { agent: attackerAgent } = await seedSignedInMember(app);
-    await attackerAgent.get(`/reports/${id}/chart`).expect(404);
+    await attackerAgent.get(`/reports/${id}/series`).expect(404);
   });
 });

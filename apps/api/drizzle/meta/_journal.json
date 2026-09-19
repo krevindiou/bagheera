@@ -8,6 +8,13 @@
       "when": 1788640372535,
       "tag": "0000_initial_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789667658208,
+      "tag": "0001_add_distribution_report_type",
+      "breakpoints": true
     }
   ]
 }

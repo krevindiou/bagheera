@@ -5,7 +5,7 @@
 export interface Report {
   id: string;
   memberId: string;
-  type: 'sum' | 'average';
+  type: 'sum' | 'average' | 'distribution';
   title: string;
   homepage: boolean;
   valueDateStart: string | null;
@@ -14,21 +14,51 @@ export interface Report {
   accountIds: string[];
   reconciledOnly: boolean | null;
   periodGrouping: 'month' | 'quarter' | 'year' | 'all';
+  // Set only for a 'distribution' report; null otherwise.
+  dataGrouping: 'category' | 'third_party' | 'payment_method' | null;
+  significantResultsNumber: number | null;
 }
 
-export interface ReportChartPoint {
+export interface ReportSeriesPoint {
   period: string;
   value: number;
 }
 
-export interface ReportChartSeries {
+export interface ReportSeriesEntry {
   currency: string;
-  credit: ReportChartPoint[];
-  debit: ReportChartPoint[];
+  credit: ReportSeriesPoint[];
+  debit: ReportSeriesPoint[];
 }
 
-export interface ReportChart {
+export interface ReportSeries {
   hidden: boolean;
   axisBounds: { min: number; max: number } | null;
-  series: ReportChartSeries[];
+  series: ReportSeriesEntry[];
+}
+
+export interface ReportDistributionPoint {
+  period: string;
+  value: number;
+}
+
+export interface ReportDistributionLabelSeries {
+  // null = the collapsed "Other" bucket: the ranked tail past the top N,
+  // plus any uncategorized operations. Fixed across the whole report's
+  // date range, so a stacked chart's segments stay stable period to
+  // period — see apps/api/src/reports/report-distribution.service.ts.
+  label: string | null;
+  // One point per period; a snapshot ('all' periodGrouping) report has
+  // exactly one.
+  points: ReportDistributionPoint[];
+}
+
+export interface ReportDistributionSeries {
+  currency: string;
+  debit: ReportDistributionLabelSeries[];
+  credit: ReportDistributionLabelSeries[];
+}
+
+export interface ReportDistribution {
+  hidden: boolean;
+  series: ReportDistributionSeries[];
 }

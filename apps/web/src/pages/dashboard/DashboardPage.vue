@@ -12,8 +12,10 @@ import {
   SYNTHESIS_CHART_RANGES,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
+import RankedChart from '../../components/RankedChart.vue';
 import { formatDate, formatMoney } from '../operations/money';
 import { toChartSeries } from '../reports/chartSeries';
+import { toDistributionFacets } from '../reports/distributionSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
 import ToastContainer from '../../components/ToastContainer.vue';
 
@@ -210,9 +212,14 @@ const accountTiles = computed(() =>
           data-testid="homepage-report"
         >
           <h3 class="h6 mb-3">{{ entry.title }}</h3>
+          <RankedChart
+            v-if="entry.kind === 'distribution'"
+            :facets="toDistributionFacets(entry.distribution, t)"
+          />
           <SynthesisChart
-            :series="toChartSeries(entry.chart, t)"
-            :axis-bounds="entry.chart.axisBounds"
+            v-else
+            :series="toChartSeries(entry.series, t)"
+            :axis-bounds="entry.series.axisBounds"
           />
         </div>
       </section>

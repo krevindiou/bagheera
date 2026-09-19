@@ -1,32 +1,34 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gte, inArray, lte, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
-import { ilikeContains } from '../common/like-pattern';
 import { MinorUnits, toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, operation, report, reportAccount } from '../db/schema';
+import { account, operation, report } from '../db/schema';
 import { ReportId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { fillPeriodGaps } from './chart/period';
+import { effectiveAccounts } from './effective-accounts';
+import { reportOperationConditions } from './report-filters';
+import { ALL_PERIOD_KEY, currentYearStart, periodExpr } from './report-periods';
 
-export interface ReportChartSeriesPoint {
+export interface ReportSeriesPoint {
   period: string;
   value: number;
 }
 
-export interface ReportChartSeries {
+export interface ReportSeriesEntry {
   currency: string;
-  credit: ReportChartSeriesPoint[];
-  debit: ReportChartSeriesPoint[];
+  credit: ReportSeriesPoint[];
+  debit: ReportSeriesPoint[];
 }
 
-export interface ReportChart {
+export interface ReportSeries {
   hidden: boolean;
   axisBounds: AxisBounds | null;
-  series: ReportChartSeries[];
+  series: ReportSeriesEntry[];
 }
 
 interface Bucket {
@@ -36,101 +38,32 @@ interface Bucket {
   creditCount: number;
 }
 
-const ALL_PERIOD_KEY = 'all';
-
-// Postgres `date_trunc(field, ...)` field names, one per non-'all' grouping.
-// 'all' has no period arithmetic — it is a single aggregate bucket handled
-// separately below, without a GROUP BY on period at all.
-const DATE_TRUNC_FIELD = {
-  month: 'month',
-  quarter: 'quarter',
-  year: 'year',
-} as const;
-
-function currentYearStart(): string {
-  return `${new Date().getUTCFullYear()}-01-01`;
-}
-
 @Injectable()
-export class ReportChartService {
+export class ReportSeriesService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly ownership: OwnershipService,
   ) {}
 
-  // Data = the report's linked accounts, or all of the member's eligible
-  // accounts when none are linked; in both cases, deleted accounts and
-  // accounts of deleted banks are excluded — including accounts that were
-  // explicitly selected before being deleted.
-  private async effectiveAccounts(
-    reportId: string,
-    memberId: string,
-  ): Promise<{ id: string; currency: string }[]> {
-    // "None selected" means no link rows at all — a selection that's been
-    // narrowed to nothing by exclusion (e.g. every linked account has
-    // since been deleted) does NOT fall back to "all accounts".
-    const rawLinks = await this.db
-      .select({ accountId: reportAccount.accountId })
-      .from(reportAccount)
-      .where(eq(reportAccount.reportId, reportId));
-
-    if (rawLinks.length === 0) {
-      return this.db
-        .select({ id: account.id, currency: account.currency })
-        .from(account)
-        .innerJoin(bank, eq(account.bankId, bank.id))
-        .where(
-          and(eq(bank.memberId, memberId), eq(account.deleted, false), eq(bank.deleted, false)),
-        );
-    }
-
-    return this.db
-      .select({ id: account.id, currency: account.currency })
-      .from(reportAccount)
-      .innerJoin(account, eq(reportAccount.accountId, account.id))
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(
-        and(
-          eq(reportAccount.reportId, reportId),
-          eq(account.deleted, false),
-          eq(bank.deleted, false),
-        ),
-      );
-  }
-
-  async getChart(req: Request, id: string): Promise<ReportChart> {
+  async getSeries(req: Request, id: string): Promise<ReportSeries> {
     const memberId = requireMemberId(req);
     const rpt = await this.ownership.requireOwnedReport(id as ReportId, memberId);
-    return this.computeChart(rpt, memberId);
+    return this.computeSeries(rpt, memberId);
   }
 
-  // Split out from `getChart` so the dashboard's homepage-report section
+  // Split out from `getSeries` so the dashboard's homepage-report section
   // (step 37) can reuse the aggregation for reports it already fetched and
   // owns, without a second ownership round-trip.
-  async computeChart(rpt: typeof report.$inferSelect, memberId: string): Promise<ReportChart> {
-    const accounts = await this.effectiveAccounts(rpt.id, memberId);
+  async computeSeries(rpt: typeof report.$inferSelect, memberId: string): Promise<ReportSeries> {
+    const accounts = await effectiveAccounts(this.db, rpt.id, memberId);
     if (accounts.length === 0) {
       return { hidden: true, axisBounds: null, series: [] };
     }
 
-    const conditions = [
-      inArray(
-        operation.accountId,
-        accounts.map((a) => a.id),
-      ),
-    ];
-    if (rpt.valueDateStart) {
-      conditions.push(gte(operation.valueDate, rpt.valueDateStart));
-    }
-    if (rpt.valueDateEnd) {
-      conditions.push(lte(operation.valueDate, rpt.valueDateEnd));
-    }
-    if (rpt.thirdParties) {
-      conditions.push(ilikeContains(operation.thirdParty, rpt.thirdParties));
-    }
-    if (rpt.reconciledOnly) {
-      conditions.push(eq(operation.reconciled, true));
-    }
+    const conditions = reportOperationConditions(
+      rpt,
+      accounts.map((a) => a.id),
+    );
 
     const grouping = rpt.periodGrouping;
 
@@ -138,15 +71,10 @@ export class ReportChartService {
     // date_trunc), not by streaming every raw operation row into Node and
     // bucketing it in a JS Map — the result set here is one row per
     // currency/period actually present, not one row per operation.
-    const periodExpr =
-      grouping === 'all'
-        ? sql<string | null>`null`
-        : sql<string>`date_trunc(${DATE_TRUNC_FIELD[grouping]}, ${operation.valueDate})::date`;
-
     const aggregated = await this.db
       .select({
         currency: account.currency,
-        period: periodExpr.as('period'),
+        period: periodExpr(operation.valueDate, grouping).as('period'),
         debitSum: sql<
           string | null
         >`sum(${operation.debit}) filter (where ${operation.debit} is not null)`,
@@ -186,7 +114,7 @@ export class ReportChartService {
       });
     }
 
-    const series: ReportChartSeries[] = [];
+    const series: ReportSeriesEntry[] = [];
     let dataMin = Infinity;
     let dataMax = -Infinity;
 
@@ -201,8 +129,8 @@ export class ReportChartService {
               grouping,
             );
 
-      const credit: ReportChartSeriesPoint[] = [];
-      const debit: ReportChartSeriesPoint[] = [];
+      const credit: ReportSeriesPoint[] = [];
+      const debit: ReportSeriesPoint[] = [];
       for (const key of periodKeys) {
         const bucket = periods.get(key);
         const creditRaw =

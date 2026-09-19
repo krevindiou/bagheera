@@ -5,16 +5,25 @@ import {
   IsBoolean,
   IsDateString,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
+  ValidateIf,
 } from 'class-validator';
 import { ReportTitleField } from '../../common/dto-fields';
 
+// A ranked distribution report shows at most this many individual buckets
+// before collapsing the remainder into "Other" — a real ceiling since it
+// drives how many rows the UI renders.
+export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
+
 export class CreateReportDto {
-  @IsIn(['sum', 'average'])
-  type!: 'sum' | 'average';
+  @IsIn(['sum', 'average', 'distribution'])
+  type!: 'sum' | 'average' | 'distribution';
 
   @ReportTitleField()
   title!: string;
@@ -50,6 +59,22 @@ export class CreateReportDto {
   @IsBoolean()
   reconciledOnly?: boolean;
 
+  // Required for every type — a 'distribution' report ranks *within* each
+  // period too (defaulting to 'all', a single whole-range bucket).
   @IsIn(['month', 'quarter', 'year', 'all'])
   periodGrouping!: 'month' | 'quarter' | 'year' | 'all';
+
+  // The next two are required for 'distribution' only — genuinely optional
+  // TS properties (not `!:`) so the Swagger CLI plugin (nest-cli.json) marks
+  // them optional in the generated schema too, matching @ValidateIf's
+  // conditional requirement rather than always-required.
+  @ValidateIf((dto: CreateReportDto) => dto.type === 'distribution')
+  @IsIn(['category', 'third_party', 'payment_method'])
+  dataGrouping?: 'category' | 'third_party' | 'payment_method';
+
+  @ValidateIf((dto: CreateReportDto) => dto.type === 'distribution')
+  @IsInt()
+  @Min(1)
+  @Max(MAX_SIGNIFICANT_RESULTS_NUMBER)
+  significantResultsNumber?: number;
 }

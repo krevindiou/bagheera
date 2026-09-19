@@ -14,7 +14,11 @@ import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation, report } from '../db/schema';
 import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { MinorUnits } from '../common/money';
-import { ReportChart, ReportChartService } from '../reports/chart.service';
+import {
+  ReportDistribution,
+  ReportDistributionService,
+} from '../reports/report-distribution.service';
+import { ReportSeries, ReportSeriesService } from '../reports/report-series.service';
 import { requireMemberId } from '../session/require-member-id';
 
 export type OnboardingTip = 'no-bank' | 'no-account' | null;
@@ -47,11 +51,12 @@ export interface AccountsOverviewBank {
   }[];
 }
 
-export interface HomepageReportChart {
-  id: string;
-  title: string;
-  chart: ReportChart;
-}
+// A homepage report is either a time series (sum/average) or a ranked
+// distribution — the `kind` discriminant lets the web layer pick which
+// component renders it without re-deriving that from `type`.
+export type HomepageReport =
+  | { kind: 'series'; id: string; title: string; series: ReportSeries }
+  | { kind: 'distribution'; id: string; title: string; distribution: ReportDistribution };
 
 export interface DashboardResponse {
   onboarding: OnboardingTip;
@@ -60,7 +65,7 @@ export interface DashboardResponse {
   lastBiggestExpense: DashboardIndicator | null;
   synthesisChart: SynthesisChart;
   accountsOverview: AccountsOverviewBank[];
-  homepageReports: HomepageReportChart[];
+  homepageReports: HomepageReport[];
 }
 
 // Sparkline tiles show only a short recent window — a fraction of the
@@ -94,7 +99,8 @@ function isoDate(date: Date): string {
 export class DashboardService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
-    private readonly reportCharts: ReportChartService,
+    private readonly reportSeries: ReportSeriesService,
+    private readonly reportDistributions: ReportDistributionService,
     private readonly config: ConfigService,
   ) {}
 
@@ -419,20 +425,34 @@ export class DashboardService {
     };
   }
 
-  private async getHomepageReports(memberId: string): Promise<HomepageReportChart[]> {
+  private async getHomepageReports(memberId: string): Promise<HomepageReport[]> {
     const homepageReports = await this.db
       .select()
       .from(report)
       .where(and(eq(report.memberId, memberId), eq(report.homepage, true)));
 
-    const charts = await Promise.all(
-      homepageReports.map(async (rpt) => ({
-        id: rpt.id,
-        title: rpt.title,
-        chart: await this.reportCharts.computeChart(rpt, memberId),
-      })),
+    const entries = await Promise.all(
+      homepageReports.map(async (rpt): Promise<HomepageReport> => {
+        if (rpt.type === 'distribution') {
+          return {
+            kind: 'distribution',
+            id: rpt.id,
+            title: rpt.title,
+            distribution: await this.reportDistributions.computeDistribution(rpt, memberId),
+          };
+        }
+        return {
+          kind: 'series',
+          id: rpt.id,
+          title: rpt.title,
+          series: await this.reportSeries.computeSeries(rpt, memberId),
+        };
+      }),
     );
-    // A homepage report whose chart has zero data points is omitted.
-    return charts.filter((entry) => !entry.chart.hidden);
+    // A homepage report whose series/distribution has zero data points is
+    // omitted.
+    return entries.filter((entry) =>
+      entry.kind === 'distribution' ? !entry.distribution.hidden : !entry.series.hidden,
+    );
   }
 }

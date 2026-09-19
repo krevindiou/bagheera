@@ -9,6 +9,7 @@ import { apiClient as realApiClient } from '../../api/client';
 import { colorForCurrency } from '../../components/chartColors';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
+import RankedChart from '../../components/RankedChart.vue';
 import DashboardPage from './DashboardPage.vue';
 import type { DashboardResponse } from './dashboard.types';
 
@@ -273,9 +274,10 @@ describe('DashboardPage', () => {
       baseDashboard({
         homepageReports: [
           {
+            kind: 'series',
             id: 'r1',
             title: 'Monthly spend',
-            chart: {
+            series: {
               hidden: false,
               axisBounds: null,
               series: [
@@ -309,9 +311,10 @@ describe('DashboardPage', () => {
       baseDashboard({
         homepageReports: [
           {
+            kind: 'series',
             id: 'r1',
             title: 'Monthly spend',
-            chart: {
+            series: {
               hidden: false,
               axisBounds: null,
               series: [{ currency: 'USD', debit: [{ period: '2026-01', value: 50 }], credit: [] }],
@@ -327,6 +330,46 @@ describe('DashboardPage', () => {
         color: colorForCurrency('USD'),
         dash: [8, 4],
         points: [{ period: '2026-01', value: 50 }],
+      },
+    ]);
+  });
+
+  it('shows a distribution chart, not the time-series chart, for a homepage distribution report', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        homepageReports: [
+          {
+            kind: 'distribution',
+            id: 'r1',
+            title: 'Spending by category',
+            distribution: {
+              hidden: false,
+              series: [
+                {
+                  currency: 'USD',
+                  debit: [
+                    { label: 'Food', points: [{ period: '2026-01-01', value: 100 }] },
+                    { label: null, points: [{ period: '2026-01-01', value: 10 }] },
+                  ],
+                  credit: [],
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    );
+    expect(wrapper.find('[data-testid="homepage-report"]').text()).toContain(
+      'Spending by category',
+    );
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
+    expect(wrapper.findComponent(RankedChart).props('facets')).toMatchObject([
+      {
+        kind: 'snapshot',
+        bars: [
+          { label: 'Food', value: -100 },
+          { label: 'Other', value: -10 },
+        ],
       },
     ]);
   });

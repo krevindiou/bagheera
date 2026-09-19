@@ -96,6 +96,8 @@ export class ReportService {
           thirdParties: dto.thirdParties,
           reconciledOnly: dto.reconciledOnly,
           periodGrouping: dto.periodGrouping,
+          dataGrouping: dto.dataGrouping,
+          significantResultsNumber: dto.significantResultsNumber,
         })
         .returning();
       if (accountIds.length > 0) {
@@ -126,6 +128,12 @@ export class ReportService {
           thirdParties: dto.thirdParties ?? null,
           reconciledOnly: dto.reconciledOnly ?? null,
           periodGrouping: dto.periodGrouping,
+          // Nulled out via `?? null` (not left as `undefined`, which Drizzle
+          // would treat as "don't touch this column") when editing a report
+          // away from 'distribution' — its now-meaningless dataGrouping/
+          // significantResultsNumber must be cleared, not left stale.
+          dataGrouping: dto.dataGrouping ?? null,
+          significantResultsNumber: dto.significantResultsNumber ?? null,
         })
         .where(eq(report.id, id));
 

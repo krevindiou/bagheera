@@ -1,4 +1,4 @@
-import type { ReportChart } from '../reports/reports.types';
+import type { ReportDistribution, ReportSeries } from '../reports/reports.types';
 
 // The dashboard controller returns a plain object (no @ApiOkResponse DTO),
 // so the generated API client types its body as `Record<string, never>`.
@@ -32,11 +32,11 @@ export interface AccountsOverviewBank {
   accounts: AccountsOverviewAccount[];
 }
 
-export interface HomepageReportChart {
-  id: string;
-  title: string;
-  chart: ReportChart;
-}
+// A homepage report is either a time series (sum/average) or a ranked
+// distribution — the `kind` discriminant picks which component renders it.
+export type HomepageReport =
+  | { kind: 'series'; id: string; title: string; series: ReportSeries }
+  | { kind: 'distribution'; id: string; title: string; distribution: ReportDistribution };
 
 export interface SynthesisChartPoint {
   period: string;
@@ -61,5 +61,5 @@ export interface DashboardResponse {
   lastBiggestExpense: DashboardIndicator | null;
   synthesisChart: DashboardSynthesisChart;
   accountsOverview: AccountsOverviewBank[];
-  homepageReports: HomepageReportChart[];
+  homepageReports: HomepageReport[];
 }

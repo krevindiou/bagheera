@@ -2,9 +2,10 @@ import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req } from
 import type { Request } from 'express';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
-import { ReportChartService } from './chart.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { ReportDistributionService } from './report-distribution.service';
+import { ReportSeriesService } from './report-series.service';
 import { ReportService } from './report.service';
 
 // Ordinary authenticated CRUD, scoped to the caller's own reports — no
@@ -14,7 +15,8 @@ import { ReportService } from './report.service';
 export class ReportController {
   constructor(
     private readonly reports: ReportService,
-    private readonly charts: ReportChartService,
+    private readonly reportSeries: ReportSeriesService,
+    private readonly distributions: ReportDistributionService,
   ) {}
 
   @Get()
@@ -22,9 +24,14 @@ export class ReportController {
     return this.reports.list(req);
   }
 
-  @Get(':id/chart')
-  chart(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
-    return this.charts.getChart(req, id);
+  @Get(':id/series')
+  series(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
+    return this.reportSeries.getSeries(req, id);
+  }
+
+  @Get(':id/distribution')
+  distribution(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
+    return this.distributions.getDistribution(req, id);
   }
 
   @Post()

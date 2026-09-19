@@ -8,8 +8,16 @@ export const entryTypeEnum = pgEnum('entry_type', ['debit', 'credit']);
 export const frequencyUnitEnum = pgEnum('frequency_unit', ['day', 'week', 'month', 'year']);
 
 // Report aggregation kind and chart period grouping.
-export const reportTypeEnum = pgEnum('report_type', ['sum', 'average']);
+export const reportTypeEnum = pgEnum('report_type', ['sum', 'average', 'distribution']);
 export const periodGroupingEnum = pgEnum('period_grouping', ['month', 'quarter', 'year', 'all']);
+
+// Grouping key for a 'distribution' report — which dimension operations are
+// ranked by.
+export const dataGroupingEnum = pgEnum('data_grouping', [
+  'category',
+  'third_party',
+  'payment_method',
+]);
 
 // SecurityEvent kinds, wired into auth/member modules later. New values can
 // be appended by later migrations as more call sites land.
