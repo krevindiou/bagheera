@@ -26,6 +26,7 @@ export const reportSchema = z
       z.string().max(255).optional(),
     ),
     accountIds: z.array(z.string()).optional(),
+    categoryIds: z.array(z.string()).optional(),
     reconciledOnly: z.boolean().optional(),
     periodGrouping: z.enum(['month', 'quarter', 'year', 'all']),
     dataGrouping: z.enum(['category', 'third_party', 'payment_method']).optional(),

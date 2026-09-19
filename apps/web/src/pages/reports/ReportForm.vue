@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
@@ -7,14 +8,21 @@ import { errorMessage } from '../../api/errorMessage';
 import { useEscapeKey } from '../../composables/useEscapeKey';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
+import { categoryLabel, groupCategories, type Category } from '../operations/operations.types';
 import { reportSchema, type ReportForm } from './reports.schemas';
 import type { Report } from './reports.types';
 
 const props = defineProps<{
   accounts: Account[];
+  categories: Category[];
   report?: Report | null;
   defaultType?: 'sum' | 'average' | 'distribution';
 }>();
+
+// Not type-scoped like an operation/scheduler form (a report spans both
+// debit and credit operations), so every category is offered — grouped by
+// parent, same as the search panel's multi-select.
+const groupedCategories = computed(() => groupCategories(props.categories));
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
@@ -33,6 +41,7 @@ function initialValues(): ReportForm {
       valueDateEnd: undefined,
       thirdParties: undefined,
       accountIds: [],
+      categoryIds: [],
       reconciledOnly: undefined,
       periodGrouping: 'year',
       dataGrouping: props.defaultType === 'distribution' ? 'category' : undefined,
@@ -47,6 +56,7 @@ function initialValues(): ReportForm {
     valueDateEnd: r.valueDateEnd ?? undefined,
     thirdParties: r.thirdParties ?? undefined,
     accountIds: r.accountIds,
+    categoryIds: r.categoryIds,
     reconciledOnly: r.reconciledOnly ?? undefined,
     periodGrouping: r.periodGrouping ?? undefined,
     dataGrouping: r.dataGrouping ?? undefined,
@@ -64,6 +74,7 @@ const [valueDateStart, valueDateStartAttrs] = defineField('valueDateStart');
 const [valueDateEnd, valueDateEndAttrs] = defineField('valueDateEnd');
 const [thirdParties, thirdPartiesAttrs] = defineField('thirdParties');
 const [accountIds, accountIdsAttrs] = defineField('accountIds');
+const [categoryIds, categoryIdsAttrs] = defineField('categoryIds');
 const [reconciledOnly, reconciledOnlyAttrs] = defineField('reconciledOnly');
 const [periodGrouping, periodGroupingAttrs] = defineField('periodGrouping');
 const [dataGrouping, dataGroupingAttrs] = defineField('dataGrouping');
@@ -82,6 +93,7 @@ const onSubmit = handleSubmit(async (submitted) => {
     valueDateEnd: submitted.valueDateEnd,
     thirdParties: submitted.thirdParties,
     accountIds: submitted.accountIds,
+    categoryIds: submitted.categoryIds,
     reconciledOnly: submitted.reconciledOnly || undefined,
     periodGrouping: submitted.periodGrouping,
     dataGrouping: submitted.dataGrouping,
@@ -180,6 +192,31 @@ const onSubmit = handleSubmit(async (submitted) => {
           class="form-control"
         />
         <div class="form-text">{{ $t('reports.thirdPartiesHint') }}</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="report-categories">{{ $t('operations.category') }}</label>
+        <select
+          id="report-categories"
+          v-model="categoryIds"
+          v-bind="categoryIdsAttrs"
+          multiple
+          class="form-select"
+        >
+          <template v-for="group in groupedCategories" :key="group.label ?? '_'">
+            <template v-if="group.label === null">
+              <option v-for="c in group.categories" :key="c.id" :value="c.id">
+                {{ categoryLabel(c, props.categories) }}
+              </option>
+            </template>
+            <optgroup v-else :label="group.label">
+              <option v-for="c in group.categories" :key="c.id" :value="c.id">
+                {{ categoryLabel(c, props.categories) }}
+              </option>
+            </optgroup>
+          </template>
+        </select>
+        <div class="form-text">{{ $t('reports.categoriesHint') }}</div>
       </div>
 
       <div class="mb-3">

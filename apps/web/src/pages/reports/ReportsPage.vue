@@ -9,6 +9,7 @@ import { useConfirm } from '../../composables/useConfirm';
 import { useSelection } from '../../composables/useSelection';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
+import type { Category } from '../operations/operations.types';
 import BatchActions from './batch.vue';
 import { toChartSeries } from './chartSeries';
 import { toDistributionFacets } from './distributionSeries';
@@ -39,6 +40,15 @@ const accountsQuery = useQuery({
   },
 });
 const accounts = computed(() => accountsQuery.data.value ?? []);
+
+const categoriesQuery = useQuery({
+  queryKey: ['categories'],
+  queryFn: async () => {
+    const { data } = await apiClient.GET('/reference-data/categories');
+    return (data as Category[] | undefined) ?? [];
+  },
+});
+const categories = computed(() => categoriesQuery.data.value ?? []);
 
 async function reloadReports() {
   await queryClient.invalidateQueries({ queryKey: ['reports'] });
@@ -247,6 +257,7 @@ function toggleView(report: Report) {
     <ReportForm
       v-if="showForm"
       :accounts="accounts"
+      :categories="categories"
       :report="editingReport"
       :default-type="createType"
       @saved="onSaved"

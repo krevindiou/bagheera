@@ -3,15 +3,18 @@ import { ilikeContains } from '../common/like-pattern';
 import { operation, report } from '../db/schema';
 
 // The operation-level filters shared by every report aggregation (date
-// range, third-party text search, reconciled-only) — scoped to the given
-// account ids. Callers `and(...)` this with any grouping/join-specific
-// conditions of their own.
+// range, third-party text search, reconciled-only, category) — scoped to
+// the given account ids. Callers `and(...)` this with any grouping/join-
+// specific conditions of their own.
 export function reportOperationConditions(
   rpt: Pick<
     typeof report.$inferSelect,
     'valueDateStart' | 'valueDateEnd' | 'thirdParties' | 'reconciledOnly'
   >,
   accountIds: string[],
+  // Empty = no category filter (every category), same "absent link rows"
+  // convention as accountIds/effectiveAccounts — see effective-categories.ts.
+  categoryIds: string[] = [],
 ): SQL[] {
   const conditions: SQL[] = [inArray(operation.accountId, accountIds)];
   if (rpt.valueDateStart) {
@@ -25,6 +28,9 @@ export function reportOperationConditions(
   }
   if (rpt.reconciledOnly) {
     conditions.push(eq(operation.reconciled, true));
+  }
+  if (categoryIds.length > 0) {
+    conditions.push(inArray(operation.categoryId, categoryIds));
   }
   return conditions;
 }

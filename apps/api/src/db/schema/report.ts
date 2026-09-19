@@ -9,6 +9,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { account } from './account';
+import { category } from './category';
 import { uuidPk } from './id';
 import { member } from './member';
 import { dataGroupingEnum, periodGroupingEnum, reportTypeEnum } from './enums';
@@ -52,4 +53,21 @@ export const reportAccount = pgTable(
       .references(() => account.id),
   },
   (table) => [primaryKey({ columns: [table.reportId, table.accountId] })],
+);
+
+// Category selection is the same kind of join table as reportAccount — empty
+// = no filter (every category), replaced wholesale on save. Unlike accounts,
+// categories are fixed reference data (not member-owned), so there's no
+// ownership chain to fall back through when the selection is empty.
+export const reportCategory = pgTable(
+  'report_category',
+  {
+    reportId: uuid('report_id')
+      .notNull()
+      .references(() => report.id),
+    categoryId: uuid('category_id')
+      .notNull()
+      .references(() => category.id),
+  },
+  (table) => [primaryKey({ columns: [table.reportId, table.categoryId] })],
 );

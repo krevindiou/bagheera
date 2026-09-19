@@ -92,6 +92,15 @@ export class CreateReportDto {
   @IsBoolean()
   reconciledOnly?: boolean;
 
+  // Empty/omitted = every category (no filter); submitted ids not matching a
+  // known category are dropped silently, same as accountIds.
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @ArrayMaxSize(100)
+  @IsUUID('7', { each: true })
+  categoryIds?: string[];
+
   // Required for every type — a 'distribution' report ranks *within* each
   // period too (defaulting to 'all', a single whole-range bucket).
   @IsIn(['month', 'quarter', 'year', 'all'])

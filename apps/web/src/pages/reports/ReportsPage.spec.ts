@@ -43,6 +43,7 @@ function report(overrides: Partial<Report> = {}): Report {
     valueDateEnd: null,
     thirdParties: null,
     accountIds: [],
+    categoryIds: [],
     reconciledOnly: null,
     periodGrouping: 'month',
     dataGrouping: null,

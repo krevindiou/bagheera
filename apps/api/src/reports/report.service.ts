@@ -3,7 +3,7 @@ import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, report, reportAccount } from '../db/schema';
+import { account, bank, category, report, reportAccount, reportCategory } from '../db/schema';
 import { ReportId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
@@ -62,6 +62,40 @@ export class ReportService {
     return map;
   }
 
+  // Categories are fixed reference data, not member-owned — unlike
+  // filterOwnedActiveAccountIds, this only needs to check the ids are real,
+  // not that they belong to the member.
+  private async filterExistingCategoryIds(categoryIds: string[]): Promise<string[]> {
+    if (categoryIds.length === 0) {
+      return [];
+    }
+    const rows = await this.db
+      .select({ id: category.id })
+      .from(category)
+      .where(inArray(category.id, categoryIds));
+    return rows.map((row) => row.id);
+  }
+
+  private async categoryIdsByReport(reportIds: string[]): Promise<Map<string, string[]>> {
+    const map = new Map<string, string[]>();
+    if (reportIds.length === 0) {
+      return map;
+    }
+    const links = await this.db
+      .select({
+        reportId: reportCategory.reportId,
+        categoryId: reportCategory.categoryId,
+      })
+      .from(reportCategory)
+      .where(inArray(reportCategory.reportId, reportIds));
+    for (const link of links) {
+      const list = map.get(link.reportId) ?? [];
+      list.push(link.categoryId);
+      map.set(link.reportId, list);
+    }
+    return map;
+  }
+
   async list(req: Request) {
     const memberId = requireMemberId(req);
     const rows = await this.db
@@ -73,15 +107,18 @@ export class ReportService {
       .orderBy(sql`${report.type}::text`, asc(report.title));
 
     const accountIds = await this.accountIdsByReport(rows.map((row) => row.id));
+    const categoryIds = await this.categoryIdsByReport(rows.map((row) => row.id));
     return rows.map((row) => ({
       ...row,
       accountIds: accountIds.get(row.id) ?? [],
+      categoryIds: categoryIds.get(row.id) ?? [],
     }));
   }
 
   async create(req: Request, dto: CreateReportDto) {
     const memberId = requireMemberId(req);
     const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
+    const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     const created = await this.db.transaction(async (tx) => {
       const [row] = await tx
@@ -105,16 +142,22 @@ export class ReportService {
           .insert(reportAccount)
           .values(accountIds.map((accountId) => ({ reportId: row.id, accountId })));
       }
+      if (categoryIds.length > 0) {
+        await tx
+          .insert(reportCategory)
+          .values(categoryIds.map((categoryId) => ({ reportId: row.id, categoryId })));
+      }
       return row;
     });
 
-    return { ...created, accountIds };
+    return { ...created, accountIds, categoryIds };
   }
 
   async update(req: Request, id: string, dto: UpdateReportDto): Promise<void> {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedReport(id as ReportId, memberId);
     const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
+    const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     await this.db.transaction(async (tx) => {
       await tx
@@ -137,13 +180,20 @@ export class ReportService {
         })
         .where(eq(report.id, id));
 
-      // Account selection is replaced wholesale on every save; links to
-      // since-deleted accounts are purged as part of the replacement.
+      // Account/category selection is replaced wholesale on every save;
+      // links to since-deleted accounts (or stale category ids) are purged
+      // as part of the replacement.
       await tx.delete(reportAccount).where(eq(reportAccount.reportId, id));
       if (accountIds.length > 0) {
         await tx
           .insert(reportAccount)
           .values(accountIds.map((accountId) => ({ reportId: id, accountId })));
+      }
+      await tx.delete(reportCategory).where(eq(reportCategory.reportId, id));
+      if (categoryIds.length > 0) {
+        await tx
+          .insert(reportCategory)
+          .values(categoryIds.map((categoryId) => ({ reportId: id, categoryId })));
       }
     });
   }
@@ -154,6 +204,7 @@ export class ReportService {
 
     await this.db.transaction(async (tx) => {
       await tx.delete(reportAccount).where(eq(reportAccount.reportId, id));
+      await tx.delete(reportCategory).where(eq(reportCategory.reportId, id));
       await tx.delete(report).where(eq(report.id, id));
     });
   }

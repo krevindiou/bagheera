@@ -12,6 +12,7 @@ export interface Report {
   valueDateEnd: string | null;
   thirdParties: string | null;
   accountIds: string[];
+  categoryIds: string[];
   reconciledOnly: boolean | null;
   periodGrouping: 'month' | 'quarter' | 'year' | 'all';
   // Set only for a 'distribution' report; null otherwise.

@@ -11,6 +11,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { fillPeriodGaps } from './chart/period';
 import { effectiveAccounts } from './effective-accounts';
+import { effectiveCategoryIds } from './effective-categories';
 import { reportOperationConditions } from './report-filters';
 import { ALL_PERIOD_KEY, currentYearStart, periodExpr } from './report-periods';
 
@@ -60,9 +61,11 @@ export class ReportSeriesService {
       return { hidden: true, axisBounds: null, series: [] };
     }
 
+    const categoryIds = await effectiveCategoryIds(this.db, rpt.id);
     const conditions = reportOperationConditions(
       rpt,
       accounts.map((a) => a.id),
+      categoryIds,
     );
 
     const grouping = rpt.periodGrouping;

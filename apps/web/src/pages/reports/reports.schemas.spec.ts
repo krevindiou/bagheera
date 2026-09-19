@@ -57,13 +57,14 @@ describe('reportSchema', () => {
     if (result.success) expect(result.data.thirdParties).toBeUndefined();
   });
 
-  it('accepts the optional accountIds/homepage/reconciledOnly flags', () => {
+  it('accepts the optional accountIds/categoryIds/homepage/reconciledOnly flags', () => {
     expect(
       reportSchema.safeParse({
         ...base,
         homepage: true,
         reconciledOnly: true,
         accountIds: ['a1', 'a2'],
+        categoryIds: ['c1', 'c2'],
       }).success,
     ).toBe(true);
   });

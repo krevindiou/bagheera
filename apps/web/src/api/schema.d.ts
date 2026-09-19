@@ -909,6 +909,7 @@ export interface components {
             thirdParties?: string;
             accountIds?: string[];
             reconciledOnly?: boolean;
+            categoryIds?: string[];
             /** @enum {string} */
             periodGrouping: "month" | "quarter" | "year" | "all";
             /** @enum {string} */
@@ -925,6 +926,7 @@ export interface components {
             thirdParties?: string;
             accountIds?: string[];
             reconciledOnly?: boolean;
+            categoryIds?: string[];
             /** @enum {string} */
             periodGrouping: "month" | "quarter" | "year" | "all";
             /** @enum {string} */

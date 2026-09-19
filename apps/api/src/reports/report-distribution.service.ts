@@ -10,6 +10,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { fillPeriodGaps } from './chart/period';
 import { effectiveAccounts } from './effective-accounts';
+import { effectiveCategoryIds } from './effective-categories';
 import { reportOperationConditions } from './report-filters';
 import { ALL_PERIOD_KEY, currentYearStart, PeriodGrouping, periodExpr } from './report-periods';
 
@@ -74,6 +75,7 @@ export class ReportDistributionService {
       return { hidden: true, series: [] };
     }
     const accountIds = accounts.map((a) => a.id);
+    const categoryIds = await effectiveCategoryIds(this.db, rpt.id);
 
     // Only 'distribution' reports reach this service — dataGrouping and
     // significantResultsNumber are both required for it (see
@@ -85,7 +87,7 @@ export class ReportDistributionService {
     // Pass 1: whole-range totals per (currency, label) — 'all' grouping
     // regardless of the report's own periodGrouping — used only to rank
     // labels and fix the top-N set each side keeps as its own series.
-    const totals = await this.groupedRows(rpt, accountIds, 'all');
+    const totals = await this.groupedRows(rpt, accountIds, categoryIds, 'all');
     const topDebit = new Map<string, Set<string>>();
     const topCredit = new Map<string, Set<string>>();
     for (const currency of new Set(totals.map((row) => row.currency))) {
@@ -98,7 +100,7 @@ export class ReportDistributionService {
     // periodGrouping — reuses pass 1's rows outright when that grouping is
     // itself 'all' rather than issuing an identical query twice.
     const periodRows =
-      grouping === 'all' ? totals : await this.groupedRows(rpt, accountIds, grouping);
+      grouping === 'all' ? totals : await this.groupedRows(rpt, accountIds, categoryIds, grouping);
 
     // currency -> side -> label (null = Other) -> period -> minor-units sum
     const byCurrency = new Map<
@@ -177,9 +179,10 @@ export class ReportDistributionService {
   private async groupedRows(
     rpt: typeof report.$inferSelect,
     accountIds: string[],
+    categoryIds: string[],
     grouping: PeriodGrouping,
   ): Promise<GroupedRow[]> {
-    const conditions = reportOperationConditions(rpt, accountIds);
+    const conditions = reportOperationConditions(rpt, accountIds, categoryIds);
     const period = periodExpr(operation.valueDate, grouping).as('period');
     const debitSum = sql<
       string | null

@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
@@ -24,6 +24,7 @@ async function createOperation(
   type: 'debit' | 'credit',
   amount: number,
   valueDate: string,
+  categoryId?: string,
 ) {
   const res = await mutate('post', '/operations', {
     accountId,
@@ -32,6 +33,7 @@ async function createOperation(
     amount,
     paymentMethodId: type === 'debit' ? PAYMENT_METHOD_ID.CREDIT_CARD : PAYMENT_METHOD_ID.DEPOSIT,
     valueDate,
+    categoryId,
   });
   expect(res.status).toBe(200);
 }
@@ -86,6 +88,27 @@ describe('GET /reports/:id/series', () => {
     expect(body.hidden).toBe(false);
     expect(body.series).toHaveLength(1);
     expect(body.series[0].currency).toBe('EUR');
+  });
+
+  it('scopes the series to the linked categories only', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountId = await createAccount(mutate, bankId);
+    await createOperation(mutate, accountId, 'credit', 1000, '2026-01-15', SALARY_CATEGORY_SEED_ID);
+    await createOperation(mutate, accountId, 'credit', 100, '2026-01-20');
+
+    const created = await mutate('post', '/reports', {
+      type: 'sum',
+      title: 'Salary only',
+      periodGrouping: 'month',
+      accountIds: [accountId],
+      categoryIds: [SALARY_CATEGORY_SEED_ID],
+    });
+    const { id } = (created.body as { report: { id: string } }).report;
+
+    const res = await agent.get(`/reports/${id}/series`).expect(200);
+    const body = res.body as SeriesBody & { series: { credit: { value: number }[] }[] };
+    expect(body.series[0].credit).toEqual([{ period: '2026-01-01', value: 1000 }]);
   });
 
   it("groups everything into a single bucket for 'all'", async () => {

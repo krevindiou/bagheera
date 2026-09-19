@@ -261,6 +261,7 @@ export default {
     dateTo: 'To date',
     accounts: 'Accounts',
     accountsHint: 'Leave empty to include every account.',
+    categoriesHint: 'Leave empty to include every category.',
     dateRangeInvalid: 'End date must be on or after the start date.',
     periodGrouping: 'Break down over',
     periodGroupingHint: '"Whole period" groups every matching operation into a single value.',

@@ -43,7 +43,7 @@ Anything not covered by `make`, run the same way `docker compose exec` — e.g.:
 ```bash
 docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm test:cov
 docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm test -- path/to/file.spec.ts   # single api test
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:generate                     # new drizzle migration after schema changes
+docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:generate --name <snake_case_description>  # new drizzle migration after schema changes — always pass --name, or drizzle-kit picks a random adjective_noun tag instead
 docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:seed                         # seed payment_method/category reference data
 docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm test -- path/to/file.spec.ts    # single web test
 docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm e2e -- e2e/some.spec.ts         # single e2e test (needs the e2e stack, see make test-e2e)

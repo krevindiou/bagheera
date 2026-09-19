@@ -15,6 +15,13 @@
       "when": 1789667658208,
       "tag": "0001_add_distribution_report_type",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789850614524,
+      "tag": "0002_add_report_category",
+      "breakpoints": true
     }
   ]
 }

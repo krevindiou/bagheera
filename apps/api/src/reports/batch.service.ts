@@ -3,7 +3,7 @@ import { inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
-import { report, reportAccount } from '../db/schema';
+import { report, reportAccount, reportCategory } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
@@ -29,6 +29,7 @@ export class ReportBatchService {
     if (owned.length > 0) {
       await this.db.transaction(async (tx) => {
         await tx.delete(reportAccount).where(inArray(reportAccount.reportId, owned));
+        await tx.delete(reportCategory).where(inArray(reportCategory.reportId, owned));
         await tx.delete(report).where(inArray(report.id, owned));
       });
     }

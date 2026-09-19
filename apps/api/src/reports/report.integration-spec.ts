@@ -1,7 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
-import { report, reportAccount } from '../db/schema';
+import { report, reportAccount, reportCategory } from '../db/schema';
+import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
@@ -80,6 +81,27 @@ describe('reports', () => {
       expect(links).toHaveLength(1);
     });
 
+    it('links known categories and silently drops an unknown one', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const unknownCategoryId = '00000000-0000-7000-8000-999999999999';
+
+      const res = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ categoryIds: [SALARY_CATEGORY_SEED_ID, unknownCategoryId] }),
+      );
+      const { report: created } = res.body as {
+        report: { id: string; categoryIds: string[] };
+      };
+      expect(created.categoryIds).toEqual([SALARY_CATEGORY_SEED_ID]);
+
+      const links = await getDb(app)
+        .select()
+        .from(reportCategory)
+        .where(eq(reportCategory.reportId, created.id));
+      expect(links).toHaveLength(1);
+    });
+
     it('rejects a value date range with the end before the start', async () => {
       const { mutate } = await seedSignedInMember(app);
 
@@ -104,19 +126,24 @@ describe('reports', () => {
   });
 
   describe('GET /reports', () => {
-    it("lists only the caller's own reports with their linked accounts", async () => {
+    it("lists only the caller's own reports with their linked accounts/categories", async () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
-      await mutate('post', '/reports', reportPayload({ accountIds: [accountId] }));
+      await mutate(
+        'post',
+        '/reports',
+        reportPayload({ accountIds: [accountId], categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+      );
 
       const { mutate: otherMutate } = await seedSignedInMember(app);
       await otherMutate('post', '/reports', reportPayload({ title: "Other's" }));
 
       const res = await agent.get('/reports').expect(200);
-      const body = res.body as { title: string; accountIds: string[] }[];
+      const body = res.body as { title: string; accountIds: string[]; categoryIds: string[] }[];
       expect(body).toHaveLength(1);
       expect(body[0].accountIds).toEqual([accountId]);
+      expect(body[0].categoryIds).toEqual([SALARY_CATEGORY_SEED_ID]);
     });
   });
 
@@ -194,6 +221,25 @@ describe('reports', () => {
       expect(links.map((l) => l.accountId)).toEqual([accountB]);
     });
 
+    it('replaces the category selection wholesale', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const created = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+      );
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      const res = await mutate('patch', `/reports/${id}`, reportPayload({ categoryIds: [] }));
+      expect(res.status).toBe(200);
+
+      const links = await getDb(app)
+        .select()
+        .from(reportCategory)
+        .where(eq(reportCategory.reportId, id));
+      expect(links).toHaveLength(0);
+    });
+
     it("404s updating another member's report", async () => {
       const { mutate: ownerMutate } = await seedSignedInMember(app);
       const created = await ownerMutate('post', '/reports', reportPayload());
@@ -210,11 +256,15 @@ describe('reports', () => {
   });
 
   describe('DELETE /reports/:id', () => {
-    it('deletes the report and its account links', async () => {
+    it('deletes the report and its account/category links', async () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
-      const created = await mutate('post', '/reports', reportPayload({ accountIds: [accountId] }));
+      const created = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ accountIds: [accountId], categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+      );
       const { id } = (created.body as { report: { id: string } }).report;
 
       const res = await mutate('delete', `/reports/${id}`);
@@ -227,6 +277,11 @@ describe('reports', () => {
         .from(reportAccount)
         .where(eq(reportAccount.reportId, id));
       expect(links).toHaveLength(0);
+      const categoryLinks = await getDb(app)
+        .select()
+        .from(reportCategory)
+        .where(eq(reportCategory.reportId, id));
+      expect(categoryLinks).toHaveLength(0);
     });
   });
 });
