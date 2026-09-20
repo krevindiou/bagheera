@@ -127,7 +127,7 @@ describe('RankedChart', () => {
 
       const chart = wrapper.findComponent(Bar);
       expect(chart.props('data')).toMatchObject({
-        labels: ['2026-1', '2026-2'],
+        labels: ['Jan 2026', 'Feb 2026'],
         datasets: [
           { label: 'Food', data: [100, 80], backgroundColor: '#b17834', stack: 'ranked' },
           {

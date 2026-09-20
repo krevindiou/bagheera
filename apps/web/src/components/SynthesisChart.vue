@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Line } from 'vue-chartjs';
 import {
   CategoryScale,
@@ -15,6 +16,7 @@ import {
   type TooltipItem,
 } from 'chart.js';
 import { formatPeriodLabel } from './periodLabel';
+import type { Locale } from '../i18n/locales';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Legend, Tooltip);
 
@@ -64,6 +66,8 @@ const props = defineProps<{
   axisBounds?: SynthesisAxisBounds | null;
 }>();
 
+const { locale } = useI18n();
+
 // Hidden whenever every series has no data points, per the shared
 // hide-when-empty rule used by reports/dashboard/operation-list charts.
 const hasData = computed(() => props.series.some((series) => series.points.length > 0));
@@ -73,7 +77,9 @@ const hasData = computed(() => props.series.some((series) => series.points.lengt
 // non-empty series.
 const labels = computed(() => {
   const reference = props.series.find((series) => series.points.length > 0);
-  return reference ? reference.points.map((point) => formatPeriodLabel(point.period)) : [];
+  return reference
+    ? reference.points.map((point) => formatPeriodLabel(point.period, locale.value as Locale))
+    : [];
 });
 
 // Past a short window, a dot per point turns into visual noise once the

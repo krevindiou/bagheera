@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Bar } from 'vue-chartjs';
 import {
   BarElement,
@@ -14,6 +15,7 @@ import {
 } from 'chart.js';
 import { formatMoney } from '../pages/operations/money';
 import { formatPeriodLabel } from './periodLabel';
+import type { Locale } from '../i18n/locales';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Legend, Tooltip);
 
@@ -82,6 +84,8 @@ export type RankedChartFacet =
 
 const props = defineProps<{ facets: RankedChartFacet[] }>();
 
+const { locale } = useI18n();
+
 // Hidden whenever every facet has no data, same hide-when-empty rule used
 // by SynthesisChart/reports/dashboard.
 const hasData = computed(() =>
@@ -140,7 +144,9 @@ function snapshotChartOptions(currency: string): ChartOptions<'bar'> {
 function stackedChartData(facet: RankedChartFacet & { kind: 'temporal' }): ChartData<'bar'> {
   const reference = facet.series[0];
   return {
-    labels: reference ? reference.points.map((point) => formatPeriodLabel(point.period)) : [],
+    labels: reference
+      ? reference.points.map((point) => formatPeriodLabel(point.period, locale.value as Locale))
+      : [],
     datasets: facet.series.map((series) => ({
       label: series.label,
       data: series.points.map((point) => point.value),

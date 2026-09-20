@@ -33,7 +33,7 @@ describe('SynthesisChart', () => {
 
     const chart = wrapper.findComponent(Line);
     expect(chart.props('data')).toMatchObject({
-      labels: ['2026-1', '2026-2'],
+      labels: ['Jan 2026', 'Feb 2026'],
       datasets: [{ label: 'Balance', data: [100, 150], borderColor: '#0d6efd' }],
     });
   });
@@ -109,6 +109,6 @@ describe('SynthesisChart', () => {
       },
     });
     const chart = wrapper.findComponent(Line);
-    expect(chart.props('data')).toMatchObject({ labels: ['2026-3'] });
+    expect(chart.props('data')).toMatchObject({ labels: ['Mar 2026'] });
   });
 });
