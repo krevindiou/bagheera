@@ -311,6 +311,19 @@ function isEditable(operation: Operation): boolean {
           :title="hasActiveSearch ? $t('operations.search.activeHint') : undefined"
           @click="showSearch = true"
         >
+          <svg
+            class="icon-16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
           {{ $t('operations.search.show') }}
           <span
             v-if="hasActiveSearch"
