@@ -853,7 +853,12 @@ input[type='radio'] {
     gap: 6px;
   }
   .side-foot {
-    display: none !important;
+    margin-top: 0;
+    margin-left: auto;
+    padding-top: 0;
+    border-top: none;
+    flex: none;
+    max-width: 160px;
   }
   .main-inner {
     padding: 24px 18px 40px;
