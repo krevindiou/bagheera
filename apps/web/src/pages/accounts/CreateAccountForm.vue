@@ -39,6 +39,14 @@ useEscapeKey(() => emit('cancel'));
 
 const isEdit = computed(() => props.mode === 'edit');
 const schema = computed(() => (isEdit.value ? editAccountSchema : createAccountSchema));
+const selectedBankName = computed(
+  () => props.banks.find((bank) => bank.id === props.account?.bankId)?.name ?? '',
+);
+const selectedCurrencyLabel = computed(() => {
+  const code = props.account?.currency;
+  const option = currencyOptions.find((o) => o.code === code);
+  return option ? `${option.code} — ${option.name}` : (code ?? '');
+});
 
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<CreateAccountForm>({
   validationSchema: toTypedSchema(schema.value),
@@ -113,12 +121,15 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="mb-3">
         <label class="form-label" for="account-bank">{{ $t('accounts.bank') }}</label>
+        <p v-if="isEdit" id="account-bank" class="form-control-plaintext">
+          {{ selectedBankName }}
+        </p>
         <select
+          v-else
           id="account-bank"
           v-model="selectedBankId"
           v-bind="bankIdAttrs"
-          v-autofocus="!isEdit"
-          :disabled="isEdit"
+          v-autofocus
           class="form-select"
           :class="{ 'is-invalid': errors.bankId }"
         >
@@ -146,22 +157,26 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="mb-3">
         <label class="form-label" for="account-currency">{{ $t('accounts.currency') }}</label>
-        <select
-          id="account-currency"
-          v-model="currency"
-          v-bind="currencyAttrs"
-          :disabled="isEdit"
-          class="form-select"
-          :class="{ 'is-invalid': errors.currency }"
-        >
-          <option value="">{{ $t('accounts.chooseCurrency') }}</option>
-          <option v-for="option in currencyOptions" :key="option.code" :value="option.code">
-            {{ option.code }} — {{ option.name }}
-          </option>
-        </select>
-        <div v-if="errors.currency" class="invalid-feedback">
-          {{ $t('accounts.validation.currency') }}
-        </div>
+        <p v-if="isEdit" id="account-currency" class="form-control-plaintext">
+          {{ selectedCurrencyLabel }}
+        </p>
+        <template v-else>
+          <select
+            id="account-currency"
+            v-model="currency"
+            v-bind="currencyAttrs"
+            class="form-select"
+            :class="{ 'is-invalid': errors.currency }"
+          >
+            <option value="">{{ $t('accounts.chooseCurrency') }}</option>
+            <option v-for="option in currencyOptions" :key="option.code" :value="option.code">
+              {{ option.code }} — {{ option.name }}
+            </option>
+          </select>
+          <div v-if="errors.currency" class="invalid-feedback">
+            {{ $t('accounts.validation.currency') }}
+          </div>
+        </template>
       </div>
 
       <div v-if="!isEdit" class="mb-3">

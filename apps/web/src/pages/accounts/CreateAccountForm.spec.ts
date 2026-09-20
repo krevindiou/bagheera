@@ -123,14 +123,16 @@ describe('CreateAccountForm', () => {
       deleted: false,
     };
 
-    it('prefills from the account and disables bank/currency, with no initial-balance field', () => {
+    it('prefills from the account and shows bank/currency read-only, with no initial-balance field', () => {
       const wrapper = mount(CreateAccountForm, {
         ...withGlobalPlugins(),
         props: { banks, mode: 'edit', account },
       });
       expect((wrapper.find('#account-name').element as HTMLInputElement).value).toBe('Checking');
-      expect(wrapper.find('#account-bank').attributes('disabled')).toBeDefined();
-      expect(wrapper.find('#account-currency').attributes('disabled')).toBeDefined();
+      expect(wrapper.find('#account-bank').element.tagName).toBe('P');
+      expect(wrapper.find('#account-bank').text()).toBe('Chase');
+      expect(wrapper.find('#account-currency').element.tagName).toBe('P');
+      expect(wrapper.find('#account-currency').text()).toContain('USD');
       expect(wrapper.find('#account-initial-balance').exists()).toBe(false);
     });
 
