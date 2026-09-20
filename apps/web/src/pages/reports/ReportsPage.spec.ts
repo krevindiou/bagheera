@@ -135,7 +135,7 @@ describe('ReportsPage', () => {
       wrapper!.find('[data-testid="report-row"] button.btn-outline-secondary');
     await rowButton().trigger('click');
     await flushPromises();
-    expect(wrapper.text()).toContain('Hide chart');
+    expect(rowButton().attributes('aria-label')).toBe('Hide chart');
     expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
     const usdColor = colorForCurrency('USD');
     expect(wrapper.findComponent(SynthesisChart).props('series')).toEqual([
@@ -149,7 +149,7 @@ describe('ReportsPage', () => {
     ]);
 
     await rowButton().trigger('click');
-    expect(wrapper.text()).toContain('View chart');
+    expect(rowButton().attributes('aria-label')).toBe('View chart');
   });
 
   it('toggles the chart by clicking the row itself', async () => {
@@ -158,7 +158,8 @@ describe('ReportsPage', () => {
     await flushPromises();
 
     await wrapper.find('[data-testid="report-row"]').trigger('click');
-    expect(wrapper.text()).toContain('Hide chart');
+    const rowButton = wrapper.find('[data-testid="report-row"] button.btn-outline-secondary');
+    expect(rowButton.attributes('aria-label')).toBe('Hide chart');
   });
 
   it('shows batch actions once a report is selected, and reloads after a batch delete', async () => {

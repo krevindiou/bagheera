@@ -9,6 +9,7 @@ import { errorMessage } from '../../api/errorMessage';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import ToastContainer from '../../components/ToastContainer.vue';
+import IconButton from '../../components/IconButton.vue';
 import SettingsTabs from './SettingsTabs.vue';
 
 // Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
@@ -151,13 +152,12 @@ async function removePasskey(id: string) {
                 }}
               </td>
               <td class="text-end">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+                <IconButton
+                  icon="trash"
+                  danger
+                  :label="$t('settings.passkeys.remove')"
                   @click="removePasskey(credential.id)"
-                >
-                  {{ $t('settings.passkeys.remove') }}
-                </button>
+                />
               </td>
             </tr>
           </tbody>

@@ -16,6 +16,7 @@ import { toDistributionFacets } from './distributionSeries';
 import ReportForm from './ReportForm.vue';
 import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 import ToastContainer from '../../components/ToastContainer.vue';
+import IconButton from '../../components/IconButton.vue';
 
 const { t } = useI18n();
 const { confirm } = useConfirm();
@@ -214,31 +215,26 @@ function toggleView(report: Report) {
                 </td>
                 <td @click.stop>
                   <div class="d-flex justify-content-end gap-2">
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary btn-text"
-                      @click="toggleView(report)"
-                    >
-                      {{
+                    <IconButton
+                      :icon="viewingReportId === report.id ? 'hide' : 'view'"
+                      :label="
                         viewingReportId === report.id
                           ? $t('reports.hideChart')
                           : $t('reports.viewChart')
-                      }}
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-secondary btn-text"
+                      "
+                      @click="toggleView(report)"
+                    />
+                    <IconButton
+                      icon="edit"
+                      :label="$t('operations.edit')"
                       @click="startEdit(report)"
-                    >
-                      {{ $t('operations.edit') }}
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+                    />
+                    <IconButton
+                      icon="trash"
+                      danger
+                      :label="$t('accounts.delete')"
                       @click="deleteReport(report)"
-                    >
-                      {{ $t('accounts.delete') }}
-                    </button>
+                    />
                   </div>
                 </td>
               </tr>

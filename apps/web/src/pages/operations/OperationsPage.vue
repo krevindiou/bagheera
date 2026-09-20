@@ -31,6 +31,7 @@ import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
 import ToastContainer from '../../components/ToastContainer.vue';
+import IconButton from '../../components/IconButton.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -437,14 +438,12 @@ function isEditable(operation: Operation): boolean {
                 <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : '' }}</td>
                 <td>{{ formatDate(operation.valueDate) }}</td>
                 <td @click.stop>
-                  <button
+                  <IconButton
                     v-if="isEditable(operation)"
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary btn-text"
+                    icon="edit"
+                    :label="$t('operations.edit')"
                     @click="startEdit(operation)"
-                  >
-                    {{ $t('operations.edit') }}
-                  </button>
+                  />
                 </td>
               </tr>
             </tbody>

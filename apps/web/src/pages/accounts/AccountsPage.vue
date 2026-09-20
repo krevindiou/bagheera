@@ -11,6 +11,7 @@ import type { Bank, Account } from './accounts.types';
 import BankChoiceForm from './BankChoiceForm.vue';
 import CreateAccountForm from './CreateAccountForm.vue';
 import EditBankForm from './EditBankForm.vue';
+import IconButton from '../../components/IconButton.vue';
 import ToastContainer from '../../components/ToastContainer.vue';
 
 const { push: toast } = useToast();
@@ -206,30 +207,25 @@ async function onAccountCreated(accountId: string) {
         <span v-if="bank.closed" class="pill pill-amber">{{ $t('accounts.closed') }}</span>
         <span v-if="bank.deleted" class="pill pill-danger">{{ $t('accounts.deleted') }}</span>
         <div class="ms-auto d-flex gap-2">
-          <button
+          <IconButton
             v-if="!bank.closed && !bank.deleted"
-            type="button"
-            class="btn btn-sm btn-outline-secondary btn-text"
+            icon="edit"
+            :label="$t('accounts.edit')"
             @click="startEditBank(bank)"
-          >
-            {{ $t('accounts.edit') }}
-          </button>
-          <button
+          />
+          <IconButton
             v-if="!bank.closed && !bank.deleted"
-            type="button"
-            class="btn btn-sm btn-outline-secondary btn-text"
+            icon="archive"
+            :label="$t('accounts.close')"
             @click="closeBank(bank)"
-          >
-            {{ $t('accounts.close') }}
-          </button>
-          <button
+          />
+          <IconButton
             v-if="!bank.deleted"
-            type="button"
-            class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+            icon="trash"
+            danger
+            :label="$t('accounts.delete')"
             @click="deleteBank(bank)"
-          >
-            {{ $t('accounts.delete') }}
-          </button>
+          />
         </div>
       </div>
 
@@ -282,30 +278,25 @@ async function onAccountCreated(accountId: string) {
               </td>
               <td @click.stop>
                 <div class="d-flex justify-content-end gap-2">
-                  <button
+                  <IconButton
                     v-if="!account.closed && !account.deleted"
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary btn-text"
+                    icon="edit"
+                    :label="$t('accounts.edit')"
                     @click="startEditAccount(account)"
-                  >
-                    {{ $t('accounts.edit') }}
-                  </button>
-                  <button
+                  />
+                  <IconButton
                     v-if="!account.closed && !account.deleted"
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary btn-text"
+                    icon="archive"
+                    :label="$t('accounts.close')"
                     @click="closeAccount(account)"
-                  >
-                    {{ $t('accounts.close') }}
-                  </button>
-                  <button
+                  />
+                  <IconButton
                     v-if="!account.deleted"
-                    type="button"
-                    class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+                    icon="trash"
+                    danger
+                    :label="$t('accounts.delete')"
                     @click="deleteAccount(account)"
-                  >
-                    {{ $t('accounts.delete') }}
-                  </button>
+                  />
                 </div>
               </td>
             </tr>

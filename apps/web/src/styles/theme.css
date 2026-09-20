@@ -217,34 +217,21 @@ input[type='radio'] {
 }
 
 /* Per-row inline actions (Accounts' Edit/Close/Delete, Schedulers/Reports'
-   Edit/View chart, Passkeys' Remove) — the mock renders these as bare
-   colored text, not bordered buttons (see e.g. Bagheera App.dc.html's
-   accounts-panel row: plain <span>s, no border/background). Real <button>
-   elements underneath for a11y/keyboard support; this just strips the
-   button chrome down to that same plain-text look. */
-.btn-text {
-  background: none;
-  border: none;
+   Edit/View chart, Passkeys' Remove) — icon-only buttons (see IconButton.vue)
+   so a row with several actions stays compact. The action name is kept as
+   the accessible name (aria-label) and hover tooltip (title), not visible
+   text — mirrors the mock's "thin, 1.5px stroke" guidance for icons. */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   padding: 0;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--paper-faint);
 }
-.btn-text:hover,
-.btn-text:focus-visible {
-  color: var(--paper-dim);
-  background: none;
-  text-decoration: underline;
-}
-.btn-text-danger {
-  color: var(--red);
-}
-.btn-text-danger:hover,
-.btn-text-danger:focus-visible {
-  color: var(--red);
-  background: none;
-  text-decoration: underline;
-  filter: brightness(1.15);
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 .panel-row {

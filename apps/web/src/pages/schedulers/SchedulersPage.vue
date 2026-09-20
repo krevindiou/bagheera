@@ -16,6 +16,7 @@ import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
 import type { Scheduler, SchedulerList } from './schedulers.types';
 import ToastContainer from '../../components/ToastContainer.vue';
+import IconButton from '../../components/IconButton.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -209,13 +210,11 @@ function goToPage(newPage: number) {
               <td class="text-end">{{ scheduler.frequencyValue }}</td>
               <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
               <td @click.stop>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary btn-text"
+                <IconButton
+                  icon="edit"
+                  :label="$t('operations.edit')"
                   @click="startEdit(scheduler)"
-                >
-                  {{ $t('operations.edit') }}
-                </button>
+                />
               </td>
             </tr>
           </tbody>
