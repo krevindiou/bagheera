@@ -33,7 +33,7 @@ export default {
     register: {
       title: 'Créer un compte',
       email: 'Adresse email',
-      country: 'Code pays',
+      country: 'Pays',
       submit: 'Continuer',
       passkeyHint: 'Vous enregistrerez une clé d’accès pour finaliser la création de votre compte.',
       success:

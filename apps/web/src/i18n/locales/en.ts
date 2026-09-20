@@ -30,7 +30,7 @@ export default {
     register: {
       title: 'Create an account',
       email: 'Email address',
-      country: 'Country code',
+      country: 'Country',
       submit: 'Continue',
       passkeyHint: "You'll register a passkey to finish creating your account.",
       success:
