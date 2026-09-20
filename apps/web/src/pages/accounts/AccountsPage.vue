@@ -203,7 +203,7 @@ async function onAccountCreated(accountId: string) {
     <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
       <div class="d-flex align-items-center gap-2 mb-2">
         <h2 class="h6 mb-0" style="font-size: 15px">{{ bank.name }}</h2>
-        <span v-if="bank.closed" class="pill">{{ $t('accounts.closed') }}</span>
+        <span v-if="bank.closed" class="pill pill-amber">{{ $t('accounts.closed') }}</span>
         <span v-if="bank.deleted" class="pill pill-danger">{{ $t('accounts.deleted') }}</span>
         <div class="ms-auto d-flex gap-2">
           <button
@@ -254,7 +254,7 @@ async function onAccountCreated(accountId: string) {
             >
               {{ account.name }} ({{ account.currency }})
             </router-link>
-            <span v-if="account.closed" class="pill">{{ $t('accounts.closed') }}</span>
+            <span v-if="account.closed" class="pill pill-amber">{{ $t('accounts.closed') }}</span>
             <span v-if="account.deleted" class="pill pill-danger">{{
               $t('accounts.deleted')
             }}</span>

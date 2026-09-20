@@ -434,6 +434,10 @@ input[type='radio'] {
   border-color: rgba(232, 105, 122, 0.4);
   color: var(--red);
 }
+.pill-amber {
+  border-color: rgba(224, 169, 76, 0.4);
+  color: var(--amber);
+}
 .pill-violet {
   border-color: rgba(124, 79, 209, 0.5);
   background: rgba(124, 79, 209, 0.14);
