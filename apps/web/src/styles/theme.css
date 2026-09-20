@@ -526,15 +526,48 @@ input[type='radio'] {
   gap: 12px;
 }
 .stat-card {
+  position: relative;
   background: var(--panel);
   border: 1px solid var(--hair);
   border-radius: 8px;
   padding: 18px;
 }
+/* padding-right reserves space for the trend badge below, on every
+   stat-card's label (not just income/expense) — so income's shorter text
+   and expense's longer one wrap the same way instead of one card staying
+   single-line while its neighbor wraps. */
 .stat-card .stat-label {
   font-size: 12.5px;
   color: var(--paper-faint);
   margin-bottom: 8px;
+  padding-right: 32px;
+}
+/* Trend badge (income/expense stat cards) — a small circular chip pinned
+   to the card's top-right corner, clear of both the label text and the
+   figure below it. Named "-trend-" (not "-stat-") to avoid colliding
+   with the unrelated .stat-chip component below. */
+.stat-trend-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stat-trend-badge svg {
+  width: 18px;
+  height: 18px;
+}
+.stat-trend-badge-success {
+  background: rgba(95, 217, 141, 0.14);
+  color: var(--green);
+}
+.stat-trend-badge-danger {
+  background: rgba(232, 105, 122, 0.14);
+  color: var(--red);
 }
 .stat-card .stat-value {
   font-family: 'Space Grotesk', sans-serif;

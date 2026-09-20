@@ -130,9 +130,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
         maxTicksLimit: 6,
         precision: 0,
         callback: (value) =>
-          new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(
-            value as number,
-          ),
+          new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(value as number),
       },
     },
   },
