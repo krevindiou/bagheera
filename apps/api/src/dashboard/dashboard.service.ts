@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMajorUnits } from '../common/money';
@@ -11,8 +10,7 @@ import {
   SynthesisChart,
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, category, operation, report } from '../db/schema';
-import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { account, bank, operation, report } from '../db/schema';
 import { MinorUnits } from '../common/money';
 import {
   ReportDistribution,
@@ -62,7 +60,7 @@ export type HomepageReport =
 export interface DashboardResponse {
   onboarding: OnboardingTip;
   totalBalances: TotalBalance[];
-  lastSalary: DashboardIndicator | null;
+  lastBiggestIncome: DashboardIndicator | null;
   lastBiggestExpense: DashboardIndicator | null;
   synthesisChart: SynthesisChart;
   accountsOverview: AccountsOverviewBank[];
@@ -102,7 +100,6 @@ export class DashboardService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly reportSeries: ReportSeriesService,
     private readonly reportDistributions: ReportDistributionService,
-    private readonly config: ConfigService,
   ) {}
 
   private async balancesByAccount(
@@ -208,7 +205,7 @@ export class DashboardService {
       return {
         onboarding: 'no-bank',
         totalBalances: [],
-        lastSalary: null,
+        lastBiggestIncome: null,
         lastBiggestExpense: null,
         synthesisChart: EMPTY_SYNTHESIS_CHART,
         accountsOverview: [],
@@ -263,8 +260,8 @@ export class DashboardService {
       .filter((a) => !a.closed && activeBankIds.has(a.bankId))
       .map((a) => a.id);
 
-    const [lastSalary, lastBiggestExpense, synthesisChart, histories] = await Promise.all([
-      this.getLastSalary(fullyActiveAccountIds, accounts),
+    const [lastBiggestIncome, lastBiggestExpense, synthesisChart, histories] = await Promise.all([
+      this.getLastBiggestIncome(fullyActiveAccountIds, accounts),
       this.getLastBiggestExpense(fullyActiveAccountIds, accounts),
       this.getSynthesisChart(accounts, range),
       this.accountHistories(accounts),
@@ -299,7 +296,7 @@ export class DashboardService {
     return {
       onboarding,
       totalBalances,
-      lastSalary,
+      lastBiggestIncome,
       lastBiggestExpense,
       synthesisChart,
       accountsOverview,
@@ -349,42 +346,43 @@ export class DashboardService {
     );
   }
 
-  private async getLastSalary(
+  private async getLastBiggestIncome(
     fullyActiveAccountIds: string[],
     accounts: (typeof account.$inferSelect)[],
   ): Promise<DashboardIndicator | null> {
     if (fullyActiveAccountIds.length === 0) {
       return null;
     }
-    const salaryCategoryId = this.config.get<string>('SALARY_CATEGORY_ID', SALARY_CATEGORY_SEED_ID);
-    const [salaryCategory] = await this.db
-      .select()
-      .from(category)
-      .where(eq(category.id, salaryCategoryId));
-    if (!salaryCategory) {
-      return null;
-    }
+    const { start, end } = previousCalendarMonthRange();
 
-    const [row] = await this.db
+    const rows = await this.db
       .select()
       .from(operation)
       .where(
         and(
           inArray(operation.accountId, fullyActiveAccountIds),
-          eq(operation.categoryId, salaryCategory.id),
+          isNull(operation.schedulerId),
+          sql`${operation.credit} is not null`,
+          sql`${operation.valueDate} >= ${start}`,
+          sql`${operation.valueDate} <= ${end}`,
         ),
-      )
-      .orderBy(desc(operation.valueDate), desc(operation.id))
-      .limit(1);
-    if (!row || row.credit === null) {
+      );
+    if (rows.length === 0) {
       return null;
     }
-    const currency = accounts.find((a) => a.id === row.accountId)!.currency;
+
+    // Largest raw stored (minor-unit) amount wins, no currency conversion;
+    // deterministic tie-break by operation id — UUIDv7 ids sort
+    // lexicographically in creation order, so a plain string compare works.
+    const winner = rows.sort((a, b) =>
+      b.credit! !== a.credit! ? b.credit! - a.credit! : a.id.localeCompare(b.id),
+    )[0];
+    const currency = accounts.find((a) => a.id === winner.accountId)!.currency;
     return {
-      amount: toMajorUnits(row.credit),
+      amount: toMajorUnits(winner.credit!),
       currency,
-      valueDate: row.valueDate,
-      thirdParty: row.thirdParty,
+      valueDate: winner.valueDate,
+      thirdParty: winner.thirdParty,
     };
   }
 

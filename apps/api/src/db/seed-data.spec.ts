@@ -46,7 +46,7 @@ describe('paymentMethodSeeds', () => {
 });
 
 describe('categorySeeds', () => {
-  it('SALARY_CATEGORY_SEED_ID matches the seeded Salary category, used by dashboard.service.ts', () => {
+  it('SALARY_CATEGORY_SEED_ID matches the seeded Salary category', () => {
     const salary = categorySeeds.find((c) => c.id === SALARY_CATEGORY_SEED_ID);
     expect(salary?.name).toBe('Salary');
     expect(salary?.type).toBe('credit');

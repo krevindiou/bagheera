@@ -50,16 +50,16 @@ export const paymentMethodSeeds: PaymentMethodSeed[] = [
 ];
 
 export interface CategorySeed {
-  // Set only for categories referenced elsewhere by id (currently just
-  // Salary, via SALARY_CATEGORY_ID). Unset categories get a DB-generated
-  // UUIDv7 on insert — see seed.ts's insertCategories.
+  // Set only for categories referenced elsewhere by a fixed id (currently
+  // just Salary, via SALARY_CATEGORY_SEED_ID — used as a stable category id
+  // by tests/fixtures). Unset categories get a DB-generated UUIDv7 on
+  // insert — see seed.ts's insertCategories.
   id?: string;
   name: string;
   type: 'debit' | 'credit';
   children?: CategorySeed[];
 }
 
-// Matches SALARY_CATEGORY_ID's default (see dashboard.service.ts).
 export const SALARY_CATEGORY_SEED_ID = '00000000-0001-7000-8000-000000000001';
 
 // Placeholder set — real list TBD with the business owner.

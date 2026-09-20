@@ -272,7 +272,7 @@ export default {
     totalBalances: 'Total balance',
     totalReconciled: 'Reconciled',
     noBalances: 'No accounts yet.',
-    lastSalary: 'Last salary',
+    lastBiggestIncome: 'Biggest income last month',
     lastBiggestExpense: 'Biggest expense last month',
     synthesisChart: 'Balance trend',
     accountsOverview: 'Accounts overview',

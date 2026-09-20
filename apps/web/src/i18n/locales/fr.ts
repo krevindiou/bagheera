@@ -277,7 +277,7 @@ export default {
     totalBalances: 'Solde total',
     totalReconciled: 'Rapproché',
     noBalances: 'Aucun compte pour le moment.',
-    lastSalary: 'Dernier salaire',
+    lastBiggestIncome: 'Plus gros revenu le mois dernier',
     lastBiggestExpense: 'Plus grosse dépense le mois dernier',
     synthesisChart: 'Évolution du solde',
     accountsOverview: 'Aperçu des comptes',

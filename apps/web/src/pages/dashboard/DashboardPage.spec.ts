@@ -19,7 +19,7 @@ function baseDashboard(overrides: Partial<DashboardResponse> = {}): DashboardRes
   return {
     onboarding: null,
     totalBalances: [],
-    lastSalary: null,
+    lastBiggestIncome: null,
     lastBiggestExpense: null,
     synthesisChart: { hidden: true, axisBounds: null, series: [] },
     accountsOverview: [],
@@ -107,10 +107,10 @@ describe('DashboardPage', () => {
     expect(wrapper.text()).toContain('No accounts yet.');
   });
 
-  it('shows the last salary and biggest expense when present', async () => {
+  it('shows the biggest income and biggest expense when present', async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
-        lastSalary: {
+        lastBiggestIncome: {
           amount: 2500,
           currency: 'USD',
           valueDate: '2026-01-15',
@@ -124,9 +124,9 @@ describe('DashboardPage', () => {
         },
       }),
     );
-    expect(wrapper.find('[data-testid="last-salary"]').text()).toContain('$2,500.00');
-    expect(wrapper.find('[data-testid="last-salary"]').text()).toContain('1/15/2026');
-    expect(wrapper.find('[data-testid="last-salary"]').text()).toContain('Acme Corp');
+    expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('$2,500.00');
+    expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('1/15/2026');
+    expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('Acme Corp');
     expect(wrapper.find('[data-testid="last-biggest-expense"]').text()).toContain('$80.00');
     expect(wrapper.find('[data-testid="last-biggest-expense"]').text()).toContain('Grocery Store');
   });

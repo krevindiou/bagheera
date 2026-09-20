@@ -109,14 +109,24 @@ const accountTiles = computed(() =>
               </span>
             </div>
           </div>
-          <div v-if="dashboard.lastSalary" class="stat-card" data-testid="last-salary">
-            <div class="stat-label">{{ $t('dashboard.lastSalary') }}</div>
+          <div
+            v-if="dashboard.lastBiggestIncome"
+            class="stat-card"
+            data-testid="last-biggest-income"
+          >
+            <div class="stat-label">{{ $t('dashboard.lastBiggestIncome') }}</div>
             <div class="stat-value text-success">
-              {{ formatMoney(dashboard.lastSalary.amount, dashboard.lastSalary.currency, true) }}
+              {{
+                formatMoney(
+                  dashboard.lastBiggestIncome.amount,
+                  dashboard.lastBiggestIncome.currency,
+                  true,
+                )
+              }}
             </div>
             <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
-              {{ dashboard.lastSalary.thirdParty }} ·
-              {{ formatDate(dashboard.lastSalary.valueDate) }}
+              {{ dashboard.lastBiggestIncome.thirdParty }} ·
+              {{ formatDate(dashboard.lastBiggestIncome.valueDate) }}
             </div>
           </div>
           <div

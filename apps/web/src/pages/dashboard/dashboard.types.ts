@@ -58,7 +58,7 @@ export interface DashboardSynthesisChart {
 export interface DashboardResponse {
   onboarding: OnboardingTip;
   totalBalances: TotalBalance[];
-  lastSalary: DashboardIndicator | null;
+  lastBiggestIncome: DashboardIndicator | null;
   lastBiggestExpense: DashboardIndicator | null;
   synthesisChart: DashboardSynthesisChart;
   accountsOverview: AccountsOverviewBank[];

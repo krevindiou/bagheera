@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
@@ -33,7 +33,12 @@ function dayInPreviousCalendarMonth(): string {
 interface DashboardBody {
   onboarding: string | null;
   totalBalances: { currency: string; amount: number; reconciledAmount: number }[];
-  lastSalary: { amount: number; currency: string; valueDate: string; thirdParty: string } | null;
+  lastBiggestIncome: {
+    amount: number;
+    currency: string;
+    valueDate: string;
+    thirdParty: string;
+  } | null;
   lastBiggestExpense: {
     amount: number;
     currency: string;
@@ -195,27 +200,34 @@ describe('GET /dashboard', () => {
     expect(tile.reconciledBalance).toBe(250);
   });
 
-  it('reports the last salary from a Salary-categorized credit', async () => {
+  it("reports last month's biggest income, regardless of category", async () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
     const accountId = await createAccount(mutate, bankId);
-    const res1 = await mutate('post', '/operations', {
+    const lastMonthDate = dayInPreviousCalendarMonth();
+    await mutate('post', '/operations', {
+      accountId,
+      type: 'credit',
+      thirdParty: 'Small',
+      amount: 20,
+      paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
+      valueDate: lastMonthDate,
+    });
+    await mutate('post', '/operations', {
       accountId,
       type: 'credit',
       thirdParty: 'Employer',
       amount: 2000,
-      categoryId: SALARY_CATEGORY_SEED_ID,
       paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
-      valueDate: '2026-01-01',
+      valueDate: lastMonthDate,
     });
-    expect(res1.status).toBe(200);
 
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
-    expect(body.lastSalary).toEqual({
+    expect(body.lastBiggestIncome).toEqual({
       amount: 2000,
       currency: 'EUR',
-      valueDate: '2026-01-01',
+      valueDate: lastMonthDate,
       thirdParty: 'Employer',
     });
   });
