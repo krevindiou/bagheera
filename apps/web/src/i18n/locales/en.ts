@@ -84,6 +84,8 @@ export default {
     chooseBank: 'Choose a bank…',
     newBankName: 'Or create a new bank',
     accountName: 'Account name',
+    account: 'Account',
+    balance: 'Balance',
     currency: 'Currency',
     chooseCurrency: 'Choose a currency…',
     initialBalance: 'Initial balance',

@@ -236,65 +236,81 @@ async function onAccountCreated(accountId: string) {
       <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-1 mb-0">
         {{ $t('accounts.noAccountsForBank') }}
       </p>
-      <div v-else class="panel">
-        <div
-          v-for="account in accountsForBank(bank.id)"
-          :key="account.id"
-          class="panel-row"
-          data-testid="account-row"
-        >
-          <div
-            class="d-flex align-items-center gap-2"
-            style="cursor: pointer"
-            @click="goToAccount(account)"
-          >
-            <router-link
-              :to="{ name: 'operations', params: { accountId: account.id } }"
-              @click.stop
+      <div v-else class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{{ $t('accounts.account') }}</th>
+              <th class="text-end">{{ $t('accounts.balance') }}</th>
+              <th class="text-end">{{ $t('dashboard.totalReconciled') }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="account in accountsForBank(bank.id)"
+              :key="account.id"
+              style="cursor: pointer"
+              data-testid="account-row"
+              @click="goToAccount(account)"
             >
-              {{ account.name }} ({{ account.currency }})
-            </router-link>
-            <span v-if="account.closed" class="pill pill-amber">{{ $t('accounts.closed') }}</span>
-            <span v-if="account.deleted" class="pill pill-danger">{{
-              $t('accounts.deleted')
-            }}</span>
-            <div class="ms-auto d-flex align-items-center gap-2" @click.stop>
-              <span class="amount" data-testid="account-balance">{{
-                formatMoney(account.balance ?? 0, account.currency, true)
-              }}</span>
-              <div class="stat-footnote stat-footnote-inline">
-                <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
-                <span class="stat-footnote-value" data-testid="account-reconciled-balance">
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <router-link
+                    :to="{ name: 'operations', params: { accountId: account.id } }"
+                    @click.stop
+                  >
+                    {{ account.name }} ({{ account.currency }})
+                  </router-link>
+                  <span v-if="account.closed" class="pill pill-amber">{{
+                    $t('accounts.closed')
+                  }}</span>
+                  <span v-if="account.deleted" class="pill pill-danger">{{
+                    $t('accounts.deleted')
+                  }}</span>
+                </div>
+              </td>
+              <td class="text-end">
+                <span class="amount" data-testid="account-balance">{{
+                  formatMoney(account.balance ?? 0, account.currency, true)
+                }}</span>
+              </td>
+              <td class="text-end">
+                <span class="amount" data-testid="account-reconciled-balance">
                   {{ formatMoney(account.reconciledBalance ?? 0, account.currency, true) }}
                 </span>
-              </div>
-              <button
-                v-if="!account.closed && !account.deleted"
-                type="button"
-                class="btn btn-sm btn-outline-secondary btn-text"
-                @click="startEditAccount(account)"
-              >
-                {{ $t('accounts.edit') }}
-              </button>
-              <button
-                v-if="!account.closed && !account.deleted"
-                type="button"
-                class="btn btn-sm btn-outline-secondary btn-text"
-                @click="closeAccount(account)"
-              >
-                {{ $t('accounts.close') }}
-              </button>
-              <button
-                v-if="!account.deleted"
-                type="button"
-                class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
-                @click="deleteAccount(account)"
-              >
-                {{ $t('accounts.delete') }}
-              </button>
-            </div>
-          </div>
-        </div>
+              </td>
+              <td @click.stop>
+                <div class="d-flex justify-content-end gap-2">
+                  <button
+                    v-if="!account.closed && !account.deleted"
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-text"
+                    @click="startEditAccount(account)"
+                  >
+                    {{ $t('accounts.edit') }}
+                  </button>
+                  <button
+                    v-if="!account.closed && !account.deleted"
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary btn-text"
+                    @click="closeAccount(account)"
+                  >
+                    {{ $t('accounts.close') }}
+                  </button>
+                  <button
+                    v-if="!account.deleted"
+                    type="button"
+                    class="btn btn-sm btn-outline-danger btn-text btn-text-danger"
+                    @click="deleteAccount(account)"
+                  >
+                    {{ $t('accounts.delete') }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 

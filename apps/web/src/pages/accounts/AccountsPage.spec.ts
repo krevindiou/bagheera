@@ -109,7 +109,7 @@ describe('AccountsPage', () => {
     expect(wrapper.find('[data-testid="account-balance"]').text()).toBe('$1,200.40');
   });
 
-  it("shows each account's reconciled balance as a muted footnote under the balance", async () => {
+  it("shows each account's reconciled balance in its own column", async () => {
     mockData(
       [bank('b1', 'Chase')],
       [account('a1', 'b1', 'Checking', 'USD', false, false, 1200.4, 1000)],
@@ -252,9 +252,7 @@ describe('AccountsPage', () => {
     await flushPromises();
     const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
-    // The click handler is on the row's inner div, not the <li> itself —
-    // a click dispatched on the <li> wouldn't bubble down to it.
-    await wrapper.find('[data-testid="account-row"] > div').trigger('click');
+    await wrapper.find('[data-testid="account-row"]').trigger('click');
     expect(pushSpy).toHaveBeenCalledWith({ name: 'operations', params: { accountId: 'a1' } });
   });
 
