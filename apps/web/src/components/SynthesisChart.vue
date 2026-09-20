@@ -94,6 +94,7 @@ const chartData = computed<ChartData<'line'>>(() => ({
     borderColor: series.color,
     backgroundColor: withAlpha(series.color, 0.18),
     borderDash: series.dash ?? [],
+    borderWidth: 1.5,
     fill: true,
     tension: 0.2,
     pointRadius: pointRadius.value,

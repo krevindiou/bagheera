@@ -67,7 +67,7 @@ const areaPath = computed(() => {
       :d="linePath"
       :stroke="color"
       fill="none"
-      stroke-width="1.75"
+      stroke-width="1.25"
       stroke-linecap="round"
       stroke-linejoin="round"
     />

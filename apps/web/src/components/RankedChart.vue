@@ -104,6 +104,8 @@ function snapshotChartData(facet: RankedChartFacet & { kind: 'snapshot' }): Char
       {
         data: facet.bars.map((bar) => bar.value),
         backgroundColor: facet.bars.map((bar) => bar.color),
+        categoryPercentage: 0.6,
+        barPercentage: 0.7,
       },
     ],
   };
@@ -146,6 +148,8 @@ function stackedChartData(facet: RankedChartFacet & { kind: 'temporal' }): Chart
       // Every dataset shares one stack, so bars sum to the period total
       // rather than sitting side by side.
       stack: 'ranked',
+      categoryPercentage: 0.6,
+      barPercentage: 0.7,
     })),
   };
 }
