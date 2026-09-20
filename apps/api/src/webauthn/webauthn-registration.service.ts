@@ -113,11 +113,11 @@ export class WebauthnRegistrationService {
     }
 
     const [row] = await this.db
-      .select({ email: member.email })
+      .select({ email: member.email, locale: member.locale })
       .from(member)
       .where(eq(member.id, memberId));
     if (row) {
-      await this.emailQueue.enqueue(passkeyRegisteredEmail(row.email));
+      await this.emailQueue.enqueue(passkeyRegisteredEmail(row.email, row.locale));
     }
     await this.audit.record('webauthn_credential_registered', memberId, req.ip ?? 'unknown');
   }

@@ -18,7 +18,9 @@ import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { HashService } from '../security/hash.service';
 import '../session/session-data';
+import { requireMemberId } from '../session/require-member-id';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
+import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { raceSafeUniqueEmail } from './race-safe-unique-email';
 
@@ -104,8 +106,8 @@ export class ProfileService {
 
     const token = buildEmailChangeToken(this.crypto, row.id, dto.email, nextVersion);
     const appUrl = this.config.getOrThrow<string>('APP_URL');
-    const confirmLink = `${appUrl}/en/confirm-email-change?key=${encodeURIComponent(token)}`;
-    await this.emailQueue.enqueue(confirmEmailChangeEmail(dto.email, confirmLink));
+    const confirmLink = `${appUrl}/${row.locale}/confirm-email-change?key=${encodeURIComponent(token)}`;
+    await this.emailQueue.enqueue(confirmEmailChangeEmail(dto.email, confirmLink, row.locale));
     await this.audit.record('email_change_requested', row.id, req.ip ?? 'unknown');
   }
 
@@ -161,7 +163,18 @@ export class ProfileService {
       throw new BadRequestException(EMAIL_CHANGE_ERROR);
     }
 
-    await this.emailQueue.enqueue(emailChangedEmail(previousEmail, payload.newEmail));
+    await this.emailQueue.enqueue(emailChangedEmail(previousEmail, payload.newEmail, row.locale));
     await this.audit.record('email_changed', row.id, sourceAddress);
+  }
+
+  /**
+   * Updates the member's UI/email language preference. Unlike updateEmail,
+   * this doesn't verify the current password — it isn't a sensitive
+   * credential, just a display preference, and requiring a password on
+   * every switcher click would be poor UX for something this low-stakes.
+   */
+  async updateLocale(req: Request, dto: UpdateLocaleDto): Promise<void> {
+    const memberId = requireMemberId(req);
+    await this.db.update(member).set({ locale: dto.locale }).where(eq(member.id, memberId));
   }
 }

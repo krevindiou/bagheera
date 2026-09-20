@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../api/client';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import { useSessionStore } from '../stores/session.store';
 
 const session = useSessionStore();
@@ -75,6 +76,8 @@ async function signOut() {
           </button>
         </div>
       </div>
+
+      <LanguageSwitcher class="side-lang-switcher" />
     </aside>
 
     <div class="main">
@@ -88,3 +91,9 @@ async function signOut() {
 
   <ConfirmModal />
 </template>
+
+<style scoped>
+.side-lang-switcher {
+  margin-top: 12px;
+}
+</style>

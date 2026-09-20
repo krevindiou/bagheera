@@ -101,6 +101,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/members/locale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProfileController_updateLocale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/members/profile/confirm-email-change": {
         parameters: {
             query?: never;
@@ -732,6 +748,8 @@ export interface components {
         RegisterDto: {
             email: string;
             country: string;
+            /** @enum {string} */
+            locale?: "en" | "fr";
             password: string;
             passwordConfirmation: string;
         };
@@ -745,6 +763,10 @@ export interface components {
         UpdateProfileDto: {
             email: string;
             currentPassword: string;
+        };
+        UpdateLocaleDto: {
+            /** @enum {string} */
+            locale: "en" | "fr";
         };
         ConfirmEmailChangeDto: {
             key: string;
@@ -1049,6 +1071,27 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProfileController_updateLocale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLocaleDto"];
             };
         };
         responses: {

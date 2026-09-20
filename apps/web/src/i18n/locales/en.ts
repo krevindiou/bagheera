@@ -350,4 +350,14 @@ export default {
       genericError: 'Something went wrong. Please try again.',
     },
   },
+  language: {
+    label: 'Language',
+    // Each language's own name, in that language — never translated, so a
+    // visitor can always find their language regardless of which one is
+    // currently active.
+    en: 'English',
+    fr: 'Français',
+    success: 'Language updated.',
+    genericError: 'Something went wrong. Please try again.',
+  },
 };

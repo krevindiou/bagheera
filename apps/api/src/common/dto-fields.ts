@@ -1,6 +1,7 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -12,6 +13,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { SUPPORTED_LOCALES } from './locale';
 
 // Composed class-validator property decorators for the field shapes that
 // recur, byte-identical, across DTOs — email, and the two password shapes
@@ -25,6 +27,18 @@ export function EmailField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsEmail()(target, propertyKey);
     MaxLength(128)(target, propertyKey);
+  };
+}
+
+/**
+ * A UI/email locale, checked against SUPPORTED_LOCALES (common/locale.ts —
+ * the source of truth the `locale` pg enum also derives from). Required by
+ * default; callers where it's optional (e.g. registration, which falls
+ * back to DEFAULT_LOCALE) stack their own `@IsOptional()` on top.
+ */
+export function LocaleField(): PropertyDecorator {
+  return function (target: object, propertyKey: string | symbol): void {
+    IsIn(SUPPORTED_LOCALES)(target, propertyKey);
   };
 }
 

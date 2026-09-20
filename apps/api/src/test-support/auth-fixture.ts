@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import type { Server } from 'http';
 import request from 'supertest';
+import type { Locale } from '../common/locale';
 import { member } from '../db/schema';
 import { buildActivationToken } from '../members/activation-token';
 import { CryptoService } from '../security/crypto.service';
@@ -81,6 +82,7 @@ interface FixtureOverrides {
   email?: string;
   password?: string;
   country?: string;
+  locale?: Locale;
 }
 
 /**
@@ -99,10 +101,16 @@ export async function insertActiveMember(
   const password = overrides.password ?? DEFAULT_PASSWORD;
   const country = overrides.country ?? 'FR';
   const passwordHash = await app.get(HashService).hash(password);
-  const [row] = await getDb(app)
-    .insert(member)
-    .values({ email, password: passwordHash, country, active: true })
-    .returning({ id: member.id });
+  const values: typeof member.$inferInsert = {
+    email,
+    password: passwordHash,
+    country,
+    active: true,
+  };
+  if (overrides.locale) {
+    values.locale = overrides.locale;
+  }
+  const [row] = await getDb(app).insert(member).values(values).returning({ id: member.id });
 
   return { email, password, memberId: row.id };
 }

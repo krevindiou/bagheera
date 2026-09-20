@@ -66,7 +66,7 @@ export class ChangePasswordService {
       .where(eq(member.id, row.id));
 
     await this.sessionTermination.terminateOtherSessions(row.id, req.session.id);
-    await this.emailQueue.enqueue(passwordChangedEmail(row.email));
+    await this.emailQueue.enqueue(passwordChangedEmail(row.email, row.locale));
     await this.audit.record('password_changed', row.id, req.ip ?? 'unknown');
   }
 }

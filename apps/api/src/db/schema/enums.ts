@@ -1,8 +1,14 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
+import { SUPPORTED_LOCALES } from '../../common/locale';
 
 // Shared debit/credit typing used by PaymentMethod, Category, Operation and
 // Scheduler.
 export const entryTypeEnum = pgEnum('entry_type', ['debit', 'credit']);
+
+// Member's UI/email language preference. Values mirror common/locale.ts's
+// SUPPORTED_LOCALES exactly — that's the tuple to edit when a language is
+// added, not this line.
+export const localeEnum = pgEnum('locale', SUPPORTED_LOCALES);
 
 // Scheduler recurrence unit.
 export const frequencyUnitEnum = pgEnum('frequency_unit', ['day', 'week', 'month', 'year']);

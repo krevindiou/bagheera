@@ -3,12 +3,13 @@ import { ref } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../../api/client';
 import { rememberAttemptedEmail } from '../../composables/useLastAttemptedEmail';
 import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';
 import { passwordValidationKey } from '../../composables/usePasswordStrength';
 import { useToast } from '../../composables/useToast';
+import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
 import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
 import PasswordInput from '../../components/PasswordInput.vue';
 import { registerSchema, type RegisterForm } from './auth.schemas';
@@ -16,6 +17,7 @@ import ToastContainer from '../../components/ToastContainer.vue';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
+const route = useRoute();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
@@ -41,8 +43,12 @@ const onSubmit = handleSubmit(async (values) => {
   genericError.value = false;
   rememberAttemptedEmail(values.email);
 
+  // Whatever locale this page is currently showing under (`/en/register`,
+  // `/fr/register`, …) — the member's own future emails and the switcher's
+  // preselected value both start from this.
+  const locale = isSupportedLocale(route.params.locale) ? route.params.locale : DEFAULT_LOCALE;
   const { response } = await apiClient.POST('/members/register', {
-    body: { ...values, country: values.country.toUpperCase() },
+    body: { ...values, country: values.country.toUpperCase(), locale },
   });
 
   if (!response.ok) {

@@ -71,7 +71,7 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
 
-  session.setMember({ email: values.email });
+  await session.fetchMember();
   toast(t('auth.signIn.success'), 'success');
   router.push({ name: 'home' });
 });
@@ -117,7 +117,7 @@ async function signInWithPasskey() {
     }
 
     rememberAttemptedEmail(attemptedEmail);
-    session.setMember({ email: attemptedEmail });
+    await session.fetchMember();
     toast(t('auth.signIn.success'), 'success');
     router.push({ name: 'home' });
   } finally {

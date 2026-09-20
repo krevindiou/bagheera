@@ -27,7 +27,8 @@ describe('RegisterPage', () => {
     apiClient.POST.mockReset();
     useToast().toasts.splice(0);
     window.sessionStorage.clear();
-    await router.push({ name: 'register' });
+    localStorage.clear();
+    await router.push({ name: 'register', params: { locale: 'en' } });
   });
 
   it('lists every ISO country as an option', () => {
@@ -51,6 +52,7 @@ describe('RegisterPage', () => {
         country: 'FR',
         password: 'longenough1',
         passwordConfirmation: 'longenough1',
+        locale: 'en',
       },
     });
     expect(readLastAttemptedEmail()).toBe('member@example.com');
@@ -58,6 +60,23 @@ describe('RegisterPage', () => {
       "If this email isn't already registered, you'll receive a link to activate your account.",
     );
     await waitForRouteName(router, 'sign-in');
+  });
+
+  it('sends the locale segment the page is currently shown under', async () => {
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    await router.push({ name: 'register', params: { locale: 'fr' } });
+    const wrapper = mount(RegisterPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith(
+      '/members/register',
+      expect.objectContaining({ body: expect.objectContaining({ locale: 'fr' }) }),
+    );
   });
 
   it('shows a generic error and stays put when registration fails', async () => {

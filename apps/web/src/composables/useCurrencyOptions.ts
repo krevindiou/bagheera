@@ -1,3 +1,5 @@
+import { i18n } from '../i18n';
+
 // Currency dropdown for account creation. Unlike useCountryOptions
 // (Intl.supportedValuesOf has no "region" key), "currency" is a valid
 // key per ECMA-402, so the code list is generated at runtime rather than
@@ -8,8 +10,10 @@ export interface CurrencyOption {
   name: string;
 }
 
+// Called once at setup time by each caller, same caveat as
+// useCountryOptions.getCountryOptions() re: a mid-session locale switch.
 export function getCurrencyOptions(): CurrencyOption[] {
-  const currencyNames = new Intl.DisplayNames(['en'], { type: 'currency' });
+  const currencyNames = new Intl.DisplayNames([i18n.global.locale.value], { type: 'currency' });
   const toOption = (code: string): CurrencyOption => ({
     code,
     name: currencyNames.of(code) ?? code,

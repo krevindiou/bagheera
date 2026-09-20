@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { DEFAULT_LOCALE, type Locale } from '../common/locale';
 import { EmailQueueService } from '../email/email-queue.service';
 import { registrationEmail } from '../email/templates/registration.template';
 import { CryptoService } from '../security/crypto.service';
@@ -13,9 +14,10 @@ export async function sendActivationEmail(
   },
   email: string,
   version: number,
+  locale: Locale = DEFAULT_LOCALE,
 ): Promise<void> {
   const token = buildActivationToken(deps.crypto, email, version);
   const appUrl = deps.config.getOrThrow<string>('APP_URL');
-  const activationLink = `${appUrl}/en/activate?key=${encodeURIComponent(token)}`;
-  await deps.emailQueue.enqueue(registrationEmail(email, activationLink));
+  const activationLink = `${appUrl}/${locale}/activate?key=${encodeURIComponent(token)}`;
+  await deps.emailQueue.enqueue(registrationEmail(email, activationLink, locale));
 }

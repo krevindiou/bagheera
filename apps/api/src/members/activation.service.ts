@@ -72,6 +72,7 @@ export class ActivationService {
       { crypto: this.crypto, emailQueue: this.emailQueue, config: this.config },
       row.email,
       nextVersion,
+      row.locale,
     );
     await this.audit.record('activation_issued', row.id, sourceAddress);
   }

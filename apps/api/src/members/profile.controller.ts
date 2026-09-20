@@ -3,6 +3,7 @@ import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { Public } from '../session/public.decorator';
 import { ConfirmEmailChangeDto } from './dto/confirm-email-change.dto';
+import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ProfileService } from './profile.service';
 
@@ -24,6 +25,17 @@ export class ProfileController {
       message:
         "If this email isn't already registered to another account, check it for a link to confirm the change.",
     };
+  }
+
+  @Post('locale')
+  @HttpCode(200)
+  @RateLimit({ points: 10, durationSeconds: 60 })
+  async updateLocale(
+    @Req() req: Request,
+    @Body() dto: UpdateLocaleDto,
+  ): Promise<{ message: string }> {
+    await this.profile.updateLocale(req, dto);
+    return { message: 'Language preference updated.' };
   }
 
   // Public: reached from the confirmation link mailed to the new address,

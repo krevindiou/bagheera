@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { DEFAULT_LOCALE } from '../common/locale';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { AuditService } from '../security/audit.service';
@@ -36,6 +37,7 @@ export class RegistrationService {
     }
 
     const passwordHash = await this.hash.hash(dto.password);
+    const locale = dto.locale ?? DEFAULT_LOCALE;
 
     const result = await raceSafeUniqueEmail(this.db, dto.email, () =>
       this.db
@@ -43,6 +45,7 @@ export class RegistrationService {
         .values({
           email: dto.email,
           country: dto.country.toUpperCase(),
+          locale,
           password: passwordHash,
           active: false,
         })
@@ -60,6 +63,7 @@ export class RegistrationService {
       { crypto: this.crypto, emailQueue: this.emailQueue, config: this.config },
       dto.email,
       result.value.activationTokenVersion,
+      locale,
     );
     await this.audit.record('activation_issued', result.value.id, sourceAddress);
   }

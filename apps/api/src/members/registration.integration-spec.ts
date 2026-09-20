@@ -4,7 +4,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member, securityEvent } from '../db/schema';
 import { csrfTokenFor, uniqueEmail } from '../test-support/auth-fixture';
-import { createTestApp, getDb } from '../test-support/create-test-app';
+import { createTestApp, FakeEmailQueue, getDb } from '../test-support/create-test-app';
 
 function messageOf(res: request.Response): string {
   return (res.body as { message: string }).message;
@@ -15,7 +15,7 @@ const REGISTER_MESSAGE =
 
 describe('POST /members/register', () => {
   let app: INestApplication<Server>;
-  let fakeEmailQueue: { enqueue: jest.Mock };
+  let fakeEmailQueue: FakeEmailQueue;
 
   beforeAll(async () => {
     ({ app, fakeEmailQueue } = await createTestApp());
@@ -62,6 +62,67 @@ describe('POST /members/register', () => {
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
     expect(event).toBeDefined();
+  });
+
+  it('defaults locale to en when omitted', async () => {
+    const email = uniqueEmail();
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+
+    await agent
+      .post('/members/register')
+      .set('x-csrf-token', csrfToken)
+      .send({
+        email,
+        password: 'a-real-password-1',
+        passwordConfirmation: 'a-real-password-1',
+        country: 'FR',
+      })
+      .expect(201);
+
+    const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
+    expect(row.locale).toBe('en');
+  });
+
+  it('stores an explicit supported locale and sends the activation link/email in it', async () => {
+    const email = uniqueEmail();
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+
+    await agent
+      .post('/members/register')
+      .set('x-csrf-token', csrfToken)
+      .send({
+        email,
+        password: 'a-real-password-1',
+        passwordConfirmation: 'a-real-password-1',
+        country: 'FR',
+        locale: 'fr',
+      })
+      .expect(201);
+
+    const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
+    expect(row.locale).toBe('fr');
+    expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
+    const sent = fakeEmailQueue.enqueue.mock.calls.at(-1)?.[0] as { html: string };
+    expect(sent.html).toContain('/fr/activate?key=');
+  });
+
+  it('rejects an unsupported locale', async () => {
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+
+    await agent
+      .post('/members/register')
+      .set('x-csrf-token', csrfToken)
+      .send({
+        email: uniqueEmail(),
+        password: 'a-real-password-1',
+        passwordConfirmation: 'a-real-password-1',
+        country: 'FR',
+        locale: 'de',
+      })
+      .expect(400);
   });
 
   it('returns the same generic message for an already-registered email and creates no second row', async () => {

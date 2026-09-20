@@ -2,6 +2,7 @@ import { Controller, Get, Inject, Req, UnauthorizedException } from '@nestjs/com
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import type { Locale } from '../common/locale';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { Public } from '../session/public.decorator';
@@ -21,14 +22,14 @@ export class CurrentSessionController {
   // row still exists).
   @Get('me')
   @Public()
-  async me(@Req() req: Request): Promise<{ email: string }> {
+  async me(@Req() req: Request): Promise<{ email: string; locale: Locale }> {
     const memberId = req.session.memberId;
     if (!memberId) {
       throw new UnauthorizedException();
     }
 
     const [row] = await this.db
-      .select({ email: member.email })
+      .select({ email: member.email, locale: member.locale })
       .from(member)
       .where(eq(member.id, memberId));
 
@@ -36,6 +37,6 @@ export class CurrentSessionController {
       throw new UnauthorizedException();
     }
 
-    return { email: row.email };
+    return { email: row.email, locale: row.locale };
   }
 }

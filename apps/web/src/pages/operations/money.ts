@@ -1,4 +1,5 @@
 import { toMajorUnits, type MinorUnits } from '@bagheera/money';
+import { i18n } from '../../i18n';
 
 // Mirrors apps/api/src/common/money.ts's scale, via the shared
 // @bagheera/money package both apps depend on — the API always returns
@@ -8,14 +9,21 @@ export function toDisplayAmount(minorUnits: number): number {
   return toMajorUnits(minorUnits as MinorUnits);
 }
 
-// Only English (`en`) is enabled currently — currency/date formatting
-// follows the active locale, which is `en` for now.
-const LOCALE = 'en';
+// Currency/date formatting follows the app's active i18n locale (switched
+// via LanguageSwitcher.vue / router/index.ts's setLocale) — read live
+// rather than captured once, so a locale switch re-renders every already-
+// mounted amount/date without a page reload. `i18n.global.locale` is a
+// plain ref (legacy: false, see i18n/index.ts), not a reactive composable
+// binding, which is why these are plain functions reading `.value` at call
+// time rather than computed()s — this module isn't a component.
+function currentLocale(): string {
+  return i18n.global.locale.value;
+}
 
 // Money inputs display the account currency symbol as an input add-on.
 export function currencySymbol(currency: string): string {
   try {
-    const part = new Intl.NumberFormat(LOCALE, { style: 'currency', currency })
+    const part = new Intl.NumberFormat(currentLocale(), { style: 'currency', currency })
       .formatToParts(0)
       .find((p) => p.type === 'currency');
     return part?.value ?? currency;
@@ -29,7 +37,7 @@ export function currencySymbol(currency: string): string {
 export function formatDate(date: string): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat(LOCALE).format(parsed);
+  return new Intl.DateTimeFormat(currentLocale()).format(parsed);
 }
 
 // Displayed amounts are localized currency strings in the account's
@@ -43,7 +51,7 @@ export function formatMoney(
 ): string {
   const value = alreadyDisplayAmount ? amount : toDisplayAmount(amount);
   try {
-    return new Intl.NumberFormat(LOCALE, { style: 'currency', currency }).format(value);
+    return new Intl.NumberFormat(currentLocale(), { style: 'currency', currency }).format(value);
   } catch {
     // Unknown/invalid currency code — fall back to a plain decimal so the
     // page doesn't crash.

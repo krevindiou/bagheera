@@ -1,3 +1,5 @@
+import { i18n } from '../i18n';
+
 // Country dropdown for registration. `Intl.supportedValuesOf` has no
 // "region" key (ECMA-402 only defines calendar/collation/currency/
 // numberingSystem/timeZone/unit for it), so the code list is static —
@@ -32,8 +34,12 @@ const ISO_3166_1_ALPHA_2 = [
   "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW",
 ];
 
+// RegisterPage calls this once at setup time, not reactively — switching
+// languages mid-registration (rare) leaves country names in the old
+// language until the next visit to the page, rather than repainting live.
+// A computed() would fix that if it ever matters in practice.
 export function getCountryOptions(): CountryOption[] {
-  const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+  const regionNames = new Intl.DisplayNames([i18n.global.locale.value], { type: 'region' });
 
   return ISO_3166_1_ALPHA_2.map((code) => ({
     code,

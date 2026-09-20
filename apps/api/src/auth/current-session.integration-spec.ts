@@ -17,10 +17,16 @@ describe('GET /auth/me', () => {
     await app.close();
   });
 
-  it("returns the signed-in member's email", async () => {
+  it("returns the signed-in member's email and locale", async () => {
     const { agent, email } = await seedSignedInMember(app);
     const res = await agent.get('/auth/me').expect(200);
-    expect(res.body).toEqual({ email });
+    expect(res.body).toEqual({ email, locale: 'en' });
+  });
+
+  it('returns a non-default locale as-is', async () => {
+    const { agent, email } = await seedSignedInMember(app, { locale: 'fr' });
+    const res = await agent.get('/auth/me').expect(200);
+    expect(res.body).toEqual({ email, locale: 'fr' });
   });
 
   it('rejects an unauthenticated request', async () => {
