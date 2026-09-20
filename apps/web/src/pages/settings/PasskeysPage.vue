@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { startRegistration } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
 import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import ToastContainer from '../../components/ToastContainer.vue';
@@ -83,11 +84,19 @@ async function addPasskey() {
 
 async function removePasskey(id: string) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.DELETE('/webauthn/credentials/{id}', {
+  const { error, response } = await apiClient.DELETE('/webauthn/credentials/{id}', {
     params: { path: { id } },
   });
   if (!response.ok) {
-    toast(t('settings.passkeys.genericError'), 'error');
+    // Branches on the status code, not the server's English text (same
+    // rule ProfilePage.vue/PasskeysPage's own registration flow follow) —
+    // a 400 here specifically means "that's your last passkey", distinct
+    // from every other failure mode, which stays the generic toast.
+    if (response.status === 400) {
+      toast(t('settings.passkeys.lastPasskeyError'), 'error');
+      return;
+    }
+    toast(errorMessage(error) ?? t('settings.passkeys.genericError'), 'error');
     return;
   }
   toast(t('settings.passkeys.removed'), 'success');

@@ -1,6 +1,6 @@
 import { SecretField } from '../../common/dto-fields';
 
-export class ActivateDto {
+export class SignupOptionsDto {
   @SecretField()
   key!: string;
 }

@@ -17,50 +17,37 @@ export default {
     months24: '24 mois',
     all: 'Depuis le début',
   },
-  password: {
-    show: 'Afficher le mot de passe',
-    hide: 'Masquer le mot de passe',
-    strength: {
-      weak: 'Faible',
-      fair: 'Correct',
-      good: 'Bon',
-      strong: 'Fort',
-    },
-  },
   auth: {
     signIn: {
       title: 'Connexion',
       email: 'Adresse email',
-      password: 'Mot de passe',
       submit: 'Se connecter',
-      invalidCredentials: 'Email ou mot de passe invalide',
-      inactiveAccount: "Votre compte n'est pas encore activé.",
-      resendActivation: "Renvoyer l'email d'activation",
-      resendSent: "Un nouvel email d'activation a été envoyé.",
-      forgotPasswordLink: 'Mot de passe oublié ?',
+      passkeySubmit: 'Se connecter avec une clé d’accès',
+      invalidCredentials: 'Échec de la connexion. Vérifiez votre adresse email et réessayez.',
+      passkeysUnsupported:
+        "Ce navigateur ne prend pas en charge les clés d'accès : la connexion n'est pas disponible.",
       registerLink: 'Créer un compte',
       success: 'Connecté.',
-      passkeySubmit: 'Se connecter avec une clé d’accès',
-      passkeyEmailRequired: "Saisissez d'abord votre adresse email.",
       tooManyAttempts: 'Trop de tentatives. Veuillez patienter une minute et réessayer.',
     },
     register: {
       title: 'Créer un compte',
       email: 'Adresse email',
       country: 'Code pays',
-      password: 'Mot de passe',
-      passwordConfirmation: 'Confirmer le mot de passe',
-      submit: "S'inscrire",
+      submit: 'Continuer',
+      passkeyHint: 'Vous enregistrerez une clé d’accès pour finaliser la création de votre compte.',
       success:
-        "Si cet email n'est pas déjà enregistré, vous recevrez un lien pour activer votre compte.",
+        "Si cet email n'est pas déjà enregistré, vous recevrez un lien pour créer votre compte.",
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
       signInLink: 'Vous avez déjà un compte ? Connectez-vous',
     },
     activate: {
-      title: 'Activation du compte',
-      pending: 'Activation de votre compte…',
-      success: 'Compte activé. Vous pouvez maintenant vous connecter.',
-      error: 'Erreur d’activation (déjà activé ?)',
+      title: 'Créer votre compte',
+      intro:
+        'Cliquez ci-dessous pour créer une clé d’accès et finaliser la création de votre compte.',
+      submit: 'Continuer',
+      success: 'Compte créé. Vous êtes maintenant connecté.',
+      error: 'Ce lien est invalide ou a expiré.',
       signInLink: 'Aller à la connexion',
     },
     confirmEmailChange: {
@@ -69,31 +56,10 @@ export default {
       success: 'Votre adresse email a été mise à jour.',
       error: "Erreur de changement d'email (lien expiré ou déjà utilisé ?)",
     },
-    forgotPassword: {
-      title: 'Mot de passe oublié ?',
-      email: 'Adresse email',
-      submit: 'Envoyer le lien de réinitialisation',
-      requestSent:
-        'Si un compte existe pour cette adresse, un lien de réinitialisation a été envoyé.',
-      signInLink: 'Retour à la connexion',
-    },
-    resetPassword: {
-      title: 'Choisissez un nouveau mot de passe',
-      password: 'Nouveau mot de passe',
-      passwordConfirmation: 'Confirmer le nouveau mot de passe',
-      submit: 'Mettre à jour le mot de passe',
-      success: 'Votre mot de passe a été mis à jour.',
-      signInLink: 'Aller à la connexion',
-    },
     validation: {
       required: 'Ce champ est requis.',
       email: 'Saisissez une adresse email valide.',
       country: 'Le pays doit être un code à 2 lettres.',
-      passwordLength: 'Le mot de passe doit contenir au moins 8 caractères.',
-      passwordWeak:
-        'Utilisez un mélange d’au moins 2 de : minuscules, majuscules, chiffres, symboles.',
-      passwordMismatch: 'Les mots de passe ne correspondent pas.',
-      currentPasswordInvalid: 'Le mot de passe actuel est invalide.',
     },
   },
   nav: {
@@ -107,7 +73,6 @@ export default {
     signOut: 'Déconnexion',
     accountsLink: 'Comptes',
     profileLink: 'Paramètres du profil',
-    passwordLink: 'Changer le mot de passe',
     passkeysLink: 'Clés d’accès',
   },
   accounts: {
@@ -321,26 +286,18 @@ export default {
     profile: {
       title: 'Profil',
       email: 'Adresse email',
-      currentPassword: 'Mot de passe actuel',
       submit: 'Enregistrer',
+      stepUpHint:
+        'Une confirmation avec l’une de vos clés d’accès vous sera demandée avant cet enregistrement.',
+      stepUpFailed: 'La confirmation par clé d’accès a échoué. Veuillez réessayer.',
       success:
         "Si cet email n'est pas déjà enregistré sur un autre compte, vérifiez-le pour trouver un lien de confirmation du changement.",
-      genericError: "Une erreur s'est produite. Veuillez réessayer.",
-    },
-    password: {
-      title: 'Changer le mot de passe',
-      tab: 'Mot de passe',
-      currentPassword: 'Mot de passe actuel',
-      newPassword: 'Nouveau mot de passe',
-      newPasswordConfirmation: 'Confirmer le nouveau mot de passe',
-      submit: 'Mettre à jour le mot de passe',
-      success: 'Votre mot de passe a été mis à jour.',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
     passkeys: {
       title: 'Clés d’accès',
       intro:
-        'Connectez-vous sans mot de passe grâce à une clé d’accès enregistrée sur cet appareil.',
+        'Gérez les clés d’accès enregistrées sur votre compte. Ce sont l’unique moyen de vous connecter.',
       device: 'Appareil',
       createdAt: 'Ajoutée',
       lastUsedAt: 'Dernière utilisation',
@@ -353,6 +310,8 @@ export default {
       added: 'Clé d’accès ajoutée',
       remove: 'Supprimer',
       removed: 'Clé d’accès supprimée',
+      lastPasskeyError:
+        'Il s’agit de votre dernière clé d’accès — vous ne pouvez pas la supprimer, cela vous bloquerait définitivement hors de votre compte.',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
   },

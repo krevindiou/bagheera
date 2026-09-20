@@ -37,16 +37,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/auth/ActivatePage.vue'),
       },
       {
-        path: 'forgot-password',
-        name: 'forgot-password',
-        component: () => import('../pages/auth/ForgotPasswordPage.vue'),
-      },
-      {
-        path: 'reset-password',
-        name: 'reset-password',
-        component: () => import('../pages/auth/ResetPasswordPage.vue'),
-      },
-      {
         path: 'confirm-email-change',
         name: 'confirm-email-change',
         component: () => import('../pages/auth/ConfirmEmailChangePage.vue'),
@@ -85,12 +75,6 @@ const routes: RouteRecordRaw[] = [
         path: 'settings/profile',
         name: 'settings-profile',
         component: () => import('../pages/settings/ProfilePage.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
-        path: 'settings/password',
-        name: 'settings-password',
-        component: () => import('../pages/settings/PasswordPage.vue'),
         meta: { requiresAuth: true },
       },
       {

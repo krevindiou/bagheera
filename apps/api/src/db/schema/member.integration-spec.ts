@@ -43,12 +43,9 @@ describe('member schema', () => {
   });
 
   describe('defaults on a minimal insert', () => {
-    it('sets an inactive, zero-token-version member with no pending email', async () => {
+    it('sets a zero-token-version member with no pending email', async () => {
       const row = await insertMember(getDb(app));
 
-      expect(row.active).toBe(false);
-      expect(row.activationTokenVersion).toBe(0);
-      expect(row.passwordResetTokenVersion).toBe(0);
       expect(row.emailChangeTokenVersion).toBe(0);
       expect(row.pendingEmail).toBeNull();
       expect(row.createdAt).toBeInstanceOf(Date);

@@ -4,22 +4,13 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
-import { HashService } from '../security/hash.service';
-import { csrfTokenFor, insertActiveMember, uniqueEmail } from '../test-support/auth-fixture';
+import {
+  csrfTokenFor,
+  insertMemberWithCredential,
+  uniqueEmail,
+} from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
-
-// Same reasoning as webauthn-registration.integration-spec.ts: mock only
-// the one function a real authenticator would otherwise be needed for.
-jest.mock('@simplewebauthn/server', () => ({
-  ...jest.requireActual<typeof import('@simplewebauthn/server')>('@simplewebauthn/server'),
-  verifyAuthenticationResponse: jest.fn(),
-}));
-
-import { verifyAuthenticationResponse } from '@simplewebauthn/server';
-
-const mockVerify = verifyAuthenticationResponse as jest.MockedFunction<
-  typeof verifyAuthenticationResponse
->;
+import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 function verifiedResult(newCounter: number): VerifiedAuthenticationResponse {
   return {
@@ -42,43 +33,6 @@ function fakeResponseFor(credentialId: string) {
   };
 }
 
-async function insertCredential(
-  app: INestApplication<Server>,
-  memberId: string,
-  credentialId: string,
-) {
-  const [row] = await getDb(app)
-    .insert(webauthnCredential)
-    .values({
-      memberId,
-      credentialId,
-      publicKey: Buffer.from([1, 2, 3]).toString('base64'),
-      counter: 0,
-    })
-    .returning();
-  return row;
-}
-
-/** A member with no password/session concerns, just a fixed active state and one passkey — for tests that never need to sign in with a password. */
-async function insertMemberWithCredential(
-  app: INestApplication<Server>,
-  credentialId: string,
-  overrides: { active?: boolean } = {},
-) {
-  const hash = await app.get(HashService).hash('unused-password-1');
-  const [row] = await getDb(app)
-    .insert(member)
-    .values({
-      email: uniqueEmail(),
-      password: hash,
-      country: 'FR',
-      active: overrides.active ?? true,
-    })
-    .returning();
-  await insertCredential(app, row.id, credentialId);
-  return row;
-}
-
 describe('webauthn authentication', () => {
   let app: INestApplication<Server>;
 
@@ -90,14 +44,9 @@ describe('webauthn authentication', () => {
     await app.close();
   });
 
-  beforeEach(() => {
-    mockVerify.mockReset();
-  });
-
   describe('POST /webauthn/authentication/options', () => {
     it('returns real, non-empty allowCredentials for a member with a passkey', async () => {
-      const { email, memberId } = await insertActiveMember(app);
-      await insertCredential(app, memberId, 'cred-opts-1');
+      const { email } = await insertMemberWithCredential(app);
 
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
@@ -125,21 +74,23 @@ describe('webauthn authentication', () => {
 
   describe('POST /webauthn/authentication/verify', () => {
     it('signs in, bumps the counter, and records webauthn_sign_in_success', async () => {
-      const row = await insertMemberWithCredential(app, 'cred-verify-1');
+      const { email, memberId, credentialId } = await insertMemberWithCredential(app);
 
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
       await agent
         .post('/webauthn/authentication/options')
         .set('x-csrf-token', csrfToken)
-        .send({ email: row.email })
+        .send({ email })
         .expect(200);
 
-      mockVerify.mockResolvedValueOnce(verifiedResult(7));
+      jest
+        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
+        .mockResolvedValueOnce(verifiedResult(7));
       const res = await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
-        .send({ response: fakeResponseFor('cred-verify-1') })
+        .send({ response: fakeResponseFor(credentialId) })
         .expect(200);
       expect(messageOf(res)).toBe('ok');
 
@@ -148,14 +99,14 @@ describe('webauthn authentication', () => {
       const [updatedCredential] = await getDb(app)
         .select()
         .from(webauthnCredential)
-        .where(eq(webauthnCredential.credentialId, 'cred-verify-1'));
+        .where(eq(webauthnCredential.credentialId, credentialId));
       expect(updatedCredential.counter).toBe(7);
       expect(updatedCredential.lastUsedAt).toBeInstanceOf(Date);
 
       const [updatedMember] = await getDb(app)
         .select({ loggedAt: member.loggedAt })
         .from(member)
-        .where(eq(member.id, row.id));
+        .where(eq(member.id, memberId));
       expect(updatedMember.loggedAt).toBeInstanceOf(Date);
 
       const [event] = await getDb(app)
@@ -164,7 +115,7 @@ describe('webauthn authentication', () => {
         .where(
           and(
             eq(securityEvent.eventType, 'webauthn_sign_in_success'),
-            eq(securityEvent.memberId, row.id),
+            eq(securityEvent.memberId, memberId),
           ),
         )
         .orderBy(desc(securityEvent.createdAt))
@@ -182,7 +133,6 @@ describe('webauthn authentication', () => {
         .send({ response: fakeResponseFor('whatever') })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
-      expect(mockVerify).not.toHaveBeenCalled();
     });
 
     it('rejects when options() found no credential (anti-enumeration path)', async () => {
@@ -200,12 +150,11 @@ describe('webauthn authentication', () => {
         .send({ response: fakeResponseFor('whatever') })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
-      expect(mockVerify).not.toHaveBeenCalled();
     });
 
     it("rejects a response whose credential id belongs to someone else's stashed session", async () => {
-      const memberA = await insertMemberWithCredential(app, 'cred-owner-a');
-      await insertMemberWithCredential(app, 'cred-owner-b');
+      const memberA = await insertMemberWithCredential(app);
+      const memberB = await insertMemberWithCredential(app);
 
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
@@ -220,52 +169,29 @@ describe('webauthn authentication', () => {
       const res = await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
-        .send({ response: fakeResponseFor('cred-owner-b') })
+        .send({ response: fakeResponseFor(memberB.credentialId) })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
-      expect(mockVerify).not.toHaveBeenCalled();
     });
 
     it('rejects when the ceremony fails verification', async () => {
-      const row = await insertMemberWithCredential(app, 'cred-fail-verify');
+      const { email, credentialId } = await insertMemberWithCredential(app);
 
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
       await agent
         .post('/webauthn/authentication/options')
         .set('x-csrf-token', csrfToken)
-        .send({ email: row.email })
+        .send({ email })
         .expect(200);
 
-      mockVerify.mockResolvedValueOnce({
-        verified: false,
-      } as VerifiedAuthenticationResponse);
+      jest
+        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
+        .mockResolvedValueOnce({ verified: false } as VerifiedAuthenticationResponse);
       const res = await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
-        .send({ response: fakeResponseFor('cred-fail-verify') })
-        .expect(401);
-      expect(messageOf(res)).toBe('Passkey sign-in failed.');
-    });
-
-    it('rejects a passkey sign-in for an inactive member', async () => {
-      const row = await insertMemberWithCredential(app, 'cred-inactive', {
-        active: false,
-      });
-
-      const agent = request.agent(app.getHttpServer());
-      const csrfToken = await csrfTokenFor(agent);
-      await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email: row.email })
-        .expect(200);
-
-      mockVerify.mockResolvedValueOnce(verifiedResult(1));
-      const res = await agent
-        .post('/webauthn/authentication/verify')
-        .set('x-csrf-token', csrfToken)
-        .send({ response: fakeResponseFor('cred-inactive') })
+        .send({ response: fakeResponseFor(credentialId) })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
     });

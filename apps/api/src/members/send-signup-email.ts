@@ -3,20 +3,20 @@ import { DEFAULT_LOCALE, type Locale } from '../common/locale';
 import { EmailQueueService } from '../email/email-queue.service';
 import { registrationEmail } from '../email/templates/registration.template';
 import { CryptoService } from '../security/crypto.service';
-import { buildActivationToken } from './activation-token';
+import { buildSignupToken } from './signup-token';
 
-/** Builds an activation link for the given member/version and enqueues the registration email. */
-export async function sendActivationEmail(
+/** Builds a sign-up confirmation link for the given email and enqueues the registration email. */
+export async function sendSignupEmail(
   deps: {
     crypto: CryptoService;
     emailQueue: EmailQueueService;
     config: ConfigService;
   },
   email: string,
-  version: number,
+  country: string,
   locale: Locale = DEFAULT_LOCALE,
 ): Promise<void> {
-  const token = buildActivationToken(deps.crypto, email, version);
+  const token = buildSignupToken(deps.crypto, email, country, locale);
   const appUrl = deps.config.getOrThrow<string>('APP_URL');
   const activationLink = `${appUrl}/${locale}/activate?key=${encodeURIComponent(token)}`;
   await deps.emailQueue.enqueue(registrationEmail(email, activationLink, locale));

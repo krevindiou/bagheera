@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
+import en from '../../src/i18n/locales/en';
 import { addVirtualAuthenticator } from './webauthn';
-import { keyFromLink, waitForEmailLink } from './mailpit';
+import { waitForEmailLink } from './mailpit';
 
 export { expect };
 
@@ -23,7 +24,6 @@ export function randomEmail(): string {
   return `e2e-${randomUUID()}@example.test`;
 }
 
-export const TEST_PASSWORD = 'Correct-Horse-Battery-Staple-1!';
 // Registration needs a 2-letter country code (see auth.schemas.ts); the
 // actual country has no bearing on anything under test.
 export const REGISTER_COUNTRY = 'US';
@@ -43,49 +43,39 @@ export async function fetchCsrfToken(page: Page): Promise<string> {
 }
 
 /**
- * Registers and activates a brand-new member via real HTTP calls sharing
- * `page`'s own browser-context cookie jar (`page.request`) — never a direct
- * DB write (this suite treats the app as a black box, one layer above where
- * that belongs — see the plan's "no direct DB access" convention) — but
- * without typing into the real registration form, since that's only the
- * point of auth.spec.ts's own dedicated test. Every request goes through
- * Vite's dev-server proxy at the same origin the browser itself uses (see
- * apps/web/vite.config.ts), so the session/CSRF cookies this mints are the
- * exact ones a real browser sign-in would carry — no cookie-domain
- * transplanting needed.
+ * Registers a brand-new member via a real HTTP call sharing `page`'s own
+ * browser-context cookie jar (`page.request`), then drives the real
+ * `/activate` page to complete the WebAuthn signup ceremony — that
+ * ceremony has to run inside an actual browser (a real
+ * `navigator.credentials.create()` call), so unlike the old
+ * password-registration flow, this can't stay entirely `page.request`;
+ * only the initial `POST /members/register` does. Requires a
+ * `virtualAuthenticator` already attached to `page` (see the
+ * `signedInMember` fixture below), or the ceremony has no authenticator to
+ * complete against and hangs.
  *
- * Deliberately does *not* sign in — used both by tests that need a signed
- * -in member (via signInAsFreshMember below) and by auth.spec.ts's negative
- * -path tests, which need a real, activated account to test a *wrong*
- * password against.
+ * Lands `page` fully signed in (the ceremony ends the same way passkey
+ * sign-in does — see WebauthnSignupService). Not typed into the real
+ * registration form, since that's only the point of auth.spec.ts's own
+ * dedicated test.
  */
-export async function registerAndActivate(
-  page: Page,
-): Promise<{ email: string; password: string }> {
+export async function registerAndCompletePasskeySignup(page: Page): Promise<{ email: string }> {
   const email = randomEmail();
-  const password = TEST_PASSWORD;
 
   await page.request.post('/members/register', {
     headers: { 'x-csrf-token': await fetchCsrfToken(page) },
-    data: { email, country: REGISTER_COUNTRY, password, passwordConfirmation: password },
+    data: { email, country: REGISTER_COUNTRY },
   });
 
   const activationLink = await waitForEmailLink(email);
-  await page.request.post('/members/activate', {
-    headers: { 'x-csrf-token': await fetchCsrfToken(page) },
-    data: { key: keyFromLink(activationLink) },
-  });
+  await page.goto(activationLink);
+  // The ceremony can't run on page load — navigator.credentials.create()
+  // requires a real user gesture (see ActivatePage.vue's own comment) — so
+  // this click is not just UI navigation, it's what starts the ceremony.
+  await page.getByRole('button', { name: en.auth.activate.submit, exact: true }).click();
+  await page.waitForURL(/\/en\/home$/);
 
-  return { email, password };
-}
-
-async function signInAsFreshMember(page: Page): Promise<{ email: string; password: string }> {
-  const member = await registerAndActivate(page);
-  await page.request.post('/auth/sign-in', {
-    headers: { 'x-csrf-token': await fetchCsrfToken(page) },
-    data: { email: member.email, password: member.password },
-  });
-  return member;
+  return { email };
 }
 
 interface AccountWithBank {
@@ -124,31 +114,36 @@ async function createAccountWithBank(page: Page): Promise<AccountWithBank> {
 }
 
 interface Fixtures {
-  /** A `page` that's already authenticated as a fresh, real member — see
-   * signInAsFreshMember above for exactly what "authenticated" means here. */
-  signedInMember: { page: Page; email: string; password: string };
+  /** A `page` that's already authenticated as a fresh, real member with one
+   * registered passkey — see registerAndCompletePasskeySignup above for
+   * exactly what "authenticated" means here. */
+  signedInMember: { page: Page; email: string };
   /** Builds on signedInMember: one bank + one account (1000.00 USD) already
    * exist, ready for operations/schedulers/reports specs to use. */
   accountWithBank: AccountWithBank;
   /** A CDP virtual WebAuthn authenticator attached to `page`, removed
-   * automatically after the test. */
+   * automatically after the test. Every account now needs a passkey to
+   * exist at all (see registerAndCompletePasskeySignup), so `signedInMember`
+   * itself depends on this — request it by name too (as passkeys.spec.ts
+   * does) only when a test needs to reason about it directly. */
   virtualAuthenticator: { authenticatorId: string };
 }
 
 export const test = base.extend<Fixtures>({
-  signedInMember: async ({ page }, use) => {
-    const { email, password } = await signInAsFreshMember(page);
-    await use({ page, email, password });
+  virtualAuthenticator: async ({ page }, use) => {
+    const authenticator = await addVirtualAuthenticator(page);
+    await use({ authenticatorId: authenticator.authenticatorId });
+    await authenticator.remove();
+  },
+
+  signedInMember: async ({ page, virtualAuthenticator }, use) => {
+    void virtualAuthenticator; // must be attached before the signup ceremony runs
+    const { email } = await registerAndCompletePasskeySignup(page);
+    await use({ page, email });
   },
 
   accountWithBank: async ({ page, signedInMember }, use) => {
     void signedInMember; // establishes the session `page` already carries
     await use(await createAccountWithBank(page));
-  },
-
-  virtualAuthenticator: async ({ page }, use) => {
-    const authenticator = await addVirtualAuthenticator(page);
-    await use({ authenticatorId: authenticator.authenticatorId });
-    await authenticator.remove();
   },
 });

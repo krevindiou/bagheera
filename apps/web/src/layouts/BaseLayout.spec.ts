@@ -28,7 +28,6 @@ function createTestRouter(): Router {
       { path: '/accounts/:accountId/schedulers', name: 'schedulers', component: stub },
       { path: '/reports', name: 'reports', component: stub },
       { path: '/settings/profile', name: 'settings-profile', component: stub },
-      { path: '/settings/password', name: 'settings-password', component: stub },
       { path: '/settings/passkeys', name: 'settings-passkeys', component: stub },
     ],
   });
@@ -77,7 +76,7 @@ describe('BaseLayout', () => {
     ['schedulers', 'Accounts', { accountId: 'a1' }],
     ['reports', 'Reports', {}],
     ['settings-profile', 'Settings', {}],
-    ['settings-password', 'Settings', {}],
+    ['settings-passkeys', 'Settings', {}],
   ])(
     'marks the right nav item active on the %s route',
     async (routeName, expectedActive, params) => {

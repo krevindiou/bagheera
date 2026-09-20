@@ -1,6 +1,6 @@
 import { testCryptoService } from '../test-support/test-crypto-service';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
-import { buildResetToken } from '../auth/reset-token';
+import { buildSignupToken } from './signup-token';
 
 describe('email-change-token', () => {
   const crypto = testCryptoService();
@@ -34,7 +34,7 @@ describe('email-change-token', () => {
   });
 
   it('returns null for a token minted for a different purpose (type confusion)', () => {
-    const resetToken = buildResetToken(crypto, 'member@example.com', 1);
-    expect(parseEmailChangeToken(crypto, resetToken)).toBeNull();
+    const signupToken = buildSignupToken(crypto, 'member@example.com', 'FR', 'en');
+    expect(parseEmailChangeToken(crypto, signupToken)).toBeNull();
   });
 });

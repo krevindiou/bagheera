@@ -6,9 +6,9 @@ import { toMinorUnits } from '../common/money';
 import { operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
-  csrfTokenFor,
-  insertActiveMember,
+  insertMemberWithCredential,
   seedSignedInMember,
+  signInWithPasskey,
   SignedInFixture,
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
@@ -117,7 +117,7 @@ describe('scheduler occurrence generation', () => {
     // so create()'s own immediate generateForScheduler() call never runs;
     // the only thing that can generate this backlog is sign-in's catch-up.
     const db = getDb(app);
-    const { email, password, memberId } = await insertActiveMember(app);
+    const { email, memberId, credentialId } = await insertMemberWithCredential(app);
     const bank = await insertBank(db, memberId);
     const account = await insertAccount(db, bank.id);
     await db.insert(scheduler).values({
@@ -132,12 +132,7 @@ describe('scheduler occurrence generation', () => {
     });
 
     const agent = request.agent(app.getHttpServer());
-    const csrfToken = await csrfTokenFor(agent);
-    await agent
-      .post('/auth/sign-in')
-      .set('x-csrf-token', csrfToken)
-      .send({ email, password })
-      .expect(200);
+    await signInWithPasskey(app, agent, email, credentialId);
 
     const generated = await getDb(app)
       .select()

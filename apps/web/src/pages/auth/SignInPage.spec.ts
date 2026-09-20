@@ -7,7 +7,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 vi.mock('@simplewebauthn/browser', () => ({
-  browserSupportsWebAuthn: vi.fn(() => false),
+  browserSupportsWebAuthn: vi.fn(() => true),
   startAuthentication: vi.fn(),
 }));
 
@@ -38,7 +38,7 @@ describe('SignInPage', () => {
     // restore() overwrites the member sign-in just set.
     apiClient.GET.mockReset();
     apiClient.GET.mockResolvedValue(jsonResult(200, undefined));
-    vi.mocked(browserSupportsWebAuthn).mockReturnValue(false);
+    vi.mocked(browserSupportsWebAuthn).mockReturnValue(true);
     vi.mocked(startAuthentication).mockReset();
     useToast().toasts.splice(0);
     window.sessionStorage.clear();
@@ -53,136 +53,94 @@ describe('SignInPage', () => {
     );
   });
 
-  it('shows a validation error for a blank password field', async () => {
+  it('shows a validation error for a blank email field', async () => {
     const wrapper = mount(SignInPage, withGlobalPlugins());
-    await wrapper.find('#sign-in-email').setValue('member@example.com');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('This field is required.');
     expect(apiClient.POST).not.toHaveBeenCalled();
-
-    // PasswordInput wraps its <input> in its own .input-group, so its
-    // sibling .invalid-feedback needs d-block — Bootstrap's plain
-    // .is-invalid ~ .invalid-feedback rule never matches across that
-    // extra nesting level. wrapper.text() above would pass either way.
-    // (Email is filled in above, so its own required-field error never
-    // renders — this is the only "This field is required." node.)
-    const passwordError = wrapper
-      .findAll('.invalid-feedback')
-      .find((el) => el.text() === 'This field is required.');
-    expect(passwordError?.classes()).toContain('d-block');
   });
 
-  it('signs in, remembers the email, shows a toast, and goes home', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+  it("shows a warning and hides the form when the browser doesn't support WebAuthn", () => {
+    vi.mocked(browserSupportsWebAuthn).mockReturnValue(false);
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+
+    expect(wrapper.text()).toContain("This browser doesn't support passkeys");
+    expect(wrapper.find('#sign-in-email').exists()).toBe(false);
+  });
+
+  it('signs in with a passkey end to end', async () => {
+    apiClient.POST.mockImplementation(async (path: string) => {
+      if (path === '/webauthn/authentication/options') return jsonResult(200, {});
+      if (path === '/webauthn/authentication/verify') return jsonResult(200);
+      return jsonResult(404);
+    });
+    vi.mocked(startAuthentication).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startAuthentication>>,
+    );
     apiClient.GET.mockResolvedValue(jsonResult(200, { email: 'member@example.com' }));
+
     const wrapper = mount(SignInPage, withGlobalPlugins());
     await wrapper.find('#sign-in-email').setValue('member@example.com');
-    await wrapper.find('#sign-in-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
-    expect(apiClient.POST).toHaveBeenCalledWith('/auth/sign-in', {
-      body: { email: 'member@example.com', password: 'hunter2' },
+    expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/authentication/options', {
+      body: { email: 'member@example.com' },
     });
-    expect(useSessionStore().isAuthenticated).toBe(true);
     expect(readLastAttemptedEmail()).toBe('member@example.com');
+    expect(useSessionStore().isAuthenticated).toBe(true);
     expect(useToast().toasts[0]?.text).toBe('Signed in.');
     await waitForRouteName(router, 'home');
   });
 
-  it('shows an inactive-account banner with a working resend button on a 403', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(403));
-    const wrapper = mount(SignInPage, withGlobalPlugins());
-    await wrapper.find('#sign-in-email').setValue('member@example.com');
-    await wrapper.find('#sign-in-password').setValue('hunter2');
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.text()).toContain('Your account is not activated yet.');
-
-    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
-    await wrapper.find('.alert-warning button').trigger('click');
-    await flushPromises();
-    await wrapper.vm.$nextTick();
-
-    expect(apiClient.POST).toHaveBeenCalledWith('/members/resend-activation', {
-      body: { email: 'member@example.com', password: 'hunter2' },
-    });
-    expect(wrapper.text()).toContain('A new activation email has been sent.');
-  });
-
-  it('shows a rate-limit banner, distinct from invalid-credentials, on a 429', async () => {
+  it('shows a rate-limit banner, distinct from invalid-credentials, on a 429 from options', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(429));
     const wrapper = mount(SignInPage, withGlobalPlugins());
     await wrapper.find('#sign-in-email').setValue('member@example.com');
-    await wrapper.find('#sign-in-password').setValue('wrong');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Too many attempts. Please wait a minute and try again.');
-    expect(wrapper.text()).not.toContain('Invalid email or password');
     expect(useSessionStore().isAuthenticated).toBe(false);
+    expect(vi.mocked(startAuthentication)).not.toHaveBeenCalled();
   });
 
-  it('shows an invalid-credentials banner on any other sign-in failure', async () => {
+  it('shows an invalid-credentials banner when options fails', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(400));
     const wrapper = mount(SignInPage, withGlobalPlugins());
     await wrapper.find('#sign-in-email').setValue('member@example.com');
-    await wrapper.find('#sign-in-password').setValue('wrong');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Invalid email or password');
+    expect(wrapper.text()).toContain('Sign-in failed');
     expect(useSessionStore().isAuthenticated).toBe(false);
   });
 
-  describe('passkey sign-in', () => {
-    it("hides the passkey button when the browser doesn't support WebAuthn", () => {
-      const wrapper = mount(SignInPage, withGlobalPlugins());
-      expect(wrapper.find('button.btn-outline-secondary').exists()).toBe(false);
+  it('shows an invalid-credentials banner when verify fails', async () => {
+    apiClient.POST.mockImplementation(async (path: string) => {
+      if (path === '/webauthn/authentication/options') return jsonResult(200, {});
+      return jsonResult(401);
     });
+    vi.mocked(startAuthentication).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startAuthentication>>,
+    );
 
-    it('requires an email before attempting a passkey sign-in', async () => {
-      vi.mocked(browserSupportsWebAuthn).mockReturnValue(true);
-      const wrapper = mount(SignInPage, withGlobalPlugins());
-      await wrapper.find('button.btn-outline-secondary').trigger('click');
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+    await wrapper.find('#sign-in-email').setValue('member@example.com');
+    await submitAndSettle(wrapper);
 
-      expect(wrapper.text()).toContain('Enter your email address first.');
-      expect(apiClient.POST).not.toHaveBeenCalled();
-    });
+    expect(wrapper.text()).toContain('Sign-in failed');
+    expect(useSessionStore().isAuthenticated).toBe(false);
+  });
 
-    it('signs in with a passkey end to end', async () => {
-      vi.mocked(browserSupportsWebAuthn).mockReturnValue(true);
-      apiClient.POST.mockImplementation(async (path: string) => {
-        if (path === '/webauthn/authentication/options') return jsonResult(200, {});
-        if (path === '/webauthn/authentication/verify') return jsonResult(200);
-        return jsonResult(404);
-      });
-      vi.mocked(startAuthentication).mockResolvedValueOnce(
-        {} as unknown as Awaited<ReturnType<typeof startAuthentication>>,
-      );
-      apiClient.GET.mockResolvedValue(jsonResult(200, { email: 'member@example.com' }));
+  it('silently abandons a cancelled passkey prompt', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
 
-      const wrapper = mount(SignInPage, withGlobalPlugins());
-      await wrapper.find('#sign-in-email').setValue('member@example.com');
-      await wrapper.find('button.btn-outline-secondary').trigger('click');
-      await flushPromises();
-      await wrapper.vm.$nextTick();
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+    await wrapper.find('#sign-in-email').setValue('member@example.com');
+    await submitAndSettle(wrapper);
+    await flushPromises();
 
-      expect(useSessionStore().isAuthenticated).toBe(true);
-      await waitForRouteName(router, 'home');
-    });
-
-    it('silently abandons a cancelled passkey prompt', async () => {
-      vi.mocked(browserSupportsWebAuthn).mockReturnValue(true);
-      apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
-      vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
-
-      const wrapper = mount(SignInPage, withGlobalPlugins());
-      await wrapper.find('#sign-in-email').setValue('member@example.com');
-      await wrapper.find('button.btn-outline-secondary').trigger('click');
-      await flushPromises();
-      await wrapper.vm.$nextTick();
-
-      expect(useSessionStore().isAuthenticated).toBe(false);
-      expect(wrapper.find('.alert').exists()).toBe(false);
-    });
+    expect(useSessionStore().isAuthenticated).toBe(false);
+    expect(wrapper.find('.alert').exists()).toBe(false);
   });
 });

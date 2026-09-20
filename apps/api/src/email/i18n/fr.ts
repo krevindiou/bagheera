@@ -7,21 +7,12 @@ export default {
   registration: {
     subject: 'Inscription Bagheera',
     body: (activationLink: string) =>
-      safeHtml`Bienvenue sur Bagheera — Cliquez sur le lien suivant pour activer votre compte : <a href="${activationLink}">${activationLink}</a>`,
-  },
-  passwordRecovery: {
-    subject: 'Bagheera - changement de mot de passe',
-    body: (changePasswordLink: string) =>
-      safeHtml`Cliquez sur le lien suivant pour changer votre mot de passe : <a href="${changePasswordLink}">${changePasswordLink}</a>`,
-  },
-  passwordChanged: {
-    subject: 'Bagheera - mot de passe modifié',
-    body: "Le mot de passe de votre compte Bagheera vient d'être modifié. Si vous n'êtes pas à l'origine de cette action, utilisez immédiatement le lien de récupération de mot de passe sur la page de connexion.",
+      safeHtml`Bienvenue sur Bagheera — Cliquez sur le lien suivant pour créer votre compte et enregistrer votre première clé d'accès : <a href="${activationLink}">${activationLink}</a>`,
   },
   emailChanged: {
     subject: 'Bagheera - adresse email modifiée',
     body: (newAddress: string) =>
-      safeHtml`L'adresse email de votre compte Bagheera vient d'être changée pour ${newAddress}. Si vous n'êtes pas à l'origine de cette action, utilisez immédiatement le lien de récupération de mot de passe sur la page de connexion.`,
+      safeHtml`L'adresse email de votre compte Bagheera vient d'être changée pour ${newAddress}. Si vous n'êtes pas à l'origine de cette action, connectez-vous immédiatement avec votre clé d'accès et vérifiez votre compte.`,
   },
   confirmEmailChange: {
     subject: 'Confirmez votre nouvelle adresse email Bagheera',
@@ -30,6 +21,6 @@ export default {
   },
   passkeyRegistered: {
     subject: 'Bagheera - clé d’accès ajoutée',
-    body: "Une nouvelle clé d'accès vient d'être ajoutée à votre compte Bagheera, lui permettant de se connecter sans mot de passe. Si vous n'êtes pas à l'origine de cette action, changez immédiatement votre mot de passe depuis la page de connexion et supprimez cette clé depuis les paramètres de votre compte.",
+    body: "Une nouvelle clé d'accès vient d'être ajoutée à votre compte Bagheera. Si vous n'êtes pas à l'origine de cette action, connectez-vous immédiatement avec une de vos autres clés d'accès et supprimez celle-ci depuis les paramètres de votre compte.",
   },
 };

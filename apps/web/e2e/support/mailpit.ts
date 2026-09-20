@@ -40,13 +40,13 @@ async function messagesTo(toAddress: string): Promise<MailpitMessageSummary[]> {
  * Snapshots the message ids already sitting in `toAddress`'s inbox. Pass
  * the result as `waitForEmailLink`'s `excludeIds` when a test sends a
  * *second* email to an address that's already received one (e.g.
- * password-reset.spec.ts's forgot-password request, sent after
- * registerAndActivate's own activation email, or a resent activation email)
- * — without it, that earlier, already-read email is a false-positive match,
- * returned before the real (asynchronously-queued, BullMQ) one has even
- * arrived. Call this *before* triggering whatever action queues the new
- * email. Unnecessary (but harmless) for a fresh, never-before-emailed
- * address, since there's nothing yet to exclude.
+ * email-change.spec.ts's confirmation email, sent to a *different* address
+ * than the account's original sign-up email) — without it, that earlier,
+ * already-read email is a false-positive match, returned before the real
+ * (asynchronously-queued, BullMQ) one has even arrived. Call this *before*
+ * triggering whatever action queues the new email. Unnecessary (but
+ * harmless) for a fresh, never-before-emailed address, since there's
+ * nothing yet to exclude.
  */
 export async function existingMessageIds(toAddress: string): Promise<Set<string>> {
   return new Set((await messagesTo(toAddress)).map((message) => message.ID));
@@ -96,9 +96,9 @@ export async function waitForEmailLink(
   return match[1].replace(/&amp;/g, '&');
 }
 
-/** Every emailed link here (activate / password-recovery/reset /
- * confirm-email-change) is a single-use `?key=` token — see the matching
- * onMounted() in each page under apps/web/src/pages/auth/. */
+/** Every emailed link here (activate / confirm-email-change) is a
+ * single-use `?key=` token — see the matching onMounted() in each page
+ * under apps/web/src/pages/auth/. */
 export function keyFromLink(link: string): string {
   const key = new URL(link).searchParams.get('key');
   if (!key) {

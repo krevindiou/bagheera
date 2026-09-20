@@ -11,21 +11,12 @@ export default {
   registration: {
     subject: 'Bagheera registration',
     body: (activationLink: string) =>
-      safeHtml`Welcome to Bagheera, — Click on the following link to activate your account: <a href="${activationLink}">${activationLink}</a>`,
-  },
-  passwordRecovery: {
-    subject: 'Bagheera change password',
-    body: (changePasswordLink: string) =>
-      safeHtml`Click on the following link to change your password: <a href="${changePasswordLink}">${changePasswordLink}</a>`,
-  },
-  passwordChanged: {
-    subject: 'Bagheera password changed',
-    body: 'Your Bagheera password has just been changed. If you did not do this, use the password recovery link on the sign-in page immediately.',
+      safeHtml`Welcome to Bagheera — click on the following link to create your account and register your first passkey: <a href="${activationLink}">${activationLink}</a>`,
   },
   emailChanged: {
     subject: 'Bagheera email address changed',
     body: (newAddress: string) =>
-      safeHtml`The email address of your Bagheera account has just been changed to ${newAddress}. If you did not do this, use the password recovery link on the sign-in page immediately.`,
+      safeHtml`The email address of your Bagheera account has just been changed to ${newAddress}. If you did not do this, sign in with your passkey immediately and review your account.`,
   },
   confirmEmailChange: {
     subject: 'Confirm your new Bagheera email address',
@@ -34,6 +25,6 @@ export default {
   },
   passkeyRegistered: {
     subject: 'Bagheera passkey added',
-    body: 'A new passkey was just added to your Bagheera account, letting it sign in without your password. If you did not do this, change your password immediately from the sign-in page and remove the passkey from your account settings.',
+    body: 'A new passkey was just added to your Bagheera account. If you did not do this, sign in with one of your other passkeys immediately and remove this one from your account settings.',
   },
 };

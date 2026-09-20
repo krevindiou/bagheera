@@ -65,8 +65,8 @@ describe('webauthn registration', () => {
   });
 
   describe('POST /webauthn/registration/options', () => {
-    it('returns real challenge options for a signed-in member', async () => {
-      const { agent, getCsrfToken } = await seedSignedInMember(app);
+    it('returns real challenge options, excluding the credential the member already signed in with', async () => {
+      const { agent, getCsrfToken, credentialId } = await seedSignedInMember(app);
       const csrfToken = await getCsrfToken();
 
       const res = await agent
@@ -75,7 +75,9 @@ describe('webauthn registration', () => {
         .expect(200);
 
       expect(typeof (res.body as { challenge: string }).challenge).toBe('string');
-      expect((res.body as { excludeCredentials: unknown[] }).excludeCredentials).toEqual([]);
+      expect((res.body as { excludeCredentials: { id: string }[] }).excludeCredentials).toEqual([
+        expect.objectContaining({ id: credentialId }),
+      ]);
     });
 
     it('requires authentication', async () => {

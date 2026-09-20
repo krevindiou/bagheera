@@ -46,18 +46,21 @@ describe('webauthn credentials', () => {
 
   describe('GET /webauthn/credentials', () => {
     it("lists only the caller's own credentials, without exposing the public key or counter", async () => {
+      // seedSignedInMember already gives the member one passkey (the one
+      // it signs in with) — this adds a second, distinct one to prove
+      // listing isn't accidentally capped at one.
       const { agent, memberId } = await seedSignedInMember(app);
       await insertCredential(app, memberId, 'My laptop');
       const { memberId: otherMemberId } = await seedSignedInMember(app);
       await insertCredential(app, otherMemberId, "Someone else's phone");
 
       const res = await agent.get('/webauthn/credentials').expect(200);
-      const body = res.body as { deviceName: string | null }[];
-      expect(body).toHaveLength(1);
-      expect(body[0].deviceName).toBe('My laptop');
-      expect(body[0]).not.toHaveProperty('publicKey');
-      expect(body[0]).not.toHaveProperty('counter');
-      expect(body[0]).not.toHaveProperty('credentialId');
+      const body = res.body as { deviceName: string | null; publicKey?: unknown }[];
+      expect(body).toHaveLength(2);
+      expect(body.map((row) => row.deviceName)).toEqual(expect.arrayContaining(['My laptop']));
+      expect(body.every((row) => !('publicKey' in row))).toBe(true);
+      expect(body.every((row) => !('counter' in row))).toBe(true);
+      expect(body.every((row) => !('credentialId' in row))).toBe(true);
     });
 
     it('requires authentication', async () => {
@@ -124,6 +127,29 @@ describe('webauthn credentials', () => {
         .delete(`/webauthn/credentials/${nonexistentV7Id()}`)
         .set('x-csrf-token', csrfToken)
         .expect(404);
+    });
+
+    it('blocks removing the last remaining passkey (no password fallback, no recovery)', async () => {
+      const { agent, getCsrfToken, credentialId } = await seedSignedInMember(app);
+      const [only] = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, credentialId));
+
+      const csrfToken = await getCsrfToken();
+      const res = await agent
+        .delete(`/webauthn/credentials/${only.id}`)
+        .set('x-csrf-token', csrfToken)
+        .expect(400);
+      expect((res.body as { message: string }).message).toBe(
+        'Cannot remove your last passkey — it would lock you out permanently.',
+      );
+
+      const rows = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.id, only.id));
+      expect(rows).toHaveLength(1);
     });
   });
 });

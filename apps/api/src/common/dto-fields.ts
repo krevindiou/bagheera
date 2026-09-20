@@ -7,8 +7,6 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  Length,
-  Matches,
   Max,
   MaxLength,
   MinLength,
@@ -16,11 +14,12 @@ import {
 import { SUPPORTED_LOCALES } from './locale';
 
 // Composed class-validator property decorators for the field shapes that
-// recur, byte-identical, across DTOs — email, and the two password shapes
-// (verifying an existing secret vs setting a new one). Before this, each
-// cap was hand-copied from a sibling DTO (see the DTO-bounds commits
-// b5c682af, fb3eea17, aaf49ccb, 8f9e7d5e, 720e269d): the cap now lives in
-// one place, so there's no number to get wrong or forget.
+// recur, byte-identical, across DTOs — email, and a length-bounded secret
+// (a token/key submitted to be verified, not chosen — authentication is
+// WebAuthn-only, so there's no password shape to compose here anymore).
+// Before this, each cap was hand-copied from a sibling DTO (see the
+// DTO-bounds commits b5c682af, fb3eea17, aaf49ccb, 8f9e7d5e, 720e269d): the
+// cap now lives in one place, so there's no number to get wrong or forget.
 
 /** An email address field: `@IsEmail()`, capped to the `member.email` column width. */
 export function EmailField(): PropertyDecorator {
@@ -43,10 +42,9 @@ export function LocaleField(): PropertyDecorator {
 }
 
 /**
- * A secret submitted to be *verified* against an existing value — a
- * current password, an activation/reset key/token. Only bounds length;
- * unlike NewPasswordField, there's no minimum, since the value being
- * checked isn't being chosen here.
+ * A secret submitted to be *verified* — a WebAuthn signup/activation key,
+ * an email-change confirmation key. Only bounds length; the value isn't
+ * being chosen here, just checked.
  */
 export function SecretField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
@@ -56,37 +54,13 @@ export function SecretField(): PropertyDecorator {
   };
 }
 
-// Rejects a password made up of only one character class (all-lowercase,
-// all-uppercase, all-digit, or all-symbol) via four negative lookaheads —
-// one per class, each asserting the *whole* value isn't composed of that
-// class alone. Passes as soon as 2+ classes are mixed in. Mirrors the
-// client's getPasswordStrength() score >= 2 ("fair") gate — see
-// apps/web/src/composables/usePasswordStrength.ts and each Zod schema's
-// `password` refine — length is NewPasswordField's own separate Length()
-// check below, not this regex's concern.
-const MIN_TWO_CHARACTER_CLASSES = /^(?![a-z]+$)(?![A-Z]+$)(?!\d+$)(?![^a-zA-Z\d]+$).+$/;
-
-/**
- * A new password being set (registration, password reset/change) —
- * unlike SecretField, this enforces a minimum length and a minimum
- * complexity, since the value is being chosen here, not just checked.
- */
-export function NewPasswordField(): PropertyDecorator {
-  return function (target: object, propertyKey: string | symbol): void {
-    Length(8, 4096)(target, propertyKey);
-    Matches(MIN_TWO_CHARACTER_CLASSES, {
-      message: 'Password must use at least two of: lowercase, uppercase, numbers, symbols.',
-    })(target, propertyKey);
-  };
-}
-
 // Second wave: name-like and free-text fields, each capped to its own real
 // constraint rather than a hand-copied number (see db/schema/*.ts for the
 // name-like ones; notes is application-chosen, the column itself is
 // unbounded `text`). One private shape behind separate concept-named
-// builders, matching EmailField/SecretField/NewPasswordField above rather
-// than one parameterized builder — so a caller writes `@ThirdPartyField()`,
-// not `@NameField(64)` with a number to look up meaning for.
+// builders, matching EmailField/SecretField above rather than one
+// parameterized builder — so a caller writes `@ThirdPartyField()`, not
+// `@NameField(64)` with a number to look up meaning for.
 
 /** A required, non-empty string capped to `maxLength` — shared shape behind the concept-named builders below. */
 function boundedName(maxLength: number): PropertyDecorator {

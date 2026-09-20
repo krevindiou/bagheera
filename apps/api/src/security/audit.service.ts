@@ -26,7 +26,10 @@ export type SecurityEventType =
   | 'webauthn_credential_registered'
   | 'webauthn_credential_removed'
   | 'webauthn_sign_in_success'
-  | 'webauthn_sign_in_failure';
+  | 'webauthn_sign_in_failure'
+  | 'signup_confirmation_issued'
+  | 'passkey_signup_completed'
+  | 'step_up_verified';
 
 /**
  * Writes to the security event log — the audit trail behind incident

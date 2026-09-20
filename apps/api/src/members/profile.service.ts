@@ -16,9 +16,10 @@ import { confirmEmailChangeEmail } from '../email/templates/confirm-email-change
 import { emailChangedEmail } from '../email/templates/email-changed.template';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
-import { HashService } from '../security/hash.service';
 import '../session/session-data';
+import '../session/step-up-session-data';
 import { requireMemberId } from '../session/require-member-id';
+import { STEP_UP_TTL_MS } from '../webauthn/webauthn-step-up.service';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -33,7 +34,6 @@ const EMAIL_CHANGE_ERROR = 'Email change error (link expired or already used?)';
 export class ProfileService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
-    private readonly hash: HashService,
     private readonly crypto: CryptoService,
     private readonly config: ConfigService,
     private readonly emailQueue: EmailQueueService,
@@ -41,19 +41,19 @@ export class ProfileService {
   ) {}
 
   /**
-   * Starts an email change: verifies the current password, then emails a
-   * confirmation link to *dto.email* itself. `member.email` is not written
-   * here — only `pendingEmail`/`emailChangeTokenVersion` are — so the
-   * address on file never actually changes until whoever controls that
-   * mailbox clicks through (see `confirmEmailChange`). A second request
-   * before the first is confirmed simply supersedes it: the version bump
-   * invalidates the earlier link.
+   * Starts an email change: requires a step-up WebAuthn proof (see
+   * WebauthnStepUpService — the passkey-era analog of "enter your current
+   * password"), then emails a confirmation link to *dto.email* itself.
+   * `member.email` is not written here — only `pendingEmail`/
+   * `emailChangeTokenVersion` are — so the address on file never actually
+   * changes until whoever controls that mailbox clicks through (see
+   * `confirmEmailChange`). A second request before the first is confirmed
+   * simply supersedes it: the version bump invalidates the earlier link.
    *
    * Resolves the same way (silently, no error) whether or not `dto.email`
    * is already registered to *another* member — surfacing "this email is
-   * taken" would let any signed-in member enumerate registered accounts by
-   * probing this endpoint with their own password. Mirrors
-   * `RegistrationService.register`'s anti-enumeration behavior; the
+   * taken" would let any signed-in member enumerate registered accounts.
+   * Mirrors `RegistrationService.register`'s anti-enumeration behavior; the
    * race-safety here specifically is `raceSafeUniqueEmail`'s, shared with
    * `RegistrationService.register`.
    */
@@ -68,17 +68,21 @@ export class ProfileService {
       throw new UnauthorizedException();
     }
 
-    const passwordOk = await this.hash.verify(row.password, dto.currentPassword);
-    if (!passwordOk) {
+    const verifiedAt = req.session.stepUpVerifiedAt;
+    // Consumed on read regardless of outcome — single-use, not just
+    // time-bounded, so a stale flag can never gate a second, unrelated
+    // change.
+    delete req.session.stepUpVerifiedAt;
+    if (!verifiedAt || Date.now() - verifiedAt > STEP_UP_TTL_MS) {
       // 422, not 400: this isn't malformed input (that's what 400 means
       // elsewhere on this endpoint/app — see error-response.ts), it's a
-      // credential check failing, the same bucket requireFullyActive()
-      // uses elsewhere for a business-rule denial. Gives the frontend a
-      // status code to branch on instead of matching this exact English
-      // sentence (see ProfilePage.vue) — and means this can never collide
-      // with the reserved "no active session" meaning of a bare 401 (see
-      // api/client.ts's onResponse).
-      throw new UnprocessableEntityException('Current password is invalid.');
+      // credential-check-equivalent failing, the same bucket
+      // requireFullyActive() uses elsewhere for a business-rule denial.
+      // Gives the frontend a status code to branch on instead of matching
+      // an exact English sentence (see ProfilePage.vue) — and means this
+      // can never collide with the reserved "no active session" meaning of
+      // a bare 401 (see api/client.ts's onResponse).
+      throw new UnprocessableEntityException('Step-up verification is required or has expired.');
     }
 
     // Nothing to change or confirm.

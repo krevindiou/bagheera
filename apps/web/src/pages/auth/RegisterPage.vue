@@ -7,11 +7,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../../api/client';
 import { rememberAttemptedEmail } from '../../composables/useLastAttemptedEmail';
 import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';
-import { passwordValidationKey } from '../../composables/usePasswordStrength';
 import { useToast } from '../../composables/useToast';
 import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
-import PasswordStrengthMeter from '../../components/PasswordStrengthMeter.vue';
-import PasswordInput from '../../components/PasswordInput.vue';
 import { registerSchema, type RegisterForm } from './auth.schemas';
 import ToastContainer from '../../components/ToastContainer.vue';
 import AuthLayout from '../../layouts/AuthLayout.vue';
@@ -28,14 +25,10 @@ const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<R
   initialValues: {
     email: '',
     country: getDefaultCountry(countryOptions),
-    password: '',
-    passwordConfirmation: '',
   },
 });
 const [email, emailAttrs] = defineField('email');
 const [country, countryAttrs] = defineField('country');
-const [password, passwordAttrs] = defineField('password');
-const [passwordConfirmation, passwordConfirmationAttrs] = defineField('passwordConfirmation');
 
 const genericError = ref(false);
 
@@ -108,34 +101,7 @@ const onSubmit = handleSubmit(async (values) => {
         </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="register-password">{{ $t('auth.register.password') }}</label>
-        <PasswordInput
-          id="register-password"
-          v-model="password"
-          v-bind="passwordAttrs"
-          :class="{ 'is-invalid': errors.password }"
-        />
-        <PasswordStrengthMeter :password="password ?? ''" />
-        <div v-if="errors.password" class="invalid-feedback d-block">
-          {{ $t(passwordValidationKey(password ?? '')) }}
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label" for="register-password-confirmation">
-          {{ $t('auth.register.passwordConfirmation') }}
-        </label>
-        <PasswordInput
-          id="register-password-confirmation"
-          v-model="passwordConfirmation"
-          v-bind="passwordConfirmationAttrs"
-          :class="{ 'is-invalid': errors.passwordConfirmation }"
-        />
-        <div v-if="errors.passwordConfirmation" class="invalid-feedback d-block">
-          {{ $t('auth.validation.passwordMismatch') }}
-        </div>
-      </div>
+      <p class="text-muted" style="font-size: 13.5px">{{ $t('auth.register.passkeyHint') }}</p>
 
       <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
         {{ $t('auth.register.submit') }}

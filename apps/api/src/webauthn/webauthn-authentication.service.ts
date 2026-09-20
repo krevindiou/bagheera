@@ -1,9 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  generateAuthenticationOptions,
-  verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
 import type {
   PublicKeyCredentialRequestOptionsJSON,
   VerifiedAuthenticationResponse,
@@ -20,24 +16,25 @@ import '../session/webauthn-session-data';
 import { AuthenticationOptionsDto } from './dto/authentication-options.dto';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
+import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 // Unknown email, unknown/removed credential, and a bad signature are all
-// indistinguishable — same discipline as sign-in.service.ts's
-// INVALID_CREDENTIALS. A bare 401 here is safe for the same reason it is on
-// the password path: this only ever fires from the sign-in page, so the web
+// indistinguishable — one generic error path for all of them. A bare 401
+// here is safe: this only ever fires from the sign-in page, so the web
 // client's global 401 handler redirecting to sign-in is a no-op there.
 const INVALID_PASSKEY = 'Passkey sign-in failed.';
 
 /**
- * The authentication counterpart to WebauthnRegistrationService — a
- * passwordless alternative to sign-in.service.ts's password check, ending in
- * the exact same session-creation step (rotate then set memberId).
+ * The sole sign-in mechanism — there is no password path. Ends in a session
+ * creation step (rotate then set memberId), same as every other
+ * privilege-boundary crossing in this app.
  */
 @Injectable()
 export class WebauthnAuthenticationService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
+    private readonly crypto: WebauthnCryptoService,
     private readonly sessionRotation: SessionRotationService,
     private readonly schedulerCatchUp: SchedulerCatchUpService,
     private readonly audit: AuditService,
@@ -64,7 +61,7 @@ export class WebauthnAuthenticationService {
       }));
     }
 
-    const options = await generateAuthenticationOptions({
+    const options = await this.crypto.generateAuthenticationOptions({
       rpID: rpConfig(this.config).rpID,
       allowCredentials,
       userVerification: 'preferred',
@@ -107,7 +104,7 @@ export class WebauthnAuthenticationService {
 
     let verification: VerifiedAuthenticationResponse;
     try {
-      verification = await verifyAuthenticationResponse({
+      verification = await this.crypto.verifyAuthenticationResponse({
         response: dto.response,
         expectedChallenge,
         expectedOrigin: rpConfig(this.config).origin,
@@ -130,7 +127,7 @@ export class WebauthnAuthenticationService {
     }
 
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
-    if (!row || !row.active) {
+    if (!row) {
       await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }

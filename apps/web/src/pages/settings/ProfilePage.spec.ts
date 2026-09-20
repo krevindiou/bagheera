@@ -5,7 +5,9 @@ import { submitAndSettle } from '../../test-support/submitAndSettle';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
+vi.mock('@simplewebauthn/browser', () => ({ startAuthentication: vi.fn() }));
 
+import { startAuthentication } from '@simplewebauthn/browser';
 import { apiClient as realApiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
@@ -13,7 +15,11 @@ import ProfilePage from './ProfilePage.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
-function jsonResult(status: number, error?: unknown) {
+function jsonResult(status: number, data?: unknown) {
+  return { data, error: undefined, response: new Response(null, { status }) };
+}
+
+function errorResult(status: number, error?: unknown) {
   return { data: undefined, error, response: new Response(null, { status }) };
 }
 
@@ -23,13 +29,32 @@ function jsonResult(status: number, error?: unknown) {
 // on why a fresh pinia is activated as soon as it's called).
 function mountWithSession(email: string) {
   const plugins = withGlobalPlugins();
-  useSessionStore().setMember({ email });
+  useSessionStore().setMember({ email, locale: 'en' });
   return mount(ProfilePage, plugins);
+}
+
+/**
+ * Routes step-up options/verify to success and defaults every other call
+ * (i.e. `/members/profile`) to a plain 200 too — pass `profileResult` to
+ * override that default for a test exercising a specific `/members/profile`
+ * outcome.
+ */
+function mockSuccessfulStepUp(profileResult = jsonResult(200)) {
+  apiClient.POST.mockImplementation(async (path: string) => {
+    if (path === '/webauthn/step-up/options') return jsonResult(200, {});
+    if (path === '/webauthn/step-up/verify') return jsonResult(200);
+    if (path === '/members/profile') return profileResult;
+    return jsonResult(404);
+  });
+  vi.mocked(startAuthentication).mockResolvedValue(
+    {} as unknown as Awaited<ReturnType<typeof startAuthentication>>,
+  );
 }
 
 describe('ProfilePage', () => {
   beforeEach(() => {
     apiClient.POST.mockReset();
+    vi.mocked(startAuthentication).mockReset();
     useToast().toasts.splice(0);
   });
 
@@ -40,53 +65,58 @@ describe('ProfilePage', () => {
     );
   });
 
-  it('submits the change, clears the password field, and shows a success toast', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+  it('completes the step-up ceremony, then submits the change and shows a success toast', async () => {
+    mockSuccessfulStepUp();
     const wrapper = mountWithSession('member@example.com');
-    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
-    expect(apiClient.POST).toHaveBeenCalledWith('/members/profile', {
-      body: { email: 'member@example.com', currentPassword: 'hunter2' },
+    expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/step-up/options');
+    expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/step-up/verify', {
+      body: { response: {} },
     });
-    expect((wrapper.find('#profile-current-password').element as HTMLInputElement).value).toBe('');
+    expect(apiClient.POST).toHaveBeenCalledWith('/members/profile', {
+      body: { email: 'member@example.com' },
+    });
     expect(wrapper.text()).toContain("If this email isn't already registered to another account");
   });
 
-  it('shows an inline field error (not a toast) for an invalid current password', async () => {
-    apiClient.POST.mockResolvedValueOnce(
-      jsonResult(422, { message: 'Current password is invalid.' }),
-    );
+  it('shows an error toast and never calls /members/profile when the step-up prompt is cancelled', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+
     const wrapper = mountWithSession('member@example.com');
-    await wrapper.find('#profile-current-password').setValue('wrong');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Current password is invalid.');
-    expect(useToast().toasts).toHaveLength(0);
-
-    // PasswordInput wraps its <input> in its own .input-group, so its
-    // sibling .invalid-feedback needs d-block — Bootstrap's plain
-    // .is-invalid ~ .invalid-feedback rule never matches across that
-    // extra nesting level. wrapper.text() above would pass either way.
-    const currentPasswordError = wrapper
-      .findAll('.invalid-feedback')
-      .find((el) => el.text() === 'Current password is invalid.');
-    expect(currentPasswordError?.classes()).toContain('d-block');
+    expect(wrapper.text()).toContain('Passkey confirmation failed');
+    expect(apiClient.POST).not.toHaveBeenCalledWith('/members/profile', expect.anything() as never);
   });
 
-  it('shows a toast for any other failure', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: 'Email already taken' }));
+  it('shows an error toast when step-up verification is rejected', async () => {
+    apiClient.POST.mockImplementation(async (path: string) => {
+      if (path === '/webauthn/step-up/options') return jsonResult(200, {});
+      return jsonResult(401);
+    });
+    vi.mocked(startAuthentication).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startAuthentication>>,
+    );
+
     const wrapper = mountWithSession('member@example.com');
-    await wrapper.find('#profile-current-password').setValue('hunter2');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('Passkey confirmation failed');
+  });
+
+  it('shows a toast for any other /members/profile failure', async () => {
+    mockSuccessfulStepUp(errorResult(400, { message: 'Email already taken' }));
+    const wrapper = mountWithSession('member@example.com');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Email already taken');
   });
 
   it('falls back to a generic error toast when the update fails without a message', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(500));
+    mockSuccessfulStepUp(jsonResult(500));
     const wrapper = mountWithSession('member@example.com');
-    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Something went wrong. Please try again.');
@@ -95,7 +125,6 @@ describe('ProfilePage', () => {
   it("shows a validation error and doesn't submit for an invalid email", async () => {
     const wrapper = mountWithSession('member@example.com');
     await wrapper.find('#profile-email').setValue('not-an-email');
-    await wrapper.find('#profile-current-password').setValue('hunter2');
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Enter a valid email address.');

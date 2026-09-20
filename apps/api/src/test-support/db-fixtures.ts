@@ -30,7 +30,6 @@ export async function insertMember(db: Db, overrides: Partial<typeof member.$inf
     .insert(member)
     .values({
       email: uniqueEmail(),
-      password: 'unused-hash',
       country: 'FR',
       ...overrides,
     })

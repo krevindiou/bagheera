@@ -1,10 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server';
-import type {
-  PublicKeyCredentialCreationOptionsJSON,
-  VerifiedRegistrationResponse,
-} from '@simplewebauthn/server';
+import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
+import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -15,25 +12,27 @@ import { passkeyRegisteredEmail } from '../email/templates/passkey-registered.te
 import { AuditService } from '../security/audit.service';
 import { requireMemberId } from '../session/require-member-id';
 import '../session/webauthn-session-data';
+import { buildRegistrationOptions } from './build-registration-options';
+import { credentialInsertValues } from './credential-insert-values';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { rpConfig } from './rp-config';
+import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 const REGISTRATION_FAILED = 'Passkey registration failed.';
 
 /**
- * Registers a passkey as an additional, optional, passwordless sign-in
- * method for an already-authenticated member — not a second factor on top
- * of the password (member.password stays required and untouched). Requires
- * only a live session (the same bar as change-password's "current password"
- * check, no extra step-up): a hijacked-but-valid session could otherwise
- * plant a persistent credential, so every successful registration also
- * emails the member — the same alert a password change already sends.
+ * Registers an additional passkey for an already-authenticated member — a
+ * second (or third, ...) credential alongside whatever they already have,
+ * not a step-up on top of the live session: a hijacked-but-valid session
+ * could otherwise plant a persistent credential, so every successful
+ * registration also emails the member as an alert.
  */
 @Injectable()
 export class WebauthnRegistrationService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
+    private readonly crypto: WebauthnCryptoService,
     private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
   ) {}
@@ -50,21 +49,12 @@ export class WebauthnRegistrationService {
       .from(webauthnCredential)
       .where(eq(webauthnCredential.memberId, memberId));
 
-    const { rpID, rpName } = rpConfig(this.config);
-    const options = await generateRegistrationOptions({
-      rpName,
-      rpID,
+    const options = await buildRegistrationOptions(this.crypto, this.config, {
       userName: row.email,
-      // Lets the authenticator prompt "you already have a passkey here"
-      // instead of silently creating a duplicate for the same device.
       excludeCredentials: existing.map((credential) => ({
         id: credential.credentialId,
         transports: credential.transports ?? undefined,
       })),
-      authenticatorSelection: {
-        residentKey: 'preferred',
-        userVerification: 'preferred',
-      },
     });
 
     req.session.webauthnChallenge = options.challenge;
@@ -82,7 +72,7 @@ export class WebauthnRegistrationService {
     const { origin, rpID } = rpConfig(this.config);
     let verification: VerifiedRegistrationResponse;
     try {
-      verification = await verifyRegistrationResponse({
+      verification = await this.crypto.verifyRegistrationResponse({
         response: dto.response,
         expectedChallenge,
         expectedOrigin: origin,
@@ -96,16 +86,10 @@ export class WebauthnRegistrationService {
       throw new BadRequestException(REGISTRATION_FAILED);
     }
 
-    const { credential } = verification.registrationInfo;
     try {
-      await this.db.insert(webauthnCredential).values({
-        memberId,
-        credentialId: credential.id,
-        publicKey: Buffer.from(credential.publicKey).toString('base64'),
-        counter: credential.counter,
-        transports: credential.transports ?? null,
-        deviceName: dto.deviceName,
-      });
+      await this.db
+        .insert(webauthnCredential)
+        .values(credentialInsertValues(memberId, verification.registrationInfo, dto.deviceName));
     } catch {
       // Most likely the credentialId unique constraint — the same
       // authenticator credential registered twice (e.g. a retried request).

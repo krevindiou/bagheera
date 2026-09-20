@@ -39,14 +39,14 @@ describe('GET /auth/csrf-token', () => {
     const res = await agent.get('/auth/csrf-token').expect(200);
     const token = (res.body as { csrfToken: string }).csrfToken;
 
-    // Whether sign-in itself succeeds isn't the point (wrong credentials
-    // on purpose) — only that the request isn't rejected at the CSRF
-    // layer. A 403 here would mean the session was dropped between the
-    // two calls and the token no longer matches.
-    const signInRes = await agent
-      .post('/auth/sign-in')
+    // Whether the email resolves to anyone isn't the point (an unknown
+    // address on purpose) — only that the request isn't rejected at the
+    // CSRF layer. A 403 here would mean the session was dropped between
+    // the two calls and the token no longer matches.
+    const optionsRes = await agent
+      .post('/webauthn/authentication/options')
       .set('x-csrf-token', token)
-      .send({ email: 'nobody@example.test', password: 'wrong-password-1' });
-    expect(signInRes.status).not.toBe(403);
+      .send({ email: 'nobody@example.test' });
+    expect(optionsRes.status).not.toBe(403);
   });
 });

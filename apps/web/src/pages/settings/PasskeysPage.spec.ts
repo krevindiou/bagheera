@@ -166,6 +166,27 @@ describe('PasskeysPage', () => {
     expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
   });
 
+  it('shows the specific last-passkey error, not the generic toast, on a 400', async () => {
+    mockCredentials([
+      { id: 'p1', deviceName: 'Only one', createdAt: '2026-01-01', lastUsedAt: null },
+    ]);
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'Cannot remove your last passkey — it would lock you out permanently.' },
+      response: new Response(null, { status: 400 }),
+    });
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find('button.btn-outline-danger').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(useToast().toasts[0]?.text).toBe(
+      "This is your last passkey — you can't remove it, or you'd be permanently locked out.",
+    );
+  });
+
   it("doesn't remove a passkey when the confirmation is cancelled", async () => {
     mockCredentials([
       { id: 'p1', deviceName: 'MacBook', createdAt: '2026-01-01', lastUsedAt: null },

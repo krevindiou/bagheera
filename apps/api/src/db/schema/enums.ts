@@ -27,6 +27,10 @@ export const dataGroupingEnum = pgEnum('data_grouping', [
 
 // SecurityEvent kinds, wired into auth/member modules later. New values can
 // be appended by later migrations as more call sites land.
+// The password/activation-era values below (sign_in_*, password_*,
+// activation_*) are dead now that auth is WebAuthn-only — kept because
+// Postgres enum values can't be dropped and historical security_event rows
+// still reference them.
 export const securityEventTypeEnum = pgEnum('security_event_type', [
   'sign_in_success',
   'sign_in_failure',
@@ -51,4 +55,7 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'webauthn_credential_removed',
   'webauthn_sign_in_success',
   'webauthn_sign_in_failure',
+  'signup_confirmation_issued',
+  'passkey_signup_completed',
+  'step_up_verified',
 ]);

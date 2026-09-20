@@ -4,8 +4,23 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
 import { AuditService, SecurityEventType } from './audit.service';
-import { csrfTokenFor, insertActiveMember, uniqueEmail } from '../test-support/auth-fixture';
+import {
+  csrfTokenFor,
+  insertMemberWithCredential,
+  uniqueEmail,
+} from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
+
+function fakeResponseFor(credentialId: string) {
+  return {
+    id: credentialId,
+    rawId: credentialId,
+    response: {},
+    clientExtensionResults: {},
+    type: 'public-key',
+  };
+}
 
 describe('security audit log', () => {
   let app: INestApplication<Server>;
@@ -19,20 +34,32 @@ describe('security audit log', () => {
   });
 
   it('records the real source address and the resolved member on a known-member failure', async () => {
-    const { email, memberId } = await insertActiveMember(app);
+    const { email, memberId, credentialId } = await insertMemberWithCredential(app);
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
     await agent
-      .post('/auth/sign-in')
+      .post('/webauthn/authentication/options')
       .set('x-csrf-token', csrfToken)
-      .send({ email, password: 'wrong-password-1' })
+      .send({ email })
+      .expect(200);
+
+    jest
+      .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
+      .mockResolvedValueOnce({ verified: false } as never);
+    await agent
+      .post('/webauthn/authentication/verify')
+      .set('x-csrf-token', csrfToken)
+      .send({ response: fakeResponseFor(credentialId) })
       .expect(401);
 
     const [event] = await getDb(app)
       .select()
       .from(securityEvent)
       .where(
-        and(eq(securityEvent.eventType, 'sign_in_failure'), eq(securityEvent.memberId, memberId)),
+        and(
+          eq(securityEvent.eventType, 'webauthn_sign_in_failure'),
+          eq(securityEvent.memberId, memberId),
+        ),
       )
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
@@ -45,15 +72,25 @@ describe('security audit log', () => {
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
     await agent
-      .post('/auth/sign-in')
+      .post('/webauthn/authentication/options')
       .set('x-csrf-token', csrfToken)
-      .send({ email, password: 'whatever12' })
+      .send({ email })
+      .expect(200);
+    await agent
+      .post('/webauthn/authentication/verify')
+      .set('x-csrf-token', csrfToken)
+      .send({ response: fakeResponseFor('whatever') })
       .expect(401);
 
     const [event] = await getDb(app)
       .select()
       .from(securityEvent)
-      .where(and(eq(securityEvent.eventType, 'sign_in_failure'), isNull(securityEvent.memberId)))
+      .where(
+        and(
+          eq(securityEvent.eventType, 'webauthn_sign_in_failure'),
+          isNull(securityEvent.memberId),
+        ),
+      )
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
     expect(event).toBeDefined();

@@ -1,9 +1,15 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
+import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import type { RedisClientType } from 'redis';
-import { csrfTokenFor, insertActiveMember, seedSignedInMember } from '../test-support/auth-fixture';
+import {
+  csrfTokenFor,
+  insertMemberWithCredential,
+  seedSignedInMember,
+} from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
+import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
 import { SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
 
 interface StoredSession {
@@ -55,11 +61,30 @@ describe('session lifecycle', () => {
       }
     }
 
-    const { email, password } = await insertActiveMember(app);
+    const { email, credentialId } = await insertMemberWithCredential(app);
     await agent
-      .post('/auth/sign-in')
+      .post('/webauthn/authentication/options')
       .set('x-csrf-token', csrfToken)
-      .send({ email, password })
+      .send({ email })
+      .expect(200);
+    jest
+      .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
+      .mockResolvedValueOnce({
+        verified: true,
+        authenticationInfo: { newCounter: 1 },
+      } as unknown as VerifiedAuthenticationResponse);
+    await agent
+      .post('/webauthn/authentication/verify')
+      .set('x-csrf-token', csrfToken)
+      .send({
+        response: {
+          id: credentialId,
+          rawId: credentialId,
+          response: {},
+          clientExtensionResults: {},
+          type: 'public-key',
+        },
+      })
       .expect(200);
 
     const after = new Set<string>();

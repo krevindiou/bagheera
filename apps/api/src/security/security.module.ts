@@ -4,7 +4,6 @@ import type { RedisClientType } from 'redis';
 import { DbModule } from '../db/db.module';
 import { AuditService } from './audit.service';
 import { CryptoService } from './crypto.service';
-import { HashService } from './hash.service';
 import { OwnershipService } from './ownership.service';
 import {
   RATE_LIMIT_VALKEY_CLIENT,
@@ -19,19 +18,18 @@ import { RateLimitGuard } from './rate-limit.guard';
 @Module({
   imports: [DbModule],
   providers: [
-    HashService,
     CryptoService,
     rateLimitValkeyClientProvider,
     // Global, the same way SessionModule wires SessionAuthGuard — nothing
     // resolves RateLimitGuard as its own injectable token (a route opts out
     // with @SkipRateLimit or overrides with @RateLimit instead), so unlike
-    // AuditService/HashService/CryptoService it isn't also listed as a
-    // plain provider or exported.
+    // AuditService/CryptoService it isn't also listed as a plain provider or
+    // exported.
     { provide: APP_GUARD, useClass: RateLimitGuard },
     AuditService,
     OwnershipService,
   ],
-  exports: [HashService, CryptoService, RATE_LIMIT_VALKEY_CLIENT, AuditService, OwnershipService],
+  exports: [CryptoService, RATE_LIMIT_VALKEY_CLIENT, AuditService, OwnershipService],
 })
 export class SecurityModule implements OnModuleDestroy {
   constructor(

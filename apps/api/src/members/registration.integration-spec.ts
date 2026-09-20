@@ -3,7 +3,11 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member, securityEvent } from '../db/schema';
-import { csrfTokenFor, uniqueEmail } from '../test-support/auth-fixture';
+import {
+  csrfTokenFor,
+  insertMemberWithCredential,
+  uniqueEmail,
+} from '../test-support/auth-fixture';
 import { createTestApp, FakeEmailQueue, getDb } from '../test-support/create-test-app';
 
 function messageOf(res: request.Response): string {
@@ -29,7 +33,7 @@ describe('POST /members/register', () => {
     fakeEmailQueue.enqueue.mockClear();
   });
 
-  it('creates an inactive member, queues an activation email, and records activation_issued', async () => {
+  it('creates no member row yet, queues a sign-up email, and records signup_confirmation_issued', async () => {
     const email = uniqueEmail();
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
@@ -37,34 +41,27 @@ describe('POST /members/register', () => {
     const res = await agent
       .post('/members/register')
       .set('x-csrf-token', csrfToken)
-      .send({
-        email,
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-real-password-1',
-        country: 'fr',
-      })
+      .send({ email, country: 'fr' })
       .expect(201);
     expect(messageOf(res)).toBe(REGISTER_MESSAGE);
 
-    const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
-    expect(row).toBeDefined();
-    expect(row.active).toBe(false);
-    // Normalized to uppercase, per RegistrationService.
-    expect(row.country).toBe('FR');
+    // The account only comes into existence once the emailed link's
+    // WebAuthn ceremony completes — see WebauthnSignupService.
+    const rows = await getDb(app).select().from(member).where(eq(member.email, email));
+    expect(rows).toHaveLength(0);
     expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
 
     const [event] = await getDb(app)
       .select()
       .from(securityEvent)
-      .where(
-        and(eq(securityEvent.eventType, 'activation_issued'), eq(securityEvent.memberId, row.id)),
-      )
+      .where(and(eq(securityEvent.eventType, 'signup_confirmation_issued')))
       .orderBy(desc(securityEvent.createdAt))
       .limit(1);
     expect(event).toBeDefined();
+    expect(event.memberId).toBeNull();
   });
 
-  it('defaults locale to en when omitted', async () => {
+  it('sends the sign-up link/email in the requested locale', async () => {
     const email = uniqueEmail();
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
@@ -72,37 +69,9 @@ describe('POST /members/register', () => {
     await agent
       .post('/members/register')
       .set('x-csrf-token', csrfToken)
-      .send({
-        email,
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-real-password-1',
-        country: 'FR',
-      })
+      .send({ email, country: 'FR', locale: 'fr' })
       .expect(201);
 
-    const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
-    expect(row.locale).toBe('en');
-  });
-
-  it('stores an explicit supported locale and sends the activation link/email in it', async () => {
-    const email = uniqueEmail();
-    const agent = request.agent(app.getHttpServer());
-    const csrfToken = await csrfTokenFor(agent);
-
-    await agent
-      .post('/members/register')
-      .set('x-csrf-token', csrfToken)
-      .send({
-        email,
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-real-password-1',
-        country: 'FR',
-        locale: 'fr',
-      })
-      .expect(201);
-
-    const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
-    expect(row.locale).toBe('fr');
     expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
     const sent = fakeEmailQueue.enqueue.mock.calls.at(-1)?.[0] as { html: string };
     expect(sent.html).toContain('/fr/activate?key=');
@@ -115,60 +84,47 @@ describe('POST /members/register', () => {
     await agent
       .post('/members/register')
       .set('x-csrf-token', csrfToken)
-      .send({
-        email: uniqueEmail(),
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-real-password-1',
-        country: 'FR',
-        locale: 'de',
-      })
+      .send({ email: uniqueEmail(), country: 'FR', locale: 'de' })
       .expect(400);
   });
 
-  it('returns the same generic message for an already-registered email and creates no second row', async () => {
+  it('returns the same generic message and sends no email for an already-registered email', async () => {
+    const { email } = await insertMemberWithCredential(app);
+    fakeEmailQueue.enqueue.mockClear();
+
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+    const res = await agent
+      .post('/members/register')
+      .set('x-csrf-token', csrfToken)
+      .send({ email, country: 'FR' })
+      .expect(201);
+
+    expect(messageOf(res)).toBe(REGISTER_MESSAGE);
+    expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('resubmitting the same not-yet-registered email is idempotent and queues another sign-up email', async () => {
     const email = uniqueEmail();
-    const password = 'a-real-password-1';
     const register = () => {
       const agent = request.agent(app.getHttpServer());
       return csrfTokenFor(agent).then((csrfToken) =>
-        agent.post('/members/register').set('x-csrf-token', csrfToken).send({
-          email,
-          password,
-          passwordConfirmation: password,
-          country: 'FR',
-        }),
+        agent
+          .post('/members/register')
+          .set('x-csrf-token', csrfToken)
+          .send({ email, country: 'FR' }),
       );
     };
 
     const first = await register();
     expect(first.status).toBe(201);
-    fakeEmailQueue.enqueue.mockClear();
 
     const second = await register();
     expect(second.status).toBe(201);
     expect(messageOf(second)).toBe(REGISTER_MESSAGE);
-    expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
-
-    const rows = await getDb(app).select().from(member).where(eq(member.email, email));
-    expect(rows).toHaveLength(1);
-  });
-
-  it('rejects mismatched password confirmation before touching the database', async () => {
-    const email = uniqueEmail();
-    const agent = request.agent(app.getHttpServer());
-    const csrfToken = await csrfTokenFor(agent);
-
-    await agent
-      .post('/members/register')
-      .set('x-csrf-token', csrfToken)
-      .send({
-        email,
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-different-password-1',
-        country: 'FR',
-      })
-      .expect(400);
-
+    // Still no row for either call — the account only comes into existence
+    // once one of the (possibly several) outstanding links' ceremony
+    // completes, see signup-token.ts's TTL-only trade-off.
     const rows = await getDb(app).select().from(member).where(eq(member.email, email));
     expect(rows).toHaveLength(0);
   });
@@ -180,28 +136,7 @@ describe('POST /members/register', () => {
     await agent
       .post('/members/register')
       .set('x-csrf-token', csrfToken)
-      .send({
-        email: uniqueEmail(),
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-real-password-1',
-        country: 'FRA',
-      })
-      .expect(400);
-  });
-
-  it('rejects a too-short password', async () => {
-    const agent = request.agent(app.getHttpServer());
-    const csrfToken = await csrfTokenFor(agent);
-
-    await agent
-      .post('/members/register')
-      .set('x-csrf-token', csrfToken)
-      .send({
-        email: uniqueEmail(),
-        password: 'short',
-        passwordConfirmation: 'short',
-        country: 'FR',
-      })
+      .send({ email: uniqueEmail(), country: 'FRA' })
       .expect(400);
   });
 });

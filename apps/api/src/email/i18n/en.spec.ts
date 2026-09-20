@@ -14,11 +14,6 @@ describe('email/i18n/en', () => {
     expect(en.registration.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
   });
 
-  it('escapes the change-password link in the password-recovery email', () => {
-    expect(en.passwordRecovery.body(XSS_PAYLOAD)).toContain(ESCAPED_PAYLOAD);
-    expect(en.passwordRecovery.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
-  });
-
   it('escapes the new address in the email-changed notice', () => {
     expect(en.emailChanged.body(XSS_PAYLOAD)).toContain(ESCAPED_PAYLOAD);
     expect(en.emailChanged.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);

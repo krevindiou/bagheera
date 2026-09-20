@@ -5,8 +5,9 @@ import request from 'supertest';
 import { member } from '../db/schema';
 import { CryptoService } from '../security/crypto.service';
 import {
+  completeStepUp,
   csrfTokenFor,
-  insertActiveMember,
+  insertMemberWithCredential,
   seedSignedInMember,
   uniqueEmail,
 } from '../test-support/auth-fixture';
@@ -19,6 +20,7 @@ function messageOf(res: request.Response): string {
 
 const UPDATE_MESSAGE =
   "If this email isn't already registered to another account, check it for a link to confirm the change.";
+const STEP_UP_ERROR = 'Step-up verification is required or has expired.';
 
 describe('POST /members/profile', () => {
   let app: INestApplication<Server>;
@@ -38,18 +40,19 @@ describe('POST /members/profile', () => {
 
   describe('POST /members/profile (start an email change)', () => {
     it('sets pendingEmail and queues a confirmation to the new address, leaving email unchanged', async () => {
-      const { agent, getCsrfToken, password, memberId } = await seedSignedInMember(app);
+      const fixture = await seedSignedInMember(app);
       const newEmail = uniqueEmail('new-address');
 
-      const csrfToken = await getCsrfToken();
-      const res = await agent
+      await completeStepUp(app, fixture);
+      const csrfToken = await fixture.getCsrfToken();
+      const res = await fixture.agent
         .post('/members/profile')
         .set('x-csrf-token', csrfToken)
-        .send({ email: newEmail, currentPassword: password })
+        .send({ email: newEmail })
         .expect(200);
       expect(messageOf(res)).toBe(UPDATE_MESSAGE);
 
-      const [row] = await getDb(app).select().from(member).where(eq(member.id, memberId));
+      const [row] = await getDb(app).select().from(member).where(eq(member.id, fixture.memberId));
       expect(row.email).not.toBe(newEmail);
       expect(row.pendingEmail).toBe(newEmail);
       expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
@@ -57,16 +60,35 @@ describe('POST /members/profile', () => {
       );
     });
 
-    it('rejects a wrong current password', async () => {
+    it('rejects the call without a prior step-up verification', async () => {
       const { agent, getCsrfToken } = await seedSignedInMember(app);
 
       const csrfToken = await getCsrfToken();
       const res = await agent
         .post('/members/profile')
         .set('x-csrf-token', csrfToken)
-        .send({ email: uniqueEmail(), currentPassword: 'wrong-password' })
+        .send({ email: uniqueEmail() })
         .expect(422);
-      expect(messageOf(res)).toBe('Current password is invalid.');
+      expect(messageOf(res)).toBe(STEP_UP_ERROR);
+    });
+
+    it('rejects a second call reusing a step-up proof already consumed by the first', async () => {
+      const fixture = await seedSignedInMember(app);
+      await completeStepUp(app, fixture);
+      const csrfToken = await fixture.getCsrfToken();
+      await fixture.agent
+        .post('/members/profile')
+        .set('x-csrf-token', csrfToken)
+        .send({ email: uniqueEmail() })
+        .expect(200);
+
+      const csrfToken2 = await fixture.getCsrfToken();
+      const res = await fixture.agent
+        .post('/members/profile')
+        .set('x-csrf-token', csrfToken2)
+        .send({ email: uniqueEmail() })
+        .expect(422);
+      expect(messageOf(res)).toBe(STEP_UP_ERROR);
     });
 
     it('requires authentication', async () => {
@@ -76,37 +98,39 @@ describe('POST /members/profile', () => {
       await agent
         .post('/members/profile')
         .set('x-csrf-token', csrfToken)
-        .send({ email: uniqueEmail(), currentPassword: 'whatever12' })
+        .send({ email: uniqueEmail() })
         .expect(401);
     });
 
     it('no-ops when the "new" email is the same as the current one', async () => {
-      const { agent, getCsrfToken, password, email, memberId } = await seedSignedInMember(app);
+      const fixture = await seedSignedInMember(app);
 
-      const csrfToken = await getCsrfToken();
-      await agent
+      await completeStepUp(app, fixture);
+      const csrfToken = await fixture.getCsrfToken();
+      await fixture.agent
         .post('/members/profile')
         .set('x-csrf-token', csrfToken)
-        .send({ email, currentPassword: password })
+        .send({ email: fixture.email })
         .expect(200);
 
       expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
       const [row] = await getDb(app)
         .select({ pendingEmail: member.pendingEmail })
         .from(member)
-        .where(eq(member.id, memberId));
+        .where(eq(member.id, fixture.memberId));
       expect(row.pendingEmail).toBeNull();
     });
 
     it('returns the same generic message and changes nothing when the new email is already taken', async () => {
-      const other = await insertActiveMember(app);
-      const { agent, getCsrfToken, password, memberId } = await seedSignedInMember(app);
+      const other = await insertMemberWithCredential(app);
+      const fixture = await seedSignedInMember(app);
 
-      const csrfToken = await getCsrfToken();
-      const res = await agent
+      await completeStepUp(app, fixture);
+      const csrfToken = await fixture.getCsrfToken();
+      const res = await fixture.agent
         .post('/members/profile')
         .set('x-csrf-token', csrfToken)
-        .send({ email: other.email, currentPassword: password })
+        .send({ email: other.email })
         .expect(200);
       expect(messageOf(res)).toBe(UPDATE_MESSAGE);
       expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
@@ -114,28 +138,34 @@ describe('POST /members/profile', () => {
       const [row] = await getDb(app)
         .select({ pendingEmail: member.pendingEmail })
         .from(member)
-        .where(eq(member.id, memberId));
+        .where(eq(member.id, fixture.memberId));
       expect(row.pendingEmail).toBeNull();
     });
   });
 
   describe('POST /members/profile/confirm-email-change', () => {
     it('completes a pending change and notifies the old address', async () => {
-      const { agent, getCsrfToken, password, memberId } = await seedSignedInMember(app);
+      const fixture = await seedSignedInMember(app);
       const newEmail = uniqueEmail('confirmed');
-      const startCsrfToken = await getCsrfToken();
-      await agent
+      await completeStepUp(app, fixture);
+      const startCsrfToken = await fixture.getCsrfToken();
+      await fixture.agent
         .post('/members/profile')
         .set('x-csrf-token', startCsrfToken)
-        .send({ email: newEmail, currentPassword: password })
+        .send({ email: newEmail })
         .expect(200);
       fakeEmailQueue.enqueue.mockClear();
 
       const [row] = await getDb(app)
         .select({ version: member.emailChangeTokenVersion })
         .from(member)
-        .where(eq(member.id, memberId));
-      const key = buildEmailChangeToken(app.get(CryptoService), memberId, newEmail, row.version);
+        .where(eq(member.id, fixture.memberId));
+      const key = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        newEmail,
+        row.version,
+      );
 
       const confirmAgent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(confirmAgent);
@@ -145,7 +175,10 @@ describe('POST /members/profile', () => {
         .send({ key })
         .expect(200);
 
-      const [updated] = await getDb(app).select().from(member).where(eq(member.id, memberId));
+      const [updated] = await getDb(app)
+        .select()
+        .from(member)
+        .where(eq(member.id, fixture.memberId));
       expect(updated.email).toBe(newEmail);
       expect(updated.pendingEmail).toBeNull();
 

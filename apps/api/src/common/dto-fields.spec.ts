@@ -6,7 +6,6 @@ import {
   AmountField,
   BankNameField,
   EmailField,
-  NewPasswordField,
   NotesField,
   ReportTitleField,
   SecretField,
@@ -18,9 +17,6 @@ class EmailFieldHost {
 }
 class SecretFieldHost {
   @SecretField() value!: string;
-}
-class NewPasswordFieldHost {
-  @NewPasswordField() value!: string;
 }
 class ThirdPartyFieldHost {
   @ThirdPartyField() value!: string;
@@ -77,49 +73,6 @@ describe('SecretField', () => {
     const dto = plainToInstance(SecretFieldHost, { value: 'x'.repeat(4097) });
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('maxLength');
-  });
-});
-
-describe('NewPasswordField', () => {
-  it('rejects a password shorter than 8 characters', async () => {
-    const dto = plainToInstance(NewPasswordFieldHost, { value: 'short1' });
-    const errors = await validate(dto);
-    expect(errors[0]?.constraints).toHaveProperty('isLength');
-  });
-
-  it('accepts an 8-character password mixing 2 character classes', async () => {
-    const dto = plainToInstance(NewPasswordFieldHost, { value: 'Exactly8' });
-    expect(await validate(dto)).toEqual([]);
-  });
-
-  it('rejects a password longer than 4096 characters', async () => {
-    const dto = plainToInstance(NewPasswordFieldHost, {
-      value: 'x'.repeat(4097),
-    });
-    const errors = await validate(dto);
-    expect(errors[0]?.constraints).toHaveProperty('isLength');
-  });
-
-  it('rejects an 8+ char password made of only one character class', async () => {
-    for (const value of ['alllowercase', 'ALLUPPERCASE', '12345678', '!!!!!!!!']) {
-      const dto = plainToInstance(NewPasswordFieldHost, { value });
-      const errors = await validate(dto);
-      expect(errors[0]?.constraints).toHaveProperty('matches');
-    }
-  });
-
-  it('accepts an 8+ char password mixing any 2 of the 4 character classes', async () => {
-    for (const value of [
-      'lowerUPPER',
-      'lower1234',
-      'lower!!!!',
-      'UPPER1234',
-      'UPPER!!!!',
-      '1234!!!!',
-    ]) {
-      const dto = plainToInstance(NewPasswordFieldHost, { value });
-      expect(await validate(dto)).toEqual([]);
-    }
   });
 });
 

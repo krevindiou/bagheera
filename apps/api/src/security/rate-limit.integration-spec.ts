@@ -1,31 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { desc, eq } from 'drizzle-orm';
 import request from 'supertest';
-import { securityEvent } from '../db/schema';
 import { csrfTokenFor, seedSignedInMember, uniqueEmail } from '../test-support/auth-fixture';
-import { createTestApp, getDb } from '../test-support/create-test-app';
+import { createTestApp } from '../test-support/create-test-app';
 
-async function attemptSignIn(
+async function attemptAuthenticationOptions(
   agent: ReturnType<typeof request.agent>,
   csrfToken: string,
   email: string,
 ): Promise<number> {
   const res = await agent
-    .post('/auth/sign-in')
+    .post('/webauthn/authentication/options')
     .set('x-csrf-token', csrfToken)
-    .send({ email, password: 'wrong-password-1' });
+    .send({ email });
   return res.status;
-}
-
-async function latestSignInThrottledEvent(app: INestApplication<Server>) {
-  const [event] = await getDb(app)
-    .select()
-    .from(securityEvent)
-    .where(eq(securityEvent.eventType, 'sign_in_throttled'))
-    .orderBy(desc(securityEvent.createdAt))
-    .limit(1);
-  return event;
 }
 
 describe('rate limiting', () => {
@@ -39,29 +27,23 @@ describe('rate limiting', () => {
     await app.close();
   });
 
-  // Sign-in's SignInThrottleAuditFilter deliberately masks a throttled
-  // attempt as the same generic 401 a wrong password produces (anti-
-  // enumeration: a caller must not be able to tell "you're locked out"
-  // from "wrong password") — it still records a distinct sign_in_throttled
-  // audit event, which is what these sign-in-specific tests check instead
-  // of the (intentionally invisible) HTTP status.
+  // WebauthnAuthenticationController.options() declares
+  // @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
+  // — same shape the old password sign-in endpoint used. Unlike sign-in,
+  // nothing masks a throttled attempt here: the route's response is already
+  // identical for a known vs. unknown email (see
+  // webauthn-authentication.service.ts's anti-enumeration comment), so a
+  // distinct 429 once the budget trips leaks nothing extra.
   it('locks out the identifier dimension once its budget is exhausted', async () => {
     const email = uniqueEmail('ratelimit');
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
-    const before = await latestSignInThrottledEvent(app);
 
     const statuses: number[] = [];
     for (let i = 0; i < 6; i++) {
-      statuses.push(await attemptSignIn(agent, csrfToken, email));
+      statuses.push(await attemptAuthenticationOptions(agent, csrfToken, email));
     }
-    // Every attempt looks like an ordinary wrong-password failure —
-    // sign-in's own @RateLimit is { points: 5, identifierField: 'email' },
-    // so the 6th silently trips the budget behind that same 401.
-    expect(statuses).toEqual([401, 401, 401, 401, 401, 401]);
-
-    const after = await latestSignInThrottledEvent(app);
-    expect(after?.id).not.toBe(before?.id);
+    expect(statuses).toEqual([200, 200, 200, 200, 200, 429]);
   });
 
   it('shares the identifier lockout across letter case (cbab0fd6 regression)', async () => {
@@ -72,19 +54,16 @@ describe('rate limiting', () => {
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
     for (let i = 0; i < 6; i++) {
-      await attemptSignIn(agent, csrfToken, upper);
+      await attemptAuthenticationOptions(agent, csrfToken, upper);
     }
-    const throttledOnUpper = await latestSignInThrottledEvent(app);
-    expect(throttledOnUpper).toBeDefined();
+    const throttledOnUpper = await attemptAuthenticationOptions(agent, csrfToken, upper);
+    expect(throttledOnUpper).toBe(429);
 
     // A different case variant of the same email is blocked immediately —
-    // one more throttled event, not a fresh ordinary failure — proving both
-    // share one normalized dimension key, not two independent ones an
-    // attacker could rotate between.
-    await attemptSignIn(agent, csrfToken, lower);
-    const throttledOnLower = await latestSignInThrottledEvent(app);
-    expect(throttledOnLower).toBeDefined();
-    expect(throttledOnLower.id).not.toBe(throttledOnUpper.id);
+    // proving both share one normalized dimension key, not two independent
+    // ones an attacker could rotate between.
+    const throttledOnLower = await attemptAuthenticationOptions(agent, csrfToken, lower);
+    expect(throttledOnLower).toBe(429);
   });
 
   it('applies an explicit @RateLimit override distinct from the default budget', async () => {
@@ -118,26 +97,21 @@ describe('rate limiting', () => {
     }
   });
 
-  it("scopes the identifier dimension to its own route — exhausting sign-in's budget doesn't affect registration", async () => {
+  it("scopes the identifier dimension to its own route — exhausting authentication's budget doesn't affect registration", async () => {
     const email = uniqueEmail('scoped');
-    const signInAgent = request.agent(app.getHttpServer());
-    const signInCsrf = await csrfTokenFor(signInAgent);
+    const authAgent = request.agent(app.getHttpServer());
+    const authCsrf = await csrfTokenFor(authAgent);
     for (let i = 0; i < 6; i++) {
-      await attemptSignIn(signInAgent, signInCsrf, email);
+      await attemptAuthenticationOptions(authAgent, authCsrf, email);
     }
-    expect(await latestSignInThrottledEvent(app)).toBeDefined();
+    expect(await attemptAuthenticationOptions(authAgent, authCsrf, email)).toBe(429);
 
     const registerAgent = request.agent(app.getHttpServer());
     const registerCsrf = await csrfTokenFor(registerAgent);
     const res = await registerAgent
       .post('/members/register')
       .set('x-csrf-token', registerCsrf)
-      .send({
-        email,
-        password: 'a-real-password-1',
-        passwordConfirmation: 'a-real-password-1',
-        country: 'FR',
-      });
+      .send({ email, country: 'FR' });
     expect(res.status).toBe(201);
   });
 });

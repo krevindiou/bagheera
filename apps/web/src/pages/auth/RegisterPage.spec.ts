@@ -18,8 +18,6 @@ const apiClient = asMockedApiClient(realApiClient);
 async function fillValidForm(wrapper: VueWrapper) {
   await wrapper.find('#register-email').setValue('member@example.com');
   await wrapper.find('#register-country').setValue('FR');
-  await wrapper.find('#register-password').setValue('longenough1');
-  await wrapper.find('#register-password-confirmation').setValue('longenough1');
 }
 
 describe('RegisterPage', () => {
@@ -40,24 +38,18 @@ describe('RegisterPage', () => {
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
-      response: new Response(null, { status: 200 }),
+      response: new Response(null, { status: 201 }),
     });
     const wrapper = mount(RegisterPage, withGlobalPlugins());
     await fillValidForm(wrapper);
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith('/members/register', {
-      body: {
-        email: 'member@example.com',
-        country: 'FR',
-        password: 'longenough1',
-        passwordConfirmation: 'longenough1',
-        locale: 'en',
-      },
+      body: { email: 'member@example.com', country: 'FR', locale: 'en' },
     });
     expect(readLastAttemptedEmail()).toBe('member@example.com');
     expect(useToast().toasts[0]?.text).toBe(
-      "If this email isn't already registered, you'll receive a link to activate your account.",
+      "If this email isn't already registered, you'll receive a link to create your account.",
     );
     await waitForRouteName(router, 'sign-in');
   });
@@ -66,7 +58,7 @@ describe('RegisterPage', () => {
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
-      response: new Response(null, { status: 200 }),
+      response: new Response(null, { status: 201 }),
     });
     await router.push({ name: 'register', params: { locale: 'fr' } });
     const wrapper = mount(RegisterPage, withGlobalPlugins());
@@ -93,52 +85,13 @@ describe('RegisterPage', () => {
     expect(router.currentRoute.value.name).toBe('register');
   });
 
-  it('shows a validation error for every required field left blank', async () => {
+  it('shows a validation error for a blank email', async () => {
     // Country isn't included here: it defaults to a browser-locale guess
     // (see useCountryOptions), so it's never actually blank at submit time.
     const wrapper = mount(RegisterPage, withGlobalPlugins());
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('Enter a valid email address.');
-    expect(wrapper.text()).toContain('Password must be at least 8 characters.');
-    expect(apiClient.POST).not.toHaveBeenCalled();
-
-    // PasswordInput wraps its <input> in its own .input-group, so its
-    // sibling .invalid-feedback needs d-block — Bootstrap's plain
-    // .is-invalid ~ .invalid-feedback rule never matches across that
-    // extra nesting level. wrapper.text() above would pass either way.
-    const passwordError = wrapper
-      .findAll('.invalid-feedback')
-      .find((el) => el.text() === 'Password must be at least 8 characters.');
-    expect(passwordError?.classes()).toContain('d-block');
-  });
-
-  it("shows a validation error and doesn't submit for mismatched passwords", async () => {
-    const wrapper = mount(RegisterPage, withGlobalPlugins());
-    await fillValidForm(wrapper);
-    await wrapper.find('#register-password-confirmation').setValue('different1');
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.text()).toContain("Passwords don't match.");
-    expect(apiClient.POST).not.toHaveBeenCalled();
-
-    const confirmationError = wrapper
-      .findAll('.invalid-feedback')
-      .find((el) => el.text() === "Passwords don't match.");
-    expect(confirmationError?.classes()).toContain('d-block');
-  });
-
-  it('rejects an 8+ char password made of only one character class, with a distinct message', async () => {
-    const wrapper = mount(RegisterPage, withGlobalPlugins());
-    await fillValidForm(wrapper);
-    await wrapper.find('#register-password').setValue('alllowercase');
-    await wrapper.find('#register-password-confirmation').setValue('alllowercase');
-    await submitAndSettle(wrapper);
-
-    expect(wrapper.text()).toContain(
-      'Use a mix of at least 2 of: lowercase, uppercase, numbers, symbols.',
-    );
-    expect(wrapper.text()).not.toContain('Password must be at least 8 characters.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 });

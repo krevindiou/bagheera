@@ -1,7 +1,6 @@
 // Remembers the last email address submitted on any auth form so the next
-// one (e.g. sign-in after a failed registration, or forgot-password after
-// a failed sign-in) starts prefilled instead of empty. Session-scoped —
-// cleared when the tab closes.
+// one (e.g. sign-in after a failed registration attempt) starts prefilled
+// instead of empty. Session-scoped — cleared when the tab closes.
 const STORAGE_KEY = 'bagheera.lastAttemptedEmail';
 
 export function readLastAttemptedEmail(): string {

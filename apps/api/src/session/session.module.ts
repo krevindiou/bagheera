@@ -10,7 +10,6 @@ import { buildCsrf } from './csrf';
 import { CsrfTokenController } from './csrf-token.controller';
 import { SessionAuthGuard } from './session-auth.guard';
 import { SessionRotationService } from './session-rotation.service';
-import { SessionTerminationService } from './session-termination.service';
 import { SESSION_COOKIE_NAME, SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from './session.constants';
 import { valkeyClientProvider } from './valkey-client.provider';
 
@@ -20,10 +19,9 @@ import { valkeyClientProvider } from './valkey-client.provider';
   providers: [
     valkeyClientProvider,
     SessionRotationService,
-    SessionTerminationService,
     { provide: APP_GUARD, useClass: SessionAuthGuard },
   ],
-  exports: [SessionRotationService, SessionTerminationService, VALKEY_CLIENT],
+  exports: [SessionRotationService, VALKEY_CLIENT],
 })
 export class SessionModule implements NestModule, OnModuleDestroy {
   constructor(

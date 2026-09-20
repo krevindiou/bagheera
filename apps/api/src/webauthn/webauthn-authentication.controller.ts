@@ -7,7 +7,7 @@ import { AuthenticationOptionsDto } from './dto/authentication-options.dto';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { WebauthnAuthenticationService } from './webauthn-authentication.service';
 
-// Public — the caller isn't signed in yet, same as SignInController.
+// Public — the caller isn't signed in yet.
 @Controller('webauthn/authentication')
 @Public()
 export class WebauthnAuthenticationController {
