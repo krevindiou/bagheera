@@ -33,8 +33,13 @@ function dayInPreviousCalendarMonth(): string {
 interface DashboardBody {
   onboarding: string | null;
   totalBalances: { currency: string; amount: number; reconciledAmount: number }[];
-  lastSalary: { amount: number; currency: string } | null;
-  lastBiggestExpense: { amount: number; currency: string } | null;
+  lastSalary: { amount: number; currency: string; valueDate: string; thirdParty: string } | null;
+  lastBiggestExpense: {
+    amount: number;
+    currency: string;
+    valueDate: string;
+    thirdParty: string;
+  } | null;
   synthesisChart: { series: { currency: string; points: { period: string; value: number }[] }[] };
   accountsOverview: {
     id: string;
@@ -211,6 +216,7 @@ describe('GET /dashboard', () => {
       amount: 2000,
       currency: 'EUR',
       valueDate: '2026-01-01',
+      thirdParty: 'Employer',
     });
   });
 
@@ -242,6 +248,7 @@ describe('GET /dashboard', () => {
       amount: 500,
       currency: 'EUR',
       valueDate: lastMonthDate,
+      thirdParty: 'Big',
     });
   });
 

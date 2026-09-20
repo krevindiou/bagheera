@@ -115,6 +115,7 @@ const accountTiles = computed(() =>
               {{ formatMoney(dashboard.lastSalary.amount, dashboard.lastSalary.currency, true) }}
             </div>
             <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
+              {{ dashboard.lastSalary.thirdParty }} ·
               {{ formatDate(dashboard.lastSalary.valueDate) }}
             </div>
           </div>
@@ -134,6 +135,7 @@ const accountTiles = computed(() =>
               }}
             </div>
             <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
+              {{ dashboard.lastBiggestExpense.thirdParty }} ·
               {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}
             </div>
           </div>

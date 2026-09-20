@@ -33,6 +33,7 @@ export interface DashboardIndicator {
   amount: number;
   currency: string;
   valueDate: string;
+  thirdParty: string;
 }
 
 export interface AccountsOverviewBank {
@@ -383,6 +384,7 @@ export class DashboardService {
       amount: toMajorUnits(row.credit),
       currency,
       valueDate: row.valueDate,
+      thirdParty: row.thirdParty,
     };
   }
 
@@ -422,6 +424,7 @@ export class DashboardService {
       amount: toMajorUnits(winner.debit!),
       currency,
       valueDate: winner.valueDate,
+      thirdParty: winner.thirdParty,
     };
   }
 

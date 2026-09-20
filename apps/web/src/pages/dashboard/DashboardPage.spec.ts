@@ -110,13 +110,25 @@ describe('DashboardPage', () => {
   it('shows the last salary and biggest expense when present', async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
-        lastSalary: { amount: 2500, currency: 'USD', valueDate: '2026-01-15' },
-        lastBiggestExpense: { amount: 80, currency: 'USD', valueDate: '2026-01-20' },
+        lastSalary: {
+          amount: 2500,
+          currency: 'USD',
+          valueDate: '2026-01-15',
+          thirdParty: 'Acme Corp',
+        },
+        lastBiggestExpense: {
+          amount: 80,
+          currency: 'USD',
+          valueDate: '2026-01-20',
+          thirdParty: 'Grocery Store',
+        },
       }),
     );
     expect(wrapper.find('[data-testid="last-salary"]').text()).toContain('$2,500.00');
     expect(wrapper.find('[data-testid="last-salary"]').text()).toContain('1/15/2026');
+    expect(wrapper.find('[data-testid="last-salary"]').text()).toContain('Acme Corp');
     expect(wrapper.find('[data-testid="last-biggest-expense"]').text()).toContain('$80.00');
+    expect(wrapper.find('[data-testid="last-biggest-expense"]').text()).toContain('Grocery Store');
   });
 
   it('shows the synthesis chart with one series per currency, using its axis bounds', async () => {

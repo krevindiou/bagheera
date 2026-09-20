@@ -15,6 +15,7 @@ export interface DashboardIndicator {
   amount: number;
   currency: string;
   valueDate: string;
+  thirdParty: string;
 }
 
 export interface AccountsOverviewAccount {
