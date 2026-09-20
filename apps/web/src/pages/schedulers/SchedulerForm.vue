@@ -36,7 +36,7 @@ const props = withDefaults(
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 useEscapeKey(() => emit('cancel'));
 
@@ -347,6 +347,7 @@ const onSubmit = handleSubmit(async (submitted) => {
           v-model="valueDate"
           v-bind="valueDateAttrs"
           type="date"
+          :lang="locale"
           class="form-control"
         />
       </div>
@@ -397,6 +398,7 @@ const onSubmit = handleSubmit(async (submitted) => {
           v-model="limitDate"
           v-bind="limitDateAttrs"
           type="date"
+          :lang="locale"
           class="form-control"
         />
       </div>

@@ -26,7 +26,7 @@ const groupedCategories = computed(() => groupCategories(props.categories));
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 useEscapeKey(() => emit('cancel'));
 
@@ -161,6 +161,7 @@ const onSubmit = handleSubmit(async (submitted) => {
             v-model="valueDateStart"
             v-bind="valueDateStartAttrs"
             type="date"
+            :lang="locale"
             class="form-control"
           />
         </div>
@@ -171,6 +172,7 @@ const onSubmit = handleSubmit(async (submitted) => {
             v-model="valueDateEnd"
             v-bind="valueDateEndAttrs"
             type="date"
+            :lang="locale"
             class="form-control"
             :class="{ 'is-invalid': errors.valueDateEnd }"
           />

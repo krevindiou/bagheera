@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useEscapeKey } from '../../composables/useEscapeKey';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
 import { categoryLabel } from './operations.types';
@@ -17,6 +18,8 @@ const props = defineProps<{
   initialCriteria?: SearchCriteria;
 }>();
 const emit = defineEmits<{ submit: [SearchCriteria]; clear: []; cancel: [] }>();
+
+const { locale } = useI18n();
 
 useEscapeKey(() => emit('cancel'));
 
@@ -259,13 +262,25 @@ function onClear() {
           <label class="form-label" for="search-date-from">{{
             $t('operations.search.dateFrom')
           }}</label>
-          <input id="search-date-from" v-model="dateFrom" type="date" class="form-control" />
+          <input
+            id="search-date-from"
+            v-model="dateFrom"
+            type="date"
+            :lang="locale"
+            class="form-control"
+          />
         </div>
         <div class="col">
           <label class="form-label" for="search-date-to">{{
             $t('operations.search.dateTo')
           }}</label>
-          <input id="search-date-to" v-model="dateTo" type="date" class="form-control" />
+          <input
+            id="search-date-to"
+            v-model="dateTo"
+            type="date"
+            :lang="locale"
+            class="form-control"
+          />
         </div>
       </div>
 
