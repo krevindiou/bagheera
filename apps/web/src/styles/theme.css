@@ -720,8 +720,14 @@ input[type='radio'] {
      of DOM order (CSS stacking order, not just source order) — without
      this, .app-glow (position:absolute) painted over this opaque panel
      instead of being hidden behind it, even though .sidebar comes later
-     in the markup. Matches the mock's own .sidebar, which sets this too. */
-  position: relative;
+     in the markup. Matches the mock's own .sidebar, which sets this too.
+     `sticky` keeps that stacking (it's positioned too) and additionally
+     pins the sidebar — logout included — to the viewport instead of
+     scrolling away with a tall .main-inner. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 .side-brand {
   display: flex;
@@ -842,7 +848,9 @@ input[type='radio'] {
     align-items: center;
     padding: 14px 16px;
     gap: 16px;
+    height: auto;
     overflow-x: auto;
+    overflow-y: visible;
   }
   .side-brand {
     margin-bottom: 0 !important;
