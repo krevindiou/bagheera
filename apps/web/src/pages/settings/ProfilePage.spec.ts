@@ -23,6 +23,8 @@ function errorResult(status: number, error?: unknown) {
   return { data: undefined, error, response: new Response(null, { status }) };
 }
 
+type ApiResult = ReturnType<typeof jsonResult> | ReturnType<typeof errorResult>;
+
 // ProfilePage reads session.member.email once, synchronously, as its form's
 // initial value — the session needs to be populated on the *same* pinia
 // instance before mount(), not after (see withGlobalPlugins' own doc-comment
@@ -39,7 +41,7 @@ function mountWithSession(email: string) {
  * override that default for a test exercising a specific `/members/profile`
  * outcome.
  */
-function mockSuccessfulStepUp(profileResult = jsonResult(200)) {
+function mockSuccessfulStepUp(profileResult: ApiResult = jsonResult(200)) {
   apiClient.POST.mockImplementation(async (path: string) => {
     if (path === '/webauthn/step-up/options') return jsonResult(200, {});
     if (path === '/webauthn/step-up/verify') return jsonResult(200);

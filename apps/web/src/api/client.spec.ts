@@ -73,7 +73,7 @@ describe('apiClient', () => {
 
   describe('401 handling', () => {
     it('clears the session and redirects to sign-in on a 401', async () => {
-      useSessionStore().setMember({ email: 'member@example.com' });
+      useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
       fetchMock.mockImplementation(async (input: RequestInfo | URL) =>
         urlOf(input).includes('csrf-token')
           ? jsonResponse(200, { csrfToken: 'test-csrf-token' })
@@ -98,12 +98,12 @@ describe('apiClient', () => {
     });
 
     it('leaves the session and route alone on a non-401 response', async () => {
-      useSessionStore().setMember({ email: 'member@example.com' });
+      useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
       const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
       await apiClient.GET('/auth/me', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
 
-      expect(useSessionStore().member).toEqual({ email: 'member@example.com' });
+      expect(useSessionStore().member).toEqual({ email: 'member@example.com', locale: 'en' });
       expect(pushSpy).not.toHaveBeenCalled();
     });
 

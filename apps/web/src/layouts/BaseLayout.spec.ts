@@ -58,7 +58,7 @@ describe('BaseLayout', () => {
 
   it('shows the sidebar once authenticated, with the brand and 4 nav items', async () => {
     wrapper = mount(BaseLayout, withGlobalPlugins(router));
-    useSessionStore().setMember({ email: 'member@example.com' });
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
     await wrapper.vm.$nextTick();
 
     // Includes the "B" logo-mark glyph alongside the "Bagheera" wordmark.
@@ -85,7 +85,7 @@ describe('BaseLayout', () => {
       // "Discarded invalid param(s)" warning for no reason.
       await router.push({ name: routeName, params });
       wrapper = mount(BaseLayout, withGlobalPlugins(router));
-      useSessionStore().setMember({ email: 'member@example.com' });
+      useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
       await wrapper.vm.$nextTick();
 
       const active = wrapper.findAll('.side-nav-item.active').map((el) => el.text());
@@ -95,7 +95,7 @@ describe('BaseLayout', () => {
 
   it('signs out: calls the API, clears the session, and returns to sign-in', async () => {
     wrapper = mount(BaseLayout, withGlobalPlugins(router));
-    useSessionStore().setMember({ email: 'member@example.com' });
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
     await wrapper.vm.$nextTick();
 
     await wrapper.find('.side-foot-logout').trigger('click');
