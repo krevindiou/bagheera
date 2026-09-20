@@ -121,6 +121,19 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
     y: {
       suggestedMin: props.axisBounds?.min,
       suggestedMax: props.axisBounds?.max,
+      ticks: {
+        // Default linear-scale ticking crowds the axis with a mark per
+        // ~30px, which on money values means long decimal-laden labels
+        // shoulder to shoulder. Cap the count and round for display —
+        // same "legible over precise" tradeoff as the point-radius
+        // thinning above.
+        maxTicksLimit: 6,
+        precision: 0,
+        callback: (value) =>
+          new Intl.NumberFormat(locale.value, { maximumFractionDigits: 0 }).format(
+            value as number,
+          ),
+      },
     },
   },
   plugins: {
