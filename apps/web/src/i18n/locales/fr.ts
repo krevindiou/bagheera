@@ -93,6 +93,7 @@ export default {
     currency: 'Devise',
     chooseCurrency: 'Choisir une devise…',
     initialBalance: 'Solde initial',
+    next: 'Suivant',
     submit: 'Enregistrer',
     edit: 'Modifier',
     close: 'Clôturer',

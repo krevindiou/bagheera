@@ -89,6 +89,7 @@ export default {
     currency: 'Currency',
     chooseCurrency: 'Choose a currency…',
     initialBalance: 'Initial balance',
+    next: 'Next',
     submit: 'Save',
     edit: 'Edit',
     close: 'Close',

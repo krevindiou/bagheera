@@ -105,7 +105,7 @@ const onSubmit = handleSubmit(async (values) => {
 
       <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-          {{ $t('accounts.submit') }}
+          {{ $t('accounts.next') }}
         </button>
         <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
           {{ $t('common.cancel') }}
