@@ -5,6 +5,7 @@ import {
   randomEmail,
   REGISTER_COUNTRY,
   registerAndCompletePasskeySignup,
+  signOut,
   test,
 } from '../support/fixtures';
 import { waitForEmailLink } from '../support/mailpit';
@@ -29,7 +30,7 @@ test.describe('registration, passkey signup ceremony, sign-in, sign-out', () => 
     await expect(page).toHaveURL(/\/en\/home$/);
     await expect(page.getByText(email, { exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: en.home.signOut, exact: true }).click();
+    await signOut(page);
     await expect(page).toHaveURL(/\/en\/sign-in$/);
 
     await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);

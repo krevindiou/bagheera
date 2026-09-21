@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
-import { apiClient } from '../api/client';
+import { useRoute } from 'vue-router';
+import AccountMenu from '../components/AccountMenu.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
-import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import { useSessionStore } from '../stores/session.store';
 
 const session = useSessionStore();
-const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
 
@@ -33,14 +31,6 @@ const navItems = computed(() => [
     active: String(route.name).startsWith('settings'),
   },
 ]);
-
-const initials = computed(() => (session.member?.email ?? '??').slice(0, 2).toUpperCase());
-
-async function signOut() {
-  await apiClient.POST('/auth/sign-out');
-  session.clear();
-  router.push({ name: 'sign-in' });
-}
 </script>
 
 <template>
@@ -66,18 +56,8 @@ async function signOut() {
       </nav>
 
       <div class="side-foot">
-        <span class="avatar-chip">{{ initials }}</span>
-        <div class="flex-grow-1 min-w-0">
-          <div class="side-foot-name" :title="session.member?.email">
-            {{ session.member?.email }}
-          </div>
-          <button type="button" class="side-foot-logout" @click="signOut">
-            {{ $t('home.signOut') }}
-          </button>
-        </div>
+        <AccountMenu />
       </div>
-
-      <LanguageSwitcher class="side-lang-switcher" />
     </aside>
 
     <div class="main">
@@ -91,9 +71,3 @@ async function signOut() {
 
   <ConfirmModal />
 </template>
-
-<style scoped>
-.side-lang-switcher {
-  margin-top: 12px;
-}
-</style>

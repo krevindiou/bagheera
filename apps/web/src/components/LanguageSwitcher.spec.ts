@@ -37,21 +37,33 @@ describe('LanguageSwitcher', () => {
     await router.push({ name: 'sign-in', params: { locale: 'en' } });
   });
 
-  it('lists every supported locale and preselects the active one', () => {
+  it('shows the active locale on the trigger and starts closed', () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
-    const select = wrapper.get('select');
-    expect(select.findAll('option').map((o) => o.text())).toEqual(['English', 'Français']);
-    expect((select.element as HTMLSelectElement).value).toBe('en');
+    expect(wrapper.get('.lang-trigger').text()).toBe('EN');
+    expect(wrapper.find('.lang-list').exists()).toBe(false);
+  });
+
+  it('opens to list every supported locale, marking the active one', async () => {
+    const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
+    await wrapper.get('.lang-trigger').trigger('click');
+
+    const options = wrapper.findAll('.lang-option');
+    expect(options.map((o) => o.text().trim())).toEqual(['English', 'Français']);
+    expect(options[0]?.classes()).toContain('selected');
+    expect(options[1]?.classes()).not.toContain('selected');
   });
 
   it('switches the URL locale, the i18n catalog, and persists the choice for a signed-out visitor', async () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
-    await wrapper.get('select').setValue('fr');
+    await wrapper.get('.lang-trigger').trigger('click');
+    await wrapper.findAll('.lang-option')[1]?.trigger('click');
     await waitForLocale('fr');
 
     expect(i18n.global.locale.value).toBe('fr');
     expect(localStorage.getItem('bagheera.locale')).toBe('fr');
     expect(apiClient.POST).not.toHaveBeenCalled();
+    // Picking an option also closes the menu.
+    expect(wrapper.find('.lang-list').exists()).toBe(false);
   });
 
   it('also persists the choice server-side when signed in', async () => {
@@ -64,7 +76,8 @@ describe('LanguageSwitcher', () => {
     session.setMember({ email: 'member@example.com', locale: 'en' });
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
 
-    await wrapper.get('select').setValue('fr');
+    await wrapper.get('.lang-trigger').trigger('click');
+    await wrapper.findAll('.lang-option')[1]?.trigger('click');
     await waitForLocale('fr');
 
     expect(apiClient.POST).toHaveBeenCalledWith('/members/locale', { body: { locale: 'fr' } });
@@ -73,10 +86,33 @@ describe('LanguageSwitcher', () => {
 
   it('does nothing when re-selecting the already-active locale', async () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
-    await wrapper.get('select').setValue('en');
+    await wrapper.get('.lang-trigger').trigger('click');
+    await wrapper.findAll('.lang-option')[0]?.trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(router.currentRoute.value.params.locale).toBe('en');
     expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
+  it('closes on Escape', async () => {
+    const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
+    await wrapper.get('.lang-trigger').trigger('click');
+    expect(wrapper.find('.lang-list').exists()).toBe(true);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.lang-list').exists()).toBe(false);
+  });
+
+  it('closes when clicking outside', async () => {
+    const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
+    await wrapper.get('.lang-trigger').trigger('click');
+    expect(wrapper.find('.lang-list').exists()).toBe(true);
+
+    document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.lang-list').exists()).toBe(false);
   });
 });

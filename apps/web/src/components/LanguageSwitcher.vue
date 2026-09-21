@@ -1,79 +1,94 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
-import { apiClient } from '../api/client';
-import { setLocale } from '../i18n';
-import {
-  isSupportedLocale,
-  setStoredLocale,
-  SUPPORTED_LOCALES,
-  type Locale,
-} from '../i18n/locales';
-import { useSessionStore } from '../stores/session.store';
-import { useToast } from '../composables/useToast';
+import { useEscapeKey } from '../composables/useEscapeKey';
+import { useLocaleSwitch } from '../composables/useLocaleSwitch';
+import { SUPPORTED_LOCALES, type Locale } from '../i18n/locales';
 
-const route = useRoute();
-const router = useRouter();
-const session = useSessionStore();
 const { t } = useI18n();
-const { push: toast } = useToast();
+const { current, choose } = useLocaleSwitch();
 
-const current = computed<Locale>(() =>
-  isSupportedLocale(route.params.locale) ? route.params.locale : 'en',
-);
+const open = ref(false);
+const root = ref<HTMLElement | null>(null);
 
-async function choose(locale: Locale): Promise<void> {
-  if (locale === current.value) return;
+// This component is always mounted (the pre-auth shell), so the listener
+// lives for the app's whole lifetime — guard the callback on `open` rather
+// than mounting/unmounting it, same as ConfirmModal.
+useEscapeKey(() => {
+  if (open.value) open.value = false;
+});
 
-  // Every call site elsewhere navigates by name and lets the router fill
-  // in `locale` from the current route (see router/index.ts's withLocale)
-  // — this is the one place that instead passes it explicitly, since
-  // switching *is* the locale change.
-  await setLocale(locale);
-  setStoredLocale(locale);
-  await router.replace({ name: route.name ?? undefined, params: { ...route.params, locale } });
-
-  if (session.isAuthenticated) {
-    const { response } = await apiClient.POST('/members/locale', { body: { locale } });
-    if (response.ok) {
-      session.setLocale(locale);
-    } else {
-      toast(t('language.genericError'), 'error');
-    }
+function onDocumentClick(event: MouseEvent): void {
+  if (open.value && root.value && !root.value.contains(event.target as Node)) {
+    open.value = false;
   }
 }
+onMounted(() => document.addEventListener('click', onDocumentClick));
+onUnmounted(() => document.removeEventListener('click', onDocumentClick));
 
-// A <select> rather than a button row: more locales are coming, and a row
-// of buttons grows wider (and eventually wraps) with every one added — a
-// dropdown's footprint stays constant regardless of SUPPORTED_LOCALES'
-// length.
-function onChange(event: Event): void {
-  const value = (event.target as HTMLSelectElement).value;
-  if (isSupportedLocale(value)) {
-    void choose(value);
-  }
+async function pick(locale: Locale): Promise<void> {
+  open.value = false;
+  await choose(locale);
 }
 </script>
 
 <template>
-  <select
-    class="form-select form-select-sm lang-switcher"
-    :aria-label="t('language.label')"
-    :value="current"
-    @change="onChange"
-  >
-    <option v-for="code in SUPPORTED_LOCALES" :key="code" :value="code">
-      {{ t(`language.${code}`) }}
-    </option>
-  </select>
+  <div ref="root" class="lang-picker">
+    <button
+      type="button"
+      class="lang-trigger"
+      :aria-label="t('language.label')"
+      :aria-expanded="open"
+      @click="open = !open"
+    >
+      {{ current.toUpperCase() }}
+      <svg
+        class="lang-chevron"
+        width="10"
+        height="10"
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M4 6l4 4 4-4"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+    <div v-if="open" class="lang-list" role="listbox" :aria-label="t('language.label')">
+      <button
+        v-for="code in SUPPORTED_LOCALES"
+        :key="code"
+        type="button"
+        role="option"
+        class="lang-option"
+        :class="{ selected: code === current }"
+        :aria-selected="code === current"
+        @click="pick(code)"
+      >
+        {{ t(`language.${code}`) }}
+        <svg
+          v-if="code === current"
+          class="lang-check"
+          width="12"
+          height="12"
+          viewBox="0 0 16 16"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M3 8.5l3.2 3.2L13 4.5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
 </template>
-
-<style scoped>
-.lang-switcher {
-  /* Fixed rather than content-sized — a native <select>'s width otherwise
-     jumps with whichever option is currently selected, which gets more
-     noticeable as more (and more varied-length) locale names are added. */
-  width: 110px;
-}
-</style>

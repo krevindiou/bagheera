@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { alertWithText, expect, randomEmail, test } from '../support/fixtures';
+import { alertWithText, expect, randomEmail, signOut, test } from '../support/fixtures';
 import { waitForEmailLink } from '../support/mailpit';
 
 // /en/confirm-email-change had no e2e coverage at all before this rewrite —
@@ -28,7 +28,7 @@ test('changing the account email requires a step-up passkey confirmation and con
   await page.getByRole('button', { name: en.auth.signIn.passkeySubmit, exact: true }).click();
   await expect(page).toHaveURL(/\/en\/home$/);
 
-  await page.getByRole('button', { name: en.home.signOut, exact: true }).click();
+  await signOut(page);
   await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(oldEmail);
   await page.getByRole('button', { name: en.auth.signIn.passkeySubmit, exact: true }).click();
   await expect(alertWithText(page, en.auth.signIn.invalidCredentials)).toBeVisible();

@@ -65,8 +65,7 @@ describe('BaseLayout', () => {
     expect(wrapper.find('.side-brand').text()).toContain('Bagheera');
     const labels = wrapper.findAll('.side-nav-item').map((el) => el.text());
     expect(labels).toEqual(['Dashboard', 'Accounts', 'Reports', 'Settings']);
-    expect(wrapper.find('.side-foot-name').text()).toBe('member@example.com');
-    expect(wrapper.find('.avatar-chip').text()).toBe('ME');
+    expect(wrapper.find('.account-email').text()).toBe('member@example.com');
   });
 
   it.each([
@@ -98,7 +97,11 @@ describe('BaseLayout', () => {
     useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
     await wrapper.vm.$nextTick();
 
-    await wrapper.find('.side-foot-logout').trigger('click');
+    // Sign-out lives behind the account menu trigger now (AccountMenu.vue
+    // has its own dedicated tests for the menu's full behavior — this is
+    // just confirming BaseLayout wires it up).
+    await wrapper.find('.account-trigger').trigger('click');
+    await wrapper.find('.account-logout').trigger('click');
     // signOut() doesn't await its own router.push(...), so the click
     // handler's promise settles once navigation has merely started — poll
     // the route itself rather than assume it's finished by then.

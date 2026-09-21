@@ -48,7 +48,7 @@ describe('ActivatePage', () => {
     await wrapper.vm.$nextTick();
 
     expect(apiClient.POST).not.toHaveBeenCalled();
-    expect(wrapper.find('button').exists()).toBe(true);
+    expect(wrapper.find('button.btn-primary').exists()).toBe(true);
   });
 
   it('creates the account and lands signed in once the button is clicked', async () => {
@@ -65,7 +65,7 @@ describe('ActivatePage', () => {
     await router.push({ name: 'activate', query: { key: 'abc123' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
     await wrapper.vm.$nextTick();
-    await wrapper.find('button').trigger('click');
+    await wrapper.find('button.btn-primary').trigger('click');
     await waitForRouteName(router, 'home');
 
     expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/signup/options', {
@@ -80,7 +80,7 @@ describe('ActivatePage', () => {
     await router.push({ name: 'activate', query: { key: 'expired' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
     await wrapper.vm.$nextTick();
-    await wrapper.find('button').trigger('click');
+    await wrapper.find('button.btn-primary').trigger('click');
     await waitForRouteName(router, 'sign-in');
 
     expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');
@@ -93,7 +93,7 @@ describe('ActivatePage', () => {
     await router.push({ name: 'activate', query: { key: 'abc123' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
     await wrapper.vm.$nextTick();
-    await wrapper.find('button').trigger('click');
+    await wrapper.find('button.btn-primary').trigger('click');
     await waitForRouteName(router, 'sign-in');
 
     expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');

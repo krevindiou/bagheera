@@ -70,6 +70,7 @@ export default {
   },
   home: {
     signedInAs: 'Connecté en tant que {email}',
+    accountMenu: 'Menu du compte',
     signOut: 'Déconnexion',
     accountsLink: 'Comptes',
     profileLink: 'Paramètres du profil',

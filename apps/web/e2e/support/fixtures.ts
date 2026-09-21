@@ -16,6 +16,16 @@ export function alertWithText(page: Page, text: string): Locator {
   return page.getByRole('alert').filter({ hasText: text });
 }
 
+/**
+ * Signs out via the real UI — sign-out lives behind the sidebar's account
+ * menu (AccountMenu.vue), not as its own always-visible button, so this is
+ * a 2-step interaction: open the menu, then click Logout inside it.
+ */
+export async function signOut(page: Page): Promise<void> {
+  await page.getByRole('button', { name: en.home.accountMenu }).click();
+  await page.getByRole('button', { name: en.home.signOut, exact: true }).click();
+}
+
 // One randomized identifier per test, never a fixed literal — the whole
 // suite runs serially against one shared, seeded Postgres/Valkey pair for
 // the run (see playwright.config.ts), so uniqueness has to come from the

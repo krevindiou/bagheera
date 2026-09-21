@@ -66,6 +66,7 @@ export default {
   },
   home: {
     signedInAs: 'Connected as {email}',
+    accountMenu: 'Account menu',
     signOut: 'Logout',
     accountsLink: 'Accounts',
     profileLink: 'Profile settings',

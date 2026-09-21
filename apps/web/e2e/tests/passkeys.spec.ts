@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { alertWithText, expect, test } from '../support/fixtures';
+import { alertWithText, expect, signOut, test } from '../support/fixtures';
 import { addVirtualAuthenticator } from '../support/webauthn';
 
 // The virtual authenticator is a real, spec-compliant WebAuthn
@@ -31,7 +31,7 @@ test('register a second passkey, sign in with it, then remove it', async ({ sign
   await expect(alertWithText(page, en.settings.passkeys.added)).toBeVisible();
   await expect(page.getByRole('cell', { name: 'E2E test device', exact: true })).toBeVisible();
 
-  await page.getByRole('button', { name: en.home.signOut, exact: true }).click();
+  await signOut(page);
   await expect(page).toHaveURL(/\/en\/sign-in$/);
 
   await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
