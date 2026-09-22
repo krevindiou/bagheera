@@ -88,14 +88,14 @@ describe('SynthesisChart', () => {
     expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 3 });
   });
 
-  it('hides point markers past the dense-window threshold, to avoid a cluttered line', () => {
+  it('still draws point markers for a longer (24-month) window', () => {
     const points = Array.from({ length: 24 }, (_, i) => ({ period: `2024-${i + 1}`, value: i }));
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
       props: { series: [{ label: 'Balance', color: '#000', points }] },
     });
     const chart = wrapper.findComponent(Line);
-    expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 0, pointHoverRadius: 4 });
+    expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 3, pointHoverRadius: 4 });
   });
 
   it('takes its labels from the first non-empty series', () => {
