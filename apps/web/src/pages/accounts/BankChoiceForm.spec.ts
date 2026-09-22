@@ -74,11 +74,16 @@ describe('BankChoiceForm', () => {
     expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
   });
 
-  it('clears the bank name once an existing bank is selected, and vice versa', async () => {
+  it('clears and disables the bank name once an existing bank is selected, and re-enables it once deselected', async () => {
     const wrapper = mount(BankChoiceForm, { ...withGlobalPlugins(), props: { banks } });
     await wrapper.find('#account-bank-name').setValue('New Bank');
     await wrapper.find('#account-bank-id').setValue('b1');
-    expect((wrapper.find('#account-bank-name').element as HTMLInputElement).value).toBe('');
+    const nameInput = wrapper.find('#account-bank-name').element as HTMLInputElement;
+    expect(nameInput.value).toBe('');
+    expect(nameInput.disabled).toBe(true);
+
+    await wrapper.find('#account-bank-id').setValue('');
+    expect(nameInput.disabled).toBe(false);
 
     await wrapper.find('#account-bank-name').setValue('Another');
     expect((wrapper.find('#account-bank-id').element as HTMLSelectElement).value).toBe('');

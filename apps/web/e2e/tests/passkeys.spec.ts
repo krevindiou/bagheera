@@ -27,7 +27,7 @@ test('register a second passkey, sign in with it, then remove it', async ({ sign
   await page
     .getByLabel(en.settings.passkeys.deviceNameLabel, { exact: true })
     .fill('E2E test device');
-  await page.getByRole('button', { name: `+ ${en.settings.passkeys.add}`, exact: true }).click();
+  await page.getByRole('button', { name: en.settings.passkeys.add, exact: true }).click();
   await expect(alertWithText(page, en.settings.passkeys.added)).toBeVisible();
   await expect(page.getByRole('cell', { name: 'E2E test device', exact: true })).toBeVisible();
 
