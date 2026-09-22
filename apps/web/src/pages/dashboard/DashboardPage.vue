@@ -96,7 +96,7 @@ const accountTiles = computed(() =>
               {{ $t('dashboard.totalBalances') }} ({{ balance.currency }})
             </div>
             <div
-              class="stat-value stat-value-primary"
+              class="stat-value"
               data-testid="total-balance"
               :class="{ 'text-danger': balance.amount < 0 }"
             >
@@ -138,9 +138,11 @@ const accountTiles = computed(() =>
                 )
               }}
             </div>
-            <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
-              {{ dashboard.lastBiggestIncome.thirdParty }} ·
-              {{ formatDate(dashboard.lastBiggestIncome.valueDate) }}
+            <div class="stat-footnote">
+              <span class="stat-footnote-label"
+                >{{ dashboard.lastBiggestIncome.thirdParty }} ·
+                {{ formatDate(dashboard.lastBiggestIncome.valueDate) }}</span
+              >
             </div>
           </div>
           <div
@@ -172,9 +174,11 @@ const accountTiles = computed(() =>
                 )
               }}
             </div>
-            <div class="mt-1" style="font-size: 12px; color: var(--paper-faint)">
-              {{ dashboard.lastBiggestExpense.thirdParty }} ·
-              {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}
+            <div class="stat-footnote">
+              <span class="stat-footnote-label"
+                >{{ dashboard.lastBiggestExpense.thirdParty }} ·
+                {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}</span
+              >
             </div>
           </div>
         </div>

@@ -530,7 +530,11 @@ input[type='radio'] {
   background: var(--panel);
   border: 1px solid var(--hair);
   border-radius: 8px;
-  padding: 18px;
+  /* Flat 18px (the mock's own value) reads heavier on top/bottom than left/right —
+     line-height leading on the label/value/footnote text already fills part of the
+     vertical padding, so the same number looks like more space horizontally than
+     vertically. 16px/18px optically balances it; deliberate deviation from the mock. */
+  padding: 16px 18px;
 }
 /* padding-right reserves space for the trend badge below, on every
    stat-card's label (not just income/expense) — so income's shorter text
@@ -610,6 +614,13 @@ input[type='radio'] {
   font-family: 'Space Grotesk', sans-serif;
 }
 .stat-chip {
+  /* A block div otherwise stretches to its parent's full width — fine for
+     .stat-card in a grid track, wrong for a "chip" meant to hug its
+     content (the mock sits it beside a sibling chip in a flex row).
+     OperationsPage.vue's lone balance chip has no such sibling to size
+     against, so without this it stretched edge-to-edge: 14px of real top/
+     bottom padding against several hundred px of dead space on the right. */
+  width: fit-content;
   background: var(--panel);
   border: 1px solid var(--hair);
   border-radius: 8px;

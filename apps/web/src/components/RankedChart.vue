@@ -207,14 +207,14 @@ function stackedChartOptions(currency: string): ChartOptions<'bar'> {
 
 <style scoped>
 .ranked-chart-facet + .ranked-chart-facet {
-  margin-top: 1.5rem;
+  margin-top: 24px;
 }
 
 .ranked-chart-title {
   font-size: 13px;
   font-weight: 600;
   color: var(--paper-dim, rgba(242, 239, 233, 0.62));
-  margin-bottom: 0.75rem;
+  margin-bottom: 12px;
 }
 
 .ranked-chart-canvas {
