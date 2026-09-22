@@ -658,6 +658,18 @@ input[type='radio'] {
   border-color: var(--violet-dim);
   color: inherit;
 }
+/* Tiles in the same tile-grid row sit at variable "Bank — Account" name
+   lengths — some wrap to 2 lines, some fit on 1. Without a reserved height
+   here, a 1-line tile stays shorter than its 2-line neighbors, so its
+   balance/reconciled/sparkline all shift up out of alignment with them.
+   Scoped to .acct-tile (not the generic .stat-card .stat-label) because
+   standalone stat-cards, like the dashboard's Total balance card, have no
+   row neighbor to align against, so the reserved space there just reads as
+   a dead gap under a label that was always going to be 1 line. */
+.acct-tile .stat-label {
+  line-height: 1.3;
+  min-height: 2.6em;
+}
 .acct-tile .stat-value {
   font-size: 19px;
   margin-top: 4px;
