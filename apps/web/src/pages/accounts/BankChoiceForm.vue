@@ -97,6 +97,7 @@ const onSubmit = handleSubmit(async (values) => {
           type="text"
           class="form-control"
           :class="{ 'is-invalid': errors.bankName }"
+          :disabled="!!bankId"
         />
         <div v-if="errors.bankName" class="invalid-feedback">
           {{ $t('accounts.validation.bankChoiceRequired') }}
