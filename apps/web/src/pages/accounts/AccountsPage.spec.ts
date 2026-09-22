@@ -79,7 +79,7 @@ describe('AccountsPage', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain("You don't have any bank yet.");
-    expect(wrapper.find('button.btn-primary').text()).toBe('+ New account');
+    expect(wrapper.find('button.btn-primary').text()).toBe('New account');
   });
 
   it('lists banks and accounts, with closed badges and a no-accounts message', async () => {

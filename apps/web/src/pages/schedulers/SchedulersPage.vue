@@ -17,6 +17,7 @@ import BatchActions from './batch.vue';
 import type { Scheduler, SchedulerList } from './schedulers.types';
 import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
+import PlusIcon from '../../components/PlusIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -148,9 +149,10 @@ function goToPage(newPage: number) {
       <button
         v-if="isAccountFullyActive"
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary d-inline-flex align-items-center gap-1"
         @click="startCreate"
       >
+        <PlusIcon />
         {{ $t('schedulers.addScheduler') }}
       </button>
     </div>

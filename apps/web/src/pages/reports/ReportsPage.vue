@@ -17,6 +17,7 @@ import ReportForm from './ReportForm.vue';
 import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
+import PlusIcon from '../../components/PlusIcon.vue';
 
 const { t } = useI18n();
 const { confirm } = useConfirm();
@@ -156,17 +157,28 @@ function toggleView(report: Report) {
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <h1 class="mb-0">{{ $t('reports.title') }}</h1>
       <div v-if="!showForm" class="d-flex gap-2">
-        <button type="button" class="btn btn-primary" @click="startCreate('sum')">
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center gap-1"
+          @click="startCreate('sum')"
+        >
+          <PlusIcon />
           {{ $t('reports.newSumReport') }}
         </button>
-        <button type="button" class="btn btn-outline-secondary" @click="startCreate('average')">
+        <button
+          type="button"
+          class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
+          @click="startCreate('average')"
+        >
+          <PlusIcon />
           {{ $t('reports.newAverageReport') }}
         </button>
         <button
           type="button"
-          class="btn btn-outline-secondary"
+          class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
           @click="startCreate('distribution')"
         >
+          <PlusIcon />
           {{ $t('reports.newDistributionReport') }}
         </button>
       </div>

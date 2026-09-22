@@ -12,6 +12,7 @@ import BankChoiceForm from './BankChoiceForm.vue';
 import CreateAccountForm from './CreateAccountForm.vue';
 import EditBankForm from './EditBankForm.vue';
 import IconButton from '../../components/IconButton.vue';
+import PlusIcon from '../../components/PlusIcon.vue';
 import ToastContainer from '../../components/ToastContainer.vue';
 
 const { push: toast } = useToast();
@@ -191,10 +192,11 @@ async function onAccountCreated(accountId: string) {
       <button
         v-if="creationStep === 'closed'"
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary d-inline-flex align-items-center gap-1"
         @click="startCreateAccount"
       >
-        + {{ $t('accounts.addAccount') }}
+        <PlusIcon />
+        {{ $t('accounts.addAccount') }}
       </button>
     </div>
     <ToastContainer />

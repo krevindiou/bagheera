@@ -32,6 +32,7 @@ import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
 import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
+import PlusIcon from '../../components/PlusIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -299,9 +300,10 @@ function isEditable(operation: Operation): boolean {
         <button
           v-if="isAccountFullyActive"
           type="button"
-          class="btn btn-primary"
+          class="btn btn-primary d-inline-flex align-items-center gap-1"
           @click="startCreate"
         >
+          <PlusIcon />
           {{ $t('operations.addOperation') }}
         </button>
         <button

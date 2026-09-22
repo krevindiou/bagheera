@@ -10,6 +10,7 @@ import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
+import PlusIcon from '../../components/PlusIcon.vue';
 import SettingsTabs from './SettingsTabs.vue';
 
 // Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
@@ -125,8 +126,14 @@ async function removePasskey(id: string) {
             :placeholder="$t('settings.passkeys.deviceNamePlaceholder')"
           />
         </div>
-        <button type="button" class="btn btn-primary" :disabled="adding" @click="addPasskey">
-          + {{ $t('settings.passkeys.add') }}
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center gap-1"
+          :disabled="adding"
+          @click="addPasskey"
+        >
+          <PlusIcon />
+          {{ $t('settings.passkeys.add') }}
         </button>
       </div>
 
