@@ -3,7 +3,6 @@ import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/serv
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { Public } from '../session/public.decorator';
-import { AuthenticationOptionsDto } from './dto/authentication-options.dto';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { WebauthnAuthenticationService } from './webauthn-authentication.service';
 
@@ -13,14 +12,15 @@ import { WebauthnAuthenticationService } from './webauthn-authentication.service
 export class WebauthnAuthenticationController {
   constructor(private readonly authentication: WebauthnAuthenticationService) {}
 
+  // IP-only: sign-in takes no identifier any more (usernameless — see
+  // WebauthnAuthenticationService), so there's no per-account dimension an
+  // attacker could exhaust to lock someone out. Options only mint a
+  // challenge; nothing here is guessable.
   @Post('options')
   @HttpCode(200)
-  @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
-  async options(
-    @Req() req: Request,
-    @Body() dto: AuthenticationOptionsDto,
-  ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-    return this.authentication.generateOptions(req, dto);
+  @RateLimit({ points: 20, durationSeconds: 60 })
+  async options(@Req() req: Request): Promise<PublicKeyCredentialRequestOptionsJSON> {
+    return this.authentication.generateOptions(req);
   }
 
   @Post('verify')

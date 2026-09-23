@@ -15,8 +15,8 @@ export interface RateLimitOptions {
   durationSeconds: number;
   /**
    * Field read off `req.body` to name a second, independent throttle
-   * dimension (e.g. `'email'` for a sign-in endpoint) alongside the
-   * source IP — an account limit and a source-address limit are each
+   * dimension (e.g. `'email'` for registration) alongside the source IP —
+   * an account limit and a source-address limit are each
    * required, checked and throttled separately, so exceeding either one
    * rejects the request and rotating the other dimension doesn't help an
    * attacker dodge it. Absent or missing on the body: only the IP

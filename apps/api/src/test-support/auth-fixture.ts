@@ -153,15 +153,12 @@ export async function insertMemberWithCredential(
 export async function signInWithPasskey(
   app: INestApplication<Server>,
   agent: Agent,
-  email: string,
   credentialId: string,
 ): Promise<void> {
   const csrfToken = await csrfTokenFor(agent);
-  await agent
-    .post('/webauthn/authentication/options')
-    .set('x-csrf-token', csrfToken)
-    .send({ email })
-    .expect(200);
+  // Usernameless: options take no email — the credential presented to
+  // verify() is what identifies the member.
+  await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
 
   jest
     .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
@@ -186,7 +183,7 @@ export async function seedSignedInMember(
   const { email, memberId, credentialId } = await insertMemberWithCredential(app, overrides);
 
   const agent = request.agent(app.getHttpServer());
-  await signInWithPasskey(app, agent, email, credentialId);
+  await signInWithPasskey(app, agent, credentialId);
 
   const getCsrfToken = () => csrfTokenFor(agent);
   return {

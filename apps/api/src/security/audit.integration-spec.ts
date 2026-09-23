@@ -4,11 +4,7 @@ import { and, desc, eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent } from '../db/schema';
 import { AuditService, SecurityEventType } from './audit.service';
-import {
-  csrfTokenFor,
-  insertMemberWithCredential,
-  uniqueEmail,
-} from '../test-support/auth-fixture';
+import { csrfTokenFor, insertMemberWithCredential } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
 
@@ -34,14 +30,10 @@ describe('security audit log', () => {
   });
 
   it('records the real source address and the resolved member on a known-member failure', async () => {
-    const { email, memberId, credentialId } = await insertMemberWithCredential(app);
+    const { memberId, credentialId } = await insertMemberWithCredential(app);
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
-    await agent
-      .post('/webauthn/authentication/options')
-      .set('x-csrf-token', csrfToken)
-      .send({ email })
-      .expect(200);
+    await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
 
     jest
       .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
@@ -67,15 +59,10 @@ describe('security audit log', () => {
     expect(event.sourceAddress.length).toBeGreaterThan(0);
   });
 
-  it('records a null memberId for a failure against an unknown email', async () => {
-    const email = uniqueEmail('nobody-audited');
+  it('records a null memberId for a failure against an unknown credential', async () => {
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
-    await agent
-      .post('/webauthn/authentication/options')
-      .set('x-csrf-token', csrfToken)
-      .send({ email })
-      .expect(200);
+    await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
     await agent
       .post('/webauthn/authentication/verify')
       .set('x-csrf-token', csrfToken)

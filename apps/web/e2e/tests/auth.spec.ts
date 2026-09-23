@@ -33,9 +33,10 @@ test.describe('registration, passkey signup ceremony, sign-in, sign-out', () => 
     await signOut(page);
     await expect(page).toHaveURL(/\/en\/sign-in$/);
 
-    await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
+    // Usernameless: no email to type — the passkey alone says who's back.
     await page.getByRole('button', { name: en.auth.signIn.passkeySubmit, exact: true }).click();
     await expect(page).toHaveURL(/\/en\/home$/);
+    await expect(page.getByText(email, { exact: true })).toBeVisible();
   });
 
   test('a second completion attempt on an already-used link fails without revealing why', async ({

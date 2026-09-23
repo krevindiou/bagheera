@@ -173,9 +173,7 @@ describe('webauthn registration', () => {
     // options() — and the step-up with it — entirely.
     it("doesn't accept a sign-in challenge in place of a registration one", async () => {
       const fixture = await seedSignedInMember(app);
-      const signInOptions = await fixture.mutate('post', '/webauthn/authentication/options', {
-        email: fixture.email,
-      });
+      const signInOptions = await fixture.mutate('post', '/webauthn/authentication/options');
       expect(signInOptions.status).toBe(200);
 
       mockVerify.mockResolvedValueOnce(verifiedResult('cred-planted'));

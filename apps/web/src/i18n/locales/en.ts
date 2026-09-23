@@ -18,10 +18,10 @@ export default {
   auth: {
     signIn: {
       title: 'Sign in',
-      email: 'Email address',
       submit: 'Sign in',
       passkeySubmit: 'Sign in with a passkey',
-      invalidCredentials: 'Sign-in failed. Check your email address and try again.',
+      passkeyHint: 'Your browser will offer the passkeys saved for this site — pick yours.',
+      invalidCredentials: 'Sign-in failed. Please try again.',
       passkeysUnsupported: "This browser doesn't support passkeys, so sign-in isn't available.",
       registerLink: 'Create an account',
       success: 'Signed in.',

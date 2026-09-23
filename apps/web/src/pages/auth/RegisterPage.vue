@@ -5,7 +5,6 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../../api/client';
-import { rememberAttemptedEmail } from '../../composables/useLastAttemptedEmail';
 import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';
 import { useToast } from '../../composables/useToast';
 import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
@@ -34,7 +33,6 @@ const genericError = ref(false);
 
 const onSubmit = handleSubmit(async (values) => {
   genericError.value = false;
-  rememberAttemptedEmail(values.email);
 
   // Whatever locale this page is currently showing under (`/en/register`,
   // `/fr/register`, …) — the member's own future emails and the switcher's

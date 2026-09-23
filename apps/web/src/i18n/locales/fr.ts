@@ -20,10 +20,11 @@ export default {
   auth: {
     signIn: {
       title: 'Connexion',
-      email: 'Adresse email',
       submit: 'Se connecter',
       passkeySubmit: 'Se connecter avec une clé d’accès',
-      invalidCredentials: 'Échec de la connexion. Vérifiez votre adresse email et réessayez.',
+      passkeyHint:
+        'Votre navigateur proposera les clés d’accès enregistrées pour ce site — choisissez la vôtre.',
+      invalidCredentials: 'Échec de la connexion. Veuillez réessayer.',
       passkeysUnsupported:
         "Ce navigateur ne prend pas en charge les clés d'accès : la connexion n'est pas disponible.",
       registerLink: 'Créer un compte',

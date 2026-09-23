@@ -4,7 +4,7 @@ import type {
   PublicKeyCredentialRequestOptionsJSON,
   VerifiedAuthenticationResponse,
 } from '@simplewebauthn/server';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { SchedulerCatchUpService } from '../auth/scheduler-catch-up.service';
@@ -13,20 +13,27 @@ import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/webauthn-session-data';
-import { AuthenticationOptionsDto } from './dto/authentication-options.dto';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
-// Unknown email, unknown/removed credential, and a bad signature are all
-// indistinguishable — one generic error path for all of them. A bare 401
-// here is safe: this only ever fires from the sign-in page, so the web
-// client's global 401 handler redirecting to sign-in is a no-op there.
+// Unknown/removed credential and a bad signature are indistinguishable —
+// one generic error path for both. A bare 401 here is safe: this only ever
+// fires from the sign-in page, so the web client's global 401 handler
+// redirecting to sign-in is a no-op there.
 const INVALID_PASSKEY = 'Passkey sign-in failed.';
 
 /**
- * The sole sign-in mechanism — there is no password path. Ends in a session
- * creation step (rotate then set memberId), same as every other
+ * The sole sign-in mechanism — there is no password path — and a
+ * usernameless one: options() takes no email and names no credentials
+ * (`allowCredentials: []`), so the member's authenticator offers whichever
+ * of its discoverable passkeys belong to this site, and verify() learns who
+ * is signing in from the credential that answered. Asking for an email
+ * first used to tell anyone whether an address was registered (through
+ * the credential ids options() returned for it) and let anyone lock a
+ * member out through a per-email rate limit. Every passkey is registered as
+ * discoverable for this reason (see build-registration-options.ts). Ends in
+ * a session creation step (rotate then set memberId), same as every other
  * privilege-boundary crossing in this app.
  */
 @Injectable()
@@ -40,56 +47,23 @@ export class WebauthnAuthenticationService {
     private readonly audit: AuditService,
   ) {}
 
-  async generateOptions(
-    req: Request,
-    dto: AuthenticationOptionsDto,
-  ): Promise<PublicKeyCredentialRequestOptionsJSON> {
-    const [row] = await this.db
-      .select()
-      .from(member)
-      .where(sql`lower(${member.email}) = lower(${dto.email})`);
-
-    let allowCredentials: { id: string; transports?: string[] }[] = [];
-    if (row) {
-      const credentials = await this.db
-        .select()
-        .from(webauthnCredential)
-        .where(eq(webauthnCredential.memberId, row.id));
-      allowCredentials = credentials.map((credential) => ({
-        id: credential.credentialId,
-        transports: credential.transports ?? undefined,
-      }));
-    }
-
+  async generateOptions(req: Request): Promise<PublicKeyCredentialRequestOptionsJSON> {
     const options = await this.crypto.generateAuthenticationOptions({
       rpID: rpConfig(this.config).rpID,
-      allowCredentials,
-      userVerification: 'preferred',
+      allowCredentials: [],
+      userVerification: 'required',
     });
-
     req.session.webauthnChallenge = options.challenge;
-    // Anti-enumeration: only stash a resolvable member id when the email
-    // matched AND has a credential to authenticate with. Response shape and
-    // timing are otherwise identical for an unknown email, so verify()
-    // always fails the same way it would for a real member with no match.
-    if (row && allowCredentials.length > 0) {
-      req.session.webauthnMemberId = row.id;
-    } else {
-      delete req.session.webauthnMemberId;
-    }
-
     return options;
   }
 
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const sourceAddress = req.ip ?? 'unknown';
     const expectedChallenge = req.session.webauthnChallenge;
-    const memberId = req.session.webauthnMemberId ?? null;
     delete req.session.webauthnChallenge;
-    delete req.session.webauthnMemberId;
 
-    if (!expectedChallenge || !memberId) {
-      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
+    if (!expectedChallenge) {
+      await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
 
@@ -97,10 +71,11 @@ export class WebauthnAuthenticationService {
       .select()
       .from(webauthnCredential)
       .where(eq(webauthnCredential.credentialId, dto.response.id));
-    if (!credentialRow || credentialRow.memberId !== memberId) {
-      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
+    if (!credentialRow) {
+      await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);
       throw new UnauthorizedException(INVALID_PASSKEY);
     }
+    const memberId = credentialRow.memberId;
 
     let verification: VerifiedAuthenticationResponse;
     try {

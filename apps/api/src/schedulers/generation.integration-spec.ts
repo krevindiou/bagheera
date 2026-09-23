@@ -117,7 +117,7 @@ describe('scheduler occurrence generation', () => {
     // so create()'s own immediate generateForScheduler() call never runs;
     // the only thing that can generate this backlog is sign-in's catch-up.
     const db = getDb(app);
-    const { email, memberId, credentialId } = await insertMemberWithCredential(app);
+    const { memberId, credentialId } = await insertMemberWithCredential(app);
     const bank = await insertBank(db, memberId);
     const account = await insertAccount(db, bank.id);
     await db.insert(scheduler).values({
@@ -132,7 +132,7 @@ describe('scheduler occurrence generation', () => {
     });
 
     const agent = request.agent(app.getHttpServer());
-    await signInWithPasskey(app, agent, email, credentialId);
+    await signInWithPasskey(app, agent, credentialId);
 
     const generated = await getDb(app)
       .select()

@@ -8,16 +8,12 @@ import 'express-session';
 // WebauthnRegistrationService) while sign-in options are public, so a
 // shared field would let a signed-in caller seed a registration verify()
 // with a challenge from the ungated sign-in endpoint and skip the step-up.
-//
-// `webauthnMemberId` is only meaningful during the authentication ceremony,
-// where the caller isn't signed in yet: it's set when `options` resolved a
-// real member with at least one credential, and left unset for an unknown
-// email or one with no credentials — see webauthn-authentication.service.ts
-// for why that's the anti-enumeration branch, not an error.
+// Sign-in stashes nothing else: it's usernameless, so who's signing in is
+// only known from the credential that answers (see
+// webauthn-authentication.service.ts).
 declare module 'express-session' {
   interface SessionData {
     webauthnChallenge?: string;
-    webauthnMemberId?: string;
     registrationChallenge?: string;
   }
 }

@@ -24,8 +24,15 @@ export function buildRegistrationOptions(
     // instead of silently creating a duplicate for the same device.
     excludeCredentials: params.excludeCredentials,
     authenticatorSelection: {
-      residentKey: 'preferred',
-      userVerification: 'preferred',
+      // Sign-in is usernameless (see webauthn-authentication.service.ts):
+      // the authenticator has to find the passkey on its own, with no
+      // credential id to look it up by — a non-discoverable one could never
+      // be used to sign in, so it's refused at creation instead.
+      residentKey: 'required',
+      // verify*Response() already requires user verification (its
+      // default); asking for anything weaker here only lets an
+      // authenticator skip it and then fail verification.
+      userVerification: 'required',
     },
   });
 }

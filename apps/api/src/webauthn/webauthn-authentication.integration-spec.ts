@@ -4,11 +4,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
-import {
-  csrfTokenFor,
-  insertMemberWithCredential,
-  uniqueEmail,
-} from '../test-support/auth-fixture';
+import { csrfTokenFor, insertMemberWithCredential } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
@@ -44,45 +40,58 @@ describe('webauthn authentication', () => {
     await app.close();
   });
 
+  // Starts a sign-in ceremony on a fresh anonymous agent — usernameless, so
+  // nothing about who is signing in is sent until verify().
+  async function startCeremony() {
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+    const options = await agent
+      .post('/webauthn/authentication/options')
+      .set('x-csrf-token', csrfToken)
+      .expect(200);
+    return { agent, csrfToken, options };
+  }
+
   describe('POST /webauthn/authentication/options', () => {
-    it('returns real, non-empty allowCredentials for a member with a passkey', async () => {
-      const { email } = await insertMemberWithCredential(app);
+    // M1: options used to take an email and answer with that member's
+    // credential ids (or none) — an open "is this address registered?"
+    // oracle. They now say nothing about any account.
+    it('names no credentials and requires user verification', async () => {
+      const { options } = await startCeremony();
 
-      const agent = request.agent(app.getHttpServer());
-      const csrfToken = await csrfTokenFor(agent);
-      const res = await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email })
-        .expect(200);
-
-      expect((res.body as { allowCredentials: unknown[] }).allowCredentials).toHaveLength(1);
+      const body = options.body as {
+        challenge: string;
+        allowCredentials: unknown[];
+        userVerification: string;
+      };
+      expect(typeof body.challenge).toBe('string');
+      expect(body.allowCredentials).toEqual([]);
+      expect(body.userVerification).toBe('required');
     });
 
-    it('returns the same shape with empty allowCredentials for an unknown email (anti-enumeration)', async () => {
+    // M6: with no identifier left on this route, repeating it for one
+    // victim's address can't lock that account out — only the (generous)
+    // per-IP budget applies.
+    it('has no per-account rate limit to exhaust', async () => {
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
-      const res = await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email: uniqueEmail('nobody') })
-        .expect(200);
 
-      expect((res.body as { allowCredentials: unknown[] }).allowCredentials).toEqual([]);
+      const statuses: number[] = [];
+      for (let i = 0; i < 10; i++) {
+        const res = await agent
+          .post('/webauthn/authentication/options')
+          .set('x-csrf-token', csrfToken)
+          .send({ email: 'victim@example.test' });
+        statuses.push(res.status);
+      }
+      expect(statuses.every((status) => status === 200)).toBe(true);
     });
   });
 
   describe('POST /webauthn/authentication/verify', () => {
-    it('signs in, bumps the counter, and records webauthn_sign_in_success', async () => {
+    it('signs in as the credential owner, bumps the counter, and records webauthn_sign_in_success', async () => {
       const { email, memberId, credentialId } = await insertMemberWithCredential(app);
-
-      const agent = request.agent(app.getHttpServer());
-      const csrfToken = await csrfTokenFor(agent);
-      await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email })
-        .expect(200);
+      const { agent, csrfToken } = await startCeremony();
 
       jest
         .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
@@ -94,7 +103,8 @@ describe('webauthn authentication', () => {
         .expect(200);
       expect(messageOf(res)).toBe('ok');
 
-      await agent.get('/auth/me').expect(200);
+      const me = await agent.get('/auth/me').expect(200);
+      expect((me.body as { email: string }).email).toBe(email);
 
       const [updatedCredential] = await getDb(app)
         .select()
@@ -123,6 +133,24 @@ describe('webauthn authentication', () => {
       expect(event).toBeDefined();
     });
 
+    it('identifies the member from whichever credential answered', async () => {
+      await insertMemberWithCredential(app);
+      const memberB = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+
+      jest
+        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
+        .mockResolvedValueOnce(verifiedResult(1));
+      await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(memberB.credentialId) })
+        .expect(200);
+
+      const me = await agent.get('/auth/me').expect(200);
+      expect((me.body as { email: string }).email).toBe(memberB.email);
+    });
+
     it('rejects verification with no prior options() call', async () => {
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);
@@ -135,55 +163,21 @@ describe('webauthn authentication', () => {
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
     });
 
-    it('rejects when options() found no credential (anti-enumeration path)', async () => {
-      const agent = request.agent(app.getHttpServer());
-      const csrfToken = await csrfTokenFor(agent);
-      await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email: uniqueEmail('nobody') })
-        .expect(200);
+    it('rejects a credential id no member has', async () => {
+      const { agent, csrfToken } = await startCeremony();
 
       const res = await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
-        .send({ response: fakeResponseFor('whatever') })
+        .send({ response: fakeResponseFor('no-such-credential') })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
-    });
-
-    it("rejects a response whose credential id belongs to someone else's stashed session", async () => {
-      const memberA = await insertMemberWithCredential(app);
-      const memberB = await insertMemberWithCredential(app);
-
-      const agent = request.agent(app.getHttpServer());
-      const csrfToken = await csrfTokenFor(agent);
-      // Options are requested for member A...
-      await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email: memberA.email })
-        .expect(200);
-
-      // ...but the response presented is member B's credential id.
-      const res = await agent
-        .post('/webauthn/authentication/verify')
-        .set('x-csrf-token', csrfToken)
-        .send({ response: fakeResponseFor(memberB.credentialId) })
-        .expect(401);
-      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      await agent.get('/auth/me').expect(401);
     });
 
     it('rejects when the ceremony fails verification', async () => {
-      const { email, credentialId } = await insertMemberWithCredential(app);
-
-      const agent = request.agent(app.getHttpServer());
-      const csrfToken = await csrfTokenFor(agent);
-      await agent
-        .post('/webauthn/authentication/options')
-        .set('x-csrf-token', csrfToken)
-        .send({ email })
-        .expect(200);
+      const { credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
 
       jest
         .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
@@ -194,6 +188,29 @@ describe('webauthn authentication', () => {
         .send({ response: fakeResponseFor(credentialId) })
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
+    });
+
+    it('consumes the challenge — a replayed verify() fails', async () => {
+      const { credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+
+      jest
+        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
+        .mockResolvedValueOnce(verifiedResult(1));
+      await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(200);
+
+      // No second mock queued on purpose: the replay has to fail on the
+      // missing challenge, before any signature check is reached.
+      const replayToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', replayToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(401);
     });
   });
 });

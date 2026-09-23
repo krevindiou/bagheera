@@ -54,7 +54,9 @@ export class WebauthnStepUpService {
         id: credential.credentialId,
         transports: credential.transports ?? undefined,
       })),
-      userVerification: 'preferred',
+      // Matches what verify() enforces (verifyAuthenticationResponse's
+      // default), same as sign-in's own options.
+      userVerification: 'required',
     });
 
     req.session.stepUpChallenge = options.challenge;

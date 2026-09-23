@@ -4,15 +4,15 @@ import request from 'supertest';
 import { csrfTokenFor, seedSignedInMember, uniqueEmail } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
-async function attemptAuthenticationOptions(
+async function attemptRegister(
   agent: ReturnType<typeof request.agent>,
   csrfToken: string,
   email: string,
 ): Promise<number> {
   const res = await agent
-    .post('/webauthn/authentication/options')
+    .post('/members/register')
     .set('x-csrf-token', csrfToken)
-    .send({ email });
+    .send({ email, country: 'FR' });
   return res.status;
 }
 
@@ -27,13 +27,11 @@ describe('rate limiting', () => {
     await app.close();
   });
 
-  // WebauthnAuthenticationController.options() declares
+  // RegistrationController.register() declares
   // @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
-  // — same shape the old password sign-in endpoint used. Unlike sign-in,
-  // nothing masks a throttled attempt here: the route's response is already
-  // identical for a known vs. unknown email (see
-  // webauthn-authentication.service.ts's anti-enumeration comment), so a
-  // distinct 429 once the budget trips leaks nothing extra.
+  // — per-address, so repeated sign-up requests can't flood one mailbox.
+  // (Sign-in options used to be the example here; they're usernameless now
+  // and take no identifier at all.)
   it('locks out the identifier dimension once its budget is exhausted', async () => {
     const email = uniqueEmail('ratelimit');
     const agent = request.agent(app.getHttpServer());
@@ -41,9 +39,9 @@ describe('rate limiting', () => {
 
     const statuses: number[] = [];
     for (let i = 0; i < 6; i++) {
-      statuses.push(await attemptAuthenticationOptions(agent, csrfToken, email));
+      statuses.push(await attemptRegister(agent, csrfToken, email));
     }
-    expect(statuses).toEqual([200, 200, 200, 200, 200, 429]);
+    expect(statuses).toEqual([201, 201, 201, 201, 201, 429]);
   });
 
   it('shares the identifier lockout across letter case (cbab0fd6 regression)', async () => {
@@ -54,15 +52,15 @@ describe('rate limiting', () => {
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
     for (let i = 0; i < 6; i++) {
-      await attemptAuthenticationOptions(agent, csrfToken, upper);
+      await attemptRegister(agent, csrfToken, upper);
     }
-    const throttledOnUpper = await attemptAuthenticationOptions(agent, csrfToken, upper);
+    const throttledOnUpper = await attemptRegister(agent, csrfToken, upper);
     expect(throttledOnUpper).toBe(429);
 
     // A different case variant of the same email is blocked immediately —
     // proving both share one normalized dimension key, not two independent
     // ones an attacker could rotate between.
-    const throttledOnLower = await attemptAuthenticationOptions(agent, csrfToken, lower);
+    const throttledOnLower = await attemptRegister(agent, csrfToken, lower);
     expect(throttledOnLower).toBe(429);
   });
 
@@ -99,21 +97,24 @@ describe('rate limiting', () => {
     }
   });
 
-  it("scopes the identifier dimension to its own route — exhausting authentication's budget doesn't affect registration", async () => {
-    const email = uniqueEmail('scoped');
-    const authAgent = request.agent(app.getHttpServer());
-    const authCsrf = await csrfTokenFor(authAgent);
-    for (let i = 0; i < 6; i++) {
-      await attemptAuthenticationOptions(authAgent, authCsrf, email);
-    }
-    expect(await attemptAuthenticationOptions(authAgent, authCsrf, email)).toBe(429);
-
+  it("scopes the identifier dimension to its own route — exhausting registration's budget doesn't affect sign-up options", async () => {
+    const identifier = uniqueEmail('scoped');
     const registerAgent = request.agent(app.getHttpServer());
     const registerCsrf = await csrfTokenFor(registerAgent);
-    const res = await registerAgent
-      .post('/members/register')
-      .set('x-csrf-token', registerCsrf)
-      .send({ email, country: 'FR' });
-    expect(res.status).toBe(201);
+    for (let i = 0; i < 6; i++) {
+      await attemptRegister(registerAgent, registerCsrf, identifier);
+    }
+    expect(await attemptRegister(registerAgent, registerCsrf, identifier)).toBe(429);
+
+    // WebauthnSignupController.options() keys its own identifier dimension
+    // off `key` — sent here with the very same value, it still gets through
+    // the guard (and fails later, as the invalid sign-up key it is).
+    const signupAgent = request.agent(app.getHttpServer());
+    const signupCsrf = await csrfTokenFor(signupAgent);
+    const res = await signupAgent
+      .post('/webauthn/signup/options')
+      .set('x-csrf-token', signupCsrf)
+      .send({ key: identifier });
+    expect(res.status).toBe(400);
   });
 });

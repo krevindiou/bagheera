@@ -37,7 +37,6 @@ test('register a second passkey, sign in with it, then remove it', async ({ sign
   await signOut(page);
   await expect(page).toHaveURL(/\/en\/sign-in$/);
 
-  await page.getByLabel(en.auth.signIn.email, { exact: true }).fill(email);
   await page.getByRole('button', { name: en.auth.signIn.passkeySubmit, exact: true }).click();
   await expect(page).toHaveURL(/\/en\/home$/);
   await expect(page.getByText(email, { exact: true })).toBeVisible();

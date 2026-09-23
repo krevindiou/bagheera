@@ -39,14 +39,13 @@ describe('GET /auth/csrf-token', () => {
     const res = await agent.get('/auth/csrf-token').expect(200);
     const token = (res.body as { csrfToken: string }).csrfToken;
 
-    // Whether the email resolves to anyone isn't the point (an unknown
-    // address on purpose) — only that the request isn't rejected at the
-    // CSRF layer. A 403 here would mean the session was dropped between
-    // the two calls and the token no longer matches.
+    // Any cheap public mutation would do — the point is only that the
+    // request isn't rejected at the CSRF layer. A 403 here would mean the
+    // session was dropped between the two calls and the token no longer
+    // matches.
     const optionsRes = await agent
       .post('/webauthn/authentication/options')
-      .set('x-csrf-token', token)
-      .send({ email: 'nobody@example.test' });
+      .set('x-csrf-token', token);
     expect(optionsRes.status).not.toBe(403);
   });
 });

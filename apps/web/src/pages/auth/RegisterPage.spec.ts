@@ -8,7 +8,6 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
-import { readLastAttemptedEmail } from '../../composables/useLastAttemptedEmail';
 import { useToast } from '../../composables/useToast';
 import { router } from '../../router';
 import RegisterPage from './RegisterPage.vue';
@@ -24,7 +23,6 @@ describe('RegisterPage', () => {
   beforeEach(async () => {
     apiClient.POST.mockReset();
     useToast().toasts.splice(0);
-    window.sessionStorage.clear();
     localStorage.clear();
     await router.push({ name: 'register', params: { locale: 'en' } });
   });
@@ -34,7 +32,7 @@ describe('RegisterPage', () => {
     expect(wrapper.findAll('#register-country option').length).toBeGreaterThan(200);
   });
 
-  it('registers, remembers the email, shows a toast, and redirects to sign-in', async () => {
+  it('registers, shows a toast, and redirects to sign-in', async () => {
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
@@ -47,7 +45,6 @@ describe('RegisterPage', () => {
     expect(apiClient.POST).toHaveBeenCalledWith('/members/register', {
       body: { email: 'member@example.com', country: 'FR', locale: 'en' },
     });
-    expect(readLastAttemptedEmail()).toBe('member@example.com');
     expect(useToast().toasts[0]?.text).toBe(
       "If this email isn't already registered, you'll receive a link to create your account.",
     );

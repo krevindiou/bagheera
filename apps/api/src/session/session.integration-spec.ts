@@ -61,12 +61,8 @@ describe('session lifecycle', () => {
       }
     }
 
-    const { email, credentialId } = await insertMemberWithCredential(app);
-    await agent
-      .post('/webauthn/authentication/options')
-      .set('x-csrf-token', csrfToken)
-      .send({ email })
-      .expect(200);
+    const { credentialId } = await insertMemberWithCredential(app);
+    await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
     jest
       .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
       .mockResolvedValueOnce({

@@ -833,9 +833,6 @@ export interface components {
             response: Record<string, never>;
             deviceName?: string;
         };
-        AuthenticationOptionsDto: {
-            email: string;
-        };
         VerifyAuthenticationDto: {
             response: Record<string, never>;
         };
@@ -1401,11 +1398,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AuthenticationOptionsDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

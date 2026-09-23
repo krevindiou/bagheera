@@ -1,15 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { registerSchema, signInSchema } from './auth.schemas';
-
-describe('signInSchema', () => {
-  it('accepts any non-empty email, format unchecked', () => {
-    expect(signInSchema.safeParse({ email: 'not-even-an-email' }).success).toBe(true);
-  });
-
-  it('rejects an empty email', () => {
-    expect(signInSchema.safeParse({ email: '' }).success).toBe(false);
-  });
-});
+import { registerSchema } from './auth.schemas';
 
 describe('registerSchema', () => {
   const base = { email: 'member@example.com', country: 'US' };

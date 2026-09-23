@@ -5,10 +5,5 @@ import { z } from 'zod';
 const email = z.string().trim().email().max(128);
 const country = z.string().regex(/^[A-Za-z]{2}$/);
 
-export const signInSchema = z.object({
-  email: z.string().trim().min(1),
-});
-export type SignInForm = z.infer<typeof signInSchema>;
-
 export const registerSchema = z.object({ email, country });
 export type RegisterForm = z.infer<typeof registerSchema>;

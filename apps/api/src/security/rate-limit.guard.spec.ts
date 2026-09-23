@@ -139,6 +139,29 @@ describe('RateLimitGuard', () => {
     expect(firstIdKey).toBe(secondIdKey);
   });
 
+  // The identifier is read before ValidationPipe runs, so it can be
+  // anything up to the body size limit — and emails/one-time tokens
+  // shouldn't sit verbatim in Valkey key names either.
+  it('keys the identifier dimension on a fixed-size hash, never the raw value', async () => {
+    const valkey = fakeValkeyClient();
+    const options: RateLimitOptions = {
+      points: 5,
+      durationSeconds: 60,
+      identifierField: 'email',
+    };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    const oversized = `${'x'.repeat(100_000)}@example.com`;
+
+    await guard.canActivate(
+      fakeExecutionContext(fakeRequest({ method: 'POST', body: { email: oversized } })),
+    );
+    const idKey = mockConsume.mock.calls.map((call) => call[0]).find((key) => key.includes(':id:'));
+
+    expect(idKey).toBeDefined();
+    expect(idKey).not.toContain('@example.com');
+    expect(idKey!.split(':id:')[1]).toHaveLength(43); // base64url SHA-256
+  });
+
   it('short-circuits to 429 when an existing block key is present, without consuming the limiter', async () => {
     const valkey = fakeValkeyClient({ exists: jest.fn().mockResolvedValue(1) });
     const guard = new RateLimitGuard(valkey, fakeReflector());

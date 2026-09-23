@@ -8,6 +8,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { createHash } from 'crypto';
 import { Request } from 'express';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 import type { RedisClientType } from 'redis';
@@ -140,15 +141,20 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
       ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]
       : undefined;
     if (typeof rawIdentifier === 'string' && rawIdentifier.length > 0) {
-      // Normalized the same way every auth flow looks the value up
-      // (`lower(email) = lower(...)`, see e.g. sign-in.service.ts) —
+      // Normalized the same way every flow looks the value up
+      // (`lower(email) = lower(...)`, see e.g. registration.service.ts) —
       // otherwise varying letter case mints a fresh dimension key per
       // variant, letting an attacker with a handful of source IPs bypass
       // the per-account budget entirely by pairing each IP with its own
       // case variant of the target email.
       const normalizedIdentifier = rawIdentifier.trim().toLowerCase();
+      // Then hashed rather than used as-is: guards run before
+      // ValidationPipe, so this is whatever the body held — up to the body
+      // size limit — and a raw key would also store emails and one-time
+      // tokens verbatim in Valkey key names.
+      const identifierHash = createHash('sha256').update(normalizedIdentifier).digest('base64url');
       dims.push({
-        key: `${routeKey}:id:${normalizedIdentifier}`,
+        key: `${routeKey}:id:${identifierHash}`,
         points: options.points,
       });
     }
