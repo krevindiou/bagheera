@@ -82,6 +82,8 @@ function fixSecureCookiesForPlainHttp(req: Request, res: Response, next: NextFun
 
 export interface FakeEmailQueue {
   enqueue: jest.Mock<Promise<void>, [unknown]>;
+  /** Only recorded: nothing runs SignupRequestService here — call it directly. */
+  enqueueSignupRequest: jest.Mock<Promise<void>, [unknown]>;
 }
 
 export interface TestApp {
@@ -92,6 +94,7 @@ export interface TestApp {
 export async function createTestApp(): Promise<TestApp> {
   const fakeEmailQueue: FakeEmailQueue = {
     enqueue: jest.fn<Promise<void>, [unknown]>().mockResolvedValue(undefined),
+    enqueueSignupRequest: jest.fn<Promise<void>, [unknown]>().mockResolvedValue(undefined),
   };
 
   const moduleRef = await Test.createTestingModule({

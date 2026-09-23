@@ -1,29 +1,46 @@
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import IORedis from 'ioredis';
 import { Job, Worker } from 'bullmq';
-import { EMAIL_PROVIDER, EMAIL_QUEUE_NAME, WORKER_BULLMQ_CONNECTION } from './email.constants';
-import { EmailMessage, type EmailProvider } from './email-message';
+import { SignupRequestService } from '../members/signup-request.service';
+import {
+  EMAIL_PROVIDER,
+  EMAIL_QUEUE_NAME,
+  SIGNUP_REQUEST_JOB,
+  WORKER_BULLMQ_CONNECTION,
+} from './email.constants';
+import { EmailMessage, type EmailProvider, SignupRequest } from './email-message';
 
-/** Consumes jobs enqueued by `EmailQueueService` and hands them to the configured `EmailProvider`. */
+/**
+ * Consumes jobs enqueued by `EmailQueueService`: hands a ready message to
+ * the configured `EmailProvider`, and a sign-up request to
+ * `SignupRequestService`, which queues the one message it resolves to.
+ */
 @Injectable()
 export class EmailWorker implements OnModuleDestroy {
   private readonly logger = new Logger('EmailWorker');
-  private readonly worker: Worker<EmailMessage>;
+  private readonly worker: Worker<EmailMessage | SignupRequest>;
 
   constructor(
     @Inject(WORKER_BULLMQ_CONNECTION) private readonly connection: IORedis,
     @Inject(EMAIL_PROVIDER) private readonly provider: EmailProvider,
+    private readonly signupRequests: SignupRequestService,
   ) {
-    this.worker = new Worker<EmailMessage>(
+    this.worker = new Worker<EmailMessage | SignupRequest>(
       EMAIL_QUEUE_NAME,
-      async (job: Job<EmailMessage>) => {
-        await this.provider.send(job.data);
-      },
+      (job: Job<EmailMessage | SignupRequest>) => this.process(job),
       { connection: this.connection },
     );
     this.worker.on('failed', (job, err) => {
       this.logger.error(`Email job ${job?.id} failed: ${err.message}`);
     });
+  }
+
+  private async process(job: Job<EmailMessage | SignupRequest>): Promise<void> {
+    if (job.name === SIGNUP_REQUEST_JOB) {
+      await this.signupRequests.handle(job.data as SignupRequest);
+      return;
+    }
+    await this.provider.send(job.data as EmailMessage);
   }
 
   async onModuleDestroy(): Promise<void> {

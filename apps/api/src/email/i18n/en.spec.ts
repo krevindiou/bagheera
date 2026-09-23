@@ -14,6 +14,17 @@ describe('email/i18n/en', () => {
     expect(en.registration.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
   });
 
+  it('escapes the sign-in link in the account-exists notice', () => {
+    expect(en.accountExists.body(XSS_PAYLOAD)).toContain(ESCAPED_PAYLOAD);
+    expect(en.accountExists.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
+  });
+
+  // Sent instead of a link: nothing in it may let anyone act on the account.
+  it('puts no link in the address-in-use notice', () => {
+    expect(en.addressInUse.body).toContain('already belongs to your account');
+    expect(en.addressInUse.body).not.toContain('href=');
+  });
+
   it('escapes the new address in the email-changed notice', () => {
     expect(en.emailChanged.body(XSS_PAYLOAD)).toContain(ESCAPED_PAYLOAD);
     expect(en.emailChanged.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);

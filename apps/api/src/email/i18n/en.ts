@@ -22,6 +22,18 @@ export default {
           emailButton('Create account', activationLink),
       }),
   },
+  accountExists: {
+    subject: 'You already have a Bagheera account',
+    body: (signInLink: string) =>
+      renderEmailLayout({
+        locale: 'en',
+        preheader: 'This email address already has an account.',
+        heading: 'You already have an account',
+        bodyHtml:
+          safeHtml`<p style="margin:0 0 20px;">Someone, probably you, asked to create a Bagheera account with this email address, but it already has one. Sign in with your passkey instead. If this wasn't you, ignore this email — nothing was changed.</p>` +
+          emailButton('Sign in', signInLink),
+      }),
+  },
   emailChanged: {
     subject: 'Bagheera email address changed',
     body: (newAddress: string) =>
@@ -43,6 +55,15 @@ export default {
           safeHtml`<p style="margin:0 0 20px;">A change of your Bagheera account's email address to this address was requested. Click the button below to confirm it. If you did not request this, ignore this email — your account's email address stays unchanged until this link is clicked.</p>` +
           emailButton('Confirm email address', confirmLink),
       }),
+  },
+  addressInUse: {
+    subject: 'Bagheera email address already in use',
+    body: renderEmailLayout({
+      locale: 'en',
+      preheader: 'Another account asked to use this email address.',
+      heading: 'Email address already in use',
+      bodyHtml: safeHtml`<p style="margin:0;">Another Bagheera account asked to change its email address to this one. It already belongs to your account, so nothing was changed. If both accounts are yours, pick a different address for the other one; otherwise, ignore this email.</p>`,
+    }),
   },
   passkeyRegistered: {
     subject: 'Bagheera passkey added',

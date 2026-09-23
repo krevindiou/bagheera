@@ -6,6 +6,7 @@ import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
+import { addressInUseEmail } from '../email/templates/address-in-use.template';
 import { confirmEmailChangeEmail } from '../email/templates/confirm-email-change.template';
 import { emailChangedEmail } from '../email/templates/email-changed.template';
 import { AuditService } from '../security/audit.service';
@@ -16,6 +17,7 @@ import { requireMemberId } from '../session/require-member-id';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { findMemberByEmail } from './find-member-by-email';
 import { raceSafeUniqueEmail } from './race-safe-unique-email';
 
 // Never distinguishes missing/malformed/expired/superseded/already-used
@@ -43,12 +45,15 @@ export class ProfileService {
    * `confirmEmailChange`). A second request before the first is confirmed
    * simply supersedes it: the version bump invalidates the earlier link.
    *
-   * Resolves the same way (silently, no error) whether or not `dto.email`
-   * is already registered to *another* member — surfacing "this email is
-   * taken" would let any signed-in member enumerate registered accounts.
-   * Mirrors `RegistrationService.register`'s anti-enumeration behavior; the
-   * race-safety here specifically is `raceSafeUniqueEmail`'s, shared with
-   * `RegistrationService.register`.
+   * Behaves the same way whether or not `dto.email` is already registered
+   * to *another* member — same response, same write, one email — or any
+   * signed-in member could enumerate registered accounts. Skipping the
+   * write for a taken address used to leave the previous link valid, which
+   * gave it away: request a change to a mailbox you control, then to the
+   * target, and see whether the first link still confirms. A taken
+   * address's owner is told about the attempt instead of being sent a link
+   * (`confirmEmailChange` re-checks uniqueness, so a link could never
+   * complete anyway).
    */
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
     const memberId = req.session.memberId;
@@ -69,27 +74,24 @@ export class ProfileService {
     }
 
     const nextVersion = row.emailChangeTokenVersion + 1;
-    const result = await raceSafeUniqueEmail(
-      this.db,
-      dto.email,
-      () =>
-        this.db
-          .update(member)
-          .set({
-            pendingEmail: dto.email,
-            emailChangeTokenVersion: nextVersion,
-          })
-          .where(eq(member.id, row.id)),
-      row.id,
-    );
-    if (!result.ok) {
-      return;
-    }
+    // Never this member: their own address returned early above.
+    const owner = await findMemberByEmail(this.db, dto.email);
+    await this.db
+      .update(member)
+      .set({
+        pendingEmail: dto.email,
+        emailChangeTokenVersion: nextVersion,
+      })
+      .where(eq(member.id, row.id));
 
-    const token = buildEmailChangeToken(this.crypto, row.id, dto.email, nextVersion);
-    const appUrl = this.config.getOrThrow<string>('APP_URL');
-    const confirmLink = `${appUrl}/${row.locale}/confirm-email-change?key=${encodeURIComponent(token)}`;
-    await this.emailQueue.enqueue(confirmEmailChangeEmail(dto.email, confirmLink, row.locale));
+    if (owner) {
+      await this.emailQueue.enqueue(addressInUseEmail(owner.email, owner.locale));
+    } else {
+      const token = buildEmailChangeToken(this.crypto, row.id, dto.email, nextVersion);
+      const appUrl = this.config.getOrThrow<string>('APP_URL');
+      const confirmLink = `${appUrl}/${row.locale}/confirm-email-change?key=${encodeURIComponent(token)}`;
+      await this.emailQueue.enqueue(confirmEmailChangeEmail(dto.email, confirmLink, row.locale));
+    }
     await this.audit.record('email_change_requested', row.id, req.ip ?? 'unknown');
   }
 

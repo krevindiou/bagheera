@@ -14,10 +14,10 @@ const UNIQUE_VIOLATION = '23505';
  * another member — whether that's caught by the precheck here, or by the
  * database's unique index rejecting `write()` because another request
  * landed in the TOCTOU gap between the precheck and the write. A caller
- * must never translate `{ ok: false }` into a response that differs from
- * success, or it becomes an oracle for enumerating registered accounts —
- * see `RegistrationService.register` and `ProfileService.updateEmail`,
- * the two call sites this was extracted from.
+ * must not let `{ ok: false }` show in its response unless whoever gets
+ * that response has already proved they control `email` — as
+ * `ProfileService.confirmEmailChange`'s caller has, through the emailed
+ * link — or it becomes an oracle for enumerating registered accounts.
  *
  * `excludeId`, when given, exempts that member's own current row from the
  * "taken" check — for an email *change*, "does someone else already have

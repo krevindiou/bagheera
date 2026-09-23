@@ -17,6 +17,18 @@ export default {
           emailButton('Créer mon compte', activationLink),
       }),
   },
+  accountExists: {
+    subject: 'Vous avez déjà un compte Bagheera',
+    body: (signInLink: string) =>
+      renderEmailLayout({
+        locale: 'fr',
+        preheader: 'Cette adresse email a déjà un compte.',
+        heading: 'Vous avez déjà un compte',
+        bodyHtml:
+          safeHtml`<p style="margin:0 0 20px;">Quelqu'un, sans doute vous, a demandé à créer un compte Bagheera avec cette adresse email, mais elle en a déjà un. Connectez-vous plutôt avec votre clé d'accès. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email — rien n'a été modifié.</p>` +
+          emailButton('Me connecter', signInLink),
+      }),
+  },
   emailChanged: {
     subject: 'Bagheera - adresse email modifiée',
     body: (newAddress: string) =>
@@ -38,6 +50,15 @@ export default {
           safeHtml`<p style="margin:0 0 20px;">Un changement de l'adresse email de votre compte Bagheera vers cette adresse a été demandé. Cliquez sur le bouton ci-dessous pour le confirmer. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email — l'adresse email de votre compte ne change pas tant que ce lien n'est pas cliqué.</p>` +
           emailButton('Confirmer mon adresse email', confirmLink),
       }),
+  },
+  addressInUse: {
+    subject: 'Bagheera - adresse email déjà utilisée',
+    body: renderEmailLayout({
+      locale: 'fr',
+      preheader: 'Un autre compte a demandé à utiliser cette adresse email.',
+      heading: 'Adresse email déjà utilisée',
+      bodyHtml: safeHtml`<p style="margin:0;">Un autre compte Bagheera a demandé à changer son adresse email pour celle-ci. Elle appartient déjà à votre compte, donc rien n'a été modifié. Si les deux comptes sont à vous, choisissez une autre adresse pour l'autre compte ; sinon, ignorez cet email.</p>`,
+    }),
   },
   passkeyRegistered: {
     subject: 'Bagheera - clé d’accès ajoutée',

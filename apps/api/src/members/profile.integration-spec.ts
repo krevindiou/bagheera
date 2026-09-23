@@ -3,6 +3,8 @@ import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import request from 'supertest';
 import { member } from '../db/schema';
+import type { EmailMessage } from '../email/email-message';
+import fr from '../email/i18n/fr';
 import { CryptoService } from '../security/crypto.service';
 import {
   completeStepUp,
@@ -11,7 +13,7 @@ import {
   seedSignedInMember,
   uniqueEmail,
 } from '../test-support/auth-fixture';
-import { createTestApp, getDb } from '../test-support/create-test-app';
+import { createTestApp, FakeEmailQueue, getDb } from '../test-support/create-test-app';
 import { buildEmailChangeToken } from './email-change-token';
 
 function messageOf(res: request.Response): string {
@@ -24,7 +26,7 @@ const STEP_UP_ERROR = 'Step-up verification is required or has expired.';
 
 describe('POST /members/profile', () => {
   let app: INestApplication<Server>;
-  let fakeEmailQueue: { enqueue: jest.Mock };
+  let fakeEmailQueue: FakeEmailQueue;
 
   beforeAll(async () => {
     ({ app, fakeEmailQueue } = await createTestApp());
@@ -37,6 +39,14 @@ describe('POST /members/profile', () => {
   beforeEach(() => {
     fakeEmailQueue.enqueue.mockClear();
   });
+
+  async function versionOf(memberId: string): Promise<number> {
+    const [row] = await getDb(app)
+      .select({ version: member.emailChangeTokenVersion })
+      .from(member)
+      .where(eq(member.id, memberId));
+    return row.version;
+  }
 
   describe('POST /members/profile (start an email change)', () => {
     it('sets pendingEmail and queues a confirmation to the new address, leaving email unchanged', async () => {
@@ -121,25 +131,62 @@ describe('POST /members/profile', () => {
       expect(row.pendingEmail).toBeNull();
     });
 
-    it('returns the same generic message and changes nothing when the new email is already taken', async () => {
-      const other = await insertMemberWithCredential(app);
+    // M2: a taken address used to skip the write and the email, which
+    // showed in both the response time and the previous link (next test).
+    it('handles an address another member holds the same way, but sends its owner a notice, not a link', async () => {
+      const other = await insertMemberWithCredential(app, { locale: 'fr' });
       const fixture = await seedSignedInMember(app);
+      const before = await versionOf(fixture.memberId);
 
       await completeStepUp(app, fixture);
-      const csrfToken = await fixture.getCsrfToken();
-      const res = await fixture.agent
-        .post('/members/profile')
-        .set('x-csrf-token', csrfToken)
-        .send({ email: other.email })
-        .expect(200);
+      const res = await fixture.mutate('post', '/members/profile', {
+        email: other.email.toUpperCase(),
+      });
+      expect(res.status).toBe(200);
       expect(messageOf(res)).toBe(UPDATE_MESSAGE);
-      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+
+      const sent = fakeEmailQueue.enqueue.mock.calls.map((call) => call[0] as EmailMessage);
+      expect(sent).toHaveLength(1);
+      expect(sent[0].to).toBe(other.email);
+      expect(sent[0].subject).toBe(fr.addressInUse.subject);
+      expect(sent[0].html).not.toContain('confirm-email-change?key=');
 
       const [row] = await getDb(app)
         .select({ pendingEmail: member.pendingEmail })
         .from(member)
         .where(eq(member.id, fixture.memberId));
-      expect(row.pendingEmail).toBeNull();
+      expect(row.pendingEmail).toBe(other.email.toUpperCase());
+      expect(await versionOf(fixture.memberId)).toBe(before + 1);
+    });
+
+    it("still supersedes the previous link when the new address is taken, so that link can't reveal it", async () => {
+      const other = await insertMemberWithCredential(app);
+      const fixture = await seedSignedInMember(app);
+      const ownMailbox = uniqueEmail('own-mailbox');
+
+      await completeStepUp(app, fixture);
+      expect((await fixture.mutate('post', '/members/profile', { email: ownMailbox })).status).toBe(
+        200,
+      );
+      const firstKey = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        ownMailbox,
+        await versionOf(fixture.memberId),
+      );
+
+      await completeStepUp(app, fixture);
+      expect(
+        (await fixture.mutate('post', '/members/profile', { email: other.email })).status,
+      ).toBe(200);
+
+      const confirmAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(confirmAgent);
+      await confirmAgent
+        .post('/members/profile/confirm-email-change')
+        .set('x-csrf-token', csrfToken)
+        .send({ key: firstKey })
+        .expect(400);
     });
   });
 

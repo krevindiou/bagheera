@@ -2,6 +2,7 @@ import { Global, Inject, Module, OnModuleDestroy, Provider } from '@nestjs/commo
 import { ConfigModule } from '@nestjs/config';
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
+import { MembersModule } from '../members/members.module';
 import {
   bullmqConnectionProvider,
   workerBullmqConnectionProvider,
@@ -24,7 +25,10 @@ const emailQueueProvider: Provider = {
 
 @Global()
 @Module({
-  imports: [ConfigModule],
+  // For SignupRequestService, which EmailWorker hands sign-up requests to.
+  // No cycle: MembersModule reaches EmailQueueService through this module
+  // being global, without importing it.
+  imports: [ConfigModule, MembersModule],
   providers: [
     bullmqConnectionProvider,
     workerBullmqConnectionProvider,
