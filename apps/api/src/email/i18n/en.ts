@@ -53,4 +53,13 @@ export default {
       bodyHtml: safeHtml`<p style="margin:0;">A new passkey was just added to your Bagheera account. If you did not do this, sign in with one of your other passkeys immediately and remove this one from your account settings.</p>`,
     }),
   },
+  passkeyRemoved: {
+    subject: 'Bagheera passkey removed',
+    body: renderEmailLayout({
+      locale: 'en',
+      preheader: 'A passkey was removed from your account.',
+      heading: 'Passkey removed',
+      bodyHtml: safeHtml`<p style="margin:0;">A passkey was just removed from your Bagheera account. If you did not do this, sign in with one of your remaining passkeys immediately and review the passkeys listed in your account settings.</p>`,
+    }),
+  },
 };

@@ -2,10 +2,9 @@
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
-import { startAuthentication } from '@simplewebauthn/browser';
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import { completeStepUp } from '../../api/stepUp';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
 import { profileSchema, type ProfileForm } from './settings.schemas';
@@ -21,35 +20,6 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<ProfileForm>
   initialValues: { email: session.member?.email ?? '' },
 });
 const [email, emailAttrs] = defineField('email');
-
-/**
- * Runs the step-up ceremony (the passkey-era analog of "enter your current
- * password" — see WebauthnStepUpService) right before the mutating call,
- * same two-hop shape SignInPage.vue's own passkey sign-in already uses.
- * Returns false (and lets the caller show its own generic error) on any
- * failure — cancelled prompt, unverified assertion, network error.
- */
-async function completeStepUp(): Promise<boolean> {
-  const { data, response } = await apiClient.POST('/webauthn/step-up/options');
-  if (!response.ok || !data) return false;
-
-  let assertion;
-  try {
-    assertion = await startAuthentication({
-      optionsJSON: data as unknown as PublicKeyCredentialRequestOptionsJSON,
-    });
-  } catch {
-    return false;
-  }
-
-  // See PasskeysPage.vue's comment: the generated client can't type this
-  // body beyond an opaque object, since Swagger has no visibility into
-  // @simplewebauthn/server's WebAuthn-spec types.
-  const { response: verifyResponse } = await apiClient.POST('/webauthn/step-up/verify', {
-    body: { response: assertion as unknown as Record<string, never> },
-  });
-  return verifyResponse.ok;
-}
 
 const onSubmit = handleSubmit(async (values) => {
   const stepUpOk = await completeStepUp();

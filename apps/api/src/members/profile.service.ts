@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -17,9 +11,8 @@ import { emailChangedEmail } from '../email/templates/email-changed.template';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import '../session/session-data';
-import '../session/step-up-session-data';
+import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
-import { STEP_UP_TTL_MS } from '../webauthn/webauthn-step-up.service';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -68,22 +61,7 @@ export class ProfileService {
       throw new UnauthorizedException();
     }
 
-    const verifiedAt = req.session.stepUpVerifiedAt;
-    // Consumed on read regardless of outcome — single-use, not just
-    // time-bounded, so a stale flag can never gate a second, unrelated
-    // change.
-    delete req.session.stepUpVerifiedAt;
-    if (!verifiedAt || Date.now() - verifiedAt > STEP_UP_TTL_MS) {
-      // 422, not 400: this isn't malformed input (that's what 400 means
-      // elsewhere on this endpoint/app — see error-response.ts), it's a
-      // credential-check-equivalent failing, the same bucket
-      // requireFullyActive() uses elsewhere for a business-rule denial.
-      // Gives the frontend a status code to branch on instead of matching
-      // an exact English sentence (see ProfilePage.vue) — and means this
-      // can never collide with the reserved "no active session" meaning of
-      // a bare 401 (see api/client.ts's onResponse).
-      throw new UnprocessableEntityException('Step-up verification is required or has expired.');
-    }
+    consumeStepUp(req);
 
     // Nothing to change or confirm.
     if (dto.email.toLowerCase() === row.email.toLowerCase()) {

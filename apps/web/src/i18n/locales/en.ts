@@ -296,6 +296,9 @@ export default {
       title: 'Passkeys',
       intro:
         'Manage the passkeys registered on your account. Passkeys are the only way to sign in.',
+      stepUpHint:
+        'Adding or removing a passkey first asks you to confirm with one you already have.',
+      stepUpFailed: 'Passkey confirmation failed. Please try again.',
       device: 'Device',
       createdAt: 'Added',
       lastUsedAt: 'Last used',

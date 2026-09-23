@@ -67,17 +67,19 @@ describe('rate limiting', () => {
   });
 
   it('applies an explicit @RateLimit override distinct from the default budget', async () => {
-    // WebauthnRegistrationController.options() declares
+    // WebauthnStepUpController.options() declares
     // @RateLimit({ points: 10, durationSeconds: 60 }), no identifierField —
     // only the IP dimension applies, budget 10 (not ipPointsFor's ×4
     // multiplier, which only kicks in when identifierField is set). No
-    // masking filter here, so a real 429 surfaces once exhausted.
+    // masking filter here, so a real 429 surfaces once exhausted. (Not
+    // registration options, same budget: those also need a fresh step-up
+    // per call, which would muddy what's being measured here.)
     const { agent, getCsrfToken } = await seedSignedInMember(app);
 
     const statuses: number[] = [];
     for (let i = 0; i < 11; i++) {
       const csrfToken = await getCsrfToken();
-      const res = await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken);
+      const res = await agent.post('/webauthn/step-up/options').set('x-csrf-token', csrfToken);
       statuses.push(res.status);
     }
     expect(statuses.slice(0, 10).every((s) => s === 200)).toBe(true);

@@ -6,6 +6,7 @@ import { startRegistration } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import { completeStepUp } from '../../api/stepUp';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import ToastContainer from '../../components/ToastContainer.vue';
@@ -48,6 +49,14 @@ const adding = ref(false);
 async function addPasskey() {
   adding.value = true;
   try {
+    // The API only starts a registration after a fresh step-up with a
+    // passkey the member already holds (a session alone could be a stolen
+    // one) — see WebauthnRegistrationService.
+    if (!(await completeStepUp())) {
+      toast(t('settings.passkeys.stepUpFailed'), 'error');
+      return;
+    }
+
     const { data, response } = await apiClient.POST('/webauthn/registration/options');
     if (!response.ok || !data) {
       toast(t('settings.passkeys.genericError'), 'error');
@@ -86,6 +95,18 @@ async function addPasskey() {
 
 async function removePasskey(id: string) {
   if (!(await confirm())) return;
+  // The API refuses this anyway (the 400 below) — checked here too only so
+  // the member isn't asked for a step-up that can't lead anywhere.
+  if (credentials.value.length <= 1) {
+    toast(t('settings.passkeys.lastPasskeyError'), 'error');
+    return;
+  }
+  // Removal is step-up gated like registration: a stolen session that
+  // could delete passkeys could lock the real owner out for good.
+  if (!(await completeStepUp())) {
+    toast(t('settings.passkeys.stepUpFailed'), 'error');
+    return;
+  }
   const { error, response } = await apiClient.DELETE('/webauthn/credentials/{id}', {
     params: { path: { id } },
   });
@@ -110,6 +131,9 @@ async function removePasskey(id: string) {
   <div>
     <SettingsTabs />
     <p class="text-muted" style="max-width: 460px">{{ $t('settings.passkeys.intro') }}</p>
+    <p class="text-muted" style="max-width: 460px; font-size: 13.5px">
+      {{ $t('settings.passkeys.stepUpHint') }}
+    </p>
     <ToastContainer />
 
     <div style="max-width: 460px">

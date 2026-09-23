@@ -4,7 +4,7 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent, webauthnCredential } from '../db/schema';
-import { seedSignedInMember } from '../test-support/auth-fixture';
+import { completeStepUp, seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 // Every :id path param in this API goes through ParseUuidV7Pipe, which
@@ -35,9 +35,10 @@ async function insertCredential(
 
 describe('webauthn credentials', () => {
   let app: INestApplication<Server>;
+  let fakeEmailQueue: { enqueue: jest.Mock };
 
   beforeAll(async () => {
-    ({ app } = await createTestApp());
+    ({ app, fakeEmailQueue } = await createTestApp());
   });
 
   afterAll(async () => {
@@ -70,15 +71,17 @@ describe('webauthn credentials', () => {
   });
 
   describe('DELETE /webauthn/credentials/:id', () => {
-    it('removes the credential and records webauthn_credential_removed', async () => {
-      const { agent, getCsrfToken, memberId } = await seedSignedInMember(app);
-      const credential = await insertCredential(app, memberId, 'To delete');
+    beforeEach(() => {
+      fakeEmailQueue.enqueue.mockClear();
+    });
 
-      const csrfToken = await getCsrfToken();
-      const res = await agent
-        .delete(`/webauthn/credentials/${credential.id}`)
-        .set('x-csrf-token', csrfToken)
-        .expect(200);
+    it('removes the credential, emails the member, and records webauthn_credential_removed', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'To delete');
+
+      await completeStepUp(app, fixture);
+      const res = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(res.status).toBe(200);
       expect((res.body as { message: string }).message).toBe('ok');
 
       const rows = await getDb(app)
@@ -87,13 +90,17 @@ describe('webauthn credentials', () => {
         .where(eq(webauthnCredential.id, credential.id));
       expect(rows).toHaveLength(0);
 
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
+        expect.objectContaining({ to: fixture.email, subject: 'Bagheera passkey removed' }),
+      );
+
       const [event] = await getDb(app)
         .select()
         .from(securityEvent)
         .where(
           and(
             eq(securityEvent.eventType, 'webauthn_credential_removed'),
-            eq(securityEvent.memberId, memberId),
+            eq(securityEvent.memberId, fixture.memberId),
           ),
         )
         .orderBy(desc(securityEvent.createdAt))
@@ -101,16 +108,34 @@ describe('webauthn credentials', () => {
       expect(event).toBeDefined();
     });
 
+    // M3: with only a session, a hijacker who planted a passkey could then
+    // delete the owner's — a permanent lockout, since there's no recovery.
+    it('rejects removal without a fresh step-up and leaves the credential in place', async () => {
+      const { memberId, mutate } = await seedSignedInMember(app);
+      const credential = await insertCredential(app, memberId, 'Still here');
+
+      const res = await mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(res.status).toBe(422);
+      expect((res.body as { message: string }).message).toBe(
+        'Step-up verification is required or has expired.',
+      );
+
+      const rows = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.id, credential.id));
+      expect(rows).toHaveLength(1);
+      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+    });
+
     it("404s on another member's credential and leaves it untouched", async () => {
       const { memberId: ownerId } = await seedSignedInMember(app);
       const credential = await insertCredential(app, ownerId, 'Not yours');
-      const { agent: attackerAgent, getCsrfToken } = await seedSignedInMember(app);
+      const attacker = await seedSignedInMember(app);
 
-      const csrfToken = await getCsrfToken();
-      await attackerAgent
-        .delete(`/webauthn/credentials/${credential.id}`)
-        .set('x-csrf-token', csrfToken)
-        .expect(404);
+      await completeStepUp(app, attacker);
+      const res = await attacker.mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(res.status).toBe(404);
 
       const rows = await getDb(app)
         .select()
@@ -120,27 +145,23 @@ describe('webauthn credentials', () => {
     });
 
     it('404s on a credential id that does not exist', async () => {
-      const { agent, getCsrfToken } = await seedSignedInMember(app);
-      const csrfToken = await getCsrfToken();
+      const fixture = await seedSignedInMember(app);
 
-      await agent
-        .delete(`/webauthn/credentials/${nonexistentV7Id()}`)
-        .set('x-csrf-token', csrfToken)
-        .expect(404);
+      await completeStepUp(app, fixture);
+      const res = await fixture.mutate('delete', `/webauthn/credentials/${nonexistentV7Id()}`);
+      expect(res.status).toBe(404);
     });
 
     it('blocks removing the last remaining passkey (no password fallback, no recovery)', async () => {
-      const { agent, getCsrfToken, credentialId } = await seedSignedInMember(app);
+      const fixture = await seedSignedInMember(app);
       const [only] = await getDb(app)
         .select()
         .from(webauthnCredential)
-        .where(eq(webauthnCredential.credentialId, credentialId));
+        .where(eq(webauthnCredential.credentialId, fixture.credentialId));
 
-      const csrfToken = await getCsrfToken();
-      const res = await agent
-        .delete(`/webauthn/credentials/${only.id}`)
-        .set('x-csrf-token', csrfToken)
-        .expect(400);
+      await completeStepUp(app, fixture);
+      const res = await fixture.mutate('delete', `/webauthn/credentials/${only.id}`);
+      expect(res.status).toBe(400);
       expect((res.body as { message: string }).message).toBe(
         'Cannot remove your last passkey — it would lock you out permanently.',
       );

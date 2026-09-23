@@ -1,8 +1,13 @@
 import 'express-session';
 
 // Global augmentation, same pattern as session-data.ts / the absolute-TTL
-// middleware's. Both registration and authentication ceremonies stash their
-// challenge here between the "options" and "verify" round trip.
+// middleware's. The sign-in (`webauthnChallenge`) and add-a-passkey
+// (`registrationChallenge`) ceremonies each stash their challenge between
+// the "options" and "verify" round trip — in separate fields on purpose:
+// registration options are gated behind a step-up (see
+// WebauthnRegistrationService) while sign-in options are public, so a
+// shared field would let a signed-in caller seed a registration verify()
+// with a challenge from the ungated sign-in endpoint and skip the step-up.
 //
 // `webauthnMemberId` is only meaningful during the authentication ceremony,
 // where the caller isn't signed in yet: it's set when `options` resolved a
@@ -13,5 +18,6 @@ declare module 'express-session' {
   interface SessionData {
     webauthnChallenge?: string;
     webauthnMemberId?: string;
+    registrationChallenge?: string;
   }
 }

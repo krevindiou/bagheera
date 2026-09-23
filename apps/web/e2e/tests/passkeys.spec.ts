@@ -13,7 +13,10 @@ import { addVirtualAuthenticator } from '../support/webauthn';
 // naming the first one against the SAME authenticator is correctly
 // refused (CTAP2_ERR_CREDENTIAL_EXCLUDED) — that's the real spec
 // behavior an actual second registration attempt on the same device would
-// hit too, not a test artifact.
+// hit too, not a test artifact. Adding and removing each also run a
+// step-up ceremony first (an assertion with a passkey already held) — the
+// virtual authenticators auto-approve those too (automaticPresenceSimulation,
+// see support/webauthn.ts), so they need no step of their own here.
 test('register a second passkey, sign in with it, then remove it', async ({ signedInMember }) => {
   const { page, email } = signedInMember;
   // 'usb' (not the default 'internal'): Chrome allows only one 'internal'

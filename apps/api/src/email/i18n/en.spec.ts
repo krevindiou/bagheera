@@ -24,6 +24,11 @@ describe('email/i18n/en', () => {
     expect(en.confirmEmailChange.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
   });
 
+  it('sends a passkey-removed alert distinct from the passkey-added one', () => {
+    expect(en.passkeyRemoved.subject).not.toBe(en.passkeyRegistered.subject);
+    expect(en.passkeyRemoved.body).toContain('removed from your Bagheera account');
+  });
+
   it('every entry has a non-empty subject', () => {
     for (const entry of Object.values(en)) {
       expect(entry.subject.length).toBeGreaterThan(0);

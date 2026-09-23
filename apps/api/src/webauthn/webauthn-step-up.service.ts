@@ -21,18 +21,16 @@ import { WebauthnCryptoService } from './webauthn-crypto.service';
 // them, same discipline as sign-in's own WebAuthn ceremony.
 const STEP_UP_FAILED = 'Step-up verification failed.';
 
-// How long a verified step-up stays usable — see ProfileService.updateEmail,
-// the sole consumer, which also deletes the flag on first use (single-use,
-// not just time-bounded).
-export const STEP_UP_TTL_MS = 5 * 60 * 1000;
-
 /**
  * Proves the caller still holds one of their own registered passkeys,
  * without creating a new session — the WebAuthn analog of "enter your
- * current password", used to gate ProfileService.updateEmail now that there
- * is no password to ask for. Unlike WebauthnAuthenticationService, this
- * never calls SessionRotationService: it only sets a short-lived,
- * single-use `stepUpVerifiedAt` flag the caller's next request consumes.
+ * current password", gating the mutations a hijacked session could turn
+ * into a permanent takeover (email change, adding or removing a passkey)
+ * now that there is no password to ask for. Unlike
+ * WebauthnAuthenticationService, this never calls SessionRotationService:
+ * it only sets a short-lived, single-use `stepUpVerifiedAt` flag the
+ * caller's next sensitive request consumes (see session/consume-step-up.ts
+ * for the TTL and single-use rule).
  */
 @Injectable()
 export class WebauthnStepUpService {

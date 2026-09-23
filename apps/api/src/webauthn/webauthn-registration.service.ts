@@ -10,6 +10,7 @@ import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
 import { passkeyRegisteredEmail } from '../email/templates/passkey-registered.template';
 import { AuditService } from '../security/audit.service';
+import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
 import '../session/webauthn-session-data';
 import { buildRegistrationOptions } from './build-registration-options';
@@ -22,10 +23,11 @@ const REGISTRATION_FAILED = 'Passkey registration failed.';
 
 /**
  * Registers an additional passkey for an already-authenticated member — a
- * second (or third, ...) credential alongside whatever they already have,
- * not a step-up on top of the live session: a hijacked-but-valid session
- * could otherwise plant a persistent credential, so every successful
- * registration also emails the member as an alert.
+ * second (or third, ...) credential alongside whatever they already have.
+ * The session alone isn't enough: a hijacked-but-valid one could otherwise
+ * plant a persistent credential of its own, so starting the ceremony
+ * consumes a fresh step-up proof (see session/consume-step-up.ts), and
+ * every successful registration still emails the member as an alert.
  */
 @Injectable()
 export class WebauthnRegistrationService {
@@ -39,6 +41,11 @@ export class WebauthnRegistrationService {
 
   async generateOptions(req: Request): Promise<PublicKeyCredentialCreationOptionsJSON> {
     const memberId = requireMemberId(req);
+    // Here rather than in verify(): failing before the ceremony starts
+    // means the member's authenticator never mints a credential the server
+    // then refuses. verify() stays gated all the same — it only accepts
+    // `registrationChallenge`, which nothing but this method ever sets.
+    consumeStepUp(req);
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
       throw new BadRequestException(REGISTRATION_FAILED);
@@ -57,14 +64,14 @@ export class WebauthnRegistrationService {
       })),
     });
 
-    req.session.webauthnChallenge = options.challenge;
+    req.session.registrationChallenge = options.challenge;
     return options;
   }
 
   async verify(req: Request, dto: VerifyRegistrationDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const expectedChallenge = req.session.webauthnChallenge;
-    delete req.session.webauthnChallenge;
+    const expectedChallenge = req.session.registrationChallenge;
+    delete req.session.registrationChallenge;
     if (!expectedChallenge) {
       throw new BadRequestException(REGISTRATION_FAILED);
     }

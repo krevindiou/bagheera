@@ -302,6 +302,9 @@ export default {
       title: 'Clés d’accès',
       intro:
         'Gérez les clés d’accès enregistrées sur votre compte. Ce sont l’unique moyen de vous connecter.',
+      stepUpHint:
+        'Ajouter ou supprimer une clé d’accès vous demande d’abord de confirmer avec une clé que vous possédez déjà.',
+      stepUpFailed: 'La confirmation par clé d’accès a échoué. Veuillez réessayer.',
       device: 'Appareil',
       createdAt: 'Ajoutée',
       lastUsedAt: 'Dernière utilisation',

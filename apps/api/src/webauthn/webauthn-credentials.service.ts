@@ -3,8 +3,11 @@ import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
-import { webauthnCredential } from '../db/schema';
+import { member, webauthnCredential } from '../db/schema';
+import { EmailQueueService } from '../email/email-queue.service';
+import { passkeyRemovedEmail } from '../email/templates/passkey-removed.template';
 import { AuditService } from '../security/audit.service';
+import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
 
 export interface WebauthnCredentialSummary {
@@ -25,6 +28,7 @@ const LAST_PASSKEY_ERROR = 'Cannot remove your last passkey — it would lock yo
 export class WebauthnCredentialsService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
   ) {}
 
@@ -42,8 +46,13 @@ export class WebauthnCredentialsService {
     return rows;
   }
 
+  // Step-up gated like registration (see WebauthnRegistrationService): a
+  // hijacked session that could delete passkeys would, right after planting
+  // its own, lock the real owner out for good — there's no recovery path.
+  // The alert email mirrors registration's for the same reason.
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
+    consumeStepUp(req);
 
     await this.db.transaction(async (tx) => {
       const owned = await tx
@@ -62,6 +71,13 @@ export class WebauthnCredentialsService {
         .where(and(eq(webauthnCredential.id, id), eq(webauthnCredential.memberId, memberId)));
     });
 
+    const [row] = await this.db
+      .select({ email: member.email, locale: member.locale })
+      .from(member)
+      .where(eq(member.id, memberId));
+    if (row) {
+      await this.emailQueue.enqueue(passkeyRemovedEmail(row.email, row.locale));
+    }
     await this.audit.record('webauthn_credential_removed', memberId, req.ip ?? 'unknown');
   }
 }

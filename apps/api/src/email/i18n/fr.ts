@@ -48,4 +48,13 @@ export default {
       bodyHtml: safeHtml`<p style="margin:0;">Une nouvelle clé d'accès vient d'être ajoutée à votre compte Bagheera. Si vous n'êtes pas à l'origine de cette action, connectez-vous immédiatement avec une de vos autres clés d'accès et supprimez celle-ci depuis les paramètres de votre compte.</p>`,
     }),
   },
+  passkeyRemoved: {
+    subject: 'Bagheera - clé d’accès supprimée',
+    body: renderEmailLayout({
+      locale: 'fr',
+      preheader: 'Une clé d’accès a été supprimée de votre compte.',
+      heading: 'Clé d’accès supprimée',
+      bodyHtml: safeHtml`<p style="margin:0;">Une clé d'accès vient d'être supprimée de votre compte Bagheera. Si vous n'êtes pas à l'origine de cette action, connectez-vous immédiatement avec une de vos clés d'accès restantes et vérifiez celles listées dans les paramètres de votre compte.</p>`,
+    }),
+  },
 };

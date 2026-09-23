@@ -4,7 +4,12 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import { securityEvent, webauthnCredential } from '../db/schema';
-import { csrfTokenFor, seedSignedInMember } from '../test-support/auth-fixture';
+import {
+  completeStepUp,
+  csrfTokenFor,
+  seedSignedInMember,
+  SignedInFixture,
+} from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
 // Real ceremony verification needs a physical authenticator, which nothing
@@ -47,9 +52,21 @@ const FAKE_RESPONSE = {
   type: 'public-key',
 };
 
+const STEP_UP_ERROR = 'Step-up verification is required or has expired.';
+
 describe('webauthn registration', () => {
   let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: jest.Mock };
+
+  // Adding a passkey needs a fresh step-up proof, consumed by options() —
+  // the same "confirm with a passkey you already hold" the web page runs
+  // right before starting the ceremony.
+  async function steppedUpOptions(fixture: SignedInFixture) {
+    await completeStepUp(app, fixture);
+    const res = await fixture.mutate('post', '/webauthn/registration/options');
+    expect(res.status).toBe(200);
+    return res;
+  }
 
   beforeAll(async () => {
     ({ app, fakeEmailQueue } = await createTestApp());
@@ -66,18 +83,32 @@ describe('webauthn registration', () => {
 
   describe('POST /webauthn/registration/options', () => {
     it('returns real challenge options, excluding the credential the member already signed in with', async () => {
-      const { agent, getCsrfToken, credentialId } = await seedSignedInMember(app);
-      const csrfToken = await getCsrfToken();
+      const fixture = await seedSignedInMember(app);
 
-      const res = await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken)
-        .expect(200);
+      const res = await steppedUpOptions(fixture);
 
       expect(typeof (res.body as { challenge: string }).challenge).toBe('string');
       expect((res.body as { excludeCredentials: { id: string }[] }).excludeCredentials).toEqual([
-        expect.objectContaining({ id: credentialId }),
+        expect.objectContaining({ id: fixture.credentialId }),
       ]);
+    });
+
+    // M3: a signed-in session alone (a stolen cookie, an unattended laptop)
+    // must not be able to plant a passkey of its own.
+    it('rejects starting the ceremony without a fresh step-up', async () => {
+      const { mutate } = await seedSignedInMember(app);
+
+      const res = await mutate('post', '/webauthn/registration/options');
+      expect(res.status).toBe(422);
+      expect((res.body as { message: string }).message).toBe(STEP_UP_ERROR);
+    });
+
+    it('consumes the step-up — a second ceremony needs a second one', async () => {
+      const fixture = await seedSignedInMember(app);
+      await steppedUpOptions(fixture);
+
+      const res = await fixture.mutate('post', '/webauthn/registration/options');
+      expect(res.status).toBe(422);
     });
 
     it('requires authentication', async () => {
@@ -90,25 +121,26 @@ describe('webauthn registration', () => {
 
   describe('POST /webauthn/registration/verify', () => {
     it('persists a credential, queues an alert email, and records the audit event', async () => {
-      const { agent, getCsrfToken, memberId, email } = await seedSignedInMember(app);
-      const csrfToken = await getCsrfToken();
-      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(200);
+      const fixture = await seedSignedInMember(app);
+      await steppedUpOptions(fixture);
 
       mockVerify.mockResolvedValueOnce(verifiedResult('cred-1'));
-      await agent
-        .post('/webauthn/registration/verify')
-        .set('x-csrf-token', csrfToken)
-        .send({ response: FAKE_RESPONSE, deviceName: 'Test device' })
-        .expect(200);
+      const res = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+        deviceName: 'Test device',
+      });
+      expect(res.status).toBe(200);
 
       const [row] = await getDb(app)
         .select()
         .from(webauthnCredential)
         .where(eq(webauthnCredential.credentialId, 'cred-1'));
-      expect(row.memberId).toBe(memberId);
+      expect(row.memberId).toBe(fixture.memberId);
       expect(row.deviceName).toBe('Test device');
 
-      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(expect.objectContaining({ to: email }));
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
+        expect.objectContaining({ to: fixture.email }),
+      );
 
       const [event] = await getDb(app)
         .select()
@@ -116,7 +148,7 @@ describe('webauthn registration', () => {
         .where(
           and(
             eq(securityEvent.eventType, 'webauthn_credential_registered'),
-            eq(securityEvent.memberId, memberId),
+            eq(securityEvent.memberId, fixture.memberId),
           ),
         )
         .orderBy(desc(securityEvent.createdAt))
@@ -125,72 +157,79 @@ describe('webauthn registration', () => {
     });
 
     it('rejects verification without a prior options() call', async () => {
-      const { agent, getCsrfToken } = await seedSignedInMember(app);
-      const csrfToken = await getCsrfToken();
+      const { mutate } = await seedSignedInMember(app);
 
       mockVerify.mockResolvedValueOnce(verifiedResult('cred-no-challenge'));
-      const res = await agent
-        .post('/webauthn/registration/verify')
-        .set('x-csrf-token', csrfToken)
-        .send({ response: FAKE_RESPONSE })
-        .expect(400);
+      const res = await mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+      });
+      expect(res.status).toBe(400);
       expect((res.body as { message: string }).message).toBe('Passkey registration failed.');
     });
 
+    // The sign-in options endpoint is public (it works for a signed-in
+    // caller too) and stashes a challenge of its own. If registration
+    // verify() accepted that one, a hijacked session could skip the gated
+    // options() — and the step-up with it — entirely.
+    it("doesn't accept a sign-in challenge in place of a registration one", async () => {
+      const fixture = await seedSignedInMember(app);
+      const signInOptions = await fixture.mutate('post', '/webauthn/authentication/options', {
+        email: fixture.email,
+      });
+      expect(signInOptions.status).toBe(200);
+
+      mockVerify.mockResolvedValueOnce(verifiedResult('cred-planted'));
+      const res = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+      });
+      expect(res.status).toBe(400);
+      const planted = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, 'cred-planted'));
+      expect(planted).toEqual([]);
+    });
+
     it('rejects when the ceremony fails verification', async () => {
-      const { agent, getCsrfToken } = await seedSignedInMember(app);
-      const csrfToken = await getCsrfToken();
-      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(200);
+      const fixture = await seedSignedInMember(app);
+      await steppedUpOptions(fixture);
 
       mockVerify.mockResolvedValueOnce({
         verified: false,
       });
-      const res = await agent
-        .post('/webauthn/registration/verify')
-        .set('x-csrf-token', csrfToken)
-        .send({ response: FAKE_RESPONSE })
-        .expect(400);
+      const res = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+      });
+      expect(res.status).toBe(400);
       expect((res.body as { message: string }).message).toBe('Passkey registration failed.');
     });
 
     it('rejects when verifyRegistrationResponse throws', async () => {
-      const { agent, getCsrfToken } = await seedSignedInMember(app);
-      const csrfToken = await getCsrfToken();
-      await agent.post('/webauthn/registration/options').set('x-csrf-token', csrfToken).expect(200);
+      const fixture = await seedSignedInMember(app);
+      await steppedUpOptions(fixture);
 
       mockVerify.mockRejectedValueOnce(new Error('bad attestation'));
-      await agent
-        .post('/webauthn/registration/verify')
-        .set('x-csrf-token', csrfToken)
-        .send({ response: FAKE_RESPONSE })
-        .expect(400);
+      const res = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+      });
+      expect(res.status).toBe(400);
     });
 
     it('rejects registering the exact same credential id twice', async () => {
-      const { agent, getCsrfToken } = await seedSignedInMember(app);
-      const csrfToken1 = await getCsrfToken();
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken1)
-        .expect(200);
+      const fixture = await seedSignedInMember(app);
+      await steppedUpOptions(fixture);
       mockVerify.mockResolvedValueOnce(verifiedResult('cred-dup'));
-      await agent
-        .post('/webauthn/registration/verify')
-        .set('x-csrf-token', csrfToken1)
-        .send({ response: FAKE_RESPONSE })
-        .expect(200);
+      const first = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+      });
+      expect(first.status).toBe(200);
 
-      const csrfToken2 = await getCsrfToken();
-      await agent
-        .post('/webauthn/registration/options')
-        .set('x-csrf-token', csrfToken2)
-        .expect(200);
+      await steppedUpOptions(fixture);
       mockVerify.mockResolvedValueOnce(verifiedResult('cred-dup'));
-      await agent
-        .post('/webauthn/registration/verify')
-        .set('x-csrf-token', csrfToken2)
-        .send({ response: FAKE_RESPONSE })
-        .expect(400);
+      const second = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_RESPONSE,
+      });
+      expect(second.status).toBe(400);
     });
   });
 });
