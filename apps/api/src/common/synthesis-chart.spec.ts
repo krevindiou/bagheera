@@ -6,6 +6,7 @@ import {
   SynthesisChartRow,
 } from './synthesis-chart';
 import { MinorUnits } from './money';
+import { MAX_PERIODS } from '../reports/chart/period';
 
 // Fixed "today" so the 12-month trailing window is deterministic:
 // currentMonth = 2026-03-01, windowStart = 2025-04-01.
@@ -186,6 +187,43 @@ describe('computeSynthesisChart', () => {
     // Every row folds into the window (nothing carried into `before`), so
     // the earliest month already reflects the first credit.
     expect(points[0].value).toBe(1);
+  });
+
+  // Regression: a row dated 9999-12-31 used to turn this default 12-month
+  // window into ~1.08 million points (see fillPeriodGaps).
+  it('keeps a 12-point window when the latest row is dated in year 9999', () => {
+    const rows: SynthesisChartRow[] = [
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2026-01-15' },
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '9999-12-31' },
+    ];
+    const chart = computeSynthesisChart(rows, latestValueDate(rows));
+    const { points } = chart.series[0];
+    expect(points).toHaveLength(12);
+    expect(points[11].period).toBe('9999-12-01');
+    expect(points[11].value).toBe(2);
+  });
+
+  it("caps an 'all' window at MAX_PERIODS months, carrying older rows into the first point", () => {
+    const rows: SynthesisChartRow[] = [
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '0202-05-01' },
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2026-01-15' },
+    ];
+    const chart = computeSynthesisChart(rows, TODAY, 'all');
+    const { points } = chart.series[0];
+    expect(points).toHaveLength(MAX_PERIODS);
+    expect(points.at(-1)?.period).toBe('2026-03-01');
+    // The 0202 row sits before the capped axis: it must still count, via
+    // the carried-over starting balance, not vanish.
+    expect(points[0].value).toBe(1);
+    expect(points.at(-1)?.value).toBe(2);
+  });
+
+  it("plots nothing for an 'all' window whose `today` precedes every row", () => {
+    const rows: SynthesisChartRow[] = [
+      { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2026-06-01' },
+    ];
+    const chart = computeSynthesisChart(rows, '2025-01-01', 'all');
+    expect(chart.series[0].points).toEqual([]);
   });
 });
 

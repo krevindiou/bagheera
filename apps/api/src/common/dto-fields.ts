@@ -10,8 +10,10 @@ import {
   Max,
   MaxLength,
   MinLength,
+  ValidateBy,
 } from 'class-validator';
 import { SUPPORTED_LOCALES } from './locale';
+import { isValueDate, MAX_VALUE_DATE, MIN_VALUE_DATE } from './value-date';
 
 // Composed class-validator property decorators for the field shapes that
 // recur, byte-identical, across DTOs — email, and a length-bounded secret
@@ -127,4 +129,24 @@ export function AmountField(): PropertyDecorator {
     IsPositive()(target, propertyKey);
     Max(AMOUNT_CEILING)(target, propertyKey);
   };
+}
+
+/**
+ * A member-submitted date — operation/scheduler value and limit dates, a
+ * report's date range, a search's date filter. Replaces `@IsDateString()`,
+ * which accepted any ISO 8601 shape (datetimes, week dates, years 0001–9999,
+ * impossible days like 2024-02-30): see common/value-date.ts for the exact
+ * rule and why it's bounded. Required by default, same as LocaleField —
+ * optional callers stack their own `@IsOptional()` on top.
+ */
+export function ValueDateField(): PropertyDecorator {
+  return ValidateBy({
+    name: 'isValueDate',
+    validator: {
+      validate: (value: unknown) => isValueDate(value),
+      // `$property` is class-validator's own message token for the field name.
+      defaultMessage: () =>
+        `$property must be a YYYY-MM-DD date between ${MIN_VALUE_DATE} and ${MAX_VALUE_DATE}`,
+    },
+  });
 }

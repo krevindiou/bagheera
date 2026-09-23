@@ -3,7 +3,6 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
-  IsDateString,
   IsIn,
   IsInt,
   IsOptional,
@@ -17,12 +16,12 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
-import { ReportTitleField } from '../../common/dto-fields';
+import { ReportTitleField, ValueDateField } from '../../common/dto-fields';
 
 // Both are optional independently, but when both are set the range has to
 // make sense — otherwise the operation query (valueDate >= start AND <= end)
 // silently matches nothing and the report just renders empty with no
-// indication why. String comparison is safe here: both are IsDateString
+// indication why. String comparison is safe here: both are ValueDateField
 // ('YYYY-MM-DD'), whose lexicographic order matches chronological order.
 function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string): void {
@@ -65,11 +64,11 @@ export class CreateReportDto {
   homepage?: boolean;
 
   @IsOptional()
-  @IsDateString()
+  @ValueDateField()
   valueDateStart?: string;
 
   @IsOptional()
-  @IsDateString()
+  @ValueDateField()
   @IsOnOrAfter('valueDateStart', { message: 'valueDateEnd must be on or after valueDateStart' })
   valueDateEnd?: string;
 

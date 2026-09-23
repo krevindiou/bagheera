@@ -98,6 +98,26 @@ describe('schedulers', () => {
       expect(res.status).toBe(400);
     });
 
+    // Same rule as an operation's own value date (see
+    // operation.integration-spec.ts) — a scheduler dated back to year 1
+    // would otherwise also seed its own run of out-of-range occurrences.
+    it.each([{ valueDate: '0001-01-01' }, { limitDate: '9999-12-31' }])(
+      'rejects %o with a 400, storing nothing',
+      async (dates) => {
+        const { mutate } = await seedSignedInMember(app);
+        const bankId = await createBank(mutate);
+        const accountId = await createAccount(mutate, bankId);
+
+        const res = await mutate('post', '/schedulers', schedulerPayload(accountId, dates));
+        expect(res.status).toBe(400);
+        const rows = await getDb(app)
+          .select()
+          .from(scheduler)
+          .where(eq(scheduler.accountId, accountId));
+        expect(rows).toEqual([]);
+      },
+    );
+
     it('rejects a mismatched payment method type', async () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);

@@ -124,6 +124,33 @@ describe('operations', () => {
       expect(res.status).toBe(400);
     });
 
+    // An operation dated 9999-12-31 once turned every chart over its
+    // account into a million-point walk (see reports/chart/period.ts) —
+    // out-of-range or impossible dates must never reach the table at all.
+    it.each(['9999-12-31', '0001-01-01', '2024-02-30'])(
+      'rejects value date %s with a 400, storing nothing',
+      async (valueDate) => {
+        const { mutate } = await seedSignedInMember(app);
+        const bankId = await createBank(mutate);
+        const accountId = await createAccount(mutate, bankId);
+
+        const res = await mutate('post', '/operations', {
+          accountId,
+          type: 'debit',
+          thirdParty: 'Far future',
+          amount: 10,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+          valueDate,
+        });
+        expect(res.status).toBe(400);
+        const rows = await getDb(app)
+          .select()
+          .from(operation)
+          .where(eq(operation.accountId, accountId));
+        expect(rows).toEqual([]);
+      },
+    );
+
     it("404s creating an operation under another member's account", async () => {
       const { mutate: ownerMutate } = await seedSignedInMember(app);
       const bankId = await createBank(ownerMutate);

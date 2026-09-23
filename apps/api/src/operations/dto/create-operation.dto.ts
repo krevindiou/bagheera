@@ -1,5 +1,5 @@
-import { IsBoolean, IsDateString, IsIn, IsOptional, IsUUID } from 'class-validator';
-import { AmountField, NotesField, ThirdPartyField } from '../../common/dto-fields';
+import { IsBoolean, IsIn, IsOptional, IsUUID } from 'class-validator';
+import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 
 export class CreateOperationDto {
   @IsUUID('7')
@@ -33,7 +33,7 @@ export class CreateOperationDto {
 
   // Defaults to today (schema default) when omitted.
   @IsOptional()
-  @IsDateString()
+  @ValueDateField()
   valueDate?: string;
 
   @NotesField()

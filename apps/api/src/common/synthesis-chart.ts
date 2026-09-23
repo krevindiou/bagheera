@@ -85,11 +85,17 @@ export function computeSynthesisChart(
   }
 
   const currentMonth = periodStart(today, 'month');
-  const windowStart =
+  const requestedStart =
     windowMonths === 'all'
       ? periodStart(earliestValueDate(rows)!, 'month')
       : addMonths(currentMonth, -(windowMonths - 1));
-  const months = fillPeriodGaps(windowStart, currentMonth, 'month');
+  const months = fillPeriodGaps(requestedStart, currentMonth, 'month');
+  // fillPeriodGaps caps how far back the axis can reach (MAX_PERIODS), so
+  // the window starts wherever the axis actually starts — otherwise rows
+  // between the requested and the capped start would land in neither
+  // `before` nor any plotted month, silently dropping out of every running
+  // balance. (Empty only for a `today` before the requested start.)
+  const windowStart = months[0] ?? requestedStart;
 
   // Per currency: `before` carries every operation dated strictly before
   // the window (the "carried-over balance from before the window"),

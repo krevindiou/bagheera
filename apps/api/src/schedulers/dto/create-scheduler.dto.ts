@@ -1,14 +1,5 @@
-import {
-  IsBoolean,
-  IsDateString,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsPositive,
-  IsUUID,
-  Max,
-} from 'class-validator';
-import { AmountField, NotesField, ThirdPartyField } from '../../common/dto-fields';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'class-validator';
+import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 
 export class CreateSchedulerDto {
   @IsUUID('7')
@@ -41,7 +32,7 @@ export class CreateSchedulerDto {
   transferAccountId?: string;
 
   // First occurrence date.
-  @IsDateString()
+  @ValueDateField()
   valueDate!: string;
 
   @NotesField()
@@ -52,7 +43,7 @@ export class CreateSchedulerDto {
   reconciled?: boolean;
 
   @IsOptional()
-  @IsDateString()
+  @ValueDateField()
   limitDate?: string;
 
   @IsOptional()

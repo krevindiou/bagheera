@@ -10,6 +10,7 @@ import {
   ReportTitleField,
   SecretField,
   ThirdPartyField,
+  ValueDateField,
 } from './dto-fields';
 
 class EmailFieldHost {
@@ -35,6 +36,9 @@ class NotesFieldHost {
 }
 class AmountFieldHost {
   @AmountField() value!: number;
+}
+class ValueDateFieldHost {
+  @ValueDateField() valueDate!: string;
 }
 
 describe('EmailField', () => {
@@ -166,5 +170,28 @@ describe('AmountField', () => {
     const dto = plainToInstance(AmountFieldHost, { value: -5 });
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('isPositive');
+  });
+});
+
+// The exact date rule is covered by value-date.spec.ts — this only pins the
+// decorator's wiring and message.
+describe('ValueDateField', () => {
+  it('accepts a plain in-range date', async () => {
+    const dto = plainToInstance(ValueDateFieldHost, { valueDate: '2026-01-01' });
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('rejects an out-of-range date, naming the field and the accepted range', async () => {
+    const dto = plainToInstance(ValueDateFieldHost, { valueDate: '9999-12-31' });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toEqual({
+      isValueDate: 'valueDate must be a YYYY-MM-DD date between 1900-01-01 and 2100-12-31',
+    });
+  });
+
+  it('is required by default — a missing value fails', async () => {
+    const dto = plainToInstance(ValueDateFieldHost, {});
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('isValueDate');
   });
 });

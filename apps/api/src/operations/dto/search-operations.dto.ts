@@ -5,7 +5,6 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsBoolean,
-  IsDateString,
   IsIn,
   IsNumber,
   IsOptional,
@@ -16,7 +15,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { ThirdPartyField } from '../../common/dto-fields';
+import { ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 
 export class AmountComparatorDto {
   @IsIn(['gt', 'gte', 'lt', 'lte', 'eq'])
@@ -72,11 +71,11 @@ export class SearchOperationsDto {
   amountComparators?: AmountComparatorDto[];
 
   @IsOptional()
-  @IsDateString()
+  @ValueDateField()
   dateFrom?: string;
 
   @IsOptional()
-  @IsDateString()
+  @ValueDateField()
   dateTo?: string;
 
   // A search filter, not stored text — deliberately narrower than
