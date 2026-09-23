@@ -4,6 +4,20 @@
 # (e.g. app.example.com) gets one via public ACME; "http://:80" serves plain
 # HTTP with no TLS of its own, for when something in front of this container
 # already terminates it (Kamal's own proxy does).
+{
+	servers {
+		# Kamal's proxy forwards the real client address in X-Forwarded-For.
+		# By default Caddy trusts no upstream proxy, so reverse_proxy below
+		# *replaces* that header with the peer's own address (Kamal's proxy
+		# container) instead of appending to it: every request would then
+		# reach the api from one and the same IP, collapsing its per-IP rate
+		# limits into a single site-wide bucket. Trusting the private ranges
+		# Kamal's proxy connects from (the Docker network) makes Caddy append,
+		# giving the two-hop chain apps/api/src/main.ts's `trust proxy`
+		# count expects.
+		trusted_proxies static private_ranges
+	}
+}
 
 {$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
