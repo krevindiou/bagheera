@@ -80,6 +80,27 @@ describe('RateLimitGuard', () => {
     expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:127.0.0.1'));
   });
 
+  it('lets a request through without consuming anything when appliesTo returns false', async () => {
+    const valkey = fakeValkeyClient();
+    const appliesTo = jest.fn().mockReturnValue(false);
+    const options: RateLimitOptions = { points: 5, durationSeconds: 60, appliesTo };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    const req = fakeRequest({ method: 'GET' });
+    await expect(guard.canActivate(fakeExecutionContext(req))).resolves.toBe(true);
+    expect(appliesTo).toHaveBeenCalledWith(req);
+    expect(valkey.exists).not.toHaveBeenCalled();
+    expect(mockConsume).not.toHaveBeenCalled();
+  });
+
+  it('throttles a request appliesTo returns true for', async () => {
+    const valkey = fakeValkeyClient();
+    const options: RateLimitOptions = { points: 5, durationSeconds: 60, appliesTo: () => true };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    const ctx = fakeExecutionContext(fakeRequest({ method: 'GET' }));
+    await expect(guard.canActivate(ctx)).resolves.toBe(true);
+    expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:127.0.0.1'));
+  });
+
   it('falls back to "unknown" for the IP dimension when the request has no IP', async () => {
     const valkey = fakeValkeyClient();
     const guard = new RateLimitGuard(valkey, fakeReflector());

@@ -106,6 +106,9 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     }
 
     const options = explicitOptions ?? DEFAULT_RATE_LIMIT;
+    if (options.appliesTo && !options.appliesTo(req)) {
+      return true;
+    }
     // Scopes every dimension's Valkey key to this handler — without it,
     // every route sharing the bare "ip:<ip>"/"id:<value>" key would consume
     // from the very same counter regardless of each route's own configured

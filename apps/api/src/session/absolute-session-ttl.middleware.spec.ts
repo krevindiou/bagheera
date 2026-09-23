@@ -21,8 +21,18 @@ describe('absoluteSessionTtl', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('stamps createdAt on first touch and calls next()', () => {
-    const req = fakeRequest({ session: {} as never });
+  // Stamping it would mark it modified, and express-session would then
+  // store it and send a cookie for every anonymous request.
+  it('leaves a session generated for this request unstamped and calls next()', () => {
+    const req = fakeRequest({ session: { cookie: {} } as never });
+    const next = jest.fn();
+    absoluteSessionTtl(req, res(), next);
+    expect(req.session.createdAt).toBeUndefined();
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  it('stamps createdAt the first time a stored session comes back and calls next()', () => {
+    const req = fakeRequest({ session: { cookie: {}, csrfIssued: true } as never });
     const next = jest.fn();
     const before = Date.now();
     absoluteSessionTtl(req, res(), next);

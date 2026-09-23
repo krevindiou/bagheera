@@ -10,12 +10,32 @@ import {
 } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
-import { SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
+import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
 
 interface StoredSession {
   memberId?: string;
   createdAt?: number;
   [key: string]: unknown;
+}
+
+async function countSessions(valkey: RedisClientType): Promise<number> {
+  let count = 0;
+  for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
+    count += Array.isArray(batch) ? batch.length : 1;
+  }
+  return count;
+}
+
+/** The Valkey key of the session a response's Set-Cookie hands out. */
+function sessionKeyFrom(res: request.Response): string {
+  const setCookie = ([] as string[]).concat(res.headers['set-cookie'] ?? []);
+  const cookie = setCookie.find((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`));
+  if (!cookie) {
+    throw new Error('Response set no session cookie');
+  }
+  // Signed value: "s:<session id>.<signature>".
+  const value = decodeURIComponent(cookie.split(';')[0].slice(SESSION_COOKIE_NAME.length + 1));
+  return `sess:${value.slice(2, value.lastIndexOf('.'))}`;
 }
 
 async function findSessionKey(valkey: RedisClientType, memberId: string): Promise<string> {
@@ -42,6 +62,31 @@ describe('session lifecycle', () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  // M4: an anonymous request that keeps nothing used to store a session
+  // anyway — flooding any URL filled Valkey.
+  it('stores no session and sends no cookie for an anonymous request that keeps nothing', async () => {
+    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const before = await countSessions(valkey);
+
+    for (let i = 0; i < 5; i++) {
+      const res = await request(app.getHttpServer()).get('/auth/me').expect(401);
+      expect(res.headers['set-cookie']).toBeUndefined();
+    }
+
+    expect(await countSessions(valkey)).toBe(before);
+  });
+
+  it("starts a kept session's absolute clock on its next request", async () => {
+    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const agent = request.agent(app.getHttpServer());
+    const key = sessionKeyFrom(await agent.get('/auth/csrf-token').expect(200));
+
+    await agent.get('/auth/me').expect(401);
+
+    const stored = JSON.parse((await valkey.get(key))!) as StoredSession;
+    expect(stored.createdAt).toEqual(expect.any(Number));
   });
 
   it('rejects a mutating request with no CSRF token, even from an authenticated agent', async () => {

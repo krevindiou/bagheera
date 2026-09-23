@@ -48,4 +48,21 @@ describe('GET /auth/csrf-token', () => {
       .set('x-csrf-token', token);
     expect(optionsRes.status).not.toBe(403);
   });
+
+  // M4: a mint for a caller without a session stores a new one — the only
+  // way an anonymous caller adds a key to Valkey — so those are throttled.
+  it('throttles minting for callers without a session, 30 a minute per IP', async () => {
+    for (let i = 0; i < 30; i++) {
+      await request(app.getHttpServer()).get('/auth/csrf-token').expect(200);
+    }
+    await request(app.getHttpServer()).get('/auth/csrf-token').expect(429);
+  });
+
+  // The SPA mints a token per mutation (apps/web/src/api/client.ts).
+  it('never throttles a caller whose session already exists', async () => {
+    const agent = request.agent(app.getHttpServer());
+    for (let i = 0; i < 40; i++) {
+      await agent.get('/auth/csrf-token').expect(200);
+    }
+  });
 });

@@ -29,6 +29,19 @@ describe('GET /health', () => {
     expect(res.body).toEqual({ status: 'ok' });
   });
 
+  // Polled every few seconds, forever: session.module.ts keeps it clear of
+  // the session middleware. With rolling cookies, a response that so much
+  // as loaded the caller's session would send its cookie again.
+  it('never creates, loads or refreshes a session', async () => {
+    const cold = await request(app.getHttpServer()).get('/health').expect(200);
+    expect(cold.headers['set-cookie']).toBeUndefined();
+
+    const agent = request.agent(app.getHttpServer());
+    await agent.get('/auth/csrf-token').expect(200);
+    const withSession = await agent.get('/health').expect(200);
+    expect(withSession.headers['set-cookie']).toBeUndefined();
+  });
+
   // The dangerous direction: if this ever regressed into always returning
   // 200, Kamal would cut traffic to a container that can't reach its
   // database — a silent production incident, not a loud one.

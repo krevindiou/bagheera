@@ -87,7 +87,15 @@ accessories:
     image: valkey/valkey:9-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "127.0.0.1:6379:6379"
-    cmd: sh -c 'exec valkey-server --requirepass "$VALKEY_PASSWORD"'
+    # maxmemory bounds how much of the host an anonymous flood (sessions,
+    # rate-limit counters) can take. noeviction makes Valkey refuse writes
+    # past it instead of silently dropping keys: evicting would erase
+    # rate-limit counters and lockouts, and BullMQ requires it anyway.
+    # `kamal deploy` doesn't restart accessories — apply a change here with
+    # `kamal accessory reboot valkey`.
+    cmd: >-
+      sh -c 'exec valkey-server --requirepass "$VALKEY_PASSWORD"
+      --maxmemory 256mb --maxmemory-policy noeviction'
     env:
       secret:
         - VALKEY_PASSWORD

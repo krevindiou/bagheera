@@ -1,3 +1,5 @@
+import type { Request } from 'express';
+
 export const RATE_LIMIT_OPTIONS = Symbol('RATE_LIMIT_OPTIONS');
 
 // The IP dimension defaults to a looser budget than the identifier
@@ -30,6 +32,13 @@ export interface RateLimitOptions {
    * dimension). Override to tune the two dimensions independently.
    */
   ipPoints?: number;
+  /**
+   * Narrows the budget to the requests this returns true for; the rest pass
+   * straight through without consuming anything. For a route whose cost
+   * depends on the caller's state — e.g. the CSRF mint only stores anything
+   * for a caller that has no session yet.
+   */
+  appliesTo?: (req: Request) => boolean;
 }
 
 export function ipPointsFor(options: RateLimitOptions): number {
