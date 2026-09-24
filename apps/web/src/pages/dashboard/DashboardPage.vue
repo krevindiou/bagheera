@@ -13,8 +13,8 @@ import {
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
 import RankedChart from '../../components/RankedChart.vue';
-import { formatDate, formatMoney } from '../operations/money';
-import AppIcon from '../../components/AppIcon.vue';
+import { formatDate } from '../operations/money';
+import StatCard from '../../components/StatCard.vue';
 import { toChartSeries } from '../reports/chartSeries';
 import { toDistributionFacets } from '../reports/distributionSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
@@ -90,74 +90,46 @@ const accountTiles = computed(() =>
           {{ $t('dashboard.noBalances') }}
         </p>
         <div class="stat-grid">
-          <div v-for="balance in dashboard.totalBalances" :key="balance.currency" class="stat-card">
-            <div class="stat-label">
-              {{ $t('dashboard.totalBalances') }} ({{ balance.currency }})
-            </div>
-            <div
-              class="stat-value"
-              data-testid="total-balance"
-              :class="{ 'text-danger': balance.amount < 0 }"
-            >
-              {{ formatMoney(balance.amount, balance.currency, true) }}
-            </div>
-            <div class="stat-footnote">
-              <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
-              <span class="stat-footnote-value" data-testid="total-reconciled">
-                {{ formatMoney(balance.reconciledAmount, balance.currency, true) }}
-              </span>
-            </div>
-          </div>
-          <div
+          <StatCard
+            v-for="balance in dashboard.totalBalances"
+            :key="balance.currency"
+            :label="`${$t('dashboard.totalBalances')} (${balance.currency})`"
+            :amount="balance.amount"
+            :currency="balance.currency"
+            :reconciled="balance.reconciledAmount"
+            value-testid="total-balance"
+            reconciled-testid="total-reconciled"
+          />
+          <StatCard
             v-if="dashboard.lastBiggestIncome"
-            class="stat-card"
+            :label="$t('dashboard.lastBiggestIncome')"
+            :amount="dashboard.lastBiggestIncome.amount"
+            :currency="dashboard.lastBiggestIncome.currency"
+            trend="up"
             data-testid="last-biggest-income"
           >
-            <div class="stat-trend-badge stat-trend-badge-success">
-              <AppIcon name="trendUp" />
-            </div>
-            <div class="stat-label">{{ $t('dashboard.lastBiggestIncome') }}</div>
-            <div class="stat-value text-success">
-              {{
-                formatMoney(
-                  dashboard.lastBiggestIncome.amount,
-                  dashboard.lastBiggestIncome.currency,
-                  true,
-                )
-              }}
-            </div>
-            <div class="stat-footnote">
+            <template #footnote>
               <span class="stat-footnote-label"
                 >{{ dashboard.lastBiggestIncome.thirdParty }} ·
                 {{ formatDate(dashboard.lastBiggestIncome.valueDate) }}</span
               >
-            </div>
-          </div>
-          <div
+            </template>
+          </StatCard>
+          <StatCard
             v-if="dashboard.lastBiggestExpense"
-            class="stat-card"
+            :label="$t('dashboard.lastBiggestExpense')"
+            :amount="dashboard.lastBiggestExpense.amount"
+            :currency="dashboard.lastBiggestExpense.currency"
+            trend="down"
             data-testid="last-biggest-expense"
           >
-            <div class="stat-trend-badge stat-trend-badge-danger">
-              <AppIcon name="trendDown" />
-            </div>
-            <div class="stat-label">{{ $t('dashboard.lastBiggestExpense') }}</div>
-            <div class="stat-value text-danger">
-              {{
-                formatMoney(
-                  dashboard.lastBiggestExpense.amount,
-                  dashboard.lastBiggestExpense.currency,
-                  true,
-                )
-              }}
-            </div>
-            <div class="stat-footnote">
+            <template #footnote>
               <span class="stat-footnote-label"
                 >{{ dashboard.lastBiggestExpense.thirdParty }} ·
                 {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}</span
               >
-            </div>
-          </div>
+            </template>
+          </StatCard>
         </div>
       </section>
 
@@ -195,32 +167,24 @@ const accountTiles = computed(() =>
              grouped per bank, which left a lone single-account bank
              stretching its one tile across the full row width. -->
         <div v-else class="tile-grid">
-          <router-link
+          <StatCard
             v-for="account in accountTiles"
             :key="account.id"
             :to="{ name: 'operations', params: { accountId: account.id } }"
-            class="stat-card acct-tile"
+            :label="`${account.bankName} — ${account.name}`"
+            :amount="account.balance"
+            :currency="account.currency"
+            :reconciled="account.reconciledBalance"
+            primary
+            class="acct-tile"
             data-testid="overview-account"
           >
-            <div class="stat-label">{{ account.bankName }} — {{ account.name }}</div>
-            <div
-              class="stat-value stat-value-primary"
-              :class="{ 'text-danger': account.balance < 0 }"
-            >
-              {{ formatMoney(account.balance, account.currency, true) }}
-            </div>
-            <div class="stat-footnote">
-              <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
-              <span class="stat-footnote-value">
-                {{ formatMoney(account.reconciledBalance, account.currency, true) }}
-              </span>
-            </div>
             <AccountSparkline
               :values="account.history"
               :color="colorForCurrency(account.currency)"
               class="mt-2"
             />
-          </router-link>
+          </StatCard>
         </div>
       </section>
 

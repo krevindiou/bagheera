@@ -32,6 +32,7 @@ import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
+import StatCard from '../../components/StatCard.vue';
 import AppIcon from '../../components/AppIcon.vue';
 
 const route = useRoute();
@@ -333,18 +334,14 @@ function isEditable(operation: Operation): boolean {
     </p>
 
     <div v-if="balance" class="mb-4" data-testid="account-balances">
-      <div class="stat-chip">
-        <div class="stat-label">{{ $t('operations.balance') }}</div>
-        <div class="stat-value stat-value-primary" :class="{ 'text-danger': balance.balance < 0 }">
-          {{ formatMoney(balance.balance, account?.currency ?? 'USD', true) }}
-        </div>
-        <div class="stat-footnote">
-          <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
-          <span class="stat-footnote-value">
-            {{ formatMoney(balance.reconciledBalance, account?.currency ?? 'USD', true) }}
-          </span>
-        </div>
-      </div>
+      <StatCard
+        variant="chip"
+        :label="$t('operations.balance')"
+        :amount="balance.balance"
+        :currency="account?.currency ?? 'USD'"
+        :reconciled="balance.reconciledBalance"
+        primary
+      />
     </div>
 
     <div v-if="chartSeries.length > 0" class="panel panel-lg p-4 mb-4">
