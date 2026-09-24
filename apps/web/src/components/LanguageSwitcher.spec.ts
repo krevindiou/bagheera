@@ -47,7 +47,7 @@ describe('LanguageSwitcher', () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
     await wrapper.get('.lang-trigger').trigger('click');
 
-    const options = wrapper.findAll('.lang-option');
+    const options = wrapper.findAll('.menu-option');
     expect(options.map((o) => o.text().trim())).toEqual(['English', 'Français']);
     expect(options[0]?.classes()).toContain('selected');
     expect(options[1]?.classes()).not.toContain('selected');
@@ -56,7 +56,7 @@ describe('LanguageSwitcher', () => {
   it('switches the URL locale, the i18n catalog, and persists the choice for a signed-out visitor', async () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
     await wrapper.get('.lang-trigger').trigger('click');
-    await wrapper.findAll('.lang-option')[1]?.trigger('click');
+    await wrapper.findAll('.menu-option')[1]?.trigger('click');
     await waitForLocale('fr');
 
     expect(i18n.global.locale.value).toBe('fr');
@@ -77,7 +77,7 @@ describe('LanguageSwitcher', () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
 
     await wrapper.get('.lang-trigger').trigger('click');
-    await wrapper.findAll('.lang-option')[1]?.trigger('click');
+    await wrapper.findAll('.menu-option')[1]?.trigger('click');
     await waitForLocale('fr');
 
     expect(apiClient.POST).toHaveBeenCalledWith('/members/locale', { body: { locale: 'fr' } });
@@ -87,7 +87,7 @@ describe('LanguageSwitcher', () => {
   it('does nothing when re-selecting the already-active locale', async () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
     await wrapper.get('.lang-trigger').trigger('click');
-    await wrapper.findAll('.lang-option')[0]?.trigger('click');
+    await wrapper.findAll('.menu-option')[0]?.trigger('click');
     await wrapper.vm.$nextTick();
 
     expect(router.currentRoute.value.params.locale).toBe('en');

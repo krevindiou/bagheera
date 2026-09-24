@@ -58,11 +58,17 @@ describe('AccountMenu', () => {
 
     await trigger.trigger('click');
     expect(trigger.attributes('aria-expanded')).toBe('true');
-    expect(wrapper.findAll('.account-lang-option').map((o) => o.text().trim())).toEqual([
+    expect(wrapper.findAll('.menu-option').map((o) => o.text().trim())).toEqual([
       'English',
       'Français',
     ]);
     expect(wrapper.get('.account-logout').text()).toContain('Logout');
+
+    // The language options sit in a labelled listbox, so `role="option"`
+    // has the parent ARIA requires.
+    const listbox = wrapper.get('[role="listbox"]');
+    expect(listbox.attributes('aria-label')).toBe('Language');
+    expect(listbox.findAll('[role="option"]')).toHaveLength(2);
 
     await trigger.trigger('click');
     expect(trigger.attributes('aria-expanded')).toBe('false');
@@ -76,7 +82,7 @@ describe('AccountMenu', () => {
     await wrapper.vm.$nextTick();
 
     await wrapper.get('.account-trigger').trigger('click');
-    await wrapper.findAll('.account-lang-option')[1]?.trigger('click');
+    await wrapper.findAll('.menu-option')[1]?.trigger('click');
     await waitForLocale('fr');
 
     expect(i18n.global.locale.value).toBe('fr');

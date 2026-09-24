@@ -914,16 +914,9 @@ input[type='radio'] {
   color: var(--paper);
 }
 .account-panel {
-  position: absolute;
   bottom: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-radius: 7px;
-  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
-  padding: 4px;
-  z-index: 5;
 }
 .account-section-label {
   padding: 8px 9px 4px;
@@ -932,33 +925,6 @@ input[type='radio'] {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--paper-faint);
-}
-.account-lang-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 7px 9px;
-  border-radius: 5px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--paper-dim);
-  cursor: pointer;
-  text-align: left;
-}
-.account-lang-option:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--paper);
-}
-.account-lang-option.selected {
-  color: var(--paper);
-}
-.account-check {
-  color: var(--violet-soft);
-  flex: none;
 }
 .account-divider {
   height: 1px;
@@ -1024,10 +990,17 @@ input[type='radio'] {
   color: var(--violet-soft);
 }
 .lang-list {
-  position: absolute;
   top: calc(100% + 6px);
   right: 0;
   min-width: 132px;
+}
+
+/* ---------- Menu panel and options (MenuPopover.vue, LocaleOptions.vue) ---------- */
+/* The floating panel and the option rows shared by the account menu and the
+   language picker; each consumer adds only its placement (.account-panel,
+   .lang-list above). */
+.menu-panel {
+  position: absolute;
   background: var(--panel-2);
   border: 1px solid var(--hair-strong);
   border-radius: 7px;
@@ -1035,7 +1008,7 @@ input[type='radio'] {
   padding: 4px;
   z-index: 5;
 }
-.lang-option {
+.menu-option {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1051,14 +1024,14 @@ input[type='radio'] {
   cursor: pointer;
   text-align: left;
 }
-.lang-option:hover {
+.menu-option:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--paper);
 }
-.lang-option.selected {
+.menu-option.selected {
   color: var(--paper);
 }
-.lang-check {
+.menu-check {
   color: var(--violet-soft);
   flex: none;
 }
