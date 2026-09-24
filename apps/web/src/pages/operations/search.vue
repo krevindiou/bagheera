@@ -2,6 +2,7 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import EntryTypeRadio from '../../components/EntryTypeRadio.vue';
 import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
@@ -132,32 +133,7 @@ function onClear() {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <div class="mb-3">
-      <div class="form-label">{{ $t('operations.search.type') }}</div>
-      <div class="form-check form-check-inline">
-        <input
-          id="search-type-debit"
-          v-model="type"
-          v-autofocus
-          class="form-check-input"
-          type="radio"
-          value="debit"
-        />
-        <label class="form-check-label" for="search-type-debit">{{ $t('operations.debit') }}</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input
-          id="search-type-credit"
-          v-model="type"
-          class="form-check-input"
-          type="radio"
-          value="credit"
-        />
-        <label class="form-check-label" for="search-type-credit">{{
-          $t('operations.credit')
-        }}</label>
-      </div>
-    </div>
+    <EntryTypeRadio v-model="type" id-prefix="search-type" :legend="$t('operations.search.type')" />
 
     <FormField :label="$t('operations.thirdParty')" for="search-third-party">
       <input

@@ -20,6 +20,12 @@ function currentLocale(): string {
   return i18n.global.locale.value;
 }
 
+// Today's date as the stored `YYYY-MM-DD` string, the default value date of
+// a new operation or scheduler.
+export function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 // Money inputs display the account currency symbol as an input add-on.
 export function currencySymbol(currency: string): string {
   try {

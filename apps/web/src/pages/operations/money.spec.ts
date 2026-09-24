@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { currencySymbol, formatDate, formatMoney, toDisplayAmount } from './money';
+import { currencySymbol, formatDate, formatMoney, toDisplayAmount, today } from './money';
 
 describe('toDisplayAmount', () => {
   it('converts a stored minor-units integer to a major-unit decimal', () => {
@@ -54,5 +54,16 @@ describe('formatMoney', () => {
 
   it('falls back to a plain decimal string for an unknown currency', () => {
     expect(formatMoney(123456, 'NOTACODE')).toBe('12.35 NOTACODE');
+  });
+});
+
+describe('today', () => {
+  it("returns today's date as a stored YYYY-MM-DD string", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-24T10:30:00Z'));
+
+    expect(today()).toBe('2026-09-24');
+
+    vi.useRealTimers();
   });
 });

@@ -7,6 +7,7 @@ import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import type { components } from '../../api/schema';
 import FormField from '../../components/FormField.vue';
+import MoneyInput from '../../components/MoneyInput.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { getCurrencyOptions, getGuessedCurrency } from '../../composables/useCurrencyOptions';
@@ -167,18 +168,12 @@ const onSubmit = handleSubmit(async (values) => {
     </FormField>
 
     <FormField v-if="!isEdit" :label="$t('accounts.initialBalance')" for="account-initial-balance">
-      <div class="input-group">
-        <span class="input-group-text">{{ initialBalanceCurrencySymbol }}</span>
-        <input
-          id="account-initial-balance"
-          v-model="initialBalance"
-          v-bind="initialBalanceAttrs"
-          type="number"
-          inputmode="decimal"
-          step="0.01"
-          class="form-control"
-        />
-      </div>
+      <MoneyInput
+        id="account-initial-balance"
+        v-model="initialBalance"
+        v-bind="initialBalanceAttrs"
+        :symbol="initialBalanceCurrencySymbol"
+      />
     </FormField>
 
     <template #actions>
