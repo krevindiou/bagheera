@@ -5,7 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
-import { useEscapeKey } from '../../composables/useEscapeKey';
+import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import { categoryLabel, groupCategories, type Category } from '../operations/operations.types';
@@ -27,8 +27,6 @@ const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t, locale } = useI18n();
-
-useEscapeKey(() => emit('cancel'));
 
 function initialValues(): ReportForm {
   const r = props.report;
@@ -118,216 +116,194 @@ const onSubmit = handleSubmit(async (submitted) => {
 </script>
 
 <template>
-  <div class="drawer-backdrop" @click="emit('cancel')">
-    <form novalidate class="drawer" @click.stop @submit="onSubmit">
-      <div class="drawer-header">
-        <div>
-          <h2 class="mb-0" style="font-size: 20px">
-            {{ $t(props.report ? 'reports.editTitle' : 'reports.createTitle') }}
-          </h2>
-          <p class="form-text mb-0">{{ $t(`reports.typeHint.${reportType}`) }}</p>
-        </div>
-        <button
-          type="button"
-          class="drawer-close"
-          :aria-label="$t('common.cancel')"
-          @click="emit('cancel')"
-        >
-          ×
-        </button>
-      </div>
+  <FormDrawer
+    :title="$t(props.report ? 'reports.editTitle' : 'reports.createTitle')"
+    :subtitle="$t(`reports.typeHint.${reportType}`)"
+    novalidate
+    @submit="onSubmit"
+    @close="emit('cancel')"
+  >
+    <div class="mb-3">
+      <label class="form-label" for="report-title">{{ $t('reports.reportTitle') }}</label>
+      <input
+        id="report-title"
+        v-model="title"
+        v-bind="titleAttrs"
+        v-autofocus
+        type="text"
+        class="form-control"
+        :class="{ 'is-invalid': errors.title }"
+      />
+      <div v-if="errors.title" class="invalid-feedback">{{ $t('auth.validation.required') }}</div>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="report-title">{{ $t('reports.reportTitle') }}</label>
+    <div class="row mb-3">
+      <div class="col">
+        <label class="form-label" for="report-value-date-start">{{ $t('reports.dateFrom') }}</label>
         <input
-          id="report-title"
-          v-model="title"
-          v-bind="titleAttrs"
-          v-autofocus
-          type="text"
-          class="form-control"
-          :class="{ 'is-invalid': errors.title }"
-        />
-        <div v-if="errors.title" class="invalid-feedback">{{ $t('auth.validation.required') }}</div>
-      </div>
-
-      <div class="row mb-3">
-        <div class="col">
-          <label class="form-label" for="report-value-date-start">{{
-            $t('reports.dateFrom')
-          }}</label>
-          <input
-            id="report-value-date-start"
-            v-model="valueDateStart"
-            v-bind="valueDateStartAttrs"
-            type="date"
-            :lang="locale"
-            class="form-control"
-          />
-        </div>
-        <div class="col">
-          <label class="form-label" for="report-value-date-end">{{ $t('reports.dateTo') }}</label>
-          <input
-            id="report-value-date-end"
-            v-model="valueDateEnd"
-            v-bind="valueDateEndAttrs"
-            type="date"
-            :lang="locale"
-            class="form-control"
-            :class="{ 'is-invalid': errors.valueDateEnd }"
-          />
-          <div v-if="errors.valueDateEnd" class="invalid-feedback">
-            {{ $t('reports.dateRangeInvalid') }}
-          </div>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label" for="report-third-parties">{{
-          $t('operations.thirdParty')
-        }}</label>
-        <input
-          id="report-third-parties"
-          v-model="thirdParties"
-          v-bind="thirdPartiesAttrs"
-          type="text"
+          id="report-value-date-start"
+          v-model="valueDateStart"
+          v-bind="valueDateStartAttrs"
+          type="date"
+          :lang="locale"
           class="form-control"
         />
-        <div class="form-text">{{ $t('reports.thirdPartiesHint') }}</div>
       </div>
+      <div class="col">
+        <label class="form-label" for="report-value-date-end">{{ $t('reports.dateTo') }}</label>
+        <input
+          id="report-value-date-end"
+          v-model="valueDateEnd"
+          v-bind="valueDateEndAttrs"
+          type="date"
+          :lang="locale"
+          class="form-control"
+          :class="{ 'is-invalid': errors.valueDateEnd }"
+        />
+        <div v-if="errors.valueDateEnd" class="invalid-feedback">
+          {{ $t('reports.dateRangeInvalid') }}
+        </div>
+      </div>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="report-categories">{{ $t('operations.category') }}</label>
-        <select
-          id="report-categories"
-          v-model="categoryIds"
-          v-bind="categoryIdsAttrs"
-          multiple
-          class="form-select"
-        >
-          <template v-for="group in groupedCategories" :key="group.label ?? '_'">
-            <template v-if="group.label === null">
-              <option v-for="c in group.categories" :key="c.id" :value="c.id">
-                {{ categoryLabel(c, props.categories) }}
-              </option>
-            </template>
-            <optgroup v-else :label="group.label">
-              <option v-for="c in group.categories" :key="c.id" :value="c.id">
-                {{ categoryLabel(c, props.categories) }}
-              </option>
-            </optgroup>
+    <div class="mb-3">
+      <label class="form-label" for="report-third-parties">{{ $t('operations.thirdParty') }}</label>
+      <input
+        id="report-third-parties"
+        v-model="thirdParties"
+        v-bind="thirdPartiesAttrs"
+        type="text"
+        class="form-control"
+      />
+      <div class="form-text">{{ $t('reports.thirdPartiesHint') }}</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="report-categories">{{ $t('operations.category') }}</label>
+      <select
+        id="report-categories"
+        v-model="categoryIds"
+        v-bind="categoryIdsAttrs"
+        multiple
+        class="form-select"
+      >
+        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
+          <template v-if="group.label === null">
+            <option v-for="c in group.categories" :key="c.id" :value="c.id">
+              {{ categoryLabel(c, props.categories) }}
+            </option>
           </template>
-        </select>
-        <div class="form-text">{{ $t('reports.categoriesHint') }}</div>
-      </div>
+          <optgroup v-else :label="group.label">
+            <option v-for="c in group.categories" :key="c.id" :value="c.id">
+              {{ categoryLabel(c, props.categories) }}
+            </option>
+          </optgroup>
+        </template>
+      </select>
+      <div class="form-text">{{ $t('reports.categoriesHint') }}</div>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="report-accounts">{{ $t('reports.accounts') }}</label>
-        <select
-          id="report-accounts"
-          v-model="accountIds"
-          v-bind="accountIdsAttrs"
-          multiple
-          class="form-select"
-        >
-          <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
-        </select>
-        <div class="form-text">{{ $t('reports.accountsHint') }}</div>
-      </div>
+    <div class="mb-3">
+      <label class="form-label" for="report-accounts">{{ $t('reports.accounts') }}</label>
+      <select
+        id="report-accounts"
+        v-model="accountIds"
+        v-bind="accountIdsAttrs"
+        multiple
+        class="form-select"
+      >
+        <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
+      </select>
+      <div class="form-text">{{ $t('reports.accountsHint') }}</div>
+    </div>
 
-      <div class="mb-3 form-check">
-        <input
-          id="report-reconciled"
-          v-model="reconciledOnly"
-          v-bind="reconciledOnlyAttrs"
-          type="checkbox"
-          class="form-check-input"
-        />
-        <label class="form-check-label" for="report-reconciled">{{
-          $t('reports.reconciledOnly')
-        }}</label>
-        <div class="form-text">{{ $t('reports.reconciledOnlyHint') }}</div>
-      </div>
+    <div class="mb-3 form-check">
+      <input
+        id="report-reconciled"
+        v-model="reconciledOnly"
+        v-bind="reconciledOnlyAttrs"
+        type="checkbox"
+        class="form-check-input"
+      />
+      <label class="form-check-label" for="report-reconciled">{{
+        $t('reports.reconciledOnly')
+      }}</label>
+      <div class="form-text">{{ $t('reports.reconciledOnlyHint') }}</div>
+    </div>
 
-      <div v-if="reportType === 'distribution'" class="mb-3">
-        <label class="form-label" for="report-data-grouping">{{
-          $t('reports.dataGrouping')
-        }}</label>
-        <select
-          id="report-data-grouping"
-          v-model="dataGrouping"
-          v-bind="dataGroupingAttrs"
-          class="form-select"
-        >
-          <option value="category">{{ $t('reports.dataGroupingOptions.category') }}</option>
-          <option value="third_party">{{ $t('reports.dataGroupingOptions.thirdParty') }}</option>
-          <option value="payment_method">
-            {{ $t('reports.dataGroupingOptions.paymentMethod') }}
-          </option>
-        </select>
-        <div class="form-text">{{ $t('reports.dataGroupingHint') }}</div>
-      </div>
+    <div v-if="reportType === 'distribution'" class="mb-3">
+      <label class="form-label" for="report-data-grouping">{{ $t('reports.dataGrouping') }}</label>
+      <select
+        id="report-data-grouping"
+        v-model="dataGrouping"
+        v-bind="dataGroupingAttrs"
+        class="form-select"
+      >
+        <option value="category">{{ $t('reports.dataGroupingOptions.category') }}</option>
+        <option value="third_party">{{ $t('reports.dataGroupingOptions.thirdParty') }}</option>
+        <option value="payment_method">
+          {{ $t('reports.dataGroupingOptions.paymentMethod') }}
+        </option>
+      </select>
+      <div class="form-text">{{ $t('reports.dataGroupingHint') }}</div>
+    </div>
 
-      <div v-if="reportType === 'distribution'" class="mb-3">
-        <label class="form-label" for="report-significant-results-number">{{
-          $t('reports.significantResultsNumber')
-        }}</label>
-        <input
-          id="report-significant-results-number"
-          v-model.number="significantResultsNumber"
-          v-bind="significantResultsNumberAttrs"
-          type="number"
-          min="1"
-          max="50"
-          class="form-control"
-          :class="{ 'is-invalid': errors.significantResultsNumber }"
-        />
-        <div class="form-text">{{ $t('reports.significantResultsNumberHint') }}</div>
-      </div>
+    <div v-if="reportType === 'distribution'" class="mb-3">
+      <label class="form-label" for="report-significant-results-number">{{
+        $t('reports.significantResultsNumber')
+      }}</label>
+      <input
+        id="report-significant-results-number"
+        v-model.number="significantResultsNumber"
+        v-bind="significantResultsNumberAttrs"
+        type="number"
+        min="1"
+        max="50"
+        class="form-control"
+        :class="{ 'is-invalid': errors.significantResultsNumber }"
+      />
+      <div class="form-text">{{ $t('reports.significantResultsNumberHint') }}</div>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="report-period-grouping">{{
-          $t('reports.periodGrouping')
-        }}</label>
-        <select
-          id="report-period-grouping"
-          v-model="periodGrouping"
-          v-bind="periodGroupingAttrs"
-          class="form-select"
-        >
-          <option value="month">{{ $t('reports.periods.month') }}</option>
-          <option value="quarter">{{ $t('reports.periods.quarter') }}</option>
-          <option value="year">{{ $t('reports.periods.year') }}</option>
-          <option value="all">{{ $t('reports.periods.all') }}</option>
-        </select>
-        <div class="form-text">
-          {{
-            reportType === 'distribution'
-              ? $t('reports.periodGroupingHintDistribution')
-              : $t('reports.periodGroupingHint')
-          }}
-        </div>
+    <div class="mb-3">
+      <label class="form-label" for="report-period-grouping">{{
+        $t('reports.periodGrouping')
+      }}</label>
+      <select
+        id="report-period-grouping"
+        v-model="periodGrouping"
+        v-bind="periodGroupingAttrs"
+        class="form-select"
+      >
+        <option value="month">{{ $t('reports.periods.month') }}</option>
+        <option value="quarter">{{ $t('reports.periods.quarter') }}</option>
+        <option value="year">{{ $t('reports.periods.year') }}</option>
+        <option value="all">{{ $t('reports.periods.all') }}</option>
+      </select>
+      <div class="form-text">
+        {{
+          reportType === 'distribution'
+            ? $t('reports.periodGroupingHintDistribution')
+            : $t('reports.periodGroupingHint')
+        }}
       </div>
+    </div>
 
-      <div class="mb-3 form-check">
-        <input
-          id="report-homepage"
-          v-model="homepage"
-          v-bind="homepageAttrs"
-          type="checkbox"
-          class="form-check-input"
-        />
-        <label class="form-check-label" for="report-homepage">{{ $t('reports.homepage') }}</label>
-      </div>
+    <div class="mb-3 form-check">
+      <input
+        id="report-homepage"
+        v-model="homepage"
+        v-bind="homepageAttrs"
+        type="checkbox"
+        class="form-check-input"
+      />
+      <label class="form-check-label" for="report-homepage">{{ $t('reports.homepage') }}</label>
+    </div>
 
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-          {{ $t('operations.submit') }}
-        </button>
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ $t('common.cancel') }}
-        </button>
-      </div>
-    </form>
-  </div>
+    <template #actions>
+      <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+        {{ $t('operations.submit') }}
+      </button>
+    </template>
+  </FormDrawer>
 </template>

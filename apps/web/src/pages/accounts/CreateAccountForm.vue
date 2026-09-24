@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import type { components } from '../../api/schema';
-import { useEscapeKey } from '../../composables/useEscapeKey';
+import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { getCurrencyOptions, getGuessedCurrency } from '../../composables/useCurrencyOptions';
 import { currencySymbol } from '../operations/money';
@@ -34,8 +34,6 @@ const emit = defineEmits<{ created: [accountId: string]; updated: []; cancel: []
 const { push: toast } = useToast();
 const { t } = useI18n();
 const currencyOptions = getCurrencyOptions();
-
-useEscapeKey(() => emit('cancel'));
 
 const isEdit = computed(() => props.mode === 'edit');
 const schema = computed(() => (isEdit.value ? editAccountSchema : createAccountSchema));
@@ -103,108 +101,94 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="drawer-backdrop" @click="emit('cancel')">
-    <form novalidate class="drawer" @click.stop @submit="onSubmit">
-      <div class="drawer-header">
-        <h2 class="mb-0" style="font-size: 20px">
-          {{ isEdit ? $t('accounts.editTitle') : $t('accounts.addAccount') }}
-        </h2>
-        <button
-          type="button"
-          class="drawer-close"
-          :aria-label="$t('common.cancel')"
-          @click="emit('cancel')"
-        >
-          ×
-        </button>
-      </div>
+  <FormDrawer
+    :title="isEdit ? $t('accounts.editTitle') : $t('accounts.addAccount')"
+    novalidate
+    @submit="onSubmit"
+    @close="emit('cancel')"
+  >
+    <div class="mb-3">
+      <label class="form-label" for="account-bank">{{ $t('accounts.bank') }}</label>
+      <p v-if="isEdit" id="account-bank" class="form-control-plaintext">
+        {{ selectedBankName }}
+      </p>
+      <select
+        v-else
+        id="account-bank"
+        v-model="selectedBankId"
+        v-bind="bankIdAttrs"
+        v-autofocus
+        class="form-select"
+        :class="{ 'is-invalid': errors.bankId }"
+      >
+        <option v-for="bank in props.banks" :key="bank.id" :value="bank.id">
+          {{ bank.name }}
+        </option>
+      </select>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="account-bank">{{ $t('accounts.bank') }}</label>
-        <p v-if="isEdit" id="account-bank" class="form-control-plaintext">
-          {{ selectedBankName }}
-        </p>
+    <div class="mb-3">
+      <label class="form-label" for="account-name">{{ $t('accounts.accountName') }}</label>
+      <input
+        id="account-name"
+        v-model="name"
+        v-bind="nameAttrs"
+        v-autofocus="isEdit"
+        type="text"
+        class="form-control"
+        :class="{ 'is-invalid': errors.name }"
+      />
+      <div v-if="errors.name" class="invalid-feedback">
+        {{ $t('auth.validation.required') }}
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="account-currency">{{ $t('accounts.currency') }}</label>
+      <p v-if="isEdit" id="account-currency" class="form-control-plaintext">
+        {{ selectedCurrencyLabel }}
+      </p>
+      <template v-else>
         <select
-          v-else
-          id="account-bank"
-          v-model="selectedBankId"
-          v-bind="bankIdAttrs"
-          v-autofocus
+          id="account-currency"
+          v-model="currency"
+          v-bind="currencyAttrs"
           class="form-select"
-          :class="{ 'is-invalid': errors.bankId }"
+          :class="{ 'is-invalid': errors.currency }"
         >
-          <option v-for="bank in props.banks" :key="bank.id" :value="bank.id">
-            {{ bank.name }}
+          <option value="">{{ $t('accounts.chooseCurrency') }}</option>
+          <option v-for="option in currencyOptions" :key="option.code" :value="option.code">
+            {{ option.code }} — {{ option.name }}
           </option>
         </select>
-      </div>
+        <div v-if="errors.currency" class="invalid-feedback">
+          {{ $t('accounts.validation.currency') }}
+        </div>
+      </template>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="account-name">{{ $t('accounts.accountName') }}</label>
+    <div v-if="!isEdit" class="mb-3">
+      <label class="form-label" for="account-initial-balance">
+        {{ $t('accounts.initialBalance') }}
+      </label>
+      <div class="input-group">
+        <span class="input-group-text">{{ initialBalanceCurrencySymbol }}</span>
         <input
-          id="account-name"
-          v-model="name"
-          v-bind="nameAttrs"
-          v-autofocus="isEdit"
-          type="text"
+          id="account-initial-balance"
+          v-model="initialBalance"
+          v-bind="initialBalanceAttrs"
+          type="number"
+          inputmode="decimal"
+          step="0.01"
           class="form-control"
-          :class="{ 'is-invalid': errors.name }"
         />
-        <div v-if="errors.name" class="invalid-feedback">
-          {{ $t('auth.validation.required') }}
-        </div>
       </div>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="account-currency">{{ $t('accounts.currency') }}</label>
-        <p v-if="isEdit" id="account-currency" class="form-control-plaintext">
-          {{ selectedCurrencyLabel }}
-        </p>
-        <template v-else>
-          <select
-            id="account-currency"
-            v-model="currency"
-            v-bind="currencyAttrs"
-            class="form-select"
-            :class="{ 'is-invalid': errors.currency }"
-          >
-            <option value="">{{ $t('accounts.chooseCurrency') }}</option>
-            <option v-for="option in currencyOptions" :key="option.code" :value="option.code">
-              {{ option.code }} — {{ option.name }}
-            </option>
-          </select>
-          <div v-if="errors.currency" class="invalid-feedback">
-            {{ $t('accounts.validation.currency') }}
-          </div>
-        </template>
-      </div>
-
-      <div v-if="!isEdit" class="mb-3">
-        <label class="form-label" for="account-initial-balance">
-          {{ $t('accounts.initialBalance') }}
-        </label>
-        <div class="input-group">
-          <span class="input-group-text">{{ initialBalanceCurrencySymbol }}</span>
-          <input
-            id="account-initial-balance"
-            v-model="initialBalance"
-            v-bind="initialBalanceAttrs"
-            type="number"
-            inputmode="decimal"
-            step="0.01"
-            class="form-control"
-          />
-        </div>
-      </div>
-
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-          {{ $t('accounts.submit') }}
-        </button>
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ $t('common.cancel') }}
-        </button>
-      </div>
-    </form>
-  </div>
+    <template #actions>
+      <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+        {{ $t('accounts.submit') }}
+      </button>
+    </template>
+  </FormDrawer>
 </template>

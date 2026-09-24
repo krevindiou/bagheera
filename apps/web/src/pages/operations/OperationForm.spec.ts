@@ -182,6 +182,21 @@ describe('OperationForm', () => {
     );
   });
 
+  it('prefills an uncategorized credit operation as credit, with its credit amount', () => {
+    const wrapper = mountForm({
+      operation: {
+        ...operation,
+        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
+        debit: null,
+        credit: 1_250_000,
+        categoryId: null,
+      },
+    });
+    expect((wrapper.find('#operation-type-credit').element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find('#operation-amount').element as HTMLInputElement).value).toBe('125');
+    expect((wrapper.find('#operation-category').element as HTMLSelectElement).value).toBe('');
+  });
+
   it('updates an operation via PATCH and emits saved', async () => {
     apiClient.PATCH.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mountForm({ operation });

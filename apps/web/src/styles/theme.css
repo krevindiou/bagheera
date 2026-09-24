@@ -1124,7 +1124,7 @@ input[type='radio'] {
   }
 }
 
-/* ---------- Slide-over drawer (OperationForm/SchedulerForm) ---------- */
+/* ---------- Slide-over drawer (FormDrawer.vue) ---------- */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -1160,6 +1160,15 @@ input[type='radio'] {
 }
 .drawer-close:hover {
   color: var(--paper);
+}
+.drawer-title {
+  font-size: 20px;
+}
+/* The footer's primary row (submit, submit-and-new, search + clear) —
+   its buttons grow to fill the row, with FormDrawer's own full-width
+   Cancel beneath: one footer layout for every drawer. */
+.drawer-actions > .btn {
+  flex-grow: 1;
 }
 .transfer-accent {
   border-left: 2px solid var(--violet-bright);

@@ -164,6 +164,21 @@ describe('SchedulerForm', () => {
     expect((wrapper.find('#scheduler-active').element as HTMLInputElement).checked).toBe(true);
   });
 
+  it('prefills an uncategorized credit scheduler as credit, with its credit amount', () => {
+    const wrapper = mountForm({
+      scheduler: {
+        ...scheduler,
+        paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
+        debit: null,
+        credit: 1_250_000,
+        categoryId: null,
+      },
+    });
+    expect((wrapper.find('#scheduler-type-credit').element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find('#scheduler-amount').element as HTMLInputElement).value).toBe('125');
+    expect((wrapper.find('#scheduler-category').element as HTMLSelectElement).value).toBe('');
+  });
+
   it('updates a scheduler via PATCH and emits saved', async () => {
     apiClient.PATCH.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mountForm({ scheduler });

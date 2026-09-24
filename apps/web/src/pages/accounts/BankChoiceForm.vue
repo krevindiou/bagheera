@@ -5,7 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
-import { useEscapeKey } from '../../composables/useEscapeKey';
+import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { bankChoiceSchema, type BankChoiceForm } from './accounts.schemas';
 import type { Bank } from './accounts.types';
@@ -18,8 +18,6 @@ const emit = defineEmits<{ chosen: [bankId: string]; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
-
-useEscapeKey(() => emit('cancel'));
 
 const { defineField, handleSubmit, errors, isSubmitting } = useForm<BankChoiceForm>({
   validationSchema: toTypedSchema(bankChoiceSchema),
@@ -57,61 +55,49 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <div class="drawer-backdrop" @click="emit('cancel')">
-    <form novalidate class="drawer" @click.stop @submit="onSubmit">
-      <div class="drawer-header">
-        <h2 class="mb-0" style="font-size: 20px">{{ $t('accounts.addAccount') }}</h2>
-        <button
-          type="button"
-          class="drawer-close"
-          :aria-label="$t('common.cancel')"
-          @click="emit('cancel')"
-        >
-          ×
-        </button>
-      </div>
+  <FormDrawer
+    :title="$t('accounts.addAccount')"
+    novalidate
+    @submit="onSubmit"
+    @close="emit('cancel')"
+  >
+    <div class="mb-3">
+      <label class="form-label" for="account-bank-id">{{ $t('accounts.existingBank') }}</label>
+      <select
+        id="account-bank-id"
+        v-model="bankId"
+        v-bind="bankIdAttrs"
+        v-autofocus
+        class="form-select"
+        :class="{ 'is-invalid': errors.bankId }"
+      >
+        <option value="">{{ $t('accounts.chooseBank') }}</option>
+        <option v-for="bank in props.banks" :key="bank.id" :value="bank.id">
+          {{ bank.name }}
+        </option>
+      </select>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="account-bank-id">{{ $t('accounts.existingBank') }}</label>
-        <select
-          id="account-bank-id"
-          v-model="bankId"
-          v-bind="bankIdAttrs"
-          v-autofocus
-          class="form-select"
-          :class="{ 'is-invalid': errors.bankId }"
-        >
-          <option value="">{{ $t('accounts.chooseBank') }}</option>
-          <option v-for="bank in props.banks" :key="bank.id" :value="bank.id">
-            {{ bank.name }}
-          </option>
-        </select>
+    <div class="mb-3">
+      <label class="form-label" for="account-bank-name">{{ $t('accounts.newBankName') }}</label>
+      <input
+        id="account-bank-name"
+        v-model="bankName"
+        v-bind="bankNameAttrs"
+        type="text"
+        class="form-control"
+        :class="{ 'is-invalid': errors.bankName }"
+        :disabled="!!bankId"
+      />
+      <div v-if="errors.bankName" class="invalid-feedback">
+        {{ $t('accounts.validation.bankChoiceRequired') }}
       </div>
+    </div>
 
-      <div class="mb-3">
-        <label class="form-label" for="account-bank-name">{{ $t('accounts.newBankName') }}</label>
-        <input
-          id="account-bank-name"
-          v-model="bankName"
-          v-bind="bankNameAttrs"
-          type="text"
-          class="form-control"
-          :class="{ 'is-invalid': errors.bankName }"
-          :disabled="!!bankId"
-        />
-        <div v-if="errors.bankName" class="invalid-feedback">
-          {{ $t('accounts.validation.bankChoiceRequired') }}
-        </div>
-      </div>
-
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
-          {{ $t('accounts.next') }}
-        </button>
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ $t('common.cancel') }}
-        </button>
-      </div>
-    </form>
-  </div>
+    <template #actions>
+      <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+        {{ $t('accounts.next') }}
+      </button>
+    </template>
+  </FormDrawer>
 </template>
