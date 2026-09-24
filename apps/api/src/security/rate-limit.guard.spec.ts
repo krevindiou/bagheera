@@ -101,6 +101,37 @@ describe('RateLimitGuard', () => {
     expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:127.0.0.1'));
   });
 
+  it('keys a perMember budget on the signed-in member, not the address', async () => {
+    const valkey = fakeValkeyClient();
+    const options: RateLimitOptions = { points: 5, durationSeconds: 60, perMember: true };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    const req = fakeRequest({ method: 'POST', session: { memberId: 'member-1' } as never });
+    await guard.canActivate(fakeExecutionContext(req));
+    expect(mockConsume.mock.calls.map((call) => call[0])).toEqual([
+      expect.stringMatching(/:member:member-1$/),
+    ]);
+  });
+
+  it('falls back to the address for a perMember budget when nobody is signed in', async () => {
+    const valkey = fakeValkeyClient();
+    const options: RateLimitOptions = { points: 5, durationSeconds: 60, perMember: true };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' })));
+    expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:127.0.0.1'));
+  });
+
+  it('shares one counter across routes naming the same scope', async () => {
+    const valkey = fakeValkeyClient();
+    const options: RateLimitOptions = { points: 5, durationSeconds: 60, scope: 'shared' };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    function routeA() {}
+    function routeB() {}
+    await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeA));
+    await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeB));
+    const keys = mockConsume.mock.calls.map((call) => call[0]);
+    expect(keys).toEqual(['shared:ip:127.0.0.1', 'shared:ip:127.0.0.1']);
+  });
+
   it('falls back to "unknown" for the IP dimension when the request has no IP', async () => {
     const valkey = fakeValkeyClient();
     const guard = new RateLimitGuard(valkey, fakeReflector());

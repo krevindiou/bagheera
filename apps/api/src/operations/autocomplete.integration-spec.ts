@@ -1,7 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
-import { category } from '../db/schema';
+import { toMinorUnits } from '../common/money';
+import { category, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
@@ -72,6 +73,33 @@ describe('GET /operations/autocomplete', () => {
     expect(body).toHaveLength(1);
     // Latest by valueDate is the second (credit) operation.
     expect(body[0].categoryId).toBe(SALARY_CATEGORY_SEED_ID);
+  });
+
+  // M5: every match used to come back, however many the member had.
+  it('returns at most 20 suggestions, exact then prefix matches first', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const accountId = await createAccount(mutate, await createBank(mutate));
+    const thirdParties = [
+      'ZZ',
+      'Zzebra',
+      ...Array.from({ length: 20 }, (_, i) => `Azz ${String(i).padStart(2, '0')}`),
+    ];
+    await getDb(app)
+      .insert(operation)
+      .values(
+        thirdParties.map((thirdParty) => ({
+          accountId,
+          thirdParty,
+          debit: toMinorUnits(1),
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+        })),
+      );
+
+    const res = await agent.get('/operations/autocomplete?q=zz').expect(200);
+    const names = (res.body as { thirdParty: string }[]).map((s) => s.thirdParty);
+
+    expect(names).toHaveLength(20);
+    expect(names.slice(0, 3)).toEqual(['ZZ', 'Zzebra', 'Azz 00']);
   });
 
   it("nulls the category when its type doesn't match the requested type, keeping the third party", async () => {

@@ -255,6 +255,43 @@ describe('accounts', () => {
       expect(body.points[body.points.length - 1]).toEqual({ period: '2020-01-01', value: -10 });
     });
 
+    // M5: totals are now summed per month in SQL rather than from every
+    // operation row in Node — pins that nothing changes: a balance carried
+    // in from before the window, a month netting to a loss, a gap month.
+    it('plots each month-end running balance, carrying earlier operations in', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const accountId = await createAccount(mutate, await createBank(mutate));
+      const operations = [
+        { type: 'credit', amount: 100, valueDate: '2024-01-10' },
+        { type: 'debit', amount: 30, valueDate: '2025-01-05' },
+        { type: 'credit', amount: 10, valueDate: '2025-01-20' },
+        { type: 'debit', amount: 5, valueDate: '2025-03-31' },
+      ];
+      for (const { type, amount, valueDate } of operations) {
+        const res = await mutate('post', '/operations', {
+          accountId,
+          type,
+          thirdParty: 'Movement',
+          amount,
+          paymentMethodId:
+            type === 'credit' ? PAYMENT_METHOD_ID.DEPOSIT : PAYMENT_METHOD_ID.CREDIT_CARD,
+          valueDate,
+        });
+        expect(res.status).toBe(200);
+      }
+
+      const res = await agent.get(`/accounts/${accountId}/chart`).expect(200);
+      const { points } = res.body as { points: { period: string; value: number }[] };
+
+      expect(points).toHaveLength(12);
+      expect(points[0]).toEqual({ period: '2024-04-01', value: 100 });
+      expect(points.slice(-3)).toEqual([
+        { period: '2025-01-01', value: 80 },
+        { period: '2025-02-01', value: 80 },
+        { period: '2025-03-01', value: 75 },
+      ]);
+    });
+
     it('widens the window to 24 months with ?range=24', async () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);

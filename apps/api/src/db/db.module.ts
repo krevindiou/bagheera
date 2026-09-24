@@ -7,6 +7,12 @@ import * as schema from './schema';
 
 const logger = new Logger('DbModule');
 
+// Server-side cap on any one statement from the app, so a runaway query
+// can't hold one of the pool's few connections — which every member's
+// requests share — indefinitely. Migrations and the seed script connect on
+// their own, without it.
+export const STATEMENT_TIMEOUT_MS = 10_000;
+
 @Global()
 @Module({
   imports: [ConfigModule],
@@ -17,6 +23,7 @@ const logger = new Logger('DbModule');
       useFactory: (config: ConfigService): Pool => {
         const pool = new Pool({
           connectionString: config.getOrThrow<string>('DATABASE_URL'),
+          statement_timeout: STATEMENT_TIMEOUT_MS,
         });
         // Idle-client errors (e.g. DB restart) are otherwise unhandled and
         // crash the process; log and let the pool recycle the connection.

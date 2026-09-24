@@ -5,6 +5,7 @@ import { operation, scheduler, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { waitForSchedulerGeneration } from '../test-support/wait-for-scheduler-generation';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -54,6 +55,7 @@ describe('POST /schedulers/batch/delete', () => {
     const bankId = await createBank(mutate);
     const accountId = await createAccount(mutate, bankId);
     const ownId = await createScheduler(mutate, accountId, '2020-01-01');
+    await waitForSchedulerGeneration(app);
     const [generated] = await getDb(app)
       .select()
       .from(operation)

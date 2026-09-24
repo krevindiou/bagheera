@@ -85,16 +85,56 @@ describe('rate limiting', () => {
   });
 
   it('never throttles a route marked @SkipRateLimit, however many times it is called', async () => {
-    const { agent, getCsrfToken } = await seedSignedInMember(app);
+    const agent = request.agent(app.getHttpServer());
 
+    // Sign-out ends the session each time, so each call needs a fresh token.
     for (let i = 0; i < 15; i++) {
-      const csrfToken = await getCsrfToken();
-      await agent
-        .post('/banks/choice')
-        .set('x-csrf-token', csrfToken)
-        .send({ name: `Bank ${i}` })
-        .expect(200);
+      const csrfToken = await csrfTokenFor(agent);
+      await agent.post('/auth/sign-out').set('x-csrf-token', csrfToken).expect(200);
     }
+  });
+
+  // M5: every authenticated create/edit/delete used to be unthrottled.
+  describe('the per-member write budget (MEMBER_WRITE_LIMIT)', () => {
+    async function spendWholeBudget(
+      mutate: Awaited<ReturnType<typeof seedSignedInMember>>['mutate'],
+    ): Promise<string> {
+      const bankId = (
+        (await mutate('post', '/banks/choice', { name: 'Bank' })).body as { id: string }
+      ).id;
+      for (let i = 1; i < 60; i++) {
+        expect((await mutate('patch', `/banks/${bankId}`, { name: `Bank ${i}` })).status).toBe(200);
+      }
+      return bankId;
+    }
+
+    it('allows 60 writes a minute, shared across every route', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await spendWholeBudget(mutate);
+
+      const res = await mutate('post', '/accounts', {
+        bankId,
+        name: 'One too many',
+        currency: 'EUR',
+      });
+      expect(res.status).toBe(429);
+    });
+
+    it("keeps each member's budget apart, even from the same address", async () => {
+      const first = await seedSignedInMember(app);
+      await spendWholeBudget(first.mutate);
+
+      const second = await seedSignedInMember(app);
+      const res = await second.mutate('post', '/banks/choice', { name: 'Still fine' });
+      expect(res.status).toBe(200);
+    });
+
+    it('leaves reads alone', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      await spendWholeBudget(mutate);
+
+      await agent.get('/banks').expect(200);
+    });
   });
 
   it("scopes the identifier dimension to its own route — exhausting registration's budget doesn't affect sign-up options", async () => {

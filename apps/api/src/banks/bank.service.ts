@@ -12,6 +12,7 @@ import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
 import { BankId } from '../security/ids';
+import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { ChooseBankDto } from './dto/choose-bank.dto';
@@ -56,6 +57,7 @@ export class BankService {
       return { id: row.id, name: row.name, created: false };
     }
 
+    requireBelowQuota('banks', await this.ownership.countOwned('banks', memberId));
     const [created] = await this.db.insert(bank).values({ memberId, name: dto.name! }).returning();
     return { id: created.id, name: created.name, created: true };
   }

@@ -1,12 +1,12 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { BatchIdsDto } from '../common/batch-ids.dto';
-import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
+import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
+import { RateLimit } from '../security/rate-limit.decorator';
 import { OperationBatchService } from './batch.service';
 
-// One request per user action, not per row (see BatchIdsDto's own array-size
-// cap) — no enumerable secret to brute-force. See SkipRateLimit's doc comment.
-@SkipRateLimit()
+// Every write here draws on the member's shared write budget.
+@RateLimit(MEMBER_WRITE_LIMIT)
 @Controller('operations/batch')
 export class OperationBatchController {
   constructor(private readonly batch: OperationBatchService) {}

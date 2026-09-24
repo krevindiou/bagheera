@@ -85,26 +85,32 @@ export interface DueOccurrencesParams {
   after: string | null;
   // Inclusive upper bound — today, or the limit date if earlier.
   horizon: string;
+  // At most this many, never more than MAX_OCCURRENCES_PER_RUN — for a
+  // caller sharing one budget across several schedulers.
+  limit?: number;
 }
 
 // Hard ceiling on occurrences returned by one dueOccurrences() call. Without
 // it, a scheduler with an old enough value date and a fine-grained enough
-// frequency (e.g. daily since 1990) turns a single catch-up — run
-// synchronously on every sign-in, and on every create/update of that
-// scheduler — into an unbounded run of inserts. A backlog past the cap
-// isn't lost: `after` tracks the latest surviving generated occurrence, so
-// the next call (next sign-in, or the next edit) picks back up right where
-// this one stopped, working through an oversized backlog a batch at a time
-// instead of all at once.
+// frequency (e.g. daily since 1990) turns a single generation run — a
+// save's background job, or a sign-in's catch-up — into an unbounded run
+// of inserts. A backlog past the cap isn't lost: `after` tracks the latest
+// surviving generated occurrence, so the next run (next sign-in, or the
+// next edit) picks back up right where this one stopped, working through
+// an oversized backlog a batch at a time instead of all at once.
 export const MAX_OCCURRENCES_PER_RUN = 1000;
 
 // Every occurrence strictly after `after` (or from occurrence 0 if `after`
 // is null) up to and including `horizon`, in chronological order — capped
-// at `MAX_OCCURRENCES_PER_RUN` entries, even when more are due. ISO date
-// strings compare correctly with plain `<`/`>` since they're zero-padded.
+// at `limit` entries, even when more are due. ISO date strings compare
+// correctly with plain `<`/`>` since they're zero-padded.
 export function dueOccurrences(params: DueOccurrencesParams): string[] {
   const { valueDate, frequencyUnit, frequencyValue, after, horizon } = params;
+  const limit = Math.min(params.limit ?? MAX_OCCURRENCES_PER_RUN, MAX_OCCURRENCES_PER_RUN);
   const dates: string[] = [];
+  if (limit <= 0) {
+    return dates;
+  }
   for (let n = 0; ; n++) {
     const date = occurrenceDate(valueDate, frequencyUnit, frequencyValue, n);
     if (date > horizon) {
@@ -112,7 +118,7 @@ export function dueOccurrences(params: DueOccurrencesParams): string[] {
     }
     if (after === null || date > after) {
       dates.push(date);
-      if (dates.length >= MAX_OCCURRENCES_PER_RUN) {
+      if (dates.length >= limit) {
         break;
       }
     }

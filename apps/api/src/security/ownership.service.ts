@@ -1,9 +1,15 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { eq, inArray } from 'drizzle-orm';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, scheduler } from '../db/schema';
 import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from './ids';
+import type { QuotaKind } from './member-quotas';
+
+async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
+  const [row] = await query;
+  return row.total;
+}
 
 /**
  * The bank→account(→operation/scheduler) ownership chain, and the flat
@@ -26,6 +32,47 @@ import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from 
 @Injectable()
 export class OwnershipService {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
+
+  // How many of `kind` the member holds, for MEMBER_QUOTAS: every row still
+  // reachable by the rules above (nothing deleted along its chain), closed
+  // ones included.
+  async countOwned(kind: QuotaKind, memberId: MemberId): Promise<number> {
+    const reachable = and(
+      eq(bank.memberId, memberId),
+      eq(bank.deleted, false),
+      eq(account.deleted, false),
+    );
+    switch (kind) {
+      case 'banks':
+        return total(
+          this.db
+            .select({ total: count() })
+            .from(bank)
+            .where(and(eq(bank.memberId, memberId), eq(bank.deleted, false))),
+        );
+      case 'accounts':
+        return total(
+          this.db
+            .select({ total: count() })
+            .from(account)
+            .innerJoin(bank, eq(account.bankId, bank.id))
+            .where(reachable),
+        );
+      case 'schedulers':
+        return total(
+          this.db
+            .select({ total: count() })
+            .from(scheduler)
+            .innerJoin(account, eq(scheduler.accountId, account.id))
+            .innerJoin(bank, eq(account.bankId, bank.id))
+            .where(reachable),
+        );
+      case 'reports':
+        return total(
+          this.db.select({ total: count() }).from(report).where(eq(report.memberId, memberId)),
+        );
+    }
+  }
 
   // Unlike every other method here, a bank's own `deleted`/`closed` is not
   // folded into the throw — a non-owner still 404s regardless, but the

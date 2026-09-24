@@ -1,22 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
-import { dueOccurrences } from './generation/interval';
+import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
 
-type SchedulerRow = typeof scheduler.$inferSelect;
 type AccountRow = typeof account.$inferSelect;
 type BankRow = typeof bank.$inferSelect;
 
-// Same executor-or-transaction surface as TransferService, so generation
-// can run inside a caller-owned transaction (post-save) or standalone
-// (sign-in catch-up, one transaction per scheduler).
+// The transaction surface TransferService also takes — generation always
+// runs inside one, so its advisory lock holds until the run commits.
 type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (tx: infer T) => unknown
   ? T
   : never;
-type Db = NodePgDatabase | Executor;
 
 function isFullyActive(acc: AccountRow, bnk: BankRow): boolean {
   return !acc.closed && !acc.deleted && !bnk.closed && !bnk.deleted;
@@ -33,24 +30,42 @@ export class SchedulerGenerationService {
     private readonly transfers: TransferService,
   ) {}
 
+  // One scheduler, in its own transaction — what a save's queued job runs
+  // (see GenerationQueueService). Resolves to how many occurrences it
+  // generated.
+  runForScheduler(schedulerId: string, budget = MAX_OCCURRENCES_PER_RUN): Promise<number> {
+    return this.db.transaction((tx) => this.generateForScheduler(tx, schedulerId, budget));
+  }
+
   // Generates every occurrence a single scheduler is due for, up to today
-  // (or its limit date if earlier) — capped per call at
-  // dueOccurrences' MAX_OCCURRENCES_PER_RUN, so an oversized backlog is
-  // worked through a batch at a time rather than in one unbounded run.
-  // Safe to call repeatedly — occurrence tracking is derived from the
-  // latest surviving generated operation on the scheduler's own account,
-  // so re-running is a no-op once caught up (or, mid-backlog, resumes
-  // exactly where the previous run's cap cut it off).
-  async generateForScheduler(
-    db: Db,
-    memberId: string,
-    row: SchedulerRow,
-    acc: AccountRow,
-    bnk: BankRow,
-  ): Promise<void> {
-    if (!row.active || !isFullyActive(acc, bnk)) {
-      return;
+  // (or its limit date if earlier) — at most `budget`, so an oversized
+  // backlog is worked through a batch at a time rather than in one
+  // unbounded run. Safe to call repeatedly — occurrence tracking is derived
+  // from the latest surviving generated operation on the scheduler's own
+  // account, so re-running is a no-op once caught up (or, mid-backlog,
+  // resumes exactly where the previous run's cap cut it off). Resolves to
+  // how many it generated.
+  private async generateForScheduler(
+    db: Executor,
+    schedulerId: string,
+    budget: number,
+  ): Promise<number> {
+    // Two runs at once for the same scheduler (a sign-in's catch-up and a
+    // queued job, say) would both resume after the same latest occurrence
+    // and insert it twice: this waits for the other to commit first. Taken
+    // before reading anything, so the scheduler row below is current too.
+    await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${schedulerId}, 0))`);
+    const [chain] = await db
+      .select({ scheduler, account, bank })
+      .from(scheduler)
+      .innerJoin(account, eq(scheduler.accountId, account.id))
+      .innerJoin(bank, eq(account.bankId, bank.id))
+      .where(eq(scheduler.id, schedulerId));
+    if (!chain || !chain.scheduler.active || !isFullyActive(chain.account, chain.bank)) {
+      return 0;
     }
+    const { scheduler: row, account: acc, bank: bnk } = chain;
+    const memberId = bnk.memberId;
 
     if (row.transferAccountId !== null) {
       const [target] = await db
@@ -59,7 +74,7 @@ export class SchedulerGenerationService {
         .innerJoin(bank, eq(account.bankId, bank.id))
         .where(eq(account.id, row.transferAccountId));
       if (!target || !isFullyActive(target.account, target.bank)) {
-        return;
+        return 0;
       }
     }
 
@@ -79,6 +94,7 @@ export class SchedulerGenerationService {
       frequencyValue: row.frequencyValue,
       after: latest?.valueDate ?? null,
       horizon,
+      limit: budget,
     });
 
     for (const valueDate of dates) {
@@ -125,23 +141,29 @@ export class SchedulerGenerationService {
         await db.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
       }
     }
+    return dates.length;
   }
 
   // Runs catch-up for every active scheduler owned by a member, across all
-  // their banks/accounts — one transaction per scheduler so one failure
-  // can't roll back another's already-generated occurrences.
-  async catchUpMember(memberId: string): Promise<void> {
+  // their banks/accounts, sharing one `budget` of occurrences between them
+  // — one transaction per scheduler so one failure can't roll back
+  // another's already-generated occurrences. Resolves to whether the budget
+  // ran out, i.e. whether some may still be behind.
+  async catchUpMember(memberId: string, budget = MAX_OCCURRENCES_PER_RUN): Promise<boolean> {
     const rows = await this.db
-      .select({ scheduler, account, bank })
+      .select({ id: scheduler.id })
       .from(scheduler)
       .innerJoin(account, eq(scheduler.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(and(eq(bank.memberId, memberId), eq(scheduler.active, true)));
 
-    for (const row of rows) {
-      await this.db.transaction((tx) =>
-        this.generateForScheduler(tx, memberId, row.scheduler, row.account, row.bank),
-      );
+    let remaining = budget;
+    for (const { id } of rows) {
+      if (remaining <= 0) {
+        break;
+      }
+      remaining -= await this.db.transaction((tx) => this.generateForScheduler(tx, id, remaining));
     }
+    return remaining <= 0;
   }
 }

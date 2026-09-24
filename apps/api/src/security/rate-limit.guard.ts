@@ -12,9 +12,11 @@ import { createHash } from 'crypto';
 import { Request } from 'express';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 import type { RedisClientType } from 'redis';
+import '../session/session-data';
 import {
   DEFAULT_RATE_LIMIT,
   ipPointsFor,
+  isMutatingRequest,
   RATE_LIMIT_OPTIONS,
   RateLimitOptions,
 } from './rate-limit.constants';
@@ -27,11 +29,6 @@ import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 const STRIKE_RESET_SECONDS = 3600;
 // Cap on how long a single lockout can run, how ever many strikes accrue.
 const MAX_BLOCK_SECONDS = 3600;
-
-// Mirrors eslint.config.mjs's MUTATING_HTTP_DECORATORS — kept as a separate
-// runtime list rather than shared, since one reads decorator names off an
-// AST at lint time and the other reads `req.method` at request time.
-const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 /**
  * Valkey-backed request throttling with progressive lockout.
@@ -98,7 +95,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
       this.reflector.get<RateLimitOptions>(RATE_LIMIT_OPTIONS, context.getClass());
 
     const req = context.switchToHttp().getRequest<Request>();
-    if (!explicitOptions && !MUTATING_METHODS.has(req.method)) {
+    if (!explicitOptions && !isMutatingRequest(req)) {
       // No explicit budget and nothing to throttle by default — the same
       // scope require-rate-limit-decision already draws around what needs
       // a decision at all.
@@ -113,8 +110,9 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     // every route sharing the bare "ip:<ip>"/"id:<value>" key would consume
     // from the very same counter regardless of each route's own configured
     // budget (see the class doc's "per route" language, which the key
-    // construction didn't actually honor before this).
-    const routeKey = `${context.getClass().name}#${context.getHandler().name}`;
+    // construction didn't actually honor before this) — unless the options
+    // name a scope for several routes to share on purpose.
+    const routeKey = options.scope ?? `${context.getClass().name}#${context.getHandler().name}`;
     for (const dimension of this.dimensions(req, options, routeKey)) {
       await this.checkDimension(dimension, options.durationSeconds);
     }
@@ -122,23 +120,24 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   }
 
   /**
-   * Independent throttle dimensions for this request: always the source
-   * IP, plus the submitted identifier (e.g. email) when the route names
-   * one — each with its own budget (see `ipPointsFor`), scoped to
-   * `routeKey` so unrelated routes never share a counter. A single route
-   * still checks both dimensions together (an attacker can't dodge one by
-   * rotating the other), it's only cross-route sharing that's excluded.
+   * Independent throttle dimensions for this request: the source IP — or,
+   * for a `perMember` budget, the signed-in member instead — plus the
+   * submitted identifier (e.g. email) when the route names one, each with
+   * its own budget (see `ipPointsFor`), scoped to `routeKey` so unrelated
+   * routes never share a counter. A single route still checks both
+   * dimensions together (an attacker can't dodge one by rotating the
+   * other), it's only cross-route sharing that's excluded.
    */
   private dimensions(
     req: Request,
     options: RateLimitOptions,
     routeKey: string,
   ): { key: string; points: number }[] {
+    const memberId = options.perMember ? req.session?.memberId : undefined;
     const dims = [
-      {
-        key: `${routeKey}:ip:${req.ip ?? 'unknown'}`,
-        points: ipPointsFor(options),
-      },
+      memberId
+        ? { key: `${routeKey}:member:${memberId}`, points: options.points }
+        : { key: `${routeKey}:ip:${req.ip ?? 'unknown'}`, points: ipPointsFor(options) },
     ];
     const rawIdentifier = options.identifierField
       ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]

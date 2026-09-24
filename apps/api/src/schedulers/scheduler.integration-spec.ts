@@ -5,6 +5,7 @@ import { operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { waitForSchedulerGeneration } from '../test-support/wait-for-scheduler-generation';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -56,6 +57,7 @@ describe('schedulers', () => {
       const { scheduler: created } = res.body as {
         scheduler: { id: string };
       };
+      await waitForSchedulerGeneration(app);
 
       const generated = await getDb(app)
         .select()
@@ -64,7 +66,8 @@ describe('schedulers', () => {
       expect(generated).toHaveLength(0);
     });
 
-    it('generates the due occurrence immediately when the value date is today or earlier', async () => {
+    // Queued since M5 — no longer inserted while the request waits.
+    it('generates the due occurrences once the queued job runs, when the value date is today or earlier', async () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
@@ -77,6 +80,7 @@ describe('schedulers', () => {
       const { scheduler: created } = res.body as {
         scheduler: { id: string };
       };
+      await waitForSchedulerGeneration(app);
 
       const generated = await getDb(app)
         .select()
@@ -168,6 +172,7 @@ describe('schedulers', () => {
       const accountId = await createAccount(mutate, bankId);
       const created = await mutate('post', '/schedulers', schedulerPayload(accountId));
       const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+      await waitForSchedulerGeneration(app);
 
       const before = await getDb(app).select().from(operation).where(eq(operation.schedulerId, id));
       expect(before).toHaveLength(0);
@@ -178,6 +183,7 @@ describe('schedulers', () => {
         schedulerPayload(accountId, { valueDate: '2020-01-01' }),
       );
       expect(res.status).toBe(200);
+      await waitForSchedulerGeneration(app);
 
       const after = await getDb(app).select().from(operation).where(eq(operation.schedulerId, id));
       expect(after.length).toBeGreaterThan(0);
@@ -207,6 +213,7 @@ describe('schedulers', () => {
         schedulerPayload(accountId, { valueDate: '2020-01-01' }),
       );
       const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+      await waitForSchedulerGeneration(app);
       const [generatedBefore] = await getDb(app)
         .select()
         .from(operation)

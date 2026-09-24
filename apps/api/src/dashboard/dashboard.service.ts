@@ -3,6 +3,7 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { toMajorUnits } from '../common/money';
+import { MonthlyNet, monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
   computeSynthesisChart,
   latestValueDate,
@@ -136,8 +137,9 @@ export class DashboardService {
   // per-account scoping AccountService.chart uses for the full 12-month
   // chart, including that each account's own window ends at its own latest
   // operation, not today), just trimmed to a shorter trailing window for
-  // the tile sparkline. A single query fetches every account's operations
-  // up front so this stays one round trip regardless of account count.
+  // the tile sparkline. A single query sums every account's monthly
+  // movements up front so this stays one round trip regardless of account
+  // count.
   private async accountHistories(
     accounts: (typeof account.$inferSelect)[],
   ): Promise<Map<string, number[]>> {
@@ -145,46 +147,29 @@ export class DashboardService {
     if (accounts.length === 0) {
       return histories;
     }
-    const rows = await this.db
-      .select({
-        accountId: operation.accountId,
-        debit: operation.debit,
-        credit: operation.credit,
-        valueDate: operation.valueDate,
-      })
-      .from(operation)
-      .where(
-        inArray(
-          operation.accountId,
-          accounts.map((a) => a.id),
-        ),
-      );
+    const monthly = await monthlyNetByAccount(
+      this.db,
+      accounts.map((a) => a.id),
+    );
 
-    const rowsByAccount = new Map<string, typeof rows>();
-    for (const row of rows) {
-      const list = rowsByAccount.get(row.accountId);
+    const monthlyByAccount = new Map<string, MonthlyNet[]>();
+    for (const row of monthly) {
+      const list = monthlyByAccount.get(row.accountId);
       if (list) {
         list.push(row);
       } else {
-        rowsByAccount.set(row.accountId, [row]);
+        monthlyByAccount.set(row.accountId, [row]);
       }
     }
 
     for (const acc of accounts) {
-      const accRows = rowsByAccount.get(acc.id);
-      if (!accRows) {
+      const accMonthly = monthlyByAccount.get(acc.id);
+      if (!accMonthly) {
         histories.set(acc.id, []);
         continue;
       }
-      const synthesis = computeSynthesisChart(
-        accRows.map((row) => ({
-          debit: row.debit,
-          credit: row.credit,
-          valueDate: row.valueDate,
-          currency: acc.currency,
-        })),
-        latestValueDate(accRows),
-      );
+      const rows = accMonthly.map((row) => toSynthesisChartRow(row, acc.currency));
+      const synthesis = computeSynthesisChart(rows, latestValueDate(rows));
       const points = synthesis.series[0]?.points ?? [];
       histories.set(
         acc.id,
@@ -320,30 +305,14 @@ export class DashboardService {
       return EMPTY_SYNTHESIS_CHART;
     }
     const currencyByAccount = new Map(accounts.map((a) => [a.id, a.currency] as const));
-    const rows = await this.db
-      .select({
-        accountId: operation.accountId,
-        debit: operation.debit,
-        credit: operation.credit,
-        valueDate: operation.valueDate,
-      })
-      .from(operation)
-      .where(
-        inArray(
-          operation.accountId,
-          accounts.map((a) => a.id),
-        ),
-      );
-    return computeSynthesisChart(
-      rows.map((row) => ({
-        debit: row.debit,
-        credit: row.credit,
-        valueDate: row.valueDate,
-        currency: currencyByAccount.get(row.accountId)!,
-      })),
-      latestValueDate(rows),
-      parseSynthesisChartWindow(range),
+    const monthly = await monthlyNetByAccount(
+      this.db,
+      accounts.map((a) => a.id),
     );
+    const rows = monthly.map((row) =>
+      toSynthesisChartRow(row, currencyByAccount.get(row.accountId)!),
+    );
+    return computeSynthesisChart(rows, latestValueDate(rows), parseSynthesisChartWindow(range));
   }
 
   private async getLastBiggestIncome(

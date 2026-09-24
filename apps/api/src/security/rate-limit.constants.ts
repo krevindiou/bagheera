@@ -2,6 +2,15 @@ import type { Request } from 'express';
 
 export const RATE_LIMIT_OPTIONS = Symbol('RATE_LIMIT_OPTIONS');
 
+// Mirrors eslint.config.mjs's MUTATING_HTTP_DECORATORS — kept as a separate
+// runtime list rather than shared, since one reads decorator names off an
+// AST at lint time and the other reads `req.method` at request time.
+export const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+export function isMutatingRequest(req: Request): boolean {
+  return MUTATING_METHODS.has(req.method);
+}
+
 // The IP dimension defaults to a looser budget than the identifier
 // dimension: many legitimate accounts can share one source address (NAT,
 // a corporate gateway), so the account-level limit is what should bite
@@ -39,6 +48,15 @@ export interface RateLimitOptions {
    * for a caller that has no session yet.
    */
   appliesTo?: (req: Request) => boolean;
+  /**
+   * Key the budget on the signed-in member rather than the source address:
+   * on an authenticated route the member is who's accountable, and a
+   * shared address (a household behind one router, an office) mustn't pool
+   * everyone's requests. Falls back to the address when there's no member.
+   */
+  perMember?: boolean;
+  /** Share one counter across every route naming the same scope, instead of one per route. */
+  scope?: string;
 }
 
 export function ipPointsFor(options: RateLimitOptions): number {
@@ -51,4 +69,26 @@ export function ipPointsFor(options: RateLimitOptions): number {
 export const DEFAULT_RATE_LIMIT: RateLimitOptions = {
   points: 5,
   durationSeconds: 60,
+};
+
+/**
+ * Every create, edit and delete a member makes, across all their data, draws
+ * on one shared budget. Plenty for anyone clicking through the app; what it
+ * stops is a script, where one request can cost the database far more than
+ * itself (a scheduler save generates up to a thousand operations).
+ */
+export const MEMBER_WRITE_LIMIT: RateLimitOptions = {
+  points: 60,
+  durationSeconds: 60,
+  perMember: true,
+  scope: 'member-writes',
+  appliesTo: isMutatingRequest,
+};
+
+/** Operation search, on every verb: reading a remembered search runs it again. */
+export const MEMBER_SEARCH_LIMIT: RateLimitOptions = {
+  points: 60,
+  durationSeconds: 60,
+  perMember: true,
+  scope: 'member-searches',
 };

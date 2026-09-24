@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, HttpCode, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
-import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
+import { MEMBER_SEARCH_LIMIT } from '../security/rate-limit.constants';
+import { RateLimit } from '../security/rate-limit.decorator';
 import { SearchOperationsDto } from './dto/search-operations.dto';
 import { OperationSearchService } from './search.service';
 
-// POST here runs a search (remembering the criteria), not a write to the
-// caller's data — scoped to their own operations, no enumerable secret to
-// brute-force. See SkipRateLimit's doc comment.
-@SkipRateLimit()
+// Throttled on every verb, reads included: GET re-runs the remembered
+// search, just as POST runs a new one.
+@RateLimit(MEMBER_SEARCH_LIMIT)
 @Controller('operations/search')
 export class OperationSearchController {
   constructor(private readonly search: OperationSearchService) {}

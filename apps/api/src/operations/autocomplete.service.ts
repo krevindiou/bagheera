@@ -8,6 +8,8 @@ import { account, bank, category, operation } from '../db/schema';
 import { requireMemberId } from '../session/require-member-id';
 import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
 
+const MAX_SUGGESTIONS = 20;
+
 export interface ThirdPartySuggestion {
   thirdParty: string;
   categoryId: string | null;
@@ -22,11 +24,14 @@ export class OperationAutocompleteService {
   // ones included). Each returned category is the one used on the latest
   // (by value date, then id) operation bearing that name; a category whose
   // type doesn't match the requested type is dropped, the third party stays.
+  // At most MAX_SUGGESTIONS, exact then prefix matches first: the form
+  // prefills the category from an exact match, so the cut must never drop
+  // it.
   async search(req: Request, dto: AutocompleteThirdPartyDto): Promise<ThirdPartySuggestion[]> {
     const memberId = requireMemberId(req);
     const lowerThirdParty = sql<string>`lower(${operation.thirdParty})`;
 
-    const rows = await this.db
+    const matches = this.db
       .selectDistinctOn([lowerThirdParty], {
         thirdParty: operation.thirdParty,
         categoryId: operation.categoryId,
@@ -44,7 +49,18 @@ export class OperationAutocompleteService {
           ilikeContains(operation.thirdParty, dto.q),
         ),
       )
-      .orderBy(lowerThirdParty, desc(operation.valueDate), desc(operation.id));
+      .orderBy(lowerThirdParty, desc(operation.valueDate), desc(operation.id))
+      .as('matches');
+
+    const rows = await this.db
+      .select()
+      .from(matches)
+      .orderBy(
+        sql`lower(${matches.thirdParty}) = lower(${dto.q}) desc`,
+        sql`starts_with(lower(${matches.thirdParty}), lower(${dto.q})) desc`,
+        sql`lower(${matches.thirdParty})`,
+      )
+      .limit(MAX_SUGGESTIONS);
 
     return rows.map((row) => ({
       thirdParty: row.thirdParty,

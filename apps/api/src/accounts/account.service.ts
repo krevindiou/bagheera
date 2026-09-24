@@ -9,6 +9,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { AxisBounds } from '../common/chart-axis';
 import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
+import { monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
   computeSynthesisChart,
   latestValueDate,
@@ -20,6 +21,7 @@ import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
 import { AccountId, BankId } from '../security/ids';
+import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -117,6 +119,7 @@ export class AccountService {
     if (bankRow.closed || bankRow.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
+    requireBelowQuota('accounts', await this.ownership.countOwned('accounts', memberId));
 
     const [created] = await this.db
       .insert(account)
@@ -153,21 +156,16 @@ export class AccountService {
     const memberId = requireMemberId(req);
     const { account: acc } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 
-    const rows = await this.db
-      .select({
-        debit: operation.debit,
-        credit: operation.credit,
-        valueDate: operation.valueDate,
-      })
-      .from(operation)
-      .where(eq(operation.accountId, id));
+    const rows = (await monthlyNetByAccount(this.db, [id])).map((row) =>
+      toSynthesisChartRow(row, acc.currency),
+    );
 
     if (rows.length === 0) {
       return { currency: acc.currency, axisBounds: null, points: [] };
     }
 
     const synthesis = computeSynthesisChart(
-      rows.map((row) => ({ ...row, currency: acc.currency })),
+      rows,
       latestValueDate(rows),
       parseSynthesisChartWindow(range),
     );

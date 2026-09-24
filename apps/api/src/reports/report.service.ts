@@ -5,6 +5,7 @@ import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, report, reportAccount, reportCategory } from '../db/schema';
 import { ReportId } from '../security/ids';
+import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -117,6 +118,7 @@ export class ReportService {
 
   async create(req: Request, dto: CreateReportDto) {
     const memberId = requireMemberId(req);
+    requireBelowQuota('reports', await this.ownership.countOwned('reports', memberId));
     const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 

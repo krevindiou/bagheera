@@ -12,11 +12,12 @@ import { DRIZZLE } from '../db/db.constants';
 import { category, operation, paymentMethod, scheduler } from '../db/schema';
 import { TRANSFER_PAYMENT_METHOD_IDS, TransferService } from '../operations/transfer.service';
 import { AccountId, SchedulerId } from '../security/ids';
+import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
-import { SchedulerGenerationService } from './generation.service';
+import { GenerationQueueService } from './generation-queue.service';
 
 const PAGE_SIZE = 20;
 
@@ -24,7 +25,7 @@ const PAGE_SIZE = 20;
 export class SchedulerService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
-    private readonly generation: SchedulerGenerationService,
+    private readonly generation: GenerationQueueService,
     private readonly transfers: TransferService,
     private readonly ownership: OwnershipService,
   ) {}
@@ -118,6 +119,7 @@ export class SchedulerService {
       { targetAccountId: null },
       transferAccountId,
     );
+    requireBelowQuota('schedulers', await this.ownership.countOwned('schedulers', memberId));
 
     const [created] = await this.db
       .insert(scheduler)
@@ -140,14 +142,8 @@ export class SchedulerService {
       .returning();
 
     // A newly-created scheduler may already be due — e.g. a value date of
-    // today, or in the past. Generation runs immediately after every save.
-    await this.generation.generateForScheduler(
-      this.db,
-      memberId,
-      created,
-      owned.account,
-      owned.bank,
-    );
+    // today, or in the past. Generation is queued after every save.
+    await this.generation.enqueueScheduler(created.id);
 
     return created;
   }
@@ -174,7 +170,7 @@ export class SchedulerService {
       transferAccountId,
     );
 
-    const [updated] = await this.db
+    await this.db
       .update(scheduler)
       .set({
         thirdParty: dto.thirdParty,
@@ -191,19 +187,12 @@ export class SchedulerService {
         frequencyValue: dto.frequencyValue,
         active: dto.active ?? true,
       })
-      .where(eq(scheduler.id, id))
-      .returning();
+      .where(eq(scheduler.id, id));
 
     // Editing a scheduler (e.g. changing its value date, interval, or
     // flipping it active) can bring new occurrences into range; generation
-    // runs immediately after every save.
-    await this.generation.generateForScheduler(
-      this.db,
-      memberId,
-      updated,
-      owned.account,
-      owned.bank,
-    );
+    // is queued after every save.
+    await this.generation.enqueueScheduler(id);
   }
 
   async remove(req: Request, id: string): Promise<void> {

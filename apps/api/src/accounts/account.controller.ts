@@ -12,14 +12,14 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
-import { SkipRateLimit } from '../security/skip-rate-limit.decorator';
+import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
+import { RateLimit } from '../security/rate-limit.decorator';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 
-// Ordinary authenticated CRUD, scoped to the caller's own accounts — no
-// enumerable secret to brute-force. See SkipRateLimit's doc comment.
-@SkipRateLimit()
+// Every write here draws on the member's shared write budget.
+@RateLimit(MEMBER_WRITE_LIMIT)
 @Controller('accounts')
 export class AccountController {
   constructor(private readonly accounts: AccountService) {}

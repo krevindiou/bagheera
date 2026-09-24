@@ -112,4 +112,32 @@ describe('dueOccurrences', () => {
     expect(dates).toHaveLength(MAX_OCCURRENCES_PER_RUN);
     expect(dates[0]).toBe('2020-06-02');
   });
+
+  describe('limit', () => {
+    const daily = {
+      valueDate: '2020-01-01',
+      frequencyUnit: 'day' as const,
+      frequencyValue: 1,
+      after: null,
+      horizon: '2030-01-01',
+    };
+
+    it('stops at a smaller limit — what a shared budget has left', () => {
+      expect(dueOccurrences({ ...daily, limit: 3 })).toEqual([
+        '2020-01-01',
+        '2020-01-02',
+        '2020-01-03',
+      ]);
+    });
+
+    it('returns nothing once the budget is spent', () => {
+      expect(dueOccurrences({ ...daily, limit: 0 })).toEqual([]);
+    });
+
+    it('never goes past MAX_OCCURRENCES_PER_RUN, however high', () => {
+      expect(dueOccurrences({ ...daily, limit: MAX_OCCURRENCES_PER_RUN * 2 })).toHaveLength(
+        MAX_OCCURRENCES_PER_RUN,
+      );
+    });
+  });
 });
