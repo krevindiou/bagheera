@@ -9,6 +9,7 @@ import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
 import { profileSchema, type ProfileForm } from './settings.schemas';
 import SettingsTabs from './SettingsTabs.vue';
+import FormField from '../../components/FormField.vue';
 
 const session = useSessionStore();
 const { push: toast } = useToast();
@@ -49,8 +50,11 @@ const onSubmit = handleSubmit(async (values) => {
     <SettingsTabs />
 
     <form novalidate style="max-width: 380px" @submit="onSubmit">
-      <div class="mb-3">
-        <label class="form-label" for="profile-email">{{ $t('settings.profile.email') }}</label>
+      <FormField
+        :label="$t('settings.profile.email')"
+        for="profile-email"
+        :error="errors.email && $t('auth.validation.email')"
+      >
         <input
           id="profile-email"
           v-model="email"
@@ -62,10 +66,7 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />
-        <div v-if="errors.email" class="invalid-feedback">
-          {{ $t('auth.validation.email') }}
-        </div>
-      </div>
+      </FormField>
 
       <p class="text-muted" style="font-size: 13.5px">{{ $t('settings.profile.stepUpHint') }}</p>
 

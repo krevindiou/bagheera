@@ -5,6 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import FormField from '../../components/FormField.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { bankChoiceSchema, type BankChoiceForm } from './accounts.schemas';
@@ -61,8 +62,7 @@ const onSubmit = handleSubmit(async (values) => {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <div class="mb-3">
-      <label class="form-label" for="account-bank-id">{{ $t('accounts.existingBank') }}</label>
+    <FormField :label="$t('accounts.existingBank')" for="account-bank-id">
       <select
         id="account-bank-id"
         v-model="bankId"
@@ -76,10 +76,13 @@ const onSubmit = handleSubmit(async (values) => {
           {{ bank.name }}
         </option>
       </select>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="account-bank-name">{{ $t('accounts.newBankName') }}</label>
+    <FormField
+      :label="$t('accounts.newBankName')"
+      for="account-bank-name"
+      :error="errors.bankName && $t('accounts.validation.bankChoiceRequired')"
+    >
       <input
         id="account-bank-name"
         v-model="bankName"
@@ -89,10 +92,7 @@ const onSubmit = handleSubmit(async (values) => {
         :class="{ 'is-invalid': errors.bankName }"
         :disabled="!!bankId"
       />
-      <div v-if="errors.bankName" class="invalid-feedback">
-        {{ $t('accounts.validation.bankChoiceRequired') }}
-      </div>
-    </div>
+    </FormField>
 
     <template #actions>
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">

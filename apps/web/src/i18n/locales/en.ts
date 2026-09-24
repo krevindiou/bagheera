@@ -235,6 +235,7 @@ export default {
     accountsHint: 'Leave empty to include every account.',
     categoriesHint: 'Leave empty to include every category.',
     dateRangeInvalid: 'End date must be on or after the start date.',
+    significantResultsNumberInvalid: 'Enter a whole number between 1 and {max}.',
     periodGrouping: 'Break down over',
     periodGroupingHint: '"Whole period" groups every matching operation into a single value.',
     periodGroupingHintDistribution:

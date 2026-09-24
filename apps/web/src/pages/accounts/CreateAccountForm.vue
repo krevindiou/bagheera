@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import type { components } from '../../api/schema';
+import FormField from '../../components/FormField.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { getCurrencyOptions, getGuessedCurrency } from '../../composables/useCurrencyOptions';
@@ -107,8 +108,7 @@ const onSubmit = handleSubmit(async (values) => {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <div class="mb-3">
-      <label class="form-label" for="account-bank">{{ $t('accounts.bank') }}</label>
+    <FormField :label="$t('accounts.bank')" for="account-bank">
       <p v-if="isEdit" id="account-bank" class="form-control-plaintext">
         {{ selectedBankName }}
       </p>
@@ -125,10 +125,13 @@ const onSubmit = handleSubmit(async (values) => {
           {{ bank.name }}
         </option>
       </select>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="account-name">{{ $t('accounts.accountName') }}</label>
+    <FormField
+      :label="$t('accounts.accountName')"
+      for="account-name"
+      :error="errors.name && $t('auth.validation.required')"
+    >
       <input
         id="account-name"
         v-model="name"
@@ -138,39 +141,32 @@ const onSubmit = handleSubmit(async (values) => {
         class="form-control"
         :class="{ 'is-invalid': errors.name }"
       />
-      <div v-if="errors.name" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
-      </div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="account-currency">{{ $t('accounts.currency') }}</label>
+    <FormField
+      :label="$t('accounts.currency')"
+      for="account-currency"
+      :error="!isEdit && errors.currency ? $t('accounts.validation.currency') : undefined"
+    >
       <p v-if="isEdit" id="account-currency" class="form-control-plaintext">
         {{ selectedCurrencyLabel }}
       </p>
-      <template v-else>
-        <select
-          id="account-currency"
-          v-model="currency"
-          v-bind="currencyAttrs"
-          class="form-select"
-          :class="{ 'is-invalid': errors.currency }"
-        >
-          <option value="">{{ $t('accounts.chooseCurrency') }}</option>
-          <option v-for="option in currencyOptions" :key="option.code" :value="option.code">
-            {{ option.code }} — {{ option.name }}
-          </option>
-        </select>
-        <div v-if="errors.currency" class="invalid-feedback">
-          {{ $t('accounts.validation.currency') }}
-        </div>
-      </template>
-    </div>
+      <select
+        v-else
+        id="account-currency"
+        v-model="currency"
+        v-bind="currencyAttrs"
+        class="form-select"
+        :class="{ 'is-invalid': errors.currency }"
+      >
+        <option value="">{{ $t('accounts.chooseCurrency') }}</option>
+        <option v-for="option in currencyOptions" :key="option.code" :value="option.code">
+          {{ option.code }} — {{ option.name }}
+        </option>
+      </select>
+    </FormField>
 
-    <div v-if="!isEdit" class="mb-3">
-      <label class="form-label" for="account-initial-balance">
-        {{ $t('accounts.initialBalance') }}
-      </label>
+    <FormField v-if="!isEdit" :label="$t('accounts.initialBalance')" for="account-initial-balance">
       <div class="input-group">
         <span class="input-group-text">{{ initialBalanceCurrencySymbol }}</span>
         <input
@@ -183,7 +179,7 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
         />
       </div>
-    </div>
+    </FormField>
 
     <template #actions>
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">

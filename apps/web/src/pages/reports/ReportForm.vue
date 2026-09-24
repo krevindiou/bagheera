@@ -5,12 +5,13 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import { groupCategories, type Category } from '../operations/operations.types';
-import { reportSchema, type ReportForm } from './reports.schemas';
+import { MAX_SIGNIFICANT_RESULTS_NUMBER, reportSchema, type ReportForm } from './reports.schemas';
 import type { Report } from './reports.types';
 
 const props = defineProps<{
@@ -124,8 +125,11 @@ const onSubmit = handleSubmit(async (submitted) => {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <div class="mb-3">
-      <label class="form-label" for="report-title">{{ $t('reports.reportTitle') }}</label>
+    <FormField
+      :label="$t('reports.reportTitle')"
+      for="report-title"
+      :error="errors.title && $t('auth.validation.required')"
+    >
       <input
         id="report-title"
         v-model="title"
@@ -135,12 +139,10 @@ const onSubmit = handleSubmit(async (submitted) => {
         class="form-control"
         :class="{ 'is-invalid': errors.title }"
       />
-      <div v-if="errors.title" class="invalid-feedback">{{ $t('auth.validation.required') }}</div>
-    </div>
+    </FormField>
 
-    <div class="row mb-3">
-      <div class="col">
-        <label class="form-label" for="report-value-date-start">{{ $t('reports.dateFrom') }}</label>
+    <div class="row">
+      <FormField class="col" :label="$t('reports.dateFrom')" for="report-value-date-start">
         <input
           id="report-value-date-start"
           v-model="valueDateStart"
@@ -149,9 +151,13 @@ const onSubmit = handleSubmit(async (submitted) => {
           :lang="locale"
           class="form-control"
         />
-      </div>
-      <div class="col">
-        <label class="form-label" for="report-value-date-end">{{ $t('reports.dateTo') }}</label>
+      </FormField>
+      <FormField
+        class="col"
+        :label="$t('reports.dateTo')"
+        for="report-value-date-end"
+        :error="errors.valueDateEnd && $t('reports.dateRangeInvalid')"
+      >
         <input
           id="report-value-date-end"
           v-model="valueDateEnd"
@@ -161,14 +167,14 @@ const onSubmit = handleSubmit(async (submitted) => {
           class="form-control"
           :class="{ 'is-invalid': errors.valueDateEnd }"
         />
-        <div v-if="errors.valueDateEnd" class="invalid-feedback">
-          {{ $t('reports.dateRangeInvalid') }}
-        </div>
-      </div>
+      </FormField>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-third-parties">{{ $t('operations.thirdParty') }}</label>
+    <FormField
+      :label="$t('operations.thirdParty')"
+      for="report-third-parties"
+      :hint="$t('reports.thirdPartiesHint')"
+    >
       <input
         id="report-third-parties"
         v-model="thirdParties"
@@ -176,11 +182,13 @@ const onSubmit = handleSubmit(async (submitted) => {
         type="text"
         class="form-control"
       />
-      <div class="form-text">{{ $t('reports.thirdPartiesHint') }}</div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-categories">{{ $t('operations.category') }}</label>
+    <FormField
+      :label="$t('operations.category')"
+      for="report-categories"
+      :hint="$t('reports.categoriesHint')"
+    >
       <CategorySelect
         id="report-categories"
         v-model="categoryIds"
@@ -189,11 +197,13 @@ const onSubmit = handleSubmit(async (submitted) => {
         :groups="groupedCategories"
         :all-categories="props.categories"
       />
-      <div class="form-text">{{ $t('reports.categoriesHint') }}</div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-accounts">{{ $t('reports.accounts') }}</label>
+    <FormField
+      :label="$t('reports.accounts')"
+      for="report-accounts"
+      :hint="$t('reports.accountsHint')"
+    >
       <select
         id="report-accounts"
         v-model="accountIds"
@@ -203,8 +213,7 @@ const onSubmit = handleSubmit(async (submitted) => {
       >
         <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
-      <div class="form-text">{{ $t('reports.accountsHint') }}</div>
-    </div>
+    </FormField>
 
     <div class="mb-3 form-check">
       <input
@@ -220,8 +229,12 @@ const onSubmit = handleSubmit(async (submitted) => {
       <div class="form-text">{{ $t('reports.reconciledOnlyHint') }}</div>
     </div>
 
-    <div v-if="reportType === 'distribution'" class="mb-3">
-      <label class="form-label" for="report-data-grouping">{{ $t('reports.dataGrouping') }}</label>
+    <FormField
+      v-if="reportType === 'distribution'"
+      :label="$t('reports.dataGrouping')"
+      for="report-data-grouping"
+      :hint="$t('reports.dataGroupingHint')"
+    >
       <select
         id="report-data-grouping"
         v-model="dataGrouping"
@@ -234,13 +247,18 @@ const onSubmit = handleSubmit(async (submitted) => {
           {{ $t('reports.dataGroupingOptions.paymentMethod') }}
         </option>
       </select>
-      <div class="form-text">{{ $t('reports.dataGroupingHint') }}</div>
-    </div>
+    </FormField>
 
-    <div v-if="reportType === 'distribution'" class="mb-3">
-      <label class="form-label" for="report-significant-results-number">{{
-        $t('reports.significantResultsNumber')
-      }}</label>
+    <FormField
+      v-if="reportType === 'distribution'"
+      :label="$t('reports.significantResultsNumber')"
+      for="report-significant-results-number"
+      :error="
+        errors.significantResultsNumber &&
+        $t('reports.significantResultsNumberInvalid', { max: MAX_SIGNIFICANT_RESULTS_NUMBER })
+      "
+      :hint="$t('reports.significantResultsNumberHint')"
+    >
       <input
         id="report-significant-results-number"
         v-model.number="significantResultsNumber"
@@ -251,13 +269,17 @@ const onSubmit = handleSubmit(async (submitted) => {
         class="form-control"
         :class="{ 'is-invalid': errors.significantResultsNumber }"
       />
-      <div class="form-text">{{ $t('reports.significantResultsNumberHint') }}</div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="report-period-grouping">{{
-        $t('reports.periodGrouping')
-      }}</label>
+    <FormField
+      :label="$t('reports.periodGrouping')"
+      for="report-period-grouping"
+      :hint="
+        reportType === 'distribution'
+          ? $t('reports.periodGroupingHintDistribution')
+          : $t('reports.periodGroupingHint')
+      "
+    >
       <select
         id="report-period-grouping"
         v-model="periodGrouping"
@@ -269,14 +291,7 @@ const onSubmit = handleSubmit(async (submitted) => {
         <option value="year">{{ $t('reports.periods.year') }}</option>
         <option value="all">{{ $t('reports.periods.all') }}</option>
       </select>
-      <div class="form-text">
-        {{
-          reportType === 'distribution'
-            ? $t('reports.periodGroupingHintDistribution')
-            : $t('reports.periodGroupingHint')
-        }}
-      </div>
-    </div>
+    </FormField>
 
     <div class="mb-3 form-check">
       <input

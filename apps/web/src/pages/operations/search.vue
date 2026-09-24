@@ -2,6 +2,7 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
@@ -158,8 +159,7 @@ function onClear() {
       </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-third-party">{{ $t('operations.thirdParty') }}</label>
+    <FormField :label="$t('operations.thirdParty')" for="search-third-party">
       <input
         id="search-third-party"
         v-model="thirdParty"
@@ -167,10 +167,9 @@ function onClear() {
         maxlength="64"
         class="form-control"
       />
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-categories">{{ $t('operations.category') }}</label>
+    <FormField :label="$t('operations.category')" for="search-categories">
       <CategorySelect
         id="search-categories"
         v-model="categoryIds"
@@ -178,18 +177,15 @@ function onClear() {
         :groups="groupedCategories"
         :all-categories="props.categories"
       />
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-payment-methods">{{
-        $t('operations.paymentMethod')
-      }}</label>
+    <FormField :label="$t('operations.paymentMethod')" for="search-payment-methods">
       <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
         <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
           {{ pm.name }}
         </option>
       </select>
-    </div>
+    </FormField>
 
     <div class="row mb-3 align-items-end">
       <div class="col">
@@ -238,11 +234,8 @@ function onClear() {
       </div>
     </div>
 
-    <div class="row mb-3">
-      <div class="col">
-        <label class="form-label" for="search-date-from">{{
-          $t('operations.search.dateFrom')
-        }}</label>
+    <div class="row">
+      <FormField class="col" :label="$t('operations.search.dateFrom')" for="search-date-from">
         <input
           id="search-date-from"
           v-model="dateFrom"
@@ -250,9 +243,8 @@ function onClear() {
           :lang="locale"
           class="form-control"
         />
-      </div>
-      <div class="col">
-        <label class="form-label" for="search-date-to">{{ $t('operations.search.dateTo') }}</label>
+      </FormField>
+      <FormField class="col" :label="$t('operations.search.dateTo')" for="search-date-to">
         <input
           id="search-date-to"
           v-model="dateTo"
@@ -260,22 +252,20 @@ function onClear() {
           :lang="locale"
           class="form-control"
         />
-      </div>
+      </FormField>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-notes">{{ $t('operations.notes') }}</label>
+    <FormField :label="$t('operations.notes')" for="search-notes">
       <input id="search-notes" v-model="notes" type="text" maxlength="128" class="form-control" />
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="search-reconciled">{{ $t('operations.reconciled') }}</label>
+    <FormField :label="$t('operations.reconciled')" for="search-reconciled">
       <select id="search-reconciled" v-model="reconciled" class="form-select">
         <option value="">{{ $t('operations.search.both') }}</option>
         <option value="true">{{ $t('operations.search.yes') }}</option>
         <option value="false">{{ $t('operations.search.no') }}</option>
       </select>
-    </div>
+    </FormField>
 
     <template #actions>
       <button type="submit" class="btn btn-primary">{{ $t('operations.search.submit') }}</button>

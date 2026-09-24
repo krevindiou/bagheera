@@ -4,6 +4,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import FormField from '../../components/FormField.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { editBankSchema, type EditBankForm } from './accounts.schemas';
@@ -42,8 +43,11 @@ const onSubmit = handleSubmit(async (values) => {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <div class="mb-3">
-      <label class="form-label" for="bank-name">{{ $t('accounts.bankNameLabel') }}</label>
+    <FormField
+      :label="$t('accounts.bankNameLabel')"
+      for="bank-name"
+      :error="errors.name && $t('auth.validation.required')"
+    >
       <input
         id="bank-name"
         v-model="name"
@@ -53,10 +57,7 @@ const onSubmit = handleSubmit(async (values) => {
         class="form-control"
         :class="{ 'is-invalid': errors.name }"
       />
-      <div v-if="errors.name" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
-      </div>
-    </div>
+    </FormField>
 
     <template #actions>
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">

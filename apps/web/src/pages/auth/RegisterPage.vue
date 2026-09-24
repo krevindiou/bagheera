@@ -10,6 +10,7 @@ import { useToast } from '../../composables/useToast';
 import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
 import { registerSchema, type RegisterForm } from './auth.schemas';
 import AuthLayout from '../../layouts/AuthLayout.vue';
+import FormField from '../../components/FormField.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -61,8 +62,11 @@ const onSubmit = handleSubmit(async (values) => {
     </div>
 
     <form novalidate @submit="onSubmit">
-      <div class="mb-3">
-        <label class="form-label" for="register-email">{{ $t('auth.register.email') }}</label>
+      <FormField
+        :label="$t('auth.register.email')"
+        for="register-email"
+        :error="errors.email && $t('auth.validation.email')"
+      >
         <input
           id="register-email"
           v-model="email"
@@ -74,13 +78,13 @@ const onSubmit = handleSubmit(async (values) => {
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />
-        <div v-if="errors.email" class="invalid-feedback">
-          {{ $t('auth.validation.email') }}
-        </div>
-      </div>
+      </FormField>
 
-      <div class="mb-3">
-        <label class="form-label" for="register-country">{{ $t('auth.register.country') }}</label>
+      <FormField
+        :label="$t('auth.register.country')"
+        for="register-country"
+        :error="errors.country && $t('auth.validation.country')"
+      >
         <select
           id="register-country"
           v-model="country"
@@ -92,10 +96,7 @@ const onSubmit = handleSubmit(async (values) => {
             {{ option.name }}
           </option>
         </select>
-        <div v-if="errors.country" class="invalid-feedback">
-          {{ $t('auth.validation.country') }}
-        </div>
-      </div>
+      </FormField>
 
       <p class="text-muted" style="font-size: 13.5px">{{ $t('auth.register.passkeyHint') }}</p>
 

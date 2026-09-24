@@ -240,6 +240,7 @@ export default {
     accountsHint: 'Laissez vide pour inclure tous les comptes.',
     categoriesHint: 'Laissez vide pour inclure toutes les catégories.',
     dateRangeInvalid: 'La date de fin doit être égale ou postérieure à la date de début.',
+    significantResultsNumberInvalid: 'Saisissez un nombre entier entre 1 et {max}.',
     periodGrouping: 'Répartir sur',
     periodGroupingHint:
       '« Toute la période » regroupe chaque opération correspondante en une seule valeur.',

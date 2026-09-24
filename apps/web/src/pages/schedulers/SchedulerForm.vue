@@ -6,6 +6,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutocomplete';
@@ -216,10 +217,12 @@ const onSubmit = handleSubmit(async (submitted) => {
       </div>
     </div>
 
-    <div class="mb-3 position-relative">
-      <label class="form-label" for="scheduler-third-party">{{
-        $t('operations.thirdParty')
-      }}</label>
+    <FormField
+      class="position-relative"
+      :label="$t('operations.thirdParty')"
+      for="scheduler-third-party"
+      :error="errors.thirdParty && $t('auth.validation.required')"
+    >
       <input
         id="scheduler-third-party"
         v-model="thirdParty"
@@ -234,13 +237,13 @@ const onSubmit = handleSubmit(async (submitted) => {
       <datalist id="scheduler-third-party-suggestions">
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
       </datalist>
-      <div v-if="errors.thirdParty" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
-      </div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="scheduler-amount">{{ $t('operations.amount') }}</label>
+    <FormField
+      :label="$t('operations.amount')"
+      for="scheduler-amount"
+      :error="errors.amount && $t(amountErrorKey)"
+    >
       <div class="input-group">
         <span class="input-group-text">{{ amountCurrencySymbol }}</span>
         <input
@@ -255,14 +258,10 @@ const onSubmit = handleSubmit(async (submitted) => {
           :class="{ 'is-invalid': errors.amount }"
         />
       </div>
-      <div v-if="errors.amount" class="invalid-feedback d-block">
-        {{ $t(amountErrorKey) }}
-      </div>
-    </div>
+    </FormField>
 
     <div class="d-flex gap-3">
-      <div class="mb-3 flex-grow-1">
-        <label class="form-label" for="scheduler-category">{{ $t('operations.category') }}</label>
+      <FormField class="flex-grow-1" :label="$t('operations.category')" for="scheduler-category">
         <CategorySelect
           id="scheduler-category"
           v-model="categoryId"
@@ -271,12 +270,14 @@ const onSubmit = handleSubmit(async (submitted) => {
           :all-categories="props.categories"
           :empty-label="$t('operations.noCategory')"
         />
-      </div>
+      </FormField>
 
-      <div class="mb-3 flex-grow-1">
-        <label class="form-label" for="scheduler-payment-method">{{
-          $t('operations.paymentMethod')
-        }}</label>
+      <FormField
+        class="flex-grow-1"
+        :label="$t('operations.paymentMethod')"
+        for="scheduler-payment-method"
+        :error="errors.paymentMethodId && $t('auth.validation.required')"
+      >
         <select
           id="scheduler-payment-method"
           v-model="paymentMethodId"
@@ -289,16 +290,16 @@ const onSubmit = handleSubmit(async (submitted) => {
             {{ pm.name }}
           </option>
         </select>
-        <div v-if="errors.paymentMethodId" class="invalid-feedback">
-          {{ $t('auth.validation.required') }}
-        </div>
-      </div>
+      </FormField>
     </div>
 
-    <div v-if="showTransferAccount" class="mb-3 transfer-accent">
-      <label class="form-label" for="scheduler-transfer-account">
-        {{ $t('operations.transferAccount') }}
-      </label>
+    <FormField
+      v-if="showTransferAccount"
+      class="transfer-accent"
+      :label="$t('operations.transferAccount')"
+      for="scheduler-transfer-account"
+      :error="errors.transferAccountId && $t('auth.validation.required')"
+    >
       <select
         id="scheduler-transfer-account"
         v-model="transferAccountId"
@@ -309,15 +310,9 @@ const onSubmit = handleSubmit(async (submitted) => {
         <option value="">{{ $t('operations.chooseTransferAccount') }}</option>
         <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
-      <div v-if="errors.transferAccountId" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
-      </div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="scheduler-value-date">{{
-        $t('schedulers.firstOccurrence')
-      }}</label>
+    <FormField :label="$t('schedulers.firstOccurrence')" for="scheduler-value-date">
       <input
         id="scheduler-value-date"
         v-model="valueDate"
@@ -326,13 +321,15 @@ const onSubmit = handleSubmit(async (submitted) => {
         :lang="locale"
         class="form-control"
       />
-    </div>
+    </FormField>
 
-    <div class="row mb-3">
-      <div class="col">
-        <label class="form-label" for="scheduler-frequency-value">{{
-          $t('schedulers.every')
-        }}</label>
+    <div class="row">
+      <FormField
+        class="col"
+        :label="$t('schedulers.every')"
+        for="scheduler-frequency-value"
+        :error="errors.frequencyValue && $t('schedulers.validation.frequencyValue')"
+      >
         <input
           id="scheduler-frequency-value"
           v-model="frequencyValue"
@@ -343,14 +340,8 @@ const onSubmit = handleSubmit(async (submitted) => {
           class="form-control"
           :class="{ 'is-invalid': errors.frequencyValue }"
         />
-        <div v-if="errors.frequencyValue" class="invalid-feedback">
-          {{ $t('schedulers.validation.frequencyValue') }}
-        </div>
-      </div>
-      <div class="col">
-        <label class="form-label" for="scheduler-frequency-unit">{{
-          $t('schedulers.frequencyUnit')
-        }}</label>
+      </FormField>
+      <FormField class="col" :label="$t('schedulers.frequencyUnit')" for="scheduler-frequency-unit">
         <select
           id="scheduler-frequency-unit"
           v-model="frequencyUnit"
@@ -362,11 +353,10 @@ const onSubmit = handleSubmit(async (submitted) => {
           <option value="month">{{ $t('schedulers.units.month') }}</option>
           <option value="year">{{ $t('schedulers.units.year') }}</option>
         </select>
-      </div>
+      </FormField>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="scheduler-limit-date">{{ $t('schedulers.limitDate') }}</label>
+    <FormField :label="$t('schedulers.limitDate')" for="scheduler-limit-date">
       <input
         id="scheduler-limit-date"
         v-model="limitDate"
@@ -375,17 +365,16 @@ const onSubmit = handleSubmit(async (submitted) => {
         :lang="locale"
         class="form-control"
       />
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="scheduler-notes">{{ $t('operations.notes') }}</label>
+    <FormField :label="$t('operations.notes')" for="scheduler-notes">
       <textarea
         id="scheduler-notes"
         v-model="notes"
         v-bind="notesAttrs"
         class="form-control"
       ></textarea>
-    </div>
+    </FormField>
 
     <div class="mb-3 form-check">
       <input

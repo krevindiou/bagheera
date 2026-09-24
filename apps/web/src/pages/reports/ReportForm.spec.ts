@@ -224,6 +224,20 @@ describe('ReportForm', () => {
     ).toBe('5');
   });
 
+  it('explains an out-of-range number of results instead of just turning the field red', async () => {
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, categories, defaultType: 'distribution' },
+    });
+    await wrapper.find('#report-title').setValue('Spending');
+    await wrapper.find('#report-significant-results-number').setValue('99');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(wrapper.find('.invalid-feedback').text()).toBe('Enter a whole number between 1 and 50.');
+    expect(wrapper.find('.form-text').exists()).toBe(true);
+  });
+
   it('creates a distribution report with its own fields plus periodGrouping', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(ReportForm, {

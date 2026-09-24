@@ -6,6 +6,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutocomplete';
@@ -213,10 +214,12 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
       </div>
     </div>
 
-    <div class="mb-3 position-relative">
-      <label class="form-label" for="operation-third-party">{{
-        $t('operations.thirdParty')
-      }}</label>
+    <FormField
+      class="position-relative"
+      :label="$t('operations.thirdParty')"
+      for="operation-third-party"
+      :error="errors.thirdParty && $t('auth.validation.required')"
+    >
       <input
         id="operation-third-party"
         v-model="thirdParty"
@@ -231,13 +234,13 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
       <datalist id="operation-third-party-suggestions">
         <option v-for="s in suggestions" :key="s.thirdParty" :value="s.thirdParty" />
       </datalist>
-      <div v-if="errors.thirdParty" class="invalid-feedback">
-        {{ $t('auth.validation.required') }}
-      </div>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="operation-amount">{{ $t('operations.amount') }}</label>
+    <FormField
+      :label="$t('operations.amount')"
+      for="operation-amount"
+      :error="errors.amount && $t(amountErrorKey)"
+    >
       <div class="input-group">
         <span class="input-group-text">{{ amountCurrencySymbol }}</span>
         <input
@@ -252,14 +255,10 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
           :class="{ 'is-invalid': errors.amount }"
         />
       </div>
-      <div v-if="errors.amount" class="invalid-feedback d-block">
-        {{ $t(amountErrorKey) }}
-      </div>
-    </div>
+    </FormField>
 
     <div class="d-flex gap-3">
-      <div class="mb-3 flex-grow-1">
-        <label class="form-label" for="operation-category">{{ $t('operations.category') }}</label>
+      <FormField class="flex-grow-1" :label="$t('operations.category')" for="operation-category">
         <CategorySelect
           id="operation-category"
           v-model="categoryId"
@@ -268,12 +267,14 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
           :all-categories="props.categories"
           :empty-label="$t('operations.noCategory')"
         />
-      </div>
+      </FormField>
 
-      <div class="mb-3 flex-grow-1">
-        <label class="form-label" for="operation-payment-method">{{
-          $t('operations.paymentMethod')
-        }}</label>
+      <FormField
+        class="flex-grow-1"
+        :label="$t('operations.paymentMethod')"
+        for="operation-payment-method"
+        :error="errors.paymentMethodId && $t('auth.validation.required')"
+      >
         <select
           id="operation-payment-method"
           v-model="paymentMethodId"
@@ -286,16 +287,15 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
             {{ pm.name }}
           </option>
         </select>
-        <div v-if="errors.paymentMethodId" class="invalid-feedback">
-          {{ $t('auth.validation.required') }}
-        </div>
-      </div>
+      </FormField>
     </div>
 
-    <div v-if="showTransferAccount" class="mb-3 transfer-accent">
-      <label class="form-label" for="operation-transfer-account">
-        {{ $t('operations.transferAccount') }}
-      </label>
+    <FormField
+      v-if="showTransferAccount"
+      class="transfer-accent"
+      :label="$t('operations.transferAccount')"
+      for="operation-transfer-account"
+    >
       <select
         id="operation-transfer-account"
         v-model="transferAccountId"
@@ -306,10 +306,9 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         <option value="">{{ $t('operations.externalAccount') }}</option>
         <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
       </select>
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="operation-value-date">{{ $t('operations.valueDate') }}</label>
+    <FormField :label="$t('operations.valueDate')" for="operation-value-date">
       <input
         id="operation-value-date"
         v-model="valueDate"
@@ -318,17 +317,16 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         :lang="locale"
         class="form-control"
       />
-    </div>
+    </FormField>
 
-    <div class="mb-3">
-      <label class="form-label" for="operation-notes">{{ $t('operations.notes') }}</label>
+    <FormField :label="$t('operations.notes')" for="operation-notes">
       <textarea
         id="operation-notes"
         v-model="notes"
         v-bind="notesAttrs"
         class="form-control"
       ></textarea>
-    </div>
+    </FormField>
 
     <div class="mb-3 form-check">
       <input
