@@ -10,6 +10,12 @@ export default {
     ok: 'Ok',
     cancel: 'Annuler',
     or: 'ou',
+    pager: {
+      label: 'Pagination',
+      previous: 'Précédent',
+      next: 'Suivant',
+      status: 'Page {page} sur {pageCount}',
+    },
   },
   chartRange: {
     label: 'Période',
@@ -142,9 +148,6 @@ export default {
     edit: 'Modifier',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération pour l'instant.",
-    previous: 'Précédent',
-    next: 'Suivant',
-    pageStatus: 'Page {page} sur {pageCount}',
     schedulersLink: 'Opérations planifiées',
     validation: {
       amount: 'Saisissez un montant supérieur à zéro.',

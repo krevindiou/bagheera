@@ -8,6 +8,12 @@ export default {
     ok: 'Ok',
     cancel: 'Cancel',
     or: 'or',
+    pager: {
+      label: 'Pagination',
+      previous: 'Previous',
+      next: 'Next',
+      status: 'Page {page} of {pageCount}',
+    },
   },
   chartRange: {
     label: 'Range',
@@ -137,9 +143,6 @@ export default {
     edit: 'Edit',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No operations yet.',
-    previous: 'Previous',
-    next: 'Next',
-    pageStatus: 'Page {page} of {pageCount}',
     schedulersLink: 'Scheduled operations',
     validation: {
       amount: 'Enter an amount greater than zero.',

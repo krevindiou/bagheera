@@ -16,6 +16,7 @@ import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
 import type { Scheduler, SchedulerList } from './schedulers.types';
 import IconButton from '../../components/IconButton.vue';
+import PagerNav from '../../components/PagerNav.vue';
 import PlusIcon from '../../components/PlusIcon.vue';
 
 const route = useRoute();
@@ -96,7 +97,6 @@ watch(
   },
 );
 
-const pageCount = computed(() => Math.max(1, Math.ceil(list.value.total / list.value.pageSize)));
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
@@ -124,11 +124,6 @@ async function onSaved() {
   showForm.value = false;
   editingScheduler.value = null;
   await reloadSchedulers();
-}
-
-function goToPage(newPage: number) {
-  if (newPage < 1 || newPage > pageCount.value) return;
-  page.value = newPage;
 }
 </script>
 
@@ -221,25 +216,12 @@ function goToPage(newPage: number) {
         </table>
       </div>
 
-      <nav class="pager d-flex align-items-center gap-2 mt-3" aria-label="pagination">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          :disabled="list.page <= 1"
-          @click="goToPage(list.page - 1)"
-        >
-          {{ $t('operations.previous') }}
-        </button>
-        <span>{{ $t('operations.pageStatus', { page: list.page, pageCount }) }}</span>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          :disabled="list.page >= pageCount"
-          @click="goToPage(list.page + 1)"
-        >
-          {{ $t('operations.next') }}
-        </button>
-      </nav>
+      <PagerNav
+        :page="list.page"
+        :total="list.total"
+        :page-size="list.pageSize"
+        @update:page="page = $event"
+      />
     </div>
 
     <SchedulerForm
