@@ -14,6 +14,7 @@ import {
 } from '../../components/synthesisChartRange';
 import RankedChart from '../../components/RankedChart.vue';
 import { formatDate, formatMoney } from '../operations/money';
+import AppIcon from '../../components/AppIcon.vue';
 import { toChartSeries } from '../reports/chartSeries';
 import { toDistributionFacets } from '../reports/distributionSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
@@ -113,18 +114,7 @@ const accountTiles = computed(() =>
             data-testid="last-biggest-income"
           >
             <div class="stat-trend-badge stat-trend-badge-success">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 16l6-6 4 4 6-8" />
-                <path d="M14 6h6v6" />
-              </svg>
+              <AppIcon name="trendUp" />
             </div>
             <div class="stat-label">{{ $t('dashboard.lastBiggestIncome') }}</div>
             <div class="stat-value text-success">
@@ -149,18 +139,7 @@ const accountTiles = computed(() =>
             data-testid="last-biggest-expense"
           >
             <div class="stat-trend-badge stat-trend-badge-danger">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 8l6 6 4-4 6 8" />
-                <path d="M14 18h6v-6" />
-              </svg>
+              <AppIcon name="trendDown" />
             </div>
             <div class="stat-label">{{ $t('dashboard.lastBiggestExpense') }}</div>
             <div class="stat-value text-danger">

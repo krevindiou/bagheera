@@ -32,7 +32,7 @@ import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
-import PlusIcon from '../../components/PlusIcon.vue';
+import AppIcon from '../../components/AppIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -297,7 +297,7 @@ function isEditable(operation: Operation): boolean {
           class="btn btn-primary d-inline-flex align-items-center gap-1"
           @click="startCreate"
         >
-          <PlusIcon />
+          <AppIcon name="plus" :size="16" />
           {{ $t('operations.addOperation') }}
         </button>
         <button
@@ -307,19 +307,7 @@ function isEditable(operation: Operation): boolean {
           :title="hasActiveSearch ? $t('operations.search.activeHint') : undefined"
           @click="showSearch = true"
         >
-          <svg
-            class="icon-16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.3-4.3" />
-          </svg>
+          <AppIcon name="search" class="icon-16" />
           {{ $t('operations.search.show') }}
           <span
             v-if="hasActiveSearch"

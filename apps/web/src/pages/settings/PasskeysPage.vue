@@ -10,7 +10,7 @@ import { completeStepUp } from '../../api/stepUp';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import IconButton from '../../components/IconButton.vue';
-import PlusIcon from '../../components/PlusIcon.vue';
+import AppIcon from '../../components/AppIcon.vue';
 import SettingsTabs from './SettingsTabs.vue';
 
 // Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
@@ -154,7 +154,7 @@ async function removePasskey(id: string) {
           :disabled="adding"
           @click="addPasskey"
         >
-          <PlusIcon />
+          <AppIcon name="plus" :size="16" />
           {{ $t('settings.passkeys.add') }}
         </button>
       </div>

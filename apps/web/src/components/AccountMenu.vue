@@ -6,6 +6,7 @@ import { apiClient } from '../api/client';
 import { useLocaleSwitch } from '../composables/useLocaleSwitch';
 import type { Locale } from '../i18n/locales';
 import { useSessionStore } from '../stores/session.store';
+import AppIcon from './AppIcon.vue';
 import LocaleOptions from './LocaleOptions.vue';
 import MenuPopover from './MenuPopover.vue';
 
@@ -49,22 +50,7 @@ async function signOut(): Promise<void> {
         <span class="account-email" :title="session.member?.email">
           {{ session.member?.email }}
         </span>
-        <svg
-          class="account-chevron"
-          width="12"
-          height="12"
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M4 6l4 4 4-4"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <AppIcon name="chevron" class="account-chevron" :size="12" />
       </button>
     </template>
 
@@ -73,22 +59,7 @@ async function signOut(): Promise<void> {
 
     <div class="account-divider"></div>
     <button type="button" class="account-logout" @click="signOut">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path
-          d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-        />
-        <path
-          d="M10.5 11L14 8l-3.5-3"
-          stroke="currentColor"
-          stroke-width="1.4"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path d="M14 8H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-      </svg>
+      <AppIcon name="logout" :size="13" />
       {{ t('home.signOut') }}
     </button>
   </MenuPopover>

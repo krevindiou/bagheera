@@ -12,7 +12,7 @@ import BankChoiceForm from './BankChoiceForm.vue';
 import CreateAccountForm from './CreateAccountForm.vue';
 import EditBankForm from './EditBankForm.vue';
 import IconButton from '../../components/IconButton.vue';
-import PlusIcon from '../../components/PlusIcon.vue';
+import AppIcon from '../../components/AppIcon.vue';
 
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
@@ -194,7 +194,7 @@ async function onAccountCreated(accountId: string) {
         class="btn btn-primary d-inline-flex align-items-center gap-1"
         @click="startCreateAccount"
       >
-        <PlusIcon />
+        <AppIcon name="plus" :size="16" />
         {{ $t('accounts.addAccount') }}
       </button>
     </div>

@@ -16,7 +16,7 @@ import { toDistributionFacets } from './distributionSeries';
 import ReportForm from './ReportForm.vue';
 import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 import IconButton from '../../components/IconButton.vue';
-import PlusIcon from '../../components/PlusIcon.vue';
+import AppIcon from '../../components/AppIcon.vue';
 
 const { t } = useI18n();
 const { confirm } = useConfirm();
@@ -161,7 +161,7 @@ function toggleView(report: Report) {
           class="btn btn-primary d-inline-flex align-items-center gap-1"
           @click="startCreate('sum')"
         >
-          <PlusIcon />
+          <AppIcon name="plus" :size="16" />
           {{ $t('reports.newSumReport') }}
         </button>
         <button
@@ -169,7 +169,7 @@ function toggleView(report: Report) {
           class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
           @click="startCreate('average')"
         >
-          <PlusIcon />
+          <AppIcon name="plus" :size="16" />
           {{ $t('reports.newAverageReport') }}
         </button>
         <button
@@ -177,7 +177,7 @@ function toggleView(report: Report) {
           class="btn btn-outline-secondary d-inline-flex align-items-center gap-1"
           @click="startCreate('distribution')"
         >
-          <PlusIcon />
+          <AppIcon name="plus" :size="16" />
           {{ $t('reports.newDistributionReport') }}
         </button>
       </div>

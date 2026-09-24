@@ -17,7 +17,7 @@ import BatchActions from './batch.vue';
 import type { Scheduler, SchedulerList } from './schedulers.types';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
-import PlusIcon from '../../components/PlusIcon.vue';
+import AppIcon from '../../components/AppIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -146,7 +146,7 @@ async function onSaved() {
         class="btn btn-primary d-inline-flex align-items-center gap-1"
         @click="startCreate"
       >
-        <PlusIcon />
+        <AppIcon name="plus" :size="16" />
         {{ $t('schedulers.addScheduler') }}
       </button>
     </div>
