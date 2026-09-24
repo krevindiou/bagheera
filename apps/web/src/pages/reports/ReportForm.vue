@@ -5,10 +5,11 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
-import { categoryLabel, groupCategories, type Category } from '../operations/operations.types';
+import { groupCategories, type Category } from '../operations/operations.types';
 import { reportSchema, type ReportForm } from './reports.schemas';
 import type { Report } from './reports.types';
 
@@ -180,26 +181,14 @@ const onSubmit = handleSubmit(async (submitted) => {
 
     <div class="mb-3">
       <label class="form-label" for="report-categories">{{ $t('operations.category') }}</label>
-      <select
+      <CategorySelect
         id="report-categories"
         v-model="categoryIds"
         v-bind="categoryIdsAttrs"
         multiple
-        class="form-select"
-      >
-        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
-          <template v-if="group.label === null">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
-          </template>
-          <optgroup v-else :label="group.label">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
-          </optgroup>
-        </template>
-      </select>
+        :groups="groupedCategories"
+        :all-categories="props.categories"
+      />
       <div class="form-text">{{ $t('reports.categoriesHint') }}</div>
     </div>
 

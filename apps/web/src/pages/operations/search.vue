@@ -2,9 +2,9 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
-import { categoryLabel } from './operations.types';
 import type {
   AmountComparatorOperator,
   Category,
@@ -171,20 +171,13 @@ function onClear() {
 
     <div class="mb-3">
       <label class="form-label" for="search-categories">{{ $t('operations.category') }}</label>
-      <select id="search-categories" v-model="categoryIds" multiple class="form-select">
-        <template v-for="group in groupedCategories" :key="group.label ?? '_'">
-          <template v-if="group.label === null">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
-          </template>
-          <optgroup v-else :label="group.label">
-            <option v-for="c in group.categories" :key="c.id" :value="c.id">
-              {{ categoryLabel(c, props.categories) }}
-            </option>
-          </optgroup>
-        </template>
-      </select>
+      <CategorySelect
+        id="search-categories"
+        v-model="categoryIds"
+        multiple
+        :groups="groupedCategories"
+        :all-categories="props.categories"
+      />
     </div>
 
     <div class="mb-3">

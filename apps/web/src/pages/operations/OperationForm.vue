@@ -6,6 +6,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutocomplete';
 import { useToast } from '../../composables/useToast';
@@ -15,7 +16,6 @@ import type { Account, Bank } from '../accounts/accounts.types';
 import { toDisplayAmount } from './money';
 import { operationSchema, type OperationForm } from './operations.schemas';
 import {
-  categoryLabel,
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
   type Operation,
@@ -260,26 +260,14 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
     <div class="d-flex gap-3">
       <div class="mb-3 flex-grow-1">
         <label class="form-label" for="operation-category">{{ $t('operations.category') }}</label>
-        <select
+        <CategorySelect
           id="operation-category"
           v-model="categoryId"
           v-bind="categoryIdAttrs"
-          class="form-select"
-        >
-          <option value="">{{ $t('operations.noCategory') }}</option>
-          <template v-for="group in groupedCategories" :key="group.label ?? '_'">
-            <template v-if="group.label === null">
-              <option v-for="c in group.categories" :key="c.id" :value="c.id">
-                {{ categoryLabel(c, props.categories) }}
-              </option>
-            </template>
-            <optgroup v-else :label="group.label">
-              <option v-for="c in group.categories" :key="c.id" :value="c.id">
-                {{ categoryLabel(c, props.categories) }}
-              </option>
-            </optgroup>
-          </template>
-        </select>
+          :groups="groupedCategories"
+          :all-categories="props.categories"
+          :empty-label="$t('operations.noCategory')"
+        />
       </div>
 
       <div class="mb-3 flex-grow-1">
