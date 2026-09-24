@@ -3,18 +3,15 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import RankedChart from '../../components/RankedChart.vue';
-import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
 import { useSelection } from '../../composables/useSelection';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import type { Category } from '../operations/operations.types';
 import BatchActions from './batch.vue';
-import { toChartSeries } from './chartSeries';
-import { toDistributionFacets } from './distributionSeries';
+import ReportChart from './ReportChart.vue';
 import ReportForm from './ReportForm.vue';
-import type { Report, ReportDistribution, ReportSeries } from './reports.types';
+import type { Report, ReportChartData, ReportDistribution, ReportSeries } from './reports.types';
 import IconButton from '../../components/IconButton.vue';
 import AppIcon from '../../components/AppIcon.vue';
 
@@ -120,15 +117,6 @@ const seriesQuery = useQuery({
     () => viewingReportId.value !== null && viewingReport.value?.type !== 'distribution',
   ),
 });
-const chartSeries = computed<SynthesisChartSeries[]>(() => {
-  const series = seriesQuery.data.value;
-  return !series || series.hidden ? [] : toChartSeries(series, t);
-});
-const chartAxisBounds = computed(() => {
-  const series = seriesQuery.data.value;
-  return !series || series.hidden ? null : series.axisBounds;
-});
-
 const distributionQuery = useQuery({
   queryKey: computed(() => ['report-distribution', viewingReportId.value]),
   queryFn: async () => {
@@ -141,9 +129,13 @@ const distributionQuery = useQuery({
     () => viewingReportId.value !== null && viewingReport.value?.type === 'distribution',
   ),
 });
-const distributionFacets = computed(() => {
-  const distribution = distributionQuery.data.value;
-  return !distribution || distribution.hidden ? [] : toDistributionFacets(distribution, t);
+const viewedChart = computed<ReportChartData | null>(() => {
+  if (viewingReport.value?.type === 'distribution') {
+    const distribution = distributionQuery.data.value;
+    return distribution ? { kind: 'distribution', distribution } : null;
+  }
+  const series = seriesQuery.data.value;
+  return series ? { kind: 'series', series } : null;
 });
 
 function toggleView(report: Report) {
@@ -250,8 +242,7 @@ function toggleView(report: Report) {
               </tr>
               <tr v-if="viewingReportId === report.id">
                 <td colspan="4">
-                  <RankedChart v-if="report.type === 'distribution'" :facets="distributionFacets" />
-                  <SynthesisChart v-else :series="chartSeries" :axis-bounds="chartAxisBounds" />
+                  <ReportChart :report="viewedChart" />
                 </td>
               </tr>
             </template>

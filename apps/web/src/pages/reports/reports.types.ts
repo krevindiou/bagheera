@@ -63,3 +63,9 @@ export interface ReportDistribution {
   hidden: boolean;
   series: ReportDistributionSeries[];
 }
+
+// What ReportChart draws: a report's per-currency series or its
+// distribution. The dashboard's HomepageReport is this plus an id/title.
+export type ReportChartData =
+  | { kind: 'series'; series: ReportSeries }
+  | { kind: 'distribution'; distribution: ReportDistribution };

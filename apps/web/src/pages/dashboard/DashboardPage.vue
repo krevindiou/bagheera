@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
-import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
@@ -12,14 +11,10 @@ import {
   SYNTHESIS_CHART_RANGES,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
-import RankedChart from '../../components/RankedChart.vue';
 import { formatDate } from '../operations/money';
 import StatCard from '../../components/StatCard.vue';
-import { toChartSeries } from '../reports/chartSeries';
-import { toDistributionFacets } from '../reports/distributionSeries';
+import ReportChart from '../reports/ReportChart.vue';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
-
-const { t } = useI18n();
 
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
@@ -197,15 +192,7 @@ const accountTiles = computed(() =>
           data-testid="homepage-report"
         >
           <h3 class="h6 mb-3">{{ entry.title }}</h3>
-          <RankedChart
-            v-if="entry.kind === 'distribution'"
-            :facets="toDistributionFacets(entry.distribution, t)"
-          />
-          <SynthesisChart
-            v-else
-            :series="toChartSeries(entry.series, t)"
-            :axis-bounds="entry.series.axisBounds"
-          />
+          <ReportChart :report="entry" />
         </div>
       </section>
     </template>
