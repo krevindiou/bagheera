@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
+import { queuedToastText } from '../../test-support/queuedToastText';
 import { submitAndSettle } from '../../test-support/submitAndSettle';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
@@ -79,7 +80,9 @@ describe('ProfilePage', () => {
     expect(apiClient.POST).toHaveBeenCalledWith('/members/profile', {
       body: { email: 'member@example.com' },
     });
-    expect(wrapper.text()).toContain("If this email isn't already registered to another account");
+    expect(queuedToastText()).toContain(
+      "If this email isn't already registered to another account",
+    );
   });
 
   it('shows an error toast and never calls /members/profile when the step-up prompt is cancelled', async () => {
@@ -89,7 +92,7 @@ describe('ProfilePage', () => {
     const wrapper = mountWithSession('member@example.com');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Passkey confirmation failed');
+    expect(queuedToastText()).toContain('Passkey confirmation failed');
     expect(apiClient.POST).not.toHaveBeenCalledWith('/members/profile', expect.anything() as never);
   });
 
@@ -105,7 +108,7 @@ describe('ProfilePage', () => {
     const wrapper = mountWithSession('member@example.com');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Passkey confirmation failed');
+    expect(queuedToastText()).toContain('Passkey confirmation failed');
   });
 
   it('shows a toast for any other /members/profile failure', async () => {
@@ -113,7 +116,7 @@ describe('ProfilePage', () => {
     const wrapper = mountWithSession('member@example.com');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Email already taken');
+    expect(queuedToastText()).toContain('Email already taken');
   });
 
   it('falls back to a generic error toast when the update fails without a message', async () => {
@@ -121,7 +124,7 @@ describe('ProfilePage', () => {
     const wrapper = mountWithSession('member@example.com');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it("shows a validation error and doesn't submit for an invalid email", async () => {

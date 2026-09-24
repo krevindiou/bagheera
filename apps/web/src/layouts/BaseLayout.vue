@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import AccountMenu from '../components/AccountMenu.vue';
 import ConfirmModal from '../components/ConfirmModal.vue';
+import ToastContainer from '../components/ToastContainer.vue';
 import { useSessionStore } from '../stores/session.store';
 
 const session = useSessionStore();
@@ -69,5 +70,9 @@ const navItems = computed(() => [
 
   <router-view v-else />
 
+  <!-- App-wide overlays, mounted once for every route, signed in or out:
+       both render module-level state (useConfirm/useToast) that any page
+       or form can drive, so no page carries its own copy. -->
   <ConfirmModal />
+  <ToastContainer />
 </template>

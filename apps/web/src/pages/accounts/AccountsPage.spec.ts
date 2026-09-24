@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
+import { queuedToastText } from '../../test-support/queuedToastText';
 import { submitAndSettle } from '../../test-support/submitAndSettle';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
@@ -205,7 +206,7 @@ describe('AccountsPage', () => {
       params: { path: { id: 'b1' } },
       body: { name: 'Chase Bank' },
     });
-    expect(wrapper.text()).toContain('Bank saved');
+    expect(queuedToastText()).toContain('Bank saved');
     expect(wrapper.findComponent(EditBankForm).exists()).toBe(false);
   });
 
@@ -228,7 +229,7 @@ describe('AccountsPage', () => {
     expect(apiClient.POST).toHaveBeenCalledWith('/banks/{id}/close', {
       params: { path: { id: 'b1' } },
     });
-    expect(wrapper.text()).toContain('Bank closed');
+    expect(queuedToastText()).toContain('Bank closed');
   });
 
   it("doesn't delete a bank when the confirmation is cancelled", async () => {
@@ -272,7 +273,7 @@ describe('AccountsPage', () => {
     await wrapper.findComponent(EditBankForm).find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Name already used');
+    expect(queuedToastText()).toContain('Name already used');
     expect(wrapper.findComponent(EditBankForm).exists()).toBe(true); // stays in edit mode
   });
 
@@ -292,7 +293,7 @@ describe('AccountsPage', () => {
     await wrapper.findComponent(EditBankForm).find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it("cancels editing a bank's name without saving", async () => {
@@ -324,7 +325,7 @@ describe('AccountsPage', () => {
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it('deletes a bank once the confirmation is accepted', async () => {
@@ -346,7 +347,7 @@ describe('AccountsPage', () => {
     expect(apiClient.DELETE).toHaveBeenCalledWith('/banks/{id}', {
       params: { path: { id: 'b1' } },
     });
-    expect(wrapper.text()).toContain('Bank deleted');
+    expect(queuedToastText()).toContain('Bank deleted');
   });
 
   it('shows an error toast when deleting a bank fails', async () => {
@@ -365,7 +366,7 @@ describe('AccountsPage', () => {
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it('edits an account and closes the edit form once the update completes', async () => {
@@ -428,7 +429,7 @@ describe('AccountsPage', () => {
     expect(apiClient.POST).toHaveBeenCalledWith('/accounts/{id}/close', {
       params: { path: { id: 'a1' } },
     });
-    expect(wrapper.text()).toContain('Account closed');
+    expect(queuedToastText()).toContain('Account closed');
   });
 
   it('shows an error toast when closing an account fails', async () => {
@@ -447,7 +448,7 @@ describe('AccountsPage', () => {
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it('deletes an account once the confirmation is accepted', async () => {
@@ -469,7 +470,7 @@ describe('AccountsPage', () => {
     expect(apiClient.DELETE).toHaveBeenCalledWith('/accounts/{id}', {
       params: { path: { id: 'a1' } },
     });
-    expect(wrapper.text()).toContain('Account deleted');
+    expect(queuedToastText()).toContain('Account deleted');
   });
 
   it('shows an error toast when deleting an account fails', async () => {
@@ -488,7 +489,7 @@ describe('AccountsPage', () => {
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it("doesn't navigate when a control inside the account row is clicked", async () => {

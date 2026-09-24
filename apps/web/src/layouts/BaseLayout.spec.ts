@@ -7,6 +7,7 @@ import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 vi.mock('../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../api/client';
+import { useToast } from '../composables/useToast';
 import { useSessionStore } from '../stores/session.store';
 import BaseLayout from './BaseLayout.vue';
 
@@ -43,6 +44,8 @@ describe('BaseLayout', () => {
     // for its default "" location) until it's actually navigated once.
     await router.push({ name: 'home' });
     apiClient.GET.mockReset();
+    // Module-singleton queue — drop whatever a previous test pushed.
+    useToast().toasts.splice(0);
   });
 
   afterEach(() => {
@@ -66,6 +69,18 @@ describe('BaseLayout', () => {
     const labels = wrapper.findAll('.side-nav-item').map((el) => el.text());
     expect(labels).toEqual(['Dashboard', 'Accounts', 'Reports', 'Settings']);
     expect(wrapper.find('.account-email').text()).toBe('member@example.com');
+  });
+
+  it('renders the one toast stack for every route, signed out or in', async () => {
+    useToast().push('Saved', 'success');
+    wrapper = mount(BaseLayout, withGlobalPlugins(router));
+    expect(wrapper.findAll('.toast-text').map((el) => el.text())).toEqual(['Saved']);
+
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findAll('.toast-container')).toHaveLength(1);
+    expect(wrapper.findAll('.toast-text').map((el) => el.text())).toEqual(['Saved']);
   });
 
   it.each([

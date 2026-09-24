@@ -30,7 +30,6 @@ import type {
 import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
-import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
 import PlusIcon from '../../components/PlusIcon.vue';
 
@@ -341,7 +340,6 @@ function isEditable(operation: Operation): boolean {
         </router-link>
       </div>
     </div>
-    <ToastContainer />
 
     <p
       v-if="isAccountFullyActive && list.items.length === 0 && !hasActiveSearch"

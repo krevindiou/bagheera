@@ -15,7 +15,6 @@ import type { Category, PaymentMethod } from '../operations/operations.types';
 import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
 import type { Scheduler, SchedulerList } from './schedulers.types';
-import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
 import PlusIcon from '../../components/PlusIcon.vue';
 
@@ -156,7 +155,6 @@ function goToPage(newPage: number) {
         {{ $t('schedulers.addScheduler') }}
       </button>
     </div>
-    <ToastContainer />
 
     <BatchActions :selected-ids="selectedIdList" @done="reloadSchedulers" />
 

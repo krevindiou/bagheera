@@ -13,7 +13,6 @@ import CreateAccountForm from './CreateAccountForm.vue';
 import EditBankForm from './EditBankForm.vue';
 import IconButton from '../../components/IconButton.vue';
 import PlusIcon from '../../components/PlusIcon.vue';
-import ToastContainer from '../../components/ToastContainer.vue';
 
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
@@ -199,7 +198,6 @@ async function onAccountCreated(accountId: string) {
         {{ $t('accounts.addAccount') }}
       </button>
     </div>
-    <ToastContainer />
 
     <p v-if="banks.length === 0" class="text-muted">{{ $t('accounts.empty') }}</p>
 

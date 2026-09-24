@@ -17,7 +17,6 @@ import { formatDate, formatMoney } from '../operations/money';
 import { toChartSeries } from '../reports/chartSeries';
 import { toDistributionFacets } from '../reports/distributionSeries';
 import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
-import ToastContainer from '../../components/ToastContainer.vue';
 
 const { t } = useI18n();
 
@@ -62,7 +61,6 @@ const accountTiles = computed(() =>
     <p class="mb-4" style="color: var(--paper-dim); font-size: 15px">
       {{ $t('dashboard.subtitle') }}
     </p>
-    <ToastContainer />
 
     <div
       v-if="dashboard.onboarding === 'no-bank'"

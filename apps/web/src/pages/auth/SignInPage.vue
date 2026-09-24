@@ -7,7 +7,6 @@ import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/brow
 import { apiClient } from '../../api/client';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
-import ToastContainer from '../../components/ToastContainer.vue';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
@@ -72,7 +71,6 @@ async function onSubmit() {
 <template>
   <AuthLayout>
     <h1>{{ $t('auth.signIn.title') }}</h1>
-    <ToastContainer />
 
     <div v-if="banner === 'invalid-credentials'" class="alert alert-danger mt-3" role="alert">
       {{ $t('auth.signIn.invalidCredentials') }}

@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
-import ToastContainer from '../../components/ToastContainer.vue';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const route = useRoute();
@@ -36,7 +35,6 @@ onMounted(async () => {
 <template>
   <AuthLayout>
     <h1>{{ $t('auth.confirmEmailChange.title') }}</h1>
-    <ToastContainer />
 
     <p v-if="pending" class="text-muted mb-0">{{ $t('auth.confirmEmailChange.pending') }}</p>
   </AuthLayout>

@@ -54,9 +54,9 @@ describe('BankChoiceForm', () => {
     await wrapper.find('#account-bank-name').setValue('New Bank');
     await submitAndSettle(wrapper);
 
-    // BankChoiceForm doesn't render its own ToastContainer (only its parent
-    // AccountsPage does), so a standalone mount here has nothing to display
-    // the toast — check the shared toast state directly instead.
+    // BankChoiceForm doesn't render a ToastContainer (only BaseLayout does,
+    // once for the whole app), so a standalone mount here has nothing to
+    // display the toast — check the shared toast state directly instead.
     expect(useToast().toasts[0]?.text).toBe('Bank name already used');
     expect(wrapper.emitted('chosen')).toBeUndefined();
   });

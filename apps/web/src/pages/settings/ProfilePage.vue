@@ -8,7 +8,6 @@ import { completeStepUp } from '../../api/stepUp';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
 import { profileSchema, type ProfileForm } from './settings.schemas';
-import ToastContainer from '../../components/ToastContainer.vue';
 import SettingsTabs from './SettingsTabs.vue';
 
 const session = useSessionStore();
@@ -48,7 +47,6 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <div>
     <SettingsTabs />
-    <ToastContainer />
 
     <form novalidate style="max-width: 380px" @submit="onSubmit">
       <div class="mb-3">

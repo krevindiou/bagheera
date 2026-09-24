@@ -7,7 +7,6 @@ import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/bro
 import { apiClient } from '../../api/client';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
-import ToastContainer from '../../components/ToastContainer.vue';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const route = useRoute();
@@ -88,7 +87,6 @@ async function createAccount() {
 <template>
   <AuthLayout>
     <h1>{{ $t('auth.activate.title') }}</h1>
-    <ToastContainer />
 
     <template v-if="key">
       <p class="text-muted">{{ $t('auth.activate.intro') }}</p>

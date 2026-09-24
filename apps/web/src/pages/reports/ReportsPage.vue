@@ -15,7 +15,6 @@ import { toChartSeries } from './chartSeries';
 import { toDistributionFacets } from './distributionSeries';
 import ReportForm from './ReportForm.vue';
 import type { Report, ReportDistribution, ReportSeries } from './reports.types';
-import ToastContainer from '../../components/ToastContainer.vue';
 import IconButton from '../../components/IconButton.vue';
 import PlusIcon from '../../components/PlusIcon.vue';
 
@@ -183,7 +182,6 @@ function toggleView(report: Report) {
         </button>
       </div>
     </div>
-    <ToastContainer />
 
     <p v-if="reports.length === 0" class="text-muted">{{ $t('reports.empty') }}</p>
 

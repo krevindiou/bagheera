@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
+import { queuedToastText } from '../../test-support/queuedToastText';
 import { submitAndSettle } from '../../test-support/submitAndSettle';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
@@ -12,6 +13,7 @@ import { colorForCurrency } from '../../components/chartColors';
 import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
+import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
 import ReportsPage from './ReportsPage.vue';
 import type { Report, ReportDistribution, ReportSeries } from './reports.types';
@@ -84,6 +86,7 @@ describe('ReportsPage', () => {
     const { state, settle } = useConfirm();
     settle(false);
     state.visible = false;
+    useToast().toasts.splice(0);
   });
 
   afterEach(() => {
@@ -246,7 +249,7 @@ describe('ReportsPage', () => {
     expect(apiClient.DELETE).toHaveBeenCalledWith('/reports/{id}', {
       params: { path: { id: 'r1' } },
     });
-    expect(wrapper.text()).toContain('Report deleted');
+    expect(queuedToastText()).toContain('Report deleted');
   });
 
   it("doesn't delete a report when the confirmation is cancelled", async () => {
@@ -275,7 +278,7 @@ describe('ReportsPage', () => {
     useConfirm().settle(true);
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Something went wrong. Please try again.');
+    expect(queuedToastText()).toContain('Something went wrong. Please try again.');
   });
 
   it("doesn't toggle the row's chart when its delete button is clicked", async () => {

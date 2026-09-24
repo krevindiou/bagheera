@@ -9,7 +9,6 @@ import { getCountryOptions, getDefaultCountry } from '../../composables/useCount
 import { useToast } from '../../composables/useToast';
 import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
 import { registerSchema, type RegisterForm } from './auth.schemas';
-import ToastContainer from '../../components/ToastContainer.vue';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
@@ -56,7 +55,6 @@ const onSubmit = handleSubmit(async (values) => {
 <template>
   <AuthLayout>
     <h1>{{ $t('auth.register.title') }}</h1>
-    <ToastContainer />
 
     <div v-if="genericError" class="alert alert-danger" role="alert">
       {{ $t('auth.register.genericError') }}
