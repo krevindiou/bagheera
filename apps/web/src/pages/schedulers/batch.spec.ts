@@ -12,8 +12,8 @@ import BatchActions from './batch.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
-function jsonResult(status: number) {
-  return { data: undefined, error: undefined, response: new Response(null, { status }) };
+function jsonResult(status: number, data?: unknown) {
+  return { data, error: undefined, response: new Response(null, { status }) };
 }
 
 describe('schedulers BatchActions', () => {
@@ -31,7 +31,7 @@ describe('schedulers BatchActions', () => {
   });
 
   it('deletes the selected schedulers once confirmed', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 2 }));
     const wrapper = mount(BatchActions, {
       ...withGlobalPlugins(),
       props: { selectedIds: ['s1', 's2'] },
@@ -57,6 +57,20 @@ describe('schedulers BatchActions', () => {
 
     expect(apiClient.POST).not.toHaveBeenCalled();
     expect(wrapper.emitted('done')).toBeUndefined();
+  });
+
+  it('shows an error, but still emits done, when the server deletes nothing', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 0 }));
+    const wrapper = mount(BatchActions, {
+      ...withGlobalPlugins(),
+      props: { selectedIds: ['s1'] },
+    });
+    await wrapper.find('[data-testid="scheduler-batch-delete"]').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
+    expect(wrapper.emitted('done')).toHaveLength(1);
   });
 
   it("shows an error and doesn't emit done when the request fails", async () => {

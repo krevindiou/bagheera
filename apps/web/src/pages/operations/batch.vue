@@ -1,79 +1,46 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
-import { useConfirm } from '../../composables/useConfirm';
-import { useToast } from '../../composables/useToast';
+import BatchBar, { type BatchAction } from '../../components/BatchBar.vue';
 
-const props = defineProps<{ selectedIds: string[] }>();
+defineProps<{ selectedIds: string[] }>();
 const emit = defineEmits<{ done: [] }>();
 
-const { confirm } = useConfirm();
-const { push: toast } = useToast();
-const { t } = useI18n();
-
-async function batchDelete() {
-  if (props.selectedIds.length === 0) return;
-  if (!(await confirm())) return;
-
-  const { data, response } = await apiClient.POST('/operations/batch/delete', {
-    body: { ids: props.selectedIds },
-  });
-  if (!response.ok) {
-    toast(t('operations.genericError'), 'error');
-    return;
-  }
-  // The server silently skips ids it won't touch (foreign, closed-account,
-  // deleted — see batch.service.ts), still returning 200. A zero count
-  // means nothing was actually deleted, so don't claim success.
-  const deletedCount = (data as { deletedCount?: number } | undefined)?.deletedCount ?? 0;
-  if (deletedCount === 0) {
-    toast(t('operations.genericError'), 'error');
-    emit('done');
-    return;
-  }
-  toast(t('operations.batch.deleted'), 'success');
-  emit('done');
-}
-
-async function batchReconcile() {
-  if (props.selectedIds.length === 0) return;
-  if (!(await confirm())) return;
-
-  const { data, response } = await apiClient.POST('/operations/batch/reconcile', {
-    body: { ids: props.selectedIds },
-  });
-  if (!response.ok) {
-    toast(t('operations.genericError'), 'error');
-    return;
-  }
-  const reconciledCount = (data as { reconciledCount?: number } | undefined)?.reconciledCount ?? 0;
-  if (reconciledCount === 0) {
-    toast(t('operations.genericError'), 'error');
-    emit('done');
-    return;
-  }
-  toast(t('operations.batch.reconciled'), 'success');
-  emit('done');
-}
+const actions: BatchAction[] = [
+  {
+    labelKey: 'operations.batch.delete',
+    successKey: 'operations.batch.deleted',
+    errorKey: 'operations.genericError',
+    testid: 'batch-delete',
+    danger: true,
+    async run(ids) {
+      const { data, response } = await apiClient.POST('/operations/batch/delete', {
+        body: { ids },
+      });
+      if (!response.ok) return null;
+      return (data as { deletedCount?: number } | undefined)?.deletedCount ?? 0;
+    },
+  },
+  {
+    labelKey: 'operations.batch.reconcile',
+    successKey: 'operations.batch.reconciled',
+    errorKey: 'operations.genericError',
+    testid: 'batch-reconcile',
+    async run(ids) {
+      const { data, response } = await apiClient.POST('/operations/batch/reconcile', {
+        body: { ids },
+      });
+      if (!response.ok) return null;
+      return (data as { reconciledCount?: number } | undefined)?.reconciledCount ?? 0;
+    },
+  },
+];
 </script>
 
 <template>
-  <div v-if="selectedIds.length > 0" class="batch-bar" data-testid="batch-actions">
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-danger"
-      data-testid="batch-delete"
-      @click="batchDelete"
-    >
-      {{ $t('operations.batch.delete') }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-secondary"
-      data-testid="batch-reconcile"
-      @click="batchReconcile"
-    >
-      {{ $t('operations.batch.reconcile') }}
-    </button>
-  </div>
+  <BatchBar
+    :selected-ids="selectedIds"
+    :actions="actions"
+    data-testid="batch-actions"
+    @done="emit('done')"
+  />
 </template>

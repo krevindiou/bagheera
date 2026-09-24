@@ -48,4 +48,25 @@ describe('ConfirmModal', () => {
 
     await expect(pending).resolves.toBe(false);
   });
+
+  it('resolves false and hides once Escape is pressed', async () => {
+    const wrapper = mount(ConfirmModal, withGlobalPlugins());
+    const pending = useConfirm().confirm();
+    await wrapper.vm.$nextTick();
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    await expect(pending).resolves.toBe(false);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.modal').exists()).toBe(false);
+  });
+
+  it('ignores Escape while no confirmation is pending', () => {
+    const wrapper = mount(ConfirmModal, withGlobalPlugins());
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+    expect(useConfirm().state.visible).toBe(false);
+    expect(wrapper.find('.modal').exists()).toBe(false);
+  });
 });

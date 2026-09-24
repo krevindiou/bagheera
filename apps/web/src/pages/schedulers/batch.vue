@@ -1,41 +1,33 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
-import { useConfirm } from '../../composables/useConfirm';
-import { useToast } from '../../composables/useToast';
+import BatchBar, { type BatchAction } from '../../components/BatchBar.vue';
 
-const props = defineProps<{ selectedIds: string[] }>();
+defineProps<{ selectedIds: string[] }>();
 const emit = defineEmits<{ done: [] }>();
 
-const { confirm } = useConfirm();
-const { push: toast } = useToast();
-const { t } = useI18n();
-
-async function batchDelete() {
-  if (props.selectedIds.length === 0) return;
-  if (!(await confirm())) return;
-
-  const { response } = await apiClient.POST('/schedulers/batch/delete', {
-    body: { ids: props.selectedIds },
-  });
-  if (!response.ok) {
-    toast(t('schedulers.genericError'), 'error');
-    return;
-  }
-  toast(t('schedulers.batch.deleted'), 'success');
-  emit('done');
-}
+const actions: BatchAction[] = [
+  {
+    labelKey: 'schedulers.batch.delete',
+    successKey: 'schedulers.batch.deleted',
+    errorKey: 'schedulers.genericError',
+    testid: 'scheduler-batch-delete',
+    danger: true,
+    async run(ids) {
+      const { data, response } = await apiClient.POST('/schedulers/batch/delete', {
+        body: { ids },
+      });
+      if (!response.ok) return null;
+      return (data as { deletedCount?: number } | undefined)?.deletedCount ?? 0;
+    },
+  },
+];
 </script>
 
 <template>
-  <div v-if="selectedIds.length > 0" class="batch-bar" data-testid="scheduler-batch-actions">
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-danger"
-      data-testid="scheduler-batch-delete"
-      @click="batchDelete"
-    >
-      {{ $t('schedulers.batch.delete') }}
-    </button>
-  </div>
+  <BatchBar
+    :selected-ids="selectedIds"
+    :actions="actions"
+    data-testid="scheduler-batch-actions"
+    @done="emit('done')"
+  />
 </template>

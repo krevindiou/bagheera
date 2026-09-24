@@ -236,7 +236,7 @@ describe('SchedulersPage', () => {
   it('shows batch actions once rows are selected, and reloads after a batch delete', async () => {
     mockGet({ schedulers: { items: [scheduler()], total: 1, page: 1, pageSize: 20 } });
     apiClient.POST.mockResolvedValueOnce({
-      data: undefined,
+      data: { deletedCount: 1 },
       error: undefined,
       response: new Response(null, { status: 200 }),
     });

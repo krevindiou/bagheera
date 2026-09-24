@@ -168,7 +168,7 @@ describe('ReportsPage', () => {
   it('shows batch actions once a report is selected, and reloads after a batch delete', async () => {
     mockGet([report()]);
     apiClient.POST.mockResolvedValueOnce({
-      data: undefined,
+      data: { deletedCount: 1 },
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
