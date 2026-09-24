@@ -3,12 +3,11 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
+import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import { colorForCurrency } from '../../components/chartColors';
 import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
-  SYNTHESIS_CHART_RANGE_LABEL_KEYS,
-  SYNTHESIS_CHART_RANGES,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
 import { useSelection } from '../../composables/useSelection';
@@ -344,21 +343,13 @@ function isEditable(operation: Operation): boolean {
       />
     </div>
 
-    <div v-if="chartSeries.length > 0" class="panel panel-lg p-4 mb-4">
-      <div class="d-flex justify-content-end mb-3">
-        <select
-          v-model="chartRange"
-          class="form-select form-select-sm w-auto"
-          :aria-label="$t('chartRange.label')"
-          data-testid="account-chart-range"
-        >
-          <option v-for="range in SYNTHESIS_CHART_RANGES" :key="range" :value="range">
-            {{ $t(SYNTHESIS_CHART_RANGE_LABEL_KEYS[range]) }}
-          </option>
-        </select>
-      </div>
-      <SynthesisChart :series="chartSeries" :axis-bounds="chartAxisBounds" />
-    </div>
+    <SynthesisChartPanel
+      v-if="chartSeries.length > 0"
+      v-model:range="chartRange"
+      :series="chartSeries"
+      :axis-bounds="chartAxisBounds"
+      range-testid="account-chart-range"
+    />
 
     <div>
       <BatchActions

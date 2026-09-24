@@ -2,13 +2,12 @@
 import { computed, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import SynthesisChart, { type SynthesisChartSeries } from '../../components/SynthesisChart.vue';
+import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
+import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
 import { colorForCurrency } from '../../components/chartColors';
 import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
-  SYNTHESIS_CHART_RANGE_LABEL_KEYS,
-  SYNTHESIS_CHART_RANGES,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
 import { formatDate } from '../operations/money';
@@ -128,29 +127,15 @@ const accountTiles = computed(() =>
         </div>
       </section>
 
-      <section
+      <SynthesisChartPanel
         v-if="!dashboard.synthesisChart.hidden"
-        class="panel panel-lg mb-4 p-4"
+        v-model:range="chartRange"
+        :title="$t('dashboard.synthesisChart')"
+        :series="toSynthesisSeries(dashboard.synthesisChart)"
+        :axis-bounds="dashboard.synthesisChart.axisBounds"
+        range-testid="synthesis-chart-range"
         data-testid="synthesis-chart"
-      >
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="h6 mb-0">{{ $t('dashboard.synthesisChart') }}</h2>
-          <select
-            v-model="chartRange"
-            class="form-select form-select-sm w-auto"
-            :aria-label="$t('chartRange.label')"
-            data-testid="synthesis-chart-range"
-          >
-            <option v-for="range in SYNTHESIS_CHART_RANGES" :key="range" :value="range">
-              {{ $t(SYNTHESIS_CHART_RANGE_LABEL_KEYS[range]) }}
-            </option>
-          </select>
-        </div>
-        <SynthesisChart
-          :series="toSynthesisSeries(dashboard.synthesisChart)"
-          :axis-bounds="dashboard.synthesisChart.axisBounds"
-        />
-      </section>
+      />
 
       <section class="mb-4">
         <h2 class="h6 mb-3">{{ $t('dashboard.accountsOverview') }}</h2>
