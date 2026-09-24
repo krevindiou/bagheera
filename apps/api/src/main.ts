@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { initSentry } from './logging/sentry';
@@ -10,6 +9,7 @@ import { initSentry } from './logging/sentry';
 initSentry();
 
 import { AppModule } from './app.module';
+import { apiResponseHeaders } from './common/api-response-headers';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 
 async function bootstrap() {
@@ -50,11 +50,7 @@ async function bootstrap() {
       },
     }),
   );
-  // Ask crawlers not to index API responses (spec section 7).
-  app.use((_req: Request, res: Response, next: NextFunction) => {
-    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    next();
-  });
+  app.use(apiResponseHeaders);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 

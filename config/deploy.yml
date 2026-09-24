@@ -55,6 +55,11 @@ builder:
 env:
   clear:
     CADDY_SITE_ADDRESS: "http://:80"
+    # Read by the Caddyfile's security headers: HSTS, sent only here where
+    # the site is always HTTPS; and the Sentry ingest origin the SPA's
+    # Content-Security-Policy allows — the DSN's host, empty without one.
+    HSTS_POLICY: "max-age=63072000; includeSubDomains"
+    SENTRY_INGEST_ORIGIN: "<%= ENV.fetch("VITE_SENTRY_DSN", "")[%r{\Ahttps://[^@/]+@([^/]+)/}, 1]&.then { |host| "https://#{host}" } %>"
 
 accessories:
   # Container name Kamal gives this is "bagheera-web-postgres" — that's

@@ -22,12 +22,38 @@
 {$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
 
-	@api path /health /api* /auth* /members* /banks* /accounts* /operations* /schedulers* /reports* /dashboard* /reference-data* /webauthn*
-	reverse_proxy @api api:3000 {
-		header_up X-Forwarded-Proto https
+	# Browser security headers, on the SPA and the proxied API responses
+	# alike (for the latter, they replace the api's own helmet() ones).
+	header {
+		# Pins HTTPS for two years: set only where the site is always served
+		# over HTTPS (config/deploy.yml). Anywhere else — a local run on
+		# https://localhost — max-age=0 keeps browsers from pinning HTTPS for
+		# every dev server on localhost.
+		Strict-Transport-Security "{$HSTS_POLICY:max-age=0}"
+		# The built SPA loads nothing but its own files: no inline script or
+		# style, self-hosted fonts. The one outside origin is Sentry's ingest
+		# host, when VITE_SENTRY_DSN is set (config/deploy.yml derives it).
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' {$SENTRY_INGEST_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
 	}
 
-	root * /srv
-	try_files {path} /index.html
-	file_server
+	# API routes go to the api container, everything else to the SPA — in
+	# separate handle blocks. Caddy runs try_files, a rewrite, before
+	# reverse_proxy whatever their order here, so a site-wide try_files
+	# turned every API path into /index.html before @api was matched: each
+	# API call got the SPA's HTML back, and /health passed with the api down.
+	@api path /health /api* /auth* /members* /banks* /accounts* /operations* /schedulers* /reports* /dashboard* /reference-data* /webauthn*
+	handle @api {
+		reverse_proxy api:3000 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
 }
