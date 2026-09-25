@@ -1,13 +1,17 @@
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
-.PHONY: help build up down ps shell-api shell-web migrate test test-unit test-integration test-e2e lint format
+.PHONY: help build build-images up down ps shell-api shell-web migrate test test-unit test-integration test-e2e lint format
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-build: ## Build images
+build: ## Build api + web and their packages/* deps, as CI's Build job does
+	$(COMPOSE) exec --workdir /app api pnpm --filter api... build
+	$(COMPOSE) exec --workdir /app web pnpm --filter web... build
+
+build-images: ## Build Docker images
 	$(COMPOSE) build
 
 up: ## Start stack

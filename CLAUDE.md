@@ -55,13 +55,14 @@ Every `make`/`docker compose` target above is dev-only; deploys go through Kamal
 
 Never commit or push unless the user explicitly asks.
 
-Run these in order; if any fail, fix and re-run before moving to the next. Do not commit until all five pass:
+Run these in order; if any fail, fix and re-run before moving to the next. Do not commit until every step passes:
 
 1. Tests in sync with the codebase: new code has new tests, changed code has updated tests, removed code has its tests removed too. Compare coverage before/after (`pnpm test:cov`, see below) — it should not drop.
 2. `make format`
 3. `make lint`
-4. `make test-unit`
-5. `security-review` skill
+4. `make build`
+5. `make test-unit`
+6. `security-review` skill
 
 ## Architecture
 
