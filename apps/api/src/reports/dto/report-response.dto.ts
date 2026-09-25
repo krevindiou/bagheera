@@ -64,5 +64,9 @@ export class ReportDistributionSeriesDto {
 
 export class ReportDistributionDto {
   hidden!: boolean;
+  // What the labels are (categories, third parties or payment methods), so
+  // clients know whether a label is reference data they can translate.
+  @ApiProperty({ enum: DATA_GROUPINGS })
+  dataGrouping!: (typeof DATA_GROUPINGS)[number];
   series!: ReportDistributionSeriesDto[];
 }

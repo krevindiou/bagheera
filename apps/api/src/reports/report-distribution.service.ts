@@ -36,6 +36,7 @@ export interface ReportDistributionSeries {
 
 export interface ReportDistribution {
   hidden: boolean;
+  dataGrouping: 'category' | 'third_party' | 'payment_method';
   series: ReportDistributionSeries[];
 }
 
@@ -69,7 +70,7 @@ export class ReportDistributionService {
   ): Promise<ReportDistribution> {
     const accounts = await effectiveAccounts(this.db, rpt.id, memberId);
     if (accounts.length === 0) {
-      return { hidden: true, series: [] };
+      return { hidden: true, dataGrouping: rpt.dataGrouping!, series: [] };
     }
     const accountIds = accounts.map((a) => a.id);
     const categoryIds = await effectiveCategoryIds(this.db, rpt.id);
@@ -162,7 +163,7 @@ export class ReportDistributionService {
       }
     }
 
-    return { hidden: series.length === 0, series };
+    return { hidden: series.length === 0, dataGrouping: rpt.dataGrouping!, series };
   }
 
   // Grouping + sum aggregation happens in Postgres (GROUP BY on the
