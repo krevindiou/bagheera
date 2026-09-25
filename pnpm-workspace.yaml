@@ -20,9 +20,11 @@ overrides:
   # GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf,
   # GHSA-jqff-g426-hqxp.
   fast-uri: '>=3.1.6'
+  # Transitive via @nestjs/platform-express; no file-upload routes, but clears
+  # three high DoS advisories. Remove once NestJS 12 ships a fixed multer.
+  multer: '>=2.3.0'
 allowBuilds:
   '@scarf/scarf': false # telemetry postinstall, not needed
-  argon2: true
   cpu-features: true # native ssh2 perf opt, used by testcontainers
   esbuild: true
   msgpackr-extract: true # native perf opt, has JS fallback either way
