@@ -2,8 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import {
+  REFERENCE_QUERY_KEYS,
+  useAccountsQuery,
+  useBanksQuery,
+} from '../../composables/useReferenceQueries';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import { formatMoney } from '../operations/money';
@@ -22,28 +27,13 @@ const route = useRoute();
 
 const queryClient = useQueryClient();
 
-const banksQuery = useQuery({
-  queryKey: ['banks'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/banks');
-    return (data as Bank[] | undefined) ?? [];
-  },
-});
-const banks = computed(() => banksQuery.data.value ?? []);
-
-const accountsQuery = useQuery({
-  queryKey: ['accounts'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/accounts');
-    return (data as Account[] | undefined) ?? [];
-  },
-});
-const accounts = computed(() => accountsQuery.data.value ?? []);
+const { banks, banksQuery } = useBanksQuery();
+const { accounts } = useAccountsQuery();
 
 async function reload() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['banks'] }),
-    queryClient.invalidateQueries({ queryKey: ['accounts'] }),
+    queryClient.invalidateQueries({ queryKey: REFERENCE_QUERY_KEYS.banks }),
+    queryClient.invalidateQueries({ queryKey: REFERENCE_QUERY_KEYS.accounts }),
   ]);
 }
 

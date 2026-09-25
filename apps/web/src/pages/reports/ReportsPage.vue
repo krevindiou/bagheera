@@ -4,10 +4,9 @@ import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import { useConfirm } from '../../composables/useConfirm';
+import { useAccountsQuery, useCategoriesQuery } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
 import { useToast } from '../../composables/useToast';
-import type { Account } from '../accounts/accounts.types';
-import type { Category } from '../operations/operations.types';
 import BatchActions from './batch.vue';
 import ReportChart from './ReportChart.vue';
 import ReportForm from './ReportForm.vue';
@@ -30,23 +29,8 @@ const reportsQuery = useQuery({
 });
 const reports = computed(() => reportsQuery.data.value ?? []);
 
-const accountsQuery = useQuery({
-  queryKey: ['accounts'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/accounts');
-    return (data as Account[] | undefined) ?? [];
-  },
-});
-const accounts = computed(() => accountsQuery.data.value ?? []);
-
-const categoriesQuery = useQuery({
-  queryKey: ['categories'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/reference-data/categories');
-    return (data as Category[] | undefined) ?? [];
-  },
-});
-const categories = computed(() => categoriesQuery.data.value ?? []);
+const { accounts } = useAccountsQuery();
+const { categories } = useCategoriesQuery();
 
 async function reloadReports() {
   await queryClient.invalidateQueries({ queryKey: ['reports'] });

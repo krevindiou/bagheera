@@ -10,8 +10,13 @@ import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
+import {
+  useAccountsQuery,
+  useBanksQuery,
+  useCategoriesQuery,
+  usePaymentMethodsQuery,
+} from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
-import type { Account, Bank } from '../accounts/accounts.types';
 import { formatDate, formatMoney } from './money';
 import {
   categoryLabel,
@@ -19,13 +24,7 @@ import {
   paymentMethodIcon,
   paymentMethodName,
 } from './operations.types';
-import type {
-  Category,
-  Operation,
-  OperationList,
-  PaymentMethod,
-  SearchCriteria,
-} from './operations.types';
+import type { Operation, OperationList, SearchCriteria } from './operations.types';
 import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
@@ -56,42 +55,11 @@ const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
 // open right after the mutation closed it.
 const suppressRecallOpen = ref(false);
 
-const accountsQuery = useQuery({
-  queryKey: ['accounts'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/accounts');
-    return (data as Account[] | undefined) ?? [];
-  },
-});
-const accounts = computed(() => accountsQuery.data.value ?? []);
+const { accounts } = useAccountsQuery();
+const { banks } = useBanksQuery();
+const { categories } = useCategoriesQuery();
+const { paymentMethods } = usePaymentMethodsQuery();
 const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
-
-const banksQuery = useQuery({
-  queryKey: ['banks'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/banks');
-    return (data as Bank[] | undefined) ?? [];
-  },
-});
-const banks = computed(() => banksQuery.data.value ?? []);
-
-const categoriesQuery = useQuery({
-  queryKey: ['categories'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/reference-data/categories');
-    return (data as Category[] | undefined) ?? [];
-  },
-});
-const categories = computed(() => categoriesQuery.data.value ?? []);
-
-const paymentMethodsQuery = useQuery({
-  queryKey: ['payment-methods'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/reference-data/payment-methods');
-    return (data as PaymentMethod[] | undefined) ?? [];
-  },
-});
-const paymentMethods = computed(() => paymentMethodsQuery.data.value ?? []);
 
 const balanceQuery = useQuery({
   queryKey: computed(() => ['balance', accountId.value]),
