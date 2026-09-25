@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import IORedis from 'ioredis';
+import { reportFinalJobFailure } from '../common/report-job-failure';
 import { GENERATION_QUEUE_NAME, GenerationJob } from './generation-queue.service';
 import { SchedulerGenerationService } from './generation.service';
 
@@ -30,6 +31,7 @@ export function createGenerationWorker(
   );
   worker.on('failed', (job, err) => {
     logger.error(`Generation job ${job?.id} failed: ${err.message}`);
+    reportFinalJobFailure(job, err);
   });
   return worker;
 }

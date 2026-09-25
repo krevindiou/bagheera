@@ -3,6 +3,8 @@ import type { Server } from 'http';
 import type { Pool } from 'pg';
 import request from 'supertest';
 import { PG_POOL } from '../db/db.constants';
+import type { RedisClientType } from 'redis';
+import { VALKEY_CLIENT } from '../session/session.constants';
 import { createTestApp } from '../test-support/create-test-app';
 
 // Kamal's zero-downtime deploy polls this exact path (config/deploy.yml's
@@ -40,6 +42,19 @@ describe('GET /health', () => {
     await agent.get('/auth/csrf-token').expect(200);
     const withSession = await agent.get('/health').expect(200);
     expect(withSession.headers['set-cookie']).toBeUndefined();
+  });
+
+  // Every request needs Valkey (sessions, rate limits), so a container that
+  // can't reach it must be pulled out of rotation like one without a database.
+  it('returns 503 when Valkey does not answer', async () => {
+    const ping = jest
+      .spyOn(app.get<RedisClientType>(VALKEY_CLIENT), 'ping')
+      .mockRejectedValueOnce(new Error('ECONNREFUSED'));
+
+    const res = await request(app.getHttpServer()).get('/health');
+
+    expect(res.status).toBe(503);
+    ping.mockRestore();
   });
 
   // The dangerous direction: if this ever regressed into always returning

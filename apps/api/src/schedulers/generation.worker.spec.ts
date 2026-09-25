@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import type IORedis from 'ioredis';
+import { reportFinalJobFailure } from '../common/report-job-failure';
 import type { GenerationJob } from './generation-queue.service';
 import type { SchedulerGenerationService } from './generation.service';
 import { createGenerationWorker } from './generation.worker';
@@ -9,6 +10,7 @@ import { createGenerationWorker } from './generation.worker';
 // it's handed instead. (Prefixed `mock` so jest.mock's hoisted factory may
 // reference it.)
 const mockWorker = { on: jest.fn() };
+jest.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: jest.fn() }));
 jest.mock('bullmq', () => ({ Worker: jest.fn().mockImplementation(() => mockWorker) }));
 
 type Processor = (job: Job<GenerationJob>) => Promise<void>;
@@ -55,9 +57,11 @@ describe('createGenerationWorker', () => {
       (job: { id: string }, err: Error) => void,
     ];
 
-    listener({ id: '7' }, new Error('deadlock'));
+    const failed = { id: '7' };
+    listener(failed, new Error('deadlock'));
 
     expect(event).toBe('failed');
+    expect(reportFinalJobFailure).toHaveBeenCalledWith(failed, expect.any(Error));
     expect(error).toHaveBeenCalledWith('Generation job 7 failed: deadlock');
     error.mockRestore();
   });

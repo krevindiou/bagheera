@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
 import type IORedis from 'ioredis';
+import { reportFinalJobFailure } from '../common/report-job-failure';
 import type { SignupRequestService } from '../members/signup-request.service';
 import type { EmailMessage, SignupRequest } from './email-message';
 import { EmailWorker } from './email.worker';
@@ -11,6 +12,7 @@ import { EmailWorker } from './email.worker';
 type Processor = (job: Job<EmailMessage | SignupRequest>) => Promise<void>;
 const mockWorker = { on: jest.fn(), close: jest.fn().mockResolvedValue(undefined) };
 let mockProcessor: Processor | undefined;
+jest.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: jest.fn() }));
 jest.mock('bullmq', () => ({
   Worker: jest.fn().mockImplementation((_queue: string, processor: Processor) => {
     mockProcessor = processor;
@@ -66,9 +68,11 @@ describe('EmailWorker', () => {
       (job: { id: string }, err: Error) => void,
     ];
 
-    listener({ id: '42' }, new Error('SMTP down'));
+    const failed = { id: '42' };
+    listener(failed, new Error('SMTP down'));
 
     expect(event).toBe('failed');
+    expect(reportFinalJobFailure).toHaveBeenCalledWith(failed, expect.any(Error));
     expect(error).toHaveBeenCalledWith('Email job 42 failed: SMTP down');
     error.mockRestore();
   });

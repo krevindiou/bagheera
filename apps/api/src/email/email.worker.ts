@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import IORedis from 'ioredis';
 import { Job, Worker } from 'bullmq';
+import { reportFinalJobFailure } from '../common/report-job-failure';
 import { SignupRequestService } from '../members/signup-request.service';
 import {
   EMAIL_PROVIDER,
@@ -32,6 +33,7 @@ export class EmailWorker implements OnModuleDestroy {
     );
     this.worker.on('failed', (job, err) => {
       this.logger.error(`Email job ${job?.id} failed: ${err.message}`);
+      reportFinalJobFailure(job, err);
     });
   }
 
