@@ -10,6 +10,7 @@ import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
+import { useAccountContext } from '../../composables/useAccountContext';
 import {
   useAccountsQuery,
   useBanksQuery,
@@ -59,7 +60,7 @@ const { accounts } = useAccountsQuery();
 const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 const { paymentMethods } = usePaymentMethodsQuery();
-const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
+const { account, bank, isFullyActive, currency } = useAccountContext(accountId);
 
 const balanceQuery = useQuery({
   queryKey: computed(() => ['balance', accountId.value]),
@@ -140,15 +141,6 @@ const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
 
-// "Fully active": neither the account nor its bank is closed or deleted.
-// Deleted accounts are unreachable (routing/the accounts query already
-// exclude them), so only the closed flags matter here.
-const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
-const isAccountFullyActive = computed(
-  () =>
-    !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
-);
-
 const searchMutation = useMutation({
   mutationFn: async (criteria: SearchCriteria) => {
     const { data } = await apiClient.POST('/operations/search', {
@@ -215,7 +207,7 @@ async function refreshAfterBatch() {
 
 function amountLabel(operation: Operation): string {
   const minorUnits = operation.debit ?? operation.credit ?? 0;
-  return formatMoney(minorUnits, account.value?.currency ?? 'USD');
+  return formatMoney(minorUnits, currency.value);
 }
 
 function startCreate() {
@@ -255,12 +247,12 @@ function isEditable(operation: Operation): boolean {
          which is hidden on closed accounts. -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <h1 v-if="account" class="mb-0" style="font-size: 24px">
-        {{ accountBank?.name }} — {{ account.name }}
+        {{ bank?.name }} — {{ account.name }}
       </h1>
       <h1 v-else class="mb-0" style="font-size: 24px">{{ $t('operations.title') }}</h1>
       <div class="d-flex flex-wrap gap-2">
         <button
-          v-if="isAccountFullyActive"
+          v-if="isFullyActive"
           type="button"
           class="btn btn-primary d-inline-flex align-items-center gap-1"
           @click="startCreate"
@@ -293,7 +285,7 @@ function isEditable(operation: Operation): boolean {
     </div>
 
     <p
-      v-if="isAccountFullyActive && list.items.length === 0 && !hasActiveSearch"
+      v-if="isFullyActive && list.items.length === 0 && !hasActiveSearch"
       class="text-muted mb-3"
       data-testid="onboarding-tip"
     >
@@ -305,7 +297,7 @@ function isEditable(operation: Operation): boolean {
         variant="chip"
         :label="$t('operations.balance')"
         :amount="balance.balance"
-        :currency="account?.currency ?? 'USD'"
+        :currency="currency"
         :reconciled="balance.reconciledBalance"
         primary
       />
@@ -320,11 +312,7 @@ function isEditable(operation: Operation): boolean {
     />
 
     <div>
-      <BatchActions
-        v-if="isAccountFullyActive"
-        :selected-ids="selectedIdList"
-        @done="refreshAfterBatch"
-      />
+      <BatchActions v-if="isFullyActive" :selected-ids="selectedIdList" @done="refreshAfterBatch" />
 
       <div v-if="list.items.length === 0" class="mb-3">
         <p class="text-muted">{{ $t('operations.empty') }}</p>
@@ -335,7 +323,7 @@ function isEditable(operation: Operation): boolean {
           <table class="table" data-testid="operations-table">
             <thead>
               <tr>
-                <th v-if="isAccountFullyActive"></th>
+                <th v-if="isFullyActive"></th>
                 <th></th>
                 <th>{{ $t('operations.thirdParty') }}</th>
                 <th class="text-end">{{ $t('operations.amount') }}</th>
@@ -354,7 +342,7 @@ function isEditable(operation: Operation): boolean {
                 :style="isEditable(operation) ? 'cursor: pointer' : undefined"
                 @click="isEditable(operation) && startEdit(operation)"
               >
-                <td v-if="isAccountFullyActive" @click.stop>
+                <td v-if="isFullyActive" @click.stop>
                   <input
                     v-if="isEditable(operation)"
                     type="checkbox"

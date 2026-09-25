@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { useAccountContext } from '../../composables/useAccountContext';
 import {
   useAccountsQuery,
   useBanksQuery,
@@ -41,16 +42,7 @@ const { accounts } = useAccountsQuery();
 const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 const { paymentMethods } = usePaymentMethodsQuery();
-
-const account = computed(() => accounts.value.find((a) => a.id === accountId.value) ?? null);
-
-// "Fully active": neither the account nor its bank is closed or
-// deleted (mirrors apps/web/src/pages/operations/OperationsPage.vue).
-const accountBank = computed(() => banks.value.find((b) => b.id === account.value?.bankId) ?? null);
-const isAccountFullyActive = computed(
-  () =>
-    !!account.value && !account.value.closed && !!accountBank.value && !accountBank.value.closed,
-);
+const { account, isFullyActive, currency } = useAccountContext(accountId);
 
 const schedulersQuery = useQuery({
   queryKey: computed(() => ['schedulers', accountId.value, page.value]),
@@ -81,7 +73,7 @@ async function reloadSchedulers() {
 
 function amountLabel(scheduler: Scheduler): string {
   const minorUnits = scheduler.debit ?? scheduler.credit ?? 0;
-  return formatMoney(minorUnits, account.value?.currency ?? 'USD');
+  return formatMoney(minorUnits, currency.value);
 }
 
 function startCreate() {
@@ -115,7 +107,7 @@ async function onSaved() {
         {{ $t('schedulers.title') }}<span v-if="account"> — {{ account.name }}</span>
       </h1>
       <button
-        v-if="isAccountFullyActive"
+        v-if="isFullyActive"
         type="button"
         class="btn btn-primary d-inline-flex align-items-center gap-1"
         @click="startCreate"
