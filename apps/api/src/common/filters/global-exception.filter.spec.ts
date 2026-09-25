@@ -41,6 +41,21 @@ describe('GlobalExceptionFilter', () => {
     );
   });
 
+  it('adds a stable code (and params) to translatable business errors', async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      new HttpException('You can have at most 50 banks.', 422),
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: 'quota_exceeded',
+        params: { limit: 50, kind: 'banks' },
+        message: 'You can have at most 50 banks.',
+      }),
+    );
+  });
+
   it("uses an HttpException's object {message} response as-is (e.g. class-validator's array)", async () => {
     const res = fakeResponse();
     const exception = new BadRequestException({

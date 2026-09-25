@@ -4,6 +4,10 @@ export interface ErrorResponseBody {
   statusCode: number;
   category: ErrorCategory;
   message: string | string[];
+  /** Stable code for translatable business errors; absent otherwise. */
+  code?: string;
+  /** Values to interpolate in the translated message (e.g. a quota limit). */
+  params?: Record<string, string | number>;
   path: string;
   timestamp: string;
 }

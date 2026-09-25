@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Sentry } from '../../logging/sentry';
+import { errorCodeOf } from './error-codes';
 import { categorize, ErrorResponseBody } from './error-response';
 
 /**
@@ -39,6 +40,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode,
       category: categorize(statusCode),
       message,
+      ...errorCodeOf(message),
       path: request.url,
       timestamp: new Date().toISOString(),
     };
