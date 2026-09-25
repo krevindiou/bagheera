@@ -121,28 +121,30 @@ export class AccountService {
     }
     requireBelowQuota('accounts', await this.ownership.countOwned('accounts', memberId));
 
-    const [created] = await this.db
-      .insert(account)
-      .values({
-        bankId: dto.bankId,
-        name: dto.name,
-        currency: dto.currency,
-      })
-      .returning();
-
     const minorUnits = toMinorUnits(dto.initialBalance ?? 0);
-    if (minorUnits !== 0) {
-      await this.db.insert(operation).values({
-        accountId: created.id,
-        paymentMethodId: INITIAL_BALANCE_PAYMENT_METHOD_ID,
-        thirdParty: 'Initial balance',
-        credit: minorUnits > 0 ? minorUnits : null,
-        debit: minorUnits < 0 ? (-(minorUnits as number) as MinorUnits) : null,
-        reconciled: true,
-      });
-    }
+    return this.db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(account)
+        .values({
+          bankId: dto.bankId,
+          name: dto.name,
+          currency: dto.currency,
+        })
+        .returning();
 
-    return created;
+      if (minorUnits !== 0) {
+        await tx.insert(operation).values({
+          accountId: created.id,
+          paymentMethodId: INITIAL_BALANCE_PAYMENT_METHOD_ID,
+          thirdParty: 'Initial balance',
+          credit: minorUnits > 0 ? minorUnits : null,
+          debit: minorUnits < 0 ? (-(minorUnits as number) as MinorUnits) : null,
+          reconciled: true,
+        });
+      }
+
+      return created;
+    });
   }
 
   // Cumulative end-of-month balance for a trailing window (12/24 months,
