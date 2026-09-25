@@ -10,6 +10,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
+import { reachableAccountsOf } from '../security/reachable';
 
 @Injectable()
 export class ReportService {
@@ -32,14 +33,7 @@ export class ReportService {
       .select({ id: account.id })
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(
-        and(
-          inArray(account.id, accountIds),
-          eq(bank.memberId, memberId),
-          eq(account.deleted, false),
-          eq(bank.deleted, false),
-        ),
-      );
+      .where(and(inArray(account.id, accountIds), reachableAccountsOf(memberId)));
     return rows.map((row) => row.id);
   }
 

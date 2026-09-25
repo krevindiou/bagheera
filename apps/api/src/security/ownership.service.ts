@@ -5,6 +5,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, scheduler } from '../db/schema';
 import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from './ids';
 import type { QuotaKind } from './member-quotas';
+import { reachableAccountsOf } from './reachable';
 
 async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
   const [row] = await query;
@@ -37,11 +38,7 @@ export class OwnershipService {
   // reachable by the rules above (nothing deleted along its chain), closed
   // ones included.
   async countOwned(kind: QuotaKind, memberId: MemberId): Promise<number> {
-    const reachable = and(
-      eq(bank.memberId, memberId),
-      eq(bank.deleted, false),
-      eq(account.deleted, false),
-    );
+    const reachable = reachableAccountsOf(memberId);
     switch (kind) {
       case 'banks':
         return total(

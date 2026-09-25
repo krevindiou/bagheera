@@ -27,6 +27,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { reachableAccountsOf } from '../security/reachable';
 
 export interface AccountChartPoint {
   period: string;
@@ -54,11 +55,7 @@ export class AccountService {
 
   async list(req: Request, bankId?: string) {
     const memberId = requireMemberId(req);
-    const conditions = [
-      eq(bank.memberId, memberId),
-      eq(bank.deleted, false),
-      eq(account.deleted, false),
-    ];
+    const conditions = [reachableAccountsOf(memberId)];
     if (bankId) {
       conditions.push(eq(account.bankId, bankId));
     }

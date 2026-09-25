@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { account, bank, reportAccount } from '../db/schema';
+import { reachableAccountsOf } from '../security/reachable';
 
 export interface EffectiveAccount {
   id: string;
@@ -31,7 +32,7 @@ export async function effectiveAccounts(
       .select({ id: account.id, currency: account.currency })
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(and(eq(bank.memberId, memberId), eq(account.deleted, false), eq(bank.deleted, false)));
+      .where(reachableAccountsOf(memberId));
   }
 
   return db
