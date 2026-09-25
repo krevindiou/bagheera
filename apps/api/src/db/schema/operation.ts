@@ -5,6 +5,7 @@ import {
   boolean,
   check,
   date,
+  index,
   pgTable,
   text,
   timestamp,
@@ -52,6 +53,18 @@ export const operation = pgTable(
   },
   (table) => [
     uniqueIndex('operation_transfer_operation_id_unique').on(table.transferOperationId),
+    index('operation_account_id_value_date_idx').on(
+      table.accountId,
+      table.valueDate.desc(),
+      table.createdAt.desc(),
+      table.id.desc(),
+    ),
+    index('operation_scheduler_id_value_date_idx')
+      .on(table.schedulerId, table.valueDate)
+      .where(sql`${table.schedulerId} is not null`),
+    index('operation_transfer_account_id_idx')
+      .on(table.transferAccountId)
+      .where(sql`${table.transferAccountId} is not null`),
     check(
       'operation_debit_credit_exclusive',
       sql`(${table.debit} is null) <> (${table.credit} is null)`,

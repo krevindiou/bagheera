@@ -4,6 +4,7 @@ import {
   boolean,
   check,
   date,
+  index,
   pgTable,
   smallint,
   text,
@@ -49,6 +50,7 @@ export const scheduler = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    index('scheduler_account_id_idx').on(table.accountId),
     check(
       'scheduler_debit_credit_exclusive',
       sql`(${table.debit} is null) <> (${table.credit} is null)`,
