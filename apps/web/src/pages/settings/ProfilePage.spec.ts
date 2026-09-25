@@ -30,10 +30,10 @@ type ApiResult = ReturnType<typeof jsonResult> | ReturnType<typeof errorResult>;
 // initial value — the session needs to be populated on the *same* pinia
 // instance before mount(), not after (see withGlobalPlugins' own doc-comment
 // on why a fresh pinia is activated as soon as it's called).
-function mountWithSession(email: string) {
+function mountWithSession(email: string, attachTo?: Element) {
   const plugins = withGlobalPlugins();
   useSessionStore().setMember({ email, locale: 'en' });
-  return mount(ProfilePage, plugins);
+  return mount(ProfilePage, { ...plugins, ...(attachTo ? { attachTo } : {}) });
 }
 
 /**
@@ -66,6 +66,15 @@ describe('ProfilePage', () => {
     expect((wrapper.find('#profile-email').element as HTMLInputElement).value).toBe(
       'member@example.com',
     );
+  });
+
+  // Native `autofocus` only fires on a full page load; reached through a
+  // client-side navigation, focus would stay on the link that was clicked.
+  it('focuses the email field when the page mounts', () => {
+    const wrapper = mountWithSession('member@example.com', document.body);
+
+    expect(document.activeElement).toBe(wrapper.find('#profile-email').element);
+    wrapper.unmount();
   });
 
   it('completes the step-up ceremony, then submits the change and shows a success toast', async () => {

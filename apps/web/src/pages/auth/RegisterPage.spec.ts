@@ -32,6 +32,16 @@ describe('RegisterPage', () => {
     expect(wrapper.findAll('#register-country option').length).toBeGreaterThan(200);
   });
 
+  // Native `autofocus` only fires on a full page load; reached through a
+  // client-side navigation (e.g. the sign-in page's link), focus would stay
+  // on the link that was clicked.
+  it('focuses the email field when the page mounts', () => {
+    const wrapper = mount(RegisterPage, { ...withGlobalPlugins(), attachTo: document.body });
+
+    expect(document.activeElement).toBe(wrapper.find('#register-email').element);
+    wrapper.unmount();
+  });
+
   it('registers, shows a toast, and redirects to sign-in', async () => {
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,

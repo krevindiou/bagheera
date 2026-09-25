@@ -71,10 +71,10 @@ const onSubmit = handleSubmit(async (values) => {
           id="register-email"
           v-model="email"
           v-bind="emailAttrs"
+          v-autofocus
           type="email"
           inputmode="email"
           autocomplete="email"
-          autofocus
           class="form-control"
           :class="{ 'is-invalid': errors.email }"
         />
