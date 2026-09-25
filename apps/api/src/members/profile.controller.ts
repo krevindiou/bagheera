@@ -1,3 +1,4 @@
+import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ClientIp } from '../common/client-ip.decorator';
@@ -20,7 +21,7 @@ export class ProfileController {
   async updateProfile(
     @Req() req: Request,
     @Body() dto: UpdateProfileDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.profile.updateEmail(req, dto);
     // Identical response whether or not the new email was already taken by
     // another member — see the service's own doc for why.
@@ -36,7 +37,7 @@ export class ProfileController {
   async updateLocale(
     @CurrentMember() memberId: MemberId,
     @Body() dto: UpdateLocaleDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.profile.updateLocale(memberId, dto);
     return { message: 'Language preference updated.' };
   }
@@ -52,7 +53,7 @@ export class ProfileController {
   async confirmEmailChange(
     @ClientIp() ip: string,
     @Body() dto: ConfirmEmailChangeDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.profile.confirmEmailChange(dto.key, ip);
     return { message: 'Your email address has been updated.' };
   }

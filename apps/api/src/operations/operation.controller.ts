@@ -7,6 +7,8 @@ import { UpdateOperationDto } from './dto/update-operation.dto';
 import { OperationService } from './operation.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
+import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { OperationListDto, OperationSavedResponseDto } from './dto/operation-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -19,7 +21,7 @@ export class OperationController {
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,
     @Query('page') page?: string,
-  ) {
+  ): Promise<OperationListDto> {
     return this.operations.list(memberId, accountId, page ? Number(page) : 1);
   }
 
@@ -28,10 +30,7 @@ export class OperationController {
   async create(
     @CurrentMember() memberId: MemberId,
     @Body() dto: CreateOperationDto,
-  ): Promise<{
-    message: string;
-    operation: Awaited<ReturnType<OperationService['create']>>;
-  }> {
+  ): Promise<OperationSavedResponseDto> {
     const created = await this.operations.create(memberId, dto);
     return { message: 'Operation saved', operation: created };
   }
@@ -42,7 +41,7 @@ export class OperationController {
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateOperationDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.operations.update(memberId, id, dto);
     return { message: 'Operation saved' };
   }

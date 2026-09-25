@@ -1,3 +1,4 @@
+import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { RateLimit } from '../security/rate-limit.decorator';
@@ -13,7 +14,7 @@ export class RegistrationController {
   @Post('register')
   @HttpCode(201)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
-  async register(@Req() req: Request, @Body() dto: RegisterDto): Promise<{ message: string }> {
+  async register(@Req() req: Request, @Body() dto: RegisterDto): Promise<MessageResponseDto> {
     await this.registration.register(dto, req.ip ?? 'unknown');
     // Identical response whether or not the email was already registered —
     // see the service's own doc for why.

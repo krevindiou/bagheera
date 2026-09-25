@@ -6,6 +6,7 @@ import { BatchIdsDto } from '../common/batch-ids.dto';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
 import { ClientIp } from '../common/client-ip.decorator';
+import { ReportBatchDeleteResponseDto } from './dto/report-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -19,7 +20,7 @@ export class ReportBatchController {
     @CurrentMember() memberId: MemberId,
     @ClientIp() ip: string,
     @Body() dto: BatchIdsDto,
-  ) {
+  ): Promise<ReportBatchDeleteResponseDto> {
     const { deletedCount } = await this.batch.batchDelete(memberId, ip, dto.ids);
     return { message: 'Reports deleted', deletedCount };
   }

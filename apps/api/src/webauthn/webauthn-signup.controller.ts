@@ -1,3 +1,4 @@
+import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server';
 import type { Request } from 'express';
@@ -36,7 +37,7 @@ export class WebauthnSignupController {
   async verify(
     @Req() req: Request,
     @Body() dto: VerifyRegistrationDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     return this.signup.verify(req, dto);
   }
 }

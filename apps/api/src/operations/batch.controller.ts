@@ -6,6 +6,7 @@ import { OperationBatchService } from './batch.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
 import { ClientIp } from '../common/client-ip.decorator';
+import { BatchDeleteResponseDto, BatchReconcileResponseDto } from './dto/operation-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -19,7 +20,7 @@ export class OperationBatchController {
     @CurrentMember() memberId: MemberId,
     @ClientIp() ip: string,
     @Body() dto: BatchIdsDto,
-  ) {
+  ): Promise<BatchDeleteResponseDto> {
     const { deletedCount } = await this.batch.batchDelete(memberId, ip, dto.ids);
     return { message: 'Operations deleted', deletedCount };
   }
@@ -30,7 +31,7 @@ export class OperationBatchController {
     @CurrentMember() memberId: MemberId,
     @ClientIp() ip: string,
     @Body() dto: BatchIdsDto,
-  ) {
+  ): Promise<BatchReconcileResponseDto> {
     const { reconciledCount } = await this.batch.batchReconcile(memberId, ip, dto.ids);
     return { message: 'Operations reconciled', reconciledCount };
   }

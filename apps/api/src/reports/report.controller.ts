@@ -9,6 +9,13 @@ import { ReportSeriesService } from './report-series.service';
 import { ReportService } from './report.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
+import { MessageResponseDto } from '../common/dto/message-response.dto';
+import {
+  ReportDistributionDto,
+  ReportDto,
+  ReportSavedResponseDto,
+  ReportSeriesDto,
+} from './dto/report-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -21,17 +28,23 @@ export class ReportController {
   ) {}
 
   @Get()
-  list(@CurrentMember() memberId: MemberId) {
+  list(@CurrentMember() memberId: MemberId): Promise<ReportDto[]> {
     return this.reports.list(memberId);
   }
 
   @Get(':id/series')
-  series(@CurrentMember() memberId: MemberId, @Param('id', ParseUuidV7Pipe) id: string) {
+  series(
+    @CurrentMember() memberId: MemberId,
+    @Param('id', ParseUuidV7Pipe) id: string,
+  ): Promise<ReportSeriesDto> {
     return this.reportSeries.getSeries(memberId, id);
   }
 
   @Get(':id/distribution')
-  distribution(@CurrentMember() memberId: MemberId, @Param('id', ParseUuidV7Pipe) id: string) {
+  distribution(
+    @CurrentMember() memberId: MemberId,
+    @Param('id', ParseUuidV7Pipe) id: string,
+  ): Promise<ReportDistributionDto> {
     return this.distributions.getDistribution(memberId, id);
   }
 
@@ -40,10 +53,7 @@ export class ReportController {
   async create(
     @CurrentMember() memberId: MemberId,
     @Body() dto: CreateReportDto,
-  ): Promise<{
-    message: string;
-    report: Awaited<ReturnType<ReportService['create']>>;
-  }> {
+  ): Promise<ReportSavedResponseDto> {
     const created = await this.reports.create(memberId, dto);
     return { message: 'Report saved', report: created };
   }
@@ -54,7 +64,7 @@ export class ReportController {
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateReportDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.reports.update(memberId, id, dto);
     return { message: 'Report saved' };
   }
@@ -64,7 +74,7 @@ export class ReportController {
   async remove(
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.reports.remove(memberId, id);
     return { message: 'Report deleted' };
   }

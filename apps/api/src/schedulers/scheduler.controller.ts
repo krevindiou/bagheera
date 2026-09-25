@@ -7,6 +7,8 @@ import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { SchedulerService } from './scheduler.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
+import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { SchedulerListDto, SchedulerSavedResponseDto } from './dto/scheduler-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -19,7 +21,7 @@ export class SchedulerController {
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,
     @Query('page') page?: string,
-  ) {
+  ): Promise<SchedulerListDto> {
     return this.schedulers.list(memberId, accountId, page ? Number(page) : 1);
   }
 
@@ -28,10 +30,7 @@ export class SchedulerController {
   async create(
     @CurrentMember() memberId: MemberId,
     @Body() dto: CreateSchedulerDto,
-  ): Promise<{
-    message: string;
-    scheduler: Awaited<ReturnType<SchedulerService['create']>>;
-  }> {
+  ): Promise<SchedulerSavedResponseDto> {
     const created = await this.schedulers.create(memberId, dto);
     return { message: 'Scheduler saved', scheduler: created };
   }
@@ -42,7 +41,7 @@ export class SchedulerController {
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateSchedulerDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.schedulers.update(memberId, id, dto);
     return { message: 'Scheduler saved' };
   }
@@ -52,7 +51,7 @@ export class SchedulerController {
   async remove(
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.schedulers.remove(memberId, id);
     return { message: 'Scheduler deleted' };
   }

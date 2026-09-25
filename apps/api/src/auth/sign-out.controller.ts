@@ -1,3 +1,4 @@
+import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { Public } from '../session/public.decorator';
@@ -14,7 +15,7 @@ export class SignOutController {
   @HttpCode(200)
   @Public()
   @SkipRateLimit()
-  async signOut(@Req() req: Request): Promise<{ message: string }> {
+  async signOut(@Req() req: Request): Promise<MessageResponseDto> {
     await this.signOutService.signOut(req);
     return { message: 'ok' };
   }

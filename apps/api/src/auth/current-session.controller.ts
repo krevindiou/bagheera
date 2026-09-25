@@ -2,11 +2,11 @@ import { Controller, Get, Inject, Req, UnauthorizedException } from '@nestjs/com
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
-import type { Locale } from '../common/locale';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { Public } from '../session/public.decorator';
 import '../session/session-data';
+import { CurrentMemberDto } from './dto/session-response.dto';
 
 @Controller('auth')
 export class CurrentSessionController {
@@ -22,7 +22,7 @@ export class CurrentSessionController {
   // row still exists).
   @Get('me')
   @Public()
-  async me(@Req() req: Request): Promise<{ email: string; locale: Locale }> {
+  async me(@Req() req: Request): Promise<CurrentMemberDto> {
     const memberId = req.session.memberId;
     if (!memberId) {
       throw new UnauthorizedException();

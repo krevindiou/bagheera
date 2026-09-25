@@ -8,6 +8,13 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
 import { ClientIp } from '../common/client-ip.decorator';
+import { MessageResponseDto } from '../common/dto/message-response.dto';
+import {
+  AccountBalanceDto,
+  AccountChartDto,
+  AccountSavedResponseDto,
+  AccountWithBalanceDto,
+} from './dto/account-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -16,7 +23,10 @@ export class AccountController {
   constructor(private readonly accounts: AccountService) {}
 
   @Get()
-  list(@CurrentMember() memberId: MemberId, @Query('bankId') bankId?: string) {
+  list(
+    @CurrentMember() memberId: MemberId,
+    @Query('bankId') bankId?: string,
+  ): Promise<AccountWithBalanceDto[]> {
     return this.accounts.list(memberId, bankId);
   }
 
@@ -25,12 +35,15 @@ export class AccountController {
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Query('range') range?: string,
-  ) {
+  ): Promise<AccountChartDto> {
     return this.accounts.chart(memberId, id, range);
   }
 
   @Get(':id/balance')
-  balance(@CurrentMember() memberId: MemberId, @Param('id', ParseUuidV7Pipe) id: string) {
+  balance(
+    @CurrentMember() memberId: MemberId,
+    @Param('id', ParseUuidV7Pipe) id: string,
+  ): Promise<AccountBalanceDto> {
     return this.accounts.balance(memberId, id);
   }
 
@@ -39,10 +52,7 @@ export class AccountController {
   async create(
     @CurrentMember() memberId: MemberId,
     @Body() dto: CreateAccountDto,
-  ): Promise<{
-    message: string;
-    account: Awaited<ReturnType<AccountService['create']>>;
-  }> {
+  ): Promise<AccountSavedResponseDto> {
     const created = await this.accounts.create(memberId, dto);
     return { message: 'Account saved', account: created };
   }
@@ -53,7 +63,7 @@ export class AccountController {
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateAccountDto,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.accounts.update(memberId, id, dto);
     return { message: 'Account saved' };
   }
@@ -64,7 +74,7 @@ export class AccountController {
     @CurrentMember() memberId: MemberId,
     @ClientIp() ip: string,
     @Param('id', ParseUuidV7Pipe) id: string,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.accounts.close(memberId, ip, id);
     return { message: 'Account closed' };
   }
@@ -75,7 +85,7 @@ export class AccountController {
     @CurrentMember() memberId: MemberId,
     @ClientIp() ip: string,
     @Param('id', ParseUuidV7Pipe) id: string,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.accounts.remove(memberId, ip, id);
     return { message: 'Account deleted' };
   }

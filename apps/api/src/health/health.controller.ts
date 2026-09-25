@@ -5,6 +5,7 @@ import type { RedisClientType } from 'redis';
 import { DRIZZLE } from '../db/db.constants';
 import { Public } from '../session/public.decorator';
 import { VALKEY_CLIENT } from '../session/session.constants';
+import { HealthResponseDto } from './dto/health-response.dto';
 
 @Controller('health')
 @Public()
@@ -15,7 +16,7 @@ export class HealthController {
   ) {}
 
   @Get()
-  async check() {
+  async check(): Promise<HealthResponseDto> {
     try {
       await this.db.execute(sql`select 1`);
     } catch {

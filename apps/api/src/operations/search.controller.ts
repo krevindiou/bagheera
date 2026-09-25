@@ -6,6 +6,8 @@ import { SearchOperationsDto } from './dto/search-operations.dto';
 import { OperationSearchService } from './search.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
+import { MessageResponseDto } from '../common/dto/message-response.dto';
+import { OperationListDto, OperationSearchRecallDto } from './dto/operation-response.dto';
 
 // Throttled on every verb, reads included: GET re-runs the remembered
 // search, just as POST runs a new one.
@@ -20,7 +22,7 @@ export class OperationSearchController {
     @CurrentMember() memberId: MemberId,
     @Body() dto: SearchOperationsDto,
     @Query('page') page?: string,
-  ) {
+  ): Promise<OperationListDto> {
     return this.search.search(memberId, dto, page ? Number(page) : 1);
   }
 
@@ -29,7 +31,7 @@ export class OperationSearchController {
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,
     @Query('page') page?: string,
-  ) {
+  ): Promise<OperationSearchRecallDto> {
     return this.search.recallAndRun(memberId, accountId, page ? Number(page) : 1);
   }
 
@@ -38,7 +40,7 @@ export class OperationSearchController {
   async clear(
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,
-  ): Promise<{ message: string }> {
+  ): Promise<MessageResponseDto> {
     await this.search.clear(memberId, accountId);
     return { message: 'Search cleared' };
   }
