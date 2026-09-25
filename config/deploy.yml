@@ -119,6 +119,9 @@ accessories:
       clear:
         PORT: "3000"
         APP_URL: https://<%= ENV.fetch("APP_DOMAIN") %>
+        RP_ID: <%= ENV.fetch("APP_DOMAIN") %>
+        RP_NAME: Bagheera
+        RP_ORIGIN: https://<%= ENV.fetch("APP_DOMAIN") %>
       secret:
         - DATABASE_URL
         - VALKEY_URL
