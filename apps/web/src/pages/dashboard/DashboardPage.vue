@@ -13,7 +13,7 @@ import {
 import { formatDate } from '../operations/money';
 import StatCard from '../../components/StatCard.vue';
 import ReportChart from '../reports/ReportChart.vue';
-import type { DashboardResponse, DashboardSynthesisChart } from './dashboard.types';
+import type { DashboardSynthesisChart } from './dashboard.types';
 
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
@@ -23,7 +23,7 @@ const { data: dashboard } = useQuery({
     const { data } = await apiClient.GET('/dashboard', {
       params: { query: { range: chartRange.value } },
     });
-    return (data as DashboardResponse | undefined) ?? null;
+    return data ?? null;
   },
 });
 

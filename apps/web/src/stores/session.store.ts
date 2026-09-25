@@ -48,11 +48,7 @@ export const useSessionStore = defineStore('session', {
     async fetchMember(): Promise<void> {
       try {
         const { data } = await apiClient.GET('/auth/me');
-        // The Swagger plugin can't infer a body schema from this
-        // controller's plain-interface return type (see DashboardPage.vue
-        // for the same pattern), so the generated type is untyped here.
-        const member = data as SessionMember | undefined;
-        this.member = member ? { email: member.email, locale: member.locale } : null;
+        this.member = data ? { email: data.email, locale: data.locale } : null;
       } catch {
         this.member = null;
       } finally {

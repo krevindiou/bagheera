@@ -713,11 +713,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        HealthResponseDto: {
+            status: string;
+        };
+        CsrfTokenResponseDto: {
+            csrfToken: string;
+        };
         RegisterDto: {
             email: string;
             country: string;
             /** @enum {string} */
             locale?: "en" | "fr";
+        };
+        MessageResponseDto: {
+            message: string;
         };
         UpdateProfileDto: {
             email: string;
@@ -728,6 +737,39 @@ export interface components {
         };
         ConfirmEmailChangeDto: {
             key: string;
+        };
+        CurrentMemberDto: {
+            /** @enum {string} */
+            locale: "en" | "fr";
+            email: string;
+        };
+        SchedulerDto: {
+            /** @enum {string} */
+            frequencyUnit: "day" | "week" | "month" | "year";
+            id: string;
+            accountId: string;
+            transferAccountId: string | null;
+            categoryId: string | null;
+            paymentMethodId: string;
+            thirdParty: string;
+            debit: number | null;
+            credit: number | null;
+            valueDate: string;
+            reconciled: boolean;
+            notes: string;
+            limitDate: string | null;
+            frequencyValue: number;
+            active: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SchedulerListDto: {
+            items: components["schemas"]["SchedulerDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
         };
         CreateSchedulerDto: {
             /** Format: uuid */
@@ -750,6 +792,10 @@ export interface components {
             frequencyUnit?: "day" | "week" | "month" | "year";
             frequencyValue: number;
             active?: boolean;
+        };
+        SchedulerSavedResponseDto: {
+            message: string;
+            scheduler: components["schemas"]["SchedulerDto"];
         };
         UpdateSchedulerDto: {
             /** Format: uuid */
@@ -776,6 +822,35 @@ export interface components {
         BatchIdsDto: {
             ids: string[];
         };
+        SchedulerBatchDeleteResponseDto: {
+            message: string;
+            deletedCount: number;
+        };
+        OperationDto: {
+            id: string;
+            accountId: string;
+            schedulerId: string | null;
+            transferOperationId: string | null;
+            transferAccountId: string | null;
+            categoryId: string | null;
+            paymentMethodId: string;
+            thirdParty: string;
+            debit: number | null;
+            credit: number | null;
+            valueDate: string;
+            reconciled: boolean;
+            notes: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        OperationListDto: {
+            items: components["schemas"]["OperationDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
         CreateOperationDto: {
             /** Format: uuid */
             accountId: string;
@@ -793,6 +868,10 @@ export interface components {
             notes?: string;
             reconciled?: boolean;
         };
+        OperationSavedResponseDto: {
+            message: string;
+            operation: components["schemas"]["OperationDto"];
+        };
         UpdateOperationDto: {
             /** Format: uuid */
             accountId: string;
@@ -809,6 +888,14 @@ export interface components {
             valueDate: string;
             notes?: string;
             reconciled?: boolean;
+        };
+        BatchDeleteResponseDto: {
+            message: string;
+            deletedCount: number;
+        };
+        BatchReconcileResponseDto: {
+            message: string;
+            reconciledCount: number;
         };
         AmountComparatorDto: {
             /** @enum {string} */
@@ -829,6 +916,30 @@ export interface components {
             notes?: string;
             reconciled?: boolean;
         };
+        SearchCriteriaDto: {
+            /** @enum {string} */
+            type?: "debit" | "credit";
+            thirdParty?: string;
+            categoryIds?: string[];
+            paymentMethodIds?: string[];
+            amountComparators?: components["schemas"]["AmountComparatorDto"][];
+            dateFrom?: string;
+            dateTo?: string;
+            notes?: string;
+            reconciled?: boolean;
+        };
+        OperationSearchRecallDto: {
+            items: components["schemas"]["OperationDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+            criteria: components["schemas"]["SearchCriteriaDto"];
+            active: boolean;
+        };
+        ThirdPartySuggestionDto: {
+            thirdParty: string;
+            categoryId: string | null;
+        };
         VerifyRegistrationDto: {
             response: Record<string, never>;
             deviceName?: string;
@@ -836,16 +947,71 @@ export interface components {
         VerifyAuthenticationDto: {
             response: Record<string, never>;
         };
+        WebauthnCredentialSummaryDto: {
+            id: string;
+            deviceName: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            lastUsedAt: string | null;
+        };
         SignupOptionsDto: {
             key: string;
+        };
+        BankDto: {
+            id: string;
+            memberId: string;
+            name: string;
+            closed: boolean;
+            deleted: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         ChooseBankDto: {
             /** Format: uuid */
             bankId?: string;
             name?: string;
         };
+        ChooseBankResponseDto: {
+            id: string;
+            name: string;
+            created: boolean;
+        };
         UpdateBankDto: {
             name: string;
+        };
+        AccountWithBalanceDto: {
+            balance: number;
+            reconciledBalance: number;
+            id: string;
+            bankId: string;
+            name: string;
+            currency: string;
+            closed: boolean;
+            deleted: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AxisBoundsDto: {
+            min: number;
+            max: number;
+        };
+        ChartPointDto: {
+            period: string;
+            value: number;
+        };
+        AccountChartDto: {
+            currency: string;
+            axisBounds: components["schemas"]["AxisBoundsDto"] | null;
+            points: components["schemas"]["ChartPointDto"][];
+        };
+        AccountBalanceDto: {
+            balance: number;
+            reconciledBalance: number;
         };
         CreateAccountDto: {
             /** Format: uuid */
@@ -855,12 +1021,87 @@ export interface components {
             currency: "AED" | "AFN" | "ALL" | "AMD" | "ANG" | "AOA" | "ARS" | "AUD" | "AWG" | "AZN" | "BAM" | "BBD" | "BDT" | "BGN" | "BHD" | "BIF" | "BMD" | "BND" | "BOB" | "BRL" | "BSD" | "BTN" | "BWP" | "BYN" | "BZD" | "CAD" | "CDF" | "CHF" | "CLP" | "CNY" | "COP" | "CRC" | "CUC" | "CUP" | "CVE" | "CZK" | "DJF" | "DKK" | "DOP" | "DZD" | "EGP" | "ERN" | "ETB" | "EUR" | "FJD" | "FKP" | "GBP" | "GEL" | "GHS" | "GIP" | "GMD" | "GNF" | "GTQ" | "GYD" | "HKD" | "HNL" | "HRK" | "HTG" | "HUF" | "IDR" | "ILS" | "INR" | "IQD" | "IRR" | "ISK" | "JMD" | "JOD" | "JPY" | "KES" | "KGS" | "KHR" | "KMF" | "KPW" | "KRW" | "KWD" | "KYD" | "KZT" | "LAK" | "LBP" | "LKR" | "LRD" | "LSL" | "LYD" | "MAD" | "MDL" | "MGA" | "MKD" | "MMK" | "MNT" | "MOP" | "MRU" | "MUR" | "MVR" | "MWK" | "MXN" | "MYR" | "MZN" | "NAD" | "NGN" | "NIO" | "NOK" | "NPR" | "NZD" | "OMR" | "PAB" | "PEN" | "PGK" | "PHP" | "PKR" | "PLN" | "PYG" | "QAR" | "RON" | "RSD" | "RUB" | "RWF" | "SAR" | "SBD" | "SCR" | "SDG" | "SEK" | "SGD" | "SHP" | "SLE" | "SLL" | "SOS" | "SRD" | "SSP" | "STN" | "SVC" | "SYP" | "SZL" | "THB" | "TJS" | "TMT" | "TND" | "TOP" | "TRY" | "TTD" | "TWD" | "TZS" | "UAH" | "UGX" | "USD" | "UYU" | "UZS" | "VES" | "VND" | "VUV" | "WST" | "XAF" | "XCD" | "XCG" | "XDR" | "XOF" | "XPF" | "XSU" | "YER" | "ZAR" | "ZMW" | "ZWG" | "ZWL";
             initialBalance?: number;
         };
+        AccountDto: {
+            id: string;
+            bankId: string;
+            name: string;
+            currency: string;
+            closed: boolean;
+            deleted: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AccountSavedResponseDto: {
+            message: string;
+            account: components["schemas"]["AccountDto"];
+        };
         UpdateAccountDto: {
             name: string;
             /** Format: uuid */
             bankId: string;
             /** @enum {string} */
             currency: "AED" | "AFN" | "ALL" | "AMD" | "ANG" | "AOA" | "ARS" | "AUD" | "AWG" | "AZN" | "BAM" | "BBD" | "BDT" | "BGN" | "BHD" | "BIF" | "BMD" | "BND" | "BOB" | "BRL" | "BSD" | "BTN" | "BWP" | "BYN" | "BZD" | "CAD" | "CDF" | "CHF" | "CLP" | "CNY" | "COP" | "CRC" | "CUC" | "CUP" | "CVE" | "CZK" | "DJF" | "DKK" | "DOP" | "DZD" | "EGP" | "ERN" | "ETB" | "EUR" | "FJD" | "FKP" | "GBP" | "GEL" | "GHS" | "GIP" | "GMD" | "GNF" | "GTQ" | "GYD" | "HKD" | "HNL" | "HRK" | "HTG" | "HUF" | "IDR" | "ILS" | "INR" | "IQD" | "IRR" | "ISK" | "JMD" | "JOD" | "JPY" | "KES" | "KGS" | "KHR" | "KMF" | "KPW" | "KRW" | "KWD" | "KYD" | "KZT" | "LAK" | "LBP" | "LKR" | "LRD" | "LSL" | "LYD" | "MAD" | "MDL" | "MGA" | "MKD" | "MMK" | "MNT" | "MOP" | "MRU" | "MUR" | "MVR" | "MWK" | "MXN" | "MYR" | "MZN" | "NAD" | "NGN" | "NIO" | "NOK" | "NPR" | "NZD" | "OMR" | "PAB" | "PEN" | "PGK" | "PHP" | "PKR" | "PLN" | "PYG" | "QAR" | "RON" | "RSD" | "RUB" | "RWF" | "SAR" | "SBD" | "SCR" | "SDG" | "SEK" | "SGD" | "SHP" | "SLE" | "SLL" | "SOS" | "SRD" | "SSP" | "STN" | "SVC" | "SYP" | "SZL" | "THB" | "TJS" | "TMT" | "TND" | "TOP" | "TRY" | "TTD" | "TWD" | "TZS" | "UAH" | "UGX" | "USD" | "UYU" | "UZS" | "VES" | "VND" | "VUV" | "WST" | "XAF" | "XCD" | "XCG" | "XDR" | "XOF" | "XPF" | "XSU" | "YER" | "ZAR" | "ZMW" | "ZWG" | "ZWL";
+        };
+        CategoryDto: {
+            /** @enum {string} */
+            type: "debit" | "credit";
+            id: string;
+            parentId: string | null;
+            name: string;
+        };
+        PaymentMethodDto: {
+            /** @enum {string|null} */
+            type: "debit" | "credit" | null;
+            id: string;
+            name: string;
+        };
+        ReportDto: {
+            /** @enum {string} */
+            type: "sum" | "average" | "distribution";
+            /** @enum {string} */
+            periodGrouping: "month" | "quarter" | "year" | "all";
+            /** @enum {string|null} */
+            dataGrouping: "category" | "third_party" | "payment_method" | null;
+            id: string;
+            memberId: string;
+            title: string;
+            homepage: boolean;
+            valueDateStart: string | null;
+            valueDateEnd: string | null;
+            thirdParties: string | null;
+            reconciledOnly: boolean | null;
+            significantResultsNumber: number | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            accountIds: string[];
+            categoryIds: string[];
+        };
+        ReportSeriesEntryDto: {
+            currency: string;
+            credit: components["schemas"]["ChartPointDto"][];
+            debit: components["schemas"]["ChartPointDto"][];
+        };
+        ReportSeriesDto: {
+            hidden: boolean;
+            axisBounds: components["schemas"]["AxisBoundsDto"] | null;
+            series: components["schemas"]["ReportSeriesEntryDto"][];
+        };
+        ReportDistributionLabelSeriesDto: {
+            label: string | null;
+            points: components["schemas"]["ChartPointDto"][];
+        };
+        ReportDistributionSeriesDto: {
+            currency: string;
+            debit: components["schemas"]["ReportDistributionLabelSeriesDto"][];
+            credit: components["schemas"]["ReportDistributionLabelSeriesDto"][];
+        };
+        ReportDistributionDto: {
+            hidden: boolean;
+            series: components["schemas"]["ReportDistributionSeriesDto"][];
         };
         CreateReportDto: {
             /** @enum {string} */
@@ -879,6 +1120,10 @@ export interface components {
             dataGrouping?: "category" | "third_party" | "payment_method";
             significantResultsNumber?: number;
         };
+        ReportSavedResponseDto: {
+            message: string;
+            report: components["schemas"]["ReportDto"];
+        };
         UpdateReportDto: {
             /** @enum {string} */
             type: "sum" | "average" | "distribution";
@@ -895,6 +1140,67 @@ export interface components {
             /** @enum {string} */
             dataGrouping?: "category" | "third_party" | "payment_method";
             significantResultsNumber?: number;
+        };
+        ReportBatchDeleteResponseDto: {
+            message: string;
+            deletedCount: number;
+        };
+        SeriesHomepageReportDto: {
+            /** @enum {string} */
+            kind: "series";
+            id: string;
+            title: string;
+            series: components["schemas"]["ReportSeriesDto"];
+        };
+        DistributionHomepageReportDto: {
+            /** @enum {string} */
+            kind: "distribution";
+            id: string;
+            title: string;
+            distribution: components["schemas"]["ReportDistributionDto"];
+        };
+        TotalBalanceDto: {
+            currency: string;
+            amount: number;
+            reconciledAmount: number;
+        };
+        DashboardIndicatorDto: {
+            amount: number;
+            currency: string;
+            valueDate: string;
+            thirdParty: string;
+        };
+        SynthesisChartSeriesDto: {
+            currency: string;
+            points: components["schemas"]["ChartPointDto"][];
+        };
+        SynthesisChartDto: {
+            hidden: boolean;
+            axisBounds: components["schemas"]["AxisBoundsDto"] | null;
+            series: components["schemas"]["SynthesisChartSeriesDto"][];
+        };
+        AccountsOverviewAccountDto: {
+            id: string;
+            name: string;
+            currency: string;
+            balance: number;
+            reconciledBalance: number;
+            history: number[];
+        };
+        AccountsOverviewBankDto: {
+            id: string;
+            name: string;
+            accounts: components["schemas"]["AccountsOverviewAccountDto"][];
+        };
+        DashboardResponseDto: {
+            /** @enum {string|null} */
+            onboarding: "no-bank" | "no-account" | null;
+            homepageReports: (components["schemas"]["SeriesHomepageReportDto"] | components["schemas"]["DistributionHomepageReportDto"])[];
+            totalBalances: components["schemas"]["TotalBalanceDto"][];
+            lastBiggestIncome: components["schemas"]["DashboardIndicatorDto"] | null;
+            lastBiggestExpense: components["schemas"]["DashboardIndicatorDto"] | null;
+            synthesisChart: components["schemas"]["SynthesisChartDto"];
+            accountsOverview: components["schemas"]["AccountsOverviewBankDto"][];
         };
     };
     responses: never;
@@ -918,7 +1224,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["HealthResponseDto"];
+                };
             };
         };
     };
@@ -935,7 +1243,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CsrfTokenResponseDto"];
+                };
             };
         };
     };
@@ -956,7 +1266,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -977,7 +1289,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -998,7 +1312,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1019,7 +1335,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1036,7 +1354,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1053,7 +1373,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["CurrentMemberDto"];
+                };
             };
         };
     };
@@ -1073,7 +1395,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SchedulerListDto"];
+                };
             };
         };
     };
@@ -1094,7 +1418,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SchedulerSavedResponseDto"];
+                };
             };
         };
     };
@@ -1113,7 +1439,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1136,7 +1464,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1157,7 +1487,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["SchedulerBatchDeleteResponseDto"];
+                };
             };
         };
     };
@@ -1177,7 +1509,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OperationListDto"];
+                };
             };
         };
     };
@@ -1198,7 +1532,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OperationSavedResponseDto"];
+                };
             };
         };
     };
@@ -1221,7 +1557,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1242,7 +1580,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BatchDeleteResponseDto"];
+                };
             };
         };
     };
@@ -1263,7 +1603,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BatchReconcileResponseDto"];
+                };
             };
         };
     };
@@ -1283,7 +1625,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OperationSearchRecallDto"];
+                };
             };
         };
     };
@@ -1306,7 +1650,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["OperationListDto"];
+                };
             };
         };
     };
@@ -1325,7 +1671,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1346,7 +1694,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>[];
+                    "application/json": components["schemas"]["ThirdPartySuggestionDto"][];
                 };
             };
         };
@@ -1387,7 +1735,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1427,7 +1777,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1445,7 +1797,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>[];
+                    "application/json": components["schemas"]["WebauthnCredentialSummaryDto"][];
                 };
             };
         };
@@ -1465,7 +1817,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1509,7 +1863,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1549,7 +1905,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1566,7 +1924,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["BankDto"][];
+                };
             };
         };
     };
@@ -1588,7 +1948,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ChooseBankResponseDto"];
                 };
             };
         };
@@ -1608,7 +1968,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1631,7 +1993,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1650,7 +2014,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1669,7 +2035,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AccountWithBalanceDto"][];
+                };
             };
         };
     };
@@ -1690,7 +2058,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AccountSavedResponseDto"];
+                };
             };
         };
     };
@@ -1712,7 +2082,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["AccountChartDto"];
                 };
             };
         };
@@ -1732,7 +2102,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AccountBalanceDto"];
+                };
             };
         };
     };
@@ -1751,7 +2123,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1774,7 +2148,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1793,7 +2169,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1811,7 +2189,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CategoryDto"][];
                 };
             };
         };
@@ -1830,7 +2208,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PaymentMethodDto"][];
                 };
             };
         };
@@ -1848,7 +2226,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReportDto"][];
+                };
             };
         };
     };
@@ -1869,7 +2249,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReportSavedResponseDto"];
+                };
             };
         };
     };
@@ -1889,7 +2271,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReportSeriesDto"];
                 };
             };
         };
@@ -1910,7 +2292,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ReportDistributionDto"];
                 };
             };
         };
@@ -1930,7 +2312,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1953,7 +2337,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
             };
         };
     };
@@ -1974,7 +2360,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ReportBatchDeleteResponseDto"];
+                };
             };
         };
     };
@@ -1994,7 +2382,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["DashboardResponseDto"];
                 };
             };
         };

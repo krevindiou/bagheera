@@ -18,12 +18,6 @@ import SettingsTabs from './SettingsTabs.vue';
 // (they carry no Nest/class-validator decorators of their own), so the
 // generated client types these bodies as an opaque `Record<string, never>`
 // — cast at the boundary rather than widening the real API contract.
-interface PasskeySummary {
-  id: string;
-  deviceName: string | null;
-  createdAt: string;
-  lastUsedAt: string | null;
-}
 
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
@@ -34,7 +28,7 @@ const credentialsQuery = useQuery({
   queryKey: ['webauthn-credentials'],
   queryFn: async () => {
     const { data } = await apiClient.GET('/webauthn/credentials');
-    return (data as unknown as PasskeySummary[] | undefined) ?? [];
+    return data ?? [];
   },
 });
 const credentials = computed(() => credentialsQuery.data.value ?? []);

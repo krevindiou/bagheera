@@ -1,8 +1,6 @@
 import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../api/client';
-import type { Account, Bank } from '../pages/accounts/accounts.types';
-import type { Category, PaymentMethod } from '../pages/operations/operations.types';
 
 // The query keys of the member's accounts and banks, and of the two seeded
 // reference lists — one home, so a page that changes accounts or banks
@@ -17,15 +15,12 @@ export const REFERENCE_QUERY_KEYS = {
 // A list endpoint answers `undefined` on failure; treat that as an empty
 // list. The `*Query` returned alongside each list is the raw query, for the
 // rare caller that needs to know whether data has actually arrived.
-function useListQuery<T>(
-  queryKey: readonly string[],
-  fetchList: () => Promise<{ data?: unknown }>,
-) {
+function useListQuery<T>(queryKey: readonly string[], fetchList: () => Promise<{ data?: T[] }>) {
   const query = useQuery({
     queryKey,
     queryFn: async () => {
       const { data } = await fetchList();
-      return (data as T[] | undefined) ?? [];
+      return data ?? [];
     },
   });
   const list = computed(() => query.data.value ?? []);
@@ -33,28 +28,26 @@ function useListQuery<T>(
 }
 
 export function useAccountsQuery() {
-  const { query, list } = useListQuery<Account>(REFERENCE_QUERY_KEYS.accounts, () =>
+  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.accounts, () =>
     apiClient.GET('/accounts'),
   );
   return { accountsQuery: query, accounts: list };
 }
 
 export function useBanksQuery() {
-  const { query, list } = useListQuery<Bank>(REFERENCE_QUERY_KEYS.banks, () =>
-    apiClient.GET('/banks'),
-  );
+  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.banks, () => apiClient.GET('/banks'));
   return { banksQuery: query, banks: list };
 }
 
 export function useCategoriesQuery() {
-  const { query, list } = useListQuery<Category>(REFERENCE_QUERY_KEYS.categories, () =>
+  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.categories, () =>
     apiClient.GET('/reference-data/categories'),
   );
   return { categoriesQuery: query, categories: list };
 }
 
 export function usePaymentMethodsQuery() {
-  const { query, list } = useListQuery<PaymentMethod>(REFERENCE_QUERY_KEYS.paymentMethods, () =>
+  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.paymentMethods, () =>
     apiClient.GET('/reference-data/payment-methods'),
   );
   return { paymentMethodsQuery: query, paymentMethods: list };

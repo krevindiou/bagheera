@@ -33,7 +33,7 @@ export function useThirdPartyAutocomplete(
       const { data } = await apiClient.GET('/operations/autocomplete', {
         params: { query: { q: query, type: type.value } },
       });
-      suggestions.value = (data as ThirdPartySuggestion[] | undefined) ?? [];
+      suggestions.value = data ?? [];
       const exact = suggestions.value.find(
         (s) => s.thirdParty.toLowerCase() === query.toLowerCase(),
       );

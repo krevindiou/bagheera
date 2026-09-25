@@ -1,37 +1,14 @@
-// The operation/reference-data controllers return plain rows (no
-// @ApiOkResponse DTOs), so the generated API client types their bodies as
-// `Record<string, never>`. These mirror the actual shapes
-// (apps/api/src/db/schema/{operation,category,payment-method}.ts).
-export interface Operation {
-  id: string;
-  accountId: string;
-  schedulerId: string | null;
-  transferOperationId: string | null;
-  transferAccountId: string | null;
-  categoryId: string | null;
-  paymentMethodId: string;
-  thirdParty: string;
-  // Minor units (real value × 10,000); exactly one of debit/credit is set.
-  debit: number | null;
-  credit: number | null;
-  valueDate: string;
-  reconciled: boolean;
-  notes: string;
-}
+import type { components } from '../../api/schema';
 
-export interface OperationList {
-  items: Operation[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+type Schemas = components['schemas'];
 
-export interface Category {
-  id: string;
-  parentId: string | null;
-  type: 'debit' | 'credit';
-  name: string;
-}
+// Derived from the generated API schema; server-only bookkeeping columns are
+// left out. Amounts are minor units (real value × 10,000).
+export type Operation = Omit<Schemas['OperationDto'], 'createdAt' | 'updatedAt'>;
+
+export type OperationList = Omit<Schemas['OperationListDto'], 'items'> & { items: Operation[] };
+
+export type Category = Schemas['CategoryDto'];
 
 // Displayed as "Parent > Child" when nested.
 export function categoryLabel(category: Category, allCategories: Category[]): string {
@@ -72,11 +49,7 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
 // `type` is null only for the Initial balance method (the system-generated
 // opening operation) — never a user choice, and naturally excluded from
 // any debit/credit-filtered choice list since null matches neither.
-export interface PaymentMethod {
-  id: string;
-  name: string;
-  type: 'debit' | 'credit' | null;
-}
+export type PaymentMethod = Schemas['PaymentMethodDto'];
 
 // Mirrors apps/api/src/db/seed-data.ts's PAYMENT_METHOD_ID — the same fixed
 // UUID literals, not DB-generated. Named lookup, not array position, is
@@ -125,23 +98,6 @@ export const TRANSFER_PAYMENT_METHOD_IDS: readonly string[] = [
   PAYMENT_METHOD_ID.TRANSFER_CREDIT,
 ];
 
-export type AmountComparatorOperator = 'gt' | 'gte' | 'lt' | 'lte' | 'eq';
-
-export interface AmountComparator {
-  operator: AmountComparatorOperator;
-  value: number;
-}
-
-// Mirrors apps/api/src/operations/dto/search-operations.dto.ts, minus
-// accountId (that's the recall key's scope, carried separately).
-export interface SearchCriteria {
-  type?: 'debit' | 'credit';
-  thirdParty?: string;
-  categoryIds?: string[];
-  paymentMethodIds?: string[];
-  amountComparators?: AmountComparator[];
-  dateFrom?: string;
-  dateTo?: string;
-  notes?: string;
-  reconciled?: boolean;
-}
+export type SearchCriteria = Schemas['SearchCriteriaDto'];
+export type AmountComparator = Schemas['AmountComparatorDto'];
+export type AmountComparatorOperator = AmountComparator['operator'];

@@ -50,8 +50,7 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
   toast(t('accounts.bankSaved'), 'success');
-  const created = data as unknown as { id: string };
-  emit('chosen', created.id);
+  emit('chosen', data!.id);
 });
 </script>
 

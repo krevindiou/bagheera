@@ -10,7 +10,7 @@ import { useToast } from '../../composables/useToast';
 import BatchActions from './batch.vue';
 import ReportChart from './ReportChart.vue';
 import ReportForm from './ReportForm.vue';
-import type { Report, ReportChartData, ReportDistribution, ReportSeries } from './reports.types';
+import type { Report, ReportChartData } from './reports.types';
 import IconButton from '../../components/IconButton.vue';
 import AppIcon from '../../components/AppIcon.vue';
 
@@ -24,7 +24,7 @@ const reportsQuery = useQuery({
   queryKey: ['reports'],
   queryFn: async () => {
     const { data } = await apiClient.GET('/reports');
-    return (data as Report[] | undefined) ?? [];
+    return data ?? [];
   },
 });
 const reports = computed(() => reportsQuery.data.value ?? []);
@@ -95,7 +95,7 @@ const seriesQuery = useQuery({
     const { data } = await apiClient.GET('/reports/{id}/series', {
       params: { path: { id: viewingReportId.value! } },
     });
-    return (data as ReportSeries | undefined) ?? null;
+    return data ?? null;
   },
   enabled: computed(
     () => viewingReportId.value !== null && viewingReport.value?.type !== 'distribution',
@@ -107,7 +107,7 @@ const distributionQuery = useQuery({
     const { data } = await apiClient.GET('/reports/{id}/distribution', {
       params: { path: { id: viewingReportId.value! } },
     });
-    return (data as ReportDistribution | undefined) ?? null;
+    return data ?? null;
   },
   enabled: computed(
     () => viewingReportId.value !== null && viewingReport.value?.type === 'distribution',

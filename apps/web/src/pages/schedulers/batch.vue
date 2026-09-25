@@ -17,7 +17,7 @@ const actions: BatchAction[] = [
         body: { ids },
       });
       if (!response.ok) return null;
-      return (data as { deletedCount?: number } | undefined)?.deletedCount ?? 0;
+      return data?.deletedCount ?? 0;
     },
   },
 ];

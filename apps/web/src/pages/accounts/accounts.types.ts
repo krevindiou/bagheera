@@ -1,23 +1,12 @@
-// The bank/account controllers return plain rows (no @ApiOkResponse DTOs),
-// so the generated API client types their bodies as `Record<string, never>`.
-// These mirror the actual shapes (apps/api/src/db/schema/{bank,account}.ts).
-export interface Bank {
-  id: string;
-  name: string;
-  closed: boolean;
-  deleted: boolean;
-}
+import type { components } from '../../api/schema';
 
-export interface Account {
-  id: string;
-  bankId: string;
-  name: string;
-  currency: string;
-  closed: boolean;
-  deleted: boolean;
-  // Only present on the `GET /accounts` list response (AccountService.list
-  // attaches these as display-only fields for the accounts screen) —
-  // omitted from fixtures/props elsewhere, hence optional.
-  balance?: number;
-  reconciledBalance?: number;
-}
+type Schemas = components['schemas'];
+
+// Derived from the generated API schema; server-only bookkeeping columns are
+// left out.
+export type Bank = Omit<Schemas['BankDto'], 'memberId' | 'createdAt' | 'updatedAt'>;
+
+// `balance`/`reconciledBalance` are only present on the `GET /accounts` list
+// response — omitted from fixtures/props elsewhere, hence optional.
+export type Account = Omit<Schemas['AccountDto'], 'createdAt' | 'updatedAt'> &
+  Partial<Pick<Schemas['AccountWithBalanceDto'], 'balance' | 'reconciledBalance'>>;

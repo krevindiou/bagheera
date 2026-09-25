@@ -25,7 +25,7 @@ import {
   paymentMethodIcon,
   paymentMethodName,
 } from './operations.types';
-import type { Operation, OperationList, SearchCriteria } from './operations.types';
+import type { Operation, SearchCriteria } from './operations.types';
 import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
@@ -68,7 +68,7 @@ const balanceQuery = useQuery({
     const { data } = await apiClient.GET('/accounts/{id}/balance', {
       params: { path: { id: accountId.value } },
     });
-    return (data as { balance: number; reconciledBalance: number } | undefined) ?? null;
+    return data ?? null;
   },
 });
 const balance = computed(() => balanceQuery.data.value ?? null);
@@ -81,15 +81,7 @@ const chartQuery = useQuery({
     const { data } = await apiClient.GET('/accounts/{id}/chart', {
       params: { path: { id: accountId.value }, query: { range: chartRange.value } },
     });
-    return (
-      (data as
-        | {
-            currency: string;
-            axisBounds: { min: number; max: number } | null;
-            points: { period: string; value: number }[];
-          }
-        | undefined) ?? null
-    );
+    return data ?? null;
   },
 });
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
@@ -110,14 +102,7 @@ const operationsQuery = useQuery({
     const { data } = await apiClient.GET('/operations/search', {
       params: { query: { accountId: accountId.value, page: String(page.value) } },
     });
-    return (
-      (data as (OperationList & { criteria?: SearchCriteria; active?: boolean }) | undefined) ?? {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 20,
-      }
-    );
+    return data ?? { items: [], total: 0, page: 1, pageSize: 20, criteria: {}, active: false };
   },
 });
 const list = computed(
@@ -147,7 +132,7 @@ const searchMutation = useMutation({
       params: { query: { page: '1' } },
       body: { accountId: accountId.value, ...criteria },
     });
-    return (data as OperationList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+    return data ?? { items: [], total: 0, page: 1, pageSize: 20 };
   },
   onSuccess(data, criteria) {
     page.value = 1;

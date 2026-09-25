@@ -97,8 +97,7 @@ const onSubmit = handleSubmit(async (values) => {
   }
 
   toast(t('accounts.accountSaved'), 'success');
-  const created = data as unknown as { account: { id: string } };
-  emit('created', created.account.id);
+  emit('created', data!.account.id);
 });
 </script>
 

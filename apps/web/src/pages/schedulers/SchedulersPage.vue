@@ -19,7 +19,7 @@ import {
 } from '../operations/operations.types';
 import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
-import type { Scheduler, SchedulerList } from './schedulers.types';
+import type { Scheduler } from './schedulers.types';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
 import AppIcon from '../../components/AppIcon.vue';
@@ -50,7 +50,7 @@ const schedulersQuery = useQuery({
     const { data } = await apiClient.GET('/schedulers', {
       params: { query: { accountId: accountId.value, page: String(page.value) } },
     });
-    return (data as SchedulerList | undefined) ?? { items: [], total: 0, page: 1, pageSize: 20 };
+    return data ?? { items: [], total: 0, page: 1, pageSize: 20 };
   },
 });
 const list = computed(
