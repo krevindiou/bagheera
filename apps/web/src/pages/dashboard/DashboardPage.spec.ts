@@ -214,17 +214,17 @@ describe('DashboardPage', () => {
     );
     const tiles = wrapper.findAll('[data-testid="overview-account"]');
     expect(tiles).toHaveLength(2);
-    expect(tiles[0]!.text()).toContain('Chase — Checking');
-    expect(tiles[0]!.text()).toContain('$500.00');
-    expect(tiles[0]!.find('.stat-value-primary').exists()).toBe(true);
-    expect(tiles[0]!.text()).toContain('$450.00');
-    expect(tiles[1]!.text()).toContain('Ally — Savings');
-    expect(tiles[1]!.text()).toContain('$1,200.00');
+    expect(tiles[0].text()).toContain('Chase — Checking');
+    expect(tiles[0].text()).toContain('$500.00');
+    expect(tiles[0].find('.stat-value-primary').exists()).toBe(true);
+    expect(tiles[0].text()).toContain('$450.00');
+    expect(tiles[1].text()).toContain('Ally — Savings');
+    expect(tiles[1].text()).toContain('$1,200.00');
 
     // Each tile's sparkline gets that account's own history, unshared
     // across tiles.
-    expect(tiles[0]!.findComponent(AccountSparkline).props('values')).toEqual([400, 420, 500]);
-    expect(tiles[1]!.findComponent(AccountSparkline).props('values')).toEqual([]);
+    expect(tiles[0].findComponent(AccountSparkline).props('values')).toEqual([400, 420, 500]);
+    expect(tiles[1].findComponent(AccountSparkline).props('values')).toEqual([]);
   });
 
   it("colors each tile's sparkline by currency, matching the synthesis chart's own per-currency colors", async () => {
@@ -270,15 +270,15 @@ describe('DashboardPage', () => {
     // code, not from series order.
     const synthesisChart = wrapper.findComponent(SynthesisChart);
     const colorsByCurrency = new Map(synthesisChart.props('series').map((s) => [s.label, s.color]));
-    expect(tiles[0]!.findComponent(AccountSparkline).props('color')).toBe(
+    expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe(
       colorsByCurrency.get('EUR'),
     );
-    expect(tiles[1]!.findComponent(AccountSparkline).props('color')).toBe(
+    expect(tiles[1].findComponent(AccountSparkline).props('color')).toBe(
       colorsByCurrency.get('USD'),
     );
     // Pinned values so a change to the hash/palette doesn't silently pass.
-    expect(tiles[0]!.findComponent(AccountSparkline).props('color')).toBe('#916fd4');
-    expect(tiles[1]!.findComponent(AccountSparkline).props('color')).toBe('#af578c');
+    expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe('#916fd4');
+    expect(tiles[1].findComponent(AccountSparkline).props('color')).toBe('#af578c');
   });
 
   it('shows homepage report charts when present, with debit and credit as separate series', async () => {

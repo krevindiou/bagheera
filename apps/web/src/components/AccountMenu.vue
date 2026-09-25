@@ -32,7 +32,7 @@ async function signOut(): Promise<void> {
   open.value = false;
   await apiClient.POST('/auth/sign-out');
   session.clear();
-  router.push({ name: 'sign-in' });
+  void router.push({ name: 'sign-in' });
 }
 </script>
 

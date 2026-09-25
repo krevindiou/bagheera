@@ -9,7 +9,7 @@ function mountPager(page: number, total = 45, pageSize = 20) {
 
 function buttons(wrapper: ReturnType<typeof mountPager>) {
   const [previous, next] = wrapper.findAll('button');
-  return { previous: previous!, next: next! };
+  return { previous: previous, next: next };
 }
 
 describe('PagerNav', () => {

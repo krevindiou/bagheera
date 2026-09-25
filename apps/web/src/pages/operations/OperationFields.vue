@@ -92,7 +92,7 @@ const { suggestions } = useThirdPartyAutocomplete(thirdParty, type, (matchedCate
 function onThirdPartyChange() {
   const isSuggestion = suggestions.value.some((s) => s.thirdParty === thirdParty.value);
   if (isSuggestion) {
-    nextTick(() => amountInput.value?.focus());
+    void nextTick(() => amountInput.value?.focus());
   }
 }
 </script>

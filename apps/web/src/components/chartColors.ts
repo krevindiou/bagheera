@@ -54,5 +54,5 @@ export function colorForCurrency(currency: string): string {
 // has no currency-specific behavior, it's just the palette-lookup shared by
 // every chart in the app that colors series/bars by a categorical key.
 export function colorForLabel(label: string): string {
-  return SYNTHESIS_COLORS[hashCode(label) % SYNTHESIS_COLORS.length]!;
+  return SYNTHESIS_COLORS[hashCode(label) % SYNTHESIS_COLORS.length];
 }

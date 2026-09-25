@@ -29,7 +29,7 @@ describe('useConfirm', () => {
   it('shares one dialog instance across every caller', () => {
     const first = useConfirm();
     const second = useConfirm();
-    first.confirm();
+    void first.confirm();
     expect(second.state.visible).toBe(true);
   });
 });

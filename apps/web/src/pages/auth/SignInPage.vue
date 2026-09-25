@@ -61,7 +61,7 @@ async function onSubmit() {
 
     await session.fetchMember();
     toast(t('auth.signIn.success'), 'success');
-    router.push({ name: 'home' });
+    void router.push({ name: 'home' });
   } finally {
     submitting.value = false;
   }

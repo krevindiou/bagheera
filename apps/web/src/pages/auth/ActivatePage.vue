@@ -35,7 +35,7 @@ onMounted(() => {
 
 function fail() {
   toast(t('auth.activate.error'), 'error');
-  router.replace({ name: 'sign-in' });
+  void router.replace({ name: 'sign-in' });
 }
 
 async function createAccount() {
@@ -77,7 +77,7 @@ async function createAccount() {
 
     await session.fetchMember();
     toast(t('auth.activate.success'), 'success');
-    router.replace({ name: 'home' });
+    void router.replace({ name: 'home' });
   } finally {
     submitting.value = false;
   }

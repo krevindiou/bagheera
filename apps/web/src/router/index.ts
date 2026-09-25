@@ -118,10 +118,10 @@ function withLocale(to: RouteLocationRaw): RouteLocationRaw {
 const rawPush = router.push.bind(router);
 const rawReplace = router.replace.bind(router);
 const rawResolve = router.resolve.bind(router);
-router.push = ((to: RouteLocationRaw) => rawPush(withLocale(to))) as typeof router.push;
-router.replace = ((to: RouteLocationRaw) => rawReplace(withLocale(to))) as typeof router.replace;
-router.resolve = ((to: RouteLocationRaw, currentLocation?: never) =>
-  rawResolve(withLocale(to), currentLocation)) as typeof router.resolve;
+router.push = (to: RouteLocationRaw) => rawPush(withLocale(to));
+router.replace = (to: RouteLocationRaw) => rawReplace(withLocale(to));
+router.resolve = (to: RouteLocationRaw, currentLocation?: never) =>
+  rawResolve(withLocale(to), currentLocation);
 
 router.beforeEach(async (to) => {
   // `to.params.locale` is always a supported value here — the `(en|fr)`

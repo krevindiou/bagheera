@@ -49,7 +49,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   resetForm();
   toast(t('auth.register.success'), 'info');
-  router.push({ name: 'sign-in' });
+  void router.push({ name: 'sign-in' });
 });
 </script>
 

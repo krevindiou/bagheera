@@ -12,7 +12,7 @@ type Tree = { [key: string]: Tree | string | ((...args: never[]) => unknown) };
 function keyPaths(tree: Tree, prefix = ''): string[] {
   return Object.entries(tree).flatMap(([key, value]) => {
     const path = prefix ? `${prefix}.${key}` : key;
-    return typeof value === 'object' && value !== null ? keyPaths(value as Tree, path) : [path];
+    return typeof value === 'object' && value !== null ? keyPaths(value, path) : [path];
   });
 }
 

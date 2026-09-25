@@ -48,8 +48,8 @@ const linePath = computed(() => {
 // under it (the same "filled line" treatment SynthesisChart.vue uses).
 const areaPath = computed(() => {
   if (!linePoints.value) return '';
-  const [firstX] = linePoints.value[0]!;
-  const [lastX] = linePoints.value[linePoints.value.length - 1]!;
+  const [firstX] = linePoints.value[0];
+  const [lastX] = linePoints.value[linePoints.value.length - 1];
   return `${linePath.value} L${lastX.toFixed(2)},${HEIGHT} L${firstX.toFixed(2)},${HEIGHT} Z`;
 });
 </script>

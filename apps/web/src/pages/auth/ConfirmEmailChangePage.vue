@@ -16,7 +16,7 @@ onMounted(async () => {
   const key = route.query.key;
   if (typeof key !== 'string' || key.length === 0) {
     toast(t('auth.confirmEmailChange.error'), 'error');
-    router.replace({ name: 'sign-in' });
+    void router.replace({ name: 'sign-in' });
     return;
   }
 
@@ -28,7 +28,7 @@ onMounted(async () => {
   } else {
     toast(t('auth.confirmEmailChange.error'), 'error');
   }
-  router.replace({ name: 'sign-in' });
+  void router.replace({ name: 'sign-in' });
 });
 </script>
 

@@ -20,7 +20,7 @@ describe('ConfirmModal', () => {
 
   it("shows the dialog's title/body/actions once a confirmation starts", async () => {
     const wrapper = mount(ConfirmModal, withGlobalPlugins());
-    useConfirm().confirm();
+    void useConfirm().confirm();
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find('.modal-title').text()).toBe('Confirmation');

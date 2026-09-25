@@ -73,7 +73,7 @@ watch(
     if (route.query.start === 'bank-choice') {
       creationStep.value = 'bank-choice';
     } else if (route.query.start === 'new-account' && activeBanks.value.length > 0) {
-      chosenBankId.value = activeBanks.value[0]!.id;
+      chosenBankId.value = activeBanks.value[0].id;
       creationStep.value = 'account';
     }
   },
@@ -164,13 +164,13 @@ async function deleteAccount(account: Account) {
 // Clicking anywhere in a row (outside its checkbox/controls) opens the
 // row's primary destination — here, the account's operations.
 function goToAccount(account: Account) {
-  router.push({ name: 'operations', params: { accountId: account.id } });
+  void router.push({ name: 'operations', params: { accountId: account.id } });
 }
 
-async function onAccountCreated(accountId: string) {
+function onAccountCreated(accountId: string) {
   creationStep.value = 'closed';
   chosenBankId.value = null;
-  router.push({ name: 'operations', params: { accountId } });
+  void router.push({ name: 'operations', params: { accountId } });
 }
 </script>
 

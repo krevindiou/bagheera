@@ -28,9 +28,9 @@ describe('AccountSparkline', () => {
     expect(paths).toHaveLength(2);
     // Ascending value (100) is lowest on screen (largest y), the peak
     // (200) is highest (smallest y, here the padding value 3).
-    expect(paths[1]!.attributes('d')).toBe('M0.00,25.00 L50.00,3.00 L100.00,14.00');
+    expect(paths[1].attributes('d')).toBe('M0.00,25.00 L50.00,3.00 L100.00,14.00');
     // The area path closes the same line down to the baseline.
-    expect(paths[0]!.attributes('d')).toBe(
+    expect(paths[0].attributes('d')).toBe(
       'M0.00,25.00 L50.00,3.00 L100.00,14.00 L100.00,28 L0.00,28 Z',
     );
   });
@@ -47,8 +47,8 @@ describe('AccountSparkline', () => {
       props: { values: [100, 200], color: '#5fd98d' },
     });
     const paths = wrapper.findAll('path');
-    expect(paths[0]!.attributes('fill')).toBe('#5fd98d');
-    expect(paths[1]!.attributes('stroke')).toBe('#5fd98d');
+    expect(paths[0].attributes('fill')).toBe('#5fd98d');
+    expect(paths[1].attributes('stroke')).toBe('#5fd98d');
   });
 
   it('defaults to the theme violet when no color is given', () => {
