@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import {
@@ -17,9 +16,8 @@ import {
 } from './entry-rules';
 import { operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
-import { AccountId, OperationId } from '../security/ids';
+import { MemberId, AccountId, OperationId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 import { TransferService } from './transfer.service';
@@ -36,8 +34,7 @@ export class OperationService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async list(req: Request, accountId: string, page: number) {
-    const memberId = requireMemberId(req);
+  async list(memberId: MemberId, accountId: string, page: number) {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const pageNumber = page > 0 ? page : 1;
@@ -57,8 +54,7 @@ export class OperationService {
     return { items: rows, total, page: pageNumber, pageSize: PAGE_SIZE };
   }
 
-  async create(req: Request, dto: CreateOperationDto) {
-    const memberId = requireMemberId(req);
+  async create(memberId: MemberId, dto: CreateOperationDto) {
     const { account: acc, bank: accBank } = await this.ownership.requireOwnedAccount(
       dto.accountId as AccountId,
       memberId,
@@ -118,8 +114,7 @@ export class OperationService {
     });
   }
 
-  async update(req: Request, id: string, dto: UpdateOperationDto): Promise<void> {
-    const memberId = requireMemberId(req);
+  async update(memberId: MemberId, id: string, dto: UpdateOperationDto): Promise<void> {
     const {
       operation: row,
       account: acc,

@@ -1,13 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, report, reportAccount, reportCategory } from '../db/schema';
-import { ReportId } from '../security/ids';
+import { MemberId, ReportId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { reachableAccountsOf } from '../security/reachable';
@@ -91,8 +89,7 @@ export class ReportService {
     return map;
   }
 
-  async list(req: Request) {
-    const memberId = requireMemberId(req);
+  async list(memberId: MemberId) {
     const rows = await this.db
       .select()
       .from(report)
@@ -110,8 +107,7 @@ export class ReportService {
     }));
   }
 
-  async create(req: Request, dto: CreateReportDto) {
-    const memberId = requireMemberId(req);
+  async create(memberId: MemberId, dto: CreateReportDto) {
     requireBelowQuota('reports', await this.ownership.countOwned('reports', memberId));
     const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
@@ -149,8 +145,7 @@ export class ReportService {
     return { ...created, accountIds, categoryIds };
   }
 
-  async update(req: Request, id: string, dto: UpdateReportDto): Promise<void> {
-    const memberId = requireMemberId(req);
+  async update(memberId: MemberId, id: string, dto: UpdateReportDto): Promise<void> {
     await this.ownership.requireOwnedReport(id as ReportId, memberId);
     const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
@@ -194,8 +189,7 @@ export class ReportService {
     });
   }
 
-  async remove(req: Request, id: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async remove(memberId: MemberId, id: string): Promise<void> {
     await this.ownership.requireOwnedReport(id as ReportId, memberId);
 
     await this.db.transaction(async (tx) => {

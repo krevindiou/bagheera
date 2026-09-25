@@ -1,5 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Req } from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
@@ -8,6 +7,8 @@ import { UpdateReportDto } from './dto/update-report.dto';
 import { ReportDistributionService } from './report-distribution.service';
 import { ReportSeriesService } from './report-series.service';
 import { ReportService } from './report.service';
+import { CurrentMember } from '../session/current-member.decorator';
+import type { MemberId } from '../security/ids';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -20,51 +21,51 @@ export class ReportController {
   ) {}
 
   @Get()
-  list(@Req() req: Request) {
-    return this.reports.list(req);
+  list(@CurrentMember() memberId: MemberId) {
+    return this.reports.list(memberId);
   }
 
   @Get(':id/series')
-  series(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
-    return this.reportSeries.getSeries(req, id);
+  series(@CurrentMember() memberId: MemberId, @Param('id', ParseUuidV7Pipe) id: string) {
+    return this.reportSeries.getSeries(memberId, id);
   }
 
   @Get(':id/distribution')
-  distribution(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
-    return this.distributions.getDistribution(req, id);
+  distribution(@CurrentMember() memberId: MemberId, @Param('id', ParseUuidV7Pipe) id: string) {
+    return this.distributions.getDistribution(memberId, id);
   }
 
   @Post()
   @HttpCode(200)
   async create(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Body() dto: CreateReportDto,
   ): Promise<{
     message: string;
     report: Awaited<ReturnType<ReportService['create']>>;
   }> {
-    const created = await this.reports.create(req, dto);
+    const created = await this.reports.create(memberId, dto);
     return { message: 'Report saved', report: created };
   }
 
   @Patch(':id')
   @HttpCode(200)
   async update(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateReportDto,
   ): Promise<{ message: string }> {
-    await this.reports.update(req, id, dto);
+    await this.reports.update(memberId, id, dto);
     return { message: 'Report saved' };
   }
 
   @Delete(':id')
   @HttpCode(200)
   async remove(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
-    await this.reports.remove(req, id);
+    await this.reports.remove(memberId, id);
     return { message: 'Report deleted' };
   }
 }

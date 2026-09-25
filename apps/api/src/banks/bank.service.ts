@@ -6,15 +6,13 @@ import {
 } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
-import { BankId } from '../security/ids';
+import { MemberId, BankId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
 
@@ -33,8 +31,7 @@ export class BankService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async list(req: Request) {
-    const memberId = requireMemberId(req);
+  async list(memberId: MemberId) {
     return this.db
       .select()
       .from(bank)
@@ -42,9 +39,7 @@ export class BankService {
       .orderBy(asc(bank.name));
   }
 
-  async choose(req: Request, dto: ChooseBankDto): Promise<ChooseBankResult> {
-    const memberId = requireMemberId(req);
-
+  async choose(memberId: MemberId, dto: ChooseBankDto): Promise<ChooseBankResult> {
     if ((!dto.bankId && !dto.name) || (dto.bankId && dto.name)) {
       throw new BadRequestException('You must select a bank.');
     }
@@ -62,8 +57,7 @@ export class BankService {
     return { id: created.id, name: created.name, created: true };
   }
 
-  async update(req: Request, id: string, dto: UpdateBankDto): Promise<void> {
-    const memberId = requireMemberId(req);
+  async update(memberId: MemberId, id: string, dto: UpdateBankDto): Promise<void> {
     const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
@@ -71,18 +65,16 @@ export class BankService {
     await this.db.update(bank).set({ name: dto.name }).where(eq(bank.id, id));
   }
 
-  async close(req: Request, id: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async close(memberId: MemberId, ip: string, id: string): Promise<void> {
     const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
     }
     await this.db.update(bank).set({ closed: true }).where(eq(bank.id, id));
-    await this.audit.record('bank_closed', memberId, req.ip ?? 'unknown');
+    await this.audit.record('bank_closed', memberId, ip);
   }
 
-  async remove(req: Request, id: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
     const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.deleted) {
       throw new UnprocessableEntityException('Bank is already deleted.');
@@ -93,6 +85,6 @@ export class BankService {
       // accounts convert to the External placeholder, irreversibly.
       await this.transfers.convertBankReferencesToExternal(tx, id);
     });
-    await this.audit.record('bank_deleted', memberId, req.ip ?? 'unknown');
+    await this.audit.record('bank_deleted', memberId, ip);
   }
 }

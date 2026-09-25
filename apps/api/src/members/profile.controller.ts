@@ -1,5 +1,8 @@
 import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
+import { ClientIp } from '../common/client-ip.decorator';
+import type { MemberId } from '../security/ids';
+import { CurrentMember } from '../session/current-member.decorator';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { Public } from '../session/public.decorator';
 import { ConfirmEmailChangeDto } from './dto/confirm-email-change.dto';
@@ -31,10 +34,10 @@ export class ProfileController {
   @HttpCode(200)
   @RateLimit({ points: 10, durationSeconds: 60 })
   async updateLocale(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Body() dto: UpdateLocaleDto,
   ): Promise<{ message: string }> {
-    await this.profile.updateLocale(req, dto);
+    await this.profile.updateLocale(memberId, dto);
     return { message: 'Language preference updated.' };
   }
 
@@ -47,10 +50,10 @@ export class ProfileController {
   @Public()
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'key' })
   async confirmEmailChange(
-    @Req() req: Request,
+    @ClientIp() ip: string,
     @Body() dto: ConfirmEmailChangeDto,
   ): Promise<{ message: string }> {
-    await this.profile.confirmEmailChange(dto.key, req.ip ?? 'unknown');
+    await this.profile.confirmEmailChange(dto.key, ip);
     return { message: 'Your email address has been updated.' };
   }
 }

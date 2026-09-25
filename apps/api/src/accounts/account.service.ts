@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { balancesByAccount, ZERO_BALANCE } from '../common/balances';
 import { AxisBounds } from '../common/chart-axis';
 import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
@@ -21,10 +20,9 @@ import { account, bank, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
-import { AccountId, BankId } from '../security/ids';
+import { MemberId, AccountId, BankId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { reachableAccountsOf } from '../security/reachable';
@@ -53,8 +51,7 @@ export class AccountService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async list(req: Request, bankId?: string) {
-    const memberId = requireMemberId(req);
+  async list(memberId: MemberId, bankId?: string) {
     const conditions = [reachableAccountsOf(memberId)];
     if (bankId) {
       conditions.push(eq(account.bankId, bankId));
@@ -85,8 +82,7 @@ export class AccountService {
     });
   }
 
-  async create(req: Request, dto: CreateAccountDto) {
-    const memberId = requireMemberId(req);
+  async create(memberId: MemberId, dto: CreateAccountDto) {
     const bankRow = await this.ownership.requireOwnedBank(dto.bankId as BankId, memberId);
     if (bankRow.closed || bankRow.deleted) {
       throw new UnprocessableEntityException('Bank is not active.');
@@ -126,8 +122,7 @@ export class AccountService {
   // today (see synthesis-chart.ts's `latestValueDate`). Empty (no
   // operations at all, ever) is signalled by an empty `points` array; the
   // chart component hides itself in that case.
-  async chart(req: Request, id: string, range?: string): Promise<AccountChart> {
-    const memberId = requireMemberId(req);
+  async chart(memberId: MemberId, id: string, range?: string): Promise<AccountChart> {
     const { account: acc } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 
     const rows = (await monthlyNetByAccount(this.db, [id])).map((row) =>
@@ -156,8 +151,10 @@ export class AccountService {
   // Balance: sum of credits minus sum of debits over all the account's
   // operations. Reconciled balance: same computation restricted to
   // reconciled operations.
-  async balance(req: Request, id: string): Promise<{ balance: number; reconciledBalance: number }> {
-    const memberId = requireMemberId(req);
+  async balance(
+    memberId: MemberId,
+    id: string,
+  ): Promise<{ balance: number; reconciledBalance: number }> {
     await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 
     const entry = (await balancesByAccount(this.db, [id])).get(id) ?? ZERO_BALANCE;
@@ -167,8 +164,7 @@ export class AccountService {
     };
   }
 
-  async update(req: Request, id: string, dto: UpdateAccountDto): Promise<void> {
-    const memberId = requireMemberId(req);
+  async update(memberId: MemberId, id: string, dto: UpdateAccountDto): Promise<void> {
     const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
@@ -179,18 +175,16 @@ export class AccountService {
     await this.db.update(account).set({ name: dto.name }).where(eq(account.id, id));
   }
 
-  async close(req: Request, id: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async close(memberId: MemberId, ip: string, id: string): Promise<void> {
     const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.closed || row.deleted) {
       throw new UnprocessableEntityException('Account is not active.');
     }
     await this.db.update(account).set({ closed: true }).where(eq(account.id, id));
-    await this.audit.record('account_closed', memberId, req.ip ?? 'unknown');
+    await this.audit.record('account_closed', memberId, ip);
   }
 
-  async remove(req: Request, id: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
     const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.deleted) {
       throw new UnprocessableEntityException('Account is already deleted.');
@@ -201,6 +195,6 @@ export class AccountService {
       // to the External placeholder, irreversibly, at deletion time.
       await this.transfers.convertAccountReferencesToExternal(tx, id);
     });
-    await this.audit.record('account_deleted', memberId, req.ip ?? 'unknown');
+    await this.audit.record('account_deleted', memberId, ip);
   }
 }

@@ -1,22 +1,13 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Patch,
-  Post,
-  Query,
-  Req,
-} from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { CurrentMember } from '../session/current-member.decorator';
+import type { MemberId } from '../security/ids';
+import { ClientIp } from '../common/client-ip.decorator';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -25,65 +16,67 @@ export class AccountController {
   constructor(private readonly accounts: AccountService) {}
 
   @Get()
-  list(@Req() req: Request, @Query('bankId') bankId?: string) {
-    return this.accounts.list(req, bankId);
+  list(@CurrentMember() memberId: MemberId, @Query('bankId') bankId?: string) {
+    return this.accounts.list(memberId, bankId);
   }
 
   @Get(':id/chart')
   chart(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Query('range') range?: string,
   ) {
-    return this.accounts.chart(req, id, range);
+    return this.accounts.chart(memberId, id, range);
   }
 
   @Get(':id/balance')
-  balance(@Req() req: Request, @Param('id', ParseUuidV7Pipe) id: string) {
-    return this.accounts.balance(req, id);
+  balance(@CurrentMember() memberId: MemberId, @Param('id', ParseUuidV7Pipe) id: string) {
+    return this.accounts.balance(memberId, id);
   }
 
   @Post()
   @HttpCode(200)
   async create(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Body() dto: CreateAccountDto,
   ): Promise<{
     message: string;
     account: Awaited<ReturnType<AccountService['create']>>;
   }> {
-    const created = await this.accounts.create(req, dto);
+    const created = await this.accounts.create(memberId, dto);
     return { message: 'Account saved', account: created };
   }
 
   @Patch(':id')
   @HttpCode(200)
   async update(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateAccountDto,
   ): Promise<{ message: string }> {
-    await this.accounts.update(req, id, dto);
+    await this.accounts.update(memberId, id, dto);
     return { message: 'Account saved' };
   }
 
   @Post(':id/close')
   @HttpCode(200)
   async close(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
+    @ClientIp() ip: string,
     @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
-    await this.accounts.close(req, id);
+    await this.accounts.close(memberId, ip, id);
     return { message: 'Account closed' };
   }
 
   @Delete(':id')
   @HttpCode(200)
   async remove(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
+    @ClientIp() ip: string,
     @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<{ message: string }> {
-    await this.accounts.remove(req, id);
+    await this.accounts.remove(memberId, ip, id);
     return { message: 'Account deleted' };
   }
 }

@@ -13,7 +13,7 @@ import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import '../session/session-data';
 import { consumeStepUp } from '../session/consume-step-up';
-import { requireMemberId } from '../session/require-member-id';
+import type { MemberId } from '../security/ids';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -157,8 +157,7 @@ export class ProfileService {
    * preference, and prompting on every switcher click would be poor UX for
    * something this low-stakes.
    */
-  async updateLocale(req: Request, dto: UpdateLocaleDto): Promise<void> {
-    const memberId = requireMemberId(req);
+  async updateLocale(memberId: MemberId, dto: UpdateLocaleDto): Promise<void> {
     await this.db.update(member).set({ locale: dto.locale }).where(eq(member.id, memberId));
   }
 }

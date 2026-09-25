@@ -1,7 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import {
@@ -12,10 +11,9 @@ import {
 } from '../operations/entry-rules';
 import { operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
-import { AccountId, SchedulerId } from '../security/ids';
+import { MemberId, AccountId, SchedulerId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { GenerationQueueService } from './generation-queue.service';
@@ -29,8 +27,7 @@ export class SchedulerService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async list(req: Request, accountId: string, page: number) {
-    const memberId = requireMemberId(req);
+  async list(memberId: MemberId, accountId: string, page: number) {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const pageNumber = page > 0 ? page : 1;
@@ -50,8 +47,7 @@ export class SchedulerService {
     return { items: rows, total, page: pageNumber, pageSize: PAGE_SIZE };
   }
 
-  async create(req: Request, dto: CreateSchedulerDto) {
-    const memberId = requireMemberId(req);
+  async create(memberId: MemberId, dto: CreateSchedulerDto) {
     const owned = await this.ownership.requireOwnedAccount(dto.accountId as AccountId, memberId);
     requireFullyActive(owned);
     await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
@@ -97,8 +93,7 @@ export class SchedulerService {
     return created;
   }
 
-  async update(req: Request, id: string, dto: UpdateSchedulerDto): Promise<void> {
-    const memberId = requireMemberId(req);
+  async update(memberId: MemberId, id: string, dto: UpdateSchedulerDto): Promise<void> {
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     requireFullyActive(owned);
     if (dto.accountId !== owned.scheduler.accountId) {
@@ -144,8 +139,7 @@ export class SchedulerService {
     await this.generation.enqueueScheduler(id);
   }
 
-  async remove(req: Request, id: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async remove(memberId: MemberId, id: string): Promise<void> {
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     requireFullyActive(owned);
 

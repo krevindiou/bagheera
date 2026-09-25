@@ -1,11 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { ilikeContains } from '../common/like-pattern';
+import { MemberId } from '../security/ids';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, category, operation } from '../db/schema';
-import { requireMemberId } from '../session/require-member-id';
 import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
 import { reachableAccountsOf } from '../security/reachable';
 
@@ -28,8 +27,10 @@ export class OperationAutocompleteService {
   // At most MAX_SUGGESTIONS, exact then prefix matches first: the form
   // prefills the category from an exact match, so the cut must never drop
   // it.
-  async search(req: Request, dto: AutocompleteThirdPartyDto): Promise<ThirdPartySuggestion[]> {
-    const memberId = requireMemberId(req);
+  async search(
+    memberId: MemberId,
+    dto: AutocompleteThirdPartyDto,
+  ): Promise<ThirdPartySuggestion[]> {
     const lowerThirdParty = sql<string>`lower(${operation.thirdParty})`;
 
     const matches = this.db

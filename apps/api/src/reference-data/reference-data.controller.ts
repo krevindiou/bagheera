@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import type { Request } from 'express';
 import { ReferenceDataService } from './reference-data.service';
 
@@ -11,12 +11,12 @@ export class ReferenceDataController {
   constructor(private readonly referenceData: ReferenceDataService) {}
 
   @Get('categories')
-  categories(@Req() req: Request) {
-    return this.referenceData.categories(req);
+  categories() {
+    return this.referenceData.categories();
   }
 
   @Get('payment-methods')
-  paymentMethods(@Req() req: Request) {
-    return this.referenceData.paymentMethods(req);
+  paymentMethods() {
+    return this.referenceData.paymentMethods();
   }
 }

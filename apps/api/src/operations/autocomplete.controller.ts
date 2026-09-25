@@ -1,7 +1,8 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
-import type { Request } from 'express';
+import { Controller, Get, Query } from '@nestjs/common';
 import { OperationAutocompleteService, ThirdPartySuggestion } from './autocomplete.service';
 import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
+import { CurrentMember } from '../session/current-member.decorator';
+import type { MemberId } from '../security/ids';
 
 @Controller('operations/autocomplete')
 export class OperationAutocompleteController {
@@ -9,9 +10,9 @@ export class OperationAutocompleteController {
 
   @Get()
   search(
-    @Req() req: Request,
+    @CurrentMember() memberId: MemberId,
     @Query() dto: AutocompleteThirdPartyDto,
   ): Promise<ThirdPartySuggestion[]> {
-    return this.autocomplete.search(req, dto);
+    return this.autocomplete.search(memberId, dto);
   }
 }

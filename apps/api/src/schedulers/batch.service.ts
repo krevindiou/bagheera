@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
+import { MemberId } from '../security/ids';
 import { DRIZZLE } from '../db/db.constants';
 import { operation, scheduler } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 
 /**
  * Batch delete. Ownership is resolved per id via
@@ -26,8 +25,11 @@ export class SchedulerBatchService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async batchDelete(req: Request, ids: string[]): Promise<{ deletedCount: number }> {
-    const memberId = requireMemberId(req);
+  async batchDelete(
+    memberId: MemberId,
+    ip: string,
+    ids: string[],
+  ): Promise<{ deletedCount: number }> {
     const owned = await this.ownership.filterOwnedSchedulerIds(ids, memberId);
     if (owned.length > 0) {
       await this.db.transaction(async (tx) => {
@@ -40,7 +42,7 @@ export class SchedulerBatchService {
         await tx.delete(scheduler).where(inArray(scheduler.id, owned));
       });
     }
-    await this.audit.record('scheduler_batch_deleted', memberId, req.ip ?? 'unknown');
+    await this.audit.record('scheduler_batch_deleted', memberId, ip);
     return { deletedCount: owned.length };
   }
 }

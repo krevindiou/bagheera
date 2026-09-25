@@ -1,9 +1,11 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { BatchIdsDto } from '../common/batch-ids.dto';
 import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { OperationBatchService } from './batch.service';
+import { CurrentMember } from '../session/current-member.decorator';
+import type { MemberId } from '../security/ids';
+import { ClientIp } from '../common/client-ip.decorator';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -13,15 +15,23 @@ export class OperationBatchController {
 
   @Post('delete')
   @HttpCode(200)
-  async delete(@Req() req: Request, @Body() dto: BatchIdsDto) {
-    const { deletedCount } = await this.batch.batchDelete(req, dto.ids);
+  async delete(
+    @CurrentMember() memberId: MemberId,
+    @ClientIp() ip: string,
+    @Body() dto: BatchIdsDto,
+  ) {
+    const { deletedCount } = await this.batch.batchDelete(memberId, ip, dto.ids);
     return { message: 'Operations deleted', deletedCount };
   }
 
   @Post('reconcile')
   @HttpCode(200)
-  async reconcile(@Req() req: Request, @Body() dto: BatchIdsDto) {
-    const { reconciledCount } = await this.batch.batchReconcile(req, dto.ids);
+  async reconcile(
+    @CurrentMember() memberId: MemberId,
+    @ClientIp() ip: string,
+    @Body() dto: BatchIdsDto,
+  ) {
+    const { reconciledCount } = await this.batch.batchReconcile(memberId, ip, dto.ids);
     return { message: 'Operations reconciled', reconciledCount };
   }
 }

@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { balancesByAccount } from '../common/balances';
 import { localIsoDate } from '../common/local-date';
 import { toMajorUnits } from '../common/money';
@@ -12,6 +11,7 @@ import {
   parseSynthesisChartWindow,
   SynthesisChart,
 } from '../common/synthesis-chart';
+import { MemberId } from '../security/ids';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report } from '../db/schema';
 import { MinorUnits } from '../common/money';
@@ -20,7 +20,6 @@ import {
   ReportDistributionService,
 } from '../reports/report-distribution.service';
 import { ReportSeries, ReportSeriesService } from '../reports/report-series.service';
-import { requireMemberId } from '../session/require-member-id';
 
 export type OnboardingTip = 'no-bank' | 'no-account' | null;
 
@@ -146,9 +145,7 @@ export class DashboardService {
     return histories;
   }
 
-  async getDashboard(req: Request, range?: string): Promise<DashboardResponse> {
-    const memberId = requireMemberId(req);
-
+  async getDashboard(memberId: MemberId, range?: string): Promise<DashboardResponse> {
     const banks = await this.db
       .select()
       .from(bank)

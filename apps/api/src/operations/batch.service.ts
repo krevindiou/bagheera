@@ -1,13 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, inArray, ne } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
+import { MemberId } from '../security/ids';
 import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { TransferService } from './transfer.service';
 
 // The "Initial balance" payment method, reserved for the system-generated
@@ -52,8 +51,11 @@ export class OperationBatchService {
     return rows.map((row) => row.id);
   }
 
-  async batchDelete(req: Request, ids: string[]): Promise<{ deletedCount: number }> {
-    const memberId = requireMemberId(req);
+  async batchDelete(
+    memberId: MemberId,
+    ip: string,
+    ids: string[],
+  ): Promise<{ deletedCount: number }> {
     const owned = await this.excludeOpeningBalance(
       await this.ownership.filterOwnedOperationIds(ids, memberId),
     );
@@ -65,19 +67,22 @@ export class OperationBatchService {
         await tx.delete(operation).where(inArray(operation.id, owned));
       });
     }
-    await this.audit.record('operation_batch_deleted', memberId, req.ip ?? 'unknown');
+    await this.audit.record('operation_batch_deleted', memberId, ip);
     return { deletedCount: owned.length };
   }
 
-  async batchReconcile(req: Request, ids: string[]): Promise<{ reconciledCount: number }> {
-    const memberId = requireMemberId(req);
+  async batchReconcile(
+    memberId: MemberId,
+    ip: string,
+    ids: string[],
+  ): Promise<{ reconciledCount: number }> {
     const owned = await this.excludeOpeningBalance(
       await this.ownership.filterOwnedOperationIds(ids, memberId),
     );
     if (owned.length > 0) {
       await this.db.update(operation).set({ reconciled: true }).where(inArray(operation.id, owned));
     }
-    await this.audit.record('operation_batch_reconciled', memberId, req.ip ?? 'unknown');
+    await this.audit.record('operation_batch_reconciled', memberId, ip);
     return { reconciledCount: owned.length };
   }
 }

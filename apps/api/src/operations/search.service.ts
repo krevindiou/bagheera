@@ -1,16 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import type { RedisClientType } from 'redis';
 import { ilikeContains } from '../common/like-pattern';
 import { toMinorUnits } from '../common/money';
 import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
-import { AccountId } from '../security/ids';
+import { MemberId, AccountId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from '../session/session.constants';
 import { SearchOperationsDto } from './dto/search-operations.dto';
 
@@ -53,15 +51,13 @@ export class OperationSearchService {
     return raw ? (JSON.parse(raw) as SearchCriteria) : {};
   }
 
-  async clear(req: Request, accountId: string): Promise<void> {
-    const memberId = requireMemberId(req);
+  async clear(memberId: MemberId, accountId: string): Promise<void> {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
     await this.valkey.del(this.key(memberId, accountId));
   }
 
   // Runs a fresh search and remembers the criteria for this member+account.
-  async search(req: Request, dto: SearchOperationsDto, page: number) {
-    const memberId = requireMemberId(req);
+  async search(memberId: MemberId, dto: SearchOperationsDto, page: number) {
     await this.ownership.requireOwnedAccount(dto.accountId as AccountId, memberId);
 
     const { accountId, ...criteria } = dto;
@@ -72,8 +68,7 @@ export class OperationSearchService {
   // Re-runs the last remembered search (empty criteria if none stored yet).
   // Exposes the criteria and whether any is set, so the frontend can
   // restore the search panel's open/hydrated state on mount.
-  async recallAndRun(req: Request, accountId: string, page: number) {
-    const memberId = requireMemberId(req);
+  async recallAndRun(memberId: MemberId, accountId: string, page: number) {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const criteria = await this.recall(memberId, accountId);

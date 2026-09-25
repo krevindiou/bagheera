@@ -1,13 +1,14 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
-import type { Request } from 'express';
+import { Controller, Get, Query } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
+import { CurrentMember } from '../session/current-member.decorator';
+import type { MemberId } from '../security/ids';
 
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboard: DashboardService) {}
 
   @Get()
-  get(@Req() req: Request, @Query('range') range?: string) {
-    return this.dashboard.getDashboard(req, range);
+  get(@CurrentMember() memberId: MemberId, @Query('range') range?: string) {
+    return this.dashboard.getDashboard(memberId, range);
   }
 }

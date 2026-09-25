@@ -1,14 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
 import { MinorUnits, toMajorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, operation, report } from '../db/schema';
-import { ReportId } from '../security/ids';
+import { MemberId, ReportId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
-import { requireMemberId } from '../session/require-member-id';
 import { fillPeriodGaps } from './chart/period';
 import { effectiveAccounts } from './effective-accounts';
 import { effectiveCategoryIds } from './effective-categories';
@@ -46,8 +44,7 @@ export class ReportSeriesService {
     private readonly ownership: OwnershipService,
   ) {}
 
-  async getSeries(req: Request, id: string): Promise<ReportSeries> {
-    const memberId = requireMemberId(req);
+  async getSeries(memberId: MemberId, id: string): Promise<ReportSeries> {
     const rpt = await this.ownership.requireOwnedReport(id as ReportId, memberId);
     return this.computeSeries(rpt, memberId);
   }
