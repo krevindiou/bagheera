@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { balancesByAccount } from '../common/balances';
 import { localIsoDate } from '../common/local-date';
 import { toMajorUnits } from '../common/money';
 import { MonthlyNet, monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
@@ -104,35 +105,6 @@ export class DashboardService {
     private readonly reportDistributions: ReportDistributionService,
   ) {}
 
-  private async balancesByAccount(
-    accountIds: string[],
-  ): Promise<Map<string, { balance: MinorUnits; reconciledBalance: MinorUnits }>> {
-    if (accountIds.length === 0) {
-      return new Map();
-    }
-    const rows = await this.db
-      .select({
-        accountId: operation.accountId,
-        credit: sql<string>`coalesce(sum(${operation.credit}), 0)`,
-        debit: sql<string>`coalesce(sum(${operation.debit}), 0)`,
-        reconciledCredit: sql<string>`coalesce(sum(${operation.credit}) filter (where ${operation.reconciled}), 0)`,
-        reconciledDebit: sql<string>`coalesce(sum(${operation.debit}) filter (where ${operation.reconciled}), 0)`,
-      })
-      .from(operation)
-      .where(inArray(operation.accountId, accountIds))
-      .groupBy(operation.accountId);
-    return new Map(
-      rows.map((row) => [
-        row.accountId,
-        {
-          balance: (Number(row.credit) - Number(row.debit)) as MinorUnits,
-          reconciledBalance: (Number(row.reconciledCredit) -
-            Number(row.reconciledDebit)) as MinorUnits,
-        },
-      ]),
-    );
-  }
-
   // Per-account cumulative balance history, last `SPARKLINE_MONTHS` months —
   // one `computeSynthesisChart` call per account (reusing the exact same
   // per-account scoping AccountService.chart uses for the full 12-month
@@ -141,17 +113,11 @@ export class DashboardService {
   // the tile sparkline. A single query sums every account's monthly
   // movements up front so this stays one round trip regardless of account
   // count.
-  private async accountHistories(
+  private accountHistories(
     accounts: (typeof account.$inferSelect)[],
-  ): Promise<Map<string, number[]>> {
+    monthly: MonthlyNet[],
+  ): Map<string, number[]> {
     const histories = new Map<string, number[]>();
-    if (accounts.length === 0) {
-      return histories;
-    }
-    const monthly = await monthlyNetByAccount(
-      this.db,
-      accounts.map((a) => a.id),
-    );
 
     const monthlyByAccount = new Map<string, MonthlyNet[]>();
     for (const row of monthly) {
@@ -208,7 +174,10 @@ export class DashboardService {
 
     const onboarding: OnboardingTip = accounts.length === 0 && hasActiveBank ? 'no-account' : null;
 
-    const balances = await this.balancesByAccount(accounts.map((a) => a.id));
+    const balances = await balancesByAccount(
+      this.db,
+      accounts.map((a) => a.id),
+    );
 
     // Total balance per currency — closed accounts/banks count here, only
     // deleted ones are excluded; ordered by the raw stored integer sum,
@@ -246,12 +215,16 @@ export class DashboardService {
       .filter((a) => !a.closed && activeBankIds.has(a.bankId))
       .map((a) => a.id);
 
-    const [lastBiggestIncome, lastBiggestExpense, synthesisChart, histories] = await Promise.all([
-      this.getLastBiggestIncome(fullyActiveAccountIds, accounts),
-      this.getLastBiggestExpense(fullyActiveAccountIds, accounts),
-      this.getSynthesisChart(accounts, range),
-      this.accountHistories(accounts),
+    const [lastBiggestIncome, lastBiggestExpense, monthly] = await Promise.all([
+      this.getBiggestEntry('credit', fullyActiveAccountIds, accounts),
+      this.getBiggestEntry('debit', fullyActiveAccountIds, accounts),
+      monthlyNetByAccount(
+        this.db,
+        accounts.map((a) => a.id),
+      ),
     ]);
+    const synthesisChart = this.getSynthesisChart(accounts, monthly, range);
+    const histories = this.accountHistories(accounts, monthly);
 
     const accountsOverview: AccountsOverviewBank[] = banks
       .filter((b) => !b.closed)
@@ -298,25 +271,27 @@ export class DashboardService {
   // today (see synthesis-chart.ts's `latestValueDate`) — one shared end
   // date for the whole chart, since every series must share the same
   // period labels.
-  private async getSynthesisChart(
+  private getSynthesisChart(
     accounts: (typeof account.$inferSelect)[],
+    monthly: MonthlyNet[],
     range?: string,
-  ): Promise<SynthesisChart> {
+  ): SynthesisChart {
     if (accounts.length === 0) {
       return EMPTY_SYNTHESIS_CHART;
     }
     const currencyByAccount = new Map(accounts.map((a) => [a.id, a.currency] as const));
-    const monthly = await monthlyNetByAccount(
-      this.db,
-      accounts.map((a) => a.id),
-    );
     const rows = monthly.map((row) =>
       toSynthesisChartRow(row, currencyByAccount.get(row.accountId)!),
     );
     return computeSynthesisChart(rows, latestValueDate(rows), parseSynthesisChartWindow(range));
   }
 
-  private async getLastBiggestIncome(
+  // Largest raw stored (minor-unit) amount on one side of the previous
+  // calendar month wins, no currency conversion; deterministic tie-break by
+  // operation id — UUIDv7 ids sort in creation order. Scheduler-generated
+  // occurrences don't count.
+  private async getBiggestEntry(
+    side: 'credit' | 'debit',
     fullyActiveAccountIds: string[],
     accounts: (typeof account.$inferSelect)[],
   ): Promise<DashboardIndicator | null> {
@@ -324,72 +299,29 @@ export class DashboardService {
       return null;
     }
     const { start, end } = previousCalendarMonthRange();
+    const column = operation[side];
 
-    const rows = await this.db
+    const [winner] = await this.db
       .select()
       .from(operation)
       .where(
         and(
           inArray(operation.accountId, fullyActiveAccountIds),
           isNull(operation.schedulerId),
-          sql`${operation.credit} is not null`,
+          isNotNull(column),
           sql`${operation.valueDate} >= ${start}`,
           sql`${operation.valueDate} <= ${end}`,
         ),
-      );
-    if (rows.length === 0) {
+      )
+      .orderBy(desc(column), asc(operation.id))
+      .limit(1);
+    if (!winner) {
       return null;
     }
 
-    // Largest raw stored (minor-unit) amount wins, no currency conversion;
-    // deterministic tie-break by operation id — UUIDv7 ids sort
-    // lexicographically in creation order, so a plain string compare works.
-    const winner = rows.sort((a, b) =>
-      b.credit! !== a.credit! ? b.credit! - a.credit! : a.id.localeCompare(b.id),
-    )[0];
     const currency = accounts.find((a) => a.id === winner.accountId)!.currency;
     return {
-      amount: toMajorUnits(winner.credit!),
-      currency,
-      valueDate: winner.valueDate,
-      thirdParty: winner.thirdParty,
-    };
-  }
-
-  private async getLastBiggestExpense(
-    fullyActiveAccountIds: string[],
-    accounts: (typeof account.$inferSelect)[],
-  ): Promise<DashboardIndicator | null> {
-    if (fullyActiveAccountIds.length === 0) {
-      return null;
-    }
-    const { start, end } = previousCalendarMonthRange();
-
-    const rows = await this.db
-      .select()
-      .from(operation)
-      .where(
-        and(
-          inArray(operation.accountId, fullyActiveAccountIds),
-          isNull(operation.schedulerId),
-          sql`${operation.debit} is not null`,
-          sql`${operation.valueDate} >= ${start}`,
-          sql`${operation.valueDate} <= ${end}`,
-        ),
-      );
-    if (rows.length === 0) {
-      return null;
-    }
-
-    // Largest raw stored (minor-unit) amount wins, no currency conversion;
-    // deterministic tie-break by operation id — UUIDv7 ids sort
-    // lexicographically in creation order, so a plain string compare works.
-    const winner = rows.sort((a, b) =>
-      b.debit! !== a.debit! ? b.debit! - a.debit! : a.id.localeCompare(b.id),
-    )[0];
-    const currency = accounts.find((a) => a.id === winner.accountId)!.currency;
-    return {
-      amount: toMajorUnits(winner.debit!),
+      amount: toMajorUnits(winner[side]!),
       currency,
       valueDate: winner.valueDate,
       thirdParty: winner.thirdParty,

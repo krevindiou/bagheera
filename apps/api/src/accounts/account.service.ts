@@ -4,9 +4,10 @@ import {
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { balancesByAccount, ZERO_BALANCE } from '../common/balances';
 import { AxisBounds } from '../common/chart-axis';
 import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
 import { monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
@@ -73,44 +74,18 @@ export class AccountService {
     // reconciled counterpart, muted/smaller — see AccountsPage.vue) next to
     // its name — one bulk aggregate query for the whole list rather than N
     // calls to the single-account `balance()` below.
-    const balances = await this.balancesByAccount(accounts.map((a) => a.id));
+    const balances = await balancesByAccount(
+      this.db,
+      accounts.map((a) => a.id),
+    );
     return accounts.map((a) => {
-      const entry = balances.get(a.id);
+      const entry = balances.get(a.id) ?? ZERO_BALANCE;
       return {
         ...a,
-        balance: toMajorUnits((entry?.balance ?? 0) as MinorUnits),
-        reconciledBalance: toMajorUnits((entry?.reconciledBalance ?? 0) as MinorUnits),
+        balance: toMajorUnits(entry.balance),
+        reconciledBalance: toMajorUnits(entry.reconciledBalance),
       };
     });
-  }
-
-  private async balancesByAccount(
-    accountIds: string[],
-  ): Promise<Map<string, { balance: MinorUnits; reconciledBalance: MinorUnits }>> {
-    if (accountIds.length === 0) {
-      return new Map();
-    }
-    const rows = await this.db
-      .select({
-        accountId: operation.accountId,
-        credit: sql<string>`coalesce(sum(${operation.credit}), 0)`,
-        debit: sql<string>`coalesce(sum(${operation.debit}), 0)`,
-        reconciledCredit: sql<string>`coalesce(sum(${operation.credit}) filter (where ${operation.reconciled}), 0)`,
-        reconciledDebit: sql<string>`coalesce(sum(${operation.debit}) filter (where ${operation.reconciled}), 0)`,
-      })
-      .from(operation)
-      .where(inArray(operation.accountId, accountIds))
-      .groupBy(operation.accountId);
-    return new Map(
-      rows.map((row) => [
-        row.accountId,
-        {
-          balance: (Number(row.credit) - Number(row.debit)) as MinorUnits,
-          reconciledBalance: (Number(row.reconciledCredit) -
-            Number(row.reconciledDebit)) as MinorUnits,
-        },
-      ]),
-    );
   }
 
   async create(req: Request, dto: CreateAccountDto) {
@@ -188,25 +163,10 @@ export class AccountService {
     const memberId = requireMemberId(req);
     await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 
-    const [row] = await this.db
-      .select({
-        credit: sql<string>`coalesce(sum(${operation.credit}), 0)`,
-        debit: sql<string>`coalesce(sum(${operation.debit}), 0)`,
-        reconciledCredit: sql<string>`coalesce(sum(${operation.credit}) filter (where ${operation.reconciled}), 0)`,
-        reconciledDebit: sql<string>`coalesce(sum(${operation.debit}) filter (where ${operation.reconciled}), 0)`,
-      })
-      .from(operation)
-      .where(eq(operation.accountId, id));
-
+    const entry = (await balancesByAccount(this.db, [id])).get(id) ?? ZERO_BALANCE;
     return {
-      // Both operands are already MinorUnits at the SQL level; `Number(...)`
-      // is only unwrapping the string node-postgres hands back for a
-      // NUMERIC/bigint aggregate — the subtraction itself always widens to
-      // plain `number`, hence the cast on the finished total.
-      balance: toMajorUnits((Number(row.credit) - Number(row.debit)) as MinorUnits),
-      reconciledBalance: toMajorUnits(
-        (Number(row.reconciledCredit) - Number(row.reconciledDebit)) as MinorUnits,
-      ),
+      balance: toMajorUnits(entry.balance),
+      reconciledBalance: toMajorUnits(entry.reconciledBalance),
     };
   }
 
