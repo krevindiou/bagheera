@@ -5,6 +5,7 @@ import type { Request } from 'express';
 import type { RedisClientType } from 'redis';
 import { ilikeContains } from '../common/like-pattern';
 import { toMinorUnits } from '../common/money';
+import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
 import { AccountId } from '../security/ids';
@@ -12,8 +13,6 @@ import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from '../session/session.constants';
 import { SearchOperationsDto } from './dto/search-operations.dto';
-
-const PAGE_SIZE = 20;
 
 // The subset of SearchOperationsDto that gets remembered across requests —
 // accountId is the Valkey key's scope, not part of the stored payload.

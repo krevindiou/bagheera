@@ -7,22 +7,26 @@ import {
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
-import { MinorUnits, toMinorUnits } from '../common/money';
+import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
-import { category, operation, paymentMethod } from '../db/schema';
+import {
+  amountFields,
+  requireFullyActive,
+  transferAccountIdFor,
+  validateTypedRefs,
+} from './entry-rules';
+import { operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AccountId, OperationId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { requireMemberId } from '../session/require-member-id';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
-import { TRANSFER_PAYMENT_METHOD_IDS, TransferService } from './transfer.service';
+import { TransferService } from './transfer.service';
 
 // The "Initial balance" payment method, reserved for the system-generated
 // opening operation — non-editable.
 const OPENING_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
-
-const PAGE_SIZE = 20;
 
 @Injectable()
 export class OperationService {
@@ -31,58 +35,6 @@ export class OperationService {
     private readonly transfers: TransferService,
     private readonly ownership: OwnershipService,
   ) {}
-
-  // Fully active = account and its bank are both neither closed nor
-  // deleted (mirrors scheduler.service.ts's requireFullyActive). Required
-  // for creating an operation and for editing/reconciling an existing one;
-  // an operation on a merely-closed account (or a closed bank) stays
-  // listable-only.
-  private requireFullyActive(row: {
-    account: { closed: boolean; deleted: boolean };
-    bank: { closed: boolean; deleted: boolean };
-  }): void {
-    if (row.account.closed || row.account.deleted || row.bank.closed || row.bank.deleted) {
-      throw new UnprocessableEntityException('Account is not active.');
-    }
-  }
-
-  // Validates the category/payment-method pair against the operation's
-  // type, enforcing type-driven choice filtering server-side.
-  private async validateTypedRefs(
-    type: 'debit' | 'credit',
-    paymentMethodId: string,
-    categoryId?: string,
-  ): Promise<void> {
-    const [method] = await this.db
-      .select()
-      .from(paymentMethod)
-      .where(eq(paymentMethod.id, paymentMethodId));
-    if (!method || method.type !== type) {
-      throw new BadRequestException('Invalid payment method for this type.');
-    }
-    if (categoryId !== undefined) {
-      const [cat] = await this.db.select().from(category).where(eq(category.id, categoryId));
-      if (!cat || cat.type !== type) {
-        throw new BadRequestException('Invalid category for this type.');
-      }
-    }
-  }
-
-  private amountFields(
-    type: 'debit' | 'credit',
-    amount: number,
-  ): { debit: MinorUnits | null; credit: MinorUnits | null } {
-    const minorUnits = toMinorUnits(amount);
-    return type === 'debit'
-      ? { debit: minorUnits, credit: null }
-      : { debit: null, credit: minorUnits };
-  }
-
-  private transferAccountId(paymentMethodId: string, transferAccountId?: string): string | null {
-    return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId)
-      ? (transferAccountId ?? null)
-      : null;
-  }
 
   async list(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
@@ -111,11 +63,11 @@ export class OperationService {
       dto.accountId as AccountId,
       memberId,
     );
-    this.requireFullyActive({ account: acc, bank: accBank });
-    await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
+    requireFullyActive({ account: acc, bank: accBank });
+    await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
 
-    const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const transferAccountId = this.transferAccountId(dto.paymentMethodId, dto.transferAccountId);
+    const { debit, credit } = amountFields(dto.type, dto.amount);
+    const transferAccountId = transferAccountIdFor(dto.paymentMethodId, dto.transferAccountId);
 
     return this.db.transaction(async (tx) => {
       const [created] = await tx
@@ -173,17 +125,17 @@ export class OperationService {
       account: acc,
       bank: accBank,
     } = await this.ownership.requireOwnedOperation(id as OperationId, memberId);
-    this.requireFullyActive({ account: acc, bank: accBank });
+    requireFullyActive({ account: acc, bank: accBank });
     if (dto.accountId !== row.accountId) {
       throw new BadRequestException('Account cannot be changed.');
     }
     if (row.paymentMethodId === OPENING_BALANCE_PAYMENT_METHOD_ID) {
       throw new UnprocessableEntityException('Opening operation cannot be edited.');
     }
-    await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
+    await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
 
-    const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const desiredTransferAccountId = this.transferAccountId(
+    const { debit, credit } = amountFields(dto.type, dto.amount);
+    const desiredTransferAccountId = transferAccountIdFor(
       dto.paymentMethodId,
       dto.transferAccountId,
     );

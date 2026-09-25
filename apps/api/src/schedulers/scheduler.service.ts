@@ -1,16 +1,17 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
-import { MinorUnits, toMinorUnits } from '../common/money';
+import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
-import { category, operation, paymentMethod, scheduler } from '../db/schema';
-import { TRANSFER_PAYMENT_METHOD_IDS, TransferService } from '../operations/transfer.service';
+import {
+  amountFields,
+  requireFullyActive,
+  transferAccountIdFor,
+  validateTypedRefs,
+} from '../operations/entry-rules';
+import { operation, scheduler } from '../db/schema';
+import { TransferService } from '../operations/transfer.service';
 import { AccountId, SchedulerId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
@@ -18,8 +19,6 @@ import { requireMemberId } from '../session/require-member-id';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { GenerationQueueService } from './generation-queue.service';
-
-const PAGE_SIZE = 20;
 
 @Injectable()
 export class SchedulerService {
@@ -29,56 +28,6 @@ export class SchedulerService {
     private readonly transfers: TransferService,
     private readonly ownership: OwnershipService,
   ) {}
-
-  // Fully active = account and its bank are both neither closed nor
-  // deleted. Required for creation and for editing/deleting an existing
-  // scheduler; a scheduler on a merely-closed account stays listable-only.
-  private requireFullyActive(row: {
-    account: { closed: boolean; deleted: boolean };
-    bank: { closed: boolean; deleted: boolean };
-  }): void {
-    if (row.account.closed || row.account.deleted || row.bank.closed || row.bank.deleted) {
-      throw new UnprocessableEntityException('Account is not active.');
-    }
-  }
-
-  // Validates the category/payment-method pair against the scheduler's
-  // type, enforcing type-driven choice filtering server-side.
-  private async validateTypedRefs(
-    type: 'debit' | 'credit',
-    paymentMethodId: string,
-    categoryId?: string,
-  ): Promise<void> {
-    const [method] = await this.db
-      .select()
-      .from(paymentMethod)
-      .where(eq(paymentMethod.id, paymentMethodId));
-    if (!method || method.type !== type) {
-      throw new BadRequestException('Invalid payment method for this type.');
-    }
-    if (categoryId !== undefined) {
-      const [cat] = await this.db.select().from(category).where(eq(category.id, categoryId));
-      if (!cat || cat.type !== type) {
-        throw new BadRequestException('Invalid category for this type.');
-      }
-    }
-  }
-
-  private amountFields(
-    type: 'debit' | 'credit',
-    amount: number,
-  ): { debit: MinorUnits | null; credit: MinorUnits | null } {
-    const minorUnits = toMinorUnits(amount);
-    return type === 'debit'
-      ? { debit: minorUnits, credit: null }
-      : { debit: null, credit: minorUnits };
-  }
-
-  private transferAccountId(paymentMethodId: string, transferAccountId?: string): string | null {
-    return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId)
-      ? (transferAccountId ?? null)
-      : null;
-  }
 
   async list(req: Request, accountId: string, page: number) {
     const memberId = requireMemberId(req);
@@ -104,11 +53,11 @@ export class SchedulerService {
   async create(req: Request, dto: CreateSchedulerDto) {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.requireOwnedAccount(dto.accountId as AccountId, memberId);
-    this.requireFullyActive(owned);
-    await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
+    requireFullyActive(owned);
+    await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
 
-    const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const transferAccountId = this.transferAccountId(dto.paymentMethodId, dto.transferAccountId);
+    const { debit, credit } = amountFields(dto.type, dto.amount);
+    const transferAccountId = transferAccountIdFor(dto.paymentMethodId, dto.transferAccountId);
     await this.transfers.validateSchedulerTarget(
       this.db,
       {
@@ -151,14 +100,14 @@ export class SchedulerService {
   async update(req: Request, id: string, dto: UpdateSchedulerDto): Promise<void> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
-    this.requireFullyActive(owned);
+    requireFullyActive(owned);
     if (dto.accountId !== owned.scheduler.accountId) {
       throw new BadRequestException('Account cannot be changed.');
     }
-    await this.validateTypedRefs(dto.type, dto.paymentMethodId, dto.categoryId);
+    await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
 
-    const { debit, credit } = this.amountFields(dto.type, dto.amount);
-    const transferAccountId = this.transferAccountId(dto.paymentMethodId, dto.transferAccountId);
+    const { debit, credit } = amountFields(dto.type, dto.amount);
+    const transferAccountId = transferAccountIdFor(dto.paymentMethodId, dto.transferAccountId);
     await this.transfers.validateSchedulerTarget(
       this.db,
       {
@@ -198,7 +147,7 @@ export class SchedulerService {
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
-    this.requireFullyActive(owned);
+    requireFullyActive(owned);
 
     await this.db.transaction(async (tx) => {
       // Already-generated operations survive deletion; only their link to
