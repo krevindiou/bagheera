@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
@@ -13,6 +13,7 @@ import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
 import { apiClient as realApiClient } from '../../api/client';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
+import { setLocale } from '../../i18n';
 import PasskeysPage from './PasskeysPage.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
@@ -86,6 +87,10 @@ describe('PasskeysPage', () => {
     state.visible = false;
   });
 
+  afterEach(async () => {
+    await setLocale('en');
+  });
+
   it('shows the empty-state message when there are no passkeys', async () => {
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
@@ -106,6 +111,27 @@ describe('PasskeysPage', () => {
     expect(rows[0].text()).toContain('1/15/2026');
     expect(rows[1].text()).toContain('Unnamed passkey');
     expect(rows[1].text()).toContain('Never');
+  });
+
+  it('shows passkey dates in the in-app language, following a switch', async () => {
+    mockCredentials([
+      {
+        id: 'p1',
+        deviceName: 'MacBook',
+        createdAt: '2026-01-02T09:30:00.000Z',
+        lastUsedAt: '2026-01-15T18:45:00.000Z',
+      },
+    ]);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+    expect(wrapper.get('tbody tr').text()).toContain('1/15/2026');
+
+    await setLocale('fr');
+    await flushPromises();
+
+    const row = wrapper.get('tbody tr');
+    expect(row.text()).toContain('02/01/2026');
+    expect(row.text()).toContain('15/01/2026');
   });
 
   it('steps up first, then registers a passkey end to end and reloads the list', async () => {

@@ -46,6 +46,14 @@ export function formatDate(date: string): string {
   return new Intl.DateTimeFormat(currentLocale()).format(parsed);
 }
 
+// The same, for a full ISO timestamp (e.g. a passkey's `createdAt`):
+// renders the calendar date it falls on in the viewer's time zone.
+export function formatTimestampDate(timestamp: string): string {
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) return timestamp;
+  return new Intl.DateTimeFormat(currentLocale()).format(parsed);
+}
+
 // Displayed amounts are localized currency strings in the account's
 // currency. Accepts either a stored (×10,000) integer, or an
 // already-converted decimal amount when `alreadyDisplayAmount` is true

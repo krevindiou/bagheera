@@ -11,6 +11,7 @@ import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import IconButton from '../../components/IconButton.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import { formatTimestampDate } from '../operations/money';
 import SettingsTabs from './SettingsTabs.vue';
 
 // Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
@@ -172,11 +173,11 @@ async function removePasskey(id: string) {
           <tbody>
             <tr v-for="credential in credentials" :key="credential.id">
               <td>{{ credential.deviceName || $t('settings.passkeys.unnamed') }}</td>
-              <td>{{ new Date(credential.createdAt).toLocaleDateString() }}</td>
+              <td>{{ formatTimestampDate(credential.createdAt) }}</td>
               <td>
                 {{
                   credential.lastUsedAt
-                    ? new Date(credential.lastUsedAt).toLocaleDateString()
+                    ? formatTimestampDate(credential.lastUsedAt)
                     : $t('settings.passkeys.neverUsed')
                 }}
               </td>

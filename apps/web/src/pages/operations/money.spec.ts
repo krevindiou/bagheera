@@ -1,5 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
-import { currencySymbol, formatDate, formatMoney, toDisplayAmount, today } from './money';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { setLocale } from '../../i18n';
+import {
+  currencySymbol,
+  formatDate,
+  formatMoney,
+  formatTimestampDate,
+  toDisplayAmount,
+  today,
+} from './money';
 
 describe('toDisplayAmount', () => {
   it('converts a stored minor-units integer to a major-unit decimal', () => {
@@ -40,6 +48,25 @@ describe('formatDate', () => {
 
   it("returns the raw string when it doesn't parse as a date", () => {
     expect(formatDate('not-a-date')).toBe('not-a-date');
+  });
+});
+
+describe('formatTimestampDate', () => {
+  afterEach(async () => {
+    await setLocale('en');
+  });
+
+  it('formats an ISO timestamp as its date in the active locale', () => {
+    expect(formatTimestampDate('2026-01-15T12:00:00.000Z')).toBe('1/15/2026');
+  });
+
+  it('follows the in-app locale rather than the browser language', async () => {
+    await setLocale('fr');
+    expect(formatTimestampDate('2026-01-15T12:00:00.000Z')).toBe('15/01/2026');
+  });
+
+  it("returns the raw string when it doesn't parse as a date", () => {
+    expect(formatTimestampDate('not-a-date')).toBe('not-a-date');
   });
 });
 
