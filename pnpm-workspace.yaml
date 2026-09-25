@@ -3,10 +3,12 @@ packages:
   - "packages/*"
 overrides:
   # Both are transitive; direct upgrade of the parent isn't available yet.
+  # Remove when @nestjs/swagger bumps js-yaml itself.
   '@nestjs/swagger>js-yaml': '>=5.2.2' # GHSA-pm4m-ph32-ghv5 (high, ReDoS)
+  # Remove when drizzle-kit stops depending on @esbuild-kit.
   '@esbuild-kit/core-utils>esbuild': '>=0.24.3' # GHSA-67mh-4wv8-2f99 (moderate)
   # Transitive via express>body-parser>qs; direct upgrade of the parent
-  # isn't available yet. Clears GHSA-4mjr-xmp4-gh2g (high, DoS via
+  # isn't available yet. Remove when express/body-parser ship qs >=6.16. Clears GHSA-4mjr-xmp4-gh2g (high, DoS via
   # attacker-controlled isBuffer) and GHSA-x5fp-wj9c-mxmx (moderate,
   # array-limit bypass).
   qs: '>=6.16.0'
@@ -16,6 +18,7 @@ overrides:
   # `unplugin`/webpack-based codegen plugin (a real `dependencies` entry,
   # per `pnpm why fast-uri`, but this app never imports that codegen
   # entry point, so Vite never bundles it into the shipped browser JS).
+  # Remove when @nestjs/cli and vue-router's plugin chains bump fast-uri.
   # Clears 4 high advisories (SSRF/host-confusion via URL parsing):
   # GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf,
   # GHSA-jqff-g426-hqxp.
