@@ -406,11 +406,6 @@ input[type='radio'] {
   padding: 10px 16px;
 }
 
-/* ---------- Progress (PasswordStrengthMeter.vue) ---------- */
-.progress {
-  background-color: var(--panel-2);
-}
-
 /* ---------- Pills (Closed/Deleted/Homepage tags — replaces .badge) ---------- */
 .pill {
   display: inline-block;
