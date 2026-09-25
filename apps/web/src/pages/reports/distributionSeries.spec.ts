@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
 import { colorForLabel } from '../../components/chartColors';
 import { toDistributionFacets } from './distributionSeries';
@@ -13,8 +14,8 @@ describe('toDistributionFacets', () => {
       series: [
         {
           currency: 'USD',
-          debit: [{ label: 'Food', points: [{ period: '2026-01-01', value: 100 }] }],
-          credit: [{ label: 'Salary', points: [{ period: '2026-01-01', value: 500 }] }],
+          debit: [{ label: 'Food', points: [{ period: '2026-01-01', value: m(100) }] }],
+          credit: [{ label: 'Salary', points: [{ period: '2026-01-01', value: m(500) }] }],
         },
       ],
     };
@@ -38,10 +39,10 @@ describe('toDistributionFacets', () => {
         {
           currency: 'USD',
           debit: [
-            { label: 'Rent', points: [{ period: '2026-01-01', value: 1000 }] },
-            { label: 'Coffee', points: [{ period: '2026-01-01', value: 5 }] },
+            { label: 'Rent', points: [{ period: '2026-01-01', value: m(1000) }] },
+            { label: 'Coffee', points: [{ period: '2026-01-01', value: m(5) }] },
           ],
-          credit: [{ label: 'Salary', points: [{ period: '2026-01-01', value: 500 }] }],
+          credit: [{ label: 'Salary', points: [{ period: '2026-01-01', value: m(500) }] }],
         },
       ],
     };
@@ -59,8 +60,8 @@ describe('toDistributionFacets', () => {
         {
           currency: 'USD',
           debit: [
-            { label: 'Food', points: [{ period: '2026-01-01', value: 100 }] },
-            { label: null, points: [{ period: '2026-01-01', value: 10 }] },
+            { label: 'Food', points: [{ period: '2026-01-01', value: m(100) }] },
+            { label: null, points: [{ period: '2026-01-01', value: m(10) }] },
           ],
           credit: [],
         },
@@ -89,7 +90,7 @@ describe('toDistributionFacets', () => {
             {
               label: 'Food',
               points: [
-                { period: '2026-01-01', value: 100 },
+                { period: '2026-01-01', value: m(100) },
                 { period: '2026-02-01', value: 0 },
               ],
             },
@@ -98,8 +99,8 @@ describe('toDistributionFacets', () => {
             {
               label: 'Salary',
               points: [
-                { period: '2026-01-01', value: 500 },
-                { period: '2026-02-01', value: 500 },
+                { period: '2026-01-01', value: m(500) },
+                { period: '2026-02-01', value: m(500) },
               ],
             },
           ],

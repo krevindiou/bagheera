@@ -3,6 +3,7 @@ import { setLocale } from '../../i18n';
 import {
   currencySymbol,
   formatDate,
+  formatDisplayMoney,
   formatMoney,
   formatTimestampDate,
   toDisplayAmount,
@@ -11,9 +12,18 @@ import {
 
 describe('toDisplayAmount', () => {
   it('converts a stored minor-units integer to a major-unit decimal', () => {
-    expect(toDisplayAmount(123456)).toBe(12.35);
-    expect(toDisplayAmount(0)).toBe(0);
-    expect(toDisplayAmount(-50000)).toBe(-5);
+    expect(toDisplayAmount(123456, 'USD')).toBe(12.35);
+    expect(toDisplayAmount(0, 'USD')).toBe(0);
+    expect(toDisplayAmount(-50000, 'USD')).toBe(-5);
+  });
+
+  it("rounds to the currency's own number of decimals", () => {
+    expect(toDisplayAmount(123456, 'JPY')).toBe(12);
+    expect(toDisplayAmount(123456, 'KWD')).toBe(12.346);
+  });
+
+  it('keeps full precision when no currency is given', () => {
+    expect(toDisplayAmount(123456)).toBe(12.3456);
   });
 });
 
@@ -75,8 +85,12 @@ describe('formatMoney', () => {
     expect(formatMoney(123456, 'USD')).toBe('$12.35');
   });
 
-  it('treats the amount as already-major-units when alreadyDisplayAmount is true', () => {
-    expect(formatMoney(12.35, 'USD', true)).toBe('$12.35');
+  it('formats a 3-decimal currency with all its decimals', () => {
+    expect(formatMoney(123456, 'KWD')).toMatch(/12\.346/);
+  });
+
+  it('formats an already-converted decimal amount with formatDisplayMoney', () => {
+    expect(formatDisplayMoney(12.35, 'USD')).toBe('$12.35');
   });
 
   it('falls back to a plain decimal string for an unknown currency', () => {

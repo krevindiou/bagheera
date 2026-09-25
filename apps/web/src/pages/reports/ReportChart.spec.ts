@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RankedChart from '../../components/RankedChart.vue';
@@ -10,12 +11,12 @@ const series: ReportChartData = {
   kind: 'series',
   series: {
     hidden: false,
-    axisBounds: { min: 0, max: 10 },
+    axisBounds: { min: 0, max: m(10) },
     series: [
       {
         currency: 'USD',
-        debit: [{ period: '2026-01', value: 10 }],
-        credit: [{ period: '2026-01', value: 5 }],
+        debit: [{ period: '2026-01', value: m(10) }],
+        credit: [{ period: '2026-01', value: m(5) }],
       },
     ],
   },
@@ -28,7 +29,7 @@ const distribution: ReportChartData = {
     series: [
       {
         currency: 'USD',
-        debit: [{ label: 'Food', points: [{ period: '2026-01', value: 100 }] }],
+        debit: [{ label: 'Food', points: [{ period: '2026-01', value: m(100) }] }],
         credit: [],
       },
     ],

@@ -61,13 +61,13 @@ const valueTone = computed(() => {
       :class="[valueTone, { 'stat-value-primary': primary }]"
       :data-testid="valueTestid"
     >
-      {{ formatMoney(amount, currency, true) }}
+      {{ formatMoney(amount, currency) }}
     </div>
     <div v-if="reconciled !== undefined || $slots.footnote" class="stat-footnote">
       <slot name="footnote">
         <span class="stat-footnote-label">{{ $t('dashboard.totalReconciled') }}</span>
         <span class="stat-footnote-value" :data-testid="reconciledTestid">
-          {{ formatMoney(reconciled!, currency, true) }}
+          {{ formatMoney(reconciled!, currency) }}
         </span>
       </slot>
     </div>

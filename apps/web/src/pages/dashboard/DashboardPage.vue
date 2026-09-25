@@ -10,7 +10,7 @@ import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
-import { formatDate } from '../operations/money';
+import { formatDate, toDisplayBounds, toDisplayPoints } from '../operations/money';
 import StatCard from '../../components/StatCard.vue';
 import ReportChart from '../reports/ReportChart.vue';
 import type { DashboardSynthesisChart } from './dashboard.types';
@@ -37,7 +37,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
   return chart.series.map((s) => ({
     label: s.currency,
     color: colorForCurrency(s.currency),
-    points: s.points,
+    points: toDisplayPoints(s.points, s.currency),
   }));
 }
 
@@ -132,7 +132,7 @@ const accountTiles = computed(() =>
         v-model:range="chartRange"
         :title="$t('dashboard.synthesisChart')"
         :series="toSynthesisSeries(dashboard.synthesisChart)"
-        :axis-bounds="dashboard.synthesisChart.axisBounds"
+        :axis-bounds="toDisplayBounds(dashboard.synthesisChart.axisBounds)"
         range-testid="synthesis-chart-range"
         data-testid="synthesis-chart"
       />

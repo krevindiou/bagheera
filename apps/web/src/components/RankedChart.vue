@@ -13,7 +13,7 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from 'chart.js';
-import { formatMoney } from '../pages/operations/money';
+import { formatDisplayMoney } from '../pages/operations/money';
 import { formatPeriodLabel } from './periodLabel';
 import type { Locale } from '../i18n/locales';
 
@@ -42,7 +42,7 @@ function emphasizeZeroWidth(ctx: { tick: { value: number } }): number {
 
 export interface RankedChartBar {
   label: string;
-  // Major-units amount (already toMajorUnits-converted, same convention as
+  // Decimal amount (already converted with toDisplayAmount, same convention as
   // SynthesisChart's points) — credit positive, debit negative, so debit
   // and credit bars diverge from one shared zero baseline in the same
   // chart (distributionSeries.ts negates debit before building this).
@@ -134,7 +134,7 @@ function snapshotChartOptions(currency: string): ChartOptions<'bar'> {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (item: TooltipItem<'bar'>) => formatMoney(item.parsed.x ?? 0, currency, true),
+          label: (item: TooltipItem<'bar'>) => formatDisplayMoney(item.parsed.x ?? 0, currency),
         },
       },
     },
@@ -176,7 +176,7 @@ function stackedChartOptions(currency: string): ChartOptions<'bar'> {
       tooltip: {
         callbacks: {
           label: (item: TooltipItem<'bar'>) =>
-            `${item.dataset.label}: ${formatMoney(item.parsed.y ?? 0, currency, true)}`,
+            `${item.dataset.label}: ${formatDisplayMoney(item.parsed.y ?? 0, currency)}`,
         },
       },
     },

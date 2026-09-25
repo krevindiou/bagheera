@@ -32,12 +32,12 @@ test("a transfer between two of the member's own accounts moves money on both si
   await expect(alertWithText(page, en.operations.saved)).toBeVisible();
 
   await expect(page.getByTestId('account-balances')).toContainText(
-    formatMoney(800, currency, true),
+    formatMoney(8_000_000, currency),
   );
 
   await page.goto(`/en/accounts/${savings.id}/operations`);
   await expect(page.getByTestId('account-balances')).toContainText(
-    formatMoney(200, currency, true),
+    formatMoney(2_000_000, currency),
   );
   // The transfer's paired counterpart operation — whatever third-party text
   // the backend gives it — shows up as a real row on this side too.

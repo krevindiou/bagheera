@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { AMOUNT_CEILING, MONEY_SCALE, MinorUnits, toMajorUnits, toMinorUnits } from './index';
+import {
+  AMOUNT_CEILING,
+  currencyFractionDigits,
+  MONEY_SCALE,
+  MinorUnits,
+  toMajorUnits,
+  toMinorUnits,
+} from './index';
 
 describe('toMinorUnits', () => {
   it('scales by MONEY_SCALE', () => {
@@ -46,5 +53,24 @@ describe('AMOUNT_CEILING', () => {
 
   it('is exactly the documented value — pins the boundary DTOs and schemas validate against', () => {
     expect(AMOUNT_CEILING).toBe(999_999_999.9999);
+  });
+});
+
+describe('currencyFractionDigits', () => {
+  it("returns the currency's own number of decimals", () => {
+    expect(currencyFractionDigits('EUR')).toBe(2);
+    expect(currencyFractionDigits('JPY')).toBe(0);
+    expect(currencyFractionDigits('KWD')).toBe(3);
+  });
+
+  it('falls back to 2 for an unknown code', () => {
+    expect(currencyFractionDigits('NOTACODE')).toBe(2);
+  });
+});
+
+describe('toMajorUnits fraction digits', () => {
+  it('rounds to the requested number of decimals', () => {
+    expect(toMajorUnits(123456 as MinorUnits, 3)).toBe(12.346);
+    expect(toMajorUnits(123456 as MinorUnits, 0)).toBe(12);
   });
 });

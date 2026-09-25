@@ -1,12 +1,23 @@
-import { toMajorUnits, type MinorUnits } from '@bagheera/money';
+import {
+  currencyFractionDigits,
+  MONEY_SCALE,
+  toMajorUnits,
+  type MinorUnits,
+} from '@bagheera/money';
 import { i18n } from '../../i18n';
 
-// Mirrors apps/api/src/common/money.ts's scale, via the shared
-// @bagheera/money package both apps depend on — the API always returns
-// stored amounts as integers (real value × 10,000). The API-response value
-// is a plain `number` (branding doesn't survive JSON), hence the cast.
-export function toDisplayAmount(minorUnits: number): number {
-  return toMajorUnits(minorUnits as MinorUnits);
+// Every amount the API returns is an integer in minor units (real value ×
+// 10,000, via the shared @bagheera/money package). The API-response value is
+// a plain `number` (branding doesn't survive JSON), hence the cast.
+//
+// Converts to a plain decimal — rounded to the currency's own number of
+// decimals when a currency is given, otherwise kept at full precision (for
+// pre-filling an edit form).
+export function toDisplayAmount(minorUnits: number, currency?: string): number {
+  return toMajorUnits(
+    minorUnits as MinorUnits,
+    currency ? currencyFractionDigits(currency) : Math.log10(MONEY_SCALE),
+  );
 }
 
 // Currency/date formatting follows the app's active i18n locale (switched
@@ -57,16 +68,28 @@ export function formatTimestampDate(timestamp: string): string {
   return new Intl.DateTimeFormat(currentLocale()).format(parsed);
 }
 
-// Displayed amounts are localized currency strings in the account's
-// currency. Accepts either a stored (×10,000) integer, or an
-// already-converted decimal amount when `alreadyDisplayAmount` is true
-// (some API responses, e.g. the dashboard, return decimal amounts already).
-export function formatMoney(
-  amount: number,
+// Chart helpers: charts plot decimal amounts, so series points (rounded to
+// the currency's decimals) and axis bounds (unrounded, they're only hints)
+// are converted from the API's minor units before they reach Chart.js.
+export function toDisplayPoints(
+  points: { period: string; value: number }[],
   currency: string,
-  alreadyDisplayAmount = false,
-): string {
-  const value = alreadyDisplayAmount ? amount : toDisplayAmount(amount);
+): { period: string; value: number }[] {
+  return points.map((point) => ({
+    period: point.period,
+    value: toDisplayAmount(point.value, currency),
+  }));
+}
+
+export function toDisplayBounds(
+  bounds: { min: number; max: number } | null | undefined,
+): { min: number; max: number } | null {
+  return bounds ? { min: bounds.min / MONEY_SCALE, max: bounds.max / MONEY_SCALE } : null;
+}
+
+// Localized currency string for a decimal amount (e.g. a chart value already
+// converted with toDisplayAmount).
+export function formatDisplayMoney(value: number, currency: string): string {
   try {
     return new Intl.NumberFormat(currentLocale(), { style: 'currency', currency }).format(value);
   } catch {
@@ -74,4 +97,10 @@ export function formatMoney(
     // page doesn't crash.
     return `${value.toFixed(2)} ${currency}`;
   }
+}
+
+// Displayed amounts are localized currency strings in the account's
+// currency, formatted from an API minor-units integer.
+export function formatMoney(minorUnits: number, currency: string): string {
+  return formatDisplayMoney(toDisplayAmount(minorUnits, currency), currency);
 }

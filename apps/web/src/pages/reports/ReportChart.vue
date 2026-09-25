@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
+import { toDisplayBounds } from '../operations/money';
 import { toChartSeries } from './chartSeries';
 import { toDistributionFacets } from './distributionSeries';
 import type { ReportChartData } from './reports.types';
@@ -24,7 +25,10 @@ const seriesChart = computed(() => {
   const report = props.report;
   if (report?.kind !== 'series') return null;
   if (report.series.hidden) return { series: [], axisBounds: null };
-  return { series: toChartSeries(report.series, t), axisBounds: report.series.axisBounds };
+  return {
+    series: toChartSeries(report.series, t),
+    axisBounds: toDisplayBounds(report.series.axisBounds),
+  };
 });
 </script>
 

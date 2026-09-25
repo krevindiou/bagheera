@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
 import { colorForCurrency } from '../../components/chartColors';
 import { toChartSeries } from './chartSeries';
@@ -13,8 +14,8 @@ describe('toChartSeries', () => {
       series: [
         {
           currency: 'USD',
-          debit: [{ period: '2026-01', value: 50 }],
-          credit: [{ period: '2026-01', value: 20 }],
+          debit: [{ period: '2026-01', value: m(50) }],
+          credit: [{ period: '2026-01', value: m(20) }],
         },
       ],
     };
@@ -38,7 +39,7 @@ describe('toChartSeries', () => {
     const series: ReportSeries = {
       hidden: false,
       axisBounds: null,
-      series: [{ currency: 'USD', debit: [], credit: [{ period: '2026-01', value: 20 }] }],
+      series: [{ currency: 'USD', debit: [], credit: [{ period: '2026-01', value: m(20) }] }],
     };
     expect(toChartSeries(series, t)).toEqual([
       {
@@ -53,7 +54,7 @@ describe('toChartSeries', () => {
     const series: ReportSeries = {
       hidden: false,
       axisBounds: null,
-      series: [{ currency: 'USD', debit: [{ period: '2026-01', value: 50 }], credit: [] }],
+      series: [{ currency: 'USD', debit: [{ period: '2026-01', value: m(50) }], credit: [] }],
     };
     expect(toChartSeries(series, t)).toEqual([
       {
@@ -74,8 +75,8 @@ describe('toChartSeries', () => {
       hidden: false,
       axisBounds: null,
       series: [
-        { currency: 'USD', debit: [{ period: '2026-01', value: 50 }], credit: [] },
-        { currency: 'EUR', debit: [], credit: [{ period: '2026-01', value: 30 }] },
+        { currency: 'USD', debit: [{ period: '2026-01', value: m(50) }], credit: [] },
+        { currency: 'EUR', debit: [], credit: [{ period: '2026-01', value: m(30) }] },
       ],
     };
     const usdColor = colorForCurrency('USD');

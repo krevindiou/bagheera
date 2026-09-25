@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
@@ -123,8 +124,8 @@ describe('ReportsPage', () => {
       series: [
         {
           currency: 'USD',
-          debit: [{ period: '2026-01', value: 10 }],
-          credit: [{ period: '2026-01', value: 5 }],
+          debit: [{ period: '2026-01', value: m(10) }],
+          credit: [{ period: '2026-01', value: m(5) }],
         },
       ],
     });
@@ -326,8 +327,8 @@ describe('ReportsPage', () => {
         {
           currency: 'USD',
           debit: [
-            { label: 'Food', points: [{ period: '2026-01-01', value: 100 }] },
-            { label: null, points: [{ period: '2026-01-01', value: 10 }] },
+            { label: 'Food', points: [{ period: '2026-01-01', value: m(100) }] },
+            { label: null, points: [{ period: '2026-01-01', value: m(10) }] },
           ],
           credit: [],
         },

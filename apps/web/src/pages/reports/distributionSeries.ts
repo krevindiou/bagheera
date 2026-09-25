@@ -1,4 +1,5 @@
 import { colorForLabel } from '../../components/chartColors';
+import { toDisplayAmount } from '../operations/money';
 import type {
   RankedChartBar,
   RankedChartFacet,
@@ -42,24 +43,26 @@ function isSnapshot(
 // convention — rather than needing a separate chart per side. `sign * 0`
 // produces `-0` for a negated zero-filled gap, which some renderers show as
 // "-$0.00" — `+ 0` normalizes it back to plain `0`.
-function negate(value: number, sign: 1 | -1): number {
-  return sign * value + 0;
+function negate(value: number, sign: 1 | -1, currency: string): number {
+  return sign * toDisplayAmount(value, currency) + 0;
 }
 
 function toBars(
   labelSeriesList: ReportDistributionLabelSeries[],
+  currency: string,
   sign: 1 | -1,
   t: (key: string) => string,
 ): RankedChartBar[] {
   return labelSeriesList.map((series) => ({
     label: labelText(series.label, t),
-    value: negate(series.points[0]?.value ?? 0, sign),
+    value: negate(series.points[0]?.value ?? 0, sign, currency),
     color: labelColor(series.label),
   }));
 }
 
 function toStackedSeries(
   labelSeriesList: ReportDistributionLabelSeries[],
+  currency: string,
   sign: 1 | -1,
   t: (key: string) => string,
 ): RankedChartStackedSeries[] {
@@ -68,7 +71,7 @@ function toStackedSeries(
     color: labelColor(series.label),
     points: series.points.map((point) => ({
       period: point.period,
-      value: negate(point.value, sign),
+      value: negate(point.value, sign, currency),
     })),
   }));
 }
@@ -84,12 +87,15 @@ function toRankedFacet(
     // report-distribution.service.ts) — merging them into one list here
     // orders by magnitude regardless of side, so the chart reads as one
     // ranking rather than two concatenated ones.
-    const bars = [...toBars(credit, 1, t), ...toBars(debit, -1, t)].sort(
+    const bars = [...toBars(credit, currency, 1, t), ...toBars(debit, currency, -1, t)].sort(
       (a, b) => Math.abs(b.value) - Math.abs(a.value),
     );
     return { kind: 'snapshot', title: currency, currency, bars };
   }
-  const series = [...toStackedSeries(credit, 1, t), ...toStackedSeries(debit, -1, t)];
+  const series = [
+    ...toStackedSeries(credit, currency, 1, t),
+    ...toStackedSeries(debit, currency, -1, t),
+  ];
   return { kind: 'temporal', title: currency, currency, series };
 }
 

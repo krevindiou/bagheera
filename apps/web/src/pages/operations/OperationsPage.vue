@@ -18,7 +18,7 @@ import {
   usePaymentMethodsQuery,
 } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
-import { formatDate, formatMoney } from './money';
+import { formatDate, formatMoney, toDisplayBounds, toDisplayPoints } from './money';
 import {
   categoryLabel,
   PAYMENT_METHOD_ID,
@@ -87,9 +87,15 @@ const chartQuery = useQuery({
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;
   if (!chart || chart.points.length === 0) return [];
-  return [{ label: chart.currency, color: colorForCurrency(chart.currency), points: chart.points }];
+  return [
+    {
+      label: chart.currency,
+      color: colorForCurrency(chart.currency),
+      points: toDisplayPoints(chart.points, chart.currency),
+    },
+  ];
 });
-const chartAxisBounds = computed(() => chartQuery.data.value?.axisBounds ?? null);
+const chartAxisBounds = computed(() => toDisplayBounds(chartQuery.data.value?.axisBounds));
 
 // Re-runs the search remembered for this member+account (empty criteria —
 // i.e. the full list — when nothing was ever searched), so a search stays

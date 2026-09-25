@@ -16,7 +16,7 @@ test.describe('dashboard', () => {
     await page.goto('/en/home');
 
     await expect(page.getByTestId('total-balance')).toContainText(
-      formatMoney(1000, currency, true),
+      formatMoney(10_000_000, currency),
     );
     // Bank name is folded into the tile's own label now (see
     // DashboardPage.vue) rather than a separate heading above it.

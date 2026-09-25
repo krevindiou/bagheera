@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
@@ -56,7 +57,7 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         onboarding: 'no-account',
-        totalBalances: [{ currency: 'USD', amount: 100, reconciledAmount: 100 }],
+        totalBalances: [{ currency: 'USD', amount: m(100), reconciledAmount: m(100) }],
       }),
     );
     expect(wrapper.find('[data-testid="onboarding-tip"]').text()).toContain(
@@ -69,8 +70,8 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         totalBalances: [
-          { currency: 'USD', amount: 12345, reconciledAmount: 12000 },
-          { currency: 'EUR', amount: -500, reconciledAmount: -400 },
+          { currency: 'USD', amount: m(12345), reconciledAmount: m(12000) },
+          { currency: 'EUR', amount: m(-500), reconciledAmount: m(-400) },
         ],
       }),
     );
@@ -85,8 +86,8 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         totalBalances: [
-          { currency: 'USD', amount: 12345, reconciledAmount: 12000 },
-          { currency: 'EUR', amount: -500, reconciledAmount: -400 },
+          { currency: 'USD', amount: m(12345), reconciledAmount: m(12000) },
+          { currency: 'EUR', amount: m(-500), reconciledAmount: m(-400) },
         ],
       }),
     );
@@ -111,13 +112,13 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         lastBiggestIncome: {
-          amount: 2500,
+          amount: m(2500),
           currency: 'USD',
           valueDate: '2026-01-15',
           thirdParty: 'Acme Corp',
         },
         lastBiggestExpense: {
-          amount: 80,
+          amount: m(80),
           currency: 'USD',
           valueDate: '2026-01-20',
           thirdParty: 'Grocery Store',
@@ -136,8 +137,8 @@ describe('DashboardPage', () => {
       baseDashboard({
         synthesisChart: {
           hidden: false,
-          axisBounds: { min: 0, max: 1000 },
-          series: [{ currency: 'USD', points: [{ period: '2026-01', value: 100 }] }],
+          axisBounds: { min: 0, max: m(1000) },
+          series: [{ currency: 'USD', points: [{ period: '2026-01', value: m(100) }] }],
         },
       }),
     );
@@ -159,8 +160,8 @@ describe('DashboardPage', () => {
       baseDashboard({
         synthesisChart: {
           hidden: false,
-          axisBounds: { min: 0, max: 1000 },
-          series: [{ currency: 'USD', points: [{ period: '2026-01', value: 100 }] }],
+          axisBounds: { min: 0, max: m(1000) },
+          series: [{ currency: 'USD', points: [{ period: '2026-01', value: m(100) }] }],
         },
       }),
     );
@@ -189,9 +190,9 @@ describe('DashboardPage', () => {
                 id: 'a1',
                 name: 'Checking',
                 currency: 'USD',
-                balance: 500,
-                reconciledBalance: 450,
-                history: [400, 420, 500],
+                balance: m(500),
+                reconciledBalance: m(450),
+                history: [m(400), m(420), m(500)],
               },
             ],
           },
@@ -203,8 +204,8 @@ describe('DashboardPage', () => {
                 id: 'a2',
                 name: 'Savings',
                 currency: 'USD',
-                balance: 1200,
-                reconciledBalance: 1200,
+                balance: m(1200),
+                reconciledBalance: m(1200),
                 history: [],
               },
             ],
@@ -223,7 +224,11 @@ describe('DashboardPage', () => {
 
     // Each tile's sparkline gets that account's own history, unshared
     // across tiles.
-    expect(tiles[0].findComponent(AccountSparkline).props('values')).toEqual([400, 420, 500]);
+    expect(tiles[0].findComponent(AccountSparkline).props('values')).toEqual([
+      m(400),
+      m(420),
+      m(500),
+    ]);
     expect(tiles[1].findComponent(AccountSparkline).props('values')).toEqual([]);
   });
 
@@ -232,10 +237,10 @@ describe('DashboardPage', () => {
       baseDashboard({
         synthesisChart: {
           hidden: false,
-          axisBounds: { min: 0, max: 1000 },
+          axisBounds: { min: 0, max: m(1000) },
           series: [
-            { currency: 'EUR', points: [{ period: '2026-01', value: 100 }] },
-            { currency: 'USD', points: [{ period: '2026-01', value: 200 }] },
+            { currency: 'EUR', points: [{ period: '2026-01', value: m(100) }] },
+            { currency: 'USD', points: [{ period: '2026-01', value: m(200) }] },
           ],
         },
         accountsOverview: [
@@ -247,17 +252,17 @@ describe('DashboardPage', () => {
                 id: 'a1',
                 name: 'Checking EUR',
                 currency: 'EUR',
-                balance: 100,
-                reconciledBalance: 100,
-                history: [100, 100],
+                balance: m(100),
+                reconciledBalance: m(100),
+                history: [m(100), m(100)],
               },
               {
                 id: 'a2',
                 name: 'Checking USD',
                 currency: 'USD',
-                balance: 200,
-                reconciledBalance: 200,
-                history: [200, 200],
+                balance: m(200),
+                reconciledBalance: m(200),
+                history: [m(200), m(200)],
               },
             ],
           },
@@ -295,8 +300,8 @@ describe('DashboardPage', () => {
               series: [
                 {
                   currency: 'USD',
-                  debit: [{ period: '2026-01', value: 50 }],
-                  credit: [{ period: '2026-01', value: 20 }],
+                  debit: [{ period: '2026-01', value: m(50) }],
+                  credit: [{ period: '2026-01', value: m(20) }],
                 },
               ],
             },
@@ -329,7 +334,9 @@ describe('DashboardPage', () => {
             series: {
               hidden: false,
               axisBounds: null,
-              series: [{ currency: 'USD', debit: [{ period: '2026-01', value: 50 }], credit: [] }],
+              series: [
+                { currency: 'USD', debit: [{ period: '2026-01', value: m(50) }], credit: [] },
+              ],
             },
           },
         ],
@@ -360,8 +367,8 @@ describe('DashboardPage', () => {
                 {
                   currency: 'USD',
                   debit: [
-                    { label: 'Food', points: [{ period: '2026-01-01', value: 100 }] },
-                    { label: null, points: [{ period: '2026-01-01', value: 10 }] },
+                    { label: 'Food', points: [{ period: '2026-01-01', value: m(100) }] },
+                    { label: null, points: [{ period: '2026-01-01', value: m(10) }] },
                   ],
                   credit: [],
                 },

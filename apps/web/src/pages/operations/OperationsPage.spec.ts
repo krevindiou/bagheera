@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
@@ -103,7 +104,7 @@ function mockGet(state: MockState = {}) {
     banks = [bank],
     categories = [category],
     paymentMethods = [paymentMethod],
-    balance = { balance: 1000, reconciledBalance: 900 },
+    balance = { balance: m(1000), reconciledBalance: m(900) },
     chart = null,
     operations = { items: [], total: 0, page: 1, pageSize: 20 },
   } = state;
@@ -156,7 +157,7 @@ describe('OperationsPage', () => {
   });
 
   it('shows the balance as the primary figure (colored by sign) and reconciled balance as a muted footnote', async () => {
-    mockGet({ balance: { balance: -500, reconciledBalance: 100 } });
+    mockGet({ balance: { balance: m(-500), reconciledBalance: m(100) } });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
     const balances = wrapper.find('[data-testid="account-balances"]');
@@ -366,8 +367,8 @@ describe('OperationsPage', () => {
     mockGet({
       chart: {
         currency: 'USD',
-        axisBounds: { min: 0, max: 1000 },
-        points: [{ period: '2026-01', value: 500 }],
+        axisBounds: { min: 0, max: m(1000) },
+        points: [{ period: '2026-01', value: m(500) }],
       },
     });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
@@ -388,8 +389,8 @@ describe('OperationsPage', () => {
     mockGet({
       chart: {
         currency: 'EUR',
-        axisBounds: { min: 0, max: 1000 },
-        points: [{ period: '2026-01', value: 500 }],
+        axisBounds: { min: 0, max: m(1000) },
+        points: [{ period: '2026-01', value: m(500) }],
       },
     });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
@@ -413,8 +414,8 @@ describe('OperationsPage', () => {
     mockGet({
       chart: {
         currency: 'USD',
-        axisBounds: { min: 0, max: 1000 },
-        points: [{ period: '2026-01', value: 500 }],
+        axisBounds: { min: 0, max: m(1000) },
+        points: [{ period: '2026-01', value: m(500) }],
       },
     });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));

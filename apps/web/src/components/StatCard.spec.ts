@@ -20,7 +20,7 @@ describe('StatCard', () => {
 
     expect(wrapper.classes()).toContain('stat-card');
     expect(wrapper.get('.stat-label').text()).toBe('Balance');
-    expect(wrapper.get('.stat-value').text()).toBe(formatMoney(1234.5, 'USD', true));
+    expect(wrapper.get('.stat-value').text()).toBe(formatMoney(1234.5, 'USD'));
   });
 
   it('is a chip when asked to', () => {
@@ -51,7 +51,7 @@ describe('StatCard', () => {
     });
 
     expect(wrapper.get('.stat-footnote-label').text()).toBe('Reconciled');
-    expect(wrapper.get('[data-testid="reconciled"]').text()).toBe(formatMoney(-2, 'USD', true));
+    expect(wrapper.get('[data-testid="reconciled"]').text()).toBe(formatMoney(-2, 'USD'));
     expect(wrapper.get('[data-testid="reconciled"]').classes()).not.toContain('text-danger');
     expect(wrapper.get('[data-testid="value"]').classes()).toContain('stat-value');
   });

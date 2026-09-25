@@ -1,3 +1,4 @@
+import { toMinorUnits as m } from '@bagheera/money';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
@@ -48,7 +49,16 @@ const account = (
   deleted = false,
   balance = 0,
   reconciledBalance = 0,
-): Account => ({ id, bankId, name, currency, closed, deleted, balance, reconciledBalance });
+): Account => ({
+  id,
+  bankId,
+  name,
+  currency,
+  closed,
+  deleted,
+  balance: m(balance),
+  reconciledBalance: m(reconciledBalance),
+});
 
 function mockData(banks: Bank[], accounts: Account[]) {
   apiClient.GET.mockImplementation(async (path: string) => {

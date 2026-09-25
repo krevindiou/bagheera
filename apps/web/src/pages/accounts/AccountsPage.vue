@@ -258,12 +258,12 @@ function onAccountCreated(accountId: string) {
               </td>
               <td class="text-end">
                 <span class="amount" data-testid="account-balance">{{
-                  formatMoney(account.balance ?? 0, account.currency, true)
+                  formatMoney(account.balance ?? 0, account.currency)
                 }}</span>
               </td>
               <td class="text-end">
                 <span class="amount" data-testid="account-reconciled-balance">
-                  {{ formatMoney(account.reconciledBalance ?? 0, account.currency, true) }}
+                  {{ formatMoney(account.reconciledBalance ?? 0, account.currency) }}
                 </span>
               </td>
               <td @click.stop>

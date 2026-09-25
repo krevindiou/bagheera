@@ -38,7 +38,22 @@ export function toMinorUnits(value: number): MinorUnits {
   return Math.round(value * MONEY_SCALE) as MinorUnits;
 }
 
-// Inverse conversion, rounded to two decimal places (currency units).
-export function toMajorUnits(value: MinorUnits): MajorUnits {
-  return (Math.round((value / MONEY_SCALE) * 100) / 100) as MajorUnits;
+// Inverse conversion, rounded to `fractionDigits` decimal places (two by
+// default; pass currencyFractionDigits(currency) for the currency's own).
+export function toMajorUnits(value: MinorUnits, fractionDigits = 2): MajorUnits {
+  const factor = Math.pow(10, fractionDigits);
+  return (Math.round((value / MONEY_SCALE) * factor) / factor) as MajorUnits;
+}
+
+// How many decimals a currency's amounts have (2 for EUR, 0 for JPY, 3 for
+// KWD), from the runtime's own currency data; 2 for an unknown code.
+export function currencyFractionDigits(currency: string): number {
+  try {
+    return (
+      new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions()
+        .maximumFractionDigits ?? 2
+    );
+  } catch {
+    return 2;
+  }
 }

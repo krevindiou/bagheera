@@ -29,7 +29,7 @@ test('create a bank and an account, then edit the bank and close the account', a
 
   // Account creation redirects straight to its operations page.
   await expect(page).toHaveURL(/\/operations$/);
-  await expect(page.getByTestId('account-balances')).toContainText(formatMoney(1000, 'USD', true));
+  await expect(page.getByTestId('account-balances')).toContainText(formatMoney(10_000_000, 'USD'));
 
   await page.goto('/en/accounts');
   const bankRow = page.getByTestId('bank-row').filter({ hasText: bankName });

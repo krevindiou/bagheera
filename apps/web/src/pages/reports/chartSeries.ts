@@ -1,4 +1,5 @@
 import { colorForCurrency } from '../../components/chartColors';
+import { toDisplayPoints } from '../operations/money';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import type { ReportSeries } from './reports.types';
 
@@ -36,14 +37,14 @@ export function toChartSeries(
         label: `${s.currency} ${t('operations.debit')}`,
         color,
         dash: DEBIT_DASH,
-        points: s.debit,
+        points: toDisplayPoints(s.debit, s.currency),
       });
     }
     if (s.credit.length > 0) {
       series.push({
         label: `${s.currency} ${t('operations.credit')}`,
         color,
-        points: s.credit,
+        points: toDisplayPoints(s.credit, s.currency),
       });
     }
   }
