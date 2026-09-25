@@ -37,7 +37,9 @@ describe('FormField', () => {
 
   it('shows the hint, after the error when both are present', () => {
     const wrapper = mountField({ error: 'Too high', hint: 'Up to 50' });
-    const children = Array.from(wrapper.element.children).map((el) => el.className);
+    const children = Array.from((wrapper.element as HTMLElement).children).map(
+      (el) => el.className,
+    );
 
     expect(wrapper.get('.form-text').text()).toBe('Up to 50');
     expect(children.indexOf('form-text')).toBeGreaterThan(
