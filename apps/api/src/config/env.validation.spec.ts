@@ -32,6 +32,11 @@ describe('validateEnv', () => {
     );
   });
 
+  it('rejects an unknown time zone and accepts an IANA one', () => {
+    expect(() => validateEnv({ ...valid, APP_TIMEZONE: 'Mars/Base' })).toThrow(/APP_TIMEZONE/);
+    expect(() => validateEnv({ ...valid, APP_TIMEZONE: 'Europe/Paris' })).not.toThrow();
+  });
+
   it('accepts a positive integer session TTL', () => {
     expect(() => validateEnv({ ...valid, SESSION_IDLE_TTL_SECONDS: '900' })).not.toThrow();
   });

@@ -121,6 +121,7 @@ accessories:
         APP_URL: https://<%= ENV.fetch("APP_DOMAIN") %>
         RP_ID: <%= ENV.fetch("APP_DOMAIN") %>
         RP_NAME: Bagheera
+        APP_TIMEZONE: Europe/Paris
         RP_ORIGIN: https://<%= ENV.fetch("APP_DOMAIN") %>
       secret:
         - DATABASE_URL

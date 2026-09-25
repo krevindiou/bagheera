@@ -93,4 +93,13 @@ describe('today', () => {
 
     vi.useRealTimers();
   });
+
+  it('follows the local calendar day, not UTC', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 1, 0, 30));
+
+    expect(today()).toBe('2026-01-01');
+
+    vi.useRealTimers();
+  });
 });

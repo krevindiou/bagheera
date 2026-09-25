@@ -23,7 +23,10 @@ function currentLocale(): string {
 // Today's date as the stored `YYYY-MM-DD` string, the default value date of
 // a new operation or scheduler.
 export function today(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 // Money inputs display the account currency symbol as an input add-on.

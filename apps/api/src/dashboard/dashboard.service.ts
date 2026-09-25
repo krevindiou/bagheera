@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { localIsoDate } from '../common/local-date';
 import { toMajorUnits } from '../common/money';
 import { MonthlyNet, monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
@@ -80,8 +81,8 @@ const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
 };
 
 function previousCalendarMonthRange(): { start: string; end: string } {
-  const now = new Date();
-  const firstOfCurrentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const [year, month] = localIsoDate().split('-').map(Number);
+  const firstOfCurrentMonth = new Date(Date.UTC(year, month - 1, 1));
   const start = new Date(
     Date.UTC(firstOfCurrentMonth.getUTCFullYear(), firstOfCurrentMonth.getUTCMonth() - 1, 1),
   );

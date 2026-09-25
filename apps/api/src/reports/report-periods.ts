@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { AnyPgColumn } from 'drizzle-orm/pg-core';
+import { localIsoDate } from '../common/local-date';
 
 export type PeriodGrouping = 'month' | 'quarter' | 'year' | 'all';
 
@@ -34,5 +35,5 @@ export function periodExpr(column: AnyPgColumn, grouping: PeriodGrouping) {
 // so it renders as *a* date on a time axis — it isn't meant to be read as
 // "this data is from this year".
 export function currentYearStart(): string {
-  return `${new Date().getUTCFullYear()}-01-01`;
+  return `${localIsoDate().slice(0, 4)}-01-01`;
 }

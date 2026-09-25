@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { localIsoDate } from '../common/local-date';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
@@ -20,7 +21,7 @@ function isFullyActive(acc: AccountRow, bnk: BankRow): boolean {
 }
 
 function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localIsoDate();
 }
 
 @Injectable()

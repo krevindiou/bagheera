@@ -5,6 +5,7 @@
 // one just scoped to a single account/currency (spec 4.14 note).
 
 import { AxisBounds, computeAxisBounds } from './chart-axis';
+import { localIsoDate } from './local-date';
 import { MinorUnits, toMajorUnits } from './money';
 import { addMonths, fillPeriodGaps, periodStart } from '../reports/chart/period';
 
@@ -77,7 +78,7 @@ export function parseSynthesisChartWindow(range: unknown): SynthesisChartWindow 
 // via `earliestValueDate`) to widen it — see spec 4.14's range selector.
 export function computeSynthesisChart(
   rows: SynthesisChartRow[],
-  today: string = new Date().toISOString().slice(0, 10),
+  today: string = localIsoDate(),
   windowMonths: SynthesisChartWindow = WINDOW_MONTHS,
 ): SynthesisChart {
   if (rows.length === 0) {

@@ -31,6 +31,15 @@ export function validateEnv(env: Record<string, unknown>): Record<string, unknow
     }
   }
 
+  const timeZone = env.APP_TIMEZONE;
+  if (typeof timeZone === 'string' && timeZone !== '') {
+    try {
+      new Intl.DateTimeFormat('en-CA', { timeZone });
+    } catch {
+      problems.push('APP_TIMEZONE must be a valid IANA time zone');
+    }
+  }
+
   if (problems.length > 0) {
     throw new Error(`Invalid environment configuration: ${problems.join('; ')}`);
   }
