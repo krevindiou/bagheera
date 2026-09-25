@@ -1,3 +1,6 @@
+# Keeps docker/Dockerfile.playwright's browser image on the @playwright/test version.
+export PLAYWRIGHT_VERSION := $(shell sed -n 's/.*"@playwright\/test": "^\{0,1\}\([0-9.]*\)".*/\1/p' apps/web/package.json)
+
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 

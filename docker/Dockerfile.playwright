@@ -8,7 +8,8 @@
 #
 # PLAYWRIGHT_VERSION must match apps/web/package.json's @playwright/test
 # version exactly — the browser binaries baked into this base image are
-# tied to that release. Bump both together.
+# tied to that release. The Makefile passes it in from package.json; the
+# default below only serves a bare `docker build`.
 ARG PLAYWRIGHT_VERSION=1.62.1
 FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
 

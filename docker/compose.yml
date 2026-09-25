@@ -33,7 +33,7 @@ services:
       retries: 10
 
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.31.0
     restart: unless-stopped
     ports:
       - "${MAILPIT_SMTP_PORT:-1025}:1025"
@@ -128,6 +128,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.playwright
+      args:
+        # Exported by the Makefile from apps/web/package.json; the default
+        # only serves a bare `docker compose build`.
+        PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION:-1.62.1}
     # Shares the web container's network namespace instead of joining the
     # bridge network under its own hostname — visiting http://web:5173
     # (rather than genuine localhost) both trips Vite's allowedHosts guard
