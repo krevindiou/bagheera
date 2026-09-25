@@ -24,6 +24,7 @@ import {
   PAYMENT_METHOD_ID,
   paymentMethodIcon,
   paymentMethodName,
+  thirdPartyLabel,
 } from './operations.types';
 import type { Operation, SearchCriteria } from './operations.types';
 import OperationForm from './OperationForm.vue';
@@ -356,7 +357,7 @@ function isEditable(operation: Operation): boolean {
                     >🕐</span
                   >
                 </td>
-                <td>{{ operation.thirdParty }}</td>
+                <td>{{ thirdPartyLabel(operation.thirdParty, operation.paymentMethodId) }}</td>
                 <td
                   class="text-end amount"
                   :class="operation.debit ? 'text-danger' : 'text-success'"

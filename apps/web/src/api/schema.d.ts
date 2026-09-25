@@ -1100,6 +1100,8 @@ export interface components {
             credit: components["schemas"]["ReportDistributionLabelSeriesDto"][];
         };
         ReportDistributionDto: {
+            /** @enum {string} */
+            dataGrouping: "category" | "third_party" | "payment_method";
             hidden: boolean;
             series: components["schemas"]["ReportDistributionSeriesDto"][];
         };

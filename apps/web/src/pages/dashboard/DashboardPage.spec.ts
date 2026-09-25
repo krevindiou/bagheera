@@ -363,6 +363,7 @@ describe('DashboardPage', () => {
             title: 'Spending by category',
             distribution: {
               hidden: false,
+              dataGrouping: 'category',
               series: [
                 {
                   currency: 'USD',

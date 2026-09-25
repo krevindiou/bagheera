@@ -26,6 +26,7 @@ const distribution: ReportChartData = {
   kind: 'distribution',
   distribution: {
     hidden: false,
+    dataGrouping: 'category',
     series: [
       {
         currency: 'USD',
@@ -84,7 +85,7 @@ describe('ReportChart', () => {
   it('gives a hidden distribution report an empty ranked chart', () => {
     const wrapper = mountChart({
       kind: 'distribution',
-      distribution: { hidden: true, series: [] },
+      distribution: { hidden: true, dataGrouping: 'category', series: [] },
     });
 
     expect(wrapper.getComponent(RankedChart).props('facets')).toEqual([]);

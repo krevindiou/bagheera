@@ -7,6 +7,7 @@ import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
+import { paymentMethodName } from './operations.types';
 import type {
   AmountComparatorOperator,
   Category,
@@ -158,7 +159,7 @@ function onClear() {
     <FormField :label="$t('operations.paymentMethod')" for="search-payment-methods">
       <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
         <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-          {{ pm.name }}
+          {{ paymentMethodName(pm.id, paymentMethods) }}
         </option>
       </select>
     </FormField>

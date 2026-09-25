@@ -56,7 +56,11 @@ function report(overrides: Partial<Report> = {}): Report {
 }
 
 const emptySeries: ReportSeries = { hidden: false, axisBounds: null, series: [] };
-const emptyDistribution: ReportDistribution = { hidden: false, series: [] };
+const emptyDistribution: ReportDistribution = {
+  hidden: false,
+  dataGrouping: 'category',
+  series: [],
+};
 
 function mockGet(
   reports: Report[],
@@ -323,6 +327,7 @@ describe('ReportsPage', () => {
   it('shows a distribution chart instead of the time-series chart for a distribution report', async () => {
     mockGet([report({ type: 'distribution', dataGrouping: 'category' })], emptySeries, {
       hidden: false,
+      dataGrouping: 'category',
       series: [
         {
           currency: 'USD',

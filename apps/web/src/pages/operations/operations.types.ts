@@ -1,4 +1,5 @@
 import type { components } from '../../api/schema';
+import { referenceName } from '../../i18n/referenceNames';
 
 type Schemas = components['schemas'];
 
@@ -15,7 +16,9 @@ export function categoryLabel(category: Category, allCategories: Category[]): st
   const parent = category.parentId
     ? allCategories.find((c) => c.id === category.parentId)
     : undefined;
-  return parent ? `${parent.name} > ${category.name}` : category.name;
+  return parent
+    ? `${referenceName(parent.name)} > ${referenceName(category.name)}`
+    : referenceName(category.name);
 }
 
 export interface CategoryGroup {
@@ -35,7 +38,7 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
   for (const top of topLevel) {
     const children = categories.filter((c) => c.parentId === top.id);
     if (children.length > 0) {
-      groups.push({ label: top.name, categories: [top, ...children] });
+      groups.push({ label: referenceName(top.name), categories: [top, ...children] });
     } else {
       standalone.push(top);
     }
@@ -67,7 +70,17 @@ export const PAYMENT_METHOD_ID = {
 } as const;
 
 export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): string {
-  return paymentMethods.find((pm) => pm.id === id)?.name ?? id;
+  const name = paymentMethods.find((pm) => pm.id === id)?.name;
+  return name === undefined ? id : referenceName(name);
+}
+
+// The third party as displayed: the system-generated opening operation is
+// stored with an English placeholder, so it is labeled from its payment
+// method instead.
+export function thirdPartyLabel(thirdParty: string, paymentMethodId: string): string {
+  return paymentMethodId === PAYMENT_METHOD_ID.INITIAL_BALANCE
+    ? referenceName('Initial balance')
+    : thirdParty;
 }
 
 // Display icons: initial balance = gauge, credit card = card, check =

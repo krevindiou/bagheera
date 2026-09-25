@@ -11,6 +11,7 @@ import { useThirdPartyAutocomplete } from '../../composables/useThirdPartyAutoco
 import { useTransferTargets } from '../../composables/useTransferTargets';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
 import type { Account, Bank } from '../accounts/accounts.types';
+import { referenceName } from '../../i18n/referenceNames';
 import { TRANSFER_PAYMENT_METHOD_IDS, type Category, type PaymentMethod } from './operations.types';
 
 // The fields an operation and a scheduler have in common — debit/credit,
@@ -160,7 +161,7 @@ function onThirdPartyChange() {
       >
         <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
         <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-          {{ pm.name }}
+          {{ referenceName(pm.name) }}
         </option>
       </select>
     </FormField>

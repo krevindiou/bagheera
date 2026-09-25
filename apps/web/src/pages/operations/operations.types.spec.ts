@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  thirdPartyLabel,
   categoryLabel,
   groupCategories,
   PAYMENT_METHOD_ID,
@@ -74,5 +75,17 @@ describe('paymentMethodIcon', () => {
 
   it('returns an empty string for an unknown id', () => {
     expect(paymentMethodIcon('unknown')).toBe('');
+  });
+});
+
+describe('thirdPartyLabel', () => {
+  it('labels the opening operation from its payment method, not its stored text', () => {
+    expect(thirdPartyLabel('Initial balance', PAYMENT_METHOD_ID.INITIAL_BALANCE)).toBe(
+      'Initial balance',
+    );
+  });
+
+  it("keeps any other operation's third party", () => {
+    expect(thirdPartyLabel('Bakery', PAYMENT_METHOD_ID.CREDIT_CARD)).toBe('Bakery');
   });
 });

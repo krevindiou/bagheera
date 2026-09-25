@@ -11,6 +11,7 @@ describe('toDistributionFacets', () => {
   it('merges debit and credit into one snapshot facet per currency, debit negated', () => {
     const distribution: ReportDistribution = {
       hidden: false,
+      dataGrouping: 'category',
       series: [
         {
           currency: 'USD',
@@ -35,6 +36,7 @@ describe('toDistributionFacets', () => {
   it('orders the merged bars by magnitude regardless of side', () => {
     const distribution: ReportDistribution = {
       hidden: false,
+      dataGrouping: 'category',
       series: [
         {
           currency: 'USD',
@@ -56,6 +58,7 @@ describe('toDistributionFacets', () => {
   it('translates a null label into "Other" with a muted, palette-independent color', () => {
     const distribution: ReportDistribution = {
       hidden: false,
+      dataGrouping: 'category',
       series: [
         {
           currency: 'USD',
@@ -83,6 +86,7 @@ describe('toDistributionFacets', () => {
   it('returns a temporal facet (multiple points per label) with debit series negated', () => {
     const distribution: ReportDistribution = {
       hidden: false,
+      dataGrouping: 'category',
       series: [
         {
           currency: 'USD',
@@ -137,13 +141,16 @@ describe('toDistributionFacets', () => {
   it('omits a currency with neither debit nor credit data', () => {
     const distribution: ReportDistribution = {
       hidden: false,
+      dataGrouping: 'category',
       series: [{ currency: 'USD', debit: [], credit: [] }],
     };
     expect(toDistributionFacets(distribution, t)).toEqual([]);
   });
 
   it('returns an empty list for a distribution with no series', () => {
-    expect(toDistributionFacets({ hidden: false, series: [] }, t)).toEqual([]);
+    expect(
+      toDistributionFacets({ hidden: false, dataGrouping: 'category', series: [] }, t),
+    ).toEqual([]);
   });
 
   it('gives each label its own color, so two categories stay distinguishable', () => {

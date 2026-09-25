@@ -1,4 +1,5 @@
 import { colorForLabel } from '../../components/chartColors';
+import { referenceName } from '../../i18n/referenceNames';
 import { toDisplayAmount } from '../operations/money';
 import type {
   RankedChartBar,
@@ -51,10 +52,10 @@ function toBars(
   labelSeriesList: ReportDistributionLabelSeries[],
   currency: string,
   sign: 1 | -1,
-  t: (key: string) => string,
+  labelOf: (label: string | null) => string,
 ): RankedChartBar[] {
   return labelSeriesList.map((series) => ({
-    label: labelText(series.label, t),
+    label: labelOf(series.label),
     value: negate(series.points[0]?.value ?? 0, sign, currency),
     color: labelColor(series.label),
   }));
@@ -64,10 +65,10 @@ function toStackedSeries(
   labelSeriesList: ReportDistributionLabelSeries[],
   currency: string,
   sign: 1 | -1,
-  t: (key: string) => string,
+  labelOf: (label: string | null) => string,
 ): RankedChartStackedSeries[] {
   return labelSeriesList.map((series) => ({
-    label: labelText(series.label, t),
+    label: labelOf(series.label),
     color: labelColor(series.label),
     points: series.points.map((point) => ({
       period: point.period,
@@ -80,21 +81,22 @@ function toRankedFacet(
   currency: string,
   debit: ReportDistributionLabelSeries[],
   credit: ReportDistributionLabelSeries[],
-  t: (key: string) => string,
+  labelOf: (label: string | null) => string,
 ): RankedChartFacet {
   if (isSnapshot(debit, credit)) {
     // Credit's and debit's own top-N rankings are independent (see
     // report-distribution.service.ts) — merging them into one list here
     // orders by magnitude regardless of side, so the chart reads as one
     // ranking rather than two concatenated ones.
-    const bars = [...toBars(credit, currency, 1, t), ...toBars(debit, currency, -1, t)].sort(
-      (a, b) => Math.abs(b.value) - Math.abs(a.value),
-    );
+    const bars = [
+      ...toBars(credit, currency, 1, labelOf),
+      ...toBars(debit, currency, -1, labelOf),
+    ].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
     return { kind: 'snapshot', title: currency, currency, bars };
   }
   const series = [
-    ...toStackedSeries(credit, currency, 1, t),
-    ...toStackedSeries(debit, currency, -1, t),
+    ...toStackedSeries(credit, currency, 1, labelOf),
+    ...toStackedSeries(debit, currency, -1, labelOf),
   ];
   return { kind: 'temporal', title: currency, currency, series };
 }
@@ -112,7 +114,12 @@ export function toDistributionFacets(
   distribution: ReportDistribution,
   t: (key: string) => string,
 ): RankedChartFacet[] {
+  // Category and payment-method labels are seeded reference data, shown
+  // translated; third-party labels are the member's own text.
+  const translateLabels = distribution.dataGrouping !== 'third_party';
+  const labelOf = (label: string | null) =>
+    label !== null && translateLabels ? referenceName(label) : labelText(label, t);
   return distribution.series
     .filter((s) => s.debit.length > 0 || s.credit.length > 0)
-    .map((s) => toRankedFacet(s.currency, s.debit, s.credit, t));
+    .map((s) => toRankedFacet(s.currency, s.debit, s.credit, labelOf));
 }
