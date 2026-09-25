@@ -9,6 +9,8 @@
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint . --fix",
+    "lint:check": "eslint . --max-warnings 0",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "test": "vitest run",
     "test:cov": "vitest run --coverage"
   },

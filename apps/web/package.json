@@ -13,7 +13,9 @@
     "e2e": "playwright test --config e2e/playwright.config.ts",
     "generate:api-client": "openapi-typescript http://localhost:3000/api/docs-json -o src/api/schema.d.ts",
     "lint": "eslint . --fix",
-    "format": "prettier --write \"src/**/*.{ts,vue}\" \"e2e/**/*.ts\""
+    "lint:check": "eslint . --max-warnings 0",
+    "format": "prettier --write \"src/**/*.{ts,vue}\" \"e2e/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue}\" \"e2e/**/*.ts\""
   },
   "dependencies": {
     "@bagheera/money": "workspace:*",

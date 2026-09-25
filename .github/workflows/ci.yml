@@ -16,8 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ./.github/actions/setup
-      - run: pnpm lint
-      - run: pnpm format
+      - run: pnpm lint:check
+      - run: pnpm format:check
       - run: pnpm --filter api exec tsc -p tsconfig.json --noEmit
       - run: node scripts/check-integration-spec-coverage.mjs
       - run: pnpm audit --prod --audit-level=high
