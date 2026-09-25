@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { apiClient } from '../api/client';
+import { queryClient } from '../api/query-client';
 import type { Locale } from '../i18n/locales';
 
 export interface SessionMember {
@@ -32,8 +33,12 @@ export const useSessionStore = defineStore('session', {
         this.member = { ...this.member, locale };
       }
     },
+    // Sign-out and the 401 handler both land here. Dropping every cached
+    // query too means whoever signs in next on this tab doesn't see the
+    // previous member's accounts or balances while their own data loads.
     clear() {
       this.member = null;
+      queryClient.clear();
     },
     // Always hits the network — unlike restore() below, never reuses a
     // cached result. Used right after sign-in (password or passkey), where

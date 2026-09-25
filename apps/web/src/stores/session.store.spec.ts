@@ -5,6 +5,7 @@ import { asMockedApiClient, mockApiClient } from '../test-support/mockApiClient'
 vi.mock('../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../api/client';
+import { queryClient } from '../api/query-client';
 import { useSessionStore } from './session.store';
 
 const apiClient = asMockedApiClient(realApiClient);
@@ -36,6 +37,17 @@ describe('useSessionStore', () => {
       store.clear();
       expect(store.member).toBeNull();
       expect(store.isAuthenticated).toBe(false);
+    });
+
+    it("drops every cached query, so the next member never sees the previous one's data", () => {
+      queryClient.setQueryData(['accounts'], [{ id: 'a1' }]);
+      queryClient.setQueryData(['balance', 'a1'], { balance: 100 });
+      const store = useSessionStore();
+      store.setMember({ email: 'member@example.com', locale: 'en' });
+
+      store.clear();
+
+      expect(queryClient.getQueryCache().getAll()).toEqual([]);
     });
   });
 
