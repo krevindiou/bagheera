@@ -11,7 +11,7 @@ Bagheera is a manual-entry personal finance manager. Users track banks, accounts
 |---|---|
 | API | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, cache, rate limiting) · BullMQ (email jobs) |
 | Web | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js |
-| Auth | Cookie-based, server-side revocable sessions |
+| Auth | Passkeys (WebAuthn), cookie-based server-side revocable sessions |
 | Infra | Docker Compose · Caddy (reverse proxy + static SPA) · Kamal (deploy) |
 
 ## Getting started
@@ -49,9 +49,9 @@ make shell-web # shell into the web container
 Anything not covered by `make` can be run directly, e.g.:
 
 ```bash
-docker compose -f docker/compose.yml exec api pnpm test:cov
-docker compose -f docker/compose.yml exec api pnpm db:generate
-docker compose -f docker/compose.yml exec web pnpm e2e
+docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm test:cov
+docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:generate --name <snake_case_description>
+make test-e2e   # Playwright needs the separate e2e stack
 ```
 
 ## Project layout

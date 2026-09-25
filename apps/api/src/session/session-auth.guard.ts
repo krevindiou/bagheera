@@ -5,11 +5,8 @@ import { IS_PUBLIC_KEY } from './public.decorator';
 import './session-data';
 
 /**
- * Global backstop for the "must be signed in" check every protected
- * controller otherwise re-implements by hand as
- * `const memberId = req.session.memberId; if (!memberId) throw ...`
- * (see e.g. `accounts/account.service.ts`). That per-service pattern stays
- * — it's what actually reads `memberId` for scoping queries — but a new
+ * Global backstop for the "must be signed in" check. Services still read
+ * the member id with `requireMemberId(req)` for scoping queries, but a new
  * controller that forgets to check first now gets a 401 here instead of
  * silently skipping auth.
  */

@@ -39,11 +39,11 @@ apiClient.use({
   },
 });
 
-// Across the API, a bare 401 always means "no active session" (wrong
-// credentials/passwords are 400s, ownership/state denials are 403/422) —
-// including the sign-in form's own invalid-credentials response, which is
-// why the currentRoute check below is enough: that case fires while
-// already on the sign-in page, so the redirect is a no-op.
+// Across the API, a bare 401 always means "no active session" (bad
+// input is 400, ownership/state denials are 403/422) — including a failed
+// sign-in ceremony, which is why the currentRoute check below is enough:
+// that case fires while already on the sign-in page, so the redirect is a
+// no-op.
 apiClient.use({
   onResponse({ response }) {
     if (response.status !== 401) return response;

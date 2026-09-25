@@ -22,7 +22,7 @@ import { raceSafeUniqueEmail } from './race-safe-unique-email';
 
 // Never distinguishes missing/malformed/expired/superseded/already-used
 // keys from one another — a single generic error path for all of them,
-// same as activation/password-reset.
+// same as the sign-up confirmation link.
 const EMAIL_CHANGE_ERROR = 'Email change error (link expired or already used?)';
 
 @Injectable()
@@ -153,9 +153,9 @@ export class ProfileService {
 
   /**
    * Updates the member's UI/email language preference. Unlike updateEmail,
-   * this doesn't verify the current password — it isn't a sensitive
-   * credential, just a display preference, and requiring a password on
-   * every switcher click would be poor UX for something this low-stakes.
+   * this doesn't require a step-up passkey proof — it's just a display
+   * preference, and prompting on every switcher click would be poor UX for
+   * something this low-stakes.
    */
   async updateLocale(req: Request, dto: UpdateLocaleDto): Promise<void> {
     const memberId = requireMemberId(req);

@@ -41,7 +41,7 @@ export const useSessionStore = defineStore('session', {
       queryClient.clear();
     },
     // Always hits the network — unlike restore() below, never reuses a
-    // cached result. Used right after sign-in (password or passkey), where
+    // cached result. Used right after sign-in (passkey), where
     // the member is known to have just changed and any earlier restore()
     // call (e.g. the router guard's, resolved to `null` while this was
     // still the sign-in page) must not be trusted anymore.

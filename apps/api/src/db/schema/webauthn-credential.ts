@@ -13,8 +13,7 @@ import { uuidPk } from './id';
 import { member } from './member';
 
 // One row per registered passkey. A member can hold several (one per
-// device); each is a standalone, fully-strength alternative to the
-// password, not a second factor — see webauthn/ module docs.
+// device); passkeys are the only sign-in method — see webauthn/ module docs.
 export const webauthnCredential = pgTable(
   'webauthn_credential',
   {
