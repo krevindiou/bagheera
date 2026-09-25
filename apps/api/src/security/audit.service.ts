@@ -2,34 +2,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { securityEvent } from '../db/schema';
+import { securityEventTypeEnum } from '../db/schema/enums';
 
-export type SecurityEventType =
-  | 'sign_in_success'
-  | 'sign_in_failure'
-  | 'sign_in_throttled'
-  | 'sign_in_inactive'
-  | 'password_recovery_requested'
-  | 'password_recovery_completed'
-  | 'password_changed'
-  | 'email_change_requested'
-  | 'email_changed'
-  | 'activation_issued'
-  | 'activation_used'
-  | 'operation_batch_deleted'
-  | 'operation_batch_reconciled'
-  | 'scheduler_batch_deleted'
-  | 'report_batch_deleted'
-  | 'bank_closed'
-  | 'bank_deleted'
-  | 'account_closed'
-  | 'account_deleted'
-  | 'webauthn_credential_registered'
-  | 'webauthn_credential_removed'
-  | 'webauthn_sign_in_success'
-  | 'webauthn_sign_in_failure'
-  | 'signup_confirmation_issued'
-  | 'passkey_signup_completed'
-  | 'step_up_verified';
+export type SecurityEventType = (typeof securityEventTypeEnum.enumValues)[number];
 
 /**
  * Writes to the security event log — the audit trail behind incident

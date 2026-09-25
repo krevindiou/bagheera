@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits } from '../common/money';
+import type { Executor } from '../db/executor';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 
@@ -18,9 +19,6 @@ export const TRANSFER_PAYMENT_METHOD_IDS: string[] = [
 // Any object exposing the query-builder surface: the plain db handle or an
 // open transaction — every method below accepts either so callers can chain
 // pairing side effects into their own transaction.
-type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (tx: infer T) => unknown
-  ? T
-  : never;
 type Db = NodePgDatabase | Executor;
 
 // Facts needed to validate a *new* transfer target (attach or retarget) —

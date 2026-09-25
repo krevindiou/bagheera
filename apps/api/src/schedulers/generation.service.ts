@@ -3,6 +3,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { localIsoDate } from '../common/local-date';
 import { DRIZZLE } from '../db/db.constants';
+import type { Executor } from '../db/executor';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
@@ -12,9 +13,6 @@ type BankRow = typeof bank.$inferSelect;
 
 // The transaction surface TransferService also takes — generation always
 // runs inside one, so its advisory lock holds until the run commits.
-type Executor = Parameters<NodePgDatabase['transaction']>[0] extends (tx: infer T) => unknown
-  ? T
-  : never;
 
 function isFullyActive(acc: AccountRow, bnk: BankRow): boolean {
   return !acc.closed && !acc.deleted && !bnk.closed && !bnk.deleted;
