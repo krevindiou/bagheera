@@ -66,8 +66,8 @@ describe('accounts', () => {
 
       const res = await agent.get('/accounts').expect(200);
       const body = res.body as { name: string; balance: number }[];
-      expect(body.find((a) => a.name === 'Checking')?.balance).toBe(100);
-      expect(body.find((a) => a.name === 'Savings')?.balance).toBe(-25);
+      expect(body.find((a) => a.name === 'Checking')?.balance).toBe(toMinorUnits(100));
+      expect(body.find((a) => a.name === 'Savings')?.balance).toBe(toMinorUnits(-25));
     });
 
     it('also includes each account reconciled balance, excluding unreconciled operations', async () => {
@@ -90,8 +90,8 @@ describe('accounts', () => {
       const res = await agent.get('/accounts').expect(200);
       const body = res.body as { name: string; balance: number; reconciledBalance: number }[];
       const checking = body.find((a) => a.name === 'Checking');
-      expect(checking?.balance).toBe(80);
-      expect(checking?.reconciledBalance).toBe(100);
+      expect(checking?.balance).toBe(toMinorUnits(80));
+      expect(checking?.reconciledBalance).toBe(toMinorUnits(100));
     });
   });
 
@@ -194,8 +194,8 @@ describe('accounts', () => {
 
       const res = await agent.get(`/accounts/${accountId}/balance`).expect(200);
       const body = res.body as { balance: number; reconciledBalance: number };
-      expect(body.balance).toBe(70);
-      expect(body.reconciledBalance).toBe(100);
+      expect(body.balance).toBe(toMinorUnits(70));
+      expect(body.reconciledBalance).toBe(toMinorUnits(100));
     });
 
     it("404s reading another member's account balance", async () => {
@@ -252,7 +252,10 @@ describe('accounts', () => {
 
       const res = await agent.get(`/accounts/${accountId}/chart`).expect(200);
       const body = res.body as { points: { period: string; value: number }[] };
-      expect(body.points[body.points.length - 1]).toEqual({ period: '2020-01-01', value: -10 });
+      expect(body.points[body.points.length - 1]).toEqual({
+        period: '2020-01-01',
+        value: toMinorUnits(-10),
+      });
     });
 
     // M5: totals are now summed per month in SQL rather than from every
@@ -284,11 +287,11 @@ describe('accounts', () => {
       const { points } = res.body as { points: { period: string; value: number }[] };
 
       expect(points).toHaveLength(12);
-      expect(points[0]).toEqual({ period: '2024-04-01', value: 100 });
+      expect(points[0]).toEqual({ period: '2024-04-01', value: toMinorUnits(100) });
       expect(points.slice(-3)).toEqual([
-        { period: '2025-01-01', value: 80 },
-        { period: '2025-02-01', value: 80 },
-        { period: '2025-03-01', value: 75 },
+        { period: '2025-01-01', value: toMinorUnits(80) },
+        { period: '2025-02-01', value: toMinorUnits(80) },
+        { period: '2025-03-01', value: toMinorUnits(75) },
       ]);
     });
 

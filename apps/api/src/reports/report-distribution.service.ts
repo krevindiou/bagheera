@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { MinorUnits, toMajorUnits } from '../common/money';
+import { MinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, category, operation, paymentMethod, report } from '../db/schema';
 import { MemberId, ReportId } from '../security/ids';
@@ -290,7 +290,7 @@ function assembleLabelSeries(
     if (!periods) continue;
     const points = periodKeys.map((key) => ({
       period: grouping === 'all' ? currentYearStart() : key,
-      value: toMajorUnits((periods.get(key) ?? 0) as MinorUnits),
+      value: (periods.get(key) ?? 0) as MinorUnits,
     }));
     series.push({ label, points });
   }

@@ -6,7 +6,7 @@
 
 import { AxisBounds, computeAxisBounds } from './chart-axis';
 import { localIsoDate } from './local-date';
-import { MinorUnits, toMajorUnits } from './money';
+import { MinorUnits } from './money';
 import { addMonths, fillPeriodGaps, periodStart } from '../reports/chart/period';
 
 const WINDOW_MONTHS = 12;
@@ -132,7 +132,7 @@ export function computeSynthesisChart(
       // to `number`, even when every addend started as MinorUnits. This
       // cast is the one place that says "done accumulating, this total is
       // still minor units."
-      const value = toMajorUnits(running as MinorUnits);
+      const value = running as MinorUnits;
       dataMin = Math.min(dataMin, value);
       dataMax = Math.max(dataMax, value);
       return { period: month, value };

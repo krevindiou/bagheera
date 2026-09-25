@@ -1,3 +1,4 @@
+import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
@@ -89,9 +90,11 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.onboarding).toBeNull();
-    expect(body.totalBalances).toEqual([{ currency: 'EUR', amount: 250, reconciledAmount: 250 }]);
+    expect(body.totalBalances).toEqual([
+      { currency: 'EUR', amount: toMinorUnits(250), reconciledAmount: toMinorUnits(250) },
+    ]);
     expect(body.accountsOverview).toHaveLength(1);
-    expect(body.accountsOverview[0].accounts[0].balance).toBe(250);
+    expect(body.accountsOverview[0].accounts[0].balance).toBe(toMinorUnits(250));
   });
 
   it("ends each account overview tile's sparkline history at its current balance", async () => {
@@ -103,7 +106,7 @@ describe('GET /dashboard', () => {
     const body = res.body as DashboardBody;
     const history = body.accountsOverview[0].accounts[0].history;
     expect(history.length).toBeGreaterThan(0);
-    expect(history[history.length - 1]).toBe(250);
+    expect(history[history.length - 1]).toBe(toMinorUnits(250));
   });
 
   it("ends both the synthesis chart and each tile's sparkline at the latest operation, not today", async () => {
@@ -128,10 +131,10 @@ describe('GET /dashboard', () => {
     const synthesisPoints = body.synthesisChart.series[0].points;
     expect(synthesisPoints[synthesisPoints.length - 1]).toEqual({
       period: '2020-01-01',
-      value: -10,
+      value: toMinorUnits(-10),
     });
     const history = body.accountsOverview[0].accounts[0].history;
-    expect(history[history.length - 1]).toBe(-10);
+    expect(history[history.length - 1]).toBe(toMinorUnits(-10));
   });
 
   it('widens the synthesis chart window with ?range=24 and ?range=all', async () => {
@@ -176,7 +179,9 @@ describe('GET /dashboard', () => {
 
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
-    expect(body.totalBalances).toEqual([{ currency: 'EUR', amount: 200, reconciledAmount: 250 }]);
+    expect(body.totalBalances).toEqual([
+      { currency: 'EUR', amount: toMinorUnits(200), reconciledAmount: toMinorUnits(250) },
+    ]);
   });
 
   it("also reports each account overview tile's own reconciled balance, excluding unreconciled operations", async () => {
@@ -196,8 +201,8 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     const tile = body.accountsOverview[0].accounts[0];
-    expect(tile.balance).toBe(200);
-    expect(tile.reconciledBalance).toBe(250);
+    expect(tile.balance).toBe(toMinorUnits(200));
+    expect(tile.reconciledBalance).toBe(toMinorUnits(250));
   });
 
   it("reports last month's biggest income, regardless of category", async () => {
@@ -225,7 +230,7 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.lastBiggestIncome).toEqual({
-      amount: 2000,
+      amount: toMinorUnits(2000),
       currency: 'EUR',
       valueDate: lastMonthDate,
       thirdParty: 'Employer',
@@ -257,7 +262,7 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.lastBiggestExpense).toEqual({
-      amount: 500,
+      amount: toMinorUnits(500),
       currency: 'EUR',
       valueDate: lastMonthDate,
       thirdParty: 'Big',

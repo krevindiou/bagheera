@@ -1,3 +1,4 @@
+import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
@@ -108,7 +109,7 @@ describe('GET /reports/:id/series', () => {
 
     const res = await agent.get(`/reports/${id}/series`).expect(200);
     const body = res.body as SeriesBody & { series: { credit: { value: number }[] }[] };
-    expect(body.series[0].credit).toEqual([{ period: '2026-01-01', value: 1000 }]);
+    expect(body.series[0].credit).toEqual([{ period: '2026-01-01', value: toMinorUnits(1000) }]);
   });
 
   it("groups everything into a single bucket for 'all'", async () => {

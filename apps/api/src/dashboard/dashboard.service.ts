@@ -3,7 +3,6 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount } from '../common/balances';
 import { localIsoDate } from '../common/local-date';
-import { toMajorUnits } from '../common/money';
 import { MonthlyNet, monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
   computeSynthesisChart,
@@ -45,7 +44,7 @@ export interface AccountsOverviewBank {
     currency: string;
     balance: number;
     reconciledBalance: number;
-    // Cumulative end-of-month balance, oldest first, for the tile's
+    // Cumulative end-of-month balance (minor units), oldest first, for the tile's
     // minimalist sparkline — see `accountHistories` below. Empty when the
     // account has no operations at all.
     history: number[];
@@ -202,8 +201,8 @@ export class DashboardService {
         // `amount` came from rawTotals, a plain-number accumulator — see
         // the comment on synthesis-chart.ts's `running` for why `+=`
         // always drops the brand even though every addend was MinorUnits.
-        amount: toMajorUnits(amount as MinorUnits),
-        reconciledAmount: toMajorUnits((rawReconciledTotals.get(currency) ?? 0) as MinorUnits),
+        amount: amount as MinorUnits,
+        reconciledAmount: (rawReconciledTotals.get(currency) ?? 0) as MinorUnits,
       }));
 
     // "Fully active" scope — the bank itself must also be non-closed.
@@ -239,10 +238,8 @@ export class DashboardService {
             // The `?? 0` fallback is an unbranded literal, so the whole
             // expression reads as plain `number` even on the found-in-map
             // branch.
-            balance: toMajorUnits((balances.get(a.id)?.balance ?? 0) as MinorUnits),
-            reconciledBalance: toMajorUnits(
-              (balances.get(a.id)?.reconciledBalance ?? 0) as MinorUnits,
-            ),
+            balance: (balances.get(a.id)?.balance ?? 0) as MinorUnits,
+            reconciledBalance: (balances.get(a.id)?.reconciledBalance ?? 0) as MinorUnits,
             history: histories.get(a.id) ?? [],
           })),
       }));
@@ -318,7 +315,7 @@ export class DashboardService {
 
     const currency = accounts.find((a) => a.id === winner.accountId)!.currency;
     return {
-      amount: toMajorUnits(winner[side]!),
+      amount: winner[side]!,
       currency,
       valueDate: winner.valueDate,
       thirdParty: winner.thirdParty,

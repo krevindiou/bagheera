@@ -11,7 +11,7 @@ export class AccountDto {
   updatedAt!: Date;
 }
 
-// Balances are attached to the list response only, in major units.
+// Balances are attached to the list response only, in minor units.
 export class AccountWithBalanceDto extends AccountDto {
   balance!: number;
   reconciledBalance!: number;

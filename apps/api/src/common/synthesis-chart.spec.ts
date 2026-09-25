@@ -41,7 +41,7 @@ describe('computeSynthesisChart', () => {
     expect(points).toHaveLength(12);
     // Window is 2025-04 .. 2026-03; the credit lands in 2026-01, the 10th point.
     expect(points.slice(0, 9).map((p) => p.value)).toEqual(Array(9).fill(0));
-    expect(points.slice(9).map((p) => p.value)).toEqual([1, 1, 1]);
+    expect(points.slice(9).map((p) => p.value)).toEqual([10000, 10000, 10000]);
     expect(points[9].period).toBe('2026-01-01');
   });
 
@@ -65,7 +65,7 @@ describe('computeSynthesisChart', () => {
     const chart = computeSynthesisChart(rows, TODAY);
     const { points } = chart.series[0];
     // Every point in the window carries the same -1, since nothing moves inside it.
-    expect(points.map((p) => p.value)).toEqual(Array(12).fill(-1));
+    expect(points.map((p) => p.value)).toEqual(Array(12).fill(-10000));
   });
 
   it('accumulates multiple rows for the same currency onto one shared entry, not a fresh one each time', () => {
@@ -87,8 +87,8 @@ describe('computeSynthesisChart', () => {
     expect(chart.series).toHaveLength(1); // one entry for USD, not two
     const jan = chart.series[0].points.find((p) => p.period === '2026-01-01');
     const feb = chart.series[0].points.find((p) => p.period === '2026-02-01');
-    expect(jan?.value).toBe(1);
-    expect(feb?.value).toBe(3); // carried forward: 1 + 2
+    expect(jan?.value).toBe(10000);
+    expect(feb?.value).toBe(30000); // carried forward: 1 + 2
   });
 
   it('nets credit minus debit within the same month', () => {
@@ -102,7 +102,7 @@ describe('computeSynthesisChart', () => {
     ];
     const chart = computeSynthesisChart(rows, TODAY);
     const feb = chart.series[0].points.find((p) => p.period === '2026-02-01');
-    expect(feb?.value).toBe(2);
+    expect(feb?.value).toBe(20000);
   });
 
   it('returns one series per currency, sorted alphabetically', () => {
@@ -134,9 +134,9 @@ describe('computeSynthesisChart', () => {
       },
     ];
     const chart = computeSynthesisChart(rows, TODAY);
-    // dataMin=0, dataMax=1 -> spread=1 -> 5% padding of 0.05.
-    expect(chart.axisBounds?.min).toBeCloseTo(-0.05, 6);
-    expect(chart.axisBounds?.max).toBeCloseTo(1.05, 6);
+    // dataMin=0, dataMax=10000 -> spread=10000 -> 5% padding of 500.
+    expect(chart.axisBounds?.min).toBeCloseTo(-500, 6);
+    expect(chart.axisBounds?.max).toBeCloseTo(10500, 6);
   });
 
   it('defaults `today` to the real current date when omitted', () => {
@@ -186,7 +186,7 @@ describe('computeSynthesisChart', () => {
     expect(points[points.length - 1].period).toBe('2026-03-01');
     // Every row folds into the window (nothing carried into `before`), so
     // the earliest month already reflects the first credit.
-    expect(points[0].value).toBe(1);
+    expect(points[0].value).toBe(10000);
   });
 
   // Regression: a row dated 9999-12-31 used to turn this default 12-month
@@ -200,7 +200,7 @@ describe('computeSynthesisChart', () => {
     const { points } = chart.series[0];
     expect(points).toHaveLength(12);
     expect(points[11].period).toBe('9999-12-01');
-    expect(points[11].value).toBe(2);
+    expect(points[11].value).toBe(20000);
   });
 
   it("caps an 'all' window at MAX_PERIODS months, carrying older rows into the first point", () => {
@@ -214,8 +214,8 @@ describe('computeSynthesisChart', () => {
     expect(points.at(-1)?.period).toBe('2026-03-01');
     // The 0202 row sits before the capped axis: it must still count, via
     // the carried-over starting balance, not vanish.
-    expect(points[0].value).toBe(1);
-    expect(points.at(-1)?.value).toBe(2);
+    expect(points[0].value).toBe(10000);
+    expect(points.at(-1)?.value).toBe(20000);
   });
 
   it("plots nothing for an 'all' window whose `today` precedes every row", () => {

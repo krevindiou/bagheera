@@ -2,7 +2,10 @@
 // charts, the dashboard/per-account synthesis chart): the data min/max
 // stretched outward by 5% of the spread, rounded outward to two
 // significant digits. Flat data pads by 5% of the absolute value instead;
-// all-zero data defaults to [-1, +1] currency units.
+// all-zero data defaults to [-1, +1] currency units. Works on minor-unit
+// values, like every amount the API returns.
+
+import { MONEY_SCALE } from './money';
 
 export interface AxisBounds {
   min: number;
@@ -24,7 +27,7 @@ export function computeAxisBounds(min: number, max: number): AxisBounds {
   const spread = max - min;
   if (spread === 0) {
     if (min === 0) {
-      return { min: -1, max: 1 };
+      return { min: -MONEY_SCALE, max: MONEY_SCALE };
     }
     const padding = roundOutwardMagnitude(Math.abs(min) * 0.05);
     return { min: min - padding, max: max + padding };

@@ -8,7 +8,7 @@ import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount, ZERO_BALANCE } from '../common/balances';
 import { AxisBounds } from '../common/chart-axis';
-import { MinorUnits, toMajorUnits, toMinorUnits } from '../common/money';
+import { MinorUnits, toMinorUnits } from '../common/money';
 import { monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
   computeSynthesisChart,
@@ -76,8 +76,8 @@ export class AccountService {
       const entry = balances.get(a.id) ?? ZERO_BALANCE;
       return {
         ...a,
-        balance: toMajorUnits(entry.balance),
-        reconciledBalance: toMajorUnits(entry.reconciledBalance),
+        balance: entry.balance,
+        reconciledBalance: entry.reconciledBalance,
       };
     });
   }
@@ -159,8 +159,8 @@ export class AccountService {
 
     const entry = (await balancesByAccount(this.db, [id])).get(id) ?? ZERO_BALANCE;
     return {
-      balance: toMajorUnits(entry.balance),
-      reconciledBalance: toMajorUnits(entry.reconciledBalance),
+      balance: entry.balance,
+      reconciledBalance: entry.reconciledBalance,
     };
   }
 

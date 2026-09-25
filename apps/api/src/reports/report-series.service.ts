@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
-import { MinorUnits, toMajorUnits } from '../common/money';
+import { MinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, operation, report } from '../db/schema';
 import { MemberId, ReportId } from '../security/ids';
@@ -148,8 +148,8 @@ export class ReportSeriesService {
         // Both ternaries' non-zero branches are already MinorUnits, but the
         // `0` fallback and the `/ count` average branch each widen back to
         // plain `number` — cast at the finished total, same as elsewhere.
-        const creditValue = toMajorUnits(creditRaw as MinorUnits);
-        const debitValue = toMajorUnits(debitRaw as MinorUnits);
+        const creditValue = creditRaw as MinorUnits;
+        const debitValue = debitRaw as MinorUnits;
         const label = grouping === 'all' ? currentYearStart() : key;
         credit.push({ period: label, value: creditValue });
         debit.push({ period: label, value: debitValue });

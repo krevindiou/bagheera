@@ -1,8 +1,8 @@
 import { computeAxisBounds } from './chart-axis';
 
 describe('computeAxisBounds', () => {
-  it('defaults to [-1, 1] for all-zero flat data', () => {
-    expect(computeAxisBounds(0, 0)).toEqual({ min: -1, max: 1 });
+  it('defaults to one currency unit either side for all-zero flat data', () => {
+    expect(computeAxisBounds(0, 0)).toEqual({ min: -10000, max: 10000 });
   });
 
   it('pads flat non-zero data by 5% of its magnitude, rounded outward', () => {

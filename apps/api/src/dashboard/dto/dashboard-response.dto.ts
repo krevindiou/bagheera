@@ -2,6 +2,7 @@ import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { AxisBoundsDto, ChartPointDto } from '../../common/dto/chart-response.dto';
 import { ReportDistributionDto, ReportSeriesDto } from '../../reports/dto/report-response.dto';
 
+// Amounts and balances are minor units (real value × 10,000).
 export class TotalBalanceDto {
   currency!: string;
   amount!: number;
@@ -21,7 +22,7 @@ export class AccountsOverviewAccountDto {
   currency!: string;
   balance!: number;
   reconciledBalance!: number;
-  // Cumulative end-of-month balance, oldest first.
+  // Cumulative end-of-month balance in minor units, oldest first.
   history!: number[];
 }
 

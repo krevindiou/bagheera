@@ -1,3 +1,4 @@
+import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
@@ -120,9 +121,9 @@ describe('GET /reports/:id/distribution', () => {
     expect(body.series).toHaveLength(1);
     expect(body.series[0].currency).toBe('EUR');
     expect(snapshotValues(body.series[0].debit)).toEqual([
-      { label: 'Food', value: 100 },
-      { label: 'Transport', value: 30 },
-      { label: null, value: 5 },
+      { label: 'Food', value: toMinorUnits(100) },
+      { label: 'Transport', value: toMinorUnits(30) },
+      { label: null, value: toMinorUnits(5) },
     ]);
     expect(body.series[0].credit).toEqual([]);
   });
@@ -147,9 +148,9 @@ describe('GET /reports/:id/distribution', () => {
     const res = await agent.get(`/reports/${id}/distribution`).expect(200);
     const body = res.body as DistributionBody;
     expect(snapshotValues(body.series[0].debit)).toEqual([
-      { label: 'Alpha', value: 50 },
-      { label: 'Beta', value: 40 },
-      { label: null, value: 30 },
+      { label: 'Alpha', value: toMinorUnits(50) },
+      { label: 'Beta', value: toMinorUnits(40) },
+      { label: null, value: toMinorUnits(30) },
     ]);
   });
 
@@ -177,8 +178,8 @@ describe('GET /reports/:id/distribution', () => {
     const res = await agent.get(`/reports/${id}/distribution`).expect(200);
     const body = res.body as DistributionBody;
     expect(snapshotValues(body.series[0].debit)).toEqual([
-      { label: 'Credit card', value: 20 },
-      { label: 'Check', value: 15 },
+      { label: 'Credit card', value: toMinorUnits(20) },
+      { label: 'Check', value: toMinorUnits(15) },
     ]);
   });
 
@@ -209,8 +210,12 @@ describe('GET /reports/:id/distribution', () => {
 
     const res = await agent.get(`/reports/${id}/distribution`).expect(200);
     const body = res.body as DistributionBody;
-    expect(snapshotValues(body.series[0].debit)).toEqual([{ label: null, value: 40 }]);
-    expect(snapshotValues(body.series[0].credit)).toEqual([{ label: 'Salary', value: 500 }]);
+    expect(snapshotValues(body.series[0].debit)).toEqual([
+      { label: null, value: toMinorUnits(40) },
+    ]);
+    expect(snapshotValues(body.series[0].credit)).toEqual([
+      { label: 'Salary', value: toMinorUnits(500) },
+    ]);
   });
 
   it('honors the date range, third-party, reconciled and account filters', async () => {
@@ -285,12 +290,12 @@ describe('GET /reports/:id/distribution', () => {
       const body = res.body as DistributionBody;
       const debit = body.series[0].debit;
       expect(debit.find((s) => s.label === 'Food')!.points).toEqual([
-        { period: '2026-01-01', value: 100 },
+        { period: '2026-01-01', value: toMinorUnits(100) },
         { period: '2026-02-01', value: 0 },
       ]);
       expect(debit.find((s) => s.label === 'Transport')!.points).toEqual([
         { period: '2026-01-01', value: 0 },
-        { period: '2026-02-01', value: 30 },
+        { period: '2026-02-01', value: toMinorUnits(30) },
       ]);
     });
 
@@ -342,7 +347,7 @@ describe('GET /reports/:id/distribution', () => {
       expect(debit.map((s) => s.label)).toEqual(['Food', 'Transport', null]);
       expect(debit.find((s) => s.label === null)!.points).toEqual([
         { period: '2026-01-01', value: 0 },
-        { period: '2026-02-01', value: 50 },
+        { period: '2026-02-01', value: toMinorUnits(50) },
       ]);
     });
   });
