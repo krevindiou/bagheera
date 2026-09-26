@@ -53,7 +53,12 @@ describe('RegisterPage', () => {
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith('/members/register', {
-      body: { email: 'member@example.com', country: 'FR', locale: 'en' },
+      body: {
+        email: 'member@example.com',
+        country: 'FR',
+        locale: 'en',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      },
     });
     expect(useToast().toasts[0]?.text).toBe(
       "If this email isn't already registered, you'll receive a link to create your account.",

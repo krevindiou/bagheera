@@ -60,8 +60,13 @@ describe('webauthn signup', () => {
     await app.close();
   });
 
-  function tokenFor(email: string, country = 'FR', locale: Locale = 'en'): string {
-    return buildSignupToken(app.get(CryptoService), email, country, locale);
+  function tokenFor(
+    email: string,
+    country = 'FR',
+    locale: Locale = 'en',
+    timeZone?: string,
+  ): string {
+    return buildSignupToken(app.get(CryptoService), email, country, locale, timeZone);
   }
 
   describe('POST /webauthn/signup/options', () => {
@@ -113,7 +118,7 @@ describe('webauthn signup', () => {
       await agent
         .post('/webauthn/signup/options')
         .set('x-csrf-token', csrfToken)
-        .send({ key: tokenFor(email, 'FR', 'fr') })
+        .send({ key: tokenFor(email, 'FR', 'fr', 'Europe/Paris') })
         .expect(200);
 
       jest
@@ -132,6 +137,7 @@ describe('webauthn signup', () => {
       expect(row).toBeDefined();
       expect(row.country).toBe('FR');
       expect(row.locale).toBe('fr');
+      expect(row.timeZone).toBe('Europe/Paris');
 
       const [credentialRow] = await getDb(app)
         .select()

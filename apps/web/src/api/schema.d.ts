@@ -85,6 +85,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/members/time-zone": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ProfileController_updateTimeZone"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/members/profile/confirm-email-change": {
         parameters: {
             query?: never;
@@ -724,6 +740,7 @@ export interface components {
             country: string;
             /** @enum {string} */
             locale?: "en" | "fr";
+            timeZone?: string;
         };
         MessageResponseDto: {
             message: string;
@@ -735,6 +752,9 @@ export interface components {
             /** @enum {string} */
             locale: "en" | "fr";
         };
+        UpdateTimeZoneDto: {
+            timeZone: string;
+        };
         ConfirmEmailChangeDto: {
             key: string;
         };
@@ -742,6 +762,7 @@ export interface components {
             /** @enum {string} */
             locale: "en" | "fr";
             email: string;
+            timeZone: string;
         };
         SchedulerDto: {
             /** @enum {string} */
@@ -1307,6 +1328,29 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateLocaleDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
+            };
+        };
+    };
+    ProfileController_updateTimeZone: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTimeZoneDto"];
             };
         };
         responses: {

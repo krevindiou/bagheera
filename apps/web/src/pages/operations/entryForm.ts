@@ -16,8 +16,9 @@ interface EntryRow {
 }
 
 // The operation-like form's starting values: the stored row when editing,
-// a blank debit dated today otherwise.
-export function entryFormValues(entry: EntryRow | null): OperationForm {
+// a blank debit dated today (in `timeZone`, see money.ts's today())
+// otherwise.
+export function entryFormValues(entry: EntryRow | null, timeZone?: string): OperationForm {
   if (!entry) {
     return {
       type: 'debit',
@@ -26,7 +27,7 @@ export function entryFormValues(entry: EntryRow | null): OperationForm {
       categoryId: undefined,
       paymentMethodId: undefined as unknown as string,
       transferAccountId: undefined,
-      valueDate: today(),
+      valueDate: today(timeZone),
       notes: '',
       reconciled: false,
     };

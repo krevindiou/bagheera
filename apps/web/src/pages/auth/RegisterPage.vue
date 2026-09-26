@@ -38,8 +38,11 @@ const onSubmit = handleSubmit(async (values) => {
   // `/fr/register`, …) — the member's own future emails and the switcher's
   // preselected value both start from this.
   const locale = isSupportedLocale(route.params.locale) ? route.params.locale : DEFAULT_LOCALE;
+  // The browser's zone, so the member's "today" starts out matching their
+  // wall clock; changeable afterwards from settings.
+  const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
   const { response } = await apiClient.POST('/members/register', {
-    body: { ...values, country: values.country.toUpperCase(), locale },
+    body: { ...values, country: values.country.toUpperCase(), locale, timeZone },
   });
 
   if (!response.ok) {

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount } from '../common/balances';
-import { localIsoDate } from '../common/local-date';
+import { memberToday } from '../common/member-today';
 import { MonthlyNet, monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
   computeSynthesisChart,
@@ -79,8 +79,8 @@ const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
   series: [],
 };
 
-function previousCalendarMonthRange(): { start: string; end: string } {
-  const [year, month] = localIsoDate().split('-').map(Number);
+function previousCalendarMonthRange(today: string): { start: string; end: string } {
+  const [year, month] = today.split('-').map(Number);
   const firstOfCurrentMonth = new Date(Date.UTC(year, month - 1, 1));
   const start = new Date(
     Date.UTC(firstOfCurrentMonth.getUTCFullYear(), firstOfCurrentMonth.getUTCMonth() - 1, 1),
@@ -211,9 +211,10 @@ export class DashboardService {
       .filter((a) => !a.closed && activeBankIds.has(a.bankId))
       .map((a) => a.id);
 
+    const today = await memberToday(this.db, memberId);
     const [lastBiggestIncome, lastBiggestExpense, monthly] = await Promise.all([
-      this.getBiggestEntry('credit', fullyActiveAccountIds, accounts),
-      this.getBiggestEntry('debit', fullyActiveAccountIds, accounts),
+      this.getBiggestEntry('credit', fullyActiveAccountIds, accounts, today),
+      this.getBiggestEntry('debit', fullyActiveAccountIds, accounts, today),
       monthlyNetByAccount(
         this.db,
         accounts.map((a) => a.id),
@@ -288,11 +289,12 @@ export class DashboardService {
     side: 'credit' | 'debit',
     fullyActiveAccountIds: string[],
     accounts: (typeof account.$inferSelect)[],
+    today: string,
   ): Promise<DashboardIndicator | null> {
     if (fullyActiveAccountIds.length === 0) {
       return null;
     }
-    const { start, end } = previousCalendarMonthRange();
+    const { start, end } = previousCalendarMonthRange(today);
     const column = operation[side];
 
     const [winner] = await this.db

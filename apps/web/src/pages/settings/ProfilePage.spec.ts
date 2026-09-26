@@ -32,7 +32,7 @@ type ApiResult = ReturnType<typeof jsonResult> | ReturnType<typeof errorResult>;
 // on why a fresh pinia is activated as soon as it's called).
 function mountWithSession(email: string, attachTo?: Element) {
   const plugins = withGlobalPlugins();
-  useSessionStore().setMember({ email, locale: 'en' });
+  useSessionStore().setMember({ email, locale: 'en', timeZone: 'UTC' });
   return mount(ProfilePage, { ...plugins, ...(attachTo ? { attachTo } : {}) });
 }
 

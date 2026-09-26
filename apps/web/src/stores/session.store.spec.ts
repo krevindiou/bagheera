@@ -26,14 +26,14 @@ describe('useSessionStore', () => {
   describe('setMember/clear', () => {
     it('marks the store authenticated once a member is set', () => {
       const store = useSessionStore();
-      store.setMember({ email: 'member@example.com', locale: 'en' });
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
       expect(store.isAuthenticated).toBe(true);
-      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en' });
+      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     });
 
     it('clears the member and authentication state', () => {
       const store = useSessionStore();
-      store.setMember({ email: 'member@example.com', locale: 'en' });
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
       store.clear();
       expect(store.member).toBeNull();
       expect(store.isAuthenticated).toBe(false);
@@ -43,7 +43,7 @@ describe('useSessionStore', () => {
       queryClient.setQueryData(['accounts'], [{ id: 'a1' }]);
       queryClient.setQueryData(['balance', 'a1'], { balance: 100 });
       const store = useSessionStore();
-      store.setMember({ email: 'member@example.com', locale: 'en' });
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
 
       store.clear();
 
@@ -54,9 +54,13 @@ describe('useSessionStore', () => {
   describe('setLocale', () => {
     it('updates the locale of an already-set member', () => {
       const store = useSessionStore();
-      store.setMember({ email: 'member@example.com', locale: 'en' });
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
       store.setLocale('fr');
-      expect(store.member).toEqual({ email: 'member@example.com', locale: 'fr' });
+      expect(store.member).toEqual({
+        email: 'member@example.com',
+        locale: 'fr',
+        timeZone: 'UTC',
+      });
     });
 
     it('is a no-op when signed out', () => {
@@ -66,16 +70,39 @@ describe('useSessionStore', () => {
     });
   });
 
+  describe('setTimeZone', () => {
+    it('updates the time zone of an already-set member', () => {
+      const store = useSessionStore();
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      store.setTimeZone('Europe/Paris');
+      expect(store.member).toEqual({
+        email: 'member@example.com',
+        locale: 'en',
+        timeZone: 'Europe/Paris',
+      });
+    });
+
+    it('is a no-op when signed out', () => {
+      const store = useSessionStore();
+      store.setTimeZone('Europe/Paris');
+      expect(store.member).toBeNull();
+    });
+  });
+
   describe('restore', () => {
     it('adopts the member returned by GET /auth/me', async () => {
       apiClient.GET.mockResolvedValueOnce({
-        data: { email: 'member@example.com', locale: 'fr' },
+        data: { email: 'member@example.com', locale: 'fr', timeZone: 'Europe/Paris' },
         error: undefined,
         response: new Response(null, { status: 200 }),
       });
       const store = useSessionStore();
       await store.restore();
-      expect(store.member).toEqual({ email: 'member@example.com', locale: 'fr' });
+      expect(store.member).toEqual({
+        email: 'member@example.com',
+        locale: 'fr',
+        timeZone: 'Europe/Paris',
+      });
       expect(store.restored).toBe(true);
     });
 
@@ -86,7 +113,7 @@ describe('useSessionStore', () => {
         response: new Response(null, { status: 401 }),
       });
       const store = useSessionStore();
-      store.setMember({ email: 'stale@example.com', locale: 'en' });
+      store.setMember({ email: 'stale@example.com', locale: 'en', timeZone: 'UTC' });
       await store.restore();
       expect(store.member).toBeNull();
       expect(store.restored).toBe(true);
@@ -102,7 +129,7 @@ describe('useSessionStore', () => {
 
     it('performs the round trip only once for concurrent callers', async () => {
       apiClient.GET.mockResolvedValueOnce({
-        data: { email: 'member@example.com', locale: 'en' },
+        data: { email: 'member@example.com', locale: 'en', timeZone: 'UTC' },
         error: undefined,
         response: new Response(null, { status: 200 }),
       });
@@ -113,7 +140,7 @@ describe('useSessionStore', () => {
       // actually matters is both settle and only one network call happens.
       await Promise.all([store.restore(), store.restore()]);
       expect(apiClient.GET).toHaveBeenCalledTimes(1);
-      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en' });
+      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     });
   });
 

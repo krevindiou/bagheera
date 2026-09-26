@@ -6,6 +6,8 @@ import type { Locale } from '../i18n/locales';
 export interface SessionMember {
   email: string;
   locale: Locale;
+  // IANA zone the member's "today" follows (see money.ts's today()).
+  timeZone: string;
 }
 
 export const useSessionStore = defineStore('session', {
@@ -33,6 +35,12 @@ export const useSessionStore = defineStore('session', {
         this.member = { ...this.member, locale };
       }
     },
+    // Same, after the settings page's own `POST /members/time-zone`.
+    setTimeZone(timeZone: string) {
+      if (this.member) {
+        this.member = { ...this.member, timeZone };
+      }
+    },
     // Sign-out and the 401 handler both land here. Dropping every cached
     // query too means whoever signs in next on this tab doesn't see the
     // previous member's accounts or balances while their own data loads.
@@ -48,7 +56,9 @@ export const useSessionStore = defineStore('session', {
     async fetchMember(): Promise<void> {
       try {
         const { data } = await apiClient.GET('/auth/me');
-        this.member = data ? { email: data.email, locale: data.locale } : null;
+        this.member = data
+          ? { email: data.email, locale: data.locale, timeZone: data.timeZone }
+          : null;
       } catch {
         this.member = null;
       } finally {

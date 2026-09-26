@@ -12,6 +12,7 @@ import {
   MinLength,
   ValidateBy,
 } from 'class-validator';
+import { isValidTimeZone } from './local-date';
 import { SUPPORTED_LOCALES } from './locale';
 import { isValueDate, MAX_VALUE_DATE, MIN_VALUE_DATE } from './value-date';
 
@@ -41,6 +42,20 @@ export function LocaleField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsIn(SUPPORTED_LOCALES)(target, propertyKey);
   };
+}
+
+/**
+ * An IANA time zone name (see common/local-date.ts's `isValidTimeZone`).
+ * Required by default; registration stacks its own `@IsOptional()`.
+ */
+export function TimeZoneField(): PropertyDecorator {
+  return ValidateBy({
+    name: 'isTimeZone',
+    validator: {
+      validate: (value: unknown) => isValidTimeZone(value),
+      defaultMessage: () => '$property must be a valid IANA time zone',
+    },
+  });
 }
 
 /**

@@ -1,4 +1,4 @@
-import { appTimeZone, localIsoDate } from './local-date';
+import { appTimeZone, isValidTimeZone, localIsoDate } from './local-date';
 
 describe('localIsoDate', () => {
   // 23:30 UTC on 31 Dec is already 1 Jan in Paris.
@@ -21,5 +21,24 @@ describe('localIsoDate', () => {
       if (previous === undefined) delete process.env.APP_TIMEZONE;
       else process.env.APP_TIMEZONE = previous;
     }
+  });
+});
+
+describe('isValidTimeZone', () => {
+  it.each(['Europe/Paris', 'UTC', 'America/Argentina/Buenos_Aires', 'Etc/GMT+12'])(
+    'accepts the IANA zone %s',
+    (zone) => {
+      expect(isValidTimeZone(zone)).toBe(true);
+    },
+  );
+
+  it.each([
+    ['an unknown zone', 'Mars/Base'],
+    ['an offset string', '+01:00'],
+    ['an empty string', ''],
+    ['an over-long name', `Europe/${'A'.repeat(64)}`],
+    ['a non-string', 42],
+  ])('rejects %s', (_label, zone) => {
+    expect(isValidTimeZone(zone)).toBe(false);
   });
 });

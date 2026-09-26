@@ -9,6 +9,7 @@ import { Public } from '../session/public.decorator';
 import { ConfirmEmailChangeDto } from './dto/confirm-email-change.dto';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateTimeZoneDto } from './dto/update-time-zone.dto';
 import { ProfileService } from './profile.service';
 
 @Controller('members')
@@ -40,6 +41,17 @@ export class ProfileController {
   ): Promise<MessageResponseDto> {
     await this.profile.updateLocale(memberId, dto);
     return { message: 'Language preference updated.' };
+  }
+
+  @Post('time-zone')
+  @HttpCode(200)
+  @RateLimit({ points: 10, durationSeconds: 60 })
+  async updateTimeZone(
+    @CurrentMember() memberId: MemberId,
+    @Body() dto: UpdateTimeZoneDto,
+  ): Promise<MessageResponseDto> {
+    await this.profile.updateTimeZone(memberId, dto);
+    return { message: 'Time zone updated.' };
   }
 
   // Public: reached from the confirmation link mailed to the new address,

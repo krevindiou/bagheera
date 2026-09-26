@@ -1,11 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import type { Worker } from 'bullmq';
 import type { Server } from 'http';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import request from 'supertest';
 import { SIGN_IN_CATCH_UP_BUDGET } from '../auth/scheduler-catch-up.service';
+import { localIsoDate } from '../common/local-date';
 import { toMinorUnits } from '../common/money';
-import { operation, scheduler } from '../db/schema';
+import { member, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   insertMemberWithCredential,
@@ -235,6 +236,24 @@ describe('scheduler occurrence generation', () => {
     const generated = await generatedFor([id]);
     expect(first + second).toBe(generated.length);
     expect(new Set(generated.map((row) => row.valueDate)).size).toBe(generated.length);
+  });
+
+  // UTC+14 and UTC-12 are 26 hours apart, so their calendar days never
+  // match: a scheduler starting on "today" in the first zone is always
+  // still in the future in the second.
+  it("generates up to the owning member's own today, not the server's", async () => {
+    const generation = app.get(SchedulerGenerationService);
+    const aheadToday = localIsoDate(new Date(), 'Pacific/Kiritimati');
+
+    async function generatedIn(timeZone: string): Promise<number> {
+      const { memberId, accountId } = await memberWithAccount();
+      await getDb(app).update(member).set({ timeZone }).where(eq(member.id, memberId));
+      const id = await insertScheduler(accountId, { valueDate: aheadToday });
+      return generation.runForScheduler(id);
+    }
+
+    expect(await generatedIn('Pacific/Kiritimati')).toBe(1);
+    expect(await generatedIn('Etc/GMT+12')).toBe(0);
   });
 
   it("shares one budget across all of a member's schedulers, saying when it ran out", async () => {

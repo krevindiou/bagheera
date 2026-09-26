@@ -15,8 +15,9 @@ export async function sendSignupEmail(
   email: string,
   country: string,
   locale: Locale = DEFAULT_LOCALE,
+  timeZone?: string,
 ): Promise<void> {
-  const token = buildSignupToken(deps.crypto, email, country, locale);
+  const token = buildSignupToken(deps.crypto, email, country, locale, timeZone);
   const appUrl = deps.config.getOrThrow<string>('APP_URL');
   const activationLink = `${appUrl}/${locale}/activate?key=${encodeURIComponent(token)}`;
   await deps.emailQueue.enqueue(registrationEmail(email, activationLink, locale));

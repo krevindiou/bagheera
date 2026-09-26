@@ -43,7 +43,7 @@ describe('router auth guard', () => {
 
   it('allows navigation once restore() resolves with an authenticated member', async () => {
     apiClient.GET.mockResolvedValueOnce({
-      data: { email: 'member@example.com', locale: 'en' },
+      data: { email: 'member@example.com', locale: 'en', timeZone: 'UTC' },
       error: undefined,
       response: new Response(null, { status: 200 }),
     });
@@ -53,7 +53,7 @@ describe('router auth guard', () => {
 
   it('skips the restore round trip once the session is already restored', async () => {
     const store = useSessionStore();
-    store.setMember({ email: 'member@example.com', locale: 'en' });
+    store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     store.restored = true;
     await router.push({ name: 'home' });
     expect(router.currentRoute.value.name).toBe('home');

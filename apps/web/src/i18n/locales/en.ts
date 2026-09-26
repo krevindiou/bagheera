@@ -296,6 +296,13 @@ export default {
         "If this email isn't already registered to another account, check it for a link to confirm the change.",
       genericError: 'Something went wrong. Please try again.',
     },
+    timeZone: {
+      label: 'Time zone',
+      hint: 'Decides what "today" is: the default date of a new operation, and when scheduled operations fall due.',
+      submit: 'Save time zone',
+      success: 'Time zone updated',
+      genericError: 'Something went wrong. Please try again.',
+    },
     passkeys: {
       title: 'Passkeys',
       intro:

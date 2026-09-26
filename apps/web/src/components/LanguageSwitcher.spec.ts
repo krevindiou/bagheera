@@ -73,7 +73,7 @@ describe('LanguageSwitcher', () => {
     // component tree.
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
     const session = useSessionStore();
-    session.setMember({ email: 'member@example.com', locale: 'en' });
+    session.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
 
     await wrapper.get('.lang-trigger').trigger('click');

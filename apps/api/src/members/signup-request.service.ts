@@ -43,6 +43,7 @@ export class SignupRequestService {
       request.email,
       request.country,
       request.locale,
+      request.timeZone,
     );
     await this.audit.record('signup_confirmation_issued', null, request.sourceAddress);
   }

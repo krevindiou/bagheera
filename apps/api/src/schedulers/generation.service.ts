@@ -2,9 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { localIsoDate } from '../common/local-date';
+import { effectiveTimeZone } from '../common/member-today';
 import { DRIZZLE } from '../db/db.constants';
 import type { Executor } from '../db/executor';
-import { account, bank, operation, scheduler } from '../db/schema';
+import { account, bank, member, operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
 
@@ -16,10 +17,6 @@ type BankRow = typeof bank.$inferSelect;
 
 function isFullyActive(acc: AccountRow, bnk: BankRow): boolean {
   return !acc.closed && !acc.deleted && !bnk.closed && !bnk.deleted;
-}
-
-function todayIsoDate(): string {
-  return localIsoDate();
 }
 
 @Injectable()
@@ -55,10 +52,11 @@ export class SchedulerGenerationService {
     // before reading anything, so the scheduler row below is current too.
     await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${schedulerId}, 0))`);
     const [chain] = await db
-      .select({ scheduler, account, bank })
+      .select({ scheduler, account, bank, timeZone: member.timeZone })
       .from(scheduler)
       .innerJoin(account, eq(scheduler.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
+      .innerJoin(member, eq(bank.memberId, member.id))
       .where(eq(scheduler.id, schedulerId));
     if (!chain || !chain.scheduler.active || !isFullyActive(chain.account, chain.bank)) {
       return 0;
@@ -84,7 +82,9 @@ export class SchedulerGenerationService {
       .orderBy(desc(operation.valueDate), desc(operation.id))
       .limit(1);
 
-    const today = todayIsoDate();
+    // The owning member's "today", so an occurrence due on their wall clock
+    // isn't held back (or generated early) by the server's zone.
+    const today = localIsoDate(new Date(), effectiveTimeZone(chain.timeZone));
     const horizon = row.limitDate !== null && row.limitDate < today ? row.limitDate : today;
 
     const dates = dueOccurrences({

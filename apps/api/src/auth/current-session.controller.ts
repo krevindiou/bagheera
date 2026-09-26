@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
+import { effectiveTimeZone } from '../common/member-today';
 import { member } from '../db/schema';
 import { Public } from '../session/public.decorator';
 import '../session/session-data';
@@ -29,7 +30,7 @@ export class CurrentSessionController {
     }
 
     const [row] = await this.db
-      .select({ email: member.email, locale: member.locale })
+      .select({ email: member.email, locale: member.locale, timeZone: member.timeZone })
       .from(member)
       .where(eq(member.id, memberId));
 
@@ -37,6 +38,6 @@ export class CurrentSessionController {
       throw new UnauthorizedException();
     }
 
-    return { email: row.email, locale: row.locale };
+    return { email: row.email, locale: row.locale, timeZone: effectiveTimeZone(row.timeZone) };
   }
 }

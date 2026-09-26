@@ -43,7 +43,7 @@ describe('AccountMenu', () => {
     // store must be grabbed after mount(), or this resolves a different
     // (pre-mount) instance than the one actually injected into the
     // component tree.
-    useSessionStore().setMember({ email: 'john@example.net', locale: 'en' });
+    useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
     expect(wrapper.get('.account-avatar').text()).toBe('JO');
@@ -53,7 +53,7 @@ describe('AccountMenu', () => {
 
   it('opens to show every supported locale and Logout, closes on a second click', async () => {
     const wrapper = mount(AccountMenu, withGlobalPlugins());
-    useSessionStore().setMember({ email: 'john@example.net', locale: 'en' });
+    useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
     const trigger = wrapper.get('.account-trigger');
 
     await trigger.trigger('click');
@@ -78,7 +78,7 @@ describe('AccountMenu', () => {
   it('switches locale, persists it server-side, and closes the menu', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(AccountMenu, withGlobalPlugins());
-    useSessionStore().setMember({ email: 'john@example.net', locale: 'en' });
+    useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
     await wrapper.get('.account-trigger').trigger('click');
@@ -93,7 +93,7 @@ describe('AccountMenu', () => {
 
   it('signs out: calls the API, clears the session, and returns to sign-in', async () => {
     const wrapper = mount(AccountMenu, withGlobalPlugins());
-    useSessionStore().setMember({ email: 'john@example.net', locale: 'en' });
+    useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
     await wrapper.get('.account-trigger').trigger('click');

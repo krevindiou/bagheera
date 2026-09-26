@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { isValidTimeZone } from '../common/local-date';
 import { DEFAULT_LOCALE } from '../common/locale';
 import { EmailQueueService } from '../email/email-queue.service';
 import { RegisterDto } from './dto/register.dto';
@@ -22,6 +23,7 @@ export class RegistrationService {
       email: dto.email,
       country: dto.country.toUpperCase(),
       locale: dto.locale ?? DEFAULT_LOCALE,
+      timeZone: isValidTimeZone(dto.timeZone) ? dto.timeZone : undefined,
       sourceAddress,
     });
   }

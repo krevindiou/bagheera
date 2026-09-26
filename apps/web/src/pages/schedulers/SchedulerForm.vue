@@ -7,6 +7,7 @@ import { errorMessage } from '../../api/errorMessage';
 import FormDrawer from '../../components/FormDrawer.vue';
 import FormField from '../../components/FormField.vue';
 import { useToast } from '../../composables/useToast';
+import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from '../operations/entryForm';
 import OperationFields from '../operations/OperationFields.vue';
@@ -29,11 +30,12 @@ const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t, locale } = useI18n();
+const session = useSessionStore();
 
 function initialValues(): SchedulerForm {
   const s = props.scheduler;
   return {
-    ...entryFormValues(s),
+    ...entryFormValues(s, session.member?.timeZone),
     limitDate: s?.limitDate ?? undefined,
     frequencyUnit: s?.frequencyUnit ?? 'month',
     frequencyValue: s?.frequencyValue ?? 1,

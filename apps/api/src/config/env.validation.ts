@@ -1,3 +1,5 @@
+import { isValidTimeZone } from '../common/local-date';
+
 const REQUIRED = [
   'DATABASE_URL',
   'VALKEY_URL',
@@ -32,12 +34,8 @@ export function validateEnv(env: Record<string, unknown>): Record<string, unknow
   }
 
   const timeZone = env.APP_TIMEZONE;
-  if (typeof timeZone === 'string' && timeZone !== '') {
-    try {
-      new Intl.DateTimeFormat('en-CA', { timeZone });
-    } catch {
-      problems.push('APP_TIMEZONE must be a valid IANA time zone');
-    }
+  if (typeof timeZone === 'string' && timeZone !== '' && !isValidTimeZone(timeZone)) {
+    problems.push('APP_TIMEZONE must be a valid IANA time zone');
   }
 
   if (problems.length > 0) {

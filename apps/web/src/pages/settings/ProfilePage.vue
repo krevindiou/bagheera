@@ -10,6 +10,7 @@ import { useToast } from '../../composables/useToast';
 import { profileSchema, type ProfileForm } from './settings.schemas';
 import SettingsTabs from './SettingsTabs.vue';
 import FormField from '../../components/FormField.vue';
+import TimeZoneForm from './TimeZoneForm.vue';
 
 const session = useSessionStore();
 const { push: toast } = useToast();
@@ -74,5 +75,7 @@ const onSubmit = handleSubmit(async (values) => {
         {{ $t('settings.profile.submit') }}
       </button>
     </form>
+
+    <TimeZoneForm />
   </div>
 </template>

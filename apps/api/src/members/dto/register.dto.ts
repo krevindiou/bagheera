@@ -1,5 +1,6 @@
-import { IsOptional, Matches } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { EmailField, LocaleField } from '../../common/dto-fields';
+import { TIME_ZONE_MAX_LENGTH } from '../../common/local-date';
 import type { Locale } from '../../common/locale';
 
 export class RegisterDto {
@@ -15,4 +16,13 @@ export class RegisterDto {
   @IsOptional()
   @LocaleField()
   locale?: Locale;
+
+  // The registering browser's IANA time zone, likewise absent for older
+  // clients: the member then follows APP_TIMEZONE (see member.time_zone).
+  // Not validated as a zone here: one this server doesn't know is dropped
+  // by RegistrationService rather than failing the whole sign-up.
+  @IsOptional()
+  @IsString()
+  @MaxLength(TIME_ZONE_MAX_LENGTH)
+  timeZone?: string;
 }

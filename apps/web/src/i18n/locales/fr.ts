@@ -303,6 +303,13 @@ export default {
         "Si cet email n'est pas déjà enregistré sur un autre compte, vérifiez-le pour trouver un lien de confirmation du changement.",
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
+    timeZone: {
+      label: 'Fuseau horaire',
+      hint: "Détermine ce qu'est « aujourd'hui » : la date par défaut d'une nouvelle opération, et l'échéance des opérations programmées.",
+      submit: 'Enregistrer le fuseau horaire',
+      success: 'Fuseau horaire mis à jour',
+      genericError: "Une erreur s'est produite. Veuillez réessayer.",
+    },
     passkeys: {
       title: 'Clés d’accès',
       intro:

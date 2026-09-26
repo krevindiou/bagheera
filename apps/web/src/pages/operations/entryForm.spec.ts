@@ -31,6 +31,10 @@ describe('entryFormValues', () => {
     });
   });
 
+  it('dates a new entry today in the given time zone', () => {
+    expect(entryFormValues(null, 'Pacific/Kiritimati').valueDate).toBe(today('Pacific/Kiritimati'));
+  });
+
   it('turns a stored debit into a debit form with its amount in major units', () => {
     expect(entryFormValues(row)).toEqual({
       type: 'debit',

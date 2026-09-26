@@ -32,12 +32,16 @@ function currentLocale(): string {
 }
 
 // Today's date as the stored `YYYY-MM-DD` string, the default value date of
-// a new operation or scheduler.
-export function today(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
+// a new operation or scheduler: in the member's own time zone when given
+// (the same one the API's "today" follows), else the browser's.
+export function today(timeZone?: string): string {
+  // The en-CA locale formats dates as YYYY-MM-DD.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 }
 
 // Money inputs display the account currency symbol as an input add-on.

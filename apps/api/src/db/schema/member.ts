@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, pgTable, timestamp, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import { TIME_ZONE_MAX_LENGTH } from '../../common/local-date';
 import { DEFAULT_LOCALE } from '../../common/locale';
 import { localeEnum } from './enums';
 import { uuidPk } from './id';
@@ -19,6 +20,11 @@ export const member = pgTable(
     // from whatever locale was active in the browser then, changeable
     // afterwards from settings (see ProfileController's `locale` route).
     locale: localeEnum('locale').notNull().default(DEFAULT_LOCALE),
+    // IANA zone deciding the member's "today" (see member-today.ts). Set at
+    // registration from the browser's zone, changeable from settings. Null
+    // for members who predate it or whose browser sent none: they follow
+    // APP_TIMEZONE.
+    timeZone: varchar('time_zone', { length: TIME_ZONE_MAX_LENGTH }),
     loggedAt: timestamp('logged_at', { withTimezone: true }),
     // Set while an email change is awaiting confirmation at the new
     // address; null the rest of the time. `email` itself is only ever

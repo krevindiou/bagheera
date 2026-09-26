@@ -16,6 +16,25 @@ describe('signup-token', () => {
     });
   });
 
+  it('round-trips the time zone when one is given', () => {
+    const token = buildSignupToken(crypto, 'member@example.com', 'FR', 'en', 'Europe/Paris');
+    expect(parseSignupToken(crypto, token)?.timeZone).toBe('Europe/Paris');
+  });
+
+  it('returns null for an invalid time zone', () => {
+    const forged = crypto.encrypt(
+      JSON.stringify({
+        type: 'signup',
+        email: 'member@example.com',
+        country: 'FR',
+        locale: 'en',
+        timeZone: 'Mars/Base',
+        exp: Date.now() + 60_000,
+      }),
+    );
+    expect(parseSignupToken(crypto, forged)).toBeNull();
+  });
+
   it('returns null for an expired token', () => {
     const realNow = Date.now;
     Date.now = () => 0;

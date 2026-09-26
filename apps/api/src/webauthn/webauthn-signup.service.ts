@@ -126,6 +126,7 @@ export class WebauthnSignupService {
             email: payload.email,
             country: payload.country,
             locale: payload.locale,
+            timeZone: payload.timeZone ?? null,
             loggedAt: new Date(),
           })
           .returning({ id: member.id });

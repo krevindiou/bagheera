@@ -6,6 +6,7 @@ import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
+import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from './entryForm';
 import OperationFields from './OperationFields.vue';
@@ -27,10 +28,11 @@ const emit = defineEmits<{ saved: []; savedAndNew: []; cancel: [] }>();
 
 const { push: toast } = useToast();
 const { t } = useI18n();
+const session = useSessionStore();
 
 const { handleSubmit, isSubmitting, resetForm } = useForm<OperationForm>({
   validationSchema: toTypedSchema(operationSchema),
-  initialValues: entryFormValues(props.operation),
+  initialValues: entryFormValues(props.operation, session.member?.timeZone),
 });
 
 async function submitForm(submitted: OperationForm): Promise<boolean> {
@@ -62,7 +64,7 @@ const onSubmit = handleSubmit(async (submitted) => {
 // form for the same account, instead of closing.
 const onSubmitAndNew = handleSubmit(async (submitted) => {
   if (await submitForm(submitted)) {
-    resetForm({ values: entryFormValues(null) });
+    resetForm({ values: entryFormValues(null, session.member?.timeZone) });
     emit('savedAndNew');
   }
 });

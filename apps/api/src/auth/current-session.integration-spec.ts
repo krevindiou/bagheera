@@ -17,16 +17,21 @@ describe('GET /auth/me', () => {
     await app.close();
   });
 
-  it("returns the signed-in member's email and locale", async () => {
+  it("returns the signed-in member's email, locale and time zone", async () => {
     const { agent, email } = await seedSignedInMember(app);
     const res = await agent.get('/auth/me').expect(200);
-    expect(res.body).toEqual({ email, locale: 'en' });
+    // No time zone on file: APP_TIMEZONE, unset in tests, so UTC.
+    expect(res.body).toEqual({ email, locale: 'en', timeZone: 'UTC' });
   });
 
-  it('returns a non-default locale as-is', async () => {
-    const { agent, email } = await seedSignedInMember(app, { locale: 'fr' });
+  it('returns a non-default locale and time zone as-is', async () => {
+    const { agent, email, memberId } = await seedSignedInMember(app, { locale: 'fr' });
+    await getDb(app)
+      .update(member)
+      .set({ timeZone: 'Europe/Paris' })
+      .where(eq(member.id, memberId));
     const res = await agent.get('/auth/me').expect(200);
-    expect(res.body).toEqual({ email, locale: 'fr' });
+    expect(res.body).toEqual({ email, locale: 'fr', timeZone: 'Europe/Paris' });
   });
 
   it('rejects an unauthenticated request', async () => {

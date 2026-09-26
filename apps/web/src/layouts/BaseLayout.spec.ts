@@ -61,7 +61,7 @@ describe('BaseLayout', () => {
 
   it('shows the sidebar once authenticated, with the brand and 4 nav items', async () => {
     wrapper = mount(BaseLayout, withGlobalPlugins(router));
-    useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
     // Includes the "B" logo-mark glyph alongside the "Bagheera" wordmark.
@@ -76,7 +76,7 @@ describe('BaseLayout', () => {
     wrapper = mount(BaseLayout, withGlobalPlugins(router));
     expect(wrapper.findAll('.toast-text').map((el) => el.text())).toEqual(['Saved']);
 
-    useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findAll('.toast-container')).toHaveLength(1);
@@ -99,7 +99,7 @@ describe('BaseLayout', () => {
       // "Discarded invalid param(s)" warning for no reason.
       await router.push({ name: routeName, params });
       wrapper = mount(BaseLayout, withGlobalPlugins(router));
-      useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
+      useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
       await wrapper.vm.$nextTick();
 
       const active = wrapper.findAll('.side-nav-item.active').map((el) => el.text());
@@ -109,7 +109,7 @@ describe('BaseLayout', () => {
 
   it('signs out: calls the API, clears the session, and returns to sign-in', async () => {
     wrapper = mount(BaseLayout, withGlobalPlugins(router));
-    useSessionStore().setMember({ email: 'member@example.com', locale: 'en' });
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
     // Sign-out lives behind the account menu trigger now (AccountMenu.vue

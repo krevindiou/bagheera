@@ -1,3 +1,4 @@
+import { isValidTimeZone } from '../common/local-date';
 import { Locale, SUPPORTED_LOCALES } from '../common/locale';
 import { CryptoService } from '../security/crypto.service';
 
@@ -17,6 +18,8 @@ export interface SignupTokenPayload {
   email: string;
   country: string;
   locale: Locale;
+  /** Absent when the registering browser sent none. */
+  timeZone?: string;
   /** Epoch milliseconds. */
   exp: number;
 }
@@ -26,12 +29,14 @@ export function buildSignupToken(
   email: string,
   country: string,
   locale: Locale,
+  timeZone?: string,
 ): string {
   const payload: SignupTokenPayload = {
     type: 'signup',
     email,
     country,
     locale,
+    timeZone,
     exp: Date.now() + SIGNUP_TOKEN_TTL_MS,
   };
   return crypto.encrypt(JSON.stringify(payload));
@@ -78,6 +83,7 @@ function isSignupTokenPayload(value: unknown): value is SignupTokenPayload {
     typeof candidate.country === 'string' &&
     typeof candidate.locale === 'string' &&
     (SUPPORTED_LOCALES as readonly string[]).includes(candidate.locale) &&
+    (candidate.timeZone === undefined || isValidTimeZone(candidate.timeZone)) &&
     typeof candidate.exp === 'number'
   );
 }

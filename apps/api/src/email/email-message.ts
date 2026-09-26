@@ -11,6 +11,8 @@ export interface SignupRequest {
   email: string;
   country: string;
   locale: Locale;
+  /** The browser's IANA time zone, when it sent one. */
+  timeZone?: string;
   /** For the audit row, recorded once the worker knows what it sent. */
   sourceAddress: string;
 }

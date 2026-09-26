@@ -116,4 +116,15 @@ describe('today', () => {
 
     vi.useRealTimers();
   });
+
+  it('follows the given time zone over the browser one', () => {
+    vi.useFakeTimers();
+    // 23:30 UTC on 31 Dec is already 1 Jan in Paris, still 31 Dec in New York.
+    vi.setSystemTime(new Date('2025-12-31T23:30:00Z'));
+
+    expect(today('Europe/Paris')).toBe('2026-01-01');
+    expect(today('America/New_York')).toBe('2025-12-31');
+
+    vi.useRealTimers();
+  });
 });

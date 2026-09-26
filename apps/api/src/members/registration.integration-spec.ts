@@ -85,6 +85,30 @@ describe('registration', () => {
       expect(fakeEmailQueue.enqueueSignupRequest).not.toHaveBeenCalled();
     });
 
+    it("queues the browser's time zone along with the request", async () => {
+      const email = uniqueEmail();
+
+      const res = await register({ email, country: 'FR', timeZone: 'Europe/Paris' });
+
+      expect(res.status).toBe(201);
+
+      expect(fakeEmailQueue.enqueueSignupRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ email, timeZone: 'Europe/Paris' }),
+      );
+    });
+
+    // A browser zone this server doesn't know must not block sign-up.
+    it('drops an unknown time zone instead of rejecting the request', async () => {
+      const email = uniqueEmail();
+
+      const res = await register({ email, country: 'FR', timeZone: 'Mars/Base' });
+
+      expect(res.status).toBe(201);
+      const [[queued]] = fakeEmailQueue.enqueueSignupRequest.mock.calls as [[SignupRequest]];
+      expect(queued).toMatchObject({ email });
+      expect(queued.timeZone).toBeUndefined();
+    });
+
     it('rejects an invalid country code', async () => {
       const res = await register({ email: uniqueEmail(), country: 'FRA' });
       expect(res.status).toBe(400);

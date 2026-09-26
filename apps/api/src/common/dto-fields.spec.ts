@@ -1,6 +1,7 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { UpdateTimeZoneDto } from '../members/dto/update-time-zone.dto';
 import {
   AccountNameField,
   AmountField,
@@ -193,5 +194,20 @@ describe('ValueDateField', () => {
     const dto = plainToInstance(ValueDateFieldHost, {});
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('isValueDate');
+  });
+});
+
+describe('TimeZoneField', () => {
+  it('accepts an IANA time zone', async () => {
+    const dto = plainToInstance(UpdateTimeZoneDto, { timeZone: 'Europe/Paris' });
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('rejects an unknown zone with its own message', async () => {
+    const dto = plainToInstance(UpdateTimeZoneDto, { timeZone: 'Mars/Base' });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toEqual({
+      isTimeZone: 'timeZone must be a valid IANA time zone',
+    });
   });
 });

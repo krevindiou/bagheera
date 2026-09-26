@@ -43,6 +43,13 @@
       "when": 1790367148263,
       "tag": "0005_add_query_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790424584016,
+      "tag": "0006_add_member_time_zone",
+      "breakpoints": true
     }
   ]
 }

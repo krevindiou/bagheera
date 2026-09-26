@@ -17,6 +17,7 @@ import type { MemberId } from '../security/ids';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateTimeZoneDto } from './dto/update-time-zone.dto';
 import { findMemberByEmail } from './find-member-by-email';
 import { raceSafeUniqueEmail } from './race-safe-unique-email';
 
@@ -159,5 +160,13 @@ export class ProfileService {
    */
   async updateLocale(memberId: MemberId, dto: UpdateLocaleDto): Promise<void> {
     await this.db.update(member).set({ locale: dto.locale }).where(eq(member.id, memberId));
+  }
+
+  /**
+   * Updates the time zone deciding the member's "today" — a preference
+   * like the locale, so no step-up either.
+   */
+  async updateTimeZone(memberId: MemberId, dto: UpdateTimeZoneDto): Promise<void> {
+    await this.db.update(member).set({ timeZone: dto.timeZone }).where(eq(member.id, memberId));
   }
 }
