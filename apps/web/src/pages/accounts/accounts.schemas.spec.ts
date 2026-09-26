@@ -67,8 +67,8 @@ describe('createAccountSchema', () => {
     if (result.success) expect(result.data.initialBalance).toBe(42.5);
   });
 
-  it("rejects a currency code that isn't exactly 3 chars", () => {
-    expect(createAccountSchema.safeParse({ ...base, currency: 'US' }).success).toBe(false);
+  it.each(['US', 'ZZZ', 'usd'])('rejects the unknown currency code %j', (currency) => {
+    expect(createAccountSchema.safeParse({ ...base, currency }).success).toBe(false);
   });
 
   it('rejects a missing bankId', () => {

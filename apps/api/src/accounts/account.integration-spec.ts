@@ -153,6 +153,17 @@ describe('accounts', () => {
       expect(res.status).toBe(404);
     });
 
+    it.each(['ZZZ', 'eur', 'EURO', ''])(
+      'rejects the unknown currency code %j',
+      async (currency) => {
+        const { mutate } = await seedSignedInMember(app);
+        const bankId = await createBank(mutate);
+
+        const res = await mutate('post', '/accounts', { bankId, name: 'Bad', currency });
+        expect(res.status).toBe(400);
+      },
+    );
+
     it('rejects creating an account under a closed bank', async () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
