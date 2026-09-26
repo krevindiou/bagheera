@@ -2,11 +2,10 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { startRegistration } from '@simplewebauthn/browser';
-import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import { completeStepUp } from '../../api/stepUp';
+import { runRegistration } from '../../api/webauthn';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import IconButton from '../../components/IconButton.vue';
@@ -51,31 +50,13 @@ async function addPasskey() {
       return;
     }
 
-    const { data, response } = await apiClient.POST('/webauthn/registration/options');
-    if (!response.ok || !data) {
-      toast(t('settings.passkeys.genericError'), 'error');
-      return;
-    }
-
-    let attestation;
-    try {
-      attestation = await startRegistration({
-        optionsJSON: data as unknown as PublicKeyCredentialCreationOptionsJSON,
-      });
-    } catch {
-      // The platform prompt was cancelled/dismissed, or this browser/device
-      // doesn't support it — not a server error, just abandon the attempt.
-      return;
-    }
-
-    const verifyRes = await apiClient.POST('/webauthn/registration/verify', {
-      body: {
-        response: attestation as unknown as Record<string, never>,
-        deviceName: deviceName.value.trim() || undefined,
-      },
+    const result = await runRegistration('/webauthn/registration', {
+      verifyBody: { deviceName: deviceName.value.trim() || undefined },
     });
-    if (!verifyRes.response.ok) {
-      toast(t('settings.passkeys.genericError'), 'error');
+    if (!result.ok) {
+      // A cancelled platform prompt is not a server error — just abandon
+      // the attempt.
+      if (result.reason !== 'cancelled') toast(t('settings.passkeys.genericError'), 'error');
       return;
     }
 

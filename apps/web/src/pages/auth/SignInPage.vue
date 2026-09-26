@@ -2,9 +2,8 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { browserSupportsWebAuthn, startAuthentication } from '@simplewebauthn/browser';
-import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
-import { apiClient } from '../../api/client';
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
+import { runAuthentication } from '../../api/webauthn';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
 import AuthLayout from '../../layouts/AuthLayout.vue';
@@ -27,35 +26,12 @@ async function onSubmit() {
   banner.value = null;
   submitting.value = true;
   try {
-    const { data, response } = await apiClient.POST('/webauthn/authentication/options');
-    if (response.status === 429) {
-      banner.value = 'rate-limited';
-      return;
-    }
-    if (!response.ok || !data) {
-      banner.value = 'invalid-credentials';
-      return;
-    }
-
-    let assertion;
-    try {
-      assertion = await startAuthentication({
-        optionsJSON: data as unknown as PublicKeyCredentialRequestOptionsJSON,
-      });
-    } catch {
-      // The platform prompt was cancelled/dismissed — not a server error,
-      // just abandon the attempt.
-      return;
-    }
-
-    // See PasskeysPage.vue's comment: the generated client can't type this
-    // body beyond an opaque object, since Swagger has no visibility into
-    // @simplewebauthn/server's WebAuthn-spec types.
-    const { response: verifyResponse } = await apiClient.POST('/webauthn/authentication/verify', {
-      body: { response: assertion as unknown as Record<string, never> },
-    });
-    if (!verifyResponse.ok) {
-      banner.value = 'invalid-credentials';
+    const result = await runAuthentication('/webauthn/authentication');
+    if (!result.ok) {
+      // A cancelled platform prompt is not a server error — just abandon
+      // the attempt.
+      if (result.reason === 'rate-limited') banner.value = 'rate-limited';
+      else if (result.reason === 'rejected') banner.value = 'invalid-credentials';
       return;
     }
 
