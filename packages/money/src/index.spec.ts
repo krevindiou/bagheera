@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   AMOUNT_CEILING,
   currencyFractionDigits,
@@ -65,6 +65,23 @@ describe('currencyFractionDigits', () => {
 
   it('falls back to 2 for an unknown code', () => {
     expect(currencyFractionDigits('NOTACODE')).toBe(2);
+  });
+
+  describe('when the runtime omits maximumFractionDigits', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('falls back to 2', () => {
+      vi.stubGlobal('Intl', {
+        NumberFormat: class {
+          resolvedOptions() {
+            return {};
+          }
+        },
+      });
+      expect(currencyFractionDigits('EUR')).toBe(2);
+    });
   });
 });
 

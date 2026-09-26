@@ -6,10 +6,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov', 'json-summary'],
       // Branches only — same convention as apps/web's vite.config.ts and
-      // apps/api's jest coverageThreshold. Currently 100% (this package's
-      // two functions have zero conditionals), so this is a pure
-      // regression tripwire for whenever real branching logic lands here,
-      // not a target being chased.
+      // apps/api's jest coverageThreshold.
       thresholds: { branches: 90 },
     },
   },
