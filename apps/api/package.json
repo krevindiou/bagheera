@@ -37,7 +37,7 @@
     "connect-redis": "^10.0.0",
     "cookie-parser": "^1.4.7",
     "csrf-csrf": "^4.0.3",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.4",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "express-session": "^1.19.0",
