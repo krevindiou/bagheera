@@ -4,8 +4,10 @@
   "testEnvironment": "node",
   "testRegex": ".integration-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.ts$": "ts-jest",
+    "^.+\\.js$": "<rootDir>/../test/esm-to-cjs-transform.cjs"
   },
+  "transformIgnorePatterns": ["/node_modules/(?!.*(@nestjs|nestjs-pino))"],
   "setupFiles": ["dotenv/config"],
   "setupFilesAfterEnv": ["<rootDir>/../test/reset-rate-limits.ts"],
   "globalSetup": "<rootDir>/../test/integration-global-setup.ts",
