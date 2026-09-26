@@ -10,7 +10,11 @@ import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from './entryForm';
 import OperationFields from './OperationFields.vue';
-import { operationSchema, type OperationForm } from './operations.schemas';
+import {
+  operationSchema,
+  type OperationForm,
+  type OperationFormValues,
+} from './operations.schemas';
 import type { Category, Operation, PaymentMethod } from './operations.types';
 
 const props = withDefaults(
@@ -30,7 +34,7 @@ const { push: toast } = useToast();
 const { t } = useI18n();
 const session = useSessionStore();
 
-const { handleSubmit, isSubmitting, resetForm } = useForm<OperationForm>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<OperationFormValues, OperationForm>({
   validationSchema: toTypedSchema(operationSchema),
   initialValues: entryFormValues(props.operation, session.member?.timeZone),
 });

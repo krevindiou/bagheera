@@ -45,8 +45,9 @@ const { value: amount, errorMessage: amountError } = useField<number | string | 
   'amount',
 );
 const { value: categoryId } = useField<string | undefined>('categoryId');
-const { value: paymentMethodId, errorMessage: paymentMethodError } =
-  useField<string>('paymentMethodId');
+const { value: paymentMethodId, errorMessage: paymentMethodError } = useField<string | undefined>(
+  'paymentMethodId',
+);
 const { value: transferAccountId, errorMessage: transferAccountError } = useField<
   string | undefined
 >('transferAccountId');
@@ -69,8 +70,10 @@ const { transferTargets, amountCurrencySymbol } = useTransferTargets(
   () => props.banks,
   () => props.storedTransferAccountId,
 );
-const showTransferAccount = computed(() =>
-  TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
+const showTransferAccount = computed(
+  () =>
+    paymentMethodId.value !== undefined &&
+    TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
 );
 
 // An amount error fires for two different reasons — zero/negative, or over

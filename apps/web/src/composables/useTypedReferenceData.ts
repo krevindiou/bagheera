@@ -25,7 +25,7 @@ export function useTypedReferenceData(
   paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {
     categoryId: Ref<string | undefined>;
-    paymentMethodId: Ref<string>;
+    paymentMethodId: Ref<string | undefined>;
   },
 ) {
   const filteredCategories = computed(() => categories().filter((c) => c.type === type.value));
@@ -41,7 +41,7 @@ export function useTypedReferenceData(
         categoryId.value = undefined;
       }
       if (!filteredPaymentMethods.value.some((pm) => pm.id === paymentMethodId.value)) {
-        paymentMethodId.value = undefined as unknown as string;
+        paymentMethodId.value = undefined;
       }
     });
   }

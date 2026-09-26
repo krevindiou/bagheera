@@ -1,5 +1,6 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
+import type { FormValues } from '../operations/operations.schemas';
 import { TRANSFER_PAYMENT_METHOD_IDS } from '../operations/operations.types';
 
 const optionalId = z.preprocess(
@@ -41,3 +42,4 @@ export const schedulerSchema = z
     { message: 'transferAccountRequired', path: ['transferAccountId'] },
   );
 export type SchedulerForm = z.infer<typeof schedulerSchema>;
+export type SchedulerFormValues = FormValues<SchedulerForm>;

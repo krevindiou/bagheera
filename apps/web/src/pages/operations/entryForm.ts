@@ -1,5 +1,5 @@
 import { toDisplayAmount, today } from './money';
-import type { OperationForm } from './operations.schemas';
+import type { OperationForm, OperationFormValues } from './operations.schemas';
 import { TRANSFER_PAYMENT_METHOD_IDS } from './operations.types';
 
 // What an operation and a scheduler share: the row as the API returns it.
@@ -18,14 +18,14 @@ interface EntryRow {
 // The operation-like form's starting values: the stored row when editing,
 // a blank debit dated today (in `timeZone`, see money.ts's today())
 // otherwise.
-export function entryFormValues(entry: EntryRow | null, timeZone?: string): OperationForm {
+export function entryFormValues(entry: EntryRow | null, timeZone?: string): OperationFormValues {
   if (!entry) {
     return {
       type: 'debit',
       thirdParty: '',
-      amount: undefined as unknown as number,
+      amount: undefined,
       categoryId: undefined,
-      paymentMethodId: undefined as unknown as string,
+      paymentMethodId: undefined,
       transferAccountId: undefined,
       valueDate: today(timeZone),
       notes: '',

@@ -25,3 +25,12 @@ export const operationSchema = z.object({
   reconciled: z.boolean().optional(),
 });
 export type OperationForm = z.infer<typeof operationSchema>;
+
+// The form's state as opposed to its validated submit payload (`OperationForm`
+// / `SchedulerForm`, the schema's output): amount and payment method start
+// empty, so they can be `undefined` until validation has passed.
+export type FormValues<T extends { amount: number; paymentMethodId: string }> = Omit<
+  T,
+  'amount' | 'paymentMethodId'
+> & { amount: number | undefined; paymentMethodId: string | undefined };
+export type OperationFormValues = FormValues<OperationForm>;

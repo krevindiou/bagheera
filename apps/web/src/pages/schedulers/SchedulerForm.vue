@@ -12,7 +12,11 @@ import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from '../operations/entryForm';
 import OperationFields from '../operations/OperationFields.vue';
 import type { Category, PaymentMethod } from '../operations/operations.types';
-import { schedulerSchema, type SchedulerForm } from './schedulers.schemas';
+import {
+  schedulerSchema,
+  type SchedulerForm,
+  type SchedulerFormValues,
+} from './schedulers.schemas';
 import type { Scheduler } from './schedulers.types';
 
 const props = withDefaults(
@@ -32,7 +36,7 @@ const { push: toast } = useToast();
 const { t, locale } = useI18n();
 const session = useSessionStore();
 
-function initialValues(): SchedulerForm {
+function initialValues(): SchedulerFormValues {
   const s = props.scheduler;
   return {
     ...entryFormValues(s, session.member?.timeZone),
@@ -45,7 +49,10 @@ function initialValues(): SchedulerForm {
 
 // The fields shared with the operation form live in OperationFields; only
 // the scheduler's own (frequency, limit date, active) are bound here.
-const { defineField, handleSubmit, errors, isSubmitting } = useForm<SchedulerForm>({
+const { defineField, handleSubmit, errors, isSubmitting } = useForm<
+  SchedulerFormValues,
+  SchedulerForm
+>({
   validationSchema: toTypedSchema(schedulerSchema),
   initialValues: initialValues(),
 });
