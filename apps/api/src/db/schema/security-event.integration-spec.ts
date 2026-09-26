@@ -13,7 +13,7 @@ function insertSecurityEvent(db: Db, overrides: Partial<typeof securityEvent.$in
   return db
     .insert(securityEvent)
     .values({
-      eventType: 'sign_in_success',
+      eventType: 'webauthn_sign_in_success',
       sourceAddress: '127.0.0.1',
       ...overrides,
     })

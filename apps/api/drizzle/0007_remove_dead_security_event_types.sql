@@ -1,0 +1,5 @@
+DELETE FROM "security_event" WHERE "event_type" IN ('sign_in_success', 'sign_in_failure', 'sign_in_throttled', 'sign_in_inactive', 'password_recovery_requested', 'password_recovery_completed', 'password_changed', 'activation_issued', 'activation_used');--> statement-breakpoint
+ALTER TABLE "security_event" ALTER COLUMN "event_type" SET DATA TYPE text;--> statement-breakpoint
+DROP TYPE "public"."security_event_type";--> statement-breakpoint
+CREATE TYPE "public"."security_event_type" AS ENUM('email_change_requested', 'email_changed', 'operation_batch_deleted', 'operation_batch_reconciled', 'scheduler_batch_deleted', 'report_batch_deleted', 'bank_closed', 'bank_deleted', 'account_closed', 'account_deleted', 'webauthn_credential_registered', 'webauthn_credential_removed', 'webauthn_sign_in_success', 'webauthn_sign_in_failure', 'signup_confirmation_issued', 'passkey_signup_completed', 'step_up_verified');--> statement-breakpoint
+ALTER TABLE "security_event" ALTER COLUMN "event_type" SET DATA TYPE "public"."security_event_type" USING "event_type"::"public"."security_event_type";

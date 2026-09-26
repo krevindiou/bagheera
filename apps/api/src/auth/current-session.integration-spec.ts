@@ -43,7 +43,7 @@ describe('GET /auth/me', () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);
 
-    // sign-in leaves a sign_in_success security_event row referencing this
+    // sign-in leaves a webauthn_sign_in_success security_event row referencing this
     // member (see db/schema/security-event.integration-spec.ts's own FK
     // test) — clear it first, or the delete below hits that real
     // constraint instead of exercising what this test is actually about.

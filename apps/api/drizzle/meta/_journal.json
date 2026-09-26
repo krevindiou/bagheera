@@ -50,6 +50,13 @@
       "when": 1790424584016,
       "tag": "0006_add_member_time_zone",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790451496997,
+      "tag": "0007_remove_dead_security_event_types",
+      "breakpoints": true
     }
   ]
 }
