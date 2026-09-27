@@ -172,6 +172,16 @@ services:
       - |
         until curl -sf http://api:3000/health >/dev/null; do sleep 2; done
         until curl -sf http://localhost:5173/ >/dev/null; do sleep 2; done
+        # `.npmrc`'s confirm-modules-purge=false doesn't cover this: pnpm's
+        # pre-script deps-status-check (which fires here whenever the
+        # lockfile changed since these volumes' node_modules were last
+        # installed — e.g. any apps/api-only dependency change, since it's
+        # one shared lockfile) only skips its interactive TTY prompt when
+        # CI is set, and this service deliberately leaves CI unset for
+        # `pnpm e2e` itself (see the environment: block above — playwright
+        # reads the same var for its own reporter choice). Scope CI=true to
+        # only this one install so it never reaches that second read.
+        CI=true pnpm install --frozen-lockfile --filter web...
         pnpm e2e
 
 volumes:
