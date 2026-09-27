@@ -1,28 +1,29 @@
 import { BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import { fakeArgumentsHost, fakeRequest, fakeResponse } from '../../test-support/fake-http-context';
+import { vi, type Mock, type MockInstance } from 'vitest';
 
 // @sentry/node's named exports aren't spy-able in place (frozen/read-only
 // bindings) — a full module mock sidesteps that instead of fighting it.
-jest.mock('@sentry/node');
+vi.mock('@sentry/node');
 import { Sentry } from '../../logging/sentry';
 
 describe('GlobalExceptionFilter', () => {
   const filter = new GlobalExceptionFilter();
   // Kept as its own variable (rather than re-reading Logger.prototype.error
-  // in each assertion) so assertions read off a plain jest.SpyInstance,
+  // in each assertion) so assertions read off a plain MockInstance,
   // not a reference extracted off the real Logger class — the latter trips
   // @typescript-eslint/unbound-method, a false positive for jest matchers.
-  let errorSpy: jest.SpyInstance;
+  let errorSpy: MockInstance;
 
   beforeEach(() => {
-    errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
-    (Sentry.captureException as jest.Mock).mockReturnValue('event-id');
+    errorSpy = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    (Sentry.captureException as Mock).mockReturnValue('event-id');
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
-    (Sentry.captureException as jest.Mock).mockClear();
+    vi.restoreAllMocks();
+    (Sentry.captureException as Mock).mockClear();
   });
 
   it("uses an HttpException's string response as the message", async () => {

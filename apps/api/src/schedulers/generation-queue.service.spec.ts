@@ -1,5 +1,6 @@
 import type { Queue } from 'bullmq';
 import { GenerationJob, GenerationQueueService } from './generation-queue.service';
+import { vi } from 'vitest';
 
 const JOB_OPTIONS = {
   attempts: 3,
@@ -9,7 +10,7 @@ const JOB_OPTIONS = {
 };
 
 describe('GenerationQueueService', () => {
-  const add = jest.fn().mockResolvedValue(undefined);
+  const add = vi.fn().mockResolvedValue(undefined);
   const service = new GenerationQueueService({ add } as unknown as Queue<GenerationJob>);
 
   beforeEach(() => add.mockClear());

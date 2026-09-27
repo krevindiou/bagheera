@@ -5,19 +5,26 @@ import { reportFinalJobFailure } from '../common/report-job-failure';
 import type { SignupRequestService } from '../members/signup-request.service';
 import type { EmailMessage, SignupRequest } from './email-message';
 import { EmailWorker } from './email.worker';
+import { vi } from 'vitest';
 
 // The real Worker would connect to Valkey and start polling — capture the
 // processor it's handed instead, and drive it directly. (Prefixed `mock` so
-// jest.mock's hoisted factory may reference it.)
+// vi.mock's hoisted factory may reference it.)
 type Processor = (job: Job<EmailMessage | SignupRequest>) => Promise<void>;
-const mockWorker = { on: jest.fn(), close: jest.fn().mockResolvedValue(undefined) };
+const mockWorker = { on: vi.fn(), close: vi.fn().mockResolvedValue(undefined) };
 let mockProcessor: Processor | undefined;
-jest.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: jest.fn() }));
-jest.mock('bullmq', () => ({
-  Worker: jest.fn().mockImplementation((_queue: string, processor: Processor) => {
+vi.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: vi.fn() }));
+vi.mock('bullmq', () => ({
+  Worker: vi.fn().mockImplementation(function Worker(_queue: string, processor: Processor) {
     mockProcessor = processor;
     return mockWorker;
   }),
+  // Unused by this spec directly, but SWC's emitted decorator metadata for
+  // EmailQueueService's constructor (Queue<...>) reads this named export
+  // the moment email-queue.service.ts loads (transitively, via
+  // signup-request.service.ts) — vi.mock rejects reads of exports the
+  // factory doesn't provide.
+  Queue: class Queue {},
 }));
 
 function job(name: string, data: EmailMessage | SignupRequest): Job<EmailMessage | SignupRequest> {
@@ -25,12 +32,12 @@ function job(name: string, data: EmailMessage | SignupRequest): Job<EmailMessage
 }
 
 describe('EmailWorker', () => {
-  const provider = { send: jest.fn().mockResolvedValue(undefined) };
-  const signupRequests = { handle: jest.fn().mockResolvedValue(undefined) };
-  const connection = { disconnect: jest.fn() };
+  const provider = { send: vi.fn().mockResolvedValue(undefined) };
+  const signupRequests = { handle: vi.fn().mockResolvedValue(undefined) };
+  const connection = { disconnect: vi.fn() };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     new EmailWorker(
       connection as unknown as IORedis,
       provider,
@@ -62,7 +69,7 @@ describe('EmailWorker', () => {
   });
 
   it('logs a job that failed', () => {
-    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
     const [event, listener] = mockWorker.on.mock.calls[0] as [
       string,
       (job: { id: string }, err: Error) => void,

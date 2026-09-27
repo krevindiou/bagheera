@@ -1,12 +1,13 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { localIsoDate } from './local-date';
 import { effectiveTimeZone, memberToday } from './member-today';
+import { vi } from 'vitest';
 
 // Resolves the `select … from … where` chain to the given rows.
 function dbReturning(rows: { timeZone: string | null }[]): NodePgDatabase {
-  const where = jest.fn().mockResolvedValue(rows);
-  const from = jest.fn().mockReturnValue({ where });
-  return { select: jest.fn().mockReturnValue({ from }) } as unknown as NodePgDatabase;
+  const where = vi.fn().mockResolvedValue(rows);
+  const from = vi.fn().mockReturnValue({ where });
+  return { select: vi.fn().mockReturnValue({ from }) } as unknown as NodePgDatabase;
 }
 
 describe('effectiveTimeZone', () => {

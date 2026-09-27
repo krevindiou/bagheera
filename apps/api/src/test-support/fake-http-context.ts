@@ -1,11 +1,12 @@
 import type { ArgumentsHost, ExecutionContext } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { vi, type Mock } from 'vitest';
 
 /**
  * Shared fakes for guard/filter/middleware unit specs — these all take a
  * slice of the real Express `Request`/`Response` plus (for guards) a Nest
  * `ExecutionContext`/`ArgumentsHost`, and hand-rolling that shape per spec
- * file just repeats the same few `jest.fn()`s. Built for the "mocked DB"
+ * file just repeats the same few `vi.fn()`s. Built for the "mocked DB"
  * unit-test style (see CLAUDE.md): no real Nest bootstrap, just enough
  * shape for the code under test to read.
  */
@@ -27,18 +28,18 @@ export function fakeRequest(overrides: Partial<Request> = {}): Request {
  * Express `Response` — that type's `status`/`json` use old-style method
  * syntax, which trips `@typescript-eslint/unbound-method` the moment a spec
  * extracts `res.status`/`res.json` into `expect(...)` (a false positive:
- * jest's matchers never call the method with a foreign `this`). `status()`
+ * vitest's matchers never call the method with a foreign `this`). `status()`
  * is chainable (returns itself) like the real one.
  */
 export interface FakeResponse {
-  status: jest.Mock;
-  json: jest.Mock;
+  status: Mock;
+  json: Mock;
 }
 
 export function fakeResponse(): FakeResponse {
   const res: FakeResponse = {
-    status: jest.fn(),
-    json: jest.fn(),
+    status: vi.fn(),
+    json: vi.fn(),
   };
   res.status.mockReturnValue(res);
   return res;

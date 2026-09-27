@@ -1,10 +1,11 @@
 import type { Request, Response } from 'express';
 import { apiResponseHeaders } from './api-response-headers';
+import { vi } from 'vitest';
 
 describe('apiResponseHeaders', () => {
   it('keeps every API response out of search indexes and out of any cache', () => {
-    const setHeader = jest.fn();
-    const next = jest.fn();
+    const setHeader = vi.fn();
+    const next = vi.fn();
 
     apiResponseHeaders({} as Request, { setHeader } as unknown as Response, next);
 

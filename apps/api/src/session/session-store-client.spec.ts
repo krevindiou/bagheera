@@ -1,14 +1,15 @@
 import type IORedis from 'ioredis';
 import { sessionStoreClient } from './session-store-client';
+import { vi } from 'vitest';
 
 function fakeClient() {
   return {
-    get: jest.fn().mockResolvedValue('v'),
-    set: jest.fn().mockResolvedValue('OK'),
-    expire: jest.fn().mockResolvedValue(1),
-    del: jest.fn().mockResolvedValue(2),
-    mget: jest.fn().mockResolvedValue(['a', null]),
-    scanStream: jest.fn().mockReturnValue('stream'),
+    get: vi.fn().mockResolvedValue('v'),
+    set: vi.fn().mockResolvedValue('OK'),
+    expire: vi.fn().mockResolvedValue(1),
+    del: vi.fn().mockResolvedValue(2),
+    mget: vi.fn().mockResolvedValue(['a', null]),
+    scanStream: vi.fn().mockReturnValue('stream'),
   };
 }
 

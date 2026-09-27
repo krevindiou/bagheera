@@ -2,16 +2,17 @@ import { Logger } from '@nestjs/common';
 import type { GenerationQueueService } from '../schedulers/generation-queue.service';
 import type { SchedulerGenerationService } from '../schedulers/generation.service';
 import { SchedulerCatchUpService, SIGN_IN_CATCH_UP_BUDGET } from './scheduler-catch-up.service';
+import { vi } from 'vitest';
 
 describe('SchedulerCatchUpService', () => {
   function setup(behind: boolean | Error) {
     const generation = {
       catchUpMember:
         behind instanceof Error
-          ? jest.fn().mockRejectedValue(behind)
-          : jest.fn().mockResolvedValue(behind),
+          ? vi.fn().mockRejectedValue(behind)
+          : vi.fn().mockResolvedValue(behind),
     };
-    const queue = { enqueueMember: jest.fn().mockResolvedValue(undefined) };
+    const queue = { enqueueMember: vi.fn().mockResolvedValue(undefined) };
     const service = new SchedulerCatchUpService(
       generation as unknown as SchedulerGenerationService,
       queue as unknown as GenerationQueueService,
@@ -34,7 +35,7 @@ describe('SchedulerCatchUpService', () => {
 
   // The member is already signed in by the time this runs.
   it('never fails sign-in: a catch-up that errors is left to the queue', async () => {
-    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     const { service, queue } = setup(new Error('canceling statement due to statement timeout'));
 
     await expect(service.catchUp('m1')).resolves.toBeUndefined();

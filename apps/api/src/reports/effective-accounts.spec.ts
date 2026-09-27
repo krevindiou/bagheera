@@ -1,14 +1,15 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { effectiveAccounts } from './effective-accounts';
+import { vi } from 'vitest';
 
 // Both query shapes effectiveAccounts issues end in a terminal `.where(...)`,
 // reached through either `.from().where()` or `.from().innerJoin()...where()`
 // — a self-returning chain covers both without caring which path was taken.
 function chain(result: unknown[]) {
   const query = {
-    from: jest.fn(),
-    innerJoin: jest.fn(),
-    where: jest.fn().mockResolvedValue(result),
+    from: vi.fn(),
+    innerJoin: vi.fn(),
+    where: vi.fn().mockResolvedValue(result),
   };
   query.from.mockReturnValue(query);
   query.innerJoin.mockReturnValue(query);
@@ -16,10 +17,7 @@ function chain(result: unknown[]) {
 }
 
 function fakeDb(rawLinks: { accountId: string }[], accounts: { id: string; currency: string }[]) {
-  const select = jest
-    .fn()
-    .mockReturnValueOnce(chain(rawLinks))
-    .mockReturnValueOnce(chain(accounts));
+  const select = vi.fn().mockReturnValueOnce(chain(rawLinks)).mockReturnValueOnce(chain(accounts));
   return { select } as unknown as NodePgDatabase;
 }
 

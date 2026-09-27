@@ -6,6 +6,7 @@ import fr from '../email/i18n/fr';
 import type { AuditService } from '../security/audit.service';
 import { testCryptoService } from '../test-support/test-crypto-service';
 import { SignupRequestService } from './signup-request.service';
+import { vi } from 'vitest';
 
 const REQUEST: SignupRequest = {
   email: 'someone@example.test',
@@ -16,16 +17,16 @@ const REQUEST: SignupRequest = {
 
 function setup(existingRows: unknown[]) {
   const db = {
-    select: jest.fn().mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(existingRows),
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(existingRows),
       }),
     }),
   } as unknown as NodePgDatabase;
   const emailQueue = {
-    enqueue: jest.fn<Promise<void>, [EmailMessage]>().mockResolvedValue(undefined),
+    enqueue: vi.fn<(message: EmailMessage) => Promise<void>>().mockResolvedValue(undefined),
   };
-  const audit = { record: jest.fn().mockResolvedValue(undefined) };
+  const audit = { record: vi.fn().mockResolvedValue(undefined) };
   const config = { getOrThrow: () => 'https://app.example' } as unknown as ConfigService;
   const handler = new SignupRequestService(
     db,

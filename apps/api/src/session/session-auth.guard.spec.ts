@@ -2,10 +2,11 @@ import { UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SessionAuthGuard } from './session-auth.guard';
 import { fakeExecutionContext, fakeRequest } from '../test-support/fake-http-context';
+import { vi } from 'vitest';
 
 function fakeReflector(isPublic: boolean | undefined): Reflector {
   return {
-    getAllAndOverride: jest.fn().mockReturnValue(isPublic),
+    getAllAndOverride: vi.fn().mockReturnValue(isPublic),
   } as unknown as Reflector;
 }
 

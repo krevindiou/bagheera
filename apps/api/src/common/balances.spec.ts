@@ -1,10 +1,11 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount, ZERO_BALANCE } from './balances';
+import { vi } from 'vitest';
 
 function dbReturning(rows: unknown[]) {
-  const groupBy = jest.fn().mockResolvedValue(rows);
+  const groupBy = vi.fn().mockResolvedValue(rows);
   const db = {
-    select: jest.fn().mockReturnValue({
+    select: vi.fn().mockReturnValue({
       from: () => ({ where: () => ({ groupBy }) }),
     }),
   };

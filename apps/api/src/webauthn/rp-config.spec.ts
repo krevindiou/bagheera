@@ -1,9 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { rpConfig } from './rp-config';
+import { vi } from 'vitest';
 
 function configWith(values: Record<string, string>): ConfigService {
   return {
-    getOrThrow: jest.fn((key: string) => {
+    getOrThrow: vi.fn((key: string) => {
       if (!(key in values)) {
         throw new Error(`config key "${key}" not set`);
       }

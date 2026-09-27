@@ -1,11 +1,12 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { findMemberByEmail } from './find-member-by-email';
+import { vi } from 'vitest';
 
 function fakeDb(rows: unknown[]): NodePgDatabase {
   return {
-    select: jest.fn().mockReturnValue({
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockResolvedValue(rows),
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue(rows),
       }),
     }),
   } as unknown as NodePgDatabase;

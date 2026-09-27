@@ -146,6 +146,9 @@ importers:
       '@types/supertest':
         specifier: ^7.2.1
         version: 7.2.1
+      '@vitest/coverage-v8':
+        specifier: ^5.0.2
+        version: 5.0.2(vitest@5.0.2)
       babel-plugin-transform-import-meta:
         specifier: ^3.0.0
         version: 3.0.0(@babel/core@7.29.7(supports-color@10.2.2))

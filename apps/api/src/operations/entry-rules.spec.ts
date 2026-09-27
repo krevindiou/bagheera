@@ -1,6 +1,7 @@
 import { BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { vi } from 'vitest';
 import {
   amountFields,
   requireFullyActive,
@@ -27,7 +28,7 @@ describe('requireFullyActive', () => {
 
 describe('validateTypedRefs', () => {
   function dbWith(...results: unknown[][]) {
-    const where = jest.fn();
+    const where = vi.fn();
     results.forEach((rows) => where.mockResolvedValueOnce(rows));
     return { select: () => ({ from: () => ({ where }) }) } as unknown as NodePgDatabase;
   }

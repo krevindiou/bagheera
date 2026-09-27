@@ -1,3 +1,4 @@
+import { vi, type Mock } from 'vitest';
 /* eslint-disable @typescript-eslint/unbound-method -- jest matchers on mocked client methods */
 import { Reflector } from '@nestjs/core';
 import type IORedis from 'ioredis';
@@ -10,30 +11,32 @@ import { fakeExecutionContext, fakeRequest } from '../test-support/fake-http-con
 // one mocked consume() — the guard caches at most one limiter per
 // points/duration pair on itself, so tests only ever need to control this
 // single function. (Prefixed `mock` so the babel-plugin-jest-hoist
-// exception lets jest.mock's hoisted factory reference it.)
+// exception lets vi.mock's hoisted factory reference it.)
 // Typed explicitly so `.mock.calls` (read in a couple of tests below) comes
 // out as `[string][]` rather than `any[][]`.
-const mockConsume = jest.fn<Promise<void>, [string]>();
-jest.mock('rate-limiter-flexible', () => ({
-  RateLimiterRedis: jest.fn().mockImplementation(() => ({ consume: mockConsume })),
+const mockConsume = vi.fn<(key: string) => Promise<void>>();
+vi.mock('rate-limiter-flexible', () => ({
+  RateLimiterRedis: vi.fn().mockImplementation(function RateLimiterRedis() {
+    return { consume: mockConsume };
+  }),
 }));
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 
 function fakeValkeyClient(overrides: Partial<IORedis> = {}): IORedis {
   return {
-    exists: jest.fn().mockResolvedValue(0),
-    incr: jest.fn().mockResolvedValue(1),
-    expire: jest.fn().mockResolvedValue(1),
-    set: jest.fn().mockResolvedValue('OK'),
+    exists: vi.fn().mockResolvedValue(0),
+    incr: vi.fn().mockResolvedValue(1),
+    expire: vi.fn().mockResolvedValue(1),
+    set: vi.fn().mockResolvedValue('OK'),
     status: 'ready',
-    quit: jest.fn().mockResolvedValue(undefined),
+    quit: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   } as unknown as IORedis;
 }
 
 function fakeReflector(opts: { skip?: boolean; options?: RateLimitOptions } = {}): Reflector {
   return {
-    get: jest.fn((key: string | symbol) => {
+    get: vi.fn((key: string | symbol) => {
       if (key === SKIP_RATE_LIMIT_KEY) return opts.skip;
       if (key === RATE_LIMIT_OPTIONS) return opts.options;
       return undefined;
@@ -43,7 +46,7 @@ function fakeReflector(opts: { skip?: boolean; options?: RateLimitOptions } = {}
 
 beforeEach(() => {
   mockConsume.mockReset().mockResolvedValue(undefined);
-  (RateLimiterRedis as jest.Mock).mockClear();
+  (RateLimiterRedis as Mock).mockClear();
 });
 
 describe('RateLimitGuard', () => {
@@ -83,7 +86,7 @@ describe('RateLimitGuard', () => {
 
   it('lets a request through without consuming anything when appliesTo returns false', async () => {
     const valkey = fakeValkeyClient();
-    const appliesTo = jest.fn().mockReturnValue(false);
+    const appliesTo = vi.fn().mockReturnValue(false);
     const options: RateLimitOptions = { points: 5, durationSeconds: 60, appliesTo };
     const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
     const req = fakeRequest({ method: 'GET' });
@@ -216,7 +219,7 @@ describe('RateLimitGuard', () => {
   });
 
   it('short-circuits to 429 when an existing block key is present, without consuming the limiter', async () => {
-    const valkey = fakeValkeyClient({ exists: jest.fn().mockResolvedValue(1) });
+    const valkey = fakeValkeyClient({ exists: vi.fn().mockResolvedValue(1) });
     const guard = new RateLimitGuard(valkey, fakeReflector());
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
     await expect(guard.canActivate(ctx)).rejects.toThrow('Too many requests');
@@ -232,7 +235,7 @@ describe('RateLimitGuard', () => {
   });
 
   it('locks out and returns 429 when the limiter budget is exhausted (a non-Error rejection)', async () => {
-    const valkey = fakeValkeyClient({ incr: jest.fn().mockResolvedValue(1) });
+    const valkey = fakeValkeyClient({ incr: vi.fn().mockResolvedValue(1) });
     mockConsume.mockRejectedValue({ msBeforeNext: 1000 });
     const guard = new RateLimitGuard(valkey, fakeReflector());
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
@@ -242,7 +245,7 @@ describe('RateLimitGuard', () => {
   });
 
   it('doubles the block duration with each further strike', async () => {
-    const valkey = fakeValkeyClient({ incr: jest.fn().mockResolvedValue(3) });
+    const valkey = fakeValkeyClient({ incr: vi.fn().mockResolvedValue(3) });
     mockConsume.mockRejectedValue({ msBeforeNext: 1000 });
     const guard = new RateLimitGuard(valkey, fakeReflector());
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
@@ -252,7 +255,7 @@ describe('RateLimitGuard', () => {
   });
 
   it('caps the block duration at MAX_BLOCK_SECONDS regardless of strike count', async () => {
-    const valkey = fakeValkeyClient({ incr: jest.fn().mockResolvedValue(20) });
+    const valkey = fakeValkeyClient({ incr: vi.fn().mockResolvedValue(20) });
     mockConsume.mockRejectedValue({ msBeforeNext: 1000 });
     const guard = new RateLimitGuard(valkey, fakeReflector());
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
@@ -268,7 +271,7 @@ describe('RateLimitGuard', () => {
     function routeB() {}
     await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeA));
     await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeB));
-    expect((RateLimiterRedis as jest.Mock).mock.calls).toHaveLength(1);
+    expect((RateLimiterRedis as Mock).mock.calls).toHaveLength(1);
   });
 
   describe('onModuleDestroy', () => {

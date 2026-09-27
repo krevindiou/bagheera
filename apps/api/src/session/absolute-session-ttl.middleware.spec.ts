@@ -2,6 +2,7 @@ import type { Response } from 'express';
 import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { SESSION_MAX_AGE_MS } from './session.constants';
 import { fakeRequest, fakeResponse } from '../test-support/fake-http-context';
+import { vi } from 'vitest';
 
 // absoluteSessionTtl takes a real Express Response — this middleware never
 // reads anything off it, but the signature still needs satisfying.
@@ -16,7 +17,7 @@ function res(): Response {
 
 describe('absoluteSessionTtl', () => {
   it('calls next() untouched when the request has no session', () => {
-    const next = jest.fn();
+    const next = vi.fn();
     absoluteSessionTtl(fakeRequest({ session: undefined as never }), res(), next);
     expect(next).toHaveBeenCalledWith();
   });
@@ -25,7 +26,7 @@ describe('absoluteSessionTtl', () => {
   // store it and send a cookie for every anonymous request.
   it('leaves a session generated for this request unstamped and calls next()', () => {
     const req = fakeRequest({ session: { cookie: {} } as never });
-    const next = jest.fn();
+    const next = vi.fn();
     absoluteSessionTtl(req, res(), next);
     expect(req.session.createdAt).toBeUndefined();
     expect(next).toHaveBeenCalledWith();
@@ -33,7 +34,7 @@ describe('absoluteSessionTtl', () => {
 
   it('stamps createdAt the first time a stored session comes back and calls next()', () => {
     const req = fakeRequest({ session: { cookie: {}, csrfIssued: true } as never });
-    const next = jest.fn();
+    const next = vi.fn();
     const before = Date.now();
     absoluteSessionTtl(req, res(), next);
     expect(req.session.createdAt).toBeGreaterThanOrEqual(before);
@@ -44,9 +45,9 @@ describe('absoluteSessionTtl', () => {
     const req = fakeRequest({
       session: { createdAt: Date.now() - 1000 } as never,
     });
-    const destroy = jest.fn();
+    const destroy = vi.fn();
     (req.session as unknown as { destroy: typeof destroy }).destroy = destroy;
-    const next = jest.fn();
+    const next = vi.fn();
     absoluteSessionTtl(req, res(), next);
     expect(destroy).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith();
@@ -54,8 +55,8 @@ describe('absoluteSessionTtl', () => {
 
   it('destroys the session and calls next() once the absolute TTL has passed', () => {
     const createdAt = Date.now() - SESSION_MAX_AGE_MS - 1000;
-    const next = jest.fn();
-    const destroy = jest.fn((cb: () => void) => cb());
+    const next = vi.fn();
+    const destroy = vi.fn((cb: () => void) => cb());
     const req = fakeRequest({ session: { createdAt, destroy } as never });
     absoluteSessionTtl(req, res(), next);
     expect(destroy).toHaveBeenCalled();

@@ -1,8 +1,9 @@
 import type { Job } from 'bullmq';
 import { Sentry } from '../logging/sentry';
 import { reportFinalJobFailure } from './report-job-failure';
+import { vi } from 'vitest';
 
-jest.mock('../logging/sentry', () => ({ Sentry: { captureException: jest.fn() } }));
+vi.mock('../logging/sentry', () => ({ Sentry: { captureException: vi.fn() } }));
 
 function job(attemptsMade: number, attempts?: number): Job {
   return { id: '9', name: 'send', queueName: 'email', attemptsMade, opts: { attempts } } as Job;
@@ -11,7 +12,7 @@ function job(attemptsMade: number, attempts?: number): Job {
 describe('reportFinalJobFailure', () => {
   const err = new Error('SMTP down');
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => vi.clearAllMocks());
 
   it('stays quiet while retries remain', () => {
     reportFinalJobFailure(job(1, 3), err);

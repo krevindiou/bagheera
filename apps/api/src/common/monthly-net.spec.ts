@@ -1,10 +1,11 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits } from './money';
 import { monthlyNetByAccount, toSynthesisChartRow } from './monthly-net';
+import { vi } from 'vitest';
 
 describe('monthlyNetByAccount', () => {
   it("doesn't query at all for no accounts", async () => {
-    const select = jest.fn();
+    const select = vi.fn();
     const db = { select } as unknown as NodePgDatabase;
     await expect(monthlyNetByAccount(db, [])).resolves.toEqual([]);
     expect(select).not.toHaveBeenCalled();
@@ -12,13 +13,13 @@ describe('monthlyNetByAccount', () => {
 
   // Postgres returns sum() over bigint as a numeric string.
   it("turns each row's summed net into a number", async () => {
-    const groupBy = jest
+    const groupBy = vi
       .fn()
       .mockResolvedValue([{ accountId: 'a1', month: '2025-01-01', net: '-200000' }]);
     const db = {
-      select: jest.fn().mockReturnValue({
-        from: jest.fn().mockReturnValue({
-          where: jest.fn().mockReturnValue({ groupBy }),
+      select: vi.fn().mockReturnValue({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ groupBy }),
         }),
       }),
     } as unknown as NodePgDatabase;

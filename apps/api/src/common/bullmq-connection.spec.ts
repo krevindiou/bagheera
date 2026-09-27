@@ -1,8 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import IORedis from 'ioredis';
 import { createBullmqConnection } from './bullmq-connection';
+import { vi } from 'vitest';
 
-jest.mock('ioredis', () => jest.fn());
+vi.mock('ioredis', () => ({ default: vi.fn() }));
 
 function configWith(values: Record<string, string | undefined>): ConfigService {
   return {
