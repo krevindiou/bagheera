@@ -11,7 +11,7 @@ import { Reflector } from '@nestjs/core';
 import { createHash } from 'crypto';
 import { Request } from 'express';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
 import '../session/session-data';
 import {
   DEFAULT_RATE_LIMIT,
@@ -20,6 +20,7 @@ import {
   RATE_LIMIT_OPTIONS,
   RateLimitOptions,
 } from './rate-limit.constants';
+import { closeValkeyClient } from '../common/valkey-client';
 import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 
@@ -68,7 +69,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
 
   constructor(
     @Inject(RATE_LIMIT_VALKEY_CLIENT)
-    private readonly valkeyClient: RedisClientType,
+    private readonly valkeyClient: IORedis,
     private readonly reflector: Reflector,
   ) {}
 
@@ -77,9 +78,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     // module even when its provider is global, so this hook can run more
     // than once against the same underlying client — guard against a
     // double quit() on an already-closed connection.
-    if (this.valkeyClient.isOpen) {
-      await this.valkeyClient.quit();
-    }
+    await closeValkeyClient(this.valkeyClient);
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -193,9 +192,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
       await this.valkeyClient.expire(strikeKey, STRIKE_RESET_SECONDS);
     }
     const blockSeconds = Math.min(MAX_BLOCK_SECONDS, durationSeconds * 2 ** (strikes - 1));
-    await this.valkeyClient.set(`rl:block:${dimensionKey}`, '1', {
-      EX: blockSeconds,
-    });
+    await this.valkeyClient.set(`rl:block:${dimensionKey}`, '1', 'EX', blockSeconds);
   }
 
   private tooManyRequests(): HttpException {
@@ -208,7 +205,6 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     if (!limiter) {
       limiter = new RateLimiterRedis({
         storeClient: this.valkeyClient,
-        useRedisPackage: true,
         keyPrefix: 'rl',
         points,
         duration: durationSeconds,

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
 import { ilikeContains } from '../common/like-pattern';
 import { toMinorUnits } from '../common/money';
 import { PAGE_SIZE } from '../common/pagination';
@@ -28,7 +28,7 @@ const AMOUNT_OPERATORS = {
 export class OperationSearchService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
-    @Inject(VALKEY_CLIENT) private readonly valkey: RedisClientType,
+    @Inject(VALKEY_CLIENT) private readonly valkey: IORedis,
     private readonly ownership: OwnershipService,
   ) {}
 
@@ -41,9 +41,12 @@ export class OperationSearchService {
     accountId: string,
     criteria: SearchCriteria,
   ): Promise<void> {
-    await this.valkey.set(this.key(memberId, accountId), JSON.stringify(criteria), {
-      EX: SESSION_IDLE_TTL_SECONDS,
-    });
+    await this.valkey.set(
+      this.key(memberId, accountId),
+      JSON.stringify(criteria),
+      'EX',
+      SESSION_IDLE_TTL_SECONDS,
+    );
   }
 
   private async recall(memberId: string, accountId: string): Promise<SearchCriteria> {

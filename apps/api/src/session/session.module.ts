@@ -4,13 +4,15 @@ import { APP_GUARD } from '@nestjs/core';
 import { RedisStore } from 'connect-redis';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
+import { closeValkeyClient } from '../common/valkey-client';
 import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { buildCsrf } from './csrf';
 import { CsrfTokenController } from './csrf-token.controller';
 import { SessionAuthGuard } from './session-auth.guard';
 import { SessionRotationService } from './session-rotation.service';
 import { SESSION_COOKIE_NAME, SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from './session.constants';
+import { sessionStoreClient } from './session-store-client';
 import { valkeyClientProvider } from './valkey-client.provider';
 
 @Module({
@@ -25,19 +27,17 @@ import { valkeyClientProvider } from './valkey-client.provider';
 })
 export class SessionModule implements NestModule, OnModuleDestroy {
   constructor(
-    @Inject(VALKEY_CLIENT) private readonly valkeyClient: RedisClientType,
+    @Inject(VALKEY_CLIENT) private readonly valkeyClient: IORedis,
     private readonly config: ConfigService,
   ) {}
 
   async onModuleDestroy(): Promise<void> {
-    if (this.valkeyClient.isOpen) {
-      await this.valkeyClient.quit();
-    }
+    await closeValkeyClient(this.valkeyClient);
   }
 
   configure(consumer: MiddlewareConsumer): void {
     const store = new RedisStore({
-      client: this.valkeyClient,
+      client: sessionStoreClient(this.valkeyClient),
       prefix: 'sess:',
       ttl: SESSION_IDLE_TTL_SECONDS,
     });

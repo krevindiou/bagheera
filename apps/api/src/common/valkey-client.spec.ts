@@ -1,12 +1,12 @@
 import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { createClient } from 'redis';
-import { createValkeyClient } from './valkey-client';
+import IORedis from 'ioredis';
+import { closeValkeyClient, createValkeyClient } from './valkey-client';
 
-jest.mock('redis', () => ({ createClient: jest.fn() }));
+jest.mock('ioredis', () => jest.fn());
 
 describe('createValkeyClient', () => {
-  const client = { on: jest.fn(), connect: jest.fn().mockResolvedValue(undefined) };
+  const client = { on: jest.fn() };
   const config = {
     getOrThrow: jest.fn().mockReturnValue('redis://valkey:6379'),
     get: jest.fn().mockReturnValue('secret'),
@@ -14,22 +14,44 @@ describe('createValkeyClient', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (createClient as jest.Mock).mockReturnValue(client);
+    (IORedis as unknown as jest.Mock).mockReturnValue(client);
   });
 
-  it('connects with the configured URL and password', async () => {
-    await expect(createValkeyClient(config, new Logger('t'))).resolves.toBe(client);
-    expect(createClient).toHaveBeenCalledWith({ url: 'redis://valkey:6379', password: 'secret' });
-    expect(client.connect).toHaveBeenCalled();
+  it('connects with the configured URL and password', () => {
+    expect(createValkeyClient(config, new Logger('t'))).toBe(client);
+    expect(IORedis).toHaveBeenCalledWith('redis://valkey:6379', { password: 'secret' });
   });
 
-  it('logs client errors', async () => {
+  it('passes extra options through', () => {
+    createValkeyClient(config, undefined, { maxRetriesPerRequest: null });
+    expect(IORedis).toHaveBeenCalledWith('redis://valkey:6379', {
+      password: 'secret',
+      maxRetriesPerRequest: null,
+    });
+    expect(client.on).not.toHaveBeenCalled();
+  });
+
+  it('logs client errors', () => {
     const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-    await createValkeyClient(config, new Logger('t'));
+    createValkeyClient(config, new Logger('t'));
     const [event, listener] = client.on.mock.calls[0] as [string, (err: Error) => void];
     listener(new Error('boom'));
     expect(event).toBe('error');
     expect(error).toHaveBeenCalledWith('Valkey client error', expect.any(Error));
     error.mockRestore();
+  });
+});
+
+describe('closeValkeyClient', () => {
+  it('quits an open client', async () => {
+    const quit = jest.fn().mockResolvedValue('OK');
+    await closeValkeyClient({ status: 'ready', quit } as unknown as IORedis);
+    expect(quit).toHaveBeenCalled();
+  });
+
+  it('does not quit an already-closed client', async () => {
+    const quit = jest.fn();
+    await closeValkeyClient({ status: 'end', quit } as unknown as IORedis);
+    expect(quit).not.toHaveBeenCalled();
   });
 });

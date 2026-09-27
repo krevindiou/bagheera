@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
 import {
   csrfTokenFor,
   insertMemberWithCredential,
@@ -18,10 +18,18 @@ interface StoredSession {
   [key: string]: unknown;
 }
 
-async function countSessions(valkey: RedisClientType): Promise<number> {
+/** Every session key in Valkey (scanStream yields batches of keys). */
+async function* sessionKeys(valkey: IORedis): AsyncGenerator<string> {
+  for await (const batch of valkey.scanStream({ match: 'sess:*' })) {
+    yield* batch as string[];
+  }
+}
+
+async function countSessions(valkey: IORedis): Promise<number> {
   let count = 0;
-  for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
-    count += Array.isArray(batch) ? batch.length : 1;
+  for await (const key of sessionKeys(valkey)) {
+    void key;
+    count += 1;
   }
   return count;
 }
@@ -38,16 +46,13 @@ function sessionKeyFrom(res: request.Response): string {
   return `sess:${value.slice(2, value.lastIndexOf('.'))}`;
 }
 
-async function findSessionKey(valkey: RedisClientType, memberId: string): Promise<string> {
-  for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
-    const keys = Array.isArray(batch) ? batch : [batch];
-    for (const key of keys) {
-      const raw = await valkey.get(key);
-      if (!raw) continue;
-      const data = JSON.parse(raw) as StoredSession;
-      if (data.memberId === memberId) {
-        return key;
-      }
+async function findSessionKey(valkey: IORedis, memberId: string): Promise<string> {
+  for await (const key of sessionKeys(valkey)) {
+    const raw = await valkey.get(key);
+    if (!raw) continue;
+    const data = JSON.parse(raw) as StoredSession;
+    if (data.memberId === memberId) {
+      return key;
     }
   }
   throw new Error(`No stored session found for member ${memberId}`);
@@ -67,7 +72,7 @@ describe('session lifecycle', () => {
   // M4: an anonymous request that keeps nothing used to store a session
   // anyway — flooding any URL filled Valkey.
   it('stores no session and sends no cookie for an anonymous request that keeps nothing', async () => {
-    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
     const before = await countSessions(valkey);
 
     for (let i = 0; i < 5; i++) {
@@ -79,7 +84,7 @@ describe('session lifecycle', () => {
   });
 
   it("starts a kept session's absolute clock on its next request", async () => {
-    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
     const agent = request.agent(app.getHttpServer());
     const key = sessionKeyFrom(await agent.get('/auth/csrf-token').expect(200));
 
@@ -97,13 +102,11 @@ describe('session lifecycle', () => {
   it('rotates the session id on sign-in (fixation defense)', async () => {
     const agent = request.agent(app.getHttpServer());
     const csrfToken = await csrfTokenFor(agent);
-    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
 
     const before = new Set<string>();
-    for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
-      for (const key of Array.isArray(batch) ? batch : [batch]) {
-        before.add(key);
-      }
+    for await (const key of sessionKeys(valkey)) {
+      before.add(key);
     }
 
     const { credentialId } = await insertMemberWithCredential(app);
@@ -129,10 +132,8 @@ describe('session lifecycle', () => {
       .expect(200);
 
     const after = new Set<string>();
-    for await (const batch of valkey.scanIterator({ MATCH: 'sess:*' })) {
-      for (const key of Array.isArray(batch) ? batch : [batch]) {
-        after.add(key);
-      }
+    for await (const key of sessionKeys(valkey)) {
+      after.add(key);
     }
 
     const brandNewKeys = [...after].filter((key) => !before.has(key));
@@ -158,7 +159,7 @@ describe('session lifecycle', () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);
 
-    const valkey = app.get<RedisClientType>(VALKEY_CLIENT);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
     const key = await findSessionKey(valkey, memberId);
     const raw = await valkey.get(key);
     const data = JSON.parse(raw!) as StoredSession;

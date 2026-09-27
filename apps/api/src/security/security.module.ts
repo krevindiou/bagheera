@@ -1,6 +1,7 @@
 import { Global, Inject, Module, OnModuleDestroy } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
+import { closeValkeyClient } from '../common/valkey-client';
 import { DbModule } from '../db/db.module';
 import { AuditService } from './audit.service';
 import { CryptoService } from './crypto.service';
@@ -34,7 +35,7 @@ import { RateLimitGuard } from './rate-limit.guard';
 export class SecurityModule implements OnModuleDestroy {
   constructor(
     @Inject(RATE_LIMIT_VALKEY_CLIENT)
-    private readonly rateLimitValkeyClient: RedisClientType,
+    private readonly rateLimitValkeyClient: IORedis,
   ) {}
 
   // Mirrors SessionModule's own onModuleDestroy for its Valkey client — this
@@ -46,8 +47,6 @@ export class SecurityModule implements OnModuleDestroy {
   // from under it, spamming ECONNREFUSED/SocketClosedUnexpectedlyError once
   // the whole run had already finished and reported its result.
   async onModuleDestroy(): Promise<void> {
-    if (this.rateLimitValkeyClient.isOpen) {
-      await this.rateLimitValkeyClient.quit();
-    }
+    await closeValkeyClient(this.rateLimitValkeyClient);
   }
 }

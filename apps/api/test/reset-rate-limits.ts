@@ -1,4 +1,4 @@
-import { createClient, type RedisClientType } from 'redis';
+import IORedis from 'ioredis';
 
 // Every integration spec file runs in the same process against the same
 // shared Valkey instance for the whole `test:integration` run (see
@@ -14,17 +14,16 @@ import { createClient, type RedisClientType } from 'redis';
 // Flush the guard's own keys before every test across the whole suite —
 // the same cleanup security/rate-limit.integration-spec.ts already does
 // for itself, just applied globally instead of to one file.
-let redis: RedisClientType;
+let redis: IORedis;
 
-beforeAll(async () => {
-  redis = createClient({ url: process.env.VALKEY_URL });
-  await redis.connect();
+beforeAll(() => {
+  redis = new IORedis(process.env.VALKEY_URL!);
 });
 
 beforeEach(async () => {
   const keys = await redis.keys('rl:*');
   if (keys.length > 0) {
-    await redis.del(keys);
+    await redis.del(...keys);
   }
 });
 

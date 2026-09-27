@@ -94,9 +94,6 @@ importers:
       rate-limiter-flexible:
         specifier: ^11.2.0
         version: 11.2.0
-      redis:
-        specifier: ^6.2.1
-        version: 6.2.1(@opentelemetry/api@1.9.1)
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2

@@ -3,7 +3,7 @@ import type { Server } from 'http';
 import type { Pool } from 'pg';
 import request from 'supertest';
 import { PG_POOL } from '../db/db.constants';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
 import { VALKEY_CLIENT } from '../session/session.constants';
 import { createTestApp } from '../test-support/create-test-app';
 
@@ -48,7 +48,7 @@ describe('GET /health', () => {
   // can't reach it must be pulled out of rotation like one without a database.
   it('returns 503 when Valkey does not answer', async () => {
     const ping = jest
-      .spyOn(app.get<RedisClientType>(VALKEY_CLIENT), 'ping')
+      .spyOn(app.get<IORedis>(VALKEY_CLIENT), 'ping')
       .mockRejectedValueOnce(new Error('ECONNREFUSED'));
 
     const res = await request(app.getHttpServer()).get('/health');

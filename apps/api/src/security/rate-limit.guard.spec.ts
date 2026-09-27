@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/unbound-method -- jest matchers on mocked client methods */
 import { Reflector } from '@nestjs/core';
-import type { RedisClientType } from 'redis';
+import type IORedis from 'ioredis';
 import { RateLimitGuard } from './rate-limit.guard';
 import { RATE_LIMIT_OPTIONS, RateLimitOptions } from './rate-limit.constants';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
@@ -18,16 +19,16 @@ jest.mock('rate-limiter-flexible', () => ({
 }));
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 
-function fakeValkeyClient(overrides: Partial<RedisClientType> = {}): RedisClientType {
+function fakeValkeyClient(overrides: Partial<IORedis> = {}): IORedis {
   return {
     exists: jest.fn().mockResolvedValue(0),
     incr: jest.fn().mockResolvedValue(1),
     expire: jest.fn().mockResolvedValue(1),
     set: jest.fn().mockResolvedValue('OK'),
-    isOpen: true,
+    status: 'ready',
     quit: jest.fn().mockResolvedValue(undefined),
     ...overrides,
-  } as unknown as RedisClientType;
+  } as unknown as IORedis;
 }
 
 function fakeReflector(opts: { skip?: boolean; options?: RateLimitOptions } = {}): Reflector {
@@ -237,11 +238,7 @@ describe('RateLimitGuard', () => {
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
     await expect(guard.canActivate(ctx)).rejects.toThrow('Too many requests');
     // durationSeconds(60) * 2^(strikes(1)-1) = 60
-    expect(valkey.set).toHaveBeenCalledWith(
-      expect.stringContaining('rl:block:'),
-      '1',
-      expect.objectContaining({ EX: 60 }),
-    );
+    expect(valkey.set).toHaveBeenCalledWith(expect.stringContaining('rl:block:'), '1', 'EX', 60);
   });
 
   it('doubles the block duration with each further strike', async () => {
@@ -251,11 +248,7 @@ describe('RateLimitGuard', () => {
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
     await expect(guard.canActivate(ctx)).rejects.toThrow('Too many requests');
     // 60 * 2^(3-1) = 240
-    expect(valkey.set).toHaveBeenCalledWith(
-      expect.stringContaining('rl:block:'),
-      '1',
-      expect.objectContaining({ EX: 240 }),
-    );
+    expect(valkey.set).toHaveBeenCalledWith(expect.stringContaining('rl:block:'), '1', 'EX', 240);
   });
 
   it('caps the block duration at MAX_BLOCK_SECONDS regardless of strike count', async () => {
@@ -264,11 +257,7 @@ describe('RateLimitGuard', () => {
     const guard = new RateLimitGuard(valkey, fakeReflector());
     const ctx = fakeExecutionContext(fakeRequest({ method: 'POST' }));
     await expect(guard.canActivate(ctx)).rejects.toThrow('Too many requests');
-    expect(valkey.set).toHaveBeenCalledWith(
-      expect.stringContaining('rl:block:'),
-      '1',
-      expect.objectContaining({ EX: 3600 }),
-    );
+    expect(valkey.set).toHaveBeenCalledWith(expect.stringContaining('rl:block:'), '1', 'EX', 3600);
   });
 
   it('reuses one RateLimiterRedis instance across routes sharing the same points/duration', async () => {
@@ -284,14 +273,14 @@ describe('RateLimitGuard', () => {
 
   describe('onModuleDestroy', () => {
     it('quits an open valkey connection', async () => {
-      const valkey = fakeValkeyClient({ isOpen: true });
+      const valkey = fakeValkeyClient({ status: 'ready' });
       const guard = new RateLimitGuard(valkey, fakeReflector());
       await guard.onModuleDestroy();
       expect(valkey.quit).toHaveBeenCalled();
     });
 
     it('does not quit an already-closed connection', async () => {
-      const valkey = fakeValkeyClient({ isOpen: false });
+      const valkey = fakeValkeyClient({ status: 'end' });
       const guard = new RateLimitGuard(valkey, fakeReflector());
       await guard.onModuleDestroy();
       expect(valkey.quit).not.toHaveBeenCalled();
