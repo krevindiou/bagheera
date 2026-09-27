@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { vi } from 'vitest';
 import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
@@ -93,9 +94,10 @@ describe('webauthn authentication', () => {
       const { email, memberId, credentialId } = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-        .mockResolvedValueOnce(verifiedResult(7));
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce(verifiedResult(7));
       const res = await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
@@ -138,9 +140,10 @@ describe('webauthn authentication', () => {
       const memberB = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-        .mockResolvedValueOnce(verifiedResult(1));
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce(verifiedResult(1));
       await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
@@ -179,9 +182,10 @@ describe('webauthn authentication', () => {
       const { credentialId } = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-        .mockResolvedValueOnce({ verified: false } as VerifiedAuthenticationResponse);
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce({ verified: false } as VerifiedAuthenticationResponse);
       const res = await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)
@@ -194,9 +198,10 @@ describe('webauthn authentication', () => {
       const { credentialId } = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-        .mockResolvedValueOnce(verifiedResult(1));
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce(verifiedResult(1));
       await agent
         .post('/webauthn/authentication/verify')
         .set('x-csrf-token', csrfToken)

@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { vi } from 'vitest';
 import type { Server } from 'http';
 import type { Pool } from 'pg';
 import request from 'supertest';
@@ -47,7 +48,7 @@ describe('GET /health', () => {
   // Every request needs Valkey (sessions, rate limits), so a container that
   // can't reach it must be pulled out of rotation like one without a database.
   it('returns 503 when Valkey does not answer', async () => {
-    const ping = jest
+    const ping = vi
       .spyOn(app.get<IORedis>(VALKEY_CLIENT), 'ping')
       .mockRejectedValueOnce(new Error('ECONNREFUSED'));
 

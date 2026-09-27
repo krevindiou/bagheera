@@ -11,6 +11,7 @@ import {
   SignedInFixture,
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { vi } from 'vitest';
 
 // Real ceremony verification needs a physical authenticator, which nothing
 // in this suite has — mock exactly the one function that would otherwise
@@ -19,16 +20,14 @@ import { createTestApp, getDb } from '../test-support/create-test-app';
 // stays real. generateRegistrationOptions is *not* mocked — it's pure,
 // deterministic, and this suite's only way to get a real challenge into
 // the session for verify() to consume.
-jest.mock('@simplewebauthn/server', () => ({
-  ...jest.requireActual<typeof import('@simplewebauthn/server')>('@simplewebauthn/server'),
-  verifyRegistrationResponse: jest.fn(),
+vi.mock('@simplewebauthn/server', async () => ({
+  ...(await vi.importActual<typeof import('@simplewebauthn/server')>('@simplewebauthn/server')),
+  verifyRegistrationResponse: vi.fn(),
 }));
 
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 
-const mockVerify = verifyRegistrationResponse as jest.MockedFunction<
-  typeof verifyRegistrationResponse
->;
+const mockVerify = vi.mocked(verifyRegistrationResponse);
 
 function verifiedResult(credentialId: string): VerifiedRegistrationResponse {
   return {
@@ -56,7 +55,7 @@ const STEP_UP_ERROR = 'Step-up verification is required or has expired.';
 
 describe('webauthn registration', () => {
   let app: INestApplication<Server>;
-  let fakeEmailQueue: { enqueue: jest.Mock };
+  let fakeEmailQueue: { enqueue: ReturnType<typeof vi.fn> };
 
   // Adding a passkey needs a fresh step-up proof, consumed by options() —
   // the same "confirm with a passkey you already hold" the web page runs

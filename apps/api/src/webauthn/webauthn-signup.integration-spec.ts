@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { vi } from 'vitest';
 import type { Server } from 'http';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { and, desc, eq } from 'drizzle-orm';
@@ -18,7 +19,7 @@ import { WebauthnCryptoService } from './webauthn-crypto.service';
 // Same reasoning as webauthn-registration.integration-spec.ts: mock only
 // the one function a real authenticator would otherwise be needed for —
 // exercised here via the app's own injected WebauthnCryptoService instance
-// rather than jest.mock(), so this file can freely interleave with
+// rather than vi.mock(), so this file can freely interleave with
 // test-support/auth-fixture.ts's own use of the same spy trick.
 function verifiedRegistration(credentialId: string): VerifiedRegistrationResponse {
   return {
@@ -121,9 +122,9 @@ describe('webauthn signup', () => {
         .send({ key: tokenFor(email, 'FR', 'fr', 'Europe/Paris') })
         .expect(200);
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse')
-        .mockResolvedValueOnce(verifiedRegistration(credentialId));
+      vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce(
+        verifiedRegistration(credentialId),
+      );
       const res = await agent
         .post('/webauthn/signup/verify')
         .set('x-csrf-token', csrfToken)
@@ -183,9 +184,9 @@ describe('webauthn signup', () => {
         .set('x-csrf-token', csrfA)
         .send({ key: tokenFor(email) })
         .expect(200);
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse')
-        .mockResolvedValueOnce(verifiedRegistration(credentialIdA));
+      vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce(
+        verifiedRegistration(credentialIdA),
+      );
       await agentA
         .post('/webauthn/signup/verify')
         .set('x-csrf-token', csrfA)
@@ -230,9 +231,9 @@ describe('webauthn signup', () => {
         .send({ key: tokenFor(email) })
         .expect(200);
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse')
-        .mockResolvedValueOnce({ verified: false });
+      vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce({
+        verified: false,
+      });
       const res = await agent
         .post('/webauthn/signup/verify')
         .set('x-csrf-token', csrfToken)

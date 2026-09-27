@@ -22,11 +22,11 @@ import type {
  * importing the library directly. Exists so code that only needs "some
  * valid session" or "some valid passkey" rather than to prove the ceremony's
  * crypto itself — chiefly test-support/auth-fixture.ts, reused by every
- * unrelated module's integration tests — can `jest.spyOn` the one injected
- * instance instead of `jest.mock`-ing the module in every consuming spec
+ * unrelated module's integration tests — can `vi.spyOn` the one injected
+ * instance instead of `vi.mock`-ing the module in every consuming spec
  * file. This class is a plain pass-through, so the
  * webauthn-*.integration-spec.ts files that DO test the ceremony itself keep
- * working unchanged with their existing `jest.mock('@simplewebauthn/server', ...)`.
+ * working unchanged with their existing `vi.mock('@simplewebauthn/server', ...)`.
  */
 @Injectable()
 export class WebauthnCryptoService {

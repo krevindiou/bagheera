@@ -1,5 +1,5 @@
 import { vi, type Mock } from 'vitest';
-/* eslint-disable @typescript-eslint/unbound-method -- jest matchers on mocked client methods */
+/* eslint-disable @typescript-eslint/unbound-method -- vitest matchers on mocked client methods */
 import { Reflector } from '@nestjs/core';
 import type IORedis from 'ioredis';
 import { RateLimitGuard } from './rate-limit.guard';
@@ -10,7 +10,7 @@ import { fakeExecutionContext, fakeRequest } from '../test-support/fake-http-con
 // Every `new RateLimiterRedis()` the guard creates internally shares this
 // one mocked consume() — the guard caches at most one limiter per
 // points/duration pair on itself, so tests only ever need to control this
-// single function. (Prefixed `mock` so the babel-plugin-jest-hoist
+// single function. (Prefixed `mock` so vi.mock's hoisting
 // exception lets vi.mock's hoisted factory reference it.)
 // Typed explicitly so `.mock.calls` (read in a couple of tests below) comes
 // out as `[string][]` rather than `any[][]`.

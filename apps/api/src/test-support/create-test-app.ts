@@ -4,6 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { NextFunction, Request, Response } from 'express';
 import type { Server } from 'http';
 import { Logger } from 'nestjs-pino';
+import { vi, type Mock } from 'vitest';
 import { AppModule } from '../app.module';
 import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
 import { DRIZZLE } from '../db/db.constants';
@@ -26,8 +27,8 @@ import { EmailQueueService } from '../email/email-queue.service';
  * live under src/ and are covered by tsconfig.json's rootDir; anything
  * those specs import must live under src/ too, or `tsc -p tsconfig.json`
  * rejects it as outside rootDir. apps/api/test/ stays reserved for files
- * jest references only by path string (globalSetup/globalTeardown/
- * setupFilesAfterEach in jest-integration.json), never imported from src/.
+ * vitest.integration.config.ts references only by path string (globalSetup,
+ * setupFiles), never imported from src/.
  *
  * The one seam replaced: `EmailQueueService` is swapped for a fake so no
  * spec depends on a reachable SMTP server (see CLAUDE.md's "no local
@@ -81,9 +82,9 @@ function fixSecureCookiesForPlainHttp(req: Request, res: Response, next: NextFun
 }
 
 export interface FakeEmailQueue {
-  enqueue: jest.Mock<Promise<void>, [unknown]>;
+  enqueue: Mock<(message: unknown) => Promise<void>>;
   /** Only recorded: nothing runs SignupRequestService here — call it directly. */
-  enqueueSignupRequest: jest.Mock<Promise<void>, [unknown]>;
+  enqueueSignupRequest: Mock<(message: unknown) => Promise<void>>;
 }
 
 export interface TestApp {
@@ -93,8 +94,8 @@ export interface TestApp {
 
 export async function createTestApp(): Promise<TestApp> {
   const fakeEmailQueue: FakeEmailQueue = {
-    enqueue: jest.fn<Promise<void>, [unknown]>().mockResolvedValue(undefined),
-    enqueueSignupRequest: jest.fn<Promise<void>, [unknown]>().mockResolvedValue(undefined),
+    enqueue: vi.fn<(message: unknown) => Promise<void>>().mockResolvedValue(undefined),
+    enqueueSignupRequest: vi.fn<(message: unknown) => Promise<void>>().mockResolvedValue(undefined),
   };
 
   const moduleRef = await Test.createTestingModule({

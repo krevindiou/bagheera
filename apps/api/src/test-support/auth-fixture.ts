@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { vi } from 'vitest';
 import { INestApplication } from '@nestjs/common';
 import type {
   VerifiedAuthenticationResponse,
@@ -146,7 +147,7 @@ export async function insertMemberWithCredential(
  * already-inserted member/credential pair, stubbing only
  * `WebauthnCryptoService.verifyAuthenticationResponse` — the one step that
  * would otherwise need a real authenticator-held private key — via
- * `jest.spyOn` on the app's own DI-resolved instance. `mockResolvedValueOnce`
+ * `vi.spyOn` on the app's own DI-resolved instance. `mockResolvedValueOnce`
  * queues exactly one canned success for this one verify() call, so this
  * needs no cleanup/reset between fixture calls or spec files.
  */
@@ -160,9 +161,9 @@ export async function signInWithPasskey(
   // verify() is what identifies the member.
   await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
 
-  jest
-    .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-    .mockResolvedValueOnce(verifiedAuthentication());
+  vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse').mockResolvedValueOnce(
+    verifiedAuthentication(),
+  );
   await agent
     .post('/webauthn/authentication/verify')
     .set('x-csrf-token', csrfToken)
@@ -210,9 +211,9 @@ export async function completeStepUp(
   const csrfToken = await fixture.getCsrfToken();
   await fixture.agent.post('/webauthn/step-up/options').set('x-csrf-token', csrfToken).expect(200);
 
-  jest
-    .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-    .mockResolvedValueOnce(verifiedAuthentication());
+  vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse').mockResolvedValueOnce(
+    verifiedAuthentication(),
+  );
   await fixture.agent
     .post('/webauthn/step-up/verify')
     .set('x-csrf-token', csrfToken)
@@ -249,7 +250,7 @@ export async function registerAndCompleteSignup(
     .send({ key })
     .expect(200);
 
-  jest.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce({
+  vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce({
     verified: true,
     registrationInfo: {
       credential: { id: credentialId, publicKey: fakePublicKey(), counter: 0 },

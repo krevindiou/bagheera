@@ -13,7 +13,7 @@ describe('GlobalExceptionFilter', () => {
   // Kept as its own variable (rather than re-reading Logger.prototype.error
   // in each assertion) so assertions read off a plain MockInstance,
   // not a reference extracted off the real Logger class — the latter trips
-  // @typescript-eslint/unbound-method, a false positive for jest matchers.
+  // @typescript-eslint/unbound-method, a false positive for vitest matchers.
   let errorSpy: MockInstance;
 
   beforeEach(() => {

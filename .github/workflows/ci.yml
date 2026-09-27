@@ -51,9 +51,9 @@ jobs:
       - uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         if: success() || failure()
         with:
-          name: Jest Unit Test Report
+          name: API Unit Test Report
           path: apps/api/junit-unit.xml
-          reporter: jest-junit
+          reporter: java-junit
       - uses: ./.github/actions/coverage-summary
         if: success() || failure()
         with:
@@ -104,9 +104,9 @@ jobs:
       - uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         if: success() || failure()
         with:
-          name: Jest Integration Test Report
+          name: API Integration Test Report
           path: apps/api/junit-integration.xml
-          reporter: jest-junit
+          reporter: java-junit
 
   # Disabled for now — re-enable by dropping `if: false`.
   e2e:

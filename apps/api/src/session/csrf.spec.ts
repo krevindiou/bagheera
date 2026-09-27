@@ -24,7 +24,7 @@ function lastConfigOptions(): DoubleCsrfConfigOptions {
 
 // A plain shape, not typed as ConfigService — extracting `.getOrThrow` off
 // a value typed as the real class trips @typescript-eslint/unbound-method
-// (a false positive for jest's expect(fn).toHaveBeenCalledWith(...)).
+// (a false positive for vitest's expect(fn).toHaveBeenCalledWith(...)).
 function fakeConfig(getOrThrow: Mock) {
   return { getOrThrow };
 }

@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { vi } from 'vitest';
 import type { Server } from 'http';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import { and, desc, eq } from 'drizzle-orm';
@@ -75,9 +76,10 @@ describe('webauthn step-up', () => {
         .set('x-csrf-token', csrfToken)
         .expect(200);
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-        .mockResolvedValueOnce(verifiedResult(9));
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce(verifiedResult(9));
       const res = await fixture.agent
         .post('/webauthn/step-up/verify')
         .set('x-csrf-token', csrfToken)
@@ -136,9 +138,10 @@ describe('webauthn step-up', () => {
         .set('x-csrf-token', csrfToken)
         .expect(200);
 
-      jest
-        .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-        .mockResolvedValueOnce({ verified: false } as VerifiedAuthenticationResponse);
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce({ verified: false } as VerifiedAuthenticationResponse);
       const res = await fixture.agent
         .post('/webauthn/step-up/verify')
         .set('x-csrf-token', csrfToken)

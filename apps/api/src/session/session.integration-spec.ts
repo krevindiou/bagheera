@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { vi } from 'vitest';
 import type { Server } from 'http';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
@@ -111,12 +112,10 @@ describe('session lifecycle', () => {
 
     const { credentialId } = await insertMemberWithCredential(app);
     await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
-    jest
-      .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-      .mockResolvedValueOnce({
-        verified: true,
-        authenticationInfo: { newCounter: 1 },
-      } as unknown as VerifiedAuthenticationResponse);
+    vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse').mockResolvedValueOnce({
+      verified: true,
+      authenticationInfo: { newCounter: 1 },
+    } as unknown as VerifiedAuthenticationResponse);
     await agent
       .post('/webauthn/authentication/verify')
       .set('x-csrf-token', csrfToken)
@@ -140,7 +139,7 @@ describe('session lifecycle', () => {
     expect(brandNewKeys.length).toBeGreaterThan(0);
   });
 
-  // KNOWN BUG, not a test mistake — kept as `it.failing` rather than
+  // KNOWN BUG, not a test mistake — kept as `it.fails` rather than
   // asserting the crash as correct: CurrentSessionController.me() is
   // @Public() (deliberately, so an anonymous caller gets a clean 401
   // instead of SessionAuthGuard's) and reads `req.session.memberId`
@@ -155,7 +154,7 @@ describe('session lifecycle', () => {
   // crosses the absolute TTL 500s instead of 401ing. One-line fix:
   // `req.session?.memberId` in current-session.controller.ts. Flagged for
   // the user rather than fixed here — out of scope for a test-writing pass.
-  it.failing('force-expires a session past the absolute TTL, regardless of activity', async () => {
+  it.fails('force-expires a session past the absolute TTL, regardless of activity', async () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);
 

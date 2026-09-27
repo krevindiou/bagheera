@@ -2,11 +2,11 @@ import swc from 'unplugin-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
-// Unit-test runner (jest-integration.json / the api container's `pnpm
-// test:integration` covers *.integration-spec.ts separately, still under
-// Jest). SWC replaces both ts-jest and the esm-to-cjs-transform.cjs Babel
-// shim — emitDecoratorMetadata (tsconfig's "decoratorMetadata" below) is
-// what Nest's DI reads to resolve constructor param types.
+// Unit-test runner (vitest.integration.config.ts covers
+// *.integration-spec.ts separately — same Testcontainers-backed suite, one
+// shared instance per whole run, so it can't share this config's plain
+// per-file isolation). emitDecoratorMetadata (tsconfig's "decoratorMetadata"
+// below) is what Nest's DI reads to resolve constructor param types.
 export default defineConfig({
   plugins: [
     tsconfigPaths(),
@@ -20,6 +20,8 @@ export default defineConfig({
     include: ['**/*.spec.ts'],
     environment: 'node',
     globals: true,
+    reporters: ['default', 'junit'],
+    outputFile: { junit: '../junit-unit.xml' },
     coverage: {
       provider: 'v8',
       reportsDirectory: '../coverage',

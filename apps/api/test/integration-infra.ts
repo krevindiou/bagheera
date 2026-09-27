@@ -42,7 +42,7 @@ export async function startIntegrationInfra(): Promise<void> {
   // Every createTestApp() boots a real Nest app with the real pino logger
   // (logging.module.ts defaults to 'info', logging a JSON line per HTTP
   // request) — across the whole suite that's hundreds of lines of noise
-  // burying the actual jest output. Quiet by default; still overridable by
+  // burying the actual test output. Quiet by default; still overridable by
   // setting LOG_LEVEL before running the suite, for anyone who actually
   // wants request-level logs while debugging one.
   if (!process.env.LOG_LEVEL) {

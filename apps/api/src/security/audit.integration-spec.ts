@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { vi } from 'vitest';
 import type { Server } from 'http';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import request from 'supertest';
@@ -35,9 +36,9 @@ describe('security audit log', () => {
     const csrfToken = await csrfTokenFor(agent);
     await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
 
-    jest
-      .spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse')
-      .mockResolvedValueOnce({ verified: false } as never);
+    vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse').mockResolvedValueOnce({
+      verified: false,
+    } as never);
     await agent
       .post('/webauthn/authentication/verify')
       .set('x-csrf-token', csrfToken)

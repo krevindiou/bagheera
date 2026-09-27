@@ -6,6 +6,7 @@ import request from 'supertest';
 import { securityEvent, webauthnCredential } from '../db/schema';
 import { completeStepUp, seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { vi } from 'vitest';
 
 // Every :id path param in this API goes through ParseUuidV7Pipe, which
 // checks the version nibble — a plain (v4) randomUUID() would 400 before
@@ -35,7 +36,7 @@ async function insertCredential(
 
 describe('webauthn credentials', () => {
   let app: INestApplication<Server>;
-  let fakeEmailQueue: { enqueue: jest.Mock };
+  let fakeEmailQueue: { enqueue: ReturnType<typeof vi.fn> };
 
   beforeAll(async () => {
     ({ app, fakeEmailQueue } = await createTestApp());
