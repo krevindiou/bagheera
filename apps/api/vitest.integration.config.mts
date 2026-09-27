@@ -1,5 +1,4 @@
 import swc from 'unplugin-swc';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 // Integration-test runner (`pnpm test:integration`) — real Postgres/Valkey
@@ -9,7 +8,6 @@ import { defineConfig } from 'vitest/config';
 // — fileParallelism: false mirrors Jest's --runInBand.
 export default defineConfig({
   plugins: [
-    tsconfigPaths(),
     swc.vite({
       module: { type: 'es6' },
       jsc: { transform: { legacyDecorator: true, decoratorMetadata: true } },

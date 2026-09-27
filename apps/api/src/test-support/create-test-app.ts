@@ -27,7 +27,7 @@ import { EmailQueueService } from '../email/email-queue.service';
  * live under src/ and are covered by tsconfig.json's rootDir; anything
  * those specs import must live under src/ too, or `tsc -p tsconfig.json`
  * rejects it as outside rootDir. apps/api/test/ stays reserved for files
- * vitest.integration.config.ts references only by path string (globalSetup,
+ * vitest.integration.config.mts references only by path string (globalSetup,
  * setupFiles), never imported from src/.
  *
  * The one seam replaced: `EmailQueueService` is swapped for a fake so no

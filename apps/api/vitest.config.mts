@@ -1,7 +1,6 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import swc from 'unplugin-swc';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const SRC = join(import.meta.dirname, 'src');
@@ -31,14 +30,13 @@ function allExcept(suffix: string, keep: string[]): string[] {
   return allSrcFiles().filter((rel) => rel.endsWith(suffix) && !keepSet.has(rel));
 }
 
-// Unit-test runner (vitest.integration.config.ts covers
+// Unit-test runner (vitest.integration.config.mts covers
 // *.integration-spec.ts separately — same Testcontainers-backed suite, one
 // shared instance per whole run, so it can't share this config's plain
 // per-file isolation). emitDecoratorMetadata (tsconfig's "decoratorMetadata"
 // below) is what Nest's DI reads to resolve constructor param types.
 export default defineConfig({
   plugins: [
-    tsconfigPaths(),
     swc.vite({
       module: { type: 'es6' },
       jsc: { transform: { legacyDecorator: true, decoratorMetadata: true } },
