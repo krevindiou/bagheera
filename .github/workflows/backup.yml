@@ -26,7 +26,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.RESTIC_AWS_SECRET_ACCESS_KEY }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_CONTAINER: ${{ vars.BACKUP_POSTGRES_CONTAINER }}
-          WAL_ARCHIVE_DIR: ${{ vars.WAL_ARCHIVE_DIR }}
         # The remote command is just `bash -s` — no secrets on it — so
         # nothing sensitive ever appears in this runner's or the deploy
         # host's own process list (`ps`/`/proc/<pid>/cmdline`). Every
@@ -43,6 +42,5 @@ jobs:
             printf 'export AWS_SECRET_ACCESS_KEY=%q\n' "$AWS_SECRET_ACCESS_KEY"
             printf 'export POSTGRES_PASSWORD=%q\n' "$POSTGRES_PASSWORD"
             printf 'export POSTGRES_CONTAINER=%q\n' "$POSTGRES_CONTAINER"
-            printf 'export WAL_ARCHIVE_DIR=%q\n' "$WAL_ARCHIVE_DIR"
             cat scripts/backup.sh
           } | ssh root@"$DEPLOY_HOST" 'bash -s'

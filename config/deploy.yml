@@ -63,18 +63,17 @@ env:
 
 accessories:
   # Container name Kamal gives this is "bagheera-web-postgres" — that's
-  # what scripts/backup.sh's POSTGRES_CONTAINER should be set to. Its
-  # "wal-archive" directory lands under Kamal's own host-side accessory
-  # directory (`kamal accessory details postgres` shows the exact mounted
-  # path) — set scripts/backup.sh's WAL_ARCHIVE_DIR to that.
+  # what scripts/backup.sh's POSTGRES_CONTAINER should be set to.
+  #
+  # No archive_mode/archive_command: WAL archiving without a periodic
+  # pg_basebackup to replay it onto isn't point-in-time recovery, it's just
+  # unbounded disk growth. Recovery point objective is the nightly pg_dump
+  # in scripts/backup.sh — up to 24h of data — documented in
+  # docs/backup-restore.md.
   postgres:
     image: postgres:18-alpine
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "127.0.0.1:5432:5432"
-    cmd: >-
-      postgres -c archive_mode=on
-      -c archive_command="test ! -f /wal-archive/%f && cp %p /wal-archive/%f"
-      -c wal_level=replica
     env:
       clear:
         POSTGRES_USER: bagheera
@@ -86,7 +85,6 @@ accessories:
       # (not .../data) — they lay out a version-named subdir underneath so
       # pg_upgrade --link works across major versions later.
       - data:/var/lib/postgresql
-      - wal-archive:/wal-archive
 
   valkey:
     image: valkey/valkey:9-alpine

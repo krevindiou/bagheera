@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
-# Nightly backup: pg_dump of the running postgres container plus whatever
-# WAL segments have accumulated since the last run, both pushed to a restic
-# repository. Run on the deploy host itself, as root (it needs docker
-# access to the postgres container, and the WAL segments on disk are owned
-# by the container's postgres uid, unreadable by an unprivileged host user).
+# Nightly backup: pg_dump of the running postgres container, pushed to a
+# restic repository. Run on the deploy host itself, as root (it needs
+# docker access to the postgres container).
 #
 # Required env:
 #   RESTIC_REPOSITORY, RESTIC_PASSWORD (or RESTIC_PASSWORD_FILE) — restic
@@ -15,8 +13,6 @@
 #     "bagheera-web-postgres" (see config/deploy.yml), not the default.
 #   POSTGRES_USER (default: bagheera)
 #   POSTGRES_DB (default: bagheera)
-#   WAL_ARCHIVE_DIR (default: /var/lib/bagheera/wal-archive) — host
-#     directory postgres's archive_command copies WAL segments into.
 #   BACKUP_KEEP_DAILY / BACKUP_KEEP_WEEKLY / BACKUP_KEEP_MONTHLY
 #     (defaults: 7 / 4 / 6) — retention passed to `restic forget --prune`.
 set -euo pipefail
@@ -26,7 +22,6 @@ set -euo pipefail
 POSTGRES_CONTAINER="${POSTGRES_CONTAINER:-postgres}"
 POSTGRES_USER="${POSTGRES_USER:-bagheera}"
 POSTGRES_DB="${POSTGRES_DB:-bagheera}"
-WAL_ARCHIVE_DIR="${WAL_ARCHIVE_DIR:-/var/lib/bagheera/wal-archive}"
 BACKUP_KEEP_DAILY="${BACKUP_KEEP_DAILY:-7}"
 BACKUP_KEEP_WEEKLY="${BACKUP_KEEP_WEEKLY:-4}"
 BACKUP_KEEP_MONTHLY="${BACKUP_KEEP_MONTHLY:-6}"
@@ -48,15 +43,8 @@ docker exec --env-file "$pgpass_env_file" "$POSTGRES_CONTAINER" \
 
 restic snapshots >/dev/null 2>&1 || restic init
 
-backup_paths=("$dump_file")
-if [ -d "$WAL_ARCHIVE_DIR" ]; then
-  backup_paths+=("$WAL_ARCHIVE_DIR")
-else
-  echo "==> WAL_ARCHIVE_DIR ($WAL_ARCHIVE_DIR) not found, skipping WAL segments"
-fi
-
 echo "==> Pushing snapshot to $RESTIC_REPOSITORY"
-restic backup --tag postgres --tag "bagheera-$(date -u +%Y-%m-%d)" "${backup_paths[@]}"
+restic backup --tag postgres --tag "bagheera-$(date -u +%Y-%m-%d)" "$dump_file"
 
 echo "==> Pruning old snapshots (keep daily=$BACKUP_KEEP_DAILY weekly=$BACKUP_KEEP_WEEKLY monthly=$BACKUP_KEEP_MONTHLY)"
 restic forget --prune \
