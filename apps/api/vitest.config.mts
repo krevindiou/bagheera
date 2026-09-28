@@ -60,6 +60,11 @@ export default defineConfig({
       include: ['**/*.ts', '**/*.js'],
       exclude: [
         '**/*.integration-spec.ts',
+        // Guards against a repeat of a real bug this exclude list once
+        // hid: a stray src/coverage/ (leftover lcov-report HTML assets
+        // from an earlier debugging session) got swept in by `all: true`
+        // as if it were app code, tanking branches from ~98% to ~48%.
+        '**/coverage/**',
         '**/test-support/**',
         '**/*.module.ts',
         ...allExcept('.controller.ts', ['health/health.controller.ts']),
@@ -80,13 +85,15 @@ export default defineConfig({
         'common/currency.ts',
         'common/parse-uuid-v7.pipe.ts',
       ],
-      // Re-gated against this run's actual number (branches 48.23%) now
-      // that the four-file include/exclude gap above this comment is
-      // fixed — not the old 90%, which only held over the *.service.ts /
-      // *.controller.ts-excluded universe Jest measured. Ratchet this up
-      // as coverage improves; CLAUDE.md's "coverage should not drop" rule
-      // is the day-to-day guard, this is the CI backstop.
-      thresholds: { branches: 48 },
+      // Verified directly against the pre-migration Jest baseline
+      // (checked out the last pre-Vitest commit, ran its real `jest
+      // --coverage` over the identical file scope): 96.47% branches
+      // there vs 98.12% here — close enough to attribute the gap to
+      // ordinary V8-vs-Istanbul branch-counting differences, not a real
+      // coverage loss. (An earlier ~48% reading was the stray
+      // src/coverage/ directory above, not this provider difference —
+      // worth remembering if the number ever drops sharply again.)
+      thresholds: { branches: 97 },
     },
   },
 });
