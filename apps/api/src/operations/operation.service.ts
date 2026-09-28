@@ -10,21 +10,17 @@ import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import {
   amountFields,
+  OPENING_BALANCE_PAYMENT_METHOD_ID,
   requireFullyActive,
   transferAccountIdFor,
   validateTypedRefs,
 } from './entry-rules';
 import { operation } from '../db/schema';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MemberId, AccountId, OperationId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 import { TransferService } from './transfer.service';
-
-// The "Initial balance" payment method, reserved for the system-generated
-// opening operation — non-editable.
-const OPENING_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 @Injectable()
 export class OperationService {

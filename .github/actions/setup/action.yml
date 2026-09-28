@@ -15,10 +15,10 @@ runs:
       shell: bash
     # packages/* ship compiled output (dist/, gitignored) rather than
     # source — every consumer (api/web builds, lint's type-check, vitest,
-    # which all resolve @bagheera/money via its package.json main/types,
-    # not a path-mapped alias to src/) needs it built first.
-    # Building it once here, for every job that uses this action, mirrors
-    # what docker/Dockerfile.api and docker/Dockerfile.caddy already do
-    # for their production builds via `pnpm --filter <app>... build`.
-    - run: pnpm --filter @bagheera/money build
+    # which all resolve @bagheera/money/@bagheera/reference-data via their
+    # package.json main/types, not a path-mapped alias to src/) needs them
+    # built first. Building them once here, for every job that uses this
+    # action, mirrors what docker/Dockerfile.api and docker/Dockerfile.caddy
+    # already do for their production builds via `pnpm --filter <app>... build`.
+    - run: pnpm --filter @bagheera/money --filter @bagheera/reference-data build
       shell: bash

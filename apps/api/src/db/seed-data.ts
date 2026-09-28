@@ -1,22 +1,11 @@
 // Plain data, kept free of any DB/Drizzle dependency so it can be
 // unit-tested (row shapes/counts) without a live Postgres connection.
 
-// Fixed, hardcoded UUID literals (not DB-generated) — the whole point of a
-// fixed reference list is that these ids stay stable across
-// environments/reseeds, and other modules (transfer.service.ts,
-// operation.service.ts, account.service.ts) key business logic off them by
-// name rather than repeating the literals.
-export const PAYMENT_METHOD_ID = {
-  CREDIT_CARD: '00000000-0000-7000-8000-000000000001',
-  CHECK_DEBIT: '00000000-0000-7000-8000-000000000002',
-  CASH_WITHDRAWAL: '00000000-0000-7000-8000-000000000003',
-  TRANSFER_DEBIT: '00000000-0000-7000-8000-000000000004',
-  CHECK_CREDIT: '00000000-0000-7000-8000-000000000005',
-  TRANSFER_CREDIT: '00000000-0000-7000-8000-000000000006',
-  DEPOSIT: '00000000-0000-7000-8000-000000000007',
-  DIRECT_DEBIT: '00000000-0000-7000-8000-000000000008',
-  INITIAL_BALANCE: '00000000-0000-7000-8000-000000000009',
-} as const;
+// The fixed UUID literals themselves live in packages/reference-data,
+// shared with apps/web (see operations.types.ts) — re-exported here so
+// existing `PAYMENT_METHOD_ID` imports from this module don't change.
+import { PAYMENT_METHOD_ID } from '@bagheera/reference-data';
+export { PAYMENT_METHOD_ID };
 
 export interface PaymentMethodSeed {
   id: string;

@@ -17,7 +17,7 @@ import {
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
 import { account, operation } from '../db/schema';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { OPENING_BALANCE_PAYMENT_METHOD_ID } from '../operations/entry-rules';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
 import { MemberId, AccountId, BankId } from '../security/ids';
@@ -37,10 +37,6 @@ export interface AccountChart {
   axisBounds: AxisBounds | null;
   points: AccountChartPoint[];
 }
-
-// The "Initial balance" payment method, reserved for the system-generated
-// opening operation.
-const INITIAL_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 @Injectable()
 export class AccountService {
@@ -102,7 +98,7 @@ export class AccountService {
       if (minorUnits !== 0) {
         await tx.insert(operation).values({
           accountId: created.id,
-          paymentMethodId: INITIAL_BALANCE_PAYMENT_METHOD_ID,
+          paymentMethodId: OPENING_BALANCE_PAYMENT_METHOD_ID,
           thirdParty: 'Initial balance',
           credit: minorUnits > 0 ? minorUnits : null,
           debit: minorUnits < 0 ? (-(minorUnits as number) as MinorUnits) : null,

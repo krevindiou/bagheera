@@ -39,6 +39,7 @@ test: test-unit test-integration test-e2e ## Run unit + integration + e2e tests
 
 test-unit: ## Run api + web + packages/* unit tests
 	$(COMPOSE) exec --workdir /app/packages/money api pnpm test
+	$(COMPOSE) exec --workdir /app/packages/reference-data api pnpm test
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm test
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm test
 
@@ -54,10 +55,12 @@ test-e2e: ## Run e2e tests
 
 lint: ## Lint whole repo
 	$(COMPOSE) exec --workdir /app/packages/money api pnpm lint
+	$(COMPOSE) exec --workdir /app/packages/reference-data api pnpm lint
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm lint
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm lint
 
 format: ## Format whole repo
 	$(COMPOSE) exec --workdir /app/packages/money api pnpm format
+	$(COMPOSE) exec --workdir /app/packages/reference-data api pnpm format
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm format
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm format

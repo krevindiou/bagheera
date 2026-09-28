@@ -3,6 +3,7 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits } from '../common/money';
 import type { Executor } from '../db/executor';
+import { TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MemberId } from '../security/ids';
@@ -10,13 +11,12 @@ import { reachableAccountsOf } from '../security/reachable';
 
 // The "Transfer" debit/credit payment methods — the only two that can carry
 // a pairing; flipping between them mirrors a transfer from one side to the
-// other.
+// other. The list itself is shared with apps/web (packages/reference-data)
+// — re-exported here so existing imports of it from this module don't
+// change.
+export { TRANSFER_PAYMENT_METHOD_IDS };
 export const TRANSFER_DEBIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_DEBIT;
 export const TRANSFER_CREDIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_CREDIT;
-export const TRANSFER_PAYMENT_METHOD_IDS: string[] = [
-  TRANSFER_DEBIT_PAYMENT_METHOD_ID,
-  TRANSFER_CREDIT_PAYMENT_METHOD_ID,
-];
 
 // Any object exposing the query-builder surface: the plain db handle or an
 // open transaction — every method below accepts either so callers can chain

@@ -4,15 +4,10 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MemberId } from '../security/ids';
 import { DRIZZLE } from '../db/db.constants';
 import { operation } from '../db/schema';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
+import { OPENING_BALANCE_PAYMENT_METHOD_ID } from './entry-rules';
 import { TransferService } from './transfer.service';
-
-// The "Initial balance" payment method, reserved for the system-generated
-// opening operation — excluded from batch actions the same way
-// OperationService.update() already blocks it from a single-item edit.
-const OPENING_BALANCE_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 /**
  * Batch delete/reconcile. Ownership is resolved per id via

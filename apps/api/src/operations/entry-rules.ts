@@ -3,9 +3,16 @@ import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { category, paymentMethod } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { TRANSFER_PAYMENT_METHOD_IDS } from './transfer.service';
 
 export type EntryType = 'debit' | 'credit';
+
+// The "Initial balance" payment method, reserved for the system-generated
+// opening operation — exported once here rather than each of
+// operation.service.ts/batch.service.ts/account.service.ts redeclaring its
+// own local alias for the same id.
+export const OPENING_BALANCE_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 // Rules shared by operations and schedulers, which are both "an entry on an
 // account with a type, a payment method and a category".

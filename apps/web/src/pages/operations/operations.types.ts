@@ -1,3 +1,4 @@
+import { PAYMENT_METHOD_ID, TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
 import type { components } from '../../api/schema';
 import { referenceName } from '../../i18n/referenceNames';
 
@@ -54,20 +55,12 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
 // any debit/credit-filtered choice list since null matches neither.
 export type PaymentMethod = Schemas['PaymentMethodDto'];
 
-// Mirrors apps/api/src/db/seed-data.ts's PAYMENT_METHOD_ID — the same fixed
-// UUID literals, not DB-generated. Named lookup, not array position, is
-// what business logic (icons, the transfer-method check below) keys off.
-export const PAYMENT_METHOD_ID = {
-  CREDIT_CARD: '00000000-0000-7000-8000-000000000001',
-  CHECK_DEBIT: '00000000-0000-7000-8000-000000000002',
-  CASH_WITHDRAWAL: '00000000-0000-7000-8000-000000000003',
-  TRANSFER_DEBIT: '00000000-0000-7000-8000-000000000004',
-  CHECK_CREDIT: '00000000-0000-7000-8000-000000000005',
-  TRANSFER_CREDIT: '00000000-0000-7000-8000-000000000006',
-  DEPOSIT: '00000000-0000-7000-8000-000000000007',
-  DIRECT_DEBIT: '00000000-0000-7000-8000-000000000008',
-  INITIAL_BALANCE: '00000000-0000-7000-8000-000000000009',
-} as const;
+// The fixed UUID literals themselves live in packages/reference-data,
+// shared with apps/api (see db/seed-data.ts) — re-exported here so
+// existing `PAYMENT_METHOD_ID` imports from this module don't change.
+// Named lookup, not array position, is what business logic (icons, the
+// transfer-method check below) keys off.
+export { PAYMENT_METHOD_ID };
 
 export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): string {
   const name = paymentMethods.find((pm) => pm.id === id)?.name;
@@ -103,13 +96,9 @@ export function paymentMethodIcon(id: string): string {
 }
 
 // The "Transfer" debit/credit payment methods — the only two that can carry
-// a transfer pairing (apps/api/src/operations/transfer.service.ts). A fixed
-// business rule, not reference data — stays static regardless of where the
-// payment-method list itself comes from.
-export const TRANSFER_PAYMENT_METHOD_IDS: readonly string[] = [
-  PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-  PAYMENT_METHOD_ID.TRANSFER_CREDIT,
-];
+// a transfer pairing (apps/api/src/operations/transfer.service.ts) —
+// re-exported here so existing imports of it from this module don't change.
+export { TRANSFER_PAYMENT_METHOD_IDS };
 
 export type SearchCriteria = Schemas['SearchCriteriaDto'];
 export type AmountComparator = Schemas['AmountComparatorDto'];
