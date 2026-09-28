@@ -57,6 +57,13 @@
       "when": 1790451496997,
       "tag": "0007_remove_dead_security_event_types",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790625599519,
+      "tag": "0008_add_scheduler_last_generated_date",
+      "breakpoints": true
     }
   ]
 }

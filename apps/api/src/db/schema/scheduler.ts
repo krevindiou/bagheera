@@ -40,6 +40,12 @@ export const scheduler = pgTable(
     reconciled: boolean('reconciled').notNull().default(false),
     notes: text('notes').notNull().default(''),
     limitDate: date('limit_date'),
+    // Explicit generation cursor: the latest occurrence date this scheduler
+    // has generated, advanced in the same transaction as the inserts it
+    // covers. Null means nothing generated yet. Deliberately independent of
+    // `operation` rows, which can be hard-deleted or edited after the fact
+    // (see SchedulerGenerationService.generateForScheduler).
+    lastGeneratedDate: date('last_generated_date'),
     frequencyUnit: frequencyUnitEnum('frequency_unit').notNull().default('month'),
     frequencyValue: smallint('frequency_value').notNull(),
     active: boolean('active').notNull().default(true),

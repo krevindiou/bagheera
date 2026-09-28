@@ -268,4 +268,70 @@ describe('scheduler occurrence generation', () => {
     const perScheduler = (await generatedFor([ids[0]])).length;
     expect(await generatedFor(ids)).toHaveLength(2 * perScheduler);
   });
+
+  // The generation cursor is the scheduler's own `lastGeneratedDate`, not
+  // the surviving operation rows — these three cover the cases that used
+  // to corrupt it when it was inferred from `max(valueDate)`.
+  describe('cursor independence from generated operations', () => {
+    it('does not regenerate a deleted latest occurrence', async () => {
+      const { accountId } = await memberWithAccount();
+      const id = await insertScheduler(accountId);
+      const generation = app.get(SchedulerGenerationService);
+      await generation.runForScheduler(id);
+
+      const before = await generatedFor([id]);
+      expect(before.length).toBeGreaterThan(1);
+      const latest = before.reduce((a, b) => (a.valueDate > b.valueDate ? a : b));
+      await getDb(app).delete(operation).where(eq(operation.id, latest.id));
+
+      await generation.runForScheduler(id);
+
+      const after = await generatedFor([id]);
+      expect(after).toHaveLength(before.length - 1);
+      expect(after.some((row) => row.valueDate === latest.valueDate)).toBe(false);
+    });
+
+    it('does not regenerate the whole history when every occurrence is deleted', async () => {
+      const { accountId } = await memberWithAccount();
+      const id = await insertScheduler(accountId);
+      const generation = app.get(SchedulerGenerationService);
+      await generation.runForScheduler(id);
+
+      const before = await generatedFor([id]);
+      expect(before.length).toBeGreaterThan(1);
+      await getDb(app)
+        .delete(operation)
+        .where(
+          inArray(
+            operation.id,
+            before.map((row) => row.id),
+          ),
+        );
+
+      await generation.runForScheduler(id);
+
+      expect(await generatedFor([id])).toHaveLength(0);
+    });
+
+    it('does not skip occurrences when the latest generated date is edited forward', async () => {
+      const { accountId } = await memberWithAccount();
+      const id = await insertScheduler(accountId);
+      const generation = app.get(SchedulerGenerationService);
+      await generation.runForScheduler(id);
+
+      const before = await generatedFor([id]);
+      expect(before.length).toBeGreaterThan(1);
+      const latest = before.reduce((a, b) => (a.valueDate > b.valueDate ? a : b));
+      await getDb(app)
+        .update(operation)
+        .set({ valueDate: '2099-01-01' })
+        .where(eq(operation.id, latest.id));
+
+      // The cursor tracks generation state, not this row, so re-running
+      // must still be a no-op — no gap-filling and no duplicate.
+      await generation.runForScheduler(id);
+
+      expect(await generatedFor([id])).toHaveLength(before.length);
+    });
+  });
 });

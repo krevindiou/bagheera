@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { localIsoDate } from '../common/local-date';
 import { effectiveTimeZone } from '../common/member-today';
@@ -36,11 +36,11 @@ export class SchedulerGenerationService {
   // Generates every occurrence a single scheduler is due for, up to today
   // (or its limit date if earlier) — at most `budget`, so an oversized
   // backlog is worked through a batch at a time rather than in one
-  // unbounded run. Safe to call repeatedly — occurrence tracking is derived
-  // from the latest surviving generated operation on the scheduler's own
-  // account, so re-running is a no-op once caught up (or, mid-backlog,
-  // resumes exactly where the previous run's cap cut it off). Resolves to
-  // how many it generated.
+  // unbounded run. Safe to call repeatedly — occurrence tracking is the
+  // scheduler's own `lastGeneratedDate` cursor, not the surviving operation
+  // rows (which can be edited or hard-deleted afterwards), so re-running is
+  // a no-op once caught up (or, mid-backlog, resumes exactly where the
+  // previous run's cap cut it off). Resolves to how many it generated.
   private async generateForScheduler(
     db: Executor,
     schedulerId: string,
@@ -75,13 +75,6 @@ export class SchedulerGenerationService {
       }
     }
 
-    const [latest] = await db
-      .select({ valueDate: operation.valueDate })
-      .from(operation)
-      .where(and(eq(operation.schedulerId, row.id), eq(operation.accountId, row.accountId)))
-      .orderBy(desc(operation.valueDate), desc(operation.id))
-      .limit(1);
-
     // The owning member's "today", so an occurrence due on their wall clock
     // isn't held back (or generated early) by the server's zone.
     const today = localIsoDate(new Date(), effectiveTimeZone(chain.timeZone));
@@ -91,7 +84,7 @@ export class SchedulerGenerationService {
       valueDate: row.valueDate,
       frequencyUnit: row.frequencyUnit,
       frequencyValue: row.frequencyValue,
-      after: latest?.valueDate ?? null,
+      after: row.lastGeneratedDate,
       horizon,
       limit: budget,
     });
@@ -139,6 +132,16 @@ export class SchedulerGenerationService {
         );
         await db.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
       }
+    }
+
+    if (dates.length > 0) {
+      // dueOccurrences returns dates in chronological order, so the last
+      // one is the new cursor — advanced here, in the same transaction as
+      // the inserts above, so a crash between them can't desync the two.
+      await db
+        .update(scheduler)
+        .set({ lastGeneratedDate: dates[dates.length - 1] })
+        .where(eq(scheduler.id, row.id));
     }
     return dates.length;
   }

@@ -94,10 +94,10 @@ export interface DueOccurrencesParams {
 // it, a scheduler with an old enough value date and a fine-grained enough
 // frequency (e.g. daily since 1990) turns a single generation run — a
 // save's background job, or a sign-in's catch-up — into an unbounded run
-// of inserts. A backlog past the cap isn't lost: `after` tracks the latest
-// surviving generated occurrence, so the next run (next sign-in, or the
-// next edit) picks back up right where this one stopped, working through
-// an oversized backlog a batch at a time instead of all at once.
+// of inserts. A backlog past the cap isn't lost: `after` is the scheduler's
+// own generation cursor, so the next run (next sign-in, or the next edit)
+// picks back up right where this one stopped, working through an
+// oversized backlog a batch at a time instead of all at once.
 export const MAX_OCCURRENCES_PER_RUN = 1000;
 
 // Every occurrence strictly after `after` (or from occurrence 0 if `after`
