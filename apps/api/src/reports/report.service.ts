@@ -1,14 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, category, report, reportAccount, reportCategory } from '../db/schema';
+import { category, report, reportAccount, reportCategory } from '../db/schema';
 import { MemberId, ReportId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
-import { reachableAccountsOf } from '../security/reachable';
 
 @Injectable()
 export class ReportService {
@@ -16,24 +15,6 @@ export class ReportService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly ownership: OwnershipService,
   ) {}
-
-  // Keeps only the ids among the submitted set that belong to the member's
-  // non-deleted accounts in non-deleted banks — foreign, unknown, closed
-  // (allowed), and since-deleted ids are dropped silently.
-  private async filterOwnedActiveAccountIds(
-    accountIds: string[],
-    memberId: string,
-  ): Promise<string[]> {
-    if (accountIds.length === 0) {
-      return [];
-    }
-    const rows = await this.db
-      .select({ id: account.id })
-      .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(and(inArray(account.id, accountIds), reachableAccountsOf(memberId)));
-    return rows.map((row) => row.id);
-  }
 
   private async accountIdsByReport(reportIds: string[]): Promise<Map<string, string[]>> {
     const map = new Map<string, string[]>();
@@ -56,7 +37,7 @@ export class ReportService {
   }
 
   // Categories are fixed reference data, not member-owned — unlike
-  // filterOwnedActiveAccountIds, this only needs to check the ids are real,
+  // filterOwnedAccountIds, this only needs to check the ids are real,
   // not that they belong to the member.
   private async filterExistingCategoryIds(categoryIds: string[]): Promise<string[]> {
     if (categoryIds.length === 0) {
@@ -109,7 +90,7 @@ export class ReportService {
 
   async create(memberId: MemberId, dto: CreateReportDto) {
     requireBelowQuota('reports', await this.ownership.countOwned('reports', memberId));
-    const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
+    const accountIds = await this.ownership.filterOwnedAccountIds(dto.accountIds ?? [], memberId);
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     const created = await this.db.transaction(async (tx) => {
@@ -147,7 +128,7 @@ export class ReportService {
 
   async update(memberId: MemberId, id: string, dto: UpdateReportDto): Promise<void> {
     await this.ownership.requireOwnedReport(id as ReportId, memberId);
-    const accountIds = await this.filterOwnedActiveAccountIds(dto.accountIds ?? [], memberId);
+    const accountIds = await this.ownership.filterOwnedAccountIds(dto.accountIds ?? [], memberId);
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     await this.db.transaction(async (tx) => {

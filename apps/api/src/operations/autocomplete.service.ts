@@ -4,7 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { ilikeContains } from '../common/like-pattern';
 import { MemberId } from '../security/ids';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, category, operation } from '../db/schema';
+import { account, category, operation } from '../db/schema';
 import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
 import { reachableAccountsOf } from '../security/reachable';
 
@@ -41,9 +41,10 @@ export class OperationAutocompleteService {
       })
       .from(operation)
       .innerJoin(account, eq(operation.accountId, account.id))
-      .innerJoin(bank, eq(account.bankId, bank.id))
       .leftJoin(category, eq(operation.categoryId, category.id))
-      .where(and(reachableAccountsOf(memberId), ilikeContains(operation.thirdParty, dto.q)))
+      .where(
+        and(reachableAccountsOf(this.db, memberId), ilikeContains(operation.thirdParty, dto.q)),
+      )
       .orderBy(lowerThirdParty, desc(operation.valueDate), desc(operation.id))
       .as('matches');
 

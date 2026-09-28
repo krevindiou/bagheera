@@ -144,6 +144,25 @@ describe('operation transfer pairing', () => {
     expect(res.status).toBe(400);
   });
 
+  it('rejects a closed transfer target', async () => {
+    const { mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountA = await createAccount(mutate, bankId);
+    const accountB = await createAccount(mutate, bankId);
+    expect((await mutate('post', `/accounts/${accountB}/close`)).status).toBe(200);
+
+    const res = await mutate('post', '/operations', {
+      accountId: accountA,
+      type: 'debit',
+      thirdParty: 'Closed target',
+      amount: 10,
+      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+      transferAccountId: accountB,
+      valueDate: '2026-01-01',
+    });
+    expect(res.status).toBe(400);
+  });
+
   it('refreshes the mirror in place when the target is unchanged', async () => {
     const { mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);

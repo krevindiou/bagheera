@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
@@ -27,7 +32,10 @@ async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
  * The `filterOwned*` siblings serve batch endpoints: given a set of ids,
  * each returns only the ones that are owned AND fully active (bank/account
  * both neither closed nor deleted) — silently dropping the rest, never
- * throwing. That's a different policy from the `requireOwned*` methods
+ * throwing. `filterOwnedAccountIds` is the one exception: like the
+ * `requireOwned*` methods, closed stays allowed there (it serves report
+ * account selection, which lists closed accounts same as everything else).
+ * That's a different policy from the `requireOwned*` methods
  * above, not just a different arity of the same one.
  */
 @Injectable()
@@ -38,7 +46,7 @@ export class OwnershipService {
   // reachable by the rules above (nothing deleted along its chain), closed
   // ones included.
   async countOwned(kind: QuotaKind, memberId: MemberId): Promise<number> {
-    const reachable = reachableAccountsOf(memberId);
+    const reachable = reachableAccountsOf(this.db, memberId);
     switch (kind) {
       case 'banks':
         return total(
@@ -96,6 +104,18 @@ export class OwnershipService {
       row.account.deleted
     ) {
       throw new NotFoundException();
+    }
+    return row;
+  }
+
+  // Only for call sites that need a fully-active target, not merely a
+  // reachable one — unlike requireOwnedAccount above, "closed" IS folded
+  // into the throw here. Built for TransferService.requireEligibleTarget's
+  // transfer-target check.
+  async requireOwnedActiveAccount(id: AccountId, memberId: MemberId) {
+    const row = await this.requireOwnedAccount(id, memberId);
+    if (row.account.closed || row.bank.closed) {
+      throw new UnprocessableEntityException('Account is not active.');
     }
     return row;
   }
@@ -203,6 +223,19 @@ export class OwnershipService {
           !row.accountClosed,
       )
       .map((row) => row.id);
+  }
+
+  // Same policy as the filterOwned*Ids siblings above: closed allowed,
+  // foreign/unknown/deleted-chain ids dropped silently.
+  async filterOwnedAccountIds(ids: string[], memberId: MemberId): Promise<string[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const rows = await this.db
+      .select({ id: account.id })
+      .from(account)
+      .where(and(inArray(account.id, ids), reachableAccountsOf(this.db, memberId)));
+    return rows.map((row) => row.id);
   }
 
   async filterOwnedReportIds(ids: string[], memberId: MemberId): Promise<string[]> {

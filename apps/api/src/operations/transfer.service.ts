@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits } from '../common/money';
 import type { Executor } from '../db/executor';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { MemberId } from '../security/ids';
+import { reachableAccountsOf } from '../security/reachable';
 
 // The "Transfer" debit/credit payment methods — the only two that can carry
 // a pairing; flipping between them mirrors a transfer from one side to the
@@ -109,6 +111,15 @@ export class TransferService {
   // that's a first-time pairing or a retarget. An operation's already-paired
   // target that has since gone inactive is left alone by the caller instead
   // of routed through here (see sync()'s 'refresh' branch).
+  //
+  // Runs on the caller's own `db` (often an open transaction — attach()/
+  // sync() are called mid-transaction by operation.service.ts and
+  // SchedulerGenerationService), not OwnershipService's injected connection
+  // — same reachableAccountsOf() the rest of the ownership-scoping surface
+  // uses, so "deleted along the chain" means not-found here too, but kept
+  // as this module's own BadRequestException/message pair rather than
+  // OwnershipService's NotFoundException, since callers surface these as
+  // form-field errors (see common/filters/error-codes.ts).
   private async requireEligibleTarget(
     db: Db,
     targetAccountId: string,
@@ -121,11 +132,13 @@ export class TransferService {
       .select({ account, bank })
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(eq(account.id, targetAccountId));
-    if (!row || row.bank.memberId !== source.memberId) {
+      .where(
+        and(eq(account.id, targetAccountId), reachableAccountsOf(db, source.memberId as MemberId)),
+      );
+    if (!row) {
       throw new BadRequestException('Invalid transfer account.');
     }
-    if (row.bank.deleted || row.account.deleted || row.bank.closed || row.account.closed) {
+    if (row.bank.closed || row.account.closed) {
       throw new BadRequestException('Transfer account is not active.');
     }
     if (row.account.currency !== source.sourceCurrency) {

@@ -368,9 +368,33 @@ describe('accounts', () => {
       });
       expect(res.status).toBe(400);
     });
+
+    it('rejects renaming an account under a closed bank', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      expect((await mutate('post', `/banks/${bankId}/close`)).status).toBe(200);
+
+      const res = await mutate('patch', `/accounts/${accountId}`, {
+        name: 'New name',
+        bankId,
+        currency: 'EUR',
+      });
+      expect(res.status).toBe(422);
+    });
   });
 
   describe('POST /accounts/:id/close and DELETE /accounts/:id', () => {
+    it('rejects closing an account under a closed bank', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      expect((await mutate('post', `/banks/${bankId}/close`)).status).toBe(200);
+
+      const res = await mutate('post', `/accounts/${accountId}/close`);
+      expect(res.status).toBe(422);
+    });
+
     it('closes an account and records account_closed', async () => {
       const { mutate, memberId } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);

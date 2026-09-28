@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { account, bank, reportAccount } from '../db/schema';
+import { account, reportAccount } from '../db/schema';
+import { MemberId } from '../security/ids';
 import { reachableAccountsOf } from '../security/reachable';
 
 export interface EffectiveAccount {
@@ -27,24 +28,20 @@ export async function effectiveAccounts(
     .from(reportAccount)
     .where(eq(reportAccount.reportId, reportId));
 
+  // Cast at this one call site rather than threading the MemberId brand
+  // through effectiveAccounts' own signature — see security/ids.ts's
+  // comment on why branding stays scoped to the OwnershipService boundary
+  // (reachableAccountsOf counts as part of that boundary, this function
+  // doesn't).
+  const reachable = reachableAccountsOf(db, memberId as MemberId);
+
   if (rawLinks.length === 0) {
-    return db
-      .select({ id: account.id, currency: account.currency })
-      .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(reachableAccountsOf(memberId));
+    return db.select({ id: account.id, currency: account.currency }).from(account).where(reachable);
   }
 
   return db
     .select({ id: account.id, currency: account.currency })
     .from(reportAccount)
     .innerJoin(account, eq(reportAccount.accountId, account.id))
-    .innerJoin(bank, eq(account.bankId, bank.id))
-    .where(
-      and(
-        eq(reportAccount.reportId, reportId),
-        eq(account.deleted, false),
-        eq(bank.deleted, false),
-      ),
-    );
+    .where(and(eq(reportAccount.reportId, reportId), reachable));
 }

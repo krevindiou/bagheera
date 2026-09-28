@@ -16,7 +16,7 @@ import {
   parseSynthesisChartWindow,
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, operation } from '../db/schema';
+import { account, operation } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
@@ -52,14 +52,13 @@ export class AccountService {
   ) {}
 
   async list(memberId: MemberId, bankId?: string) {
-    const conditions = [reachableAccountsOf(memberId)];
+    const conditions = [reachableAccountsOf(this.db, memberId)];
     if (bankId) {
       conditions.push(eq(account.bankId, bankId));
     }
     const rows = await this.db
       .select({ account })
       .from(account)
-      .innerJoin(bank, eq(account.bankId, bank.id))
       .where(and(...conditions))
       .orderBy(asc(account.name));
     const accounts = rows.map((r) => r.account);
@@ -165,10 +164,10 @@ export class AccountService {
   }
 
   async update(memberId: MemberId, id: string, dto: UpdateAccountDto): Promise<void> {
-    const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
-    if (row.closed || row.deleted) {
-      throw new UnprocessableEntityException('Account is not active.');
-    }
+    const { account: row } = await this.ownership.requireOwnedActiveAccount(
+      id as AccountId,
+      memberId,
+    );
     if (dto.bankId !== row.bankId || dto.currency !== row.currency) {
       throw new BadRequestException('Bank and currency cannot be changed.');
     }
@@ -176,10 +175,7 @@ export class AccountService {
   }
 
   async close(memberId: MemberId, ip: string, id: string): Promise<void> {
-    const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
-    if (row.closed || row.deleted) {
-      throw new UnprocessableEntityException('Account is not active.');
-    }
+    await this.ownership.requireOwnedActiveAccount(id as AccountId, memberId);
     await this.db.update(account).set({ closed: true }).where(eq(account.id, id));
     await this.audit.record('account_closed', memberId, ip);
   }

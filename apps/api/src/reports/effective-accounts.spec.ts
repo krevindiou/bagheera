@@ -17,7 +17,13 @@ function chain(result: unknown[]) {
 }
 
 function fakeDb(rawLinks: { accountId: string }[], accounts: { id: string; currency: string }[]) {
-  const select = vi.fn().mockReturnValueOnce(chain(rawLinks)).mockReturnValueOnce(chain(accounts));
+  const select = vi
+    .fn()
+    .mockReturnValueOnce(chain(rawLinks))
+    // reachableAccountsOf's own EXISTS subquery — built (but never awaited)
+    // for its query-builder shape alone, in between the two calls above.
+    .mockReturnValueOnce(chain([]))
+    .mockReturnValueOnce(chain(accounts));
   return { select } as unknown as NodePgDatabase;
 }
 
