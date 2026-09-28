@@ -1,26 +1,26 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 
 // Target for the API dev-server proxy below. Defaults to localhost for
 // native (non-Docker) dev; docker-compose.yml overrides it to the api
 // service's container-network address ("http://api:3000").
-const apiProxyTarget = process.env.API_PROXY_TARGET ?? "http://localhost:3000";
+const apiProxyTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:3000';
 
 // API route prefixes, proxied to the API dev server so cookies stay
 // same-origin during local development.
 const apiRoutePrefixes = [
-  "/accounts",
-  "/auth",
-  "/banks",
-  "/dashboard",
-  "/health",
-  "/members",
-  "/operations",
-  "/reference-data",
-  "/reports",
-  "/schedulers",
-  "/webauthn",
+  '/accounts',
+  '/auth',
+  '/banks',
+  '/dashboard',
+  '/health',
+  '/members',
+  '/operations',
+  '/reference-data',
+  '/reports',
+  '/schedulers',
+  '/webauthn',
 ];
 
 // https://vite.dev/config/
@@ -33,7 +33,7 @@ export default defineConfig({
     // isn't valid syntax for a browser loading it as a native ES module.
     // Forcing it through esbuild's pre-bundling step (like any regular
     // node_modules dep) converts it to real ESM first.
-    include: ["@bagheera/money"],
+    include: ['@bagheera/money'],
   },
   server: {
     host: true,
@@ -48,20 +48,22 @@ export default defineConfig({
           // trusts this header from its immediate proxy — Caddy in
           // production, this dev proxy locally). Without it, sign-in
           // silently never persists a session outside of production.
-          headers: { "X-Forwarded-Proto": "https" },
+          headers: { 'X-Forwarded-Proto': 'https' },
         },
       ]),
     ),
   },
   test: {
-    environment: "jsdom",
+    environment: 'jsdom',
     globals: true,
-    setupFiles: ["./src/test-setup.ts"],
+    setupFiles: ['./src/test-setup.ts'],
     // e2e/ holds Playwright specs (run via `pnpm e2e`), not Vitest ones.
-    exclude: ["**/node_modules/**", "e2e/**"],
+    exclude: ['**/node_modules/**', 'e2e/**'],
+    reporters: ['default', 'junit'],
+    outputFile: { junit: './junit-unit.xml' },
     coverage: {
-      provider: "v8",
-      reporter: ["text", "lcov", "json-summary"],
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'json-summary'],
       // Branches only, not lines/statements/functions — branch is the one
       // metric that can't be satisfied by a line merely running once (it
       // needs both sides of a conditional exercised), so it's the one worth
