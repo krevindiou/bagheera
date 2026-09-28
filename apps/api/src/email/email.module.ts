@@ -48,7 +48,7 @@ export class EmailModule implements OnModuleDestroy {
 
   // Explicit order: the worker must stop pulling jobs and close its
   // internal blocking connection before the shared connection it borrows
-  // is closed, or ioredis leaves a dangling handle (and Jest complains).
+  // is closed, or ioredis leaves a dangling handle (and Vitest complains).
   async onModuleDestroy(): Promise<void> {
     await this.worker.onModuleDestroy();
     await this.queue.close();

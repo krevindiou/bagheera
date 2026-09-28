@@ -27,14 +27,14 @@ make help              # list all targets
 make ps                # container status
 make down               # stop stack
 make migrate            # run db migrations
-make lint                # lint api + web
-make format              # format api + web
+make lint                # lint api + web + packages/money
+make format              # format api + web + packages/money
 make shell-api           # shell into the api container
 make shell-web           # shell into the web container
 
 make test                # unit + integration + e2e
-make test-unit           # api (jest) + web (vitest) unit tests
-make test-integration    # api integration tests (jest-integration.json, uses Testcontainers)
+make test-unit           # api + web + packages/money unit tests (all vitest)
+make test-integration    # api integration tests (vitest.integration.config.mts, uses Testcontainers)
 make test-e2e            # boots a separate `bagheera-e2e` compose stack, seeds it, runs Playwright
 ```
 
@@ -86,7 +86,7 @@ One Nest module per bounded concern (`apps/api/src/*/`, wired in `app.module.ts`
 - **Rate limiting**: `rate-limiter-flexible` backed by Valkey (`security/rate-limit.*`).
 - **Ownership scoping**: the bank→account(→operation/scheduler) ownership chain, and the flat report-owner check, are centralized in `security/ownership.service.ts` (`OwnershipService`) — every service that scopes a query to the signed-in member calls its `requireOwned*`/`filterOwned*` methods rather than re-joining bank/account itself. "Closed" is never folded into these checks (closed stays reachable/listable); each caller decides whether it needs a fully-active chain for a mutation.
 - **Reports**: chart aggregation is done in Postgres (SQL grouping), not pulled into app-level JS — see `reports/chart.service.ts` and `common/chart-axis.ts` / `common/synthesis-chart.ts`.
-- **Tests**: `*.spec.ts` = jest unit tests (co-located, mocked DB). `*.integration-spec.ts` = jest integration tests (`jest-integration.json`, run via `test:integration`) spin up real Postgres/Valkey through Testcontainers — that's why the `api` dev container mounts the host Docker socket.
+- **Tests**: `*.spec.ts` = vitest unit tests (co-located, mocked DB). `*.integration-spec.ts` = vitest integration tests (`vitest.integration.config.mts`, run via `test:integration`) spin up real Postgres/Valkey through Testcontainers — that's why the `api` dev container mounts the host Docker socket.
 
 ### Web (`apps/web`, Vue 3)
 

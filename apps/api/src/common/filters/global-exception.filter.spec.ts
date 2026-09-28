@@ -78,7 +78,7 @@ describe('GlobalExceptionFilter', () => {
     await filter.catch(new NoBodyException(), fakeArgumentsHost(fakeRequest(), res));
     // Nest's HttpException.message defaults to the status text when the
     // response body carries no usable message of its own.
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.any() is untyped (any) in @types/jest */
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.any() is untyped (any) in vitest */
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
     /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   });
@@ -153,7 +153,7 @@ describe('GlobalExceptionFilter', () => {
       fakeArgumentsHost(fakeRequest({ url: '/accounts/1' }), res),
     );
 
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.stringMatching() is untyped (any) in @types/jest */
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.stringMatching() is untyped (any) in vitest */
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         path: '/accounts/1',

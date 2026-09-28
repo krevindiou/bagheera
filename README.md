@@ -40,8 +40,8 @@ make help      # list all targets
 make ps        # container status
 make migrate   # run db migrations
 make test      # unit + integration + e2e (or test-unit/test-integration/test-e2e individually)
-make lint      # lint api + web
-make format    # format api + web
+make lint      # lint api + web + packages/money
+make format    # format api + web + packages/money
 make shell-api # shell into the api container
 make shell-web # shell into the web container
 ```
@@ -58,11 +58,13 @@ make test-e2e   # Playwright needs the separate e2e stack
 
 ```
 apps/
-  api/     NestJS backend
-  web/     Vue frontend
-docker/    Dockerfiles, Compose files, Caddyfile
-scripts/   backup.sh
-.kamal/    deploy config/secrets
+  api/       NestJS backend
+  web/       Vue frontend
+packages/
+  money/     cross-stack code shared by api and web (minor-units money math)
+docker/      Dockerfiles, Compose files, Caddyfile
+scripts/     backup.sh
+.kamal/      deploy config/secrets
 ```
 
 ## Production

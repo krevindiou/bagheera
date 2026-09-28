@@ -5,10 +5,10 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 import { seedDatabase } from '../src/db/seed';
 
-// Started once for the whole `pnpm test:integration` run (Jest globalSetup
-// keeps this module instance alive between setup and teardown), giving the
-// integration suite real Postgres/Valkey instances instead of a
-// developer-started `docker compose` pair.
+// Started once for the whole `pnpm test:integration` run (Vitest's
+// globalSetup keeps this module instance alive between setup and
+// teardown), giving the integration suite real Postgres/Valkey instances
+// instead of a developer-started `docker compose` pair.
 const POSTGRES_IMAGE = 'postgres:18-alpine';
 const VALKEY_IMAGE = 'valkey/valkey:9-alpine';
 const POSTGRES_USER = 'bagheera';
