@@ -179,6 +179,7 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       VALKEY_URL: ${{ secrets.VALKEY_URL }}
+      VALKEY_PASSWORD: ${{ secrets.VALKEY_PASSWORD }}
       CRYPTO_KEYS: ${{ secrets.CRYPTO_KEYS }}
       CRYPTO_ACTIVE_KEY_ID: ${{ secrets.CRYPTO_ACTIVE_KEY_ID }}
       SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
@@ -193,6 +194,16 @@ jobs:
         with:
           ruby-version: "3.4"
       - run: gem install kamal --no-document --version "~> 2.12"
+      - name: Check .kamal/secrets env vars are set
+        run: |
+          missing=0
+          for name in $(grep -oP '^\w+(?==\$\w+$)' .kamal/secrets); do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is required by .kamal/secrets but is unset in the deploy job env"
+              missing=1
+            fi
+          done
+          exit "$missing"
       - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.KAMAL_SSH_PRIVATE_KEY }}
