@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Nightly backup: pg_dump of the running postgres container, pushed to a
-# restic repository. Run on the deploy host itself, as root (it needs
-# docker access to the postgres container).
+# restic repository. Run on the deploy host itself, as the dedicated
+# `backup` user (a member of the `docker` group — enough for `docker exec`
+# against the postgres container, without needing root). See
+# docs/backup-restore.md's "Deploy host SSH setup" for how that user is
+# provisioned.
 #
 # Required env:
 #   RESTIC_REPOSITORY, RESTIC_PASSWORD (or RESTIC_PASSWORD_FILE) — restic

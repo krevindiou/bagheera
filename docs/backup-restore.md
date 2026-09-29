@@ -1,5 +1,51 @@
 # Restoring from a backup
 
+## Deploy host SSH setup (one-time)
+
+`ci.yml`'s deploy job and `backup.yml` both pin the deploy host's SSH key
+in a `DEPLOY_HOST_KNOWN_HOSTS` secret rather than trusting whatever
+`ssh-keyscan` returns on each run (that accepts whichever key answers,
+which a DNS/routing MITM could exploit). `backup.yml` also connects as a
+dedicated `backup` user instead of `root`, so a leaked
+`KAMAL_SSH_PRIVATE_KEY` can only reach the postgres container, not the
+whole host. Both need a one-time setup on the deploy host, done once
+(and again if the host is ever rebuilt or its key rotated):
+
+1. **Capture the host's key** from a trusted connection (e.g. right after
+   provisioning the host, or over a connection you've already verified
+   out of band):
+   ```sh
+   ssh-keyscan -H <deploy-host> > known_hosts_line
+   cat known_hosts_line   # sanity-check: one non-empty line per key type
+   ```
+2. **Store it as a repo secret:**
+   ```sh
+   gh secret set DEPLOY_HOST_KNOWN_HOSTS < known_hosts_line
+   rm known_hosts_line
+   ```
+3. **Provision the `backup` user** on the deploy host (as root or an
+   existing sudo user):
+   ```sh
+   useradd --create-home --shell /bin/bash backup
+   usermod -aG docker backup
+   install -d -m 700 -o backup -g backup /home/backup/.ssh
+   # The same public key KAMAL_SSH_PRIVATE_KEY's private half pairs with —
+   # reusing Kamal's own deploy key means no new GitHub secret is needed.
+   cp /root/.ssh/authorized_keys /home/backup/.ssh/authorized_keys
+   chown backup:backup /home/backup/.ssh/authorized_keys
+   chmod 600 /home/backup/.ssh/authorized_keys
+   ```
+   Membership in the `docker` group is root-equivalent for anything
+   touching the Docker socket — this trades "backup's key can reach the
+   whole host as root" for "backup's key can reach the whole host via
+   docker", which is why it's still a distinct, narrower user rather than
+   a sandboxed one: it removes *root login* from what a leaked key gets,
+   not full host access. A tighter setup (e.g. a rootless backup
+   container with only the postgres socket mounted in) is a further step,
+   not required by this one.
+
+## Restoring
+
 `scripts/backup.sh` pushes a `pg_dump` snapshot (custom format) to a restic
 repository nightly. There's no WAL archiving, so this is the only recovery
 point — the recovery point objective is however old the last successful

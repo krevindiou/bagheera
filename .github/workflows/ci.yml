@@ -207,7 +207,14 @@ jobs:
       - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.KAMAL_SSH_PRIVATE_KEY }}
-      - run: mkdir -p ~/.ssh && ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+      # Pinned, not ssh-keyscan'd: scanning on every run trusts whatever key
+      # answers at connect time (a DNS/routing MITM would pass silently).
+      # DEPLOY_HOST_KNOWN_HOSTS holds the host's own known_hosts line(s),
+      # captured once out of band — see docs/backup-restore.md's "Deploy
+      # host SSH setup" section for how to (re)generate it.
+      - run: mkdir -p ~/.ssh && printf '%s\n' "$DEPLOY_HOST_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+        env:
+          DEPLOY_HOST_KNOWN_HOSTS: ${{ secrets.DEPLOY_HOST_KNOWN_HOSTS }}
       - name: Build and push the api accessory image
         run: |
           echo "$KAMAL_REGISTRY_PASSWORD" | docker login "$KAMAL_REGISTRY_SERVER" -u "$KAMAL_REGISTRY_USERNAME" --password-stdin

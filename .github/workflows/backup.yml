@@ -17,7 +17,10 @@ jobs:
       - uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.KAMAL_SSH_PRIVATE_KEY }}
-      - run: mkdir -p ~/.ssh && ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+      # Pinned, not ssh-keyscan'd — see the same step in ci.yml's deploy job.
+      - run: mkdir -p ~/.ssh && printf '%s\n' "$DEPLOY_HOST_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+        env:
+          DEPLOY_HOST_KNOWN_HOSTS: ${{ secrets.DEPLOY_HOST_KNOWN_HOSTS }}
       - name: Run scripts/backup.sh on the deploy host
         env:
           RESTIC_REPOSITORY: ${{ secrets.RESTIC_REPOSITORY }}
@@ -43,4 +46,8 @@ jobs:
             printf 'export POSTGRES_PASSWORD=%q\n' "$POSTGRES_PASSWORD"
             printf 'export POSTGRES_CONTAINER=%q\n' "$POSTGRES_CONTAINER"
             cat scripts/backup.sh
-          } | ssh root@"$DEPLOY_HOST" 'bash -s'
+          # Not root: a dedicated `backup` user in the deploy host's `docker`
+          # group, which is enough to run `docker exec` against the postgres
+          # container without widening what a leaked KAMAL_SSH_PRIVATE_KEY
+          # can do. See docs/backup-restore.md's "Deploy host SSH setup".
+          } | ssh backup@"$DEPLOY_HOST" 'bash -s'
