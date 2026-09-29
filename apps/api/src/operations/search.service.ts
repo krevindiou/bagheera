@@ -120,7 +120,6 @@ export class OperationSearchService {
     }
 
     const where = and(...conditions);
-    const pageNumber = page > 0 ? page : 1;
 
     const rows = await this.db
       .select()
@@ -128,13 +127,13 @@ export class OperationSearchService {
       .where(where)
       .orderBy(desc(operation.valueDate), desc(operation.createdAt), desc(operation.id))
       .limit(PAGE_SIZE)
-      .offset((pageNumber - 1) * PAGE_SIZE);
+      .offset((page - 1) * PAGE_SIZE);
 
     const [{ total }] = await this.db
       .select({ total: sql<number>`count(*)::int` })
       .from(operation)
       .where(where);
 
-    return { items: rows, total, page: pageNumber, pageSize: PAGE_SIZE };
+    return { items: rows, total, page, pageSize: PAGE_SIZE };
   }
 }

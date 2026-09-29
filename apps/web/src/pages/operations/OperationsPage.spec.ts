@@ -274,14 +274,14 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
-      params: { query: { accountId: ACCOUNT_ID, page: '2' } },
+      params: { query: { accountId: ACCOUNT_ID, page: 2 } },
     });
 
     await prev.trigger('click');
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
-      params: { query: { accountId: ACCOUNT_ID, page: '1' } },
+      params: { query: { accountId: ACCOUNT_ID, page: 1 } },
     });
   });
 
@@ -302,7 +302,7 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     expect(apiClient.POST).toHaveBeenCalledWith('/operations/search', {
-      params: { query: { page: '1' } },
+      params: { query: { page: 1 } },
       body: expect.objectContaining({ accountId: ACCOUNT_ID, thirdParty: 'Landlord' }),
     });
     // Submitting closes the panel and shows the active-search dot, without
@@ -491,14 +491,14 @@ describe('OperationsPage', () => {
     await next.trigger('click');
     await flushPromises();
     expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
-      params: { query: { accountId: ACCOUNT_ID, page: '2' } },
+      params: { query: { accountId: ACCOUNT_ID, page: 2 } },
     });
 
     await router.push({ name: 'operations', params: { accountId: ACCOUNT_ID_2 } });
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
-      params: { query: { accountId: ACCOUNT_ID_2, page: '1' } },
+      params: { query: { accountId: ACCOUNT_ID_2, page: 1 } },
     });
   });
 

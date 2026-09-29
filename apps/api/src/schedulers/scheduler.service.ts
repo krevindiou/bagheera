@@ -30,21 +30,20 @@ export class SchedulerService {
   async list(memberId: MemberId, accountId: string, page: number) {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
-    const pageNumber = page > 0 ? page : 1;
     const rows = await this.db
       .select()
       .from(scheduler)
       .where(eq(scheduler.accountId, accountId))
       .orderBy(desc(scheduler.createdAt), desc(scheduler.id))
       .limit(PAGE_SIZE)
-      .offset((pageNumber - 1) * PAGE_SIZE);
+      .offset((page - 1) * PAGE_SIZE);
 
     const [{ total }] = await this.db
       .select({ total: count() })
       .from(scheduler)
       .where(eq(scheduler.accountId, accountId));
 
-    return { items: rows, total, page: pageNumber, pageSize: PAGE_SIZE };
+    return { items: rows, total, page, pageSize: PAGE_SIZE };
   }
 
   async create(memberId: MemberId, dto: CreateSchedulerDto) {

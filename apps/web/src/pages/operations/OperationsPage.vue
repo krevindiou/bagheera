@@ -113,7 +113,7 @@ const operationsQuery = useQuery({
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/operations/search', {
-        params: { query: { accountId: accountId.value, page: String(page.value) } },
+        params: { query: { accountId: accountId.value, page: page.value } },
       }),
     ),
 });
@@ -143,7 +143,7 @@ const searchMutation = useMutation({
   mutationFn: async (criteria: SearchCriteria) =>
     unwrap(
       await apiClient.POST('/operations/search', {
-        params: { query: { page: '1' } },
+        params: { query: { page: 1 } },
         body: { accountId: accountId.value, ...criteria },
       }),
     ),

@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Post, Query } from '@nestjs/common';
+import { PageQueryDto } from '../common/dto/page-query.dto';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_SEARCH_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
@@ -21,18 +22,18 @@ export class OperationSearchController {
   run(
     @CurrentMember() memberId: MemberId,
     @Body() dto: SearchOperationsDto,
-    @Query('page') page?: string,
+    @Query() { page }: PageQueryDto,
   ): Promise<OperationListDto> {
-    return this.search.search(memberId, dto, page ? Number(page) : 1);
+    return this.search.search(memberId, dto, page);
   }
 
   @Get()
   recall(
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,
-    @Query('page') page?: string,
+    @Query() { page }: PageQueryDto,
   ): Promise<OperationSearchRecallDto> {
-    return this.search.recallAndRun(memberId, accountId, page ? Number(page) : 1);
+    return this.search.recallAndRun(memberId, accountId, page);
   }
 
   @Delete()

@@ -225,14 +225,14 @@ describe('SchedulersPage', () => {
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/schedulers', {
-      params: { query: { accountId: ACCOUNT_ID, page: '2' } },
+      params: { query: { accountId: ACCOUNT_ID, page: 2 } },
     });
 
     await prev.trigger('click');
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/schedulers', {
-      params: { query: { accountId: ACCOUNT_ID, page: '1' } },
+      params: { query: { accountId: ACCOUNT_ID, page: 1 } },
     });
   });
 
@@ -246,14 +246,14 @@ describe('SchedulersPage', () => {
     await next.trigger('click');
     await flushPromises();
     expect(apiClient.GET).toHaveBeenCalledWith('/schedulers', {
-      params: { query: { accountId: ACCOUNT_ID, page: '2' } },
+      params: { query: { accountId: ACCOUNT_ID, page: 2 } },
     });
 
     await router.push({ name: 'schedulers', params: { accountId: ACCOUNT_ID_2 } });
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/schedulers', {
-      params: { query: { accountId: ACCOUNT_ID_2, page: '1' } },
+      params: { query: { accountId: ACCOUNT_ID_2, page: 1 } },
     });
   });
 

@@ -33,21 +33,20 @@ export class OperationService {
   async list(memberId: MemberId, accountId: string, page: number) {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
-    const pageNumber = page > 0 ? page : 1;
     const rows = await this.db
       .select()
       .from(operation)
       .where(eq(operation.accountId, accountId))
       .orderBy(desc(operation.valueDate), desc(operation.createdAt), desc(operation.id))
       .limit(PAGE_SIZE)
-      .offset((pageNumber - 1) * PAGE_SIZE);
+      .offset((page - 1) * PAGE_SIZE);
 
     const [{ total }] = await this.db
       .select({ total: count() })
       .from(operation)
       .where(eq(operation.accountId, accountId));
 
-    return { items: rows, total, page: pageNumber, pageSize: PAGE_SIZE };
+    return { items: rows, total, page, pageSize: PAGE_SIZE };
   }
 
   async create(memberId: MemberId, dto: CreateOperationDto) {

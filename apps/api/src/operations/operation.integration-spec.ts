@@ -207,6 +207,19 @@ describe('operations', () => {
       const { agent: attackerAgent } = await seedSignedInMember(app);
       await attackerAgent.get(`/operations?accountId=${accountId}&page=1`).expect(404);
     });
+
+    it('defaults to page 1 when omitted, and rejects a non-positive or non-integer page', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      const res = await agent.get(`/operations?accountId=${accountId}`).expect(200);
+      expect((res.body as { page: number }).page).toBe(1);
+
+      await agent.get(`/operations?accountId=${accountId}&page=0`).expect(400);
+      await agent.get(`/operations?accountId=${accountId}&page=-1`).expect(400);
+      await agent.get(`/operations?accountId=${accountId}&page=abc`).expect(400);
+    });
   });
 
   describe('PATCH /operations/:id', () => {

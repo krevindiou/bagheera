@@ -50,7 +50,7 @@ const schedulersQuery = useQuery({
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/schedulers', {
-        params: { query: { accountId: accountId.value, page: String(page.value) } },
+        params: { query: { accountId: accountId.value, page: page.value } },
       }),
     ),
 });

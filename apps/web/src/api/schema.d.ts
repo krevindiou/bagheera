@@ -1429,7 +1429,7 @@ export interface operations {
         parameters: {
             query: {
                 accountId: string;
-                page?: string;
+                page: number;
             };
             header?: never;
             path?: never;
@@ -1543,7 +1543,7 @@ export interface operations {
         parameters: {
             query: {
                 accountId: string;
-                page?: string;
+                page: number;
             };
             header?: never;
             path?: never;
@@ -1659,7 +1659,7 @@ export interface operations {
         parameters: {
             query: {
                 accountId: string;
-                page?: string;
+                page: number;
             };
             header?: never;
             path?: never;
@@ -1679,8 +1679,8 @@ export interface operations {
     };
     OperationSearchController_run: {
         parameters: {
-            query?: {
-                page?: string;
+            query: {
+                page: number;
             };
             header?: never;
             path?: never;

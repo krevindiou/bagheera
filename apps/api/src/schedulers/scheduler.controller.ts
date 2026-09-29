@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import { PageQueryDto } from '../common/dto/page-query.dto';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
@@ -20,9 +21,9 @@ export class SchedulerController {
   list(
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,
-    @Query('page') page?: string,
+    @Query() { page }: PageQueryDto,
   ): Promise<SchedulerListDto> {
-    return this.schedulers.list(memberId, accountId, page ? Number(page) : 1);
+    return this.schedulers.list(memberId, accountId, page);
   }
 
   @Post()

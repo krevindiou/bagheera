@@ -58,6 +58,12 @@ describe('accounts', () => {
       expect(filtered.body).toHaveLength(1);
     });
 
+    it('rejects a malformed bankId with 400, not a 500 from Postgres', async () => {
+      const { agent } = await seedSignedInMember(app);
+
+      await agent.get('/accounts?bankId=not-a-uuid').expect(400);
+    });
+
     it('includes each account balance', async () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);

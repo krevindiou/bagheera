@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
-import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
+import { ParseUuidV7Pipe, ParseUuidV7PipeOptional } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { AccountService } from './account.service';
@@ -25,7 +25,7 @@ export class AccountController {
   @Get()
   list(
     @CurrentMember() memberId: MemberId,
-    @Query('bankId') bankId?: string,
+    @Query('bankId', ParseUuidV7PipeOptional) bankId?: string,
   ): Promise<AccountWithBalanceDto[]> {
     return this.accounts.list(memberId, bankId);
   }
