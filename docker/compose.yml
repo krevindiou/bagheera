@@ -49,6 +49,12 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.api
       target: dev
+      args:
+        # Exported by the Makefile from this host's own docker.sock gid —
+        # required, no fallback: a bare `docker compose build` bypassing
+        # the Makefile fails fast instead of silently baking in some other
+        # host's gid (see Dockerfile.api's own comment).
+        DOCKER_GID: ${DOCKER_GID:?}
     restart: unless-stopped
     # Migrate then start so `docker compose up` alone is enough — no
     # separate `db:migrate` step needed on a fresh checkout.
@@ -131,9 +137,11 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.playwright
       args:
-        # Exported by the Makefile from apps/web/package.json; the default
-        # only serves a bare `docker compose build`.
-        PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION:-1.62.1}
+        # Exported by the Makefile from apps/web/package.json — required,
+        # no fallback: a bare `docker compose build` bypassing the
+        # Makefile fails fast instead of silently using some other
+        # version's browser binaries.
+        PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION:?}
     # Shares the web container's network namespace instead of joining the
     # bridge network under its own hostname — visiting http://web:5173
     # (rather than genuine localhost) both trips Vite's allowedHosts guard

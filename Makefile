@@ -1,5 +1,9 @@
 # Keeps docker/Dockerfile.playwright's browser image on the @playwright/test version.
 export PLAYWRIGHT_VERSION := $(shell sed -n 's/.*"@playwright\/test": "^\{0,1\}\([0-9.]*\)".*/\1/p' apps/web/package.json)
+# Lets docker/Dockerfile.api's dev stage add its `node` user to a group
+# matching this host's docker.sock gid, so `pnpm test:integration`
+# (Testcontainers) can reach it without `docker compose exec -u root`.
+export DOCKER_GID := $(shell stat -c %g /var/run/docker.sock)
 
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml

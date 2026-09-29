@@ -8,9 +8,11 @@
 #
 # PLAYWRIGHT_VERSION must match apps/web/package.json's @playwright/test
 # version exactly — the browser binaries baked into this base image are
-# tied to that release. The Makefile passes it in from package.json; the
-# default below only serves a bare `docker build`.
-ARG PLAYWRIGHT_VERSION=1.62.1
+# tied to that release. The Makefile passes it in from package.json; no
+# default here, so a bare `docker build`/`docker compose build` bypassing
+# it fails fast (missing tag) instead of silently building a mismatched
+# browser image.
+ARG PLAYWRIGHT_VERSION
 FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
 
 # Otherwise corepack's first pnpm invocation blocks on an interactive
