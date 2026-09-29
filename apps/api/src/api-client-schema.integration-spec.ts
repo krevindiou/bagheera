@@ -17,10 +17,15 @@ const hasWebWorkspace = existsSync(path.join(REPO_ROOT, 'apps', 'web'));
 describe.skipIf(!hasWebWorkspace)('generated web API client', () => {
   it("matches the API's OpenAPI document", async () => {
     const { app } = await createTestApp();
-    // Same DocumentBuilder config main.ts uses to serve /api/docs-json.
+    // Same DocumentBuilder config (and ignoreGlobalPrefix) main.ts uses to
+    // serve /api/docs-json — createTestApp() itself never applies the
+    // global prefix (see its own doc comment), so this option is a no-op
+    // here, kept only so a future change to that stays symmetric with
+    // main.ts's own call.
     const document = SwaggerModule.createDocument(
       app,
       new DocumentBuilder().setTitle('Bagheera API').setVersion('1').build(),
+      { ignoreGlobalPrefix: true },
     );
     await app.close();
 

@@ -47,7 +47,7 @@ export const REGISTER_COUNTRY = 'US';
  * the same way it does.
  */
 export async function fetchCsrfToken(page: Page): Promise<string> {
-  const res = await page.request.get('/auth/csrf-token');
+  const res = await page.request.get('/api/auth/csrf-token');
   const body = (await res.json()) as { csrfToken: string };
   return body.csrfToken;
 }
@@ -72,7 +72,7 @@ export async function fetchCsrfToken(page: Page): Promise<string> {
 export async function registerAndCompletePasskeySignup(page: Page): Promise<{ email: string }> {
   const email = randomEmail();
 
-  await page.request.post('/members/register', {
+  await page.request.post('/api/members/register', {
     headers: { 'x-csrf-token': await fetchCsrfToken(page) },
     data: { email, country: REGISTER_COUNTRY },
   });
@@ -102,14 +102,14 @@ interface AccountWithBank {
 async function createAccountWithBank(page: Page): Promise<AccountWithBank> {
   const currency = 'USD';
   const csrf1 = await fetchCsrfToken(page);
-  const bankRes = await page.request.post('/banks/choice', {
+  const bankRes = await page.request.post('/api/banks/choice', {
     headers: { 'x-csrf-token': csrf1 },
     data: { name: `E2E bank ${randomUUID().slice(0, 8)}` },
   });
   const bank = (await bankRes.json()) as { id: string };
 
   const csrf2 = await fetchCsrfToken(page);
-  const accountRes = await page.request.post('/accounts', {
+  const accountRes = await page.request.post('/api/accounts', {
     headers: { 'x-csrf-token': csrf2 },
     data: {
       bankId: bank.id,

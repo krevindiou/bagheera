@@ -15,7 +15,7 @@ export default defineConfig({
   // Every spec shares one Postgres/Valkey pair *and* one source IP for the
   // whole run (this container) — rate-limiting is keyed off IP+identifier
   // (apps/api/src/security/rate-limit.*), so a lockout assertion running
-  // concurrently with anything else hitting /webauthn/authentication/*
+  // concurrently with anything else hitting /api/webauthn/authentication/*
   // would trip shared limiter state unpredictably. See the plan's
   // "Execution model" section for the full rationale.
   fullyParallel: false,

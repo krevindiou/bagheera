@@ -3,9 +3,13 @@ import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
 import type { paths } from './schema';
 
-// Same-origin in production (Caddy proxies API requests to the API
-// service); local dev talks to the API dev server via Vite's dev proxy.
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
+// Same-origin in production (Caddy proxies /api* requests to the API
+// service); local dev talks to the API dev server via Vite's dev proxy
+// (see vite.config.ts's apiRoutePrefixes). The API's own routes are
+// unprefixed (main.ts's setGlobalPrefix('api', ...) adds this at the HTTP
+// layer only — see its own comment), so schema.d.ts's generated paths stay
+// unprefixed too; this is the one place that prefix is added back.
+const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export const apiClient = createClient<paths>({
   baseUrl,
@@ -16,7 +20,7 @@ const CSRF_HEADER = 'x-csrf-token';
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 async function fetchCsrfToken(): Promise<string> {
-  const res = await fetch(new URL('auth/csrf-token', new URL(baseUrl, window.location.origin)), {
+  const res = await fetch(new URL(`${baseUrl}/auth/csrf-token`, window.location.origin), {
     credentials: 'include',
   });
   const body = (await res.json()) as { csrfToken: string };

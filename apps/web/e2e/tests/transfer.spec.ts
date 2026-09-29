@@ -9,7 +9,7 @@ test("a transfer between two of the member's own accounts moves money on both si
 }) => {
   const { page, bankId, accountId: sourceId, currency } = accountWithBank;
 
-  const savingsRes = await page.request.post('/accounts', {
+  const savingsRes = await page.request.post('/api/accounts', {
     headers: { 'x-csrf-token': await fetchCsrfToken(page) },
     data: {
       bankId,

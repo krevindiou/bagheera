@@ -17,6 +17,13 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
+  // Every controller route lives under /api — one prefix both
+  // docker/Caddyfile and apps/web/vite.config.ts's dev proxy can match with
+  // a single /api* rule, instead of listing each controller's first path
+  // segment by hand (see scripts/check-api-routes.mjs's removal). /health
+  // stays unprefixed: Dockerfile.api's HEALTHCHECK and docker-compose.yml's
+  // both curl it directly, unprefixed, and Kamal's proxy checks it too.
+  app.setGlobalPrefix('api', { exclude: ['health'] });
   // Production sits behind TWO reverse-proxy hops, not one: Kamal's own
   // TLS-terminating edge proxy, then the Caddy container it forwards to
   // (see config/deploy.yml and docker/Caddyfile) — both append to
@@ -61,6 +68,12 @@ async function bootstrap() {
     const swaggerDocument = SwaggerModule.createDocument(
       app,
       new DocumentBuilder().setTitle('Bagheera API').setVersion('1').build(),
+      // Keeps documented paths prefix-free (e.g. "/auth/csrf-token" rather
+      // than "/api/auth/csrf-token") — apps/web/src/api/client.ts supplies
+      // the /api prefix itself via openapi-fetch's own baseUrl, so the
+      // generated schema.d.ts's path keys must match what's documented
+      // here, not the real registered route.
+      { ignoreGlobalPrefix: true },
     );
     SwaggerModule.setup('api/docs', app, swaggerDocument, {
       jsonDocumentUrl: 'api/docs-json',

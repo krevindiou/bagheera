@@ -8,7 +8,7 @@ test('filtering operations by third-party text narrows the list, and clearing re
   const { page, accountId } = accountWithBank;
 
   for (const thirdParty of ['Coffee Shop', 'Electronics Store']) {
-    await page.request.post('/operations', {
+    await page.request.post('/api/operations', {
       headers: { 'x-csrf-token': await fetchCsrfToken(page) },
       data: {
         accountId,

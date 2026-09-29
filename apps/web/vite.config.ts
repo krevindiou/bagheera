@@ -8,20 +8,9 @@ import vue from '@vitejs/plugin-vue';
 const apiProxyTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:3000';
 
 // API route prefixes, proxied to the API dev server so cookies stay
-// same-origin during local development.
-const apiRoutePrefixes = [
-  '/accounts',
-  '/auth',
-  '/banks',
-  '/dashboard',
-  '/health',
-  '/members',
-  '/operations',
-  '/reference-data',
-  '/reports',
-  '/schedulers',
-  '/webauthn',
-];
+// same-origin during local development. Every controller route lives
+// under /api (main.ts's setGlobalPrefix); /health is the one exception.
+const apiRoutePrefixes = ['/health', '/api'];
 
 // https://vite.dev/config/
 export default defineConfig({
