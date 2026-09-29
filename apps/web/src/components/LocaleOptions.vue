@@ -28,3 +28,33 @@ const { t } = useI18n();
     </button>
   </div>
 </template>
+
+<style scoped>
+.menu-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 7px 9px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--paper-dim);
+  cursor: pointer;
+  text-align: left;
+}
+.menu-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--paper);
+}
+.menu-option.selected {
+  color: var(--paper);
+}
+.menu-check {
+  color: var(--violet-soft);
+  flex: none;
+}
+</style>

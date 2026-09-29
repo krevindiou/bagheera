@@ -36,3 +36,44 @@ async function pick(locale: Locale): Promise<void> {
     <LocaleOptions :current="current" @pick="pick" />
   </MenuPopover>
 </template>
+
+<style scoped>
+/* A themed replacement for a native <select>: a compact trigger (current
+   locale code) that opens a small listbox of full locale names — same
+   panel/hairline/violet language as the rest of the shell instead of OS
+   chrome. */
+.lang-picker {
+  position: relative;
+  flex: none;
+}
+.lang-trigger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--panel-2);
+  border: 1px solid var(--hair-strong);
+  color: var(--paper-dim);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 7px 5px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.lang-trigger:hover {
+  color: var(--paper);
+  border-color: var(--paper-faint);
+}
+.lang-trigger[aria-expanded='true'] {
+  color: var(--paper);
+  border-color: var(--violet);
+}
+.lang-chevron {
+  flex: none;
+  color: var(--paper-faint);
+  transition: transform 0.15s ease;
+}
+.lang-trigger[aria-expanded='true'] .lang-chevron {
+  transform: rotate(180deg);
+  color: var(--violet-soft);
+}
+</style>

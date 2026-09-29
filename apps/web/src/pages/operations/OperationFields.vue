@@ -218,3 +218,10 @@ function onThirdPartyChange() {
 
   <slot name="end" />
 </template>
+
+<style scoped>
+.transfer-accent {
+  border-left: 2px solid var(--violet-bright);
+  padding-left: 12px;
+}
+</style>

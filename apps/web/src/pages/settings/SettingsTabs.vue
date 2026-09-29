@@ -27,3 +27,27 @@ const tabs = [
     </router-link>
   </nav>
 </template>
+
+<style scoped>
+.tab-bar {
+  display: flex;
+  gap: 22px;
+  border-bottom: 1px solid var(--hair);
+  margin-bottom: 26px;
+}
+.tab-item {
+  padding-bottom: 12px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--paper-dim);
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+}
+.tab-item:hover {
+  color: var(--paper);
+}
+.tab-item.active {
+  color: var(--paper);
+  border-bottom-color: var(--violet-bright);
+}
+</style>

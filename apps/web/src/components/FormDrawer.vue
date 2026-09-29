@@ -70,3 +70,54 @@ useFocusTrap(panel);
     </div>
   </div>
 </template>
+
+<style scoped>
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1050;
+}
+.drawer {
+  width: 400px;
+  max-width: 92vw;
+  height: 100%;
+  background: var(--panel);
+  border-left: 1px solid var(--hair-strong);
+  padding: 32px 30px;
+  overflow-y: auto;
+  box-shadow: -30px 0 60px -20px rgba(0, 0, 0, 0.6);
+}
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.drawer-close {
+  cursor: pointer;
+  color: var(--paper-faint);
+  font-size: 22px;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.drawer-close:hover {
+  color: var(--paper);
+}
+.drawer-title {
+  font-size: 20px;
+}
+/* The footer's primary row (submit, submit-and-new, search + clear) —
+   its buttons grow to fill the row, with this drawer's own full-width
+   Cancel beneath: one footer layout for every drawer. `:slotted()` because
+   the buttons themselves are written in each caller's own template
+   (OperationForm.vue, SchedulerForm.vue, search.vue, ...) as this
+   component's `#actions` slot content, not by FormDrawer.vue itself. */
+.drawer-actions > :slotted(.btn) {
+  flex-grow: 1;
+}
+</style>

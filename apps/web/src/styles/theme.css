@@ -9,9 +9,16 @@
  * bakes literal hex into (verified by reading its compiled CSS) — the
  * .btn-primary/.btn-outline-* variants, checked radio/checkbox fill,
  * focus rings, the <select> arrow icon, .modal-* — get a manual override
- * below. Everything else in this file is bespoke (no Bootstrap
- * equivalent): the sidebar shell, stat cards, slide-over drawer, tab bar,
- * pills, sign-in card.
+ * below.
+ *
+ * This file stays limited to: design tokens, Bootstrap remaps/overrides
+ * (used by raw Bootstrap classes across many unrelated templates, so no
+ * single component owns them), and a handful of small selectors genuinely
+ * shared by two or more components (documented inline below). Anything
+ * owned by exactly one component — the sidebar shell, stat cards, slide-over
+ * drawer, tab bar, pills, sign-in card, etc. — lives in that component's own
+ * `<style scoped>` instead; see git history before 2026-09 if you need the
+ * pre-split single-file version.
  */
 
 :root {
@@ -126,7 +133,10 @@ h6,
    page-title size (Accounts/Reports/Settings); Dashboard (28px) and
    Operations/Schedulers (24px) override it inline. Margins stay on each
    page's own Bootstrap spacing utility (mb-0/mb-1/etc.) — not set here, so
-   as not to out-specificity those classes. */
+   as not to out-specificity those classes.
+   Stays global rather than moving into BaseLayout.vue's scoped style: it
+   targets the <h1> of whichever routed page renders inside .main-inner —
+   every current and future page, not something BaseLayout itself owns. */
 .main-inner h1 {
   font-size: 26px;
 }
@@ -216,50 +226,6 @@ input[type='radio'] {
   --bs-btn-hover-color: var(--violet-soft);
 }
 
-/* Per-row inline actions (Accounts' Edit/Close/Delete, Schedulers/Reports'
-   Edit/View chart, Passkeys' Remove) — icon-only buttons (see IconButton.vue)
-   so a row with several actions stays compact. The action name is kept as
-   the accessible name (aria-label) and hover tooltip (title), not visible
-   text — mirrors the mock's "thin, 1.5px stroke" guidance for icons. */
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-}
-.btn-icon svg {
-  width: 16px;
-  height: 16px;
-}
-
-.icon-16 {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.panel-row {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--hair);
-  font-size: 14.5px;
-}
-.panel-row:last-child {
-  border-bottom: none;
-}
-.panel-row:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-/* The account-name link is plain text in the mock (a bare {{acct.name}}
-   span) — the row itself is the click target (cursor:pointer + the hover
-   above), not a conventional inline text link, so it shouldn't pick up
-   --bs-link-color/underline. */
-.panel-row a {
-  color: inherit;
-  text-decoration: none;
-}
-
 /* ---------- Forms ---------- */
 .form-label {
   font-size: 13px;
@@ -308,105 +274,9 @@ input[type='radio'] {
   color: var(--paper-faint);
 }
 
-/* ---------- Modal (ConfirmModal.vue) ---------- */
-.modal-content {
-  --bs-modal-bg: var(--panel);
-  --bs-modal-color: var(--paper);
-  --bs-modal-border-color: var(--hair-strong);
-  box-shadow: var(--bs-box-shadow);
-}
-.modal-header,
-.modal-footer {
-  border-color: var(--hair);
-}
-
-/* ---------- Toast (ToastContainer.vue) ---------- */
-.toast-container {
-  /* Bottom-right, not top-right: every page header lives in that same
-     top-right region (New operation / Search / Scheduled operations on
-     Operations, the sidebar's own top-right proximity on narrower
-     layouts, etc.), and a stack of toasts there visibly covered those
-     buttons. Bottom-right is clear on every page/viewport this app has.
-     Newest toast still ends up nearest the corner: items render in push
-     order (oldest first) inside a column that grows upward as the
-     bottom edge stays pinned. */
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1100;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: min(360px, calc(100vw - 40px));
-}
-.toast-item {
-  /* .toast-container is also Bootstrap's own built-in class, which bakes
-     in pointer-events:none (Bootstrap expects its .toast to restore
-     :auto — see bootstrap.css) — without this, that :none inherits
-     straight down through .toast-item/.toast-close and the close button
-     (and the whole toast) silently stops receiving clicks. */
-  pointer-events: auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-left: 3px solid var(--paper-faint);
-  border-radius: var(--bs-border-radius);
-  box-shadow: var(--bs-box-shadow-sm);
-  padding: 12px 14px;
-  color: var(--paper);
-  font-size: 14px;
-}
-.toast-success {
-  border-left-color: var(--green);
-}
-.toast-error {
-  border-left-color: var(--red);
-}
-.toast-info {
-  border-left-color: var(--violet-bright);
-}
-.toast-text {
-  flex: 1;
-  line-height: 1.4;
-}
-.toast-close {
-  flex: none;
-  background: transparent;
-  border: none;
-  color: var(--paper-faint);
-  font-size: 18px;
-  line-height: 1;
-  padding: 0;
-  cursor: pointer;
-}
-.toast-close:hover {
-  color: var(--paper);
-}
-
-/* ---------- Batch-selection bar (operations/schedulers/reports batch.vue) ----------
-   Fixed and centered rather than an in-flow row — an in-flow row toggling
-   in/out with the selection (mb-3 and all) pushed the table down by its own
-   height the moment a row got checked (same class of bug as the schedulers
-   "New scheduler" button hiding under showForm — see SchedulersPage.vue). */
-.batch-bar {
-  position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 1040;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-radius: 8px;
-  box-shadow: var(--bs-box-shadow);
-  padding: 10px 16px;
-}
-
-/* ---------- Pills (Closed/Deleted/Homepage tags — replaces .badge) ---------- */
+/* ---------- Pills (Closed/Deleted/Homepage tags — replaces .badge) ----------
+   Used across Accounts/Schedulers/Reports/etc. for unrelated one-off tags —
+   no single component owns this vocabulary. */
 .pill {
   display: inline-block;
   font-size: 11.5px;
@@ -444,20 +314,6 @@ input[type='radio'] {
   border-radius: 10px;
 }
 
-/* Chart.js (responsive + maintainAspectRatio:false, see SynthesisChart.vue)
-   sizes its canvas to fill this container — with no height of its own it
-   fell back to a cramped intrinsic size, squashing the y-axis. */
-.synthesis-chart {
-  height: 300px;
-}
-
-/* The row buttons are already 14px (.btn), but the plain "Page X of Y"
-   text between them had no size of its own and fell back to the body
-   default — visibly larger than its neighbors. */
-.pager {
-  font-size: 14px;
-}
-
 .table-responsive {
   background: var(--panel);
   border: 1px solid var(--hair);
@@ -491,11 +347,15 @@ input[type='radio'] {
   border-bottom-width: 0;
 }
 
+/* Signed amounts in any table/row across Dashboard/Operations/Schedulers/
+   Accounts — no single component owns this vocabulary. */
 .amount {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
 }
 
+/* "← back to X" link atop Operations/Schedulers — same two unrelated pages,
+   no single owning component. */
 .back-link {
   display: inline-block;
   font-size: 13px;
@@ -508,180 +368,8 @@ input[type='radio'] {
   color: var(--paper-dim);
 }
 
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-}
-/* Distinct from .stat-grid: the mock gives the accounts-overview tile grid
-   its own column/gap sizing (180px/12px vs the stat row's 160px/14px). */
-.tile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-.stat-card {
-  position: relative;
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 8px;
-  /* Flat 18px (the mock's own value) reads heavier on top/bottom than left/right —
-     line-height leading on the label/value/footnote text already fills part of the
-     vertical padding, so the same number looks like more space horizontally than
-     vertically. 16px/18px optically balances it; deliberate deviation from the mock. */
-  padding: 16px 18px;
-}
-/* padding-right reserves space for the trend badge below, on every
-   stat-card's label (not just income/expense) — so income's shorter text
-   and expense's longer one wrap the same way instead of one card staying
-   single-line while its neighbor wraps. */
-.stat-card .stat-label {
-  font-size: 12.5px;
-  color: var(--paper-faint);
-  margin-bottom: 8px;
-  padding-right: 32px;
-}
-/* Trend badge (income/expense stat cards) — a small circular chip pinned
-   to the card's top-right corner, clear of both the label text and the
-   figure below it. Named "-trend-" (not "-stat-") to avoid colliding
-   with the unrelated .stat-chip component below. */
-.stat-trend-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.stat-trend-badge svg {
-  width: 18px;
-  height: 18px;
-}
-.stat-trend-badge-success {
-  background: rgba(95, 217, 141, 0.14);
-  color: var(--green);
-}
-.stat-trend-badge-danger {
-  background: rgba(232, 105, 122, 0.14);
-  color: var(--red);
-}
-.stat-card .stat-value {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 26px;
-  font-weight: 600;
-}
-/* Foreground boost for the one number on the page meant to read as "the"
-   headline figure (the total-balance card) — everything else sharing
-   .stat-value (last salary, biggest expense, account tiles) stays at the
-   base size. Scoped as ".stat-card .stat-value-primary", matching
-   ".stat-card .stat-value" 's own specificity, so this actually wins the
-   cascade instead of losing to it despite coming later in the file. */
-.stat-card .stat-value-primary {
-  font-size: 30px;
-  font-weight: 700;
-}
-/* Footnote line inside the total-balance card ("reconciled $X") — no
-   divider, no bold, always muted regardless of sign, so it reads as a
-   quiet caption under the headline number rather than a second, competing
-   figure (see .stat-value-primary above for the other half of that split). */
-.stat-footnote {
-  margin-top: 6px;
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-}
-/* AccountsPage.vue's row: reconciled sits beside the balance on the same
-   line (next to the row's own Edit/Close/Delete buttons), not stacked
-   below it like the dashboard card/tile/chip use — no top margin needed. */
-.stat-footnote-inline {
-  margin-top: 0;
-}
-.stat-footnote-label,
-.stat-footnote-value {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--paper-faint);
-}
-.stat-footnote-value {
-  font-family: 'Space Grotesk', sans-serif;
-}
-.stat-chip {
-  /* A block div otherwise stretches to its parent's full width — fine for
-     .stat-card in a grid track, wrong for a "chip" meant to hug its
-     content (the mock sits it beside a sibling chip in a flex row).
-     OperationsPage.vue's lone balance chip has no such sibling to size
-     against, so without this it stretched edge-to-edge: 14px of real top/
-     bottom padding against several hundred px of dead space on the right. */
-  width: fit-content;
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 8px;
-  padding: 14px 18px;
-  min-width: 140px;
-}
-.stat-chip .stat-label {
-  font-size: 12px;
-  color: var(--paper-faint);
-}
-.stat-chip .stat-value {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-}
-/* Same specificity as .stat-chip .stat-value above — placed after so it
-   wins the font-size tiebreak on source order (see the .acct-tile
-   equivalent below for the same pattern). */
-.stat-chip .stat-value-primary {
-  font-size: 24px;
-  font-weight: 700;
-}
-.stat-chip .stat-footnote {
-  margin-top: 8px;
-}
-
-.acct-tile {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 16px;
-}
-.acct-tile:hover {
-  border-color: var(--violet-dim);
-  color: inherit;
-}
-/* Tiles in the same tile-grid row sit at variable "Bank — Account" name
-   lengths — some wrap to 2 lines, some fit on 1. Without a reserved height
-   here, a 1-line tile stays shorter than its 2-line neighbors, so its
-   balance/reconciled/sparkline all shift up out of alignment with them.
-   Scoped to .acct-tile (not the generic .stat-card .stat-label) because
-   standalone stat-cards, like the dashboard's Total balance card, have no
-   row neighbor to align against, so the reserved space there just reads as
-   a dead gap under a label that was always going to be 1 line. */
-.acct-tile .stat-label {
-  line-height: 1.3;
-  min-height: 2.6em;
-}
-.acct-tile .stat-value {
-  font-size: 19px;
-  margin-top: 4px;
-}
-/* Same specificity as .acct-tile .stat-value above (both 0-2-0, different
-   class on the same element) — placed after so it wins the font-size
-   tiebreak on source order. Smaller than the dashboard total's own 30px
-   hero size (.stat-card .stat-value-primary): this sits in a dense tile
-   grid, not alone at the top of the page, but still deliberately bigger
-   than the plain 19px baseline per .stat-value-primary's foreground intent. */
-.acct-tile .stat-value-primary {
-  font-size: 22px;
-}
-.acct-tile .stat-footnote {
-  margin-top: 6px;
-}
-
+/* Small status indicator — BaseLayout's active-nav dot, Schedulers'
+   active/paused dot, Operations' search-active dot. No single owner. */
 .dot {
   display: inline-block;
   width: 8px;
@@ -696,508 +384,34 @@ input[type='radio'] {
   opacity: 1;
 }
 
-/* The reconciled checkmark was a bare "✓" glyph — thin and low-contrast
-   against the panel background. A filled circle behind it gives it the
-   same "status dot" weight as .dot-active. */
-.reconciled-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(95, 217, 141, 0.18);
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-/* ---------- Tabs (settings) ---------- */
-.tab-bar {
+/* Footnote line under a StatCard's headline figure ("reconciled $X") — kept
+   here rather than in StatCard.vue because callers (DashboardPage.vue's
+   income/expense cards) supply their own footnote content through the
+   `#footnote` slot, using these same class names directly in their own
+   template; StatCard.vue's scoped styles can't reach into that
+   caller-authored slot content, so this stays shared vocabulary. */
+.stat-footnote {
+  margin-top: 6px;
   display: flex;
-  gap: 22px;
-  border-bottom: 1px solid var(--hair);
-  margin-bottom: 26px;
-}
-.tab-item {
-  padding-bottom: 12px;
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--paper-dim);
-  border-bottom: 2px solid transparent;
-  text-decoration: none;
-}
-.tab-item:hover {
-  color: var(--paper);
-}
-.tab-item.active {
-  color: var(--paper);
-  border-bottom-color: var(--violet-bright);
-}
-
-/* ---------- App shell ---------- */
-.app-shell {
-  display: flex;
-  min-height: 100vh;
-  position: relative;
-  background: var(--ink);
-}
-/* Decorative violet halo bleeding in from the top-left corner, behind the
-   sidebar/main content (see Bagheera App.dc.html's app-shell). */
-.app-glow {
-  position: absolute;
-  width: 520px;
-  height: 520px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(154, 114, 232, 0.16), transparent 70%);
-  filter: blur(50px);
-  pointer-events: none;
-  top: -120px;
-  left: -120px;
-}
-.sidebar {
-  width: 236px;
-  flex: none;
-  background: var(--panel);
-  border-right: 1px solid var(--hair);
-  display: flex;
-  flex-direction: column;
-  padding: 24px 16px;
-  /* Positioned elements always paint above non-positioned ones regardless
-     of DOM order (CSS stacking order, not just source order) — without
-     this, .app-glow (position:absolute) painted over this opaque panel
-     instead of being hidden behind it, even though .sidebar comes later
-     in the markup. Matches the mock's own .sidebar, which sets this too.
-     `sticky` keeps that stacking (it's positioned too) and additionally
-     pins the sidebar — logout included — to the viewport instead of
-     scrolling away with a tall .main-inner. */
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-  /* .main is also `position: relative` (its own stacking context) and
-     comes later in the DOM, so without an explicit z-index here .main
-     wins ties and paints over .sidebar. Invisible on desktop (the two
-     never overlap spatially), but on mobile .account-panel opens
-     downward and overflows .sidebar's own box into .main's area — without
-     this, .main's (transparent, but still hit-testable) background sat on
-     top there and silently ate clicks on Logout/language options. */
-  z-index: 2;
-}
-.side-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  text-decoration: none;
-  color: var(--paper);
-}
-.logo-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background: var(--violet);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  flex: none;
-  color: #fff;
-}
-.side-brand-name {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
-  font-size: 17px;
-}
-.side-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 28px;
-}
-.side-nav-item {
-  cursor: pointer;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14.5px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--paper-dim);
-  text-decoration: none;
-}
-.side-nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--paper);
-}
-.side-nav-item.active {
-  color: var(--paper);
-}
-.side-nav-item .dot {
-  width: 6px;
-  height: 6px;
-}
-.side-foot {
-  margin-top: auto;
-  padding-top: 16px;
-  border-top: 1px solid var(--hair);
-}
-
-/* ---------- Account menu (AccountMenu.vue, sidebar footer) ---------- */
-/* Avatar + email double as the trigger for a popover holding the language
-   section and sign-out — the avatar-as-menu-button convention most SaaS
-   shells use, rather than separate always-visible controls. Opens upward:
-   the trigger sits at the very bottom of the sidebar, so a downward menu
-   would run off-screen (flipped back for the mobile top-bar layout, see
-   the max-width:820px block below). */
-.account-menu {
-  position: relative;
-}
-.account-trigger {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  padding: 6px;
-  cursor: pointer;
-  color: inherit;
-  text-align: left;
-}
-.account-trigger:hover,
-.account-trigger[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--hair-strong);
-}
-.account-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.account-email {
-  flex: 1;
-  min-width: 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.account-chevron {
-  flex: none;
-  color: var(--paper-faint);
-  transition: transform 0.15s ease;
-}
-.account-trigger[aria-expanded='true'] .account-chevron {
-  transform: rotate(180deg);
-  color: var(--paper);
-}
-.account-panel {
-  bottom: calc(100% + 8px);
-  left: 0;
-  right: 0;
-}
-.account-section-label {
-  padding: 8px 9px 4px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--paper-faint);
-}
-.account-divider {
-  height: 1px;
-  background: var(--hair);
-  margin: 4px 0;
-}
-.account-logout {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 9px;
-  border-radius: 5px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--red);
-  cursor: pointer;
-  text-align: left;
-}
-.account-logout:hover {
-  background: rgba(232, 105, 122, 0.1);
-}
-
-/* ---------- Language switcher (LanguageSwitcher.vue, pre-auth shell) ---------- */
-/* A themed replacement for a native <select>: a compact trigger (current
-   locale code) that opens a small listbox of full locale names — same
-   panel/hairline/violet language as the rest of the shell instead of OS
-   chrome. */
-.lang-picker {
-  position: relative;
-  flex: none;
-}
-.lang-trigger {
-  display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 5px;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  color: var(--paper-dim);
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 5px 7px 5px 9px;
-  border-radius: 6px;
-  cursor: pointer;
 }
-.lang-trigger:hover {
-  color: var(--paper);
-  border-color: var(--paper-faint);
-}
-.lang-trigger[aria-expanded='true'] {
-  color: var(--paper);
-  border-color: var(--violet);
-}
-.lang-chevron {
-  flex: none;
+.stat-footnote-label,
+.stat-footnote-value {
+  font-size: 13px;
+  font-weight: 400;
   color: var(--paper-faint);
-  transition: transform 0.15s ease;
 }
-.lang-trigger[aria-expanded='true'] .lang-chevron {
-  transform: rotate(180deg);
-  color: var(--violet-soft);
-}
-.lang-list {
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 132px;
+.stat-footnote-value {
+  font-family: 'Space Grotesk', sans-serif;
 }
 
-/* ---------- Menu panel and options (MenuPopover.vue, LocaleOptions.vue) ---------- */
-/* The floating panel and the option rows shared by the account menu and the
-   language picker; each consumer adds only its placement (.account-panel,
-   .lang-list above). */
-.menu-panel {
-  position: absolute;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-radius: 7px;
-  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
-  padding: 4px;
-  z-index: 5;
-}
-.menu-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 7px 9px;
-  border-radius: 5px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--paper-dim);
-  cursor: pointer;
-  text-align: left;
-}
-.menu-option:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--paper);
-}
-.menu-option.selected {
-  color: var(--paper);
-}
-.menu-check {
-  color: var(--violet-soft);
-  flex: none;
-}
-
-.main {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-}
-.main-inner {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 36px 40px 60px;
-}
-
-@media (max-width: 820px) {
-  .app-shell {
-    flex-direction: column;
-  }
-  /* Two rows: brand + account menu pinned on row 1 (always fully visible —
-     cramming all of brand/nav/foot into one row left the account menu
-     pushed off-screen on an actual phone width, needing a sideways scroll
-     just to reach it), nav as its own full-width scrollable strip on row
-     2 (4 text labels don't fit one row next to the other two, so this is
-     the one region that scrolls). */
-  .sidebar {
-    width: 100%;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: 'brand . foot' 'nav nav nav';
-    align-items: center;
-    padding: 14px 16px;
-    row-gap: 14px;
-    height: auto;
-    overflow-y: visible;
-  }
-  .side-brand {
-    grid-area: brand;
-    margin-bottom: 0 !important;
-  }
-  .side-nav {
-    grid-area: nav;
-    flex-direction: row;
-    margin-top: 0;
-    gap: 6px;
-    overflow-x: auto;
-  }
-  .side-foot {
-    grid-area: foot;
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-    max-width: 220px;
-  }
-  /* The sidebar is a top bar on mobile, not a bottom-pinned footer — the
-     account panel has room below it now, not above. */
-  .account-panel {
-    top: calc(100% + 8px);
-    bottom: auto;
-  }
-  .main-inner {
-    padding: 24px 18px 40px;
-  }
-}
-
-/* ---------- Slide-over drawer (FormDrawer.vue) ---------- */
-.drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  justify-content: flex-end;
-  z-index: 1050;
-}
-.drawer {
-  width: 400px;
-  max-width: 92vw;
-  height: 100%;
-  background: var(--panel);
-  border-left: 1px solid var(--hair-strong);
-  padding: 32px 30px;
-  overflow-y: auto;
-  box-shadow: -30px 0 60px -20px rgba(0, 0, 0, 0.6);
-}
-.drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.drawer-close {
-  cursor: pointer;
-  color: var(--paper-faint);
-  font-size: 22px;
-  line-height: 1;
-  background: none;
-  border: none;
-  padding: 0;
-}
-.drawer-close:hover {
-  color: var(--paper);
-}
-.drawer-title {
-  font-size: 20px;
-}
-/* The footer's primary row (submit, submit-and-new, search + clear) —
-   its buttons grow to fill the row, with FormDrawer's own full-width
-   Cancel beneath: one footer layout for every drawer. */
-.drawer-actions > .btn {
-  flex-grow: 1;
-}
-.transfer-accent {
-  border-left: 2px solid var(--violet-bright);
-  padding-left: 12px;
-}
-
-/* ---------- Auth shell (sign-in + other pre-auth pages) ---------- */
-.auth-shell {
-  min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-  background: linear-gradient(160deg, #150f1e 0%, var(--ink) 45%, #0a0810 100%);
-}
-.auth-shell::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(124, 79, 209, 0.16), transparent 55%);
-  pointer-events: none;
-}
-.auth-halo {
-  position: absolute;
-  width: 480px;
-  height: 480px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(154, 114, 232, 0.35), transparent 70%);
-  filter: blur(40px);
-  pointer-events: none;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-.auth-card {
-  width: 100%;
-  max-width: 420px;
-  position: relative;
-  z-index: 1;
-  background: var(--panel);
-  border-radius: 6px;
-  padding: 48px 44px;
-  box-shadow:
-    0 30px 80px -20px rgba(0, 0, 0, 0.6),
-    0 0 0 1px var(--hair-strong),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-.auth-logo {
-  width: 44px;
-  height: 44px;
-  font-size: 20px;
-  margin-bottom: 26px;
-}
-.auth-rule {
-  width: 32px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--violet-bright), transparent);
-  margin-bottom: 18px;
-}
+/* ---------- Auth card typography (AuthLayout.vue + every pre-auth page) ----------
+   AuthLayout.vue renders the card shell; the heading/copy/button below are
+   written in each pre-auth page's own template as AuthLayout's default
+   slot content (SignInPage/RegisterPage/ActivatePage/ConfirmEmailChangePage),
+   so none of those pages' scoped styles alone can cover every caller —
+   kept here instead of quadruplicated. */
 .auth-card h1 {
   font-size: 30px;
   margin: 0 0 8px;
@@ -1212,8 +426,20 @@ input[type='radio'] {
   font-size: 15px;
 }
 
-@media (max-width: 480px) {
-  .auth-card {
-    padding: 36px 26px;
-  }
+/* Brand mark — BaseLayout's sidebar (32px) and AuthLayout's card (44px via
+   its own .auth-logo size override) both use this base square. */
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: var(--violet);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  flex: none;
+  color: #fff;
 }

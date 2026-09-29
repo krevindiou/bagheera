@@ -187,3 +187,59 @@ const accountTiles = computed(() =>
     </template>
   </div>
 </template>
+
+<style scoped>
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+/* Distinct from .stat-grid: the mock gives the accounts-overview tile grid
+   its own column/gap sizing (180px/12px vs the stat row's 160px/14px). */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.acct-tile {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 16px;
+}
+.acct-tile:hover {
+  border-color: var(--violet-dim);
+  color: inherit;
+}
+/* Tiles in the same tile-grid row sit at variable "Bank — Account" name
+   lengths — some wrap to 2 lines, some fit on 1. Without a reserved height
+   here, a 1-line tile stays shorter than its 2-line neighbors, so its
+   balance/reconciled/sparkline all shift up out of alignment with them.
+   Scoped to .acct-tile (not StatCard's own .stat-label) because standalone
+   stat-cards, like the total-balance card above, have no row neighbor to
+   align against, so the reserved space there just reads as a dead gap
+   under a label that was always going to be 1 line.
+   :deep() reaches past StatCard.vue's own scoped style — .stat-label etc.
+   are elements StatCard renders internally, not this component's own. */
+.acct-tile :deep(.stat-label) {
+  line-height: 1.3;
+  min-height: 2.6em;
+}
+/* !important, not source order, guarantees these win over StatCard's own
+   .stat-card .stat-value(-primary) rules: both are now separately-scoped
+   selectors of equal specificity (two classes each), so which one wins
+   would otherwise depend on which component's <style> block Vite happens
+   to inject first — not something to build a visual override on. */
+.acct-tile :deep(.stat-value) {
+  font-size: 19px !important;
+  margin-top: 4px;
+}
+.acct-tile :deep(.stat-value-primary) {
+  font-size: 22px !important;
+}
+.acct-tile :deep(.stat-footnote) {
+  margin-top: 6px;
+}
+</style>

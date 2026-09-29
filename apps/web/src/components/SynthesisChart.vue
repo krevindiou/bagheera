@@ -153,3 +153,12 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
     <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>
+
+<style scoped>
+/* Chart.js (responsive + maintainAspectRatio:false above) sizes its canvas
+   to fill this container — with no height of its own it fell back to a
+   cramped intrinsic size, squashing the y-axis. */
+.synthesis-chart {
+  height: 300px;
+}
+</style>

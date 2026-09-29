@@ -428,3 +428,28 @@ function isEditable(operation: Operation): boolean {
     </div>
   </div>
 </template>
+
+<style scoped>
+.icon-16 {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* The reconciled checkmark was a bare "✓" glyph — thin and low-contrast
+   against the panel background. A filled circle behind it gives it the
+   same "status dot" weight as .dot-active. */
+.reconciled-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(95, 217, 141, 0.18);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+</style>

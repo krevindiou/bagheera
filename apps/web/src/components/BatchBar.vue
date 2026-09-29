@@ -64,3 +64,25 @@ async function perform(action: BatchAction) {
     </button>
   </div>
 </template>
+
+<style scoped>
+/* Fixed and centered rather than an in-flow row — an in-flow row toggling
+   in/out with the selection (mb-3 and all) pushed the table down by its own
+   height the moment a row got checked (same class of bug as the schedulers
+   "New scheduler" button hiding under showForm — see SchedulersPage.vue). */
+.batch-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 1040;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--panel-2);
+  border: 1px solid var(--hair-strong);
+  border-radius: 8px;
+  box-shadow: var(--bs-box-shadow);
+  padding: 10px 16px;
+}
+</style>

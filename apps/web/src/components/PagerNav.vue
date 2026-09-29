@@ -35,3 +35,12 @@ function goTo(page: number) {
     </button>
   </nav>
 </template>
+
+<style scoped>
+/* The row buttons are already 14px (.btn), but the plain "Page X of Y"
+   text between them had no size of its own and fell back to the body
+   default — visibly larger than its neighbors. */
+.pager {
+  font-size: 14px;
+}
+</style>

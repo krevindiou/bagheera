@@ -33,3 +33,16 @@ useEscapeKey(() => {
   </div>
   <div v-if="state.visible" class="modal-backdrop show"></div>
 </template>
+
+<style scoped>
+.modal-content {
+  --bs-modal-bg: var(--panel);
+  --bs-modal-color: var(--paper);
+  --bs-modal-border-color: var(--hair-strong);
+  box-shadow: var(--bs-box-shadow);
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--hair);
+}
+</style>

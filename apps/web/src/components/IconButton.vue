@@ -26,3 +26,18 @@ defineProps<{
     <AppIcon :name="icon" />
   </button>
 </template>
+
+<style scoped>
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+</style>
