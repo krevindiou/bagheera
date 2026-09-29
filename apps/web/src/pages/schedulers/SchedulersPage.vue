@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { unwrap } from '../../api/unwrap';
 import { useAccountContext } from '../../composables/useAccountContext';
 import {
   useAccountsQuery,
@@ -46,16 +47,17 @@ const { account, isFullyActive, currency } = useAccountContext(accountId);
 
 const schedulersQuery = useQuery({
   queryKey: computed(() => ['schedulers', accountId.value, page.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/schedulers', {
-      params: { query: { accountId: accountId.value, page: String(page.value) } },
-    });
-    return data ?? { items: [], total: 0, page: 1, pageSize: 20 };
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/schedulers', {
+        params: { query: { accountId: accountId.value, page: String(page.value) } },
+      }),
+    ),
 });
 const list = computed(
   () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: 20 },
 );
+const isError = computed(() => schedulersQuery.isError.value);
 watch(
   () => schedulersQuery.data.value,
   () => {
@@ -119,7 +121,11 @@ async function onSaved() {
 
     <BatchActions :selected-ids="selectedIdList" @done="reloadSchedulers" />
 
-    <p v-if="list.items.length === 0" class="text-muted">{{ $t('schedulers.empty') }}</p>
+    <div v-if="isError" class="alert alert-danger" data-testid="schedulers-error">
+      {{ $t('common.loadError') }}
+    </div>
+
+    <p v-else-if="list.items.length === 0" class="text-muted">{{ $t('schedulers.empty') }}</p>
 
     <div v-else>
       <div class="table-responsive">

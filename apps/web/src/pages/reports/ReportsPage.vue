@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { unwrap } from '../../api/unwrap';
 import { useConfirm } from '../../composables/useConfirm';
 import { useAccountsQuery, useCategoriesQuery } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
@@ -22,12 +23,10 @@ const queryClient = useQueryClient();
 
 const reportsQuery = useQuery({
   queryKey: ['reports'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/reports');
-    return data ?? [];
-  },
+  queryFn: async () => unwrap(await apiClient.GET('/reports')),
 });
 const reports = computed(() => reportsQuery.data.value ?? []);
+const reportsError = computed(() => reportsQuery.isError.value);
 
 const { accounts } = useAccountsQuery();
 const { categories } = useCategoriesQuery();
@@ -91,24 +90,24 @@ async function deleteReport(report: Report) {
 
 const seriesQuery = useQuery({
   queryKey: computed(() => ['report-series', viewingReportId.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/reports/{id}/series', {
-      params: { path: { id: viewingReportId.value! } },
-    });
-    return data ?? null;
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/reports/{id}/series', {
+        params: { path: { id: viewingReportId.value! } },
+      }),
+    ),
   enabled: computed(
     () => viewingReportId.value !== null && viewingReport.value?.type !== 'distribution',
   ),
 });
 const distributionQuery = useQuery({
   queryKey: computed(() => ['report-distribution', viewingReportId.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/reports/{id}/distribution', {
-      params: { path: { id: viewingReportId.value! } },
-    });
-    return data ?? null;
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/reports/{id}/distribution', {
+        params: { path: { id: viewingReportId.value! } },
+      }),
+    ),
   enabled: computed(
     () => viewingReportId.value !== null && viewingReport.value?.type === 'distribution',
   ),
@@ -159,7 +158,11 @@ function toggleView(report: Report) {
       </div>
     </div>
 
-    <p v-if="reports.length === 0" class="text-muted">{{ $t('reports.empty') }}</p>
+    <div v-if="reportsError" class="alert alert-danger" data-testid="reports-error">
+      {{ $t('common.loadError') }}
+    </div>
+
+    <p v-else-if="reports.length === 0" class="text-muted">{{ $t('reports.empty') }}</p>
 
     <template v-else>
       <BatchActions :selected-ids="selectedIdList" @done="onBatchDeleted" />

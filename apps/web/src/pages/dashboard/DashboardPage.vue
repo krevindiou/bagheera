@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { unwrap } from '../../api/unwrap';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
@@ -17,14 +18,14 @@ import type { DashboardSynthesisChart } from './dashboard.types';
 
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
-const { data: dashboard } = useQuery({
+const { data: dashboard, isError } = useQuery({
   queryKey: computed(() => ['dashboard', chartRange.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/dashboard', {
-      params: { query: { range: chartRange.value } },
-    });
-    return data ?? null;
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/dashboard', {
+        params: { query: { range: chartRange.value } },
+      }),
+    ),
 });
 
 // The synthesis chart is one line per currency (not a fixed debit/credit
@@ -51,7 +52,10 @@ const accountTiles = computed(() =>
 </script>
 
 <template>
-  <div v-if="dashboard">
+  <div v-if="isError" class="alert alert-danger" data-testid="dashboard-error">
+    {{ $t('common.loadError') }}
+  </div>
+  <div v-else-if="dashboard">
     <h1 class="mb-1" style="font-size: 28px">{{ $t('dashboard.title') }}</h1>
     <p class="mb-4" style="color: var(--paper-dim); font-size: 15px">
       {{ $t('dashboard.subtitle') }}

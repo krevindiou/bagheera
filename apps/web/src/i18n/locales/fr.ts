@@ -10,6 +10,7 @@ export default {
     ok: 'Ok',
     cancel: 'Annuler',
     or: 'ou',
+    loadError: 'Impossible de charger ces données. Veuillez réessayer.',
     pager: {
       label: 'Pagination',
       previous: 'Précédent',

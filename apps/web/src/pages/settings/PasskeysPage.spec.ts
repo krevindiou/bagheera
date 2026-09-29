@@ -97,6 +97,25 @@ describe('PasskeysPage', () => {
     expect(wrapper.text()).toContain("You don't have any passkey yet.");
   });
 
+  it('shows an error message instead of the empty state when the list fails to load', async () => {
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/webauthn/credentials') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      return jsonResult(200, undefined);
+    });
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+    expect(wrapper.find('[data-testid="passkeys-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.text()).not.toContain("You don't have any passkey yet.");
+  });
+
   it('lists passkeys, falling back for an unnamed device and a never-used one', async () => {
     mockCredentials([
       { id: 'p1', deviceName: 'MacBook', createdAt: '2026-01-01', lastUsedAt: '2026-01-15' },

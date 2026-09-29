@@ -105,6 +105,25 @@ describe('ReportsPage', () => {
     expect(wrapper.text()).toContain('No reports yet.');
   });
 
+  it('shows an error message instead of the empty state when the list fails to load', async () => {
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/reports') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      return { data: accounts, error: undefined, response: new Response() };
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('[data-testid="reports-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.text()).not.toContain('No reports yet.');
+  });
+
   it('lists reports with a type badge and a homepage badge when applicable', async () => {
     mockGet([
       report({ id: 'r1', type: 'sum', title: 'Rent' }),

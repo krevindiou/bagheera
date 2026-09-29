@@ -147,6 +147,30 @@ describe('SchedulersPage', () => {
     expect(wrapper.text()).toContain('No scheduled operations yet.');
   });
 
+  it('shows an error message instead of the empty state when the list fails to load', async () => {
+    apiClient.GET.mockImplementation(async (path: string) => {
+      const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+      if (path === '/schedulers') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      if (path === '/accounts') return ok([account]);
+      if (path === '/banks') return ok([bank]);
+      if (path === '/reference-data/categories') return ok([category]);
+      if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+      return ok(undefined);
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('[data-testid="schedulers-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.text()).not.toContain('No scheduled operations yet.');
+  });
+
   it('lists schedulers with an active/paused dot and signed, formatted amounts', async () => {
     mockGet({
       schedulers: {

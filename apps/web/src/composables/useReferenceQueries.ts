@@ -1,6 +1,7 @@
 import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../api/client';
+import { unwrap } from '../api/unwrap';
 
 // The query keys of the member's accounts and banks, and of the two seeded
 // reference lists — one home, so a page that changes accounts or banks
@@ -12,16 +13,16 @@ export const REFERENCE_QUERY_KEYS = {
   paymentMethods: ['payment-methods'],
 } as const;
 
-// A list endpoint answers `undefined` on failure; treat that as an empty
-// list. The `*Query` returned alongside each list is the raw query, for the
-// rare caller that needs to know whether data has actually arrived.
-function useListQuery<T>(queryKey: readonly string[], fetchList: () => Promise<{ data?: T[] }>) {
+// The `*Query` returned alongside each list is the raw query, for the rare
+// caller that needs to know whether data has actually arrived or the
+// request failed (`isError`).
+function useListQuery<T>(
+  queryKey: readonly string[],
+  fetchList: () => Promise<{ data?: T[]; error?: unknown; response: Response }>,
+) {
   const query = useQuery({
     queryKey,
-    queryFn: async () => {
-      const { data } = await fetchList();
-      return data ?? [];
-    },
+    queryFn: async () => unwrap<T[]>(await fetchList()),
   });
   const list = computed(() => query.data.value ?? []);
   return { query, list };

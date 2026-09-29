@@ -3,6 +3,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createMemoryHistory, createRouter, type Router } from 'vue-router';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
+import { queuedToastText } from '../../test-support/queuedToastText';
 import { submitAndSettle } from '../../test-support/submitAndSettle';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
@@ -12,6 +13,7 @@ import { apiClient as realApiClient } from '../../api/client';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { colorForCurrency } from '../../components/chartColors';
 import { useConfirm } from '../../composables/useConfirm';
+import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import OperationForm from './OperationForm.vue';
 import OperationsPage from './OperationsPage.vue';
@@ -135,6 +137,7 @@ describe('OperationsPage', () => {
     const { state, settle } = useConfirm();
     settle(false);
     state.visible = false;
+    useToast().toasts.splice(0);
   });
 
   afterEach(() => {
@@ -181,6 +184,30 @@ describe('OperationsPage', () => {
     await flushPromises();
     expect(wrapper.find('[data-testid="onboarding-tip"]').exists()).toBe(false);
     expect(wrapper.find('button.btn-primary').exists()).toBe(false);
+  });
+
+  it('shows an error message instead of the empty state when the list fails to load', async () => {
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/operations/search') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+      if (path === '/accounts') return ok([account]);
+      if (path === '/banks') return ok([bank]);
+      if (path === '/reference-data/categories') return ok([category]);
+      if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+      return ok(undefined);
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('[data-testid="operations-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.find('table').exists()).toBe(false);
   });
 
   it('lists operations with reconciled/scheduler icons and signed, formatted amounts', async () => {
@@ -291,6 +318,24 @@ describe('OperationsPage', () => {
     expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe(
       'Landlord',
     );
+  });
+
+  it('toasts an error when the search mutation fails, without closing the panel', async () => {
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'Internal error' },
+      response: new Response(null, { status: 500 }),
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="toggle-search"]').trigger('click');
+    await wrapper.find('#search-third-party').setValue('Landlord');
+    await wrapper.find('[data-testid="search-form"]').trigger('submit');
+    await flushPromises();
+
+    expect(queuedToastText()).toContain("Couldn't load this. Please try again.");
+    expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(true);
   });
 
   it('clears the search via the DELETE endpoint', async () => {

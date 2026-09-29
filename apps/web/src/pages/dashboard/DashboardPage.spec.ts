@@ -45,6 +45,21 @@ describe('DashboardPage', () => {
     expect(wrapper.find('h1').exists()).toBe(false);
   });
 
+  it('shows an error message instead of hiding a failed load as empty data', async () => {
+    apiClient.GET.mockReset();
+    apiClient.GET.mockResolvedValue({
+      data: undefined,
+      error: { message: 'Internal error' },
+      response: new Response(null, { status: 500 }),
+    });
+    const wrapper = mount(DashboardPage, withGlobalPlugins());
+    await flushPromises();
+    expect(wrapper.find('[data-testid="dashboard-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.find('h1').exists()).toBe(false);
+  });
+
   it('shows the no-bank onboarding tip and hides everything else', async () => {
     const wrapper = await mountWithDashboard(baseDashboard({ onboarding: 'no-bank' }));
     expect(wrapper.find('[data-testid="onboarding-tip"]').text()).toContain(

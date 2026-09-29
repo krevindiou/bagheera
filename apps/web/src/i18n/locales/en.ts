@@ -8,6 +8,7 @@ export default {
     ok: 'Ok',
     cancel: 'Cancel',
     or: 'or',
+    loadError: "Couldn't load this. Please try again.",
     pager: {
       label: 'Pagination',
       previous: 'Previous',

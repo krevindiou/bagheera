@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import { unwrap } from '../../api/unwrap';
 import { completeStepUp } from '../../api/stepUp';
 import { runRegistration } from '../../api/webauthn';
 import { useToast } from '../../composables/useToast';
@@ -25,12 +26,10 @@ const queryClient = useQueryClient();
 
 const credentialsQuery = useQuery({
   queryKey: ['webauthn-credentials'],
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/webauthn/credentials');
-    return data ?? [];
-  },
+  queryFn: async () => unwrap(await apiClient.GET('/webauthn/credentials')),
 });
 const credentials = computed(() => credentialsQuery.data.value ?? []);
+const credentialsError = computed(() => credentialsQuery.isError.value);
 
 async function reload() {
   await queryClient.invalidateQueries({ queryKey: ['webauthn-credentials'] });
@@ -135,7 +134,11 @@ async function removePasskey(id: string) {
         </button>
       </div>
 
-      <div v-if="credentials.length > 0" class="table-responsive">
+      <div v-if="credentialsError" class="alert alert-danger" data-testid="passkeys-error">
+        {{ $t('common.loadError') }}
+      </div>
+
+      <div v-else-if="credentials.length > 0" class="table-responsive">
         <table class="table align-middle mb-0">
           <thead>
             <tr>

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { unwrap } from '../../api/unwrap';
+import { useToast } from '../../composables/useToast';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import { colorForCurrency } from '../../components/chartColors';
@@ -37,6 +40,8 @@ import AppIcon from '../../components/AppIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
+const { t } = useI18n();
+const { push: toast } = useToast();
 
 const queryClient = useQueryClient();
 
@@ -65,12 +70,12 @@ const { account, bank, isFullyActive, currency } = useAccountContext(accountId);
 
 const balanceQuery = useQuery({
   queryKey: computed(() => ['balance', accountId.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/accounts/{id}/balance', {
-      params: { path: { id: accountId.value } },
-    });
-    return data ?? null;
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/accounts/{id}/balance', {
+        params: { path: { id: accountId.value } },
+      }),
+    ),
 });
 const balance = computed(() => balanceQuery.data.value ?? null);
 
@@ -78,12 +83,12 @@ const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
 const chartQuery = useQuery({
   queryKey: computed(() => ['chart', accountId.value, chartRange.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/accounts/{id}/chart', {
-      params: { path: { id: accountId.value }, query: { range: chartRange.value } },
-    });
-    return data ?? null;
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/accounts/{id}/chart', {
+        params: { path: { id: accountId.value }, query: { range: chartRange.value } },
+      }),
+    ),
 });
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;
@@ -105,16 +110,17 @@ const chartAxisBounds = computed(() => toDisplayBounds(chartQuery.data.value?.ax
 // hydrated with its criteria.
 const operationsQuery = useQuery({
   queryKey: computed(() => ['operations', accountId.value, page.value]),
-  queryFn: async () => {
-    const { data } = await apiClient.GET('/operations/search', {
-      params: { query: { accountId: accountId.value, page: String(page.value) } },
-    });
-    return data ?? { items: [], total: 0, page: 1, pageSize: 20, criteria: {}, active: false };
-  },
+  queryFn: async () =>
+    unwrap(
+      await apiClient.GET('/operations/search', {
+        params: { query: { accountId: accountId.value, page: String(page.value) } },
+      }),
+    ),
 });
 const list = computed(
   () => operationsQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: 20 },
 );
+const operationsError = computed(() => operationsQuery.isError.value);
 
 watch(
   () => operationsQuery.data.value,
@@ -134,13 +140,13 @@ const categoryNames = computed(
 );
 
 const searchMutation = useMutation({
-  mutationFn: async (criteria: SearchCriteria) => {
-    const { data } = await apiClient.POST('/operations/search', {
-      params: { query: { page: '1' } },
-      body: { accountId: accountId.value, ...criteria },
-    });
-    return data ?? { items: [], total: 0, page: 1, pageSize: 20 };
-  },
+  mutationFn: async (criteria: SearchCriteria) =>
+    unwrap(
+      await apiClient.POST('/operations/search', {
+        params: { query: { page: '1' } },
+        body: { accountId: accountId.value, ...criteria },
+      }),
+    ),
   onSuccess(data, criteria) {
     page.value = 1;
     suppressRecallOpen.value = true;
@@ -159,6 +165,9 @@ const searchMutation = useMutation({
     selectedIds.value = new Set();
     hasActiveSearch.value = true;
     showSearch.value = false;
+  },
+  onError() {
+    toast(t('common.loadError'), 'error');
   },
 });
 function runSearch(criteria: SearchCriteria) {
@@ -306,7 +315,11 @@ function isEditable(operation: Operation): boolean {
     <div>
       <BatchActions v-if="isFullyActive" :selected-ids="selectedIdList" @done="refreshAfterBatch" />
 
-      <div v-if="list.items.length === 0" class="mb-3">
+      <div v-if="operationsError" class="alert alert-danger mb-3" data-testid="operations-error">
+        {{ $t('common.loadError') }}
+      </div>
+
+      <div v-else-if="list.items.length === 0" class="mb-3">
         <p class="text-muted">{{ $t('operations.empty') }}</p>
       </div>
 
