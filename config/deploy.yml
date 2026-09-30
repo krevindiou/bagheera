@@ -71,7 +71,10 @@ accessories:
   # in scripts/backup.sh — up to 24h of data — documented in
   # docs/backup-restore.md.
   postgres:
-    image: postgres:18-alpine
+    # Pinned by digest so a floated `postgres:18-alpine` retag can't
+    # silently change what production runs; Renovate's docker:pinDigests
+    # preset (renovate.json) keeps this current as the tag moves.
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "127.0.0.1:5432:5432"
     env:
@@ -87,7 +90,8 @@ accessories:
       - data:/var/lib/postgresql
 
   valkey:
-    image: valkey/valkey:9-alpine
+    # Pinned by digest — same reasoning as postgres above.
+    image: valkey/valkey:9-alpine@sha256:48332870af354a799964c0012ae1194a0bf2bf894eb508f945810596dc2d8d11
     host: <%= ENV.fetch("DEPLOY_HOST") %>
     port: "127.0.0.1:6379:6379"
     # maxmemory bounds how much of the host an anonymous flood (sessions,
