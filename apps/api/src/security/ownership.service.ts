@@ -10,7 +10,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, scheduler } from '../db/schema';
 import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from './ids';
 import type { QuotaKind } from './member-quotas';
-import { reachableAccountsOf } from './reachable';
+import { isFullyActive, reachableAccountsOf } from './reachable';
 
 async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
   const [row] = await query;
@@ -110,11 +110,14 @@ export class OwnershipService {
 
   // Only for call sites that need a fully-active target, not merely a
   // reachable one — unlike requireOwnedAccount above, "closed" IS folded
-  // into the throw here. Built for TransferService.requireEligibleTarget's
-  // transfer-target check.
-  async requireOwnedActiveAccount(id: AccountId, memberId: MemberId) {
+  // into the throw here. Bound to this service's own injected connection,
+  // so it's for callers running outside a transaction (account.service.ts's
+  // update/close) — TransferService.requireEligibleTarget needs the same
+  // check inside its caller's own transaction instead, so it uses
+  // isFullyActive directly against a row it fetches itself.
+  async requireOwnedFullyActiveAccount(id: AccountId, memberId: MemberId) {
     const row = await this.requireOwnedAccount(id, memberId);
-    if (row.account.closed || row.bank.closed) {
+    if (!isFullyActive(row.account, row.bank)) {
       throw new UnprocessableEntityException('Account is not active.');
     }
     return row;

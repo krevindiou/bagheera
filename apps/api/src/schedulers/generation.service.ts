@@ -7,17 +7,11 @@ import { DRIZZLE } from '../db/db.constants';
 import type { Executor } from '../db/executor';
 import { account, bank, member, operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
+import { isFullyActive } from '../security/reachable';
 import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
-
-type AccountRow = typeof account.$inferSelect;
-type BankRow = typeof bank.$inferSelect;
 
 // The transaction surface TransferService also takes — generation always
 // runs inside one, so its advisory lock holds until the run commits.
-
-function isFullyActive(acc: AccountRow, bnk: BankRow): boolean {
-  return !acc.closed && !acc.deleted && !bnk.closed && !bnk.deleted;
-}
 
 @Injectable()
 export class SchedulerGenerationService {

@@ -160,7 +160,7 @@ export class AccountService {
   }
 
   async update(memberId: MemberId, id: string, dto: UpdateAccountDto): Promise<void> {
-    const { account: row } = await this.ownership.requireOwnedActiveAccount(
+    const { account: row } = await this.ownership.requireOwnedFullyActiveAccount(
       id as AccountId,
       memberId,
     );
@@ -171,7 +171,7 @@ export class AccountService {
   }
 
   async close(memberId: MemberId, ip: string, id: string): Promise<void> {
-    await this.ownership.requireOwnedActiveAccount(id as AccountId, memberId);
+    await this.ownership.requireOwnedFullyActiveAccount(id as AccountId, memberId);
     await this.db.update(account).set({ closed: true }).where(eq(account.id, id));
     await this.audit.record('account_closed', memberId, ip);
   }

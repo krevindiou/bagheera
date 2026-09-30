@@ -25,3 +25,18 @@ export function reachableAccountsOf(db: NodePgDatabase | Executor, memberId: Mem
     ),
   );
 }
+
+// "Fully active" = an account and its bank are both neither closed nor
+// deleted — required for a mutation (creating/editing an entry, a transfer
+// target, a scheduler occurrence); a merely-closed chain stays
+// reachable/listable, see reachableAccountsOf above. Every current caller
+// already holds both rows (in memory, or from a query that joined them
+// itself), so this stays a plain predicate rather than a second
+// query-builder condition alongside reachableAccountsOf — add one only
+// once an actual caller needs "fully active" as a WHERE clause.
+export function isFullyActive(
+  acc: { closed: boolean; deleted: boolean },
+  bnk: { closed: boolean; deleted: boolean },
+): boolean {
+  return !acc.closed && !acc.deleted && !bnk.closed && !bnk.deleted;
+}

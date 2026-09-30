@@ -4,6 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { category, paymentMethod } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { isFullyActive } from '../security/reachable';
 import { TRANSFER_PAYMENT_METHOD_IDS } from './transfer.service';
 
 export type EntryType = 'debit' | 'credit';
@@ -17,15 +18,15 @@ export const OPENING_BALANCE_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.INITI
 // Rules shared by operations and schedulers, which are both "an entry on an
 // account with a type, a payment method and a category".
 
-// Fully active = account and its bank are both neither closed nor deleted.
 // Required for creating an entry and for editing/reconciling/deleting an
 // existing one; an entry on a merely-closed account (or a closed bank)
-// stays listable-only.
+// stays listable-only. See security/reachable.ts's isFullyActive for what
+// "fully active" means.
 export function requireFullyActive(row: {
   account: { closed: boolean; deleted: boolean };
   bank: { closed: boolean; deleted: boolean };
 }): void {
-  if (row.account.closed || row.account.deleted || row.bank.closed || row.bank.deleted) {
+  if (!isFullyActive(row.account, row.bank)) {
     throw new UnprocessableEntityException('Account is not active.');
   }
 }

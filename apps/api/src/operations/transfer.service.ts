@@ -7,7 +7,7 @@ import { TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MemberId } from '../security/ids';
-import { reachableAccountsOf } from '../security/reachable';
+import { isFullyActive, reachableAccountsOf } from '../security/reachable';
 
 // The "Transfer" debit/credit payment methods — the only two that can carry
 // a pairing; flipping between them mirrors a transfer from one side to the
@@ -138,7 +138,7 @@ export class TransferService {
     if (!row) {
       throw new BadRequestException('Invalid transfer account.');
     }
-    if (row.bank.closed || row.account.closed) {
+    if (!isFullyActive(row.account, row.bank)) {
       throw new BadRequestException('Transfer account is not active.');
     }
     if (row.account.currency !== source.sourceCurrency) {

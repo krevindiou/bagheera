@@ -11,6 +11,7 @@ import {
   SynthesisChart,
 } from '../common/synthesis-chart';
 import { MemberId } from '../security/ids';
+import { isFullyActive } from '../security/reachable';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report } from '../db/schema';
 import { MinorUnits } from '../common/money';
@@ -162,6 +163,7 @@ export class DashboardService {
     }
 
     const bankIds = banks.map((b) => b.id);
+    const bankById = new Map(banks.map((b) => [b.id, b]));
     const hasActiveBank = banks.some((b) => !b.closed);
     const accounts = await this.db
       .select()
@@ -205,10 +207,8 @@ export class DashboardService {
         reconciledAmount: (rawReconciledTotals.get(currency) ?? 0) as MinorUnits,
       }));
 
-    // "Fully active" scope — the bank itself must also be non-closed.
-    const activeBankIds = new Set(banks.filter((b) => !b.closed).map((b) => b.id));
     const fullyActiveAccountIds = accounts
-      .filter((a) => !a.closed && activeBankIds.has(a.bankId))
+      .filter((a) => isFullyActive(a, bankById.get(a.bankId)!))
       .map((a) => a.id);
 
     const today = await memberToday(this.db, memberId);
@@ -230,7 +230,7 @@ export class DashboardService {
         id: b.id,
         name: b.name,
         accounts: accounts
-          .filter((a) => a.bankId === b.id && !a.closed)
+          .filter((a) => a.bankId === b.id && isFullyActive(a, b))
           .sort((a, b2) => a.name.localeCompare(b2.name))
           .map((a) => ({
             id: a.id,
