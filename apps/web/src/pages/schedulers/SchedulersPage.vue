@@ -13,12 +13,8 @@ import {
   usePaymentMethodsQuery,
 } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
-import { formatMoney } from '../operations/money';
-import {
-  categoryLabel,
-  paymentMethodIcon,
-  paymentMethodName,
-} from '../operations/operations.types';
+import { formatMoney } from '../../domain/money';
+import { categoryLabel, paymentMethodIcon, paymentMethodName } from '../../domain/referenceData';
 import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
 import type { Scheduler } from './schedulers.types';

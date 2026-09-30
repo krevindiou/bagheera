@@ -22,15 +22,15 @@ import {
   usePaymentMethodsQuery,
 } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
-import { formatDate, formatMoney, toDisplayBounds, toDisplayPoints } from './money';
+import { formatDate, formatMoney, toDisplayBounds, toDisplayPoints } from '../../domain/money';
 import {
   categoryLabel,
   PAYMENT_METHOD_ID,
   paymentMethodIcon,
   paymentMethodName,
   thirdPartyLabel,
-} from './operations.types';
-import type { Operation, SearchCriteria } from './operations.types';
+} from '../../domain/referenceData';
+import type { Operation, SearchCriteria } from '../../domain/referenceData';
 import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';

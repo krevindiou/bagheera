@@ -11,8 +11,8 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 import { apiClient as realApiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
-import { PAYMENT_METHOD_ID } from '../operations/operations.types';
-import type { Category, PaymentMethod } from '../operations/operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
+import type { Category, PaymentMethod } from '../../domain/referenceData';
 import SchedulerForm from './SchedulerForm.vue';
 import type { Scheduler } from './schedulers.types';
 

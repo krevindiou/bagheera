@@ -1,9 +1,5 @@
 <script setup lang="ts" generic="T extends string | string[] | undefined">
-import {
-  categoryLabel,
-  type Category,
-  type CategoryGroup,
-} from '../pages/operations/operations.types';
+import { categoryLabel, type Category, type CategoryGroup } from '../domain/referenceData';
 
 // The category <select> every form shares: the operation/scheduler forms
 // (single, type-filtered, with a "No category" choice), the search panel

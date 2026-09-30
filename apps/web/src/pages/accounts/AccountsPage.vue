@@ -8,7 +8,7 @@ import { queryKeys } from '../../api/queryKeys';
 import { useAccountsQuery, useBanksQuery } from '../../composables/useReferenceQueries';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
-import { formatMoney } from '../operations/money';
+import { formatMoney } from '../../domain/money';
 import type { Bank, Account } from './accounts.types';
 import BankChoiceForm from './BankChoiceForm.vue';
 import CreateAccountForm from './CreateAccountForm.vue';

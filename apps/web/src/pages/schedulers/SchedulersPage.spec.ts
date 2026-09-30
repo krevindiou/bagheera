@@ -11,8 +11,8 @@ import { apiClient as realApiClient } from '../../api/client';
 import { queryKeys } from '../../api/queryKeys';
 import { useConfirm } from '../../composables/useConfirm';
 import type { Account, Bank } from '../accounts/accounts.types';
-import { PAYMENT_METHOD_ID } from '../operations/operations.types';
-import type { Category, PaymentMethod } from '../operations/operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
+import type { Category, PaymentMethod } from '../../domain/referenceData';
 import SchedulersPage from './SchedulersPage.vue';
 import type { Scheduler } from './schedulers.types';
 

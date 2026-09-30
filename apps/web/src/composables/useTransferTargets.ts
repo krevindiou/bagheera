@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import { currencySymbol } from '../pages/operations/money';
+import { currencySymbol } from '../domain/money';
 import type { Account, Bank } from '../pages/accounts/accounts.types';
 
 /**

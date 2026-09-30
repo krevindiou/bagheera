@@ -1,9 +1,5 @@
 import { computed, watch, type Ref } from 'vue';
-import {
-  groupCategories,
-  type Category,
-  type PaymentMethod,
-} from '../pages/operations/operations.types';
+import { groupCategories, type Category, type PaymentMethod } from '../domain/referenceData';
 
 /**
  * Category/payment-method choices filtered to the selected debit/credit

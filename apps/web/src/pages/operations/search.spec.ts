@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 import SearchPanel from './search.vue';
-import type { Category, PaymentMethod, SearchCriteria } from './operations.types';
+import type { Category, PaymentMethod, SearchCriteria } from '../../domain/referenceData';
 
 const categories: Category[] = [
   { id: 'c1', parentId: null, type: 'debit', name: 'Food' },

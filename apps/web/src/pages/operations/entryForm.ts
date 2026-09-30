@@ -1,6 +1,6 @@
-import { toDisplayAmount, today } from './money';
+import { toDisplayAmount, today } from '../../domain/money';
 import type { OperationForm, OperationFormValues } from './operations.schemas';
-import { TRANSFER_PAYMENT_METHOD_IDS } from './operations.types';
+import { TRANSFER_PAYMENT_METHOD_IDS } from '../../domain/referenceData';
 
 // What an operation and a scheduler share: the row as the API returns it.
 interface EntryRow {

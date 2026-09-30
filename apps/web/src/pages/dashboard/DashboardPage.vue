@@ -12,7 +12,7 @@ import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
-import { formatDate, toDisplayBounds, toDisplayPoints } from '../operations/money';
+import { formatDate, toDisplayBounds, toDisplayPoints } from '../../domain/money';
 import StatCard from '../../components/StatCard.vue';
 import ReportChart from '../reports/ReportChart.vue';
 import type { DashboardSynthesisChart } from './dashboard.types';

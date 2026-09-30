@@ -4,7 +4,7 @@ import {
   toMajorUnits,
   type MinorUnits,
 } from '@bagheera/money';
-import { i18n } from '../../i18n';
+import { i18n } from '../i18n';
 
 // Every amount the API returns is an integer in minor units (real value ×
 // 10,000, via the shared @bagheera/money package). The API-response value is

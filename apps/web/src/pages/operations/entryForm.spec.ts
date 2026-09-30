@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { entryFormValues, entryRequestFields } from './entryForm';
-import { today } from './money';
+import { today } from '../../domain/money';
 import type { OperationForm } from './operations.schemas';
-import { PAYMENT_METHOD_ID } from './operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 
 const row = {
   debit: 500000 as number | null,

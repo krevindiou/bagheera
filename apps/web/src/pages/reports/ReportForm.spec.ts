@@ -9,7 +9,7 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 import { apiClient as realApiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
-import type { Category } from '../operations/operations.types';
+import type { Category } from '../../domain/referenceData';
 import ReportForm from './ReportForm.vue';
 import type { Report } from './reports.types';
 

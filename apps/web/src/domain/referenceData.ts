@@ -1,6 +1,6 @@
 import { PAYMENT_METHOD_ID, TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
-import type { components } from '../../api/schema';
-import { referenceName } from '../../i18n/referenceNames';
+import type { components } from '../api/schema';
+import { referenceName } from '../i18n/referenceNames';
 
 type Schemas = components['schemas'];
 

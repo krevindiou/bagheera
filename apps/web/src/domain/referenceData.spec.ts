@@ -6,8 +6,8 @@ import {
   PAYMENT_METHOD_ID,
   paymentMethodIcon,
   paymentMethodName,
-} from './operations.types';
-import type { Category, PaymentMethod } from './operations.types';
+} from './referenceData';
+import type { Category, PaymentMethod } from './referenceData';
 
 const category = (id: string, name: string, parentId: string | null = null): Category => ({
   id,

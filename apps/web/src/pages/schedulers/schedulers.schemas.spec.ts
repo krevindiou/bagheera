@@ -1,6 +1,6 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
-import { PAYMENT_METHOD_ID } from '../operations/operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import { schedulerSchema } from './schedulers.schemas';
 
 // Any well-formed uuid stands in for an account id here — the schema only

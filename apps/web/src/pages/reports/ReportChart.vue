@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
-import { toDisplayBounds } from '../operations/money';
+import { toDisplayBounds } from '../../domain/money';
 import { toChartSeries } from './chartSeries';
 import { toDistributionFacets } from './distributionSeries';
 import type { ReportChartData } from './reports.types';

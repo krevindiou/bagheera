@@ -10,7 +10,7 @@ import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
-import { groupCategories, type Category } from '../operations/operations.types';
+import { groupCategories, type Category } from '../../domain/referenceData';
 import { MAX_SIGNIFICANT_RESULTS_NUMBER, reportSchema, type ReportForm } from './reports.schemas';
 import type { Report } from './reports.types';
 

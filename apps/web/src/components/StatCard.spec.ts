@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { formatMoney } from '../pages/operations/money';
+import { formatMoney } from '../domain/money';
 import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import StatCard from './StatCard.vue';
 

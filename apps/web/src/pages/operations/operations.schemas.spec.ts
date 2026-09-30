@@ -1,6 +1,6 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
-import { PAYMENT_METHOD_ID } from './operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import { operationSchema } from './operations.schemas';
 
 const base = {

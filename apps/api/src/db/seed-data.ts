@@ -2,7 +2,7 @@
 // unit-tested (row shapes/counts) without a live Postgres connection.
 
 // The fixed UUID literals themselves live in packages/reference-data,
-// shared with apps/web (see operations.types.ts) — re-exported here so
+// shared with apps/web (see src/domain/referenceData.ts) — re-exported here so
 // existing `PAYMENT_METHOD_ID` imports from this module don't change.
 import { PAYMENT_METHOD_ID } from '@bagheera/reference-data';
 export { PAYMENT_METHOD_ID };

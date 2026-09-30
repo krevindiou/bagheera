@@ -13,7 +13,7 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from 'chart.js';
-import { formatDisplayMoney } from '../pages/operations/money';
+import { formatDisplayMoney } from '../domain/money';
 import { formatPeriodLabel } from './periodLabel';
 import type { Locale } from '../i18n/locales';
 

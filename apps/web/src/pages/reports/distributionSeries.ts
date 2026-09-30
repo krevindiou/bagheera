@@ -1,6 +1,6 @@
 import { colorForLabel } from '../../components/chartColors';
 import { referenceName } from '../../i18n/referenceNames';
-import { toDisplayAmount } from '../operations/money';
+import { toDisplayAmount } from '../../domain/money';
 import type {
   RankedChartBar,
   RankedChartFacet,

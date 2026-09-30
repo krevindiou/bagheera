@@ -11,7 +11,7 @@ import MoneyInput from '../../components/MoneyInput.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import { getCurrencyOptions, getGuessedCurrency } from '../../composables/useCurrencyOptions';
-import { currencySymbol } from '../operations/money';
+import { currencySymbol } from '../../domain/money';
 import { createAccountSchema, editAccountSchema, type CreateAccountForm } from './accounts.schemas';
 import type { Account, Bank } from './accounts.types';
 

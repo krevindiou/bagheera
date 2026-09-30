@@ -7,13 +7,13 @@ import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
-import { paymentMethodName } from './operations.types';
+import { paymentMethodName } from '../../domain/referenceData';
 import type {
   AmountComparatorOperator,
   Category,
   PaymentMethod,
   SearchCriteria,
-} from './operations.types';
+} from '../../domain/referenceData';
 
 const props = defineProps<{
   categories: Category[];

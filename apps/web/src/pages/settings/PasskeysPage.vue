@@ -12,7 +12,7 @@ import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import IconButton from '../../components/IconButton.vue';
 import AppIcon from '../../components/AppIcon.vue';
-import { formatTimestampDate } from '../operations/money';
+import { formatTimestampDate } from '../../domain/money';
 import SettingsTabs from './SettingsTabs.vue';
 
 // Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types

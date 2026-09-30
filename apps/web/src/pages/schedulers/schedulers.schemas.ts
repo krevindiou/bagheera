@@ -1,7 +1,7 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
 import type { FormValues } from '../operations/operations.schemas';
-import { TRANSFER_PAYMENT_METHOD_IDS } from '../operations/operations.types';
+import { TRANSFER_PAYMENT_METHOD_IDS } from '../../domain/referenceData';
 
 const optionalId = z.preprocess(
   (value) => (value === '' || value === undefined || value === null ? undefined : value),

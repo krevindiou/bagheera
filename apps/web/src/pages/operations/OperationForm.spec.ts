@@ -12,8 +12,8 @@ import { apiClient as realApiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import OperationForm from './OperationForm.vue';
-import { PAYMENT_METHOD_ID } from './operations.types';
-import type { Category, Operation, PaymentMethod } from './operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
+import type { Category, Operation, PaymentMethod } from '../../domain/referenceData';
 
 const apiClient = asMockedApiClient(realApiClient);
 

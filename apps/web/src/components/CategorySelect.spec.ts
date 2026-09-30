@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { groupCategories, type Category } from '../pages/operations/operations.types';
+import { groupCategories, type Category } from '../domain/referenceData';
 import CategorySelect from './CategorySelect.vue';
 
 // One standalone category (Rent) and a parent with a child (Food >

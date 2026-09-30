@@ -1,6 +1,6 @@
 import { nextTick, ref } from 'vue';
 import { describe, expect, it } from 'vitest';
-import type { Category, PaymentMethod } from '../pages/operations/operations.types';
+import type { Category, PaymentMethod } from '../domain/referenceData';
 import { useTypedReferenceData } from './useTypedReferenceData';
 
 const categories: Category[] = [

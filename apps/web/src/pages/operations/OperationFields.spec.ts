@@ -14,7 +14,7 @@ import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues } from './entryForm';
 import OperationFields from './OperationFields.vue';
 import { operationSchema, type OperationForm } from './operations.schemas';
-import { PAYMENT_METHOD_ID, type Category, type PaymentMethod } from './operations.types';
+import { PAYMENT_METHOD_ID, type Category, type PaymentMethod } from '../../domain/referenceData';
 
 const apiClient = asMockedApiClient(realApiClient);
 

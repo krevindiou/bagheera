@@ -11,7 +11,7 @@ import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from '../operations/entryForm';
 import OperationFields from '../operations/OperationFields.vue';
-import type { Category, PaymentMethod } from '../operations/operations.types';
+import type { Category, PaymentMethod } from '../../domain/referenceData';
 import {
   schedulerSchema,
   type SchedulerForm,

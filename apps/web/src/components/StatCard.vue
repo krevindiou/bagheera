@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { RouterLink, type RouteLocationRaw } from 'vue-router';
-import { formatMoney } from '../pages/operations/money';
+import { formatMoney } from '../domain/money';
 import AppIcon from './AppIcon.vue';
 
 // A figure with its label and a footnote: the dashboard's balance, biggest

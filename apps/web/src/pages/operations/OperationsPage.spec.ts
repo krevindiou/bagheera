@@ -18,8 +18,13 @@ import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import OperationForm from './OperationForm.vue';
 import OperationsPage from './OperationsPage.vue';
-import { PAYMENT_METHOD_ID } from './operations.types';
-import type { Category, Operation, PaymentMethod, SearchCriteria } from './operations.types';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
+import type {
+  Category,
+  Operation,
+  PaymentMethod,
+  SearchCriteria,
+} from '../../domain/referenceData';
 
 const apiClient = asMockedApiClient(realApiClient);
 

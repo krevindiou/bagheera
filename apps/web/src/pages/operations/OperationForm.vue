@@ -15,7 +15,7 @@ import {
   type OperationForm,
   type OperationFormValues,
 } from './operations.schemas';
-import type { Category, Operation, PaymentMethod } from './operations.types';
+import type { Category, Operation, PaymentMethod } from '../../domain/referenceData';
 
 const props = withDefaults(
   defineProps<{

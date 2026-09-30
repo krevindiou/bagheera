@@ -1,5 +1,5 @@
 import { colorForCurrency } from '../../components/chartColors';
-import { toDisplayPoints } from '../operations/money';
+import { toDisplayPoints } from '../../domain/money';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import type { ReportSeries } from './reports.types';
 
