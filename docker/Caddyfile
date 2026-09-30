@@ -1,29 +1,20 @@
-# Production edge: serves the built SPA and reverse-proxies API routes to
-# the api container, same-origin. $CADDY_SITE_ADDRESS sets the whole site
-# address: default "localhost" gets a locally-trusted cert; a real hostname
-# (e.g. app.example.com) gets one via public ACME; "http://:80" serves plain
-# HTTP with no TLS of its own, for when something in front of this container
-# already terminates it (Kamal's own proxy does).
-{
-	servers {
-		# Kamal's proxy forwards the real client address in X-Forwarded-For.
-		# By default Caddy trusts no upstream proxy, so reverse_proxy below
-		# *replaces* that header with the peer's own address (Kamal's proxy
-		# container) instead of appending to it: every request would then
-		# reach the api from one and the same IP, collapsing its per-IP rate
-		# limits into a single site-wide bucket. Trusting the private ranges
-		# Kamal's proxy connects from (the Docker network) makes Caddy append,
-		# giving the two-hop chain apps/api/src/main.ts's `trust proxy`
-		# count expects.
-		trusted_proxies static private_ranges
-	}
-}
+# Production edge: serves the built SPA, same-origin with the API (which
+# kamal-proxy now routes to directly — see config/deploy.api.yml — not
+# through this container at all; apps/api/src/main.ts's `trust proxy` count
+# was updated to match that one-hop change). $CADDY_SITE_ADDRESS sets the
+# whole site address: default "localhost" gets a locally-trusted cert; a
+# real hostname (e.g. app.example.com) gets one via public ACME; "http://:80"
+# serves plain HTTP with no TLS of its own, for when something in front of
+# this container already terminates it (Kamal's own proxy does).
 
 {$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
 
-	# Browser security headers, on the SPA and the proxied API responses
-	# alike (for the latter, they replace the api's own helmet() ones).
+	# Browser security headers for the SPA. The API (a separate Kamal app
+	# now, see config/deploy.api.yml) no longer passes through this
+	# container at all, so it's covered only by its own helmet() headers —
+	# already equivalent for the headers set below (CSP content differs by
+	# origin, which is expected: each serves its own).
 	header {
 		# Pins HTTPS for two years: set only where the site is always served
 		# over HTTPS (config/deploy.yml). Anywhere else — a local run on
@@ -39,16 +30,13 @@
 		-Server
 	}
 
-	# API routes go to the api container, everything else to the SPA — in
-	# separate handle blocks. Caddy runs try_files, a rewrite, before
-	# reverse_proxy whatever their order here, so a site-wide try_files
-	# turned every API path into /index.html before @api was matched: each
-	# API call got the SPA's HTML back, and /health passed with the api down.
-	@api path /health /api*
-	handle @api {
-		reverse_proxy api:3000 {
-			header_up X-Forwarded-Proto https
-		}
+	# Answers kamal-proxy's own per-deploy readiness check of *this*
+	# container (config/deploy.yml's proxy.healthcheck) — a direct
+	# container-to-container probe that bypasses the public /health,/api*
+	# path-prefix routing rule that sends real traffic on those paths to
+	# the separate api app (config/deploy.api.yml) instead of here.
+	handle /health {
+		respond "ok" 200
 	}
 
 	handle {

@@ -1,26 +1,28 @@
-# Kamal deploys the public edge container (docker/Dockerfile.caddy — the built SPA
-# served by Caddy, which reverse-proxies API routes to the "api" accessory
-# below so cookies stay same-origin). Kamal's own proxy terminates TLS and
-# does the health-checked, zero-downtime container swap in front of it; the
-# Caddyfile is told (via CADDY_SITE_ADDRESS below) not to also manage TLS.
+# Kamal deploys the public edge container (docker/Dockerfile.caddy — the built
+# SPA served by Caddy). Kamal's own proxy terminates TLS and does the
+# health-checked, zero-downtime container swap in front of it; the Caddyfile
+# is told (via CADDY_SITE_ADDRESS below) not to also manage TLS.
 #
-# postgres/valkey/api run as accessories: fixed, Kamal-managed containers
-# reachable by the edge container at their accessory name (e.g. "api:3000"),
-# stable across every edge deploy. Kamal only builds/pushes/rolls the
-# primary service (the edge image); the api accessory's image has to be
-# built and pushed to the registry separately before `kamal accessory boot
-# api` (see the deploy CI stage for the exact commands).
+# The API is a second, independent Kamal app — see config/deploy.api.yml —
+# sharing this app's kamal-proxy and hostname via path-based routing
+# (/health, /api/*), not an accessory of this one and not proxied through
+# Caddy at all anymore (kamal-proxy routes those paths to it directly,
+# before Caddy ever sees them).
+#
+# postgres/valkey still run as accessories below: fixed, Kamal-managed
+# containers reachable by the api app at their accessory name (e.g.
+# "postgres:5432"), stable across every deploy of either app. A backing
+# store restarting for a few seconds during its own `kamal accessory
+# reboot` is fine; a live web process doing the same isn't — that
+# distinction, not "shared vs. app-specific," is why these stay accessories
+# while api doesn't.
 #
 # Required at deploy time (see .kamal/secrets):
-#   KAMAL_REGISTRY_PASSWORD, POSTGRES_PASSWORD, DATABASE_URL, VALKEY_URL,
-#   VALKEY_PASSWORD, CRYPTO_KEYS, CRYPTO_ACTIVE_KEY_ID, SESSION_SECRET,
-#   CSRF_SECRET, EMAIL_SMTP_URL, EMAIL_FROM
+#   KAMAL_REGISTRY_PASSWORD, POSTGRES_PASSWORD
 # Required as plain env (export before running kamal):
-#   DEPLOY_HOST, APP_DOMAIN, KAMAL_REGISTRY_SERVER, KAMAL_REGISTRY_USERNAME,
-#   API_IMAGE (registry/bagheera-api:<tag> pushed ahead of time)
+#   DEPLOY_HOST, APP_DOMAIN, KAMAL_REGISTRY_SERVER, KAMAL_REGISTRY_USERNAME
 # Optional (Sentry error reporting, off when unset):
-#   SENTRY_DSN (api accessory, via .kamal/secrets), VITE_SENTRY_DSN (baked
-#   into the edge image's web build)
+#   VITE_SENTRY_DSN, baked into the edge image's web build
 
 service: bagheera-web
 
@@ -108,31 +110,3 @@ accessories:
         - VALKEY_PASSWORD
     directories:
       - data:/data
-
-  api:
-    image: <%= ENV.fetch("API_IMAGE") %>
-    host: <%= ENV.fetch("DEPLOY_HOST") %>
-    # Loopback-only, like postgres/valkey above — Caddy reaches this
-    # accessory over the internal Docker network via "api:3000" regardless
-    # of any host-published port; this is for host-side debugging only
-    # (e.g. `curl localhost:3000/health` from the deploy host).
-    port: "127.0.0.1:3000:3000"
-    env:
-      clear:
-        PORT: "3000"
-        APP_URL: https://<%= ENV.fetch("APP_DOMAIN") %>
-        RP_ID: <%= ENV.fetch("APP_DOMAIN") %>
-        RP_NAME: Bagheera
-        APP_TIMEZONE: Europe/Paris
-        RP_ORIGIN: https://<%= ENV.fetch("APP_DOMAIN") %>
-      secret:
-        - DATABASE_URL
-        - VALKEY_URL
-        - VALKEY_PASSWORD
-        - CRYPTO_KEYS
-        - CRYPTO_ACTIVE_KEY_ID
-        - SESSION_SECRET
-        - CSRF_SECRET
-        - EMAIL_SMTP_URL
-        - EMAIL_FROM
-        - SENTRY_DSN

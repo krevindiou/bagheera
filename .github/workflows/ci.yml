@@ -180,7 +180,6 @@ jobs:
       KAMAL_REGISTRY_SERVER: ${{ vars.KAMAL_REGISTRY_SERVER }}
       KAMAL_REGISTRY_USERNAME: ${{ vars.KAMAL_REGISTRY_USERNAME }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
-      API_IMAGE: ${{ vars.KAMAL_REGISTRY_SERVER }}/${{ vars.KAMAL_REGISTRY_USERNAME }}/bagheera-api:${{ github.sha }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       VALKEY_URL: ${{ secrets.VALKEY_URL }}
@@ -220,16 +219,13 @@ jobs:
       - run: mkdir -p ~/.ssh && printf '%s\n' "$DEPLOY_HOST_KNOWN_HOSTS" >> ~/.ssh/known_hosts
         env:
           DEPLOY_HOST_KNOWN_HOSTS: ${{ secrets.DEPLOY_HOST_KNOWN_HOSTS }}
-      - name: Build and push the api accessory image
-        run: |
-          echo "$KAMAL_REGISTRY_PASSWORD" | docker login "$KAMAL_REGISTRY_SERVER" -u "$KAMAL_REGISTRY_USERNAME" --password-stdin
-          docker build -f docker/Dockerfile.api -t "$API_IMAGE" .
-          docker push "$API_IMAGE"
+      - name: Build and push the api image
+        run: kamal build push -c config/deploy.api.yml
       - name: Run database migrations from the new image
-        # Deliberately not --reuse: this spins up a one-off container from
-        # the new $API_IMAGE without touching the still-running (old-image)
-        # accessory, so the schema is up to date before any new code runs.
-        run: kamal accessory exec api "node dist/db/migrate.js"
-      - name: Boot or reboot the api accessory on the new image
-        run: kamal accessory details api >/dev/null 2>&1 && kamal accessory reboot api || kamal accessory boot api
+        # kamal app exec runs a one-off container from the image just built
+        # above, without touching the still-running (old-image) api
+        # container, so the schema is up to date before any new code runs.
+        run: kamal app exec -c config/deploy.api.yml "node dist/db/migrate.js"
+      - name: Deploy the api app (health-gated, zero-downtime)
+        run: kamal deploy -c config/deploy.api.yml
       - run: kamal deploy
