@@ -3,6 +3,7 @@ node_modules/
 dist/
 *.tsbuildinfo
 coverage/
+coverage-integration/
 junit-*.xml
 .env
 .env.local

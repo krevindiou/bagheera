@@ -137,13 +137,18 @@ jobs:
       - uses: ./.github/actions/write-api-test-env
         with:
           secret-suffix: integration
-      - run: pnpm --filter api test:integration
+      - run: pnpm --filter api test:integration:cov
       - uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
         if: success() || failure()
         with:
           name: API Integration Test Report
           path: apps/api/junit-integration.xml
           reporter: java-junit
+      - uses: ./.github/actions/coverage-summary
+        if: success() || failure()
+        with:
+          path: apps/api/coverage-integration/coverage-summary.json
+          title: API integration test coverage (services/controllers)
 
   # Disabled for now — re-enable by dropping `if: false`.
   e2e:
