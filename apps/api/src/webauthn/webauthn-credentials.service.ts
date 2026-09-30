@@ -1,7 +1,8 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
@@ -63,7 +64,7 @@ export class WebauthnCredentialsService {
         throw new NotFoundException();
       }
       if (owned.length <= 1) {
-        throw new BadRequestException(LAST_PASSKEY_ERROR);
+        throw new BusinessError(HttpStatus.BAD_REQUEST, 'last_passkey', LAST_PASSKEY_ERROR);
       }
 
       await tx

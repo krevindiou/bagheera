@@ -1,8 +1,9 @@
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
@@ -25,6 +26,10 @@ import { raceSafeUniqueEmail } from './race-safe-unique-email';
 // keys from one another — a single generic error path for all of them,
 // same as the sign-up confirmation link.
 const EMAIL_CHANGE_ERROR = 'Email change error (link expired or already used?)';
+
+function emailChangeError(): BusinessError {
+  return new BusinessError(HttpStatus.BAD_REQUEST, 'email_change_link_invalid', EMAIL_CHANGE_ERROR);
+}
 
 @Injectable()
 export class ProfileService {
@@ -111,7 +116,7 @@ export class ProfileService {
   async confirmEmailChange(key: string, sourceAddress = 'unknown'): Promise<void> {
     const payload = parseEmailChangeToken(this.crypto, key);
     if (!payload) {
-      throw new BadRequestException(EMAIL_CHANGE_ERROR);
+      throw emailChangeError();
     }
 
     const [row] = await this.db.select().from(member).where(eq(member.id, payload.memberId));
@@ -121,7 +126,7 @@ export class ProfileService {
       row.pendingEmail !== payload.newEmail ||
       row.emailChangeTokenVersion !== payload.version
     ) {
-      throw new BadRequestException(EMAIL_CHANGE_ERROR);
+      throw emailChangeError();
     }
 
     const previousEmail = row.email;
@@ -145,7 +150,7 @@ export class ProfileService {
       row.id,
     );
     if (!result.ok) {
-      throw new BadRequestException(EMAIL_CHANGE_ERROR);
+      throw emailChangeError();
     }
 
     await this.emailQueue.enqueue(emailChangedEmail(previousEmail, payload.newEmail, row.locale));

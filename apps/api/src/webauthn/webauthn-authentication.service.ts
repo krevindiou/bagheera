@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {
   PublicKeyCredentialRequestOptionsJSON,
@@ -8,6 +8,7 @@ import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { SchedulerCatchUpService } from '../auth/scheduler-catch-up.service';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
@@ -22,6 +23,10 @@ import { WebauthnCryptoService } from './webauthn-crypto.service';
 // fires from the sign-in page, so the web client's global 401 handler
 // redirecting to sign-in is a no-op there.
 const INVALID_PASSKEY = 'Passkey sign-in failed.';
+
+function invalidPasskey(): BusinessError {
+  return new BusinessError(HttpStatus.UNAUTHORIZED, 'passkey_sign_in_failed', INVALID_PASSKEY);
+}
 
 /**
  * The sole sign-in mechanism — there is no password path — and a
@@ -64,7 +69,7 @@ export class WebauthnAuthenticationService {
 
     if (!expectedChallenge) {
       await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);
-      throw new UnauthorizedException(INVALID_PASSKEY);
+      throw invalidPasskey();
     }
 
     const [credentialRow] = await this.db
@@ -73,7 +78,7 @@ export class WebauthnAuthenticationService {
       .where(eq(webauthnCredential.credentialId, dto.response.id));
     if (!credentialRow) {
       await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);
-      throw new UnauthorizedException(INVALID_PASSKEY);
+      throw invalidPasskey();
     }
     const memberId = credentialRow.memberId;
 
@@ -93,18 +98,18 @@ export class WebauthnAuthenticationService {
       });
     } catch {
       await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
-      throw new UnauthorizedException(INVALID_PASSKEY);
+      throw invalidPasskey();
     }
 
     if (!verification.verified) {
       await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
-      throw new UnauthorizedException(INVALID_PASSKEY);
+      throw invalidPasskey();
     }
 
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
       await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
-      throw new UnauthorizedException(INVALID_PASSKEY);
+      throw invalidPasskey();
     }
 
     await this.db

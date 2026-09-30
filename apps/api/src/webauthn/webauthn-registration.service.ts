@@ -1,10 +1,11 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
@@ -20,6 +21,14 @@ import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 const REGISTRATION_FAILED = 'Passkey registration failed.';
+
+function registrationFailed(): BusinessError {
+  return new BusinessError(
+    HttpStatus.BAD_REQUEST,
+    'passkey_registration_failed',
+    REGISTRATION_FAILED,
+  );
+}
 
 /**
  * Registers an additional passkey for an already-authenticated member — a
@@ -48,7 +57,7 @@ export class WebauthnRegistrationService {
     consumeStepUp(req);
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
-      throw new BadRequestException(REGISTRATION_FAILED);
+      throw registrationFailed();
     }
 
     const existing = await this.db
@@ -73,7 +82,7 @@ export class WebauthnRegistrationService {
     const expectedChallenge = req.session.registrationChallenge;
     delete req.session.registrationChallenge;
     if (!expectedChallenge) {
-      throw new BadRequestException(REGISTRATION_FAILED);
+      throw registrationFailed();
     }
 
     const { origin, rpID } = rpConfig(this.config);
@@ -86,11 +95,11 @@ export class WebauthnRegistrationService {
         expectedRPID: rpID,
       });
     } catch {
-      throw new BadRequestException(REGISTRATION_FAILED);
+      throw registrationFailed();
     }
 
     if (!verification.verified || !verification.registrationInfo) {
-      throw new BadRequestException(REGISTRATION_FAILED);
+      throw registrationFailed();
     }
 
     try {
@@ -100,7 +109,7 @@ export class WebauthnRegistrationService {
     } catch {
       // Most likely the credentialId unique constraint — the same
       // authenticator credential registered twice (e.g. a retried request).
-      throw new BadRequestException(REGISTRATION_FAILED);
+      throw registrationFailed();
     }
 
     const [row] = await this.db

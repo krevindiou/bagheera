@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {
   PublicKeyCredentialRequestOptionsJSON,
@@ -7,6 +7,7 @@ import type {
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
@@ -20,6 +21,10 @@ import { WebauthnCryptoService } from './webauthn-crypto.service';
 // mismatch from a bad signature — a single generic error path for all of
 // them, same discipline as sign-in's own WebAuthn ceremony.
 const STEP_UP_FAILED = 'Step-up verification failed.';
+
+function stepUpFailed(): BusinessError {
+  return new BusinessError(HttpStatus.UNAUTHORIZED, 'step_up_failed', STEP_UP_FAILED);
+}
 
 /**
  * Proves the caller still holds one of their own registered passkeys,
@@ -73,7 +78,7 @@ export class WebauthnStepUpService {
     delete req.session.stepUpMemberId;
 
     if (!expectedChallenge || stashedMemberId !== memberId) {
-      throw new UnauthorizedException(STEP_UP_FAILED);
+      throw stepUpFailed();
     }
 
     const [credentialRow] = await this.db
@@ -81,7 +86,7 @@ export class WebauthnStepUpService {
       .from(webauthnCredential)
       .where(eq(webauthnCredential.credentialId, dto.response.id));
     if (!credentialRow || credentialRow.memberId !== memberId) {
-      throw new UnauthorizedException(STEP_UP_FAILED);
+      throw stepUpFailed();
     }
 
     let verification: VerifiedAuthenticationResponse;
@@ -99,11 +104,11 @@ export class WebauthnStepUpService {
         },
       });
     } catch {
-      throw new UnauthorizedException(STEP_UP_FAILED);
+      throw stepUpFailed();
     }
 
     if (!verification.verified) {
-      throw new UnauthorizedException(STEP_UP_FAILED);
+      throw stepUpFailed();
     }
 
     await this.db

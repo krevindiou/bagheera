@@ -1,4 +1,5 @@
-import { BadRequestException, HttpException, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { BusinessError } from './business-error';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import { fakeArgumentsHost, fakeRequest, fakeResponse } from '../../test-support/fake-http-context';
 import { vi, type Mock, type MockInstance } from 'vitest';
@@ -42,10 +43,15 @@ describe('GlobalExceptionFilter', () => {
     );
   });
 
-  it('adds a stable code (and params) to translatable business errors', async () => {
+  it("reads a BusinessError's code and params straight off its response body", async () => {
     const res = fakeResponse();
     await filter.catch(
-      new HttpException('You can have at most 50 banks.', 422),
+      new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'quota_exceeded',
+        'You can have at most 50 banks.',
+        { limit: 50, kind: 'banks' },
+      ),
       fakeArgumentsHost(fakeRequest(), res),
     );
     expect(res.json).toHaveBeenCalledWith(
@@ -55,6 +61,26 @@ describe('GlobalExceptionFilter', () => {
         message: 'You can have at most 50 banks.',
       }),
     );
+  });
+
+  it("doesn't add a code for a plain HttpException, even with a message that used to match the old lookup table", async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      new HttpException('You can have at most 50 banks.', 422),
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    const [[body]] = res.json.mock.calls as [[Record<string, unknown>]];
+    expect(body.code).toBeUndefined();
+  });
+
+  it('ignores a `code` on the response body that is present but not a string', async () => {
+    const res = fakeResponse();
+    await filter.catch(
+      new HttpException({ message: 'x', code: 42 }, 400),
+      fakeArgumentsHost(fakeRequest(), res),
+    );
+    const [[body]] = res.json.mock.calls as [[Record<string, unknown>]];
+    expect(body.code).toBeUndefined();
   });
 
   it("uses an HttpException's object {message} response as-is (e.g. class-validator's array)", async () => {

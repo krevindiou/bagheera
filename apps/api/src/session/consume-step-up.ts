@@ -1,5 +1,6 @@
-import { UnprocessableEntityException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import type { Request } from 'express';
+import { BusinessError } from '../common/filters/business-error';
 import './step-up-session-data';
 
 // How long a verified step-up stays usable: long enough to finish the one
@@ -29,6 +30,10 @@ export function consumeStepUp(req: Request): void {
   const verifiedAt = req.session.stepUpVerifiedAt;
   delete req.session.stepUpVerifiedAt;
   if (!verifiedAt || Date.now() - verifiedAt > STEP_UP_TTL_MS) {
-    throw new UnprocessableEntityException('Step-up verification is required or has expired.');
+    throw new BusinessError(
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      'step_up_required',
+      'Step-up verification is required or has expired.',
+    );
   }
 }

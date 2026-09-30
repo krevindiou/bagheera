@@ -1,11 +1,7 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { account, bank, operation, report, scheduler } from '../db/schema';
 import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from './ids';
@@ -118,7 +114,11 @@ export class OwnershipService {
   async requireOwnedFullyActiveAccount(id: AccountId, memberId: MemberId) {
     const row = await this.requireOwnedAccount(id, memberId);
     if (!isFullyActive(row.account, row.bank)) {
-      throw new UnprocessableEntityException('Account is not active.');
+      throw new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'account_not_active',
+        'Account is not active.',
+      );
     }
     return row;
   }

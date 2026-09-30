@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {
   PublicKeyCredentialCreationOptionsJSON,
@@ -7,6 +7,7 @@ import type {
 import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
@@ -25,6 +26,10 @@ import { WebauthnCryptoService } from './webauthn-crypto.service';
 // email from an attestation failure — a single generic error path for all
 // of them, same discipline as every other token-gated flow in this app.
 const SIGNUP_FAILED = 'Sign-up link is invalid or has expired.';
+
+function signupFailed(): BusinessError {
+  return new BusinessError(HttpStatus.BAD_REQUEST, 'signup_link_invalid', SIGNUP_FAILED);
+}
 
 // Postgres unique_violation — the email-uniqueness backstop for the
 // member-row insert below (see race-safe-unique-email.ts, whose write side
@@ -58,7 +63,7 @@ export class WebauthnSignupService {
   ): Promise<PublicKeyCredentialCreationOptionsJSON> {
     const payload = parseSignupToken(this.crypto, dto.key);
     if (!payload) {
-      throw new BadRequestException(SIGNUP_FAILED);
+      throw signupFailed();
     }
 
     // Safe to reveal here (not an enumeration oracle): only whoever holds
@@ -69,7 +74,7 @@ export class WebauthnSignupService {
       .from(member)
       .where(sql`lower(${member.email}) = lower(${payload.email})`);
     if (existing) {
-      throw new BadRequestException(SIGNUP_FAILED);
+      throw signupFailed();
     }
 
     const options = await buildRegistrationOptions(this.webauthnCrypto, this.config, {
@@ -90,14 +95,14 @@ export class WebauthnSignupService {
     delete req.session.pendingSignupKey;
 
     if (!expectedChallenge || !key) {
-      throw new BadRequestException(SIGNUP_FAILED);
+      throw signupFailed();
     }
 
     // Re-parsed fresh, never trusting the options-time parse — the token
     // could have expired in the gap between the two calls.
     const payload = parseSignupToken(this.crypto, key);
     if (!payload) {
-      throw new BadRequestException(SIGNUP_FAILED);
+      throw signupFailed();
     }
 
     const { origin, rpID } = rpConfig(this.config);
@@ -110,11 +115,11 @@ export class WebauthnSignupService {
         expectedRPID: rpID,
       });
     } catch {
-      throw new BadRequestException(SIGNUP_FAILED);
+      throw signupFailed();
     }
 
     if (!verification.verified || !verification.registrationInfo) {
-      throw new BadRequestException(SIGNUP_FAILED);
+      throw signupFailed();
     }
 
     let memberId: string;
@@ -142,7 +147,7 @@ export class WebauthnSignupService {
         // signup-token.ts's TTL-only trade-off) — same generic error, not
         // an enumeration signal (only the mailbox owner reaches this at
         // all).
-        throw new BadRequestException(SIGNUP_FAILED);
+        throw signupFailed();
       }
       throw err;
     }

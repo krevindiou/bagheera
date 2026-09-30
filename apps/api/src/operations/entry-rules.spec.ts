@@ -1,8 +1,9 @@
-import { BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { vi } from 'vitest';
+import { BusinessError } from '../common/filters/business-error';
 import {
+  accountCannotBeChanged,
   amountFields,
   requireFullyActive,
   transferAccountIdFor,
@@ -22,7 +23,12 @@ describe('requireFullyActive', () => {
     ['closed bank', { account: active, bank: { closed: true, deleted: false } }],
     ['deleted bank', { account: active, bank: { closed: false, deleted: true } }],
   ])('rejects a %s', (_name, row) => {
-    expect(() => requireFullyActive(row)).toThrow(UnprocessableEntityException);
+    expect(() => requireFullyActive(row)).toThrow(BusinessError);
+    try {
+      requireFullyActive(row);
+    } catch (err) {
+      expect((err as BusinessError).getResponse()).toMatchObject({ code: 'account_not_active' });
+    }
   });
 });
 
@@ -45,7 +51,7 @@ describe('validateTypedRefs', () => {
   });
 
   it('rejects an unknown or wrong-type payment method', async () => {
-    await expect(validateTypedRefs(dbWith([]), 'debit', 'pm')).rejects.toThrow(BadRequestException);
+    await expect(validateTypedRefs(dbWith([]), 'debit', 'pm')).rejects.toThrow(BusinessError);
     await expect(validateTypedRefs(dbWith([{ type: 'credit' }]), 'debit', 'pm')).rejects.toThrow(
       'Invalid payment method',
     );
@@ -58,6 +64,14 @@ describe('validateTypedRefs', () => {
     await expect(
       validateTypedRefs(dbWith([{ type: 'debit' }], []), 'debit', 'pm', 'cat'),
     ).rejects.toThrow('Invalid category');
+  });
+});
+
+describe('accountCannotBeChanged', () => {
+  it('is a 400 BusinessError with the account_cannot_be_changed code', () => {
+    const err = accountCannotBeChanged();
+    expect(err.getStatus()).toBe(400);
+    expect(err.getResponse()).toMatchObject({ code: 'account_cannot_be_changed' });
   });
 });
 

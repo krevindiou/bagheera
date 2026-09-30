@@ -1,6 +1,7 @@
-import { BadRequestException, UnprocessableEntityException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { category, paymentMethod } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
@@ -27,8 +28,22 @@ export function requireFullyActive(row: {
   bank: { closed: boolean; deleted: boolean };
 }): void {
   if (!isFullyActive(row.account, row.bank)) {
-    throw new UnprocessableEntityException('Account is not active.');
+    throw new BusinessError(
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      'account_not_active',
+      'Account is not active.',
+    );
   }
+}
+
+// Shared by operation.service.ts and scheduler.service.ts's own update():
+// an entry's account is fixed at creation, same rule for both.
+export function accountCannotBeChanged(): BusinessError {
+  return new BusinessError(
+    HttpStatus.BAD_REQUEST,
+    'account_cannot_be_changed',
+    'Account cannot be changed.',
+  );
 }
 
 // Validates the category/payment-method pair against the entry's type,
@@ -44,12 +59,20 @@ export async function validateTypedRefs(
     .from(paymentMethod)
     .where(eq(paymentMethod.id, paymentMethodId));
   if (!method || method.type !== type) {
-    throw new BadRequestException('Invalid payment method for this type.');
+    throw new BusinessError(
+      HttpStatus.BAD_REQUEST,
+      'payment_method_invalid',
+      'Invalid payment method for this type.',
+    );
   }
   if (categoryId !== undefined) {
     const [cat] = await db.select().from(category).where(eq(category.id, categoryId));
     if (!cat || cat.type !== type) {
-      throw new BadRequestException('Invalid category for this type.');
+      throw new BusinessError(
+        HttpStatus.BAD_REQUEST,
+        'category_invalid',
+        'Invalid category for this type.',
+      );
     }
   }
 }

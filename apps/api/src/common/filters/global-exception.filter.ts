@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Sentry } from '../../logging/sentry';
-import { errorCodeOf } from './error-codes';
 import { categorize, ErrorResponseBody } from './error-response';
 
 /**
@@ -40,7 +39,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       statusCode,
       category: categorize(statusCode),
       message,
-      ...errorCodeOf(message),
+      ...this.extractBusinessCode(exception),
       path: request.url,
       timestamp: new Date().toISOString(),
     };
@@ -73,6 +72,25 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       typeof (exception as { statusCode: unknown }).statusCode === 'number' &&
       (exception as { expose?: unknown }).expose === true
     );
+  }
+
+  // Pulled straight off a BusinessError's own response body — no
+  // message-text matching involved, unlike the old errorCodeOf().
+  private extractBusinessCode(
+    exception: unknown,
+  ): { code: string; params?: Record<string, string | number> } | Record<string, never> {
+    if (!(exception instanceof HttpException)) {
+      return {};
+    }
+    const response = exception.getResponse();
+    if (typeof response !== 'object' || response === null || !('code' in response)) {
+      return {};
+    }
+    const { code, params } = response as {
+      code: unknown;
+      params?: Record<string, string | number>;
+    };
+    return typeof code === 'string' ? { code, params } : {};
   }
 
   private extractMessage(exception: unknown, statusCode: number): string | string[] {

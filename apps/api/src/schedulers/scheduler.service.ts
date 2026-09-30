@@ -1,9 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import {
+  accountCannotBeChanged,
   amountFields,
   requireFullyActive,
   transferAccountIdFor,
@@ -96,7 +97,7 @@ export class SchedulerService {
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     requireFullyActive(owned);
     if (dto.accountId !== owned.scheduler.accountId) {
-      throw new BadRequestException('Account cannot be changed.');
+      throw accountCannotBeChanged();
     }
     await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
 

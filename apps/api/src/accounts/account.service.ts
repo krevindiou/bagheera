@@ -1,13 +1,9 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount, ZERO_BALANCE } from '../common/balances';
 import { AxisBounds } from '../common/chart-axis';
+import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
@@ -80,7 +76,11 @@ export class AccountService {
   async create(memberId: MemberId, dto: CreateAccountDto) {
     const bankRow = await this.ownership.requireOwnedBank(dto.bankId as BankId, memberId);
     if (bankRow.closed || bankRow.deleted) {
-      throw new UnprocessableEntityException('Bank is not active.');
+      throw new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'bank_not_active',
+        'Bank is not active.',
+      );
     }
     requireBelowQuota('accounts', await this.ownership.countOwned('accounts', memberId));
 
@@ -165,7 +165,11 @@ export class AccountService {
       memberId,
     );
     if (dto.bankId !== row.bankId || dto.currency !== row.currency) {
-      throw new BadRequestException('Bank and currency cannot be changed.');
+      throw new BusinessError(
+        HttpStatus.BAD_REQUEST,
+        'bank_currency_immutable',
+        'Bank and currency cannot be changed.',
+      );
     }
     await this.db.update(account).set({ name: dto.name }).where(eq(account.id, id));
   }
@@ -179,7 +183,11 @@ export class AccountService {
   async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
     const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     if (row.deleted) {
-      throw new UnprocessableEntityException('Account is already deleted.');
+      throw new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'account_already_deleted',
+        'Account is already deleted.',
+      );
     }
     await this.db.transaction(async (tx) => {
       await tx.update(account).set({ deleted: true }).where(eq(account.id, id));

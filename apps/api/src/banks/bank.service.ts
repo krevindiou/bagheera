@@ -1,11 +1,7 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
@@ -20,6 +16,14 @@ export interface ChooseBankResult {
   id: string;
   name: string;
   created: boolean;
+}
+
+function bankNotActive(): BusinessError {
+  return new BusinessError(
+    HttpStatus.UNPROCESSABLE_ENTITY,
+    'bank_not_active',
+    'Bank is not active.',
+  );
 }
 
 @Injectable()
@@ -41,13 +45,13 @@ export class BankService {
 
   async choose(memberId: MemberId, dto: ChooseBankDto): Promise<ChooseBankResult> {
     if ((!dto.bankId && !dto.name) || (dto.bankId && dto.name)) {
-      throw new BadRequestException('You must select a bank.');
+      throw new BusinessError(HttpStatus.BAD_REQUEST, 'bank_required', 'You must select a bank.');
     }
 
     if (dto.bankId) {
       const row = await this.ownership.requireOwnedBank(dto.bankId as BankId, memberId);
       if (row.closed || row.deleted) {
-        throw new UnprocessableEntityException('Bank is not active.');
+        throw bankNotActive();
       }
       return { id: row.id, name: row.name, created: false };
     }
@@ -60,7 +64,7 @@ export class BankService {
   async update(memberId: MemberId, id: string, dto: UpdateBankDto): Promise<void> {
     const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.closed || row.deleted) {
-      throw new UnprocessableEntityException('Bank is not active.');
+      throw bankNotActive();
     }
     await this.db.update(bank).set({ name: dto.name }).where(eq(bank.id, id));
   }
@@ -68,7 +72,7 @@ export class BankService {
   async close(memberId: MemberId, ip: string, id: string): Promise<void> {
     const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.closed || row.deleted) {
-      throw new UnprocessableEntityException('Bank is not active.');
+      throw bankNotActive();
     }
     await this.db.update(bank).set({ closed: true }).where(eq(bank.id, id));
     await this.audit.record('bank_closed', memberId, ip);
@@ -77,7 +81,11 @@ export class BankService {
   async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
     const row = await this.ownership.requireOwnedBank(id as BankId, memberId);
     if (row.deleted) {
-      throw new UnprocessableEntityException('Bank is already deleted.');
+      throw new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'bank_already_deleted',
+        'Bank is already deleted.',
+      );
     }
     await this.db.transaction(async (tx) => {
       await tx.update(bank).set({ deleted: true }).where(eq(bank.id, id));

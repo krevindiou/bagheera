@@ -1,4 +1,5 @@
-import { UnprocessableEntityException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+import { BusinessError } from '../common/filters/business-error';
 
 /**
  * The most of each thing one member can hold — deleted ones aside, closed
@@ -19,6 +20,11 @@ export type QuotaKind = keyof typeof MEMBER_QUOTAS;
 export function requireBelowQuota(kind: QuotaKind, held: number): void {
   const limit = MEMBER_QUOTAS[kind];
   if (held >= limit) {
-    throw new UnprocessableEntityException(`You can have at most ${limit} ${kind}.`);
+    throw new BusinessError(
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      'quota_exceeded',
+      `You can have at most ${limit} ${kind}.`,
+      { limit, kind },
+    );
   }
 }

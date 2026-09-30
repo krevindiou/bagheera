@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits } from '../common/money';
 import type { Executor } from '../db/executor';
 import { TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
@@ -117,16 +118,20 @@ export class TransferService {
   // SchedulerGenerationService), not OwnershipService's injected connection
   // — same reachableAccountsOf() the rest of the ownership-scoping surface
   // uses, so "deleted along the chain" means not-found here too, but kept
-  // as this module's own BadRequestException/message pair rather than
+  // as this module's own BusinessError (BAD_REQUEST) rather than
   // OwnershipService's NotFoundException, since callers surface these as
-  // form-field errors (see common/filters/error-codes.ts).
+  // form-field errors.
   private async requireEligibleTarget(
     db: Db,
     targetAccountId: string,
     source: PairingEligibility,
   ): Promise<void> {
     if (targetAccountId === source.sourceAccountId) {
-      throw new BadRequestException('Cannot transfer to the same account.');
+      throw new BusinessError(
+        HttpStatus.BAD_REQUEST,
+        'transfer_same_account',
+        'Cannot transfer to the same account.',
+      );
     }
     const [row] = await db
       .select({ account, bank })
@@ -136,13 +141,25 @@ export class TransferService {
         and(eq(account.id, targetAccountId), reachableAccountsOf(db, source.memberId as MemberId)),
       );
     if (!row) {
-      throw new BadRequestException('Invalid transfer account.');
+      throw new BusinessError(
+        HttpStatus.BAD_REQUEST,
+        'transfer_account_invalid',
+        'Invalid transfer account.',
+      );
     }
     if (!isFullyActive(row.account, row.bank)) {
-      throw new BadRequestException('Transfer account is not active.');
+      throw new BusinessError(
+        HttpStatus.BAD_REQUEST,
+        'transfer_account_not_active',
+        'Transfer account is not active.',
+      );
     }
     if (row.account.currency !== source.sourceCurrency) {
-      throw new BadRequestException('Transfer account currency mismatch.');
+      throw new BusinessError(
+        HttpStatus.BAD_REQUEST,
+        'transfer_currency_mismatch',
+        'Transfer account currency mismatch.',
+      );
     }
   }
 

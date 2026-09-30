@@ -1,14 +1,11 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { count, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BusinessError } from '../common/filters/business-error';
 import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import {
+  accountCannotBeChanged,
   amountFields,
   OPENING_BALANCE_PAYMENT_METHOD_ID,
   requireFullyActive,
@@ -117,10 +114,14 @@ export class OperationService {
     } = await this.ownership.requireOwnedOperation(id as OperationId, memberId);
     requireFullyActive({ account: acc, bank: accBank });
     if (dto.accountId !== row.accountId) {
-      throw new BadRequestException('Account cannot be changed.');
+      throw accountCannotBeChanged();
     }
     if (row.paymentMethodId === OPENING_BALANCE_PAYMENT_METHOD_ID) {
-      throw new UnprocessableEntityException('Opening operation cannot be edited.');
+      throw new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'opening_operation_locked',
+        'Opening operation cannot be edited.',
+      );
     }
     await validateTypedRefs(this.db, dto.type, dto.paymentMethodId, dto.categoryId);
 
