@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useAccountContext } from '../../composables/useAccountContext';
 import {
@@ -46,7 +47,7 @@ const { paymentMethods } = usePaymentMethodsQuery();
 const { account, isFullyActive, currency } = useAccountContext(accountId);
 
 const schedulersQuery = useQuery({
-  queryKey: computed(() => ['schedulers', accountId.value, page.value]),
+  queryKey: computed(() => queryKeys.schedulers.page(accountId.value, page.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/schedulers', {
@@ -70,7 +71,9 @@ const categoryNames = computed(
 );
 
 async function reloadSchedulers() {
-  await queryClient.invalidateQueries({ queryKey: ['schedulers', accountId.value, page.value] });
+  // The `.all` prefix, not `.page(accountId, page.value)` — invalidates
+  // every cached page for this account, not just whichever one is showing.
+  await queryClient.invalidateQueries({ queryKey: queryKeys.schedulers.all(accountId.value) });
 }
 
 function amountLabel(scheduler: Scheduler): string {

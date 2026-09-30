@@ -4,11 +4,8 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import {
-  REFERENCE_QUERY_KEYS,
-  useAccountsQuery,
-  useBanksQuery,
-} from '../../composables/useReferenceQueries';
+import { queryKeys } from '../../api/queryKeys';
+import { useAccountsQuery, useBanksQuery } from '../../composables/useReferenceQueries';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import { formatMoney } from '../operations/money';
@@ -32,8 +29,8 @@ const { accounts } = useAccountsQuery();
 
 async function reload() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: REFERENCE_QUERY_KEYS.banks }),
-    queryClient.invalidateQueries({ queryKey: REFERENCE_QUERY_KEYS.accounts }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.banks }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
   ]);
 }
 

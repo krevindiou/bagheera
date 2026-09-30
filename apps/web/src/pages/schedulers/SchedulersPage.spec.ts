@@ -8,6 +8,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
+import { queryKeys } from '../../api/queryKeys';
 import { useConfirm } from '../../composables/useConfirm';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { PAYMENT_METHOD_ID } from '../operations/operations.types';
@@ -276,6 +277,29 @@ describe('SchedulersPage', () => {
     await flushPromises();
 
     expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
+  });
+
+  it('invalidates every cached page (not just the current one) after a batch delete', async () => {
+    mockGet({ schedulers: { items: [scheduler()], total: 1, page: 1, pageSize: 20 } });
+    apiClient.POST.mockResolvedValueOnce({
+      data: { deletedCount: 1 },
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    const { global, queryClient } = withGlobalPlugins(router);
+    wrapper = mount(SchedulersPage, { global });
+    await flushPromises();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await wrapper.find('[data-testid="scheduler-row"] input[type="checkbox"]').setValue(true);
+    await wrapper.find('[data-testid="scheduler-batch-delete"]').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    const invalidatedKeys = invalidateSpy.mock.calls.map(
+      (call) => (call[0] as { queryKey?: unknown } | undefined)?.queryKey,
+    );
+    expect(invalidatedKeys).toContainEqual(queryKeys.schedulers.all(ACCOUNT_ID));
   });
 
   it('creates a scheduler and closes the form on save', async () => {

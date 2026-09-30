@@ -10,6 +10,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
+import { queryKeys } from '../../api/queryKeys';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { colorForCurrency } from '../../components/chartColors';
 import { useConfirm } from '../../composables/useConfirm';
@@ -395,6 +396,31 @@ describe('OperationsPage', () => {
     expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
   });
 
+  it('invalidates every cached page, plus the dashboard and accounts list, after a batch action', async () => {
+    mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
+    apiClient.POST.mockResolvedValueOnce({
+      data: { deletedCount: 1 },
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    const { global, queryClient } = withGlobalPlugins(router);
+    wrapper = mount(OperationsPage, { global });
+    await flushPromises();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await wrapper.find('[data-testid="operation-row"] input[type="checkbox"]').setValue(true);
+    await wrapper.find('[data-testid="batch-delete"]').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    const invalidatedKeys = invalidateSpy.mock.calls.map(
+      (call) => (call[0] as { queryKey?: unknown } | undefined)?.queryKey,
+    );
+    expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
+    expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
+  });
+
   it('hides batch actions again once every row is deselected', async () => {
     mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
@@ -527,6 +553,32 @@ describe('OperationsPage', () => {
     );
     expect(wrapper.find('#operation-third-party').exists()).toBe(false);
     expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
+  });
+
+  it('invalidates every cached page (not just the current one), plus the dashboard and accounts list, after saving', async () => {
+    mockGet();
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    const { global, queryClient } = withGlobalPlugins(router);
+    wrapper = mount(OperationsPage, { global });
+    await flushPromises();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await wrapper.find('button.btn-primary').trigger('click');
+    await wrapper.find('#operation-third-party').setValue('Landlord');
+    await wrapper.find('#operation-amount').setValue('50');
+    await wrapper.find('#operation-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+    await submitAndSettle(wrapper);
+
+    const invalidatedKeys = invalidateSpy.mock.calls.map(
+      (call) => (call[0] as { queryKey?: unknown } | undefined)?.queryKey,
+    );
+    expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
+    expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });
 
   it('cancels the create form without saving', async () => {

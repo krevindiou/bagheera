@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
@@ -19,7 +20,7 @@ import type { DashboardSynthesisChart } from './dashboard.types';
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
 const { data: dashboard, isError } = useQuery({
-  queryKey: computed(() => ['dashboard', chartRange.value]),
+  queryKey: computed(() => queryKeys.dashboard.range(chartRange.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/dashboard', {

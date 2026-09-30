@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useToast } from '../../composables/useToast';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
@@ -69,7 +70,7 @@ const { paymentMethods } = usePaymentMethodsQuery();
 const { account, bank, isFullyActive, currency } = useAccountContext(accountId);
 
 const balanceQuery = useQuery({
-  queryKey: computed(() => ['balance', accountId.value]),
+  queryKey: computed(() => queryKeys.balance(accountId.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/accounts/{id}/balance', {
@@ -82,7 +83,7 @@ const balance = computed(() => balanceQuery.data.value ?? null);
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
 const chartQuery = useQuery({
-  queryKey: computed(() => ['chart', accountId.value, chartRange.value]),
+  queryKey: computed(() => queryKeys.chart.range(accountId.value, chartRange.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/accounts/{id}/chart', {
@@ -109,7 +110,7 @@ const chartAxisBounds = computed(() => toDisplayBounds(chartQuery.data.value?.ax
 // recalled search is active, the panel is restored docked open and
 // hydrated with its criteria.
 const operationsQuery = useQuery({
-  queryKey: computed(() => ['operations', accountId.value, page.value]),
+  queryKey: computed(() => queryKeys.operations.page(accountId.value, page.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/operations/search', {
@@ -157,7 +158,7 @@ const searchMutation = useMutation({
     // Mark the cached page as an active search, or the `operationsQuery.data`
     // watch below (which reruns off this same write) sees no `active` flag
     // and immediately flips hasActiveSearch back off.
-    queryClient.setQueryData(['operations', accountId.value, 1], {
+    queryClient.setQueryData(queryKeys.operations.page(accountId.value, 1), {
       ...data,
       active: true,
       criteria,
@@ -184,25 +185,35 @@ const clearSearchMutation = useMutation({
     hasActiveSearch.value = false;
     page.value = 1;
     showSearch.value = false;
-    await queryClient.invalidateQueries({ queryKey: ['operations', accountId.value] });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) });
   },
 });
 function clearSearch() {
   clearSearchMutation.mutate();
 }
 
+// Both money-changing: every cached page of this account's operations (not
+// just the one showing — the old per-page key left stale rows on any other
+// page until its own next visit), this account's own chart/balance, and —
+// since a single operation edit moves this account's balance — the
+// dashboard's totals and the accounts list's own balances, wherever else
+// they're cached.
 async function refreshAfterSave() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['operations', accountId.value, page.value] }),
-    queryClient.invalidateQueries({ queryKey: ['chart', accountId.value] }),
-    queryClient.invalidateQueries({ queryKey: ['balance', accountId.value] }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.chart.all(accountId.value) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.balance(accountId.value) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
   ]);
 }
 
 async function refreshAfterBatch() {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['operations', accountId.value, page.value] }),
-    queryClient.invalidateQueries({ queryKey: ['balance', accountId.value] }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.balance(accountId.value) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
   ]);
 }
 

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useConfirm } from '../../composables/useConfirm';
 import { useAccountsQuery, useCategoriesQuery } from '../../composables/useReferenceQueries';
@@ -22,7 +23,7 @@ const { push: toast } = useToast();
 const queryClient = useQueryClient();
 
 const reportsQuery = useQuery({
-  queryKey: ['reports'],
+  queryKey: queryKeys.reports,
   queryFn: async () => unwrap(await apiClient.GET('/reports')),
 });
 const reports = computed(() => reportsQuery.data.value ?? []);
@@ -32,7 +33,7 @@ const { accounts } = useAccountsQuery();
 const { categories } = useCategoriesQuery();
 
 async function reloadReports() {
-  await queryClient.invalidateQueries({ queryKey: ['reports'] });
+  await queryClient.invalidateQueries({ queryKey: queryKeys.reports });
 }
 
 const showForm = ref(false);
@@ -89,7 +90,7 @@ async function deleteReport(report: Report) {
 }
 
 const seriesQuery = useQuery({
-  queryKey: computed(() => ['report-series', viewingReportId.value]),
+  queryKey: computed(() => queryKeys.reportSeries(viewingReportId.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/reports/{id}/series', {
@@ -101,7 +102,7 @@ const seriesQuery = useQuery({
   ),
 });
 const distributionQuery = useQuery({
-  queryKey: computed(() => ['report-distribution', viewingReportId.value]),
+  queryKey: computed(() => queryKeys.reportDistribution(viewingReportId.value)),
   queryFn: async () =>
     unwrap(
       await apiClient.GET('/reports/{id}/distribution', {

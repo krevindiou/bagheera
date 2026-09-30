@@ -15,6 +15,11 @@ import { router as appRouter } from '../router';
  * (no retries, no cache reuse across tests). Defaults to the app's real
  * router, since several pages/guards depend on actual navigation — pass a
  * different instance/route table when a test needs to isolate from it.
+ *
+ * Also returns the `queryClient` itself — most callers only destructure
+ * `global`, but a test asserting on cache invalidation (e.g. spying on
+ * `queryClient.invalidateQueries`) needs the same instance the mounted
+ * component actually uses, not one it builds separately.
  */
 export function withGlobalPlugins(router: Router = appRouter) {
   const pinia = createPinia();
@@ -32,5 +37,5 @@ export function withGlobalPlugins(router: Router = appRouter) {
     i18n,
     [VueQueryPlugin, { queryClient }],
   ];
-  return { global: { plugins, directives: { autofocus: vAutofocus } } };
+  return { global: { plugins, directives: { autofocus: vAutofocus } }, queryClient };
 }

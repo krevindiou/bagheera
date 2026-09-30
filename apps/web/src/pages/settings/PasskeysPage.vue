@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
+import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { completeStepUp } from '../../api/stepUp';
 import { runRegistration } from '../../api/webauthn';
@@ -25,14 +26,14 @@ const { t } = useI18n();
 const queryClient = useQueryClient();
 
 const credentialsQuery = useQuery({
-  queryKey: ['webauthn-credentials'],
+  queryKey: queryKeys.webauthnCredentials,
   queryFn: async () => unwrap(await apiClient.GET('/webauthn/credentials')),
 });
 const credentials = computed(() => credentialsQuery.data.value ?? []);
 const credentialsError = computed(() => credentialsQuery.isError.value);
 
 async function reload() {
-  await queryClient.invalidateQueries({ queryKey: ['webauthn-credentials'] });
+  await queryClient.invalidateQueries({ queryKey: queryKeys.webauthnCredentials });
 }
 
 const deviceName = ref('');

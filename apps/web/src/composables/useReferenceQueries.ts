@@ -1,17 +1,8 @@
 import { computed } from 'vue';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../api/client';
+import { queryKeys } from '../api/queryKeys';
 import { unwrap } from '../api/unwrap';
-
-// The query keys of the member's accounts and banks, and of the two seeded
-// reference lists — one home, so a page that changes accounts or banks
-// invalidates exactly what the pages reading them cached.
-export const REFERENCE_QUERY_KEYS = {
-  accounts: ['accounts'],
-  banks: ['banks'],
-  categories: ['categories'],
-  paymentMethods: ['payment-methods'],
-} as const;
 
 // The `*Query` returned alongside each list is the raw query, for the rare
 // caller that needs to know whether data has actually arrived or the
@@ -29,26 +20,24 @@ function useListQuery<T>(
 }
 
 export function useAccountsQuery() {
-  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.accounts, () =>
-    apiClient.GET('/accounts'),
-  );
+  const { query, list } = useListQuery(queryKeys.accounts, () => apiClient.GET('/accounts'));
   return { accountsQuery: query, accounts: list };
 }
 
 export function useBanksQuery() {
-  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.banks, () => apiClient.GET('/banks'));
+  const { query, list } = useListQuery(queryKeys.banks, () => apiClient.GET('/banks'));
   return { banksQuery: query, banks: list };
 }
 
 export function useCategoriesQuery() {
-  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.categories, () =>
+  const { query, list } = useListQuery(queryKeys.categories, () =>
     apiClient.GET('/reference-data/categories'),
   );
   return { categoriesQuery: query, categories: list };
 }
 
 export function usePaymentMethodsQuery() {
-  const { query, list } = useListQuery(REFERENCE_QUERY_KEYS.paymentMethods, () =>
+  const { query, list } = useListQuery(queryKeys.paymentMethods, () =>
     apiClient.GET('/reference-data/payment-methods'),
   );
   return { paymentMethodsQuery: query, paymentMethods: list };

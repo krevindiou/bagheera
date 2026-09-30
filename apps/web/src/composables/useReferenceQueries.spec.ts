@@ -8,7 +8,6 @@ vi.mock('../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../api/client';
 import {
-  REFERENCE_QUERY_KEYS,
   useAccountsQuery,
   useBanksQuery,
   useCategoriesQuery,
@@ -78,12 +77,5 @@ describe('useReferenceQueries', () => {
     await flushPromises();
 
     expect(banksQuery.data.value).toEqual([{ id: 'b1' }]);
-  });
-
-  it('keeps each list under its own query key', () => {
-    const keys = Object.values(REFERENCE_QUERY_KEYS).map((key) => key.join('/'));
-
-    expect(new Set(keys).size).toBe(keys.length);
-    expect(REFERENCE_QUERY_KEYS.accounts).toEqual(['accounts']);
   });
 });
