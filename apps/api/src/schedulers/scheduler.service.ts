@@ -7,10 +7,11 @@ import {
   accountCannotBeChanged,
   amountFields,
   requireFullyActive,
+  requireFullyActiveLocked,
   transferAccountIdFor,
   validateTypedRefs,
 } from '../operations/entry-rules';
-import { operation, scheduler } from '../db/schema';
+import { operation, scheduler, member } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { MemberId, AccountId, SchedulerId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
@@ -64,27 +65,47 @@ export class SchedulerService {
       { targetAccountId: null },
       transferAccountId,
     );
-    requireBelowQuota('schedulers', await this.ownership.countOwned('schedulers', memberId));
 
-    const [created] = await this.db
-      .insert(scheduler)
-      .values({
-        accountId: dto.accountId,
-        thirdParty: dto.thirdParty,
-        debit,
-        credit,
-        categoryId: dto.categoryId,
-        paymentMethodId: dto.paymentMethodId,
-        transferAccountId,
-        valueDate: dto.valueDate,
-        notes: dto.notes ?? '',
-        reconciled: dto.reconciled ?? false,
-        limitDate: dto.limitDate,
-        frequencyUnit: dto.frequencyUnit ?? 'month',
-        frequencyValue: dto.frequencyValue,
-        active: dto.active ?? true,
-      })
-      .returning();
+    const created = await this.db.transaction(async (tx) => {
+      // Re-validate fully-active state inside transaction under row locks
+      await requireFullyActiveLocked(tx, dto.accountId as AccountId);
+
+      // Lock member row and check quota inside transaction
+      const [memberRow] = await tx
+        .select()
+        .from(member)
+        .where(eq(member.id, memberId))
+        .for('update');
+
+      if (!memberRow) {
+        throw new Error('Member not found');
+      }
+
+      const held = await this.ownership.countOwned('schedulers', memberId);
+      requireBelowQuota('schedulers', held);
+
+      const [created] = await tx
+        .insert(scheduler)
+        .values({
+          accountId: dto.accountId,
+          thirdParty: dto.thirdParty,
+          debit,
+          credit,
+          categoryId: dto.categoryId,
+          paymentMethodId: dto.paymentMethodId,
+          transferAccountId,
+          valueDate: dto.valueDate,
+          notes: dto.notes ?? '',
+          reconciled: dto.reconciled ?? false,
+          limitDate: dto.limitDate,
+          frequencyUnit: dto.frequencyUnit ?? 'month',
+          frequencyValue: dto.frequencyValue,
+          active: dto.active ?? true,
+        })
+        .returning();
+
+      return created;
+    });
 
     // A newly-created scheduler may already be due — e.g. a value date of
     // today, or in the past. Generation is queued after every save.
@@ -114,24 +135,29 @@ export class SchedulerService {
       transferAccountId,
     );
 
-    await this.db
-      .update(scheduler)
-      .set({
-        thirdParty: dto.thirdParty,
-        debit,
-        credit,
-        categoryId: dto.categoryId ?? null,
-        paymentMethodId: dto.paymentMethodId,
-        transferAccountId,
-        valueDate: dto.valueDate,
-        notes: dto.notes ?? '',
-        reconciled: dto.reconciled ?? false,
-        limitDate: dto.limitDate ?? null,
-        frequencyUnit: dto.frequencyUnit ?? 'month',
-        frequencyValue: dto.frequencyValue,
-        active: dto.active ?? true,
-      })
-      .where(eq(scheduler.id, id));
+    await this.db.transaction(async (tx) => {
+      // Re-validate fully-active state inside transaction under row locks
+      await requireFullyActiveLocked(tx, dto.accountId as AccountId);
+
+      await tx
+        .update(scheduler)
+        .set({
+          thirdParty: dto.thirdParty,
+          debit,
+          credit,
+          categoryId: dto.categoryId ?? null,
+          paymentMethodId: dto.paymentMethodId,
+          transferAccountId,
+          valueDate: dto.valueDate,
+          notes: dto.notes ?? '',
+          reconciled: dto.reconciled ?? false,
+          limitDate: dto.limitDate ?? null,
+          frequencyUnit: dto.frequencyUnit ?? 'month',
+          frequencyValue: dto.frequencyValue,
+          active: dto.active ?? true,
+        })
+        .where(eq(scheduler.id, id));
+    });
 
     // Editing a scheduler (e.g. changing its value date, interval, or
     // flipping it active) can bring new occurrences into range; generation
@@ -144,6 +170,9 @@ export class SchedulerService {
     requireFullyActive(owned);
 
     await this.db.transaction(async (tx) => {
+      // Re-validate fully-active state inside transaction under row locks
+      await requireFullyActiveLocked(tx, owned.scheduler.accountId as AccountId);
+
       // Already-generated operations survive deletion; only their link to
       // this scheduler is dropped.
       await tx.update(operation).set({ schedulerId: null }).where(eq(operation.schedulerId, id));

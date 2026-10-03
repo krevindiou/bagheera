@@ -3,8 +3,10 @@ import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits, toMinorUnits } from '../common/money';
-import { category, paymentMethod } from '../db/schema';
+import { account, bank, category, paymentMethod } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { AccountId } from '../security/ids';
+import type { Executor } from '../db/executor';
 import { isFullyActive } from '../security/reachable';
 import { TRANSFER_PAYMENT_METHOD_IDS } from './transfer.service';
 
@@ -92,4 +94,35 @@ export function transferAccountIdFor(
   transferAccountId?: string,
 ): string | null {
   return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId) ? (transferAccountId ?? null) : null;
+}
+
+// Re-validates fully-active state inside a transaction under row locks.
+// Called after locking the account and bank rows via FOR UPDATE.
+export async function requireFullyActiveLocked(
+  tx: Executor,
+  accountId: AccountId,
+): Promise<{
+  account: { closed: boolean; deleted: boolean };
+  bank: { closed: boolean; deleted: boolean };
+}> {
+  const [row] = await tx
+    .select({ account, bank })
+    .from(account)
+    .innerJoin(bank, eq(account.bankId, bank.id))
+    .where(eq(account.id, accountId))
+    .for('update');
+
+  if (!row) {
+    throw new BusinessError(HttpStatus.NOT_FOUND, 'account_not_found', 'Account not found.');
+  }
+
+  if (!isFullyActive(row.account, row.bank)) {
+    throw new BusinessError(
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      'account_not_active',
+      'Account is not active.',
+    );
+  }
+
+  return row;
 }

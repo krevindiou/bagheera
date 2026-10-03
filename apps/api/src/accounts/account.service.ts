@@ -12,7 +12,7 @@ import {
   parseSynthesisChartWindow,
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
-import { account, operation } from '../db/schema';
+import { account, bank, member, operation } from '../db/schema';
 import { OPENING_BALANCE_PAYMENT_METHOD_ID } from '../operations/entry-rules';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
@@ -82,10 +82,38 @@ export class AccountService {
         'Bank is not active.',
       );
     }
-    requireBelowQuota('accounts', await this.ownership.countOwned('accounts', memberId));
 
     const minorUnits = toMinorUnits(dto.initialBalance ?? 0);
     return this.db.transaction(async (tx) => {
+      // Lock member and bank rows, re-validate bank active status inside transaction
+      const [memberRow] = await tx
+        .select()
+        .from(member)
+        .where(eq(member.id, memberId))
+        .for('update');
+
+      if (!memberRow) {
+        throw new Error('Member not found');
+      }
+
+      const [lockedBank] = await tx
+        .select()
+        .from(bank)
+        .where(eq(bank.id, dto.bankId))
+        .for('update');
+
+      if (!lockedBank || lockedBank.closed || lockedBank.deleted) {
+        throw new BusinessError(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          'bank_not_active',
+          'Bank is not active.',
+        );
+      }
+
+      // Check quota inside transaction
+      const held = await this.ownership.countOwned('accounts', memberId);
+      requireBelowQuota('accounts', held);
+
       const [created] = await tx
         .insert(account)
         .values({

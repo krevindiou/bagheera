@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
-import { category, report, reportAccount, reportCategory } from '../db/schema';
+import { category, member, report, reportAccount, reportCategory } from '../db/schema';
 import { MemberId, ReportId } from '../security/ids';
 import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
@@ -89,11 +89,24 @@ export class ReportService {
   }
 
   async create(memberId: MemberId, dto: CreateReportDto) {
-    requireBelowQuota('reports', await this.ownership.countOwned('reports', memberId));
     const accountIds = await this.ownership.filterOwnedAccountIds(dto.accountIds ?? [], memberId);
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     const created = await this.db.transaction(async (tx) => {
+      // Lock member row and check quota inside transaction
+      const [memberRow] = await tx
+        .select()
+        .from(member)
+        .where(eq(member.id, memberId))
+        .for('update');
+
+      if (!memberRow) {
+        throw new Error('Member not found');
+      }
+
+      const held = await this.ownership.countOwned('reports', memberId);
+      requireBelowQuota('reports', held);
+
       const [row] = await tx
         .insert(report)
         .values({

@@ -9,6 +9,7 @@ import {
   amountFields,
   OPENING_BALANCE_PAYMENT_METHOD_ID,
   requireFullyActive,
+  requireFullyActiveLocked,
   transferAccountIdFor,
   validateTypedRefs,
 } from './entry-rules';
@@ -58,6 +59,9 @@ export class OperationService {
     const transferAccountId = transferAccountIdFor(dto.paymentMethodId, dto.transferAccountId);
 
     return this.db.transaction(async (tx) => {
+      // Re-validate fully-active state inside transaction under row locks
+      await requireFullyActiveLocked(tx, dto.accountId as AccountId);
+
       const [created] = await tx
         .insert(operation)
         .values({
@@ -134,20 +138,38 @@ export class OperationService {
     const reconciled = dto.reconciled ?? false;
 
     await this.db.transaction(async (tx) => {
-      // Resolved from the pairing state stored before this save — creates,
+      // Re-validate fully-active state inside transaction under row locks
+      await requireFullyActiveLocked(tx, dto.accountId as AccountId);
+
+      // Lock the operation row and read pairing state from it
+      const [lockedOp] = await tx
+        .select()
+        .from(operation)
+        .where(eq(operation.id, id))
+        .for('update');
+
+      if (!lockedOp) {
+        throw new BusinessError(
+          HttpStatus.NOT_FOUND,
+          'operation_not_found',
+          'Operation not found.',
+        );
+      }
+
+      // Resolved from the pairing state stored in the locked row — creates,
       // updates, retargets or removes the mirror as needed (see
       // transfer.service.ts).
       const transferOperationId = await this.transfers.sync(
         tx,
         {
           sourceOperationId: id,
-          sourceAccountId: row.accountId,
+          sourceAccountId: lockedOp.accountId,
           sourceCurrency: acc.currency,
           memberId,
         },
         {
-          targetAccountId: row.transferAccountId,
-          mirrorOperationId: row.transferOperationId,
+          targetAccountId: lockedOp.transferAccountId,
+          mirrorOperationId: lockedOp.transferOperationId,
         },
         desiredTransferAccountId,
         {
@@ -157,7 +179,7 @@ export class OperationService {
           thirdParty: dto.thirdParty,
           valueDate: dto.valueDate,
           notes,
-          schedulerId: row.schedulerId,
+          schedulerId: lockedOp.schedulerId,
         },
       );
 
