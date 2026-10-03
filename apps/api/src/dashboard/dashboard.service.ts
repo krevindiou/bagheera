@@ -11,9 +11,10 @@ import {
   SynthesisChart,
 } from '../common/synthesis-chart';
 import { MemberId } from '../security/ids';
-import { isFullyActive } from '../security/reachable';
+import { isFullyActive, reachableAccountsOf } from '../security/reachable';
+import { OwnershipService } from '../security/ownership.service';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, operation, report } from '../db/schema';
+import { account, operation, report } from '../db/schema';
 import { MinorUnits } from '../common/money';
 import {
   ReportDistribution,
@@ -100,6 +101,7 @@ function isoDate(date: Date): string {
 export class DashboardService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
+    private readonly ownership: OwnershipService,
     private readonly reportSeries: ReportSeriesService,
     private readonly reportDistributions: ReportDistributionService,
   ) {}
@@ -146,10 +148,7 @@ export class DashboardService {
   }
 
   async getDashboard(memberId: MemberId, range?: string): Promise<DashboardResponse> {
-    const banks = await this.db
-      .select()
-      .from(bank)
-      .where(and(eq(bank.memberId, memberId), eq(bank.deleted, false)));
+    const banks = await this.ownership.listOwnedBanks(memberId);
     if (banks.length === 0) {
       return {
         onboarding: 'no-bank',
@@ -162,13 +161,14 @@ export class DashboardService {
       };
     }
 
-    const bankIds = banks.map((b) => b.id);
     const bankById = new Map(banks.map((b) => [b.id, b]));
     const hasActiveBank = banks.some((b) => !b.closed);
-    const accounts = await this.db
-      .select()
+    const accountRows = await this.db
+      .select({ account })
       .from(account)
-      .where(and(inArray(account.bankId, bankIds), eq(account.deleted, false)));
+      .where(reachableAccountsOf(this.db, memberId))
+      .orderBy(asc(account.name));
+    const accounts = accountRows.map((r) => r.account);
 
     const onboarding: OnboardingTip = accounts.length === 0 && hasActiveBank ? 'no-account' : null;
 

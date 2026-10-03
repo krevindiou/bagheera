@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { and, count, eq, inArray } from 'drizzle-orm';
+import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
@@ -73,6 +73,16 @@ export class OwnershipService {
           this.db.select({ total: count() }).from(report).where(eq(report.memberId, memberId)),
         );
     }
+  }
+
+  // List all non-deleted banks owned by this member, ordered by name.
+  // Closed banks are included (reachable/listable).
+  async listOwnedBanks(memberId: MemberId) {
+    return this.db
+      .select()
+      .from(bank)
+      .where(and(eq(bank.memberId, memberId), eq(bank.deleted, false)))
+      .orderBy(asc(bank.name));
   }
 
   // Unlike every other method here, a bank's own `deleted`/`closed` is not
