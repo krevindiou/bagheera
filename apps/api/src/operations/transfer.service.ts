@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits } from '../common/money';
@@ -97,6 +97,57 @@ export function classifyPairingEdit(
 
 @Injectable()
 export class TransferService {
+  // Extracts the mirror-content fields from an operation row. Used by
+  // insertWithMirror to avoid field-by-field rebuilding; also available
+  // for callers that need to derive content from an existing row.
+  mirrorContentOf(row: InferSelectModel<typeof operation>): MirrorContent {
+    return {
+      paymentMethodId: row.paymentMethodId,
+      debit: row.debit,
+      credit: row.credit,
+      thirdParty: row.thirdParty,
+      valueDate: row.valueDate,
+      notes: row.notes,
+      schedulerId: row.schedulerId,
+    };
+  }
+
+  // Inserts an operation and, if transferAccountId is non-null, attaches a
+  // mirror in the target account and back-fills the source row's own
+  // transferOperationId. Returns the inserted operation row with
+  // transferOperationId populated (null if no mirror). Validates the target
+  // before the mirror insert, so validation order stays consistent with
+  // attach(). Used by both operation.service.ts create and
+  // SchedulerGenerationService to avoid duplicating the pairing protocol.
+  async insertWithMirror(
+    db: Db,
+    values: InferInsertModel<typeof operation>,
+    source: { sourceCurrency: string; memberId: string },
+  ): Promise<InferSelectModel<typeof operation>> {
+    const [created] = await db.insert(operation).values(values).returning();
+
+    // A transfer target was chosen: pair the operation with a mirror in the
+    // target account (see attach() for the pairing rules). A fresh operation
+    // can never have prior pairing state, so this is always an attach.
+    if (values.transferAccountId) {
+      const transferOperationId = await this.attach(
+        db,
+        {
+          sourceOperationId: created.id,
+          sourceAccountId: created.accountId,
+          sourceCurrency: source.sourceCurrency,
+          memberId: source.memberId,
+        },
+        values.transferAccountId,
+        this.mirrorContentOf(created),
+      );
+      await db.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
+      created.transferOperationId = transferOperationId;
+    }
+
+    return created;
+  }
+
   isTransferMethod(paymentMethodId: string): boolean {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId);
   }

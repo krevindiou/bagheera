@@ -5,7 +5,7 @@ import { localIsoDate } from '../common/local-date';
 import { effectiveTimeZone } from '../common/member-today';
 import { DRIZZLE } from '../db/db.constants';
 import type { Executor } from '../db/executor';
-import { account, bank, member, operation, scheduler } from '../db/schema';
+import { account, bank, member, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { isFullyActive } from '../security/reachable';
 import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
@@ -84,9 +84,9 @@ export class SchedulerGenerationService {
     });
 
     for (const valueDate of dates) {
-      const [created] = await db
-        .insert(operation)
-        .values({
+      await this.transfers.insertWithMirror(
+        db,
+        {
           accountId: row.accountId,
           schedulerId: row.id,
           thirdParty: row.thirdParty,
@@ -98,34 +98,12 @@ export class SchedulerGenerationService {
           valueDate,
           notes: row.notes,
           reconciled: row.reconciled,
-        })
-        .returning();
-
-      if (row.transferAccountId !== null) {
-        // A freshly-generated occurrence can never have prior pairing
-        // state, so this is always an attach — never sync()'s fuller
-        // reconcile.
-        const transferOperationId = await this.transfers.attach(
-          db,
-          {
-            sourceOperationId: created.id,
-            sourceAccountId: created.accountId,
-            sourceCurrency: acc.currency,
-            memberId,
-          },
-          row.transferAccountId,
-          {
-            paymentMethodId: created.paymentMethodId,
-            debit: created.debit,
-            credit: created.credit,
-            thirdParty: created.thirdParty,
-            valueDate: created.valueDate,
-            notes: created.notes,
-            schedulerId: created.schedulerId,
-          },
-        );
-        await db.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
-      }
+        },
+        {
+          sourceCurrency: acc.currency,
+          memberId,
+        },
+      );
     }
 
     if (dates.length > 0) {

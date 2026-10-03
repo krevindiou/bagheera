@@ -62,9 +62,9 @@ export class OperationService {
       // Re-validate fully-active state inside transaction under row locks
       await requireFullyActiveLocked(tx, dto.accountId as AccountId);
 
-      const [created] = await tx
-        .insert(operation)
-        .values({
+      const created = await this.transfers.insertWithMirror(
+        tx,
+        {
           accountId: dto.accountId,
           thirdParty: dto.thirdParty,
           debit,
@@ -75,36 +75,12 @@ export class OperationService {
           ...(dto.valueDate ? { valueDate: dto.valueDate } : {}),
           ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
           ...(dto.reconciled !== undefined ? { reconciled: dto.reconciled } : {}),
-        })
-        .returning();
-
-      // A transfer target was chosen: pair the operation with a mirror in
-      // the target account (see transfer.service.ts for the rules). A
-      // fresh operation can never have prior pairing state, so this is
-      // always an attach — never sync()'s fuller reconcile.
-      if (transferAccountId !== null) {
-        const transferOperationId = await this.transfers.attach(
-          tx,
-          {
-            sourceOperationId: created.id,
-            sourceAccountId: created.accountId,
-            sourceCurrency: acc.currency,
-            memberId,
-          },
-          transferAccountId,
-          {
-            paymentMethodId: created.paymentMethodId,
-            debit: created.debit,
-            credit: created.credit,
-            thirdParty: created.thirdParty,
-            valueDate: created.valueDate,
-            notes: created.notes,
-            schedulerId: created.schedulerId,
-          },
-        );
-        await tx.update(operation).set({ transferOperationId }).where(eq(operation.id, created.id));
-        created.transferOperationId = transferOperationId;
-      }
+        },
+        {
+          sourceCurrency: acc.currency,
+          memberId,
+        },
+      );
 
       return created;
     });
