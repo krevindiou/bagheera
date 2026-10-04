@@ -19,6 +19,11 @@ import { OwnershipService } from '../security/ownership.service';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { GenerationQueueService } from './generation-queue.service';
+import { columnsExcept } from '../db/columns';
+
+// Every scheduler column but the internal generation cursor
+// (lastGeneratedDate), which no client reads — what list/create respond with.
+const schedulerResponseColumns = columnsExcept(scheduler, 'lastGeneratedDate');
 
 @Injectable()
 export class SchedulerService {
@@ -33,7 +38,7 @@ export class SchedulerService {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const rows = await this.db
-      .select()
+      .select(schedulerResponseColumns)
       .from(scheduler)
       .where(eq(scheduler.accountId, accountId))
       .orderBy(desc(scheduler.createdAt), desc(scheduler.id))
@@ -102,7 +107,7 @@ export class SchedulerService {
           frequencyValue: dto.frequencyValue,
           active: dto.active ?? true,
         })
-        .returning();
+        .returning(schedulerResponseColumns);
 
       return created;
     });

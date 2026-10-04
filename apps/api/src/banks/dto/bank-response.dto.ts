@@ -1,3 +1,5 @@
+import type { Assert, SameKeys } from '../../common/dto/same-keys';
+import type { bank } from '../../db/schema';
 export class BankDto {
   id!: string;
   memberId!: string;
@@ -13,3 +15,6 @@ export class ChooseBankResponseDto {
   name!: string;
   created!: boolean;
 }
+
+// See common/dto/same-keys.ts.
+export type BankDtoMatchesRow = Assert<SameKeys<BankDto, typeof bank.$inferSelect>>;

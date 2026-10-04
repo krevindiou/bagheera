@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { AxisBounds, computeAxisBounds } from '../common/chart-axis';
+import { computeAxisBounds } from '../common/chart-axis';
 import { MinorUnits } from '../common/money';
 import { DRIZZLE } from '../db/db.constants';
 import { account, operation, report } from '../db/schema';
@@ -12,23 +12,15 @@ import { effectiveAccounts } from './effective-accounts';
 import { effectiveCategoryIds } from './effective-categories';
 import { reportOperationConditions } from './report-filters';
 import { ALL_PERIOD_KEY, currentYearStart, periodExpr } from './report-periods';
+import { ChartPointDto } from '../common/dto/chart-response.dto';
+import { ReportSeriesDto, ReportSeriesEntryDto } from './dto/report-response.dto';
 
-export interface ReportSeriesPoint {
-  period: string;
-  value: number;
-}
+// Response shapes: the Swagger DTOs themselves (dto/report-response.dto.ts).
+export type ReportSeriesPoint = ChartPointDto;
 
-export interface ReportSeriesEntry {
-  currency: string;
-  credit: ReportSeriesPoint[];
-  debit: ReportSeriesPoint[];
-}
+export type ReportSeriesEntry = ReportSeriesEntryDto;
 
-export interface ReportSeries {
-  hidden: boolean;
-  axisBounds: AxisBounds | null;
-  series: ReportSeriesEntry[];
-}
+export type ReportSeries = ReportSeriesDto;
 
 interface Bucket {
   debitSum: MinorUnits;

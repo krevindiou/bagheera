@@ -2,7 +2,6 @@ import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount, ZERO_BALANCE } from '../common/balances';
-import { AxisBounds } from '../common/chart-axis';
 import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
@@ -22,17 +21,12 @@ import { OwnershipService } from '../security/ownership.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { reachableAccountsOf } from '../security/reachable';
+import { ChartPointDto } from '../common/dto/chart-response.dto';
+import { AccountChartDto } from './dto/account-response.dto';
 
-export interface AccountChartPoint {
-  period: string;
-  value: number;
-}
+export type AccountChartPoint = ChartPointDto;
 
-export interface AccountChart {
-  currency: string;
-  axisBounds: AxisBounds | null;
-  points: AccountChartPoint[];
-}
+export type AccountChart = AccountChartDto;
 
 @Injectable()
 export class AccountService {

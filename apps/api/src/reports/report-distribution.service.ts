@@ -11,34 +11,21 @@ import { effectiveAccounts } from './effective-accounts';
 import { effectiveCategoryIds } from './effective-categories';
 import { reportOperationConditions } from './report-filters';
 import { ALL_PERIOD_KEY, currentYearStart, PeriodGrouping, periodExpr } from './report-periods';
+import { ChartPointDto } from '../common/dto/chart-response.dto';
+import {
+  ReportDistributionDto,
+  ReportDistributionLabelSeriesDto,
+  ReportDistributionSeriesDto,
+} from './dto/report-response.dto';
 
-export interface ReportDistributionPoint {
-  period: string;
-  value: number;
-}
+// Response shapes: the Swagger DTOs themselves (dto/report-response.dto.ts).
+export type ReportDistributionPoint = ChartPointDto;
 
-export interface ReportDistributionLabelSeries {
-  // null = the collapsed "Other" bucket: the ranked tail past the top N,
-  // plus any uncategorized operations. The top-N label set is ranked once
-  // over the report's *whole* date range and then held fixed across every
-  // period — so with a month/quarter/year periodGrouping, a stacked chart's
-  // segments never appear, disappear, or reorder from one period to the
-  // next depending on which period happens to be looked at.
-  label: string | null;
-  points: ReportDistributionPoint[];
-}
+export type ReportDistributionLabelSeries = ReportDistributionLabelSeriesDto;
 
-export interface ReportDistributionSeries {
-  currency: string;
-  debit: ReportDistributionLabelSeries[];
-  credit: ReportDistributionLabelSeries[];
-}
+export type ReportDistributionSeries = ReportDistributionSeriesDto;
 
-export interface ReportDistribution {
-  hidden: boolean;
-  dataGrouping: 'category' | 'third_party' | 'payment_method';
-  series: ReportDistributionSeries[];
-}
+export type ReportDistribution = ReportDistributionDto;
 
 interface GroupedRow {
   currency: string;

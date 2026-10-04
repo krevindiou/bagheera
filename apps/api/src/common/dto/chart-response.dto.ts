@@ -9,3 +9,14 @@ export class ChartPointDto {
   period!: string;
   value!: number;
 }
+
+export class SynthesisChartSeriesDto {
+  currency!: string;
+  points!: ChartPointDto[];
+}
+
+export class SynthesisChartDto {
+  hidden!: boolean;
+  axisBounds!: AxisBoundsDto | null;
+  series!: SynthesisChartSeriesDto[];
+}

@@ -7,13 +7,11 @@ import { DRIZZLE } from '../db/db.constants';
 import { account, category, operation } from '../db/schema';
 import { AutocompleteThirdPartyDto } from './dto/autocomplete-third-party.dto';
 import { reachableAccountsOf } from '../security/reachable';
+import { ThirdPartySuggestionDto } from './dto/operation-response.dto';
 
 const MAX_SUGGESTIONS = 20;
 
-export interface ThirdPartySuggestion {
-  thirdParty: string;
-  categoryId: string | null;
-}
+export type ThirdPartySuggestion = ThirdPartySuggestionDto;
 
 @Injectable()
 export class OperationAutocompleteService {

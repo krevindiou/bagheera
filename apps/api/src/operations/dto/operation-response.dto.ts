@@ -1,5 +1,7 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { SearchOperationsDto } from './search-operations.dto';
+import type { Assert, SameKeys } from '../../common/dto/same-keys';
+import type { operation } from '../../db/schema';
 
 export class OperationDto {
   id!: string;
@@ -54,3 +56,6 @@ export class BatchReconcileResponseDto {
   message!: string;
   reconciledCount!: number;
 }
+
+// See common/dto/same-keys.ts.
+export type OperationDtoMatchesRow = Assert<SameKeys<OperationDto, typeof operation.$inferSelect>>;

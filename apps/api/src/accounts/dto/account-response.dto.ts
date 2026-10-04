@@ -1,4 +1,6 @@
 import { AxisBoundsDto, ChartPointDto } from '../../common/dto/chart-response.dto';
+import type { Assert, SameKeys } from '../../common/dto/same-keys';
+import type { account } from '../../db/schema';
 
 export class AccountDto {
   id!: string;
@@ -32,3 +34,6 @@ export class AccountChartDto {
   axisBounds!: AxisBoundsDto | null;
   points!: ChartPointDto[];
 }
+
+// See common/dto/same-keys.ts.
+export type AccountDtoMatchesRow = Assert<SameKeys<AccountDto, typeof account.$inferSelect>>;

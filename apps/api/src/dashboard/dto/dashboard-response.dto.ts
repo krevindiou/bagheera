@@ -1,5 +1,5 @@
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { AxisBoundsDto, ChartPointDto } from '../../common/dto/chart-response.dto';
+import { SynthesisChartDto } from '../../common/dto/chart-response.dto';
 import { ReportDistributionDto, ReportSeriesDto } from '../../reports/dto/report-response.dto';
 
 // Amounts and balances are minor units (real value × 10,000).
@@ -30,17 +30,6 @@ export class AccountsOverviewBankDto {
   id!: string;
   name!: string;
   accounts!: AccountsOverviewAccountDto[];
-}
-
-export class SynthesisChartSeriesDto {
-  currency!: string;
-  points!: ChartPointDto[];
-}
-
-export class SynthesisChartDto {
-  hidden!: boolean;
-  axisBounds!: AxisBoundsDto | null;
-  series!: SynthesisChartSeriesDto[];
 }
 
 export class SeriesHomepageReportDto {

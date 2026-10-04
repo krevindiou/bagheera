@@ -11,12 +11,9 @@ import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
+import { ChooseBankResponseDto } from './dto/bank-response.dto';
 
-export interface ChooseBankResult {
-  id: string;
-  name: string;
-  created: boolean;
-}
+export type ChooseBankResult = ChooseBankResponseDto;
 
 function bankNotActive(): BusinessError {
   return new BusinessError(

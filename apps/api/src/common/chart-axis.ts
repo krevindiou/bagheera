@@ -6,11 +6,9 @@
 // values, like every amount the API returns.
 
 import { MONEY_SCALE } from './money';
+import { AxisBoundsDto } from './dto/chart-response.dto';
 
-export interface AxisBounds {
-  min: number;
-  max: number;
-}
+export type AxisBounds = AxisBoundsDto;
 
 // Rounds a non-negative magnitude up to two significant digits — e.g.
 // 1.85 -> 1.9, 12.5 -> 13, 5 -> 5.

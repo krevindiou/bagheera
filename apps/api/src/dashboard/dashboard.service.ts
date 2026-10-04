@@ -16,59 +16,29 @@ import { OwnershipService } from '../security/ownership.service';
 import { DRIZZLE } from '../db/db.constants';
 import { account, operation, report } from '../db/schema';
 import { MinorUnits } from '../common/money';
+import { ReportDistributionService } from '../reports/report-distribution.service';
+import { ReportSeriesService } from '../reports/report-series.service';
 import {
-  ReportDistribution,
-  ReportDistributionService,
-} from '../reports/report-distribution.service';
-import { ReportSeries, ReportSeriesService } from '../reports/report-series.service';
+  AccountsOverviewBankDto,
+  DashboardIndicatorDto,
+  DashboardResponseDto,
+  DistributionHomepageReportDto,
+  SeriesHomepageReportDto,
+  TotalBalanceDto,
+} from './dto/dashboard-response.dto';
 
-export type OnboardingTip = 'no-bank' | 'no-account' | null;
+// Response shapes: the Swagger DTOs themselves (dto/dashboard-response.dto.ts).
+export type OnboardingTip = DashboardResponseDto['onboarding'];
 
-export interface TotalBalance {
-  currency: string;
-  amount: number;
-  reconciledAmount: number;
-}
+export type TotalBalance = TotalBalanceDto;
 
-export interface DashboardIndicator {
-  amount: number;
-  currency: string;
-  valueDate: string;
-  thirdParty: string;
-}
+export type DashboardIndicator = DashboardIndicatorDto;
 
-export interface AccountsOverviewBank {
-  id: string;
-  name: string;
-  accounts: {
-    id: string;
-    name: string;
-    currency: string;
-    balance: number;
-    reconciledBalance: number;
-    // Cumulative end-of-month balance (minor units), oldest first, for the tile's
-    // minimalist sparkline — see `accountHistories` below. Empty when the
-    // account has no operations at all.
-    history: number[];
-  }[];
-}
+export type AccountsOverviewBank = AccountsOverviewBankDto;
 
-// A homepage report is either a time series (sum/average) or a ranked
-// distribution — the `kind` discriminant lets the web layer pick which
-// component renders it without re-deriving that from `type`.
-export type HomepageReport =
-  | { kind: 'series'; id: string; title: string; series: ReportSeries }
-  | { kind: 'distribution'; id: string; title: string; distribution: ReportDistribution };
+export type HomepageReport = SeriesHomepageReportDto | DistributionHomepageReportDto;
 
-export interface DashboardResponse {
-  onboarding: OnboardingTip;
-  totalBalances: TotalBalance[];
-  lastBiggestIncome: DashboardIndicator | null;
-  lastBiggestExpense: DashboardIndicator | null;
-  synthesisChart: SynthesisChart;
-  accountsOverview: AccountsOverviewBank[];
-  homepageReports: HomepageReport[];
-}
+export type DashboardResponse = DashboardResponseDto;
 
 // Sparkline tiles show only a short recent window — a fraction of the
 // synthesis chart's full 12-month one — since they carry no axis/labels to

@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import type { Assert, SameKeys } from '../../common/dto/same-keys';
+import type { scheduler } from '../../db/schema';
 
 export class SchedulerDto {
   id!: string;
@@ -39,3 +41,10 @@ export class SchedulerBatchDeleteResponseDto {
   message!: string;
   deletedCount!: number;
 }
+
+// See common/dto/same-keys.ts.
+// lastGeneratedDate is the internal generation cursor, selected out of every
+// response (see SchedulerService's schedulerResponseColumns).
+export type SchedulerDtoMatchesRow = Assert<
+  SameKeys<SchedulerDto, Omit<typeof scheduler.$inferSelect, 'lastGeneratedDate'>>
+>;

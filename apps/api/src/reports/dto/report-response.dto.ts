@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AxisBoundsDto, ChartPointDto } from '../../common/dto/chart-response.dto';
+import type { Assert, SameKeys } from '../../common/dto/same-keys';
+import type { report } from '../../db/schema';
 
 const REPORT_TYPES = ['sum', 'average', 'distribution'] as const;
 const PERIOD_GROUPINGS = ['month', 'quarter', 'year', 'all'] as const;
@@ -51,7 +53,12 @@ export class ReportSeriesDto {
 }
 
 export class ReportDistributionLabelSeriesDto {
-  // null = the collapsed "Other" bucket.
+  // null = the collapsed "Other" bucket: the ranked tail past the top N,
+  // plus any uncategorized operations. The top-N label set is ranked once
+  // over the report's *whole* date range and then held fixed across every
+  // period — so with a month/quarter/year periodGrouping, a stacked chart's
+  // segments never appear, disappear, or reorder from one period to the
+  // next depending on which period happens to be looked at.
   label!: string | null;
   points!: ChartPointDto[];
 }
@@ -70,3 +77,8 @@ export class ReportDistributionDto {
   dataGrouping!: (typeof DATA_GROUPINGS)[number];
   series!: ReportDistributionSeriesDto[];
 }
+
+// See common/dto/same-keys.ts.
+export type ReportDtoMatchesRow = Assert<
+  SameKeys<ReportDto, typeof report.$inferSelect & { accountIds: string[]; categoryIds: string[] }>
+>;

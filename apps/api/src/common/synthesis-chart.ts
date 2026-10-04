@@ -4,28 +4,25 @@
 // the per-account chart: they are explicitly "the same chart", the account
 // one just scoped to a single account/currency (spec 4.14 note).
 
-import { AxisBounds, computeAxisBounds } from './chart-axis';
+import { computeAxisBounds } from './chart-axis';
 import { localIsoDate } from './local-date';
 import { MinorUnits } from './money';
 import { addMonths, fillPeriodGaps, periodStart } from '../reports/chart/period';
+import {
+  ChartPointDto,
+  SynthesisChartDto,
+  SynthesisChartSeriesDto,
+} from './dto/chart-response.dto';
 
 const WINDOW_MONTHS = 12;
 
-export interface SynthesisChartPoint {
-  period: string;
-  value: number;
-}
+// The response shapes this builds are the Swagger DTOs themselves, declared
+// once in dto/chart-response.dto.ts.
+export type SynthesisChartPoint = ChartPointDto;
 
-export interface SynthesisChartSeries {
-  currency: string;
-  points: SynthesisChartPoint[];
-}
+export type SynthesisChartSeries = SynthesisChartSeriesDto;
 
-export interface SynthesisChart {
-  hidden: boolean;
-  axisBounds: AxisBounds | null;
-  series: SynthesisChartSeries[];
-}
+export type SynthesisChart = SynthesisChartDto;
 
 export interface SynthesisChartRow {
   currency: string;

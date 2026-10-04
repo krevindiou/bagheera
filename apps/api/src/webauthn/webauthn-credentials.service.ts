@@ -10,13 +10,9 @@ import { passkeyRemovedEmail } from '../email/templates/passkey-removed.template
 import { AuditService } from '../security/audit.service';
 import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
+import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response.dto';
 
-export interface WebauthnCredentialSummary {
-  id: string;
-  deviceName: string | null;
-  createdAt: Date;
-  lastUsedAt: Date | null;
-}
+export type WebauthnCredentialSummary = WebauthnCredentialSummaryDto;
 
 // Authentication is passkey-only with no password fallback and no account
 // recovery — deleting your last remaining passkey would be a permanent,
