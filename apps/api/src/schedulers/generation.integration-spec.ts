@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
-import type { Worker } from 'bullmq';
+import type { Queue, Worker } from 'bullmq';
 import type { Server } from 'http';
 import { eq, inArray } from 'drizzle-orm';
 import request from 'supertest';
 import { SIGN_IN_CATCH_UP_BUDGET } from '../auth/scheduler-catch-up.service';
 import { localIsoDate } from '../common/local-date';
 import { toMinorUnits } from '../common/money';
-import { member, operation, scheduler } from '../db/schema';
+import { account, member, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import {
   insertMemberWithCredential,
@@ -17,7 +17,12 @@ import {
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { insertAccount, insertBank } from '../test-support/db-fixtures';
 import { waitForSchedulerGeneration } from '../test-support/wait-for-scheduler-generation';
-import { GENERATION_WORKER } from './generation-queue.service';
+import {
+  GENERATION_QUEUE,
+  GENERATION_WORKER,
+  SWEEP_JOB_SCHEDULER_ID,
+  SWEEP_PATTERN,
+} from './generation-queue.service';
 import { SchedulerGenerationService } from './generation.service';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
@@ -332,6 +337,57 @@ describe('scheduler occurrence generation', () => {
       await generation.runForScheduler(id);
 
       expect(await generatedFor([id])).toHaveLength(before.length);
+    });
+  });
+
+  describe('hourly sweep', () => {
+    it('is registered as a job scheduler on boot', async () => {
+      const schedulers = await app.get<Queue>(GENERATION_QUEUE).getJobSchedulers();
+      expect(schedulers).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: SWEEP_JOB_SCHEDULER_ID, pattern: SWEEP_PATTERN }),
+        ]),
+      );
+    });
+
+    it('lists a member as due only while an active, fully active scheduler has an occurrence due', async () => {
+      // Paused so a real on-the-hour sweep can't catch `due` up mid-test.
+      await withWorkerPaused(async () => {
+        const generation = app.get(SchedulerGenerationService);
+        const due = await memberWithAccount();
+        const dueId = await insertScheduler(due.accountId);
+        const inactive = await memberWithAccount();
+        await insertScheduler(inactive.accountId, { active: false });
+        const future = await memberWithAccount();
+        await insertScheduler(future.accountId, { valueDate: '2099-01-01' });
+        const closed = await memberWithAccount();
+        await getDb(app)
+          .update(account)
+          .set({ closed: true })
+          .where(eq(account.id, closed.accountId));
+        await insertScheduler(closed.accountId);
+
+        const before = await generation.dueMemberIds();
+        expect(before).toContain(due.memberId);
+        expect(before).not.toContain(inactive.memberId);
+        expect(before).not.toContain(future.memberId);
+        expect(before).not.toContain(closed.memberId);
+
+        // Caught up: no longer due until its next occurrence.
+        await generation.runForScheduler(dueId);
+        expect(await generation.dueMemberIds()).not.toContain(due.memberId);
+      });
+    });
+
+    it("generates a due member's backlog without any save or sign-in", async () => {
+      // Inserted directly, so neither a save nor a sign-in ever queues it.
+      const { accountId } = await memberWithAccount();
+      const id = await insertScheduler(accountId);
+
+      await app.get<Queue>(GENERATION_QUEUE).add('sweep', { sweep: true });
+      await waitForSchedulerGeneration(app);
+
+      expect((await generatedFor([id])).length).toBeGreaterThan(10);
     });
   });
 });

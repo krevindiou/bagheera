@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import type IORedis from 'ioredis';
 import { reportFinalJobFailure } from '../common/report-job-failure';
-import type { GenerationJob } from './generation-queue.service';
+import type { GenerationJob, GenerationQueueService } from './generation-queue.service';
 import type { SchedulerGenerationService } from './generation.service';
 import { createGenerationWorker } from './generation.worker';
 import { vi, type Mock } from 'vitest';
@@ -30,14 +30,20 @@ describe('createGenerationWorker', () => {
   const generation = {
     runForScheduler: vi.fn().mockResolvedValue(3),
     catchUpMember: vi.fn().mockResolvedValue(false),
+    dueMemberIds: vi.fn().mockResolvedValue(['m1', 'm2']),
   };
+  const generationQueue = { enqueueMember: vi.fn().mockResolvedValue(undefined) };
   const connection = {} as IORedis;
   let processor: Processor;
   let options: { concurrency: number };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    createGenerationWorker(connection, generation as unknown as SchedulerGenerationService);
+    createGenerationWorker(
+      connection,
+      generation as unknown as SchedulerGenerationService,
+      generationQueue as unknown as GenerationQueueService,
+    );
     [, processor, options] = (Worker as unknown as Mock).mock.calls[0] as [
       string,
       Processor,
@@ -58,6 +64,14 @@ describe('createGenerationWorker', () => {
   it('catches a member up on all their schedulers', async () => {
     await processor({ data: { memberId: 'm1' } } as Job<GenerationJob>);
     expect(generation.catchUpMember).toHaveBeenCalledWith('m1');
+    expect(generation.runForScheduler).not.toHaveBeenCalled();
+  });
+
+  it('queues one catch-up per due member on a sweep, without generating itself', async () => {
+    await processor({ data: { sweep: true } } as Job<GenerationJob>);
+    expect(generation.dueMemberIds).toHaveBeenCalled();
+    expect(generationQueue.enqueueMember.mock.calls).toEqual([['m1'], ['m2']]);
+    expect(generation.catchUpMember).not.toHaveBeenCalled();
     expect(generation.runForScheduler).not.toHaveBeenCalled();
   });
 

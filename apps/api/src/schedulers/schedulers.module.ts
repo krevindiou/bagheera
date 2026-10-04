@@ -1,4 +1,4 @@
-import { Inject, Module, OnModuleDestroy } from '@nestjs/common';
+import { Inject, Module, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Queue, Worker } from 'bullmq';
 import IORedis from 'ioredis';
@@ -45,20 +45,25 @@ import { SchedulerService } from './scheduler.service';
     },
     {
       provide: GENERATION_WORKER,
-      inject: [GENERATION_WORKER_CONNECTION, SchedulerGenerationService],
+      inject: [GENERATION_WORKER_CONNECTION, SchedulerGenerationService, GenerationQueueService],
       useFactory: createGenerationWorker,
     },
     GenerationQueueService,
   ],
   exports: [SchedulerService, SchedulerGenerationService, GenerationQueueService],
 })
-export class SchedulersModule implements OnModuleDestroy {
+export class SchedulersModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(GENERATION_WORKER) private readonly worker: Worker,
     @Inject(GENERATION_WORKER_CONNECTION) private readonly workerConnection: IORedis,
     @Inject(GENERATION_QUEUE) private readonly queue: Queue,
     @Inject(GENERATION_QUEUE_CONNECTION) private readonly queueConnection: IORedis,
+    private readonly generationQueue: GenerationQueueService,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.generationQueue.scheduleSweep();
+  }
 
   // Explicit order, as in EmailModule: the worker stops pulling jobs and
   // closes its blocking connection before the connection it borrows goes.

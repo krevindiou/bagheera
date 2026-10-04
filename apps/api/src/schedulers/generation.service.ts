@@ -13,6 +13,28 @@ import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
 // The transaction surface TransferService also takes — generation always
 // runs inside one, so its advisory lock holds until the run commits.
 
+// A scheduler's occurrences due as of `now`, after its generation cursor, up
+// to the owning member's "today" (or its limit date if earlier) — at most
+// `limit`. The member's own zone, so an occurrence due on their wall clock
+// isn't held back (or generated early) by the server's.
+function dueDates(
+  row: typeof scheduler.$inferSelect,
+  timeZone: string | null,
+  now: Date,
+  limit: number,
+): string[] {
+  const today = localIsoDate(now, effectiveTimeZone(timeZone));
+  const horizon = row.limitDate !== null && row.limitDate < today ? row.limitDate : today;
+  return dueOccurrences({
+    valueDate: row.valueDate,
+    frequencyUnit: row.frequencyUnit,
+    frequencyValue: row.frequencyValue,
+    after: row.lastGeneratedDate,
+    horizon,
+    limit,
+  });
+}
+
 @Injectable()
 export class SchedulerGenerationService {
   constructor(
@@ -69,19 +91,7 @@ export class SchedulerGenerationService {
       }
     }
 
-    // The owning member's "today", so an occurrence due on their wall clock
-    // isn't held back (or generated early) by the server's zone.
-    const today = localIsoDate(new Date(), effectiveTimeZone(chain.timeZone));
-    const horizon = row.limitDate !== null && row.limitDate < today ? row.limitDate : today;
-
-    const dates = dueOccurrences({
-      valueDate: row.valueDate,
-      frequencyUnit: row.frequencyUnit,
-      frequencyValue: row.frequencyValue,
-      after: row.lastGeneratedDate,
-      horizon,
-      limit: budget,
-    });
+    const dates = dueDates(row, chain.timeZone, new Date(), budget);
 
     for (const valueDate of dates) {
       await this.transfers.insertWithMirror(
@@ -116,6 +126,34 @@ export class SchedulerGenerationService {
         .where(eq(scheduler.id, row.id));
     }
     return dates.length;
+  }
+
+  // Every member with at least one occurrence due right now on an active
+  // scheduler whose account chain is fully active — what the hourly sweep
+  // queues a catch-up for. Same due-date rule as generateForScheduler, so a
+  // caught-up member drops out until their next occurrence comes due. Reads
+  // every active scheduler, which the per-member scheduler quota keeps
+  // small. A scheduler whose transfer target has since gone inactive still
+  // counts here; its member's catch-up then generates nothing for it.
+  async dueMemberIds(now = new Date()): Promise<string[]> {
+    const rows = await this.db
+      .select({ scheduler, account, bank, timeZone: member.timeZone })
+      .from(scheduler)
+      .innerJoin(account, eq(scheduler.accountId, account.id))
+      .innerJoin(bank, eq(account.bankId, bank.id))
+      .innerJoin(member, eq(bank.memberId, member.id))
+      .where(eq(scheduler.active, true));
+
+    const due = new Set<string>();
+    for (const row of rows) {
+      if (due.has(row.bank.memberId) || !isFullyActive(row.account, row.bank)) {
+        continue;
+      }
+      if (dueDates(row.scheduler, row.timeZone, now, 1).length > 0) {
+        due.add(row.bank.memberId);
+      }
+    }
+    return [...due];
   }
 
   // Runs catch-up for every active scheduler owned by a member, across all

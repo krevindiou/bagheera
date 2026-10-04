@@ -15,12 +15,15 @@ export async function waitForSchedulerGeneration(
   const queue = app.get<Queue>(GENERATION_QUEUE);
   const deadline = Date.now() + timeoutMs;
   for (;;) {
-    const counts = await queue.getJobCounts('waiting', 'active', 'delayed', 'prioritized');
-    if (Object.values(counts).every((n) => n === 0)) {
+    const counts = await queue.getJobCounts('waiting', 'active', 'prioritized');
+    // The hourly sweep's job scheduler always keeps its next run delayed;
+    // only other delayed jobs (a retry's backoff) mean work is pending.
+    const delayed = (await queue.getDelayed()).filter((job) => !job.repeatJobKey).length;
+    if (delayed === 0 && Object.values(counts).every((n) => n === 0)) {
       return;
     }
     if (Date.now() > deadline) {
-      throw new Error(`Scheduler generation still busy: ${JSON.stringify(counts)}`);
+      throw new Error(`Scheduler generation still busy: ${JSON.stringify({ ...counts, delayed })}`);
     }
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
