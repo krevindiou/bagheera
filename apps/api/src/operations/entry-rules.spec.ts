@@ -2,10 +2,13 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { vi } from 'vitest';
 import { BusinessError } from '../common/filters/business-error';
+import type { Executor } from '../db/executor';
+import type { AccountId } from '../security/ids';
 import {
   accountCannotBeChanged,
   amountFields,
   requireFullyActive,
+  requireFullyActiveLocked,
   transferAccountIdFor,
   validateTypedRefs,
 } from './entry-rules';
@@ -29,6 +32,41 @@ describe('requireFullyActive', () => {
     } catch (err) {
       expect((err as BusinessError).getResponse()).toMatchObject({ code: 'account_not_active' });
     }
+  });
+});
+
+describe('requireFullyActiveLocked', () => {
+  // The locked select's chain, resolving to `rows` at its final `.for()`.
+  function txWith(rows: unknown[]) {
+    const forLock = vi.fn().mockResolvedValue(rows);
+    const tx = {
+      select: () => ({
+        from: () => ({ innerJoin: () => ({ where: () => ({ for: forLock }) }) }),
+      }),
+    } as unknown as Executor;
+    return { tx, forLock };
+  }
+  const accountId = 'a1' as AccountId;
+
+  it('locks the account and bank rows for update and returns them when fully active', async () => {
+    const row = { account: active, bank: active };
+    const { tx, forLock } = txWith([row]);
+    await expect(requireFullyActiveLocked(tx, accountId)).resolves.toBe(row);
+    expect(forLock).toHaveBeenCalledWith('update');
+  });
+
+  it('404s when the account is gone', async () => {
+    const { tx } = txWith([]);
+    await expect(requireFullyActiveLocked(tx, accountId)).rejects.toMatchObject({
+      response: { code: 'account_not_found' },
+    });
+  });
+
+  it('rejects an account closed or deleted since the pre-check', async () => {
+    const { tx } = txWith([{ account: { closed: true, deleted: false }, bank: active }]);
+    await expect(requireFullyActiveLocked(tx, accountId)).rejects.toMatchObject({
+      response: { code: 'account_not_active' },
+    });
   });
 });
 
