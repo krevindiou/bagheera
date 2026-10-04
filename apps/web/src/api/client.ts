@@ -19,10 +19,13 @@ export const apiClient = createClient<paths>({
 const CSRF_HEADER = 'x-csrf-token';
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
-async function fetchCsrfToken(): Promise<string> {
+// The minted token, or the mint's own failed response (e.g. a 429 once its
+// rate limit is hit), which the caller should see instead of its request.
+async function fetchCsrfToken(): Promise<string | Response> {
   const res = await fetch(new URL(`${baseUrl}/auth/csrf-token`, window.location.origin), {
     credentials: 'include',
   });
+  if (!res.ok) return res;
   const body = (await res.json()) as { csrfToken: string };
   return body.csrfToken;
 }
@@ -37,6 +40,11 @@ apiClient.use({
   async onRequest({ request }) {
     if (SAFE_METHODS.has(request.method)) return request;
     const token = await fetchCsrfToken();
+    // A failed mint answers for the request itself, so its caller sees the
+    // real status rather than sending a token-less request the API would
+    // just reject as a CSRF failure (403). openapi-fetch skips the fetch
+    // (and the onResponse middleware below) for a Response returned here.
+    if (token instanceof Response) return token;
     const withCsrf = new Request(request);
     withCsrf.headers.set(CSRF_HEADER, token);
     return withCsrf;

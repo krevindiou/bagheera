@@ -69,6 +69,26 @@ describe('apiClient', () => {
       const realRequest = realCall?.[0] as Request;
       expect(realRequest.headers.get('x-csrf-token')).toBe('test-csrf-token');
     });
+
+    it("answers a mutating request with the mint's own failure instead of sending it token-less", async () => {
+      fetchMock.mockImplementation(async (input: RequestInfo | URL) =>
+        urlOf(input).includes('csrf-token')
+          ? jsonResponse(429, { message: 'Too many requests', code: 'rate_limited' })
+          : jsonResponse(200, {}),
+      );
+
+      const result = await apiClient.POST('/auth/sign-out', {
+        baseUrl: TEST_BASE_URL,
+        fetch: fetchMock,
+      });
+
+      expect(result.response.status).toBe(429);
+      expect(result.error).toEqual({ message: 'Too many requests', code: 'rate_limited' });
+      // The request itself never went out.
+      expect(fetchMock.mock.calls.every(([input]) => urlOf(input).includes('csrf-token'))).toBe(
+        true,
+      );
+    });
   });
 
   describe('401 handling', () => {
