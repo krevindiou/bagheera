@@ -1,8 +1,7 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { count, desc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
-import { PAGE_SIZE } from '../common/pagination';
 import { DRIZZLE } from '../db/db.constants';
 import {
   accountCannotBeChanged,
@@ -27,25 +26,6 @@ export class OperationService {
     private readonly transfers: TransferService,
     private readonly ownership: OwnershipService,
   ) {}
-
-  async list(memberId: MemberId, accountId: string, page: number) {
-    await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
-
-    const rows = await this.db
-      .select()
-      .from(operation)
-      .where(eq(operation.accountId, accountId))
-      .orderBy(desc(operation.valueDate), desc(operation.createdAt), desc(operation.id))
-      .limit(PAGE_SIZE)
-      .offset((page - 1) * PAGE_SIZE);
-
-    const [{ total }] = await this.db
-      .select({ total: count() })
-      .from(operation)
-      .where(eq(operation.accountId, accountId));
-
-    return { items: rows, total, page, pageSize: PAGE_SIZE };
-  }
 
   async create(memberId: MemberId, dto: CreateOperationDto) {
     const { account: acc, bank: accBank } = await this.ownership.requireOwnedAccount(

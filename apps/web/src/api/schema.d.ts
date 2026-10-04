@@ -268,7 +268,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["OperationSearchController_recall"];
+        get?: never;
         put?: never;
         post: operations["OperationSearchController_run"];
         delete: operations["OperationSearchController_clear"];
@@ -866,8 +866,27 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
-        OperationListDto: {
+        AmountComparatorDto: {
+            /** @enum {string} */
+            operator: "gt" | "gte" | "lt" | "lte" | "eq";
+            value: number;
+        };
+        SearchCriteriaDto: {
+            /** @enum {string} */
+            type?: "debit" | "credit";
+            thirdParty?: string;
+            categoryIds?: string[];
+            paymentMethodIds?: string[];
+            amountComparators?: components["schemas"]["AmountComparatorDto"][];
+            dateFrom?: string;
+            dateTo?: string;
+            notes?: string;
+            reconciled?: boolean;
+        };
+        OperationSearchRecallDto: {
             items: components["schemas"]["OperationDto"][];
+            criteria: components["schemas"]["SearchCriteriaDto"];
+            active: boolean;
             total: number;
             page: number;
             pageSize: number;
@@ -918,11 +937,6 @@ export interface components {
             message: string;
             reconciledCount: number;
         };
-        AmountComparatorDto: {
-            /** @enum {string} */
-            operator: "gt" | "gte" | "lt" | "lte" | "eq";
-            value: number;
-        };
         SearchOperationsDto: {
             /** Format: uuid */
             accountId: string;
@@ -937,25 +951,11 @@ export interface components {
             notes?: string;
             reconciled?: boolean;
         };
-        SearchCriteriaDto: {
-            /** @enum {string} */
-            type?: "debit" | "credit";
-            thirdParty?: string;
-            categoryIds?: string[];
-            paymentMethodIds?: string[];
-            amountComparators?: components["schemas"]["AmountComparatorDto"][];
-            dateFrom?: string;
-            dateTo?: string;
-            notes?: string;
-            reconciled?: boolean;
-        };
-        OperationSearchRecallDto: {
+        OperationListDto: {
             items: components["schemas"]["OperationDto"][];
             total: number;
             page: number;
             pageSize: number;
-            criteria: components["schemas"]["SearchCriteriaDto"];
-            active: boolean;
         };
         ThirdPartySuggestionDto: {
             thirdParty: string;
@@ -1556,7 +1556,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OperationListDto"];
+                    "application/json": components["schemas"]["OperationSearchRecallDto"];
                 };
             };
         };
@@ -1651,28 +1651,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BatchReconcileResponseDto"];
-                };
-            };
-        };
-    };
-    OperationSearchController_recall: {
-        parameters: {
-            query: {
-                accountId: string;
-                page: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OperationSearchRecallDto"];
                 };
             };
         };

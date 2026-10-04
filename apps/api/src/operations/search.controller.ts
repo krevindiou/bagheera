@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Post, Query } from '@nestjs/common';
 import { PageQueryDto } from '../common/dto/page-query.dto';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_SEARCH_LIMIT } from '../security/rate-limit.constants';
@@ -8,10 +8,11 @@ import { OperationSearchService } from './search.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
-import { OperationListDto, OperationSearchRecallDto } from './dto/operation-response.dto';
+import { OperationListDto } from './dto/operation-response.dto';
 
-// Throttled on every verb, reads included: GET re-runs the remembered
-// search, just as POST runs a new one.
+// The member+account's remembered search: POST sets it (and returns its
+// first page), DELETE clears it. Listing itself is GET /operations, which
+// re-runs whatever is remembered here and shares this search budget.
 @RateLimit(MEMBER_SEARCH_LIMIT)
 @Controller('operations/search')
 export class OperationSearchController {
@@ -25,15 +26,6 @@ export class OperationSearchController {
     @Query() { page }: PageQueryDto,
   ): Promise<OperationListDto> {
     return this.search.search(memberId, dto, page);
-  }
-
-  @Get()
-  recall(
-    @CurrentMember() memberId: MemberId,
-    @Query('accountId', ParseUuidV7Pipe) accountId: string,
-    @Query() { page }: PageQueryDto,
-  ): Promise<OperationSearchRecallDto> {
-    return this.search.recallAndRun(memberId, accountId, page);
   }
 
   @Delete()

@@ -124,7 +124,7 @@ function mockGet(state: MockState = {}) {
     if (path === '/reference-data/payment-methods') return ok(paymentMethods);
     if (path === '/accounts/{id}/balance') return ok(balance);
     if (path === '/accounts/{id}/chart') return ok(chart);
-    if (path === '/operations/search') return ok(operations);
+    if (path === '/operations') return ok(operations);
     return ok(undefined);
   });
 }
@@ -194,7 +194,7 @@ describe('OperationsPage', () => {
 
   it('shows an error message instead of the empty state when the list fails to load', async () => {
     apiClient.GET.mockImplementation(async (path: string) => {
-      if (path === '/operations/search') {
+      if (path === '/operations') {
         return {
           data: undefined,
           error: { message: 'Internal error' },
@@ -279,14 +279,14 @@ describe('OperationsPage', () => {
     await next.trigger('click');
     await flushPromises();
 
-    expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
+    expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
       params: { query: { accountId: ACCOUNT_ID, page: 2 } },
     });
 
     await prev.trigger('click');
     await flushPromises();
 
-    expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
+    expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
       params: { query: { accountId: ACCOUNT_ID, page: 1 } },
     });
   });
@@ -521,14 +521,14 @@ describe('OperationsPage', () => {
     const [, next] = wrapper.findAll('nav button');
     await next.trigger('click');
     await flushPromises();
-    expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
+    expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
       params: { query: { accountId: ACCOUNT_ID, page: 2 } },
     });
 
     await router.push({ name: 'operations', params: { accountId: ACCOUNT_ID_2 } });
     await flushPromises();
 
-    expect(apiClient.GET).toHaveBeenCalledWith('/operations/search', {
+    expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
       params: { query: { accountId: ACCOUNT_ID_2, page: 1 } },
     });
   });

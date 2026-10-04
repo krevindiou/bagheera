@@ -113,7 +113,7 @@ const operationsQuery = useQuery({
   queryKey: computed(() => queryKeys.operations.page(accountId.value, page.value)),
   queryFn: async () =>
     unwrap(
-      await apiClient.GET('/operations/search', {
+      await apiClient.GET('/operations', {
         params: { query: { accountId: accountId.value, page: page.value } },
       }),
     ),

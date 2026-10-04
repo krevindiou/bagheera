@@ -185,7 +185,7 @@ describe('operations', () => {
   });
 
   describe('GET /operations', () => {
-    it('paginates and 404s for a foreign account', async () => {
+    it('paginates, unfiltered when no search is remembered, and 404s for a foreign account', async () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
@@ -200,9 +200,10 @@ describe('operations', () => {
       }
 
       const res = await agent.get(`/operations?accountId=${accountId}&page=1`).expect(200);
-      const body = res.body as { items: unknown[]; total: number };
+      const body = res.body as { items: unknown[]; total: number; active: boolean };
       expect(body.total).toBe(3);
       expect(body.items).toHaveLength(3);
+      expect(body.active).toBe(false);
 
       const { agent: attackerAgent } = await seedSignedInMember(app);
       await attackerAgent.get(`/operations?accountId=${accountId}&page=1`).expect(404);

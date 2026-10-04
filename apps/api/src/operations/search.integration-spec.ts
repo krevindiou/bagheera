@@ -87,10 +87,9 @@ describe('operations search', () => {
     expect(searchBody.total).toBe(1);
     expect(searchBody.items[0].thirdParty).toBe('Grocery Store');
 
-    // Recall: same criteria remembered without resubmitting them.
-    const recallRes = await agent
-      .get(`/operations/search?accountId=${accountId}&page=1`)
-      .expect(200);
+    // Recall: listing the account's operations re-applies the remembered
+    // criteria without resubmitting them.
+    const recallRes = await agent.get(`/operations?accountId=${accountId}&page=1`).expect(200);
     const recallBody = recallRes.body as SearchResult & {
       active: boolean;
       criteria: Record<string, unknown>;
@@ -103,9 +102,7 @@ describe('operations search', () => {
     const clearRes = await mutate('delete', `/operations/search?accountId=${accountId}`);
     expect(clearRes.status).toBe(200);
 
-    const afterClear = await agent
-      .get(`/operations/search?accountId=${accountId}&page=1`)
-      .expect(200);
+    const afterClear = await agent.get(`/operations?accountId=${accountId}&page=1`).expect(200);
     const afterClearBody = afterClear.body as SearchResult & {
       active: boolean;
     };
@@ -152,7 +149,7 @@ describe('operations search', () => {
     });
     expect(searchRes.status).toBe(404);
 
-    await attackerAgent.get(`/operations/search?accountId=${accountId}`).expect(404);
+    await attackerAgent.get(`/operations?accountId=${accountId}`).expect(404);
 
     const clearRes = await attackerMutate('delete', `/operations/search?accountId=${accountId}`);
     expect(clearRes.status).toBe(404);
