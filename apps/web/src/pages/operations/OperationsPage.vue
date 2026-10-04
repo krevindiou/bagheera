@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
-import { useToast } from '../../composables/useToast';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import { colorForCurrency } from '../../components/chartColors';
@@ -21,6 +19,7 @@ import {
   useCategoriesQuery,
   usePaymentMethodsQuery,
 } from '../../composables/useReferenceQueries';
+import { useOperationSearch } from '../../composables/useOperationSearch';
 import { useSelection } from '../../composables/useSelection';
 import { formatDate, formatMoney, toDisplayBounds, toDisplayPoints } from '../../domain/money';
 import {
@@ -30,7 +29,7 @@ import {
   paymentMethodName,
   thirdPartyLabel,
 } from '../../domain/referenceData';
-import type { Operation, SearchCriteria } from '../../domain/referenceData';
+import type { Operation } from '../../domain/referenceData';
 import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
@@ -41,27 +40,28 @@ import AppIcon from '../../components/AppIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
-const { t } = useI18n();
-const { push: toast } = useToast();
 
 const queryClient = useQueryClient();
-
-const page = ref(1);
-watch(accountId, () => {
-  page.value = 1;
-});
 
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
 const { selectedIds, selectedIdList, toggleSelected } = useSelection();
-const showSearch = ref(false);
-const hasActiveSearch = ref(false);
-const recalledCriteria = ref<SearchCriteria | undefined>(undefined);
-// Set right before a search/clear mutation writes its own result into the
-// `operations` query cache, so the watch below (which reruns off that same
-// write) doesn't mistake it for a page-load recall and pop the panel back
-// open right after the mutation closed it.
-const suppressRecallOpen = ref(false);
+const {
+  page,
+  list,
+  isError: operationsError,
+  isActive: hasActiveSearch,
+  panelOpen: showSearch,
+  criteria: recalledCriteria,
+  openPanel: openSearch,
+  closePanel: closeSearch,
+  run: runSearch,
+  clear: clearSearch,
+} = useOperationSearch(accountId);
+// A new page of results (paging, a search, a refetch) starts unselected.
+watch(list, () => {
+  selectedIds.value = new Set();
+});
 
 const { accounts } = useAccountsQuery();
 const { banks } = useBanksQuery();
@@ -104,93 +104,9 @@ const chartSeries = computed<SynthesisChartSeries[]>(() => {
 });
 const chartAxisBounds = computed(() => toDisplayBounds(chartQuery.data.value?.axisBounds));
 
-// Re-runs the search remembered for this member+account (empty criteria —
-// i.e. the full list — when nothing was ever searched), so a search stays
-// applied across pagination and page reloads within the session. When the
-// recalled search is active, the panel is restored docked open and
-// hydrated with its criteria.
-const operationsQuery = useQuery({
-  queryKey: computed(() => queryKeys.operations.page(accountId.value, page.value)),
-  queryFn: async () =>
-    unwrap(
-      await apiClient.GET('/operations', {
-        params: { query: { accountId: accountId.value, page: page.value } },
-      }),
-    ),
-});
-const list = computed(
-  () => operationsQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: 20 },
-);
-const operationsError = computed(() => operationsQuery.isError.value);
-
-watch(
-  () => operationsQuery.data.value,
-  (result) => {
-    selectedIds.value = new Set();
-    hasActiveSearch.value = result?.active ?? false;
-    if (result?.active && !suppressRecallOpen.value) {
-      recalledCriteria.value = result.criteria;
-      showSearch.value = true;
-    }
-    suppressRecallOpen.value = false;
-  },
-);
-
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
-
-const searchMutation = useMutation({
-  mutationFn: async (criteria: SearchCriteria) =>
-    unwrap(
-      await apiClient.POST('/operations/search', {
-        params: { query: { page: 1 } },
-        body: { accountId: accountId.value, ...criteria },
-      }),
-    ),
-  onSuccess(data, criteria) {
-    page.value = 1;
-    suppressRecallOpen.value = true;
-    // The watch's own hydration is skipped by the suppress guard above, so
-    // hydrate the panel's fields here from what was actually submitted —
-    // otherwise reopening "Search operation" later shows a blank form.
-    recalledCriteria.value = criteria;
-    // Mark the cached page as an active search, or the `operationsQuery.data`
-    // watch below (which reruns off this same write) sees no `active` flag
-    // and immediately flips hasActiveSearch back off.
-    queryClient.setQueryData(queryKeys.operations.page(accountId.value, 1), {
-      ...data,
-      active: true,
-      criteria,
-    });
-    selectedIds.value = new Set();
-    hasActiveSearch.value = true;
-    showSearch.value = false;
-  },
-  onError() {
-    toast(t('common.loadError'), 'error');
-  },
-});
-function runSearch(criteria: SearchCriteria) {
-  searchMutation.mutate(criteria);
-}
-
-const clearSearchMutation = useMutation({
-  mutationFn: async () => {
-    await apiClient.DELETE('/operations/search', {
-      params: { query: { accountId: accountId.value } },
-    });
-  },
-  async onSuccess() {
-    hasActiveSearch.value = false;
-    page.value = 1;
-    showSearch.value = false;
-    await queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) });
-  },
-});
-function clearSearch() {
-  clearSearchMutation.mutate();
-}
 
 // Both money-changing: every cached page of this account's operations (not
 // just the one showing — the old per-page key left stale rows on any other
@@ -277,7 +193,7 @@ function isEditable(operation: Operation): boolean {
           class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
           data-testid="toggle-search"
           :title="hasActiveSearch ? $t('operations.search.activeHint') : undefined"
-          @click="showSearch = true"
+          @click="openSearch"
         >
           <AppIcon name="search" class="icon-16" />
           {{ $t('operations.search.show') }}
@@ -434,7 +350,7 @@ function isEditable(operation: Operation): boolean {
         :initial-criteria="recalledCriteria"
         @submit="runSearch"
         @clear="clearSearch"
-        @cancel="showSearch = false"
+        @cancel="closeSearch"
       />
     </div>
   </div>
