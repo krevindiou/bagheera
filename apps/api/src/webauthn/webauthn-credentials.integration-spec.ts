@@ -4,7 +4,11 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent, webauthnCredential } from '../db/schema';
-import { completeStepUp, seedSignedInMember } from '../test-support/auth-fixture';
+import {
+  completeStepUp,
+  seedSignedInMember,
+  signInWithPasskey,
+} from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { vi } from 'vitest';
 
@@ -107,6 +111,21 @@ describe('webauthn credentials', () => {
         .orderBy(desc(securityEvent.createdAt))
         .limit(1);
       expect(event).toBeDefined();
+    });
+
+    it("signs out the member's other sessions but keeps the current one", async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Compromised');
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      await otherDevice.get('/auth/me').expect(200);
+
+      await completeStepUp(app, fixture);
+      const res = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(res.status).toBe(200);
+
+      await fixture.agent.get('/auth/me').expect(200);
+      await otherDevice.get('/auth/me').expect(401);
     });
 
     // M3: with only a session, a hijacker who planted a passkey could then

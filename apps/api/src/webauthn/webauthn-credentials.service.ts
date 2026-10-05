@@ -9,6 +9,7 @@ import { EmailQueueService } from '../email/email-queue.service';
 import { passkeyRemovedEmail } from '../email/templates/passkey-removed.template';
 import { AuditService } from '../security/audit.service';
 import { consumeStepUp } from '../session/consume-step-up';
+import { SessionRegistryService } from '../session/session-registry.service';
 import { requireMemberId } from '../session/require-member-id';
 import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response.dto';
 
@@ -27,6 +28,7 @@ export class WebauthnCredentialsService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
+    private readonly sessionRegistry: SessionRegistryService,
   ) {}
 
   async list(req: Request): Promise<WebauthnCredentialSummary[]> {
@@ -67,6 +69,10 @@ export class WebauthnCredentialsService {
         .delete(webauthnCredential)
         .where(and(eq(webauthnCredential.id, id), eq(webauthnCredential.memberId, memberId)));
     });
+
+    // The removed passkey may be the compromised one: any other session
+    // could belong to whoever holds it.
+    await this.sessionRegistry.revokeOthers(memberId, req.sessionID);
 
     const [row] = await this.db
       .select({ email: member.email, locale: member.locale })

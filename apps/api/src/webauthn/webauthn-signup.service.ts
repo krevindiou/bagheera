@@ -12,6 +12,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
+import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/signup-session-data';
 import { parseSignupToken } from '../members/signup-token';
@@ -54,6 +55,7 @@ export class WebauthnSignupService {
     private readonly crypto: CryptoService,
     private readonly webauthnCrypto: WebauthnCryptoService,
     private readonly sessionRotation: SessionRotationService,
+    private readonly sessionRegistry: SessionRegistryService,
     private readonly audit: AuditService,
   ) {}
 
@@ -154,6 +156,7 @@ export class WebauthnSignupService {
 
     await this.sessionRotation.rotate(req);
     req.session.memberId = memberId;
+    await this.sessionRegistry.register(memberId, req.sessionID);
     await this.audit.record('passkey_signup_completed', memberId, sourceAddress);
 
     return { message: 'ok' };

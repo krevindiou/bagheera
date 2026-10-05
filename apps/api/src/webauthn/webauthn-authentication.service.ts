@@ -12,6 +12,7 @@ import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
+import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/webauthn-session-data';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
@@ -48,6 +49,7 @@ export class WebauthnAuthenticationService {
     private readonly config: ConfigService,
     private readonly crypto: WebauthnCryptoService,
     private readonly sessionRotation: SessionRotationService,
+    private readonly sessionRegistry: SessionRegistryService,
     private readonly schedulerCatchUp: SchedulerCatchUpService,
     private readonly audit: AuditService,
   ) {}
@@ -122,6 +124,7 @@ export class WebauthnAuthenticationService {
 
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
+    await this.sessionRegistry.register(row.id, req.sessionID);
 
     await this.db.update(member).set({ loggedAt: new Date() }).where(eq(member.id, row.id));
 

@@ -10,8 +10,14 @@ import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { buildCsrf } from './csrf';
 import { CsrfTokenController } from './csrf-token.controller';
 import { SessionAuthGuard } from './session-auth.guard';
+import { SessionRegistryService } from './session-registry.service';
 import { SessionRotationService } from './session-rotation.service';
-import { SESSION_COOKIE_NAME, SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from './session.constants';
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_IDLE_TTL_SECONDS,
+  SESSION_KEY_PREFIX,
+  VALKEY_CLIENT,
+} from './session.constants';
 import { sessionStoreClient } from './session-store-client';
 import { valkeyClientProvider } from './valkey-client.provider';
 
@@ -21,9 +27,10 @@ import { valkeyClientProvider } from './valkey-client.provider';
   providers: [
     valkeyClientProvider,
     SessionRotationService,
+    SessionRegistryService,
     { provide: APP_GUARD, useClass: SessionAuthGuard },
   ],
-  exports: [SessionRotationService, VALKEY_CLIENT],
+  exports: [SessionRotationService, SessionRegistryService, VALKEY_CLIENT],
 })
 export class SessionModule implements NestModule, OnModuleDestroy {
   constructor(
@@ -38,7 +45,7 @@ export class SessionModule implements NestModule, OnModuleDestroy {
   configure(consumer: MiddlewareConsumer): void {
     const store = new RedisStore({
       client: sessionStoreClient(this.valkeyClient),
-      prefix: 'sess:',
+      prefix: SESSION_KEY_PREFIX,
       ttl: SESSION_IDLE_TTL_SECONDS,
     });
 

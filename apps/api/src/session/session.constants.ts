@@ -2,6 +2,9 @@ export const VALKEY_CLIENT = Symbol('VALKEY_CLIENT');
 
 export const SESSION_COOKIE_NAME = 'bagheera.sid';
 
+/** Key prefix connect-redis stores sessions under (`sess:<sid>`). */
+export const SESSION_KEY_PREFIX = 'sess:';
+
 /**
  * Idle timeout: session expires this many seconds after the last request.
  * Defaults to 30 minutes; overridable via `SESSION_IDLE_TTL_SECONDS` so the

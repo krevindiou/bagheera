@@ -63,10 +63,11 @@ export class ProfileController {
   @Public()
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'key' })
   async confirmEmailChange(
+    @Req() req: Request,
     @ClientIp() ip: string,
     @Body() dto: ConfirmEmailChangeDto,
   ): Promise<MessageResponseDto> {
-    await this.profile.confirmEmailChange(dto.key, ip);
+    await this.profile.confirmEmailChange(dto.key, ip, req.sessionID);
     return { message: 'Your email address has been updated.' };
   }
 }

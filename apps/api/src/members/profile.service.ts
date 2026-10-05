@@ -13,6 +13,7 @@ import { emailChangedEmail } from '../email/templates/email-changed.template';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import '../session/session-data';
+import { SessionRegistryService } from '../session/session-registry.service';
 import { consumeStepUp } from '../session/consume-step-up';
 import type { MemberId } from '../security/ids';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
@@ -39,6 +40,7 @@ export class ProfileService {
     private readonly config: ConfigService,
     private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
+    private readonly sessionRegistry: SessionRegistryService,
   ) {}
 
   /**
@@ -112,8 +114,15 @@ export class ProfileService {
    * issued — the version/pendingEmail check below is what actually decides
    * whether the token is still live, not which email currently identifies
    * the row.
+   *
+   * Signs out the member's other sessions on success, sparing
+   * `currentSessionId` (the confirming request's own, if any).
    */
-  async confirmEmailChange(key: string, sourceAddress = 'unknown'): Promise<void> {
+  async confirmEmailChange(
+    key: string,
+    sourceAddress = 'unknown',
+    currentSessionId?: string,
+  ): Promise<void> {
     const payload = parseEmailChangeToken(this.crypto, key);
     if (!payload) {
       throw emailChangeError();
@@ -152,6 +161,11 @@ export class ProfileService {
     if (!result.ok) {
       throw emailChangeError();
     }
+
+    // The mailbox just changed hands: sessions opened before this point
+    // (other than the one confirming, if it is the member's own) may belong
+    // to whoever prompted the change.
+    await this.sessionRegistry.revokeOthers(row.id, currentSessionId);
 
     await this.emailQueue.enqueue(emailChangedEmail(previousEmail, payload.newEmail, row.locale));
     await this.audit.record('email_changed', row.id, sourceAddress);

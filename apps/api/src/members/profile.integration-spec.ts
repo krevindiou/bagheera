@@ -11,6 +11,7 @@ import {
   csrfTokenFor,
   insertMemberWithCredential,
   seedSignedInMember,
+  signInWithPasskey,
   uniqueEmail,
 } from '../test-support/auth-fixture';
 import { createTestApp, FakeEmailQueue, getDb } from '../test-support/create-test-app';
@@ -191,6 +192,53 @@ describe('POST /members/profile', () => {
   });
 
   describe('POST /members/profile/confirm-email-change', () => {
+    async function startEmailChange(fixture: Awaited<ReturnType<typeof seedSignedInMember>>) {
+      const newEmail = uniqueEmail('confirmed');
+      await completeStepUp(app, fixture);
+      expect((await fixture.mutate('post', '/members/profile', { email: newEmail })).status).toBe(
+        200,
+      );
+      const key = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        newEmail,
+        await versionOf(fixture.memberId),
+      );
+      return key;
+    }
+
+    it("signs out every session of the member when confirmed from a browser that isn't theirs", async () => {
+      const fixture = await seedSignedInMember(app);
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      const key = await startEmailChange(fixture);
+
+      const confirmAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(confirmAgent);
+      await confirmAgent
+        .post('/members/profile/confirm-email-change')
+        .set('x-csrf-token', csrfToken)
+        .send({ key })
+        .expect(200);
+
+      await fixture.agent.get('/auth/me').expect(401);
+      await otherDevice.get('/auth/me').expect(401);
+    });
+
+    it("keeps the confirming session when it is the member's own, and signs out the others", async () => {
+      const fixture = await seedSignedInMember(app);
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      const key = await startEmailChange(fixture);
+
+      expect(
+        (await fixture.mutate('post', '/members/profile/confirm-email-change', { key })).status,
+      ).toBe(200);
+
+      await fixture.agent.get('/auth/me').expect(200);
+      await otherDevice.get('/auth/me').expect(401);
+    });
+
     it('completes a pending change and notifies the old address', async () => {
       const fixture = await seedSignedInMember(app);
       const newEmail = uniqueEmail('confirmed');
