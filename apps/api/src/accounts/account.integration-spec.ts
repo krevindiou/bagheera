@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
-import { toMinorUnits } from '../common/money';
+import { AMOUNT_CEILING, toMinorUnits } from '../common/money';
 import { account, operation, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
@@ -166,6 +166,22 @@ describe('accounts', () => {
         const bankId = await createBank(mutate);
 
         const res = await mutate('post', '/accounts', { bankId, name: 'Bad', currency });
+        expect(res.status).toBe(400);
+      },
+    );
+
+    it.each([AMOUNT_CEILING + 1, -AMOUNT_CEILING - 1, 9e15])(
+      'rejects the out-of-range opening balance %s with 400, not a 500 from Postgres',
+      async (initialBalance) => {
+        const { mutate } = await seedSignedInMember(app);
+        const bankId = await createBank(mutate);
+
+        const res = await mutate('post', '/accounts', {
+          bankId,
+          name: 'Huge',
+          currency: 'EUR',
+          initialBalance,
+        });
         expect(res.status).toBe(400);
       },
     );

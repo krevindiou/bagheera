@@ -10,6 +10,7 @@ import {
   NotesField,
   ReportTitleField,
   SecretField,
+  SignedAmountField,
   ThirdPartyField,
   ValueDateField,
 } from './dto-fields';
@@ -37,6 +38,9 @@ class NotesFieldHost {
 }
 class AmountFieldHost {
   @AmountField() value!: number;
+}
+class SignedAmountFieldHost {
+  @SignedAmountField() value!: number;
 }
 class ValueDateFieldHost {
   @ValueDateField() valueDate!: string;
@@ -171,6 +175,30 @@ describe('AmountField', () => {
     const dto = plainToInstance(AmountFieldHost, { value: -5 });
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('isPositive');
+  });
+});
+
+describe('SignedAmountField', () => {
+  it.each([AMOUNT_CEILING, -AMOUNT_CEILING, 0, -25.5])('accepts %s', async (value) => {
+    const dto = plainToInstance(SignedAmountFieldHost, { value });
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('rejects a balance above AMOUNT_CEILING', async () => {
+    const dto = plainToInstance(SignedAmountFieldHost, { value: AMOUNT_CEILING + 1 });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('max');
+  });
+
+  it('rejects a balance below -AMOUNT_CEILING', async () => {
+    const dto = plainToInstance(SignedAmountFieldHost, { value: -AMOUNT_CEILING - 1 });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('min');
+  });
+
+  it('rejects a non-finite value', async () => {
+    const dto = plainToInstance(SignedAmountFieldHost, { value: Infinity });
+    expect(await validate(dto)).not.toEqual([]);
   });
 });
 

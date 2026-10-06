@@ -1,5 +1,5 @@
-import { IsIn, IsNumber, IsOptional, IsUUID } from 'class-validator';
-import { AccountNameField } from '../../common/dto-fields';
+import { IsIn, IsOptional, IsUUID } from 'class-validator';
+import { AccountNameField, SignedAmountField } from '../../common/dto-fields';
 import { ISO_CURRENCY_CODES } from '../../common/currency';
 
 export class CreateAccountDto {
@@ -17,6 +17,6 @@ export class CreateAccountDto {
   // positive → opening credit, negative → opening debit, 0/omitted →
   // no opening operation.
   @IsOptional()
-  @IsNumber()
+  @SignedAmountField()
   initialBalance?: number;
 }

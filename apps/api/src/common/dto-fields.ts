@@ -9,6 +9,7 @@ import {
   IsString,
   Max,
   MaxLength,
+  Min,
   MinLength,
   ValidateBy,
 } from 'class-validator';
@@ -142,6 +143,20 @@ export function AmountField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsNumber()(target, propertyKey);
     IsPositive()(target, propertyKey);
+    Max(AMOUNT_CEILING)(target, propertyKey);
+  };
+}
+
+/**
+ * A signed monetary amount — an account's opening balance, where positive
+ * is a credit and negative a debit. Bounded by ±AMOUNT_CEILING for the same
+ * reasons as AmountField: past it, `toMinorUnits()` loses precision and the
+ * `bigint` columns overflow.
+ */
+export function SignedAmountField(): PropertyDecorator {
+  return function (target: object, propertyKey: string | symbol): void {
+    IsNumber()(target, propertyKey);
+    Min(-AMOUNT_CEILING)(target, propertyKey);
     Max(AMOUNT_CEILING)(target, propertyKey);
   };
 }
