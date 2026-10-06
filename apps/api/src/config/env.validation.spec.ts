@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { validateEnv } from './env.validation';
 
 const valid = {
@@ -39,5 +41,59 @@ describe('validateEnv', () => {
 
   it('accepts a positive integer session TTL', () => {
     expect(() => validateEnv({ ...valid, SESSION_IDLE_TTL_SECONDS: '900' })).not.toThrow();
+  });
+
+  describe('in production', () => {
+    const strong = {
+      ...valid,
+      NODE_ENV: 'production',
+      SESSION_SECRET: 's'.repeat(32),
+      CSRF_SECRET: 'c'.repeat(32),
+      CRYPTO_KEYS: '{"1":"' + Buffer.alloc(32, 7).toString('base64') + '"}',
+    };
+
+    it('accepts strong secrets', () => {
+      expect(() => validateEnv(strong)).not.toThrow();
+    });
+
+    it('rejects a session or CSRF secret under 32 bytes', () => {
+      expect(() => validateEnv({ ...strong, SESSION_SECRET: 'short' })).toThrow(
+        /SESSION_SECRET must be at least 32 bytes/,
+      );
+      expect(() => validateEnv({ ...strong, CSRF_SECRET: 'x'.repeat(31) })).toThrow(
+        /CSRF_SECRET must be at least 32 bytes/,
+      );
+    });
+
+    it('does not double-report a missing secret', () => {
+      expect(() => validateEnv({ ...strong, SESSION_SECRET: undefined })).toThrow(
+        /^Invalid environment configuration: SESSION_SECRET is required$/,
+      );
+    });
+
+    it('rejects a published example CRYPTO_KEYS key', () => {
+      expect(() =>
+        validateEnv({
+          ...strong,
+          CRYPTO_KEYS: '{"1":"8mJ0e7Z3vscIKX6Sp4hzw1tCTQiSVF0gzOREHMhYTYM="}',
+        }),
+      ).toThrow(/CRYPTO_KEYS must not contain a published example key/);
+    });
+
+    it('rejects every secret shipped in .env.example, so the file can never go live', () => {
+      const example = readFileSync(join(__dirname, '../../.env.example'), 'utf8');
+      const read = (name: string) => new RegExp(`^${name}=(.*)$`, 'm').exec(example)?.[1] ?? '';
+      const shipped = {
+        ...strong,
+        SESSION_SECRET: read('SESSION_SECRET'),
+        CSRF_SECRET: read('CSRF_SECRET'),
+        CRYPTO_KEYS: read('CRYPTO_KEYS'),
+      };
+      expect(() => validateEnv(shipped)).toThrow(/SESSION_SECRET.*CSRF_SECRET.*CRYPTO_KEYS/s);
+    });
+
+    it('leaves non-production environments alone', () => {
+      expect(() => validateEnv({ ...valid, NODE_ENV: 'development' })).not.toThrow();
+    });
   });
 });
