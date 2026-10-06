@@ -7,6 +7,8 @@ import request from 'supertest';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
 import { csrfTokenFor, insertMemberWithCredential } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { withClockAhead } from '../test-support/with-clock-ahead';
+import { CHALLENGE_TTL_MS } from '../session/challenge';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 function verifiedResult(newCounter: number): VerifiedAuthenticationResponse {
@@ -174,6 +176,25 @@ describe('webauthn authentication', () => {
         .set('x-csrf-token', csrfToken)
         .send({ response: fakeResponseFor('no-such-credential') })
         .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      await agent.get('/auth/me').expect(401);
+    });
+
+    it('rejects a challenge answered after it expired', async () => {
+      const { credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+
+      const verifySpy = vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse');
+      verifySpy.mockClear();
+      const res = await withClockAhead(CHALLENGE_TTL_MS + 1000, () =>
+        agent
+          .post('/webauthn/authentication/verify')
+          .set('x-csrf-token', csrfToken)
+          .send({ response: fakeResponseFor(credentialId) }),
+      );
+      expect(res.status).toBe(401);
+      // Refused on the stale challenge alone, before any signature check.
+      expect(verifySpy).not.toHaveBeenCalled();
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
       await agent.get('/auth/me').expect(401);
     });

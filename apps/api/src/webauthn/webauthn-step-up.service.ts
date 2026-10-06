@@ -11,6 +11,7 @@ import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
+import { storeChallenge, takeChallenge } from '../session/challenge';
 import { requireMemberId } from '../session/require-member-id';
 import '../session/step-up-session-data';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
@@ -64,7 +65,7 @@ export class WebauthnStepUpService {
       userVerification: 'required',
     });
 
-    req.session.stepUpChallenge = options.challenge;
+    storeChallenge(req.session, 'stepUpChallenge', options.challenge);
     req.session.stepUpMemberId = memberId;
     return options;
   }
@@ -72,9 +73,8 @@ export class WebauthnStepUpService {
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const memberId = requireMemberId(req);
     const sourceAddress = req.ip ?? 'unknown';
-    const expectedChallenge = req.session.stepUpChallenge;
+    const expectedChallenge = takeChallenge(req.session, 'stepUpChallenge');
     const stashedMemberId = req.session.stepUpMemberId;
-    delete req.session.stepUpChallenge;
     delete req.session.stepUpMemberId;
 
     if (!expectedChallenge || stashedMemberId !== memberId) {

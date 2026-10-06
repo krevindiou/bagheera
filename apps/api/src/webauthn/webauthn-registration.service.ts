@@ -11,6 +11,7 @@ import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
 import { passkeyRegisteredEmail } from '../email/templates/passkey-registered.template';
 import { AuditService } from '../security/audit.service';
+import { storeChallenge, takeChallenge } from '../session/challenge';
 import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
 import '../session/webauthn-session-data';
@@ -73,14 +74,13 @@ export class WebauthnRegistrationService {
       })),
     });
 
-    req.session.registrationChallenge = options.challenge;
+    storeChallenge(req.session, 'registrationChallenge', options.challenge);
     return options;
   }
 
   async verify(req: Request, dto: VerifyRegistrationDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const expectedChallenge = req.session.registrationChallenge;
-    delete req.session.registrationChallenge;
+    const expectedChallenge = takeChallenge(req.session, 'registrationChallenge');
     if (!expectedChallenge) {
       throw registrationFailed();
     }

@@ -11,6 +11,8 @@ import {
   SignedInFixture,
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { withClockAhead } from '../test-support/with-clock-ahead';
+import { CHALLENGE_TTL_MS } from '../session/challenge';
 import { vi } from 'vitest';
 
 // Real ceremony verification needs a physical authenticator, which nothing
@@ -184,6 +186,33 @@ describe('webauthn registration', () => {
         .select()
         .from(webauthnCredential)
         .where(eq(webauthnCredential.credentialId, 'cred-planted'));
+      expect(planted).toEqual([]);
+    });
+
+    // The step-up proof is spent by options(), so a member who cancels the
+    // browser prompt leaves a live challenge behind. Without an expiry,
+    // whoever later got hold of the session cookie could answer it with
+    // their own authenticator and plant a passkey without any step-up.
+    it('rejects a challenge answered after it expired, and plants nothing', async () => {
+      const fixture = await seedSignedInMember(app);
+      await steppedUpOptions(fixture);
+      const csrfToken = await fixture.getCsrfToken();
+
+      const res = await withClockAhead(CHALLENGE_TTL_MS + 1000, () =>
+        fixture.agent
+          .post('/webauthn/registration/verify')
+          .set('x-csrf-token', csrfToken)
+          .send({ response: FAKE_RESPONSE }),
+      );
+      expect(res.status).toBe(400);
+      expect((res.body as { message: string }).message).toBe('Passkey registration failed.');
+      // Refused on the stale challenge alone, before any ceremony check.
+      expect(mockVerify).not.toHaveBeenCalled();
+
+      const planted = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, 'cred-late'));
       expect(planted).toEqual([]);
     });
 

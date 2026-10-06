@@ -12,6 +12,7 @@ import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
+import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/webauthn-session-data';
@@ -60,14 +61,13 @@ export class WebauthnAuthenticationService {
       allowCredentials: [],
       userVerification: 'required',
     });
-    req.session.webauthnChallenge = options.challenge;
+    storeChallenge(req.session, 'webauthnChallenge', options.challenge);
     return options;
   }
 
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const sourceAddress = req.ip ?? 'unknown';
-    const expectedChallenge = req.session.webauthnChallenge;
-    delete req.session.webauthnChallenge;
+    const expectedChallenge = takeChallenge(req.session, 'webauthnChallenge');
 
     if (!expectedChallenge) {
       await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);

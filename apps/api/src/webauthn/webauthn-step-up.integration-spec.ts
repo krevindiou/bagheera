@@ -11,6 +11,8 @@ import {
   seedSignedInMember,
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { withClockAhead } from '../test-support/with-clock-ahead';
+import { CHALLENGE_TTL_MS } from '../session/challenge';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 function verifiedResult(newCounter: number): VerifiedAuthenticationResponse {
@@ -127,6 +129,28 @@ describe('webauthn step-up', () => {
         .set('x-csrf-token', csrfToken)
         .send({ response: fakeResponseFor(other.credentialId) })
         .expect(401);
+      expect(messageOf(res)).toBe(STEP_UP_FAILED);
+    });
+
+    it('rejects a challenge answered after it expired', async () => {
+      const fixture = await seedSignedInMember(app);
+      const csrfToken = await fixture.getCsrfToken();
+      await fixture.agent
+        .post('/webauthn/step-up/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
+
+      const verifySpy = vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse');
+      verifySpy.mockClear();
+      const res = await withClockAhead(CHALLENGE_TTL_MS + 1000, () =>
+        fixture.agent
+          .post('/webauthn/step-up/verify')
+          .set('x-csrf-token', csrfToken)
+          .send({ response: fakeResponseFor(fixture.credentialId) }),
+      );
+      expect(res.status).toBe(401);
+      // Refused on the stale challenge alone, before any signature check.
+      expect(verifySpy).not.toHaveBeenCalled();
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
     });
 
