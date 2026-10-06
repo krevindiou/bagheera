@@ -20,7 +20,7 @@ export class SmtpEmailProvider implements EmailProvider {
     this.from = this.config.getOrThrow<string>('EMAIL_FROM');
   }
 
-  async send(message: EmailMessage): Promise<void> {
+  async send(message: EmailMessage, jobId?: string): Promise<void> {
     try {
       await this.transport.sendMail({
         from: this.from,
@@ -29,7 +29,11 @@ export class SmtpEmailProvider implements EmailProvider {
         html: message.html,
       });
     } catch (err) {
-      this.logger.error(`Failed to send email to ${message.to}: ${(err as Error).message}`);
+      // Neither the recipient nor the error message: SMTP servers echo the
+      // rejected address back in theirs. The job id leads to the queue entry.
+      const { code } = err as { code?: unknown };
+      const reason = typeof code === 'string' ? code : 'unknown';
+      this.logger.error(`Failed to send email job ${jobId ?? 'unknown'}: ${reason}`);
     }
   }
 }

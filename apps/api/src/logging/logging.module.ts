@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
+import { LOG_REDACT_PATHS } from './redact-paths';
 
 /**
  * Structured JSON logging on stdout, for `docker compose logs`/any log
@@ -17,7 +18,7 @@ import { LoggerModule } from 'nestjs-pino';
             ? { target: 'pino-pretty', options: { singleLine: true } }
             : undefined,
         redact: {
-          paths: ['req.headers.cookie', 'req.headers.authorization', 'res.headers["set-cookie"]'],
+          paths: LOG_REDACT_PATHS,
           remove: true,
         },
         autoLogging: { ignore: (req) => req.url === '/health' },

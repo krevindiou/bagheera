@@ -28,7 +28,7 @@ vi.mock('bullmq', () => ({
 }));
 
 function job(name: string, data: EmailMessage | SignupRequest): Job<EmailMessage | SignupRequest> {
-  return { name, data } as Job<EmailMessage | SignupRequest>;
+  return { id: 'job-1', name, data } as Job<EmailMessage | SignupRequest>;
 }
 
 describe('EmailWorker', () => {
@@ -50,7 +50,7 @@ describe('EmailWorker', () => {
 
     await mockProcessor!(job('send', message));
 
-    expect(provider.send).toHaveBeenCalledWith(message);
+    expect(provider.send).toHaveBeenCalledWith(message, 'job-1');
     expect(signupRequests.handle).not.toHaveBeenCalled();
   });
 

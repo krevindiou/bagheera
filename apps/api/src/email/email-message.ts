@@ -19,5 +19,6 @@ export interface SignupRequest {
 
 /** Provider abstraction: swap the concrete transport without touching call sites or tests. */
 export interface EmailProvider {
-  send(message: EmailMessage): Promise<void>;
+  /** `jobId` identifies the queue job in logs — never log the recipient instead. */
+  send(message: EmailMessage, jobId?: string): Promise<void>;
 }
