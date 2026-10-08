@@ -16,13 +16,14 @@ const apiRoutePrefixes = ['/health', '/api'];
 export default defineConfig({
   plugins: [vue()],
   optimizeDeps: {
-    // packages/money is a pnpm workspace symlink, so Vite's dep crawler
-    // treats it as source and serves its dist/index.js untransformed —
+    // packages/money and packages/reference-data are pnpm workspace
+    // symlinks, so Vite's dep crawler treats them as source and serves
+    // their dist/index.js untransformed —
     // but that file is tsc's CommonJS output (`exports.foo = ...`), which
     // isn't valid syntax for a browser loading it as a native ES module.
-    // Forcing it through esbuild's pre-bundling step (like any regular
-    // node_modules dep) converts it to real ESM first.
-    include: ['@bagheera/money'],
+    // Forcing them through esbuild's pre-bundling step (like any regular
+    // node_modules dep) converts them to real ESM first.
+    include: ['@bagheera/money', '@bagheera/reference-data'],
   },
   server: {
     host: true,
