@@ -71,6 +71,66 @@ export const ICONS = {
     strokeWidth: 1.75,
     shapes: [path('M4 8l6 6 4-4 6 8'), path('M14 18h6v-6')],
   },
+  card: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [
+      { tag: 'rect', attrs: { x: 2.5, y: 5, width: 19, height: 14, rx: 2 } },
+      path('M2.5 10h19'),
+      path('M6 15h4'),
+    ],
+  },
+  checkList: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [
+      path('M3.5 6l1.5 1.5L8 4.5'),
+      path('M3.5 13l1.5 1.5L8 11.5'),
+      path('M12 6h8.5'),
+      path('M12 13h8.5'),
+      path('M4 20h16.5'),
+    ],
+  },
+  cash: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [
+      { tag: 'rect', attrs: { x: 2.5, y: 6, width: 19, height: 12, rx: 2 } },
+      { tag: 'circle', attrs: { cx: 12, cy: 12, r: 2.5 } },
+      path('M6 12h.01'),
+      path('M18 12h.01'),
+    ],
+  },
+  transfer: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [
+      path('M4 8h15'),
+      path('M15.5 4.5L19 8l-3.5 3.5'),
+      path('M20 16H5'),
+      path('M8.5 12.5L5 16l3.5 3.5'),
+    ],
+  },
+  gauge: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [path('M4 18a9 9 0 1 1 16 0'), path('M12 14l4-5'), path('M12 14h.01')],
+  },
+  clock: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [{ tag: 'circle', attrs: { cx: 12, cy: 12, r: 9 } }, path('M12 7v5l3 2')],
+  },
+  close: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [path('M6 6l12 12'), path('M18 6L6 18')],
+  },
+  arrowLeft: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [path('M19 12H5'), path('M11 6l-6 6 6 6')],
+  },
   chevron: { viewBox: '0 0 16 16', strokeWidth: 1.7, shapes: [path('M4 6l4 4 4-4')] },
   check: { viewBox: '0 0 16 16', strokeWidth: 1.8, shapes: [path('M3 8.5l3.2 3.2L13 4.5')] },
   logout: {

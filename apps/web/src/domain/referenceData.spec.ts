@@ -67,14 +67,16 @@ describe('paymentMethodName', () => {
 
 describe('paymentMethodIcon', () => {
   it('maps each known payment-method id to its icon', () => {
-    expect(paymentMethodIcon(PAYMENT_METHOD_ID.CREDIT_CARD)).toBe('💳');
-    expect(paymentMethodIcon(PAYMENT_METHOD_ID.TRANSFER_DEBIT)).toBe('🔁');
-    expect(paymentMethodIcon(PAYMENT_METHOD_ID.TRANSFER_CREDIT)).toBe('🔁');
-    expect(paymentMethodIcon(PAYMENT_METHOD_ID.INITIAL_BALANCE)).toBe('🎚️');
+    expect(paymentMethodIcon(PAYMENT_METHOD_ID.CREDIT_CARD)).toBe('card');
+    expect(paymentMethodIcon(PAYMENT_METHOD_ID.CHECK_DEBIT)).toBe('checkList');
+    expect(paymentMethodIcon(PAYMENT_METHOD_ID.CASH_WITHDRAWAL)).toBe('cash');
+    expect(paymentMethodIcon(PAYMENT_METHOD_ID.TRANSFER_DEBIT)).toBe('transfer');
+    expect(paymentMethodIcon(PAYMENT_METHOD_ID.TRANSFER_CREDIT)).toBe('transfer');
+    expect(paymentMethodIcon(PAYMENT_METHOD_ID.INITIAL_BALANCE)).toBe('gauge');
   });
 
-  it('returns an empty string for an unknown id', () => {
-    expect(paymentMethodIcon('unknown')).toBe('');
+  it('returns null for an unknown id', () => {
+    expect(paymentMethodIcon('unknown')).toBeNull();
   });
 });
 

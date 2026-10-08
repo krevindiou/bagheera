@@ -83,7 +83,7 @@ describe('FormDrawer', () => {
     expect(wrapper.emitted('submit')).toHaveLength(1);
   });
 
-  it('emits close from the backdrop, the × button and the Cancel button', async () => {
+  it('emits close from the backdrop, the close button and the Cancel button', async () => {
     const wrapper = mountDrawer();
 
     await wrapper.find('.drawer-backdrop').trigger('click');
@@ -91,6 +91,12 @@ describe('FormDrawer', () => {
     await wrapper.find('form button.btn-outline-secondary').trigger('click');
 
     expect(wrapper.emitted('close')).toHaveLength(3);
+  });
+
+  it('names the close button "Close"', () => {
+    const wrapper = mountDrawer();
+
+    expect(wrapper.find('.drawer-close').attributes('aria-label')).toBe('Close');
   });
 
   it('emits close when Escape is pressed', () => {
@@ -110,7 +116,7 @@ describe('FormDrawer', () => {
     expect(wrapper.emitted('close')).toBeUndefined();
   });
 
-  it('keeps Tab focus inside the panel, wrapping from Cancel to the × button', () => {
+  it('keeps Tab focus inside the panel, wrapping from Cancel to the close button', () => {
     const wrapper = mountDrawer({ attachTo: document.body });
     (wrapper.find('form button.btn-outline-secondary').element as HTMLElement).focus();
 

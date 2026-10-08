@@ -1,5 +1,6 @@
 import { PAYMENT_METHOD_ID, TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
 import type { components } from '../api/schema';
+import type { IconName } from '../components/appIcons';
 import { referenceName } from '../i18n/referenceNames';
 
 type Schemas = components['schemas'];
@@ -77,22 +78,22 @@ export function thirdPartyLabel(thirdParty: string, paymentMethodId: string): st
 }
 
 // Display icons: initial balance = gauge, credit card = card, check =
-// list, cash withdrawal/deposit = money, transfer/direct debit =
+// list, cash withdrawal/deposit = cash, transfer/direct debit =
 // exchange arrows. Web-only — no equivalent column server-side.
-export const PAYMENT_METHOD_ICONS: Record<string, string> = {
-  [PAYMENT_METHOD_ID.CREDIT_CARD]: '💳',
-  [PAYMENT_METHOD_ID.CHECK_DEBIT]: '📋',
-  [PAYMENT_METHOD_ID.CASH_WITHDRAWAL]: '💵',
-  [PAYMENT_METHOD_ID.TRANSFER_DEBIT]: '🔁',
-  [PAYMENT_METHOD_ID.CHECK_CREDIT]: '📋',
-  [PAYMENT_METHOD_ID.TRANSFER_CREDIT]: '🔁',
-  [PAYMENT_METHOD_ID.DEPOSIT]: '💵',
-  [PAYMENT_METHOD_ID.DIRECT_DEBIT]: '🔁',
-  [PAYMENT_METHOD_ID.INITIAL_BALANCE]: '🎚️',
+export const PAYMENT_METHOD_ICONS: Record<string, IconName> = {
+  [PAYMENT_METHOD_ID.CREDIT_CARD]: 'card',
+  [PAYMENT_METHOD_ID.CHECK_DEBIT]: 'checkList',
+  [PAYMENT_METHOD_ID.CASH_WITHDRAWAL]: 'cash',
+  [PAYMENT_METHOD_ID.TRANSFER_DEBIT]: 'transfer',
+  [PAYMENT_METHOD_ID.CHECK_CREDIT]: 'checkList',
+  [PAYMENT_METHOD_ID.TRANSFER_CREDIT]: 'transfer',
+  [PAYMENT_METHOD_ID.DEPOSIT]: 'cash',
+  [PAYMENT_METHOD_ID.DIRECT_DEBIT]: 'transfer',
+  [PAYMENT_METHOD_ID.INITIAL_BALANCE]: 'gauge',
 };
 
-export function paymentMethodIcon(id: string): string {
-  return PAYMENT_METHOD_ICONS[id] ?? '';
+export function paymentMethodIcon(id: string): IconName | null {
+  return PAYMENT_METHOD_ICONS[id] ?? null;
 }
 
 // The "Transfer" debit/credit payment methods — the only two that can carry

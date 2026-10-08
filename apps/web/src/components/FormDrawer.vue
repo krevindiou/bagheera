@@ -2,12 +2,13 @@
 import { ref, useId } from 'vue';
 import { useEscapeKey } from '../composables/useEscapeKey';
 import { useFocusTrap } from '../composables/useFocusTrap';
+import AppIcon from './AppIcon.vue';
 
 // Shared shell for every slide-over form (operation, scheduler, search,
 // report, account, bank choice/edit): the backdrop, a titled header with
 // a close button, the <form> itself, and one footer layout — the
 // caller's primary action(s) sharing a row (the #actions slot), Cancel
-// full-width beneath. Backdrop click, the × button, Cancel and Escape all
+// full-width beneath. Backdrop click, the close button, Cancel and Escape all
 // emit `close`; the caller decides what closing means.
 //
 // Attributes land on the <form>, not the backdrop (the vee-validate
@@ -51,10 +52,10 @@ useFocusTrap(panel);
         <button
           type="button"
           class="drawer-close"
-          :aria-label="$t('common.cancel')"
+          :aria-label="$t('common.close')"
           @click="emit('close')"
         >
-          ×
+          <AppIcon name="close" :size="18" />
         </button>
       </div>
 
@@ -98,8 +99,8 @@ useFocusTrap(panel);
 }
 .drawer-close {
   cursor: pointer;
+  display: inline-flex;
   color: var(--paper-faint);
-  font-size: 22px;
   line-height: 1;
   background: none;
   border: none;

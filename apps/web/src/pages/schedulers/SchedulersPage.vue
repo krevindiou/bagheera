@@ -14,13 +14,14 @@ import {
 } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
 import { formatMoney } from '../../domain/money';
-import { categoryLabel, paymentMethodIcon, paymentMethodName } from '../../domain/referenceData';
+import { categoryLabel } from '../../domain/referenceData';
 import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
 import type { Scheduler } from './schedulers.types';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -101,7 +102,8 @@ async function onSaved() {
       :to="{ name: 'operations', params: { accountId } }"
       class="back-link"
     >
-      ← {{ account.name }} · {{ $t('operations.title') }}
+      <AppIcon name="arrowLeft" :size="12" />
+      {{ account.name }} · {{ $t('operations.title') }}
     </router-link>
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="mb-0" style="font-size: 24px">
@@ -169,8 +171,11 @@ async function onSaved() {
               <td class="text-end amount" :class="scheduler.debit ? 'text-danger' : 'text-success'">
                 {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
               </td>
-              <td :title="paymentMethodName(scheduler.paymentMethodId, paymentMethods)">
-                {{ paymentMethodIcon(scheduler.paymentMethodId) }}
+              <td>
+                <PaymentMethodIcon
+                  :id="scheduler.paymentMethodId"
+                  :payment-methods="paymentMethods"
+                />
               </td>
               <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}</td>
               <td class="text-end">{{ scheduler.frequencyValue }}</td>

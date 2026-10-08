@@ -38,4 +38,11 @@ describe('ToastContainer', () => {
     expect(wrapper.findAll('.toast-item')).toHaveLength(0);
     expect(useToast().toasts).toHaveLength(0);
   });
+
+  it('labels the dismiss button "Close", not "Cancel"', () => {
+    useToast().push('Bye');
+    const wrapper = mount(ToastContainer, withGlobalPlugins());
+
+    expect(wrapper.find('.toast-close').attributes('aria-label')).toBe('Close');
+  });
 });

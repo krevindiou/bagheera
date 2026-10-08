@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useToast } from '../composables/useToast';
+import AppIcon from './AppIcon.vue';
 
 const { toasts, dismiss } = useToast();
 const { t } = useI18n();
@@ -30,10 +31,10 @@ const variantClass: Record<string, string> = {
       <button
         type="button"
         class="toast-close"
-        :aria-label="t('common.cancel')"
+        :aria-label="t('common.close')"
         @click="dismiss(toast.id)"
       >
-        ×
+        <AppIcon name="close" :size="16" />
       </button>
     </div>
   </div>
@@ -94,8 +95,8 @@ const variantClass: Record<string, string> = {
   flex: none;
   background: transparent;
   border: none;
+  display: inline-flex;
   color: var(--paper-faint);
-  font-size: 18px;
   line-height: 1;
   padding: 0;
   cursor: pointer;

@@ -357,7 +357,9 @@ input[type='radio'] {
 /* "← back to X" link atop Operations/Schedulers — same two unrelated pages,
    no single owning component. */
 .back-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--paper-faint);
   cursor: pointer;

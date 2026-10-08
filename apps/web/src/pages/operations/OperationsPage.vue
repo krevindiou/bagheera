@@ -22,13 +22,7 @@ import {
 import { useOperationSearch } from '../../composables/useOperationSearch';
 import { useSelection } from '../../composables/useSelection';
 import { formatDate, formatMoney, toDisplayBounds, toDisplayPoints } from '../../domain/money';
-import {
-  categoryLabel,
-  PAYMENT_METHOD_ID,
-  paymentMethodIcon,
-  paymentMethodName,
-  thirdPartyLabel,
-} from '../../domain/referenceData';
+import { categoryLabel, PAYMENT_METHOD_ID, thirdPartyLabel } from '../../domain/referenceData';
 import type { Operation } from '../../domain/referenceData';
 import OperationForm from './OperationForm.vue';
 import BatchActions from './batch.vue';
@@ -37,6 +31,8 @@ import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
 import StatCard from '../../components/StatCard.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
+import StatusIcon from '../../components/StatusIcon.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -167,7 +163,8 @@ function isEditable(operation: Operation): boolean {
 <template>
   <div>
     <router-link :to="{ name: 'accounts' }" class="back-link">
-      ← {{ $t('nav.accounts') }}
+      <AppIcon name="arrowLeft" :size="12" />
+      {{ $t('nav.accounts') }}
     </router-link>
 
     <!-- Header action row: New operation, Search toggle, Schedulers link.
@@ -195,7 +192,7 @@ function isEditable(operation: Operation): boolean {
           :title="hasActiveSearch ? $t('operations.search.activeHint') : undefined"
           @click="openSearch"
         >
-          <AppIcon name="search" class="icon-16" />
+          <AppIcon name="search" />
           {{ $t('operations.search.show') }}
           <span
             v-if="hasActiveSearch"
@@ -283,19 +280,16 @@ function isEditable(operation: Operation): boolean {
                   />
                 </td>
                 <td>
-                  <span
+                  <StatusIcon
                     v-if="operation.reconciled"
-                    class="reconciled-dot"
-                    :title="$t('operations.reconciled')"
-                    data-testid="reconciled-icon"
-                    >✓</span
-                  >
-                  <span
+                    kind="reconciled"
+                    :label="$t('operations.reconciled')"
+                  />
+                  <StatusIcon
                     v-if="operation.schedulerId"
-                    :title="$t('operations.generatedByScheduler')"
-                    data-testid="scheduler-icon"
-                    >🕐</span
-                  >
+                    kind="scheduler"
+                    :label="$t('operations.generatedByScheduler')"
+                  />
                 </td>
                 <td>{{ thirdPartyLabel(operation.thirdParty, operation.paymentMethodId) }}</td>
                 <td
@@ -304,8 +298,11 @@ function isEditable(operation: Operation): boolean {
                 >
                   {{ operation.debit ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
-                <td :title="paymentMethodName(operation.paymentMethodId, paymentMethods)">
-                  {{ paymentMethodIcon(operation.paymentMethodId) }}
+                <td>
+                  <PaymentMethodIcon
+                    :id="operation.paymentMethodId"
+                    :payment-methods="paymentMethods"
+                  />
                 </td>
                 <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : '' }}</td>
                 <td>{{ formatDate(operation.valueDate) }}</td>
@@ -355,28 +352,3 @@ function isEditable(operation: Operation): boolean {
     </div>
   </div>
 </template>
-
-<style scoped>
-.icon-16 {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-/* The reconciled checkmark was a bare "✓" glyph — thin and low-contrast
-   against the panel background. A filled circle behind it gives it the
-   same "status dot" weight as .dot-active. */
-.reconciled-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(95, 217, 141, 0.18);
-  color: var(--green);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-}
-</style>

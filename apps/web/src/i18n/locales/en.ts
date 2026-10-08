@@ -7,6 +7,7 @@ export default {
     confirmBody: 'Do you confirm?',
     ok: 'Ok',
     cancel: 'Cancel',
+    close: 'Close',
     or: 'or',
     loadError: "Couldn't load this. Please try again.",
     pager: {

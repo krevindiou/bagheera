@@ -9,6 +9,7 @@ export default {
     confirmBody: 'Confirmez-vous ?',
     ok: 'Ok',
     cancel: 'Annuler',
+    close: 'Fermer',
     or: 'ou',
     loadError: 'Impossible de charger ces données. Veuillez réessayer.',
     pager: {
