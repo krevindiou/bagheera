@@ -1,9 +1,5 @@
-// jsdom doesn't implement canvas rendering; Chart.js only needs a context
-// object it can call no-op methods on to mount without throwing in tests.
-// Chart.js's acquireContext() also requires context.canvas === the element
-// getContext() was called on (it discards the context otherwise) — a plain
-// arrow function has no `this` to read the calling element from, so this
-// has to be a regular function.
+// jsdom has no canvas; Chart.js only needs no-op methods. A regular
+// function, since Chart.js requires `context.canvas` to be `this`.
 HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement) {
   return {
     canvas: this,
@@ -13,9 +9,7 @@ HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement) {
     putImageData: () => {},
     createImageData: () => [],
     setTransform: () => {},
-    // Chart.js's teardown path (destroy() -> clearCanvas()) calls this one
-    // specifically — only surfaces once a test actually unmounts a chart
-    // mid-run rather than leaving it for the wrapper's final afterEach.
+    // Called by Chart.js's destroy().
     resetTransform: () => {},
     drawImage: () => {},
     save: () => {},

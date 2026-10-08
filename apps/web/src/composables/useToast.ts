@@ -12,12 +12,8 @@ export interface ToastMessage {
 const toasts = reactive<ToastMessage[]>([]);
 let nextId = 1;
 
-// A handful of quick saves in a row (e.g. adding several operations back to
-// back) would otherwise leave every one of them on screen at once, still
-// stacking by the time the container runs into other fixed UI (see
-// theme.css's .toast-container comment). Capping the visible queue keeps
-// the stack bounded regardless of how fast toasts arrive — the oldest is
-// evicted immediately, same as if its own timer had just fired.
+// Quick saves in a row would otherwise stack toasts into other fixed UI;
+// past the cap, the oldest goes at once.
 const MAX_VISIBLE_TOASTS = 3;
 
 function dismiss(id: number) {

@@ -2,8 +2,7 @@ import { AnyPgColumn, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 import { entryTypeEnum } from './enums';
 import { uuidPk } from './id';
 
-// Two-level hierarchy (placeholder names — real seed list TBD with the
-// business owner).
+// Two-level hierarchy.
 export const category = pgTable('category', {
   id: uuidPk(),
   parentId: uuid('parent_id').references((): AnyPgColumn => category.id),

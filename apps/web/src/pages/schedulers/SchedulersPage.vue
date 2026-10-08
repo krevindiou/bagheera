@@ -69,8 +69,6 @@ const categoryNames = computed(
 );
 
 async function reloadSchedulers() {
-  // The `.all` prefix, not `.page(accountId, page.value)` — invalidates
-  // every cached page for this account, not just whichever one is showing.
   await queryClient.invalidateQueries({ queryKey: queryKeys.schedulers.all(accountId.value) });
 }
 

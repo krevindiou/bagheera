@@ -18,18 +18,15 @@ const banner = ref<Banner>(null);
 const submitting = ref(false);
 const passkeysSupported = browserSupportsWebAuthn();
 
-// Usernameless: no email is asked for — the browser offers the member's own
-// passkeys for this site, and the API recognizes the account from whichever
-// one they pick (see the API's WebauthnAuthenticationService for why an
-// email-first flow was dropped).
+// Usernameless: the browser offers the member's passkeys for this site, and
+// the API recognizes the account from the one picked.
 async function onSubmit() {
   banner.value = null;
   submitting.value = true;
   try {
     const result = await runAuthentication('/webauthn/authentication');
     if (!result.ok) {
-      // A cancelled platform prompt is not a server error — just abandon
-      // the attempt.
+      // A cancelled prompt isn't an error.
       if (result.reason === 'rate-limited') banner.value = 'rate-limited';
       else if (result.reason === 'rejected') banner.value = 'invalid-credentials';
       return;

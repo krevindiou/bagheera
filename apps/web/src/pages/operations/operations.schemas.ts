@@ -6,10 +6,8 @@ const optionalId = z.preprocess(
   z.string().uuid().optional(),
 );
 
-// Field rules mirror the API DTOs (apps/api/src/operations/dto/*). The
-// transfer account is optional even for a transfer payment method: leaving
-// it empty means the "External account" placeholder (a plain transfer with
-// no mirrored operation on another of the member's accounts).
+// Field rules mirror the API DTOs. An empty transfer account means
+// "External account" (no mirror).
 export const operationSchema = z.object({
   type: z.enum(['debit', 'credit']),
   thirdParty: z.string().trim().min(1).max(64),
@@ -26,9 +24,8 @@ export const operationSchema = z.object({
 });
 export type OperationForm = z.infer<typeof operationSchema>;
 
-// The form's state as opposed to its validated submit payload (`OperationForm`
-// / `SchedulerForm`, the schema's output): amount and payment method start
-// empty, so they can be `undefined` until validation has passed.
+// Form state, not the validated payload: amount and payment method start
+// `undefined`.
 export type FormValues<T extends { amount: number; paymentMethodId: string }> = Omit<
   T,
   'amount' | 'paymentMethodId'

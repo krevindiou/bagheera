@@ -19,10 +19,7 @@ import EditBankForm from './EditBankForm.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
-// A dedicated stub router instead of the real singleton: "accounts" has
-// meta.requiresAuth on the real route table, so pushing there without an
-// authenticated session would silently redirect to sign-in via the real
-// guard — this component only needs "accounts"/"operations" to resolve.
+// A stub router: the real one's auth guard would redirect to sign-in.
 function createTestRouter(): Router {
   const stub = { template: '<div />' };
   return createRouter({
@@ -160,9 +157,7 @@ describe('AccountsPage', () => {
     await router.push({ name: 'accounts', query: { start: 'bank-choice' } });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
 
-    // The deep-link watch only fires once banksQuery.data actually resolves,
-    // which takes more hops than a single flushPromises() round — poll
-    // instead (same reasoning as elsewhere in this suite).
+    // Polls: the deep-link watch waits on banksQuery.
     await vi.waitFor(() => {
       if (!wrapper.find('#account-bank-id').exists()) throw new Error('not opened yet');
     });
@@ -207,8 +202,7 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.find('button').trigger('click'); // Edit is listed first
-    // The edit form now renders as a page-level drawer rather than inline
-    // in the row — scope to the component instance rather than the row.
+    // The edit form is a page-level drawer, not inside the row.
     await wrapper.findComponent(EditBankForm).find('input').setValue('Chase Bank');
     await submitAndSettle(wrapper);
 
@@ -410,8 +404,7 @@ describe('AccountsPage', () => {
     await wrapper.find('[data-testid="account-row"] .btn-outline-secondary').trigger('click'); // Edit
     expect(wrapper.find('#account-name').exists()).toBe(true);
 
-    // The edit form now renders as a page-level drawer rather than inline
-    // in the row — scope to the component instance rather than a class.
+    // The edit form is a page-level drawer, not inside the row.
     await wrapper
       .findComponent(CreateAccountForm)
       .find('button.btn-outline-secondary')

@@ -15,13 +15,9 @@ import { withClockAhead } from '../test-support/with-clock-ahead';
 import { CHALLENGE_TTL_MS } from '../session/challenge';
 import { vi } from 'vitest';
 
-// Real ceremony verification needs a physical authenticator, which nothing
-// in this suite has — mock exactly the one function that would otherwise
-// need one. Everything else (routing, DTO validation, session-stashed
-// challenge, credential persistence/ownership, email queueing, audit)
-// stays real. generateRegistrationOptions is *not* mocked — it's pure,
-// deterministic, and this suite's only way to get a real challenge into
-// the session for verify() to consume.
+// Only verification is mocked (it needs a real authenticator);
+// generateRegistrationOptions stays real to put a real challenge in the
+// session.
 vi.mock('@simplewebauthn/server', async () => ({
   ...(await vi.importActual<typeof import('@simplewebauthn/server')>('@simplewebauthn/server')),
   verifyRegistrationResponse: vi.fn(),
@@ -59,9 +55,7 @@ describe('webauthn registration', () => {
   let app: INestApplication<Server>;
   let fakeEmailQueue: { enqueue: ReturnType<typeof vi.fn> };
 
-  // Adding a passkey needs a fresh step-up proof, consumed by options() —
-  // the same "confirm with a passkey you already hold" the web page runs
-  // right before starting the ceremony.
+  // options() consumes a step-up proof, as on the web page.
   async function steppedUpOptions(fixture: SignedInFixture) {
     await completeStepUp(app, fixture);
     const res = await fixture.mutate('post', '/webauthn/registration/options');
@@ -94,8 +88,8 @@ describe('webauthn registration', () => {
       ]);
     });
 
-    // M3: a signed-in session alone (a stolen cookie, an unattended laptop)
-    // must not be able to plant a passkey of its own.
+    // A session alone (stolen cookie, unattended laptop) must not plant a
+    // passkey.
     it('rejects starting the ceremony without a fresh step-up', async () => {
       const { mutate } = await seedSignedInMember(app);
 

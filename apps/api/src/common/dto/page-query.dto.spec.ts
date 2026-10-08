@@ -1,7 +1,5 @@
-// class-transformer's @Type() reads decorator metadata through
-// Reflect.getMetadata — normally polyfilled once by main.ts at process
-// start; an isolated unit-test file never runs main.ts, so it needs the
-// same polyfill imported for itself (see search-operations.dto.spec.ts).
+// @Type() needs Reflect.getMetadata, which Nest loads at runtime but an
+// isolated unit test doesn't.
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';

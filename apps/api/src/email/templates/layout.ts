@@ -2,14 +2,11 @@ import type { Locale } from '../../common/locale';
 import { safeHtml } from '../../common/escape-html';
 
 /**
- * Shared HTML shell for every outbound email — mirrors the app's
- * "FinTech-Noir" theme (see apps/web/src/styles/theme.css) so transactional
- * mail reads as the same product. Table-based markup + inline styles only:
- * email clients strip <style> blocks, ignore CSS custom properties, and
- * often block remote fonts/images — so every color below is a literal
- * copied from theme.css (no shared import) and the "B" logo mark is drawn
- * with CSS instead of an image. No <link>/<img>/@font-face pointing off-host
- * anywhere in this file — keep it that way.
+ * HTML shell for every outbound email, mirroring the web theme
+ * (apps/web/src/styles/theme.css). Tables and inline styles only: mail
+ * clients strip <style>, ignore CSS variables and block remote assets, so
+ * colors are literals copied from theme.css and the logo is drawn in CSS.
+ * Keep off-host <link>/<img>/@font-face out of this file.
  */
 
 const COLOR = {
@@ -23,10 +20,7 @@ const COLOR = {
   violetBright: '#9a72e8',
 } as const;
 
-// System font stack (no @font-face) — theme.css uses 'Archivo'/'Space
-// Grotesk' via Google Fonts, but those are remote and most mail clients
-// strip @font-face anyway, so this falls back to each platform's default
-// sans-serif rather than trying to embed/self-host font files in the email.
+// The web fonts are remote, and most mail clients strip @font-face anyway.
 const FONT = 'Helvetica, Arial, sans-serif';
 
 export interface EmailLayoutOptions {
@@ -90,10 +84,8 @@ Bagheera — personal finance manager
 }
 
 /**
- * Bulletproof (table-based) CTA button plus a plain-text copy of the link
- * underneath, for clients that strip button styling or images. `label` and
- * `url` are run through `safeHtml` here, so callers can pass either through
- * unescaped.
+ * Table-based CTA button plus the link spelled out, for clients that strip
+ * button styling. Escapes `label` and `url` itself.
  */
 export function emailButton(label: string, url: string): string {
   const button = safeHtml`<a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:12px 24px; font-family:${FONT}; font-size:14px; font-weight:700; color:#ffffff; text-decoration:none; border-radius:6px;">${label}</a>`;

@@ -27,11 +27,7 @@ describe('rate limiting', () => {
     await app.close();
   });
 
-  // RegistrationController.register() declares
-  // @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
-  // — per-address, so repeated sign-up requests can't flood one mailbox.
-  // (Sign-in options used to be the example here; they're usernameless now
-  // and take no identifier at all.)
+  // Registration: 5/min per email, so sign-ups can't flood one mailbox.
   it('locks out the identifier dimension once its budget is exhausted', async () => {
     const email = uniqueEmail('ratelimit');
     const agent = request.agent(app.getHttpServer());
@@ -57,21 +53,14 @@ describe('rate limiting', () => {
     const throttledOnUpper = await attemptRegister(agent, csrfToken, upper);
     expect(throttledOnUpper).toBe(429);
 
-    // A different case variant of the same email is blocked immediately —
-    // proving both share one normalized dimension key, not two independent
-    // ones an attacker could rotate between.
+    // Case variants share one normalized key.
     const throttledOnLower = await attemptRegister(agent, csrfToken, lower);
     expect(throttledOnLower).toBe(429);
   });
 
   it('applies an explicit @RateLimit override distinct from the default budget', async () => {
-    // WebauthnStepUpController.options() declares
-    // @RateLimit({ points: 10, durationSeconds: 60 }), no identifierField —
-    // only the IP dimension applies, budget 10 (not ipPointsFor's ×4
-    // multiplier, which only kicks in when identifierField is set). No
-    // masking filter here, so a real 429 surfaces once exhausted. (Not
-    // registration options, same budget: those also need a fresh step-up
-    // per call, which would muddy what's being measured here.)
+    // Step-up options: 10/min, IP dimension only (no ×4 multiplier without
+    // identifierField).
     const { agent, getCsrfToken } = await seedSignedInMember(app);
 
     const statuses: number[] = [];
@@ -94,7 +83,6 @@ describe('rate limiting', () => {
     }
   });
 
-  // M5: every authenticated create/edit/delete used to be unthrottled.
   describe('the per-member write budget (MEMBER_WRITE_LIMIT)', () => {
     async function spendWholeBudget(
       mutate: Awaited<ReturnType<typeof seedSignedInMember>>['mutate'],

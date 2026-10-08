@@ -6,13 +6,9 @@ import {
 } from '@bagheera/money';
 import { i18n } from '../i18n';
 
-// Every amount the API returns is an integer in minor units (real value ×
-// 10,000, via the shared @bagheera/money package). The API-response value is
-// a plain `number` (branding doesn't survive JSON), hence the cast.
-//
-// Converts to a plain decimal — rounded to the currency's own number of
-// decimals when a currency is given, otherwise kept at full precision (for
-// pre-filling an edit form).
+// API minor units (a plain `number`: brands don't survive JSON) to a
+// decimal, rounded to the currency's decimals when one is given, else at
+// full precision (to pre-fill an edit form).
 export function toDisplayAmount(minorUnits: number, currency?: string): number {
   return toMajorUnits(
     minorUnits as MinorUnits,
@@ -20,13 +16,8 @@ export function toDisplayAmount(minorUnits: number, currency?: string): number {
   );
 }
 
-// Currency/date formatting follows the app's active i18n locale (switched
-// via LanguageSwitcher.vue / router/index.ts's setLocale) — read live
-// rather than captured once, so a locale switch re-renders every already-
-// mounted amount/date without a page reload. `i18n.global.locale` is a
-// plain ref (legacy: false, see i18n/index.ts), not a reactive composable
-// binding, which is why these are plain functions reading `.value` at call
-// time rather than computed()s — this module isn't a component.
+// Formatting follows the active i18n locale, read at call time so a
+// locale switch re-renders mounted amounts and dates.
 function currentLocale(): string {
   return i18n.global.locale.value;
 }
@@ -56,8 +47,7 @@ export function currencySymbol(currency: string): string {
   }
 }
 
-// Date formatting follows the active locale, same as money. Accepts a
-// stored `YYYY-MM-DD` date string and renders it localized.
+// A stored `YYYY-MM-DD` date, localized.
 export function formatDate(date: string): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
@@ -91,20 +81,17 @@ export function toDisplayBounds(
   return bounds ? { min: bounds.min / MONEY_SCALE, max: bounds.max / MONEY_SCALE } : null;
 }
 
-// Localized currency string for a decimal amount (e.g. a chart value already
-// converted with toDisplayAmount).
+// A decimal amount (e.g. from toDisplayAmount) as localized currency.
 export function formatDisplayMoney(value: number, currency: string): string {
   try {
     return new Intl.NumberFormat(currentLocale(), { style: 'currency', currency }).format(value);
   } catch {
-    // Unknown/invalid currency code — fall back to a plain decimal so the
-    // page doesn't crash.
+    // Unknown currency code.
     return `${value.toFixed(2)} ${currency}`;
   }
 }
 
-// Displayed amounts are localized currency strings in the account's
-// currency, formatted from an API minor-units integer.
+// An API minor-units amount as localized currency.
 export function formatMoney(minorUnits: number, currency: string): string {
   return formatDisplayMoney(toDisplayAmount(minorUnits, currency), currency);
 }

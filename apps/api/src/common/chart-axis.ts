@@ -1,9 +1,7 @@
-// Shared vertical-axis-bounds formula for every time-series chart (report
-// charts, the dashboard/per-account synthesis chart): the data min/max
-// stretched outward by 5% of the spread, rounded outward to two
-// significant digits. Flat data pads by 5% of the absolute value instead;
-// all-zero data defaults to [-1, +1] currency units. Works on minor-unit
-// values, like every amount the API returns.
+// Vertical-axis bounds for every time-series chart (reports, synthesis
+// chart): data min/max padded by 5% of the spread, the padding rounded up
+// to two significant digits. Flat data pads by 5% of its absolute value;
+// all-zero data gets [-1, +1] currency units. Minor-unit values.
 
 import { MONEY_SCALE } from './money';
 import { AxisBoundsDto } from './dto/chart-response.dto';

@@ -7,8 +7,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'json-summary'],
-      // Branches only — same convention as apps/web's vite.config.ts and
-      // apps/api's vitest.config.mts coverageThreshold.
+      // Branches only, like apps/api and apps/web.
       thresholds: { branches: 90 },
     },
   },

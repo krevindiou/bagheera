@@ -2,11 +2,8 @@ import en from './locales/en';
 import fr from './locales/fr';
 import { SUPPORTED_LOCALES } from './locales';
 
-// Flat catalog objects (see en.ts/fr.ts) don't get any compile-time check
-// that a later-added locale still has every key en.ts does — nothing
-// stops one from silently drifting as pages gain new $t() keys. This
-// walks both trees and fails loudly on the first mismatch instead of
-// leaving a blank/fallback string to be noticed in production.
+// The loader's typing catches keys missing from fr.ts, not extra ones; this
+// walks both trees and fails on any mismatch.
 type Tree = { [key: string]: Tree | string | ((...args: never[]) => unknown) };
 
 function keyPaths(tree: Tree, prefix = ''): string[] {

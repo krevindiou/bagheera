@@ -5,9 +5,7 @@ import { SUPPORTED_LOCALES } from '../../common/locale';
 // Scheduler.
 export const entryTypeEnum = pgEnum('entry_type', ['debit', 'credit']);
 
-// Member's UI/email language preference. Values mirror common/locale.ts's
-// SUPPORTED_LOCALES exactly — that's the tuple to edit when a language is
-// added, not this line.
+// Member's UI/email language; edit SUPPORTED_LOCALES, not this line.
 export const localeEnum = pgEnum('locale', SUPPORTED_LOCALES);
 
 // Scheduler recurrence unit.
@@ -25,8 +23,7 @@ export const dataGroupingEnum = pgEnum('data_grouping', [
   'payment_method',
 ]);
 
-// SecurityEvent kinds, wired into auth/member modules later. New values can
-// be appended by later migrations as more call sites land.
+// Audit-log event kinds (see AuditService).
 export const securityEventTypeEnum = pgEnum('security_event_type', [
   'email_change_requested',
   'email_changed',

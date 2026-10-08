@@ -7,16 +7,14 @@ import { Public } from '../session/public.decorator';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { WebauthnAuthenticationService } from './webauthn-authentication.service';
 
-// Public — the caller isn't signed in yet.
+// Public: the caller isn't signed in yet.
 @Controller('webauthn/authentication')
 @Public()
 export class WebauthnAuthenticationController {
   constructor(private readonly authentication: WebauthnAuthenticationService) {}
 
-  // IP-only: sign-in takes no identifier any more (usernameless — see
-  // WebauthnAuthenticationService), so there's no per-account dimension an
-  // attacker could exhaust to lock someone out. Options only mint a
-  // challenge; nothing here is guessable.
+  // IP-only: usernameless sign-in has no per-account dimension to lock
+  // someone out with.
   @Post('options')
   @HttpCode(200)
   @RateLimit({ points: 20, durationSeconds: 60 })

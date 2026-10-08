@@ -12,9 +12,7 @@ import { useSessionStore } from '../stores/session.store';
 import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import AccountMenu from './AccountMenu.vue';
 
-// Mirrors waitForRouteName's own rationale: choose()'s router.replace()
-// resolves through the router's async guard, which flushPromises() alone
-// doesn't reliably observe — poll for the param it eventually sets instead.
+// Polls, like waitForRouteName: the replace() goes through an async guard.
 async function waitForLocale(locale: string): Promise<void> {
   await vi.waitFor(() => {
     if (router.currentRoute.value.params.locale !== locale) {
@@ -39,10 +37,7 @@ describe('AccountMenu', () => {
 
   it('shows the email-initials avatar and email on the trigger, starting closed', async () => {
     const wrapper = mount(AccountMenu, withGlobalPlugins());
-    // withGlobalPlugins() mints its own fresh Pinia and activates it — the
-    // store must be grabbed after mount(), or this resolves a different
-    // (pre-mount) instance than the one actually injected into the
-    // component tree.
+    // After mount(): withGlobalPlugins() activates its own Pinia.
     useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
@@ -99,9 +94,7 @@ describe('AccountMenu', () => {
     await wrapper.get('.account-trigger').trigger('click');
     await wrapper.get('.account-logout').trigger('click');
 
-    // signOut() doesn't await its own router.push(...), so the click
-    // handler's promise settles once navigation has merely started — poll
-    // the route itself rather than assume it's finished by then.
+    // Polls: signOut() doesn't await its navigation.
     await vi.waitFor(() => {
       if (router.currentRoute.value.name !== 'sign-in') throw new Error('not navigated yet');
     });

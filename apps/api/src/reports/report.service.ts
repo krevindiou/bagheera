@@ -36,9 +36,7 @@ export class ReportService {
     return map;
   }
 
-  // Categories are fixed reference data, not member-owned — unlike
-  // filterOwnedAccountIds, this only needs to check the ids are real,
-  // not that they belong to the member.
+  // Categories aren't member-owned: only check they exist.
   private async filterExistingCategoryIds(categoryIds: string[]): Promise<string[]> {
     if (categoryIds.length === 0) {
       return [];
@@ -75,8 +73,7 @@ export class ReportService {
       .select()
       .from(report)
       .where(eq(report.memberId, memberId))
-      // Ordered by type name, then title — the enum's declaration order
-      // (sum, average) doesn't match, so sort on its text form instead.
+      // By type name (not enum declaration order), then title.
       .orderBy(sql`${report.type}::text`, asc(report.title));
 
     const accountIds = await this.accountIdsByReport(rows.map((row) => row.id));
@@ -93,7 +90,7 @@ export class ReportService {
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     const created = await this.db.transaction(async (tx) => {
-      // Lock member row and check quota inside transaction
+      // Serializes concurrent creates for the quota check below.
       const [memberRow] = await tx
         .select()
         .from(member)
@@ -156,10 +153,8 @@ export class ReportService {
           thirdParties: dto.thirdParties ?? null,
           reconciledOnly: dto.reconciledOnly ?? null,
           periodGrouping: dto.periodGrouping,
-          // Nulled out via `?? null` (not left as `undefined`, which Drizzle
-          // would treat as "don't touch this column") when editing a report
-          // away from 'distribution' — its now-meaningless dataGrouping/
-          // significantResultsNumber must be cleared, not left stale.
+          // `?? null`, not undefined (= untouched): leaving 'distribution'
+          // must clear these.
           dataGrouping: dto.dataGrouping ?? null,
           significantResultsNumber: dto.significantResultsNumber ?? null,
         })

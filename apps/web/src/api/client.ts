@@ -3,12 +3,9 @@ import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
 import type { paths } from './schema';
 
-// Same-origin in production (Caddy proxies /api* requests to the API
-// service); local dev talks to the API dev server via Vite's dev proxy
-// (see vite.config.ts's apiRoutePrefixes). The API's own routes are
-// unprefixed (main.ts's setGlobalPrefix('api', ...) adds this at the HTTP
-// layer only — see its own comment), so schema.d.ts's generated paths stay
-// unprefixed too; this is the one place that prefix is added back.
+// Same-origin: kamal-proxy routes /api to the API in production, Vite's dev
+// proxy locally. schema.d.ts paths leave out the API's /api prefix (Swagger
+// ignores it), so it's added back here.
 const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export const apiClient = createClient<paths>({
@@ -30,20 +27,16 @@ async function fetchCsrfToken(): Promise<string | Response> {
   return body.csrfToken;
 }
 
-// The CSRF cookie is httpOnly (page scripts can't read it, so the classic
-// double-submit pattern of mirroring a JS-readable cookie into a header
-// doesn't apply here) — instead every mutating request mints a fresh token
-// from the session first and echoes it back via the CSRF header. One extra
-// round trip per mutation, but it stays correct across session-id
-// rotations (sign-in) without the client having to track those itself.
+// The CSRF cookie is httpOnly, so every mutating request mints a fresh
+// token first and sends it in the CSRF header: one extra round trip, but
+// always right across session rotations.
 apiClient.use({
   async onRequest({ request }) {
     if (SAFE_METHODS.has(request.method)) return request;
     const token = await fetchCsrfToken();
-    // A failed mint answers for the request itself, so its caller sees the
-    // real status rather than sending a token-less request the API would
-    // just reject as a CSRF failure (403). openapi-fetch skips the fetch
-    // (and the onResponse middleware below) for a Response returned here.
+    // A failed mint answers for the request, so the caller sees its real
+    // status rather than a CSRF 403. openapi-fetch then skips the fetch and
+    // onResponse below.
     if (token instanceof Response) return token;
     const withCsrf = new Request(request);
     withCsrf.headers.set(CSRF_HEADER, token);
@@ -51,11 +44,8 @@ apiClient.use({
   },
 });
 
-// Across the API, a bare 401 always means "no active session" (bad
-// input is 400, ownership/state denials are 403/422) — including a failed
-// sign-in ceremony, which is why the currentRoute check below is enough:
-// that case fires while already on the sign-in page, so the redirect is a
-// no-op.
+// A 401 means "no active session". A failed sign-in ceremony is a 401 too,
+// but fires on the sign-in page, where the redirect is a no-op.
 apiClient.use({
   onResponse({ response }) {
     if (response.status !== 401) return response;
@@ -63,8 +53,7 @@ apiClient.use({
     try {
       useSessionStore().clear();
     } catch {
-      // No active Pinia instance (e.g. a bare fetch outside app context) —
-      // nothing to clear.
+      // No active Pinia: nothing to clear.
     }
     if (router.currentRoute.value.name !== 'sign-in') {
       void router.push({ name: 'sign-in' });

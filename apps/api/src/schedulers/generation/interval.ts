@@ -1,8 +1,5 @@
-// Pure date arithmetic for scheduler occurrence generation. Deliberately
-// free of any DB dependency so it's unit- and property-testable in
-// isolation. Dates are plain 'YYYY-MM-DD' strings throughout (as stored by
-// Drizzle's `date` column mode) — never a JS `Date`, to sidestep timezone
-// drift entirely.
+// Pure date arithmetic for occurrence generation, on plain 'YYYY-MM-DD'
+// strings (never a JS `Date`, so no timezone drift).
 
 export type FrequencyUnit = 'day' | 'week' | 'month' | 'year';
 
@@ -29,8 +26,7 @@ function daysInMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-// Adds a whole number of days to an ISO date via `Date`'s own UTC
-// arithmetic (safe here — no month/year clamping is involved).
+// UTC `Date` arithmetic is safe for days: no clamping involved.
 function addDays(date: YearMonthDay, days: number): YearMonthDay {
   const asDate = new Date(Date.UTC(date.year, date.month - 1, date.day));
   asDate.setUTCDate(asDate.getUTCDate() + days);
@@ -41,11 +37,8 @@ function addDays(date: YearMonthDay, days: number): YearMonthDay {
   };
 }
 
-// Adds a whole number of months to an ISO date. When the anchor day
-// doesn't exist in the target month (e.g. Jan 31 + 1 month), only that
-// occurrence clamps to the target month's last day — the anchor day itself
-// is unaffected, so a later occurrence that lands on a longer month
-// returns to the original day (Jan 31 → Feb 28 → Mar 31).
+// A missing anchor day clamps to the month's last day for that occurrence
+// only, since each is computed from the anchor (Jan 31 → Feb 28 → Mar 31).
 function addMonthsClamped(date: YearMonthDay, months: number): YearMonthDay {
   const totalMonths = date.month - 1 + months;
   const year = date.year + Math.floor(totalMonths / 12);
@@ -90,20 +83,11 @@ export interface DueOccurrencesParams {
   limit?: number;
 }
 
-// Hard ceiling on occurrences returned by one dueOccurrences() call. Without
-// it, a scheduler with an old enough value date and a fine-grained enough
-// frequency (e.g. daily since 1990) turns a single generation run — a
-// save's background job, or a sign-in's catch-up — into an unbounded run
-// of inserts. A backlog past the cap isn't lost: `after` is the scheduler's
-// own generation cursor, so the next run (next sign-in, or the next edit)
-// picks back up right where this one stopped, working through an
-// oversized backlog a batch at a time instead of all at once.
+// Ceiling per call: daily since 1990 would otherwise be an unbounded run of
+// inserts. The rest isn't lost: the next run resumes from the cursor.
 export const MAX_OCCURRENCES_PER_RUN = 1000;
 
-// Every occurrence strictly after `after` (or from occurrence 0 if `after`
-// is null) up to and including `horizon`, in chronological order — capped
-// at `limit` entries, even when more are due. ISO date strings compare
-// correctly with plain `<`/`>` since they're zero-padded.
+// Occurrences in (`after`, `horizon`], chronological, at most `limit`.
 export function dueOccurrences(params: DueOccurrencesParams): string[] {
   const { valueDate, frequencyUnit, frequencyValue, after, horizon } = params;
   const limit = Math.min(params.limit ?? MAX_OCCURRENCES_PER_RUN, MAX_OCCURRENCES_PER_RUN);

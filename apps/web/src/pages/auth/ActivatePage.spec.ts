@@ -39,10 +39,7 @@ describe('ActivatePage', () => {
   });
 
   it('shows a Continue button instead of auto-running the ceremony — it needs a real user gesture', async () => {
-    // navigator.credentials.create() requires a genuine user gesture in
-    // real browsers — an onMounted auto-attempt is silently blocked, so
-    // this page must wait for a click instead (see ActivatePage.vue's own
-    // comment).
+    // The ceremony needs a user gesture (see ActivatePage.vue).
     await router.push({ name: 'activate', query: { key: 'abc123' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
     await wrapper.vm.$nextTick();

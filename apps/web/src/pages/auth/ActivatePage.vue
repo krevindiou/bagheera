@@ -14,12 +14,8 @@ const session = useSessionStore();
 const { push: toast } = useToast();
 const { t } = useI18n();
 
-// The ceremony can't run on mount: navigator.credentials.create() requires
-// a real user gesture (spec'd "transient activation") — a plain lifecycle
-// hook doesn't count, so an auto-triggered attempt is silently blocked by
-// the browser (confirmed against a real Chromium instance, not just unit
-// tests, which don't enforce this). Keyed, so the "no key" case can fail
-// immediately without ever showing the button.
+// Not run on mount: navigator.credentials.create() needs a user gesture,
+// and browsers silently block it otherwise (unit tests don't enforce this).
 const key = ref<string | null>(null);
 const submitting = ref(false);
 
@@ -42,9 +38,8 @@ async function createAccount() {
   if (!key.value) return;
   submitting.value = true;
   try {
-    // Cancelled/unsupported counts as a failure too: this link is
-    // single-use (see WebauthnSignupService), so there's nothing to retry
-    // from here.
+    // Cancelled counts as a failure too; the emailed link stays valid for a
+    // retry until its TTL.
     const result = await runRegistration('/webauthn/signup', {
       optionsBody: { key: key.value },
     });

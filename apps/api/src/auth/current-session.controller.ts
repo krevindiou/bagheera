@@ -13,14 +13,9 @@ import { CurrentMemberDto } from './dto/session-response.dto';
 export class CurrentSessionController {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
-  // Lets the web app restore its client-side session state (Pinia) on a
-  // fresh page load — the httpOnly session cookie survives a refresh, but
-  // the in-memory member info doesn't, so the client needs a round trip to
-  // know it's still signed in before routing decisions are made. Public
-  // because an anonymous caller must get a clean 401 here, not have
-  // SessionAuthGuard reject the request before this handler's own check
-  // runs (same outcome, but this is the one that also verifies the member
-  // row still exists).
+  // Lets the SPA restore its session state after a reload: the httpOnly
+  // cookie survives, the in-memory member info doesn't. Also 401s when the
+  // session's member row no longer exists.
   @Get('me')
   @Public()
   async me(@Req() req: Request): Promise<CurrentMemberDto> {

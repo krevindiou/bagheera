@@ -9,12 +9,8 @@ export interface EffectiveAccount {
   currency: string;
 }
 
-// Data = the report's linked accounts, or all of the member's eligible
-// accounts when none are linked — in both cases, deleted accounts and
-// accounts of deleted banks are excluded, including accounts that were
-// explicitly selected before being deleted. Shared by every report
-// aggregation (report-series.service.ts, report-distribution.service.ts) so the
-// "which accounts feed this report" rule lives in exactly one place.
+// The accounts feeding a report: its linked ones, or every reachable one
+// when none are linked. Deleted ones are excluded either way.
 export async function effectiveAccounts(
   db: NodePgDatabase,
   reportId: string,
@@ -28,11 +24,6 @@ export async function effectiveAccounts(
     .from(reportAccount)
     .where(eq(reportAccount.reportId, reportId));
 
-  // Cast at this one call site rather than threading the MemberId brand
-  // through effectiveAccounts' own signature — see security/ids.ts's
-  // comment on why branding stays scoped to the OwnershipService boundary
-  // (reachableAccountsOf counts as part of that boundary, this function
-  // doesn't).
   const reachable = reachableAccountsOf(db, memberId as MemberId);
 
   if (rawLinks.length === 0) {

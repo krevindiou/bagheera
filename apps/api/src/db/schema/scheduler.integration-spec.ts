@@ -10,8 +10,7 @@ import { scheduler } from './scheduler';
 
 type Db = NodePgDatabase<typeof schema>;
 
-// Arbitrary — these specs only care that debit/credit holds *some* valid
-// MinorUnits value, never about the actual amount.
+// Arbitrary amounts.
 const AMOUNT = toMinorUnits(10);
 const OTHER_AMOUNT = toMinorUnits(5);
 
@@ -108,10 +107,7 @@ describe('scheduler schema', () => {
       expect(row.frequencyValue).toBe(32767);
     });
 
-    // The real DB-level ceiling behind schedulers/generation/interval.ts's
-    // application-level cap (see 726f0aed) — that fix stops a too-large
-    // frequencyValue from ever reaching this column; this proves the
-    // column itself would refuse one anyway if something bypassed the cap.
+    // Backstop for the DTO's frequencyValue cap, should anything bypass it.
     it('rejects a value beyond the smallint range', async () => {
       const { account } = await insertMemberBankAccount(getDb(app));
 

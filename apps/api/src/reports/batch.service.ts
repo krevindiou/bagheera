@@ -7,13 +7,7 @@ import { report, reportAccount, reportCategory } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
 
-/**
- * Batch delete. Ownership is resolved per id via
- * OwnershipService.filterOwnedReportIds, directly against the report's own
- * `memberId` (reports have no bank/account chain): an id belonging to
- * another member, or unknown, is dropped rather than rejected — the caller
- * never learns which of its ids were foreign vs. simply didn't exist.
- */
+/** Batch delete; foreign or unknown ids are silently dropped. */
 @Injectable()
 export class ReportBatchService {
   constructor(

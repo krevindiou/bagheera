@@ -7,13 +7,9 @@ import { RATE_LIMIT_OPTIONS, RateLimitOptions } from './rate-limit.constants';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 import { fakeExecutionContext, fakeRequest } from '../test-support/fake-http-context';
 
-// Every `new RateLimiterRedis()` the guard creates internally shares this
-// one mocked consume() — the guard caches at most one limiter per
-// points/duration pair on itself, so tests only ever need to control this
-// single function. (Prefixed `mock` so vi.mock's hoisting
-// exception lets vi.mock's hoisted factory reference it.)
-// Typed explicitly so `.mock.calls` (read in a couple of tests below) comes
-// out as `[string][]` rather than `any[][]`.
+// Shared by every RateLimiterRedis the guard creates. (`mock` prefix:
+// vi.mock's hoisted factory may reference it; typed so `.mock.calls` isn't
+// `any[][]`.)
 const mockConsume = vi.fn<(key: string) => Promise<void>>();
 vi.mock('rate-limiter-flexible', () => ({
   RateLimiterRedis: vi.fn().mockImplementation(function RateLimiterRedis() {
@@ -195,9 +191,6 @@ describe('RateLimitGuard', () => {
     expect(firstIdKey).toBe(secondIdKey);
   });
 
-  // The identifier is read before ValidationPipe runs, so it can be
-  // anything up to the body size limit — and emails/one-time tokens
-  // shouldn't sit verbatim in Valkey key names either.
   it('keys the identifier dimension on a fixed-size hash, never the raw value', async () => {
     const valkey = fakeValkeyClient();
     const options: RateLimitOptions = {

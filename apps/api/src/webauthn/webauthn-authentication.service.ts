@@ -31,17 +31,11 @@ function invalidPasskey(): BusinessError {
 }
 
 /**
- * The sole sign-in mechanism — there is no password path — and a
- * usernameless one: options() takes no email and names no credentials
- * (`allowCredentials: []`), so the member's authenticator offers whichever
- * of its discoverable passkeys belong to this site, and verify() learns who
- * is signing in from the credential that answered. Asking for an email
- * first used to tell anyone whether an address was registered (through
- * the credential ids options() returned for it) and let anyone lock a
- * member out through a per-email rate limit. Every passkey is registered as
- * discoverable for this reason (see build-registration-options.ts). Ends in
- * a session creation step (rotate then set memberId), same as every other
- * privilege-boundary crossing in this app.
+ * The sole, usernameless sign-in: options() names no credentials, so the
+ * authenticator offers its discoverable passkeys for this site, and
+ * verify() learns the member from the one that answered. Asking for an
+ * email would reveal which addresses are registered and allow per-email
+ * lockouts. Ends by rotating the session, then setting memberId.
  */
 @Injectable()
 export class WebauthnAuthenticationService {

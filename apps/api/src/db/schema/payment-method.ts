@@ -1,9 +1,8 @@
 import { pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 import { entryTypeEnum } from './enums';
 
-// Fixed reference list — ids are stable identifiers relied on by business
-// logic, not auto-generated. UUIDs are hardcoded literals (see seed-data.ts),
-// not DB-generated defaults.
+// Fixed reference list: ids are hardcoded literals business logic relies
+// on (see packages/reference-data), not DB-generated.
 export const paymentMethod = pgTable('payment_method', {
   id: uuid('id').primaryKey(),
   name: varchar('name', { length: 16 }).notNull(),

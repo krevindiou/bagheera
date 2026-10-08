@@ -1,20 +1,13 @@
-# Production edge: serves the built SPA, same-origin with the API (which
-# kamal-proxy now routes to directly — see config/deploy.api.yml — not
-# through this container at all; apps/api/src/main.ts's `trust proxy` count
-# was updated to match that one-hop change). $CADDY_SITE_ADDRESS sets the
-# whole site address: default "localhost" gets a locally-trusted cert; a
-# real hostname (e.g. app.example.com) gets one via public ACME; "http://:80"
-# serves plain HTTP with no TLS of its own, for when something in front of
-# this container already terminates it (Kamal's own proxy does).
+# Serves the built SPA. The API is same-origin but routed by kamal-proxy
+# straight to its own app (config/deploy.api.yml), never through here.
+# $CADDY_SITE_ADDRESS: "localhost" (default) gets a locally-trusted cert, a
+# real hostname a public ACME one, "http://:80" plain HTTP behind a
+# TLS-terminating proxy (Kamal's).
 
 {$CADDY_SITE_ADDRESS:localhost} {
 	encode gzip
 
-	# Browser security headers for the SPA. The API (a separate Kamal app
-	# now, see config/deploy.api.yml) no longer passes through this
-	# container at all, so it's covered only by its own helmet() headers —
-	# already equivalent for the headers set below (CSP content differs by
-	# origin, which is expected: each serves its own).
+	# The SPA's security headers; the API sets its own with helmet().
 	header {
 		# Pins HTTPS for two years: set only where the site is always served
 		# over HTTPS (config/deploy.yml). Anywhere else — a local run on
@@ -30,11 +23,9 @@
 		-Server
 	}
 
-	# Answers kamal-proxy's own per-deploy readiness check of *this*
-	# container (config/deploy.yml's proxy.healthcheck) — a direct
-	# container-to-container probe that bypasses the public /health,/api*
-	# path-prefix routing rule that sends real traffic on those paths to
-	# the separate api app (config/deploy.api.yml) instead of here.
+	# kamal-proxy's readiness check of this container (config/deploy.yml).
+	# It probes the container directly; public /health traffic goes to the
+	# api app.
 	handle /health {
 		respond "ok" 200
 	}

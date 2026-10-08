@@ -1,10 +1,8 @@
 import { onMounted, onUnmounted } from 'vue';
 
-// Every drawer/modal overlay in the app mounts only while it's open (a
-// parent `v-if`) — so listening for the whole time this component instance
-// is alive is exactly "listen while the overlay is open". ConfirmModal is
-// the one exception (always mounted, toggling its own `state.visible`
-// instead) — it just guards the callback itself on that flag.
+// Listens while the calling component is mounted: overlays mount only
+// while open, except always-mounted ones (ConfirmModal, popovers) that
+// guard the callback on their own flag.
 export function useEscapeKey(onEscape: () => void): void {
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onEscape();

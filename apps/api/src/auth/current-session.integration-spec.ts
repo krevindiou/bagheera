@@ -43,10 +43,8 @@ describe('GET /auth/me', () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);
 
-    // sign-in leaves a webauthn_sign_in_success security_event row referencing this
-    // member (see db/schema/security-event.integration-spec.ts's own FK
-    // test) — clear it first, or the delete below hits that real
-    // constraint instead of exercising what this test is actually about.
+    // Sign-in logged a security_event row referencing this member; clear it
+    // or the member delete hits that FK.
     const db = getDb(app);
     await db.delete(securityEvent).where(eq(securityEvent.memberId, memberId));
     await db.delete(member).where(eq(member.id, memberId));

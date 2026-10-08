@@ -8,8 +8,7 @@ describe('isValueDate', () => {
     },
   );
 
-  // The dates that made a single chart walk a million periods: see
-  // reports/chart/period.ts.
+  // Dates that would make a chart walk a million periods.
   it.each(['0001-01-01', '1899-12-31', '2101-01-01', '9999-12-31'])(
     'rejects %s, outside the accepted range',
     (date) => {
@@ -24,8 +23,8 @@ describe('isValueDate', () => {
     },
   );
 
-  // Shapes the old @IsDateString() accepted (any ISO 8601 form) but the
-  // `date` columns and web date inputs never produce.
+  // Other ISO 8601 shapes, which `date` columns and web date inputs never
+  // produce.
   it.each(['2026-01-01T00:00:00Z', '2026-W01-1', '2026-001', '+2026-01-01', '2026-1-1', ''])(
     'rejects %s, which is not a plain YYYY-MM-DD date',
     (date) => {

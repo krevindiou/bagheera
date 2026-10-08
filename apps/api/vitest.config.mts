@@ -12,29 +12,18 @@ function allSrcFiles(): string[] {
 }
 
 /**
- * Every source file matching `suffix` (e.g. '.controller.ts') or, with
- * `suffix` empty, every file under `dir`, minus `keep` (paths relative to
- * `src`, forward-slashed) — computed from the filesystem rather than
- * hand-enumerated, so a new controller/service/email file is excluded from
- * coverage by default the same way Jest's old `collectCoverageFrom`
- * excluded the whole category, without this list going stale. A `**`-globbed
- * exclude/include entry can't express "this category, except these few
- * files" on its own: Vitest's coverage include/exclude are two independent
- * sets (unlike Jest's single ordered array, where a later bare pattern
- * could re-include a file an earlier `!`-prefixed one had dropped) — a
- * `!`-prefixed entry placed inside `exclude` silently zeroes the whole
- * report, and duplicating a path in `include` doesn't override `exclude`.
+ * Every source file ending in `suffix`, minus `keep` (paths relative to
+ * `src`). Vitest's include/exclude can't express "this category except
+ * these files": a `!` entry in `exclude` zeroes the whole report, and
+ * `include` doesn't override `exclude`.
  */
 function allExcept(suffix: string, keep: string[]): string[] {
   const keepSet = new Set(keep);
   return allSrcFiles().filter((rel) => rel.endsWith(suffix) && !keepSet.has(rel));
 }
 
-// Unit-test runner (vitest.integration.config.mts covers
-// *.integration-spec.ts separately — same Testcontainers-backed suite, one
-// shared instance per whole run, so it can't share this config's plain
-// per-file isolation). emitDecoratorMetadata (tsconfig's "decoratorMetadata"
-// below) is what Nest's DI reads to resolve constructor param types.
+// Unit tests (integration specs: vitest.integration.config.mts).
+// decoratorMetadata is what Nest's DI reads for constructor param types.
 export default defineConfig({
   plugins: [
     swc.vite({
@@ -54,16 +43,12 @@ export default defineConfig({
       reportsDirectory: '../coverage',
       reporter: ['text', 'lcov', 'json-summary'],
       all: true,
-      // Mirrors the old jest "collectCoverageFrom" list: every controller,
-      // service and email/** file is excluded except the ones named below
-      // (computed at config-load time by `allExcept`, see its comment).
+      // Controllers, services and email/** are left to integration
+      // coverage, except the files kept below.
       include: ['**/*.ts', '**/*.js'],
       exclude: [
         '**/*.integration-spec.ts',
-        // Guards against a repeat of a real bug this exclude list once
-        // hid: a stray src/coverage/ (leftover lcov-report HTML assets
-        // from an earlier debugging session) got swept in by `all: true`
-        // as if it were app code, tanking branches from ~98% to ~48%.
+        // A stray src/coverage/ report would otherwise count as app code.
         '**/coverage/**',
         '**/test-support/**',
         '**/*.module.ts',
@@ -85,14 +70,6 @@ export default defineConfig({
         'common/currency.ts',
         'common/parse-uuid-v7.pipe.ts',
       ],
-      // Verified directly against the pre-migration Jest baseline
-      // (checked out the last pre-Vitest commit, ran its real `jest
-      // --coverage` over the identical file scope): 96.47% branches
-      // there vs 98.12% here — close enough to attribute the gap to
-      // ordinary V8-vs-Istanbul branch-counting differences, not a real
-      // coverage loss. (An earlier ~48% reading was the stray
-      // src/coverage/ directory above, not this provider difference —
-      // worth remembering if the number ever drops sharply again.)
       thresholds: { branches: 97 },
     },
   },

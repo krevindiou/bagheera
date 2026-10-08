@@ -10,10 +10,7 @@ import AppIcon from './AppIcon.vue';
 import LocaleOptions from './LocaleOptions.vue';
 import MenuPopover from './MenuPopover.vue';
 
-// The sidebar footer's account button: avatar + email double as the menu
-// trigger, matching the avatar-as-menu-button convention most SaaS shells
-// use (Linear/Notion/Slack) rather than the account chip and language
-// picker sitting as separate always-visible controls.
+// The sidebar footer's account button: avatar and email open the menu.
 const session = useSessionStore();
 const router = useRouter();
 const { t } = useI18n();

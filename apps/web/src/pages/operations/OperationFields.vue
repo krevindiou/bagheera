@@ -18,13 +18,9 @@ import {
   type PaymentMethod,
 } from '../../domain/referenceData';
 
-// The fields an operation and a scheduler have in common — debit/credit,
-// third party, amount, category, payment method, transfer account, value
-// date, notes, reconciled — bound by name to the enclosing form's
-// vee-validate context (the parent's `useForm`, reached by injection), so
-// each form keeps only its own submit logic and extra fields. `idPrefix`
-// builds every input id (`<prefix>-amount`, …). The `after-value-date`
-// slot sits right under the value date, and `end` after the last field.
+// The fields operations and schedulers share, bound by name to the parent's
+// `useForm` (by injection). `idPrefix` builds the input ids; slots
+// `after-value-date` and `end` add form-specific fields.
 const props = defineProps<{
   idPrefix: string;
   accountId: string;
@@ -59,9 +55,6 @@ const { value: valueDate } = useField<string>('valueDate');
 const { value: notes } = useField<string | undefined>('notes');
 const { value: reconciled } = useField<boolean | undefined>('reconciled');
 
-// Category/payment-method choices only ever show options matching the
-// selected debit/credit type; a still-valid selection survives a type
-// switch.
 const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
   () => props.categories,
@@ -80,9 +73,7 @@ const showTransferAccount = computed(
     TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
 );
 
-// An amount error fires for two different reasons — zero/negative, or over
-// AMOUNT_CEILING — that deserve different copy; decided from the actual
-// value rather than parsed out of zod's own issue.
+// Different copy for an amount over AMOUNT_CEILING vs zero/negative.
 const amountErrorKey = computed(() =>
   Number(amount.value) > AMOUNT_CEILING
     ? 'operations.validation.amountTooHigh'
@@ -94,9 +85,8 @@ const { suggestions } = useThirdPartyAutocomplete(thirdParty, type, (matchedCate
   categoryId.value = matchedCategoryId;
 });
 
-// Native "change" (not "input") fires when a datalist suggestion is picked,
-// as opposed to every keystroke while typing — selecting a suggestion
-// moves focus to the next field.
+// "change" fires on picking a datalist suggestion (unlike "input"): move
+// on to the amount.
 function onThirdPartyChange() {
   const isSuggestion = suggestions.value.some((s) => s.thirdParty === thirdParty.value);
   if (isSuggestion) {

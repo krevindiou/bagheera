@@ -32,12 +32,9 @@ function registrationFailed(): BusinessError {
 }
 
 /**
- * Registers an additional passkey for an already-authenticated member — a
- * second (or third, ...) credential alongside whatever they already have.
- * The session alone isn't enough: a hijacked-but-valid one could otherwise
- * plant a persistent credential of its own, so starting the ceremony
- * consumes a fresh step-up proof (see session/consume-step-up.ts), and
- * every successful registration still emails the member as an alert.
+ * Adds a passkey for a signed-in member. Starting the ceremony consumes a
+ * step-up proof, or a hijacked session could plant its own credential; each
+ * success emails the member an alert.
  */
 @Injectable()
 export class WebauthnRegistrationService {
@@ -51,10 +48,9 @@ export class WebauthnRegistrationService {
 
   async generateOptions(req: Request): Promise<PublicKeyCredentialCreationOptionsJSON> {
     const memberId = requireMemberId(req);
-    // Here rather than in verify(): failing before the ceremony starts
-    // means the member's authenticator never mints a credential the server
-    // then refuses. verify() stays gated all the same — it only accepts
-    // `registrationChallenge`, which nothing but this method ever sets.
+    // Here, not in verify(), so the authenticator never mints a credential
+    // the server then refuses. verify() is still gated: only this method
+    // sets `registrationChallenge`.
     consumeStepUp(req);
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
@@ -107,8 +103,7 @@ export class WebauthnRegistrationService {
         .insert(webauthnCredential)
         .values(credentialInsertValues(memberId, verification.registrationInfo, dto.deviceName));
     } catch {
-      // Most likely the credentialId unique constraint — the same
-      // authenticator credential registered twice (e.g. a retried request).
+      // Most likely the credentialId unique constraint (a retried request).
       throw registrationFailed();
     }
 

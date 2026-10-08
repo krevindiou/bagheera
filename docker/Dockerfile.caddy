@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-# Builds the production edge image: the web app's static assets served by
-# Caddy, which also reverse-proxies API routes to the api container.
+# Production web image: the built SPA served by Caddy (the API is its own
+# Kamal app).
 #   docker build -f docker/Dockerfile.caddy -t bagheera-caddy .
 # Build context is the repo root (pnpm workspace).
 

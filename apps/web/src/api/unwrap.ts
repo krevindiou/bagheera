@@ -1,11 +1,8 @@
 import { errorMessage } from './errorMessage';
 
-// openapi-fetch never throws on a non-2xx response — it resolves with
-// `error` set instead. Every `queryFn` used to do `return data ?? <fallback>`,
-// which reads a failed request as "no data" (an empty list, a null balance)
-// rather than surfacing it, so TanStack Query's `isError`/retry never fire.
-// Wrap the raw `{ data, error, response }` result in this so a failure
-// throws instead, and callers render an error state off `isError`.
+// openapi-fetch resolves a non-2xx with `error` set rather than throwing;
+// this throws, so a failed query reaches TanStack's `isError` and retry
+// instead of reading as "no data".
 export function unwrap<T>({
   data,
   error,

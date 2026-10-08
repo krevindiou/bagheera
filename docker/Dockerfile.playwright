@@ -1,24 +1,16 @@
 # syntax=docker/dockerfile:1
-# Runs apps/web's e2e suite against the docker-compose dev stack, from a
-# container instead of the host — needed because Playwright's Chromium
-# build requires glibc (web's own dev image is Alpine/musl, see
-# Dockerfile.web) and to avoid needing Node/pnpm/browsers on the host at
-# all. Build context is the repo root, e.g.:
+# Runs apps/web's e2e suite in a container: Playwright's Chromium needs
+# glibc (web's dev image is musl), and the host needs nothing installed.
+# Build context is the repo root, e.g.:
 #   docker build -f docker/Dockerfile.playwright -t bagheera-playwright .
 #
-# PLAYWRIGHT_VERSION must match apps/web/package.json's @playwright/test
-# version exactly — the browser binaries baked into this base image are
-# tied to that release. The Makefile passes it in from package.json; no
-# default here, so a bare `docker build`/`docker compose build` bypassing
-# it fails fast (missing tag) instead of silently building a mismatched
-# browser image.
+# PLAYWRIGHT_VERSION must equal apps/web's @playwright/test version (the
+# image's browsers are tied to it). The Makefile passes it; no default, so
+# building without it fails fast.
 ARG PLAYWRIGHT_VERSION
 FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
 
-# Otherwise corepack's first pnpm invocation blocks on an interactive
-# "Do you want to continue? [Y/n]" download confirmation — fine with a
-# real TTY, but `docker compose run` doesn't guarantee one and CI never
-# has one.
+# Otherwise corepack's first pnpm run prompts to download, with no TTY.
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 WORKDIR /app
@@ -31,22 +23,13 @@ COPY apps/web/package.json apps/web/package.json
 COPY packages ./packages
 RUN pnpm install --frozen-lockfile --filter web...
 
-# Run as a non-root user instead of root — otherwise anything this
-# container writes to the bind-mounted apps/web (test-results/,
-# playwright-report/) comes out root-owned on the host, same class of
-# problem as the node_modules mixup earlier this project. Uses the base
-# image's "ubuntu" user (uid 1000) rather than its "pwuser" (uid 1001) —
-# uid 1000 is also what Dockerfile.web/api's own "node" user resolves to,
-# and a bind mount enforces the numeric uid, not the in-container name, so
-# a mismatched uid here would still get EACCES against the host-owned
-# apps/web tree despite being "non-root".
+# Non-root, or test-results/ and playwright-report/ come out root-owned on
+# the host. "ubuntu" (uid 1000, like the other images' "node"), not
+# "pwuser" (1001): bind mounts match numeric uids.
 RUN chown -R ubuntu:ubuntu /app
 USER ubuntu
 
-# Pre-warms corepack's pnpm download into ubuntu's own cache (the RUN
-# above happened as root — a different $HOME, so a different cache dir —
-# so without this, the first `pnpm e2e` invocation at runtime would still
-# pay for a fresh download under the ubuntu user).
+# Pre-warms pnpm in ubuntu's own corepack cache (the install ran as root).
 RUN pnpm --version
 
 WORKDIR /app/apps/web

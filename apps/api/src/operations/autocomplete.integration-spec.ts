@@ -75,7 +75,6 @@ describe('GET /operations/autocomplete', () => {
     expect(body[0].categoryId).toBe(SALARY_CATEGORY_SEED_ID);
   });
 
-  // M5: every match used to come back, however many the member had.
   it('returns at most 20 suggestions, exact then prefix matches first', async () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const accountId = await createAccount(mutate, await createBank(mutate));

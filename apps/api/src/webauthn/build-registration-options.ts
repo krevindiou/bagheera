@@ -3,13 +3,7 @@ import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/ser
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
-/**
- * Shared option-building for both WebAuthn registration ceremonies — the
- * authenticated "add a passkey" flow (webauthn-registration.service.ts) and
- * the unauthenticated sign-up ceremony (webauthn-signup.service.ts). Only
- * `userName`/`excludeCredentials` differ between the two; everything else
- * (rpID/rpName, authenticatorSelection) is identical.
- */
+/** Options for both registration ceremonies: adding a passkey, and sign-up. */
 export function buildRegistrationOptions(
   crypto: WebauthnCryptoService,
   config: ConfigService,
@@ -24,14 +18,11 @@ export function buildRegistrationOptions(
     // instead of silently creating a duplicate for the same device.
     excludeCredentials: params.excludeCredentials,
     authenticatorSelection: {
-      // Sign-in is usernameless (see webauthn-authentication.service.ts):
-      // the authenticator has to find the passkey on its own, with no
-      // credential id to look it up by — a non-discoverable one could never
-      // be used to sign in, so it's refused at creation instead.
+      // Sign-in is usernameless, so a non-discoverable passkey could never
+      // be used.
       residentKey: 'required',
-      // verify*Response() already requires user verification (its
-      // default); asking for anything weaker here only lets an
-      // authenticator skip it and then fail verification.
+      // verify*Response() requires it by default; anything weaker would
+      // only fail verification later.
       userVerification: 'required',
     },
   });

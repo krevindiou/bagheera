@@ -13,11 +13,8 @@ const { t } = useI18n();
 
 const isAuthenticated = computed(() => session.isAuthenticated);
 
-// The sidebar is a flat 4-item nav (Dashboard/Accounts/Reports/Settings —
-// see docs/design_handoff_fintech_noir_theme/README.md). Operations and
-// Schedulers are reached *through* Accounts (click a row), so they count
-// as "Accounts" for the active-item dot; the 3 settings routes all count
-// as "Settings".
+// Operations and schedulers are reached through Accounts, so they light up
+// "Accounts"; every settings route lights up "Settings".
 const navItems = computed(() => [
   { label: t('nav.home'), to: { name: 'home' }, active: route.name === 'home' },
   {
@@ -70,9 +67,8 @@ const navItems = computed(() => [
 
   <router-view v-else />
 
-  <!-- App-wide overlays, mounted once for every route, signed in or out:
-       both render module-level state (useConfirm/useToast) that any page
-       or form can drive, so no page carries its own copy. -->
+  <!-- Mounted once, signed in or out: they render useConfirm/useToast's
+       shared state. -->
   <ConfirmModal />
   <ToastContainer />
 </template>
@@ -84,8 +80,7 @@ const navItems = computed(() => [
   position: relative;
   background: var(--ink);
 }
-/* Decorative violet halo bleeding in from the top-left corner, behind the
-   sidebar/main content (see Bagheera App.dc.html's app-shell). */
+/* Decorative violet halo from the top-left corner. */
 .app-glow {
   position: absolute;
   width: 520px;
@@ -105,25 +100,14 @@ const navItems = computed(() => [
   display: flex;
   flex-direction: column;
   padding: 24px 16px;
-  /* Positioned elements always paint above non-positioned ones regardless
-     of DOM order (CSS stacking order, not just source order) — without
-     this, .app-glow (position:absolute) painted over this opaque panel
-     instead of being hidden behind it, even though .sidebar comes later
-     in the markup. Matches the mock's own .sidebar, which sets this too.
-     `sticky` keeps that stacking (it's positioned too) and additionally
-     pins the sidebar — logout included — to the viewport instead of
-     scrolling away with a tall .main-inner. */
+  /* Positioned so .app-glow (absolute) paints behind it; sticky also pins
+     it, logout included, to the viewport. */
   position: sticky;
   top: 0;
   height: 100vh;
   overflow-y: auto;
-  /* .main is also `position: relative` (its own stacking context) and
-     comes later in the DOM, so without an explicit z-index here .main
-     wins ties and paints over .sidebar. Invisible on desktop (the two
-     never overlap spatially), but on mobile .account-panel opens
-     downward and overflows .sidebar's own box into .main's area — without
-     this, .main's (transparent, but still hit-testable) background sat on
-     top there and silently ate clicks on Logout/language options. */
+  /* Above .main (positioned, later in the DOM): on mobile .account-panel
+     overflows into .main, which would otherwise eat its clicks. */
   z-index: 2;
 }
 .side-brand {
@@ -189,12 +173,8 @@ const navItems = computed(() => [
   .app-shell {
     flex-direction: column;
   }
-  /* Two rows: brand + account menu pinned on row 1 (always fully visible —
-     cramming all of brand/nav/foot into one row left the account menu
-     pushed off-screen on an actual phone width, needing a sideways scroll
-     just to reach it), nav as its own full-width scrollable strip on row
-     2 (4 text labels don't fit one row next to the other two, so this is
-     the one region that scrolls). */
+  /* Row 1: brand and account menu, always visible. Row 2: the nav, the one
+     strip that scrolls sideways. */
   .sidebar {
     width: 100%;
     display: grid;

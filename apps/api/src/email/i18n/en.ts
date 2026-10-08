@@ -1,14 +1,7 @@
 import { safeHtml } from '../../common/escape-html';
 import { emailButton, renderEmailLayout } from '../templates/layout';
 
-// Translation catalog for the API-sent emails. Only English (`en`) is
-// enabled currently.
-//
-// Every body that interpolates a value is built with the safeHtml`...` tag
-// (common/escape-html.ts) — it escapes every interpolation unconditionally,
-// so there's no per-value decision to get wrong. `renderEmailLayout`/
-// `emailButton` (../templates/layout.ts) wrap that content in the app's
-// themed HTML shell.
+// English email catalog. Bodies interpolating a value use safeHtml`...`.
 export default {
   registration: {
     subject: 'Bagheera registration',

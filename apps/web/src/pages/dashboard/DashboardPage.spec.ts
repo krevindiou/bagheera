@@ -111,9 +111,7 @@ describe('DashboardPage', () => {
     expect(balanceCard?.contains(reconciled[0].element)).toBe(true);
     expect(reconciled[0].text()).toBe('$12,000.00');
     expect(reconciled[0].classes()).not.toContain('text-danger');
-    // Unlike the total balance above it, the reconciled footnote stays
-    // muted even when negative — it's a quiet detail, not a second figure
-    // competing for the same red/white treatment.
+    // Unlike the balance, the reconciled footnote stays muted when negative.
     expect(reconciled[1].text()).toBe('-€400.00');
     expect(reconciled[1].classes()).not.toContain('text-danger');
   });
@@ -285,9 +283,7 @@ describe('DashboardPage', () => {
       }),
     );
     const tiles = wrapper.findAll('[data-testid="overview-account"]');
-    // Same colors as the synthesis chart series above — both derive from
-    // chartColors.ts's colorForCurrency, a pure function of the currency
-    // code, not from series order.
+    // Same per-currency colors as the synthesis chart.
     const synthesisChart = wrapper.findComponent(SynthesisChart);
     const colorsByCurrency = new Map(synthesisChart.props('series').map((s) => [s.label, s.color]));
     expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe(

@@ -2,15 +2,9 @@ import { isValidTimeZone } from '../common/local-date';
 import { Locale, SUPPORTED_LOCALES } from '../common/locale';
 import { CryptoService } from '../security/crypto.service';
 
-// Sign-up links expire after 1 hour. Unlike the old activation/reset tokens,
-// there's no member row (and so no version counter) to bump on reissue —
-// nothing exists yet when this token is minted. A resubmitted sign-up for
-// the same email before the first link is used simply mints a second,
-// independently-valid token; the short TTL is the only bound on that
-// exposure (accepted trade-off — see docs/spec/01-user-registration.md).
-// Replay/reuse protection instead comes from `member.email`'s unique index:
-// a second completion attempt for the same email hits a unique-violation
-// and collapses into the same generic error as every other failure mode.
+// No member row exists yet, so no version counter: a resubmitted sign-up
+// mints a second valid token, bounded only by this TTL. Replay is stopped
+// by `member.email`'s unique index instead.
 const SIGNUP_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 export interface SignupTokenPayload {
@@ -42,12 +36,7 @@ export function buildSignupToken(
   return crypto.encrypt(JSON.stringify(payload));
 }
 
-/**
- * Decrypts and validates the shape/expiry of a sign-up key. Returns `null`
- * for anything wrong with the token itself — tampered/malformed ciphertext,
- * bad JSON, wrong shape, expired — never throws, so callers can collapse
- * every such case into the same generic error path.
- */
+/** Decrypts and checks shape/expiry; `null` for any bad token, never throws. */
 export function parseSignupToken(crypto: CryptoService, key: string): SignupTokenPayload | null {
   let decrypted: string;
   try {

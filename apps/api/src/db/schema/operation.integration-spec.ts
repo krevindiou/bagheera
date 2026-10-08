@@ -10,8 +10,7 @@ import { operation } from './operation';
 
 type Db = NodePgDatabase<typeof schema>;
 
-// Arbitrary — these specs only care that debit/credit holds *some* valid
-// MinorUnits value, never about the actual amount.
+// Arbitrary amounts.
 const AMOUNT = toMinorUnits(10);
 const OTHER_AMOUNT = toMinorUnits(5);
 

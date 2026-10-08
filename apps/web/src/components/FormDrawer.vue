@@ -4,18 +4,13 @@ import { useEscapeKey } from '../composables/useEscapeKey';
 import { useFocusTrap } from '../composables/useFocusTrap';
 import AppIcon from './AppIcon.vue';
 
-// Shared shell for every slide-over form (operation, scheduler, search,
-// report, account, bank choice/edit): the backdrop, a titled header with
-// a close button, the <form> itself, and one footer layout — the
-// caller's primary action(s) sharing a row (the #actions slot), Cancel
-// full-width beneath. Backdrop click, the close button, Cancel and Escape all
-// emit `close`; the caller decides what closing means.
+// Shell for every slide-over form: backdrop, titled header with a close
+// button, the <form>, the #actions row and a full-width Cancel. Backdrop,
+// close button, Cancel and Escape all emit `close`.
 //
-// Attributes land on the <form>, not the backdrop (the vee-validate
-// forms' `novalidate`, the search panel's `data-testid`). The native
-// submit is default-prevented before `submit` is emitted, so a
-// vee-validate `handleSubmit(...)` wrapper or a plain handler both work
-// as the listener.
+// Attributes land on the <form>. The native submit is prevented before
+// `submit` is emitted, so a vee-validate `handleSubmit(...)` or a plain
+// handler both work.
 defineOptions({ inheritAttrs: false });
 
 defineProps<{

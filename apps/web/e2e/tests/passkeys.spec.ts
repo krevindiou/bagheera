@@ -2,26 +2,13 @@ import en from '../../src/i18n/locales/en';
 import { alertWithText, expect, signOut, test } from '../support/fixtures';
 import { addVirtualAuthenticator } from '../support/webauthn';
 
-// The virtual authenticator is a real, spec-compliant WebAuthn
-// implementation (see support/webauthn.ts) — no server-side mocking, unlike
-// apps/api's own webauthn integration specs, which have no browser to
-// produce a genuine ceremony with. signedInMember already registered one
-// passkey (the signup ceremony itself, against its own authenticator) —
-// this adds a *second*, distinct passkey from a *different* virtual
-// authenticator (simulating a second physical device, e.g. a phone next
-// to a laptop): registering a second passkey with excludeCredentials
-// naming the first one against the SAME authenticator is correctly
-// refused (CTAP2_ERR_CREDENTIAL_EXCLUDED) — that's the real spec
-// behavior an actual second registration attempt on the same device would
-// hit too, not a test artifact. Adding and removing each also run a
-// step-up ceremony first (an assertion with a passkey already held) — the
-// virtual authenticators auto-approve those too (automaticPresenceSimulation,
-// see support/webauthn.ts), so they need no step of their own here.
+// The second passkey comes from a second virtual authenticator (a second
+// device): the same one would refuse it (CTAP2_ERR_CREDENTIAL_EXCLUDED, as
+// a real device does). The step-ups before adding and removing are
+// auto-approved (automaticPresenceSimulation).
 test('register a second passkey, sign in with it, then remove it', async ({ signedInMember }) => {
   const { page, email } = signedInMember;
-  // 'usb' (not the default 'internal'): Chrome allows only one 'internal'
-  // authenticator per context, and signedInMember's own setup already
-  // attached one — see addVirtualAuthenticator's own comment.
+  // 'usb': signedInMember already holds the context's one 'internal'.
   const secondAuthenticator = await addVirtualAuthenticator(page, 'usb');
 
   await page.goto('/en/settings/passkeys');

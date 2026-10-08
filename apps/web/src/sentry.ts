@@ -3,10 +3,7 @@ import * as Sentry from '@sentry/vue';
 import { router } from './router';
 import { scrubBreadcrumb, scrubEvent } from './sentry-scrub';
 
-/**
- * No-ops when VITE_SENTRY_DSN isn't set (local dev, CI, e2e), so this is
- * safe to call unconditionally from main.ts.
- */
+/** No-op without VITE_SENTRY_DSN. */
 export function initSentry(app: App): void {
   const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
   if (!dsn) {

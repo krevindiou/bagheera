@@ -21,11 +21,8 @@ const apiClient = asMockedApiClient(realApiClient);
 const ACCOUNT_ID = '00000000-0000-7000-8000-000000000401';
 const CATEGORY_FOOD = '00000000-0000-7000-8000-000000000301';
 
-// "schedulers" carries meta.requiresAuth on the real route table — a
-// dedicated guard-free stub avoids the real guard redirecting every push to
-// sign-in (see the AccountsPage/OperationsPage specs for the same reasoning).
-// "operations" is also registered: the page's "← back to Operations" link
-// resolves that route name even though these tests never navigate to it.
+// A stub router: the real one's auth guard would redirect to sign-in.
+// "operations" is there for the back link to resolve.
 function createTestRouter(): Router {
   const stub = { template: '<div />' };
   return createRouter({

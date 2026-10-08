@@ -44,24 +44,15 @@ export class ProfileService {
   ) {}
 
   /**
-   * Starts an email change: requires a step-up WebAuthn proof (see
-   * WebauthnStepUpService — the passkey-era analog of "enter your current
-   * password"), then emails a confirmation link to *dto.email* itself.
-   * `member.email` is not written here — only `pendingEmail`/
-   * `emailChangeTokenVersion` are — so the address on file never actually
-   * changes until whoever controls that mailbox clicks through (see
-   * `confirmEmailChange`). A second request before the first is confirmed
-   * simply supersedes it: the version bump invalidates the earlier link.
+   * Starts an email change after a step-up proof: records `pendingEmail`,
+   * bumps the token version (invalidating any earlier link) and emails a
+   * confirmation link to the new address. `member.email` only changes in
+   * `confirmEmailChange`.
    *
-   * Behaves the same way whether or not `dto.email` is already registered
-   * to *another* member — same response, same write, one email — or any
-   * signed-in member could enumerate registered accounts. Skipping the
-   * write for a taken address used to leave the previous link valid, which
-   * gave it away: request a change to a mailbox you control, then to the
-   * target, and see whether the first link still confirms. A taken
-   * address's owner is told about the attempt instead of being sent a link
-   * (`confirmEmailChange` re-checks uniqueness, so a link could never
-   * complete anyway).
+   * Does the same write and sends one email whether or not another member
+   * holds `dto.email`, or a signed-in member could enumerate accounts (e.g.
+   * by checking whether an earlier link still works). That owner is told
+   * of the attempt instead of getting a link.
    */
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
     const memberId = req.session.memberId;
@@ -104,19 +95,9 @@ export class ProfileService {
   }
 
   /**
-   * Completes an email change: writes `member.email` only once the new
-   * address's owner has proven control of it via the emailed token. A bad,
-   * expired, already-used, or superseded-by-a-later-request key all
-   * collapse into the same generic error — never a field-level validation
-   * error a caller could use to tell them apart. Looked up by the token's
-   * `memberId` rather than an email, so this stays correct even if the
-   * member's own current address changed (again) since the token was
-   * issued — the version/pendingEmail check below is what actually decides
-   * whether the token is still live, not which email currently identifies
-   * the row.
-   *
-   * Signs out the member's other sessions on success, sparing
-   * `currentSessionId` (the confirming request's own, if any).
+   * Completes an email change from the emailed token. Every bad, expired,
+   * used or superseded key gets the same generic error. On success, signs
+   * out the member's other sessions, sparing `currentSessionId`.
    */
   async confirmEmailChange(
     key: string,
@@ -139,10 +120,7 @@ export class ProfileService {
     }
 
     const previousEmail = row.email;
-    // Re-checked here, not just at request time — someone else could have
-    // claimed this exact address in the meantime (a fresh registration, or
-    // their own confirmed change), and only the write below is atomic
-    // against that.
+    // Re-checked: someone may have claimed the address since the request.
     const result = await raceSafeUniqueEmail(
       this.db,
       payload.newEmail,
@@ -171,20 +149,12 @@ export class ProfileService {
     await this.audit.record('email_changed', row.id, sourceAddress);
   }
 
-  /**
-   * Updates the member's UI/email language preference. Unlike updateEmail,
-   * this doesn't require a step-up passkey proof — it's just a display
-   * preference, and prompting on every switcher click would be poor UX for
-   * something this low-stakes.
-   */
+  /** A display preference: no step-up, unlike updateEmail. */
   async updateLocale(memberId: MemberId, dto: UpdateLocaleDto): Promise<void> {
     await this.db.update(member).set({ locale: dto.locale }).where(eq(member.id, memberId));
   }
 
-  /**
-   * Updates the time zone deciding the member's "today" — a preference
-   * like the locale, so no step-up either.
-   */
+  /** A preference like the locale: no step-up. */
   async updateTimeZone(memberId: MemberId, dto: UpdateTimeZoneDto): Promise<void> {
     await this.db.update(member).set({ timeZone: dto.timeZone }).where(eq(member.id, memberId));
   }

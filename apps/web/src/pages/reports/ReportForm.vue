@@ -21,9 +21,7 @@ const props = defineProps<{
   defaultType?: 'sum' | 'average' | 'distribution';
 }>();
 
-// Not type-scoped like an operation/scheduler form (a report spans both
-// debit and credit operations), so every category is offered — grouped by
-// parent, same as the search panel's multi-select.
+// A report spans debit and credit, so every category is offered.
 const groupedCategories = computed(() => groupCategories(props.categories));
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 

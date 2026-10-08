@@ -1,9 +1,4 @@
-// Plain data, kept free of any DB/Drizzle dependency so it can be
-// unit-tested (row shapes/counts) without a live Postgres connection.
-
-// The fixed UUID literals themselves live in packages/reference-data,
-// shared with apps/web (see src/domain/referenceData.ts) — re-exported here so
-// existing `PAYMENT_METHOD_ID` imports from this module don't change.
+// Plain data, free of any DB dependency so it unit-tests without Postgres.
 import { PAYMENT_METHOD_ID } from '@bagheera/reference-data';
 export { PAYMENT_METHOD_ID };
 
@@ -39,10 +34,8 @@ export const paymentMethodSeeds: PaymentMethodSeed[] = [
 ];
 
 export interface CategorySeed {
-  // Set only for categories referenced elsewhere by a fixed id (currently
-  // just Salary, via SALARY_CATEGORY_SEED_ID — used as a stable category id
-  // by tests/fixtures). Unset categories get a DB-generated UUIDv7 on
-  // insert — see seed.ts's insertCategories.
+  // Only for categories needing a fixed id (Salary); others get a
+  // DB-generated one.
   id?: string;
   name: string;
   type: 'debit' | 'credit';

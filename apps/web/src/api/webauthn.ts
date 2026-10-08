@@ -11,13 +11,9 @@ export type CeremonyResult =
 type AuthenticationPath = '/webauthn/authentication' | '/webauthn/step-up';
 type RegistrationPath = '/webauthn/registration' | '/webauthn/signup';
 
-// Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
-// (they carry no Nest/class-validator decorators of their own), so the
-// generated client types these bodies as an opaque `Record<string, never>`
-// and the options responses as untyped — every cast lives here, at the
-// boundary, rather than widening the real API contract. The path unions
-// above keep callers type-checked; this loose signature only exists so one
-// function can POST to any of them.
+// Swagger can't describe @simplewebauthn's types, so the generated client
+// has these bodies and responses untyped; the casts stay here. The path
+// unions above keep callers type-checked.
 type LooseResult = { data?: unknown; response: Response };
 const post = apiClient.POST as unknown as (
   path: string,

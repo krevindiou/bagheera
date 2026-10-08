@@ -3,14 +3,10 @@ import type { Ref } from 'vue';
 import en from './locales/en';
 import { DEFAULT_LOCALE, type Locale } from './locales';
 
-// The shape every locale catalog must match — en.ts is the reference,
-// fr.ts's parity is checked at build time by parity.spec.ts.
+// The shape every catalog must match (parity.spec.ts checks fr.ts).
 type MessageSchema = typeof en;
 
-// Only `en` ships in the initial bundle; every other catalog is fetched on
-// first use via loadLocaleMessages() below (called from the router's
-// navigation guard once the active locale segment is known) so the bundle
-// doesn't grow with every language this app adds.
+// Only `en` ships in the initial bundle; other catalogs load on first use.
 const loaders: Record<Locale, () => Promise<{ default: MessageSchema }>> = {
   en: () => Promise.resolve({ default: en }),
   fr: () => import('./locales/fr'),
@@ -23,11 +19,8 @@ export const i18n = createI18n({
   messages: { en },
 });
 
-// vue-i18n infers the available locales from the *keys of the eagerly-passed*
-// `messages` map above — just `en`, since `fr` is lazy-loaded — not from the
-// app's full `Locale` union. That leaves `i18n.global` statically typed as if
-// only 'en' could ever be active; widen it back to `Locale` for the two spots
-// below that add/activate a locale it didn't statically know about.
+// vue-i18n types the locales from the eager `messages` keys (just `en`);
+// widen to `Locale` for the lazy ones.
 const global = i18n.global as unknown as {
   locale: Ref<Locale>;
   setLocaleMessage(locale: Locale, message: MessageSchema): void;

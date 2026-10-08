@@ -124,9 +124,7 @@ describe('operations', () => {
       expect(res.status).toBe(400);
     });
 
-    // An operation dated 9999-12-31 once turned every chart over its
-    // account into a million-point walk (see reports/chart/period.ts) —
-    // out-of-range or impossible dates must never reach the table at all.
+    // Out-of-range dates would blow up chart period walks.
     it.each(['9999-12-31', '0001-01-01', '2024-02-30'])(
       'rejects value date %s with a 400, storing nothing',
       async (valueDate) => {

@@ -4,17 +4,14 @@ import { GlobalExceptionFilter } from './global-exception.filter';
 import { fakeArgumentsHost, fakeRequest, fakeResponse } from '../../test-support/fake-http-context';
 import { vi, type Mock, type MockInstance } from 'vitest';
 
-// @sentry/node's named exports aren't spy-able in place (frozen/read-only
-// bindings) — a full module mock sidesteps that instead of fighting it.
+// @sentry/node's exports are read-only bindings, so not spy-able in place.
 vi.mock('@sentry/node');
 import { Sentry } from '../../logging/sentry';
 
 describe('GlobalExceptionFilter', () => {
   const filter = new GlobalExceptionFilter();
-  // Kept as its own variable (rather than re-reading Logger.prototype.error
-  // in each assertion) so assertions read off a plain MockInstance,
-  // not a reference extracted off the real Logger class — the latter trips
-  // @typescript-eslint/unbound-method, a false positive for vitest matchers.
+  // Asserting on Logger.prototype.error directly trips
+  // @typescript-eslint/unbound-method.
   let errorSpy: MockInstance;
 
   beforeEach(() => {
@@ -102,8 +99,7 @@ describe('GlobalExceptionFilter', () => {
       }
     }
     await filter.catch(new NoBodyException(), fakeArgumentsHost(fakeRequest(), res));
-    // Nest's HttpException.message defaults to the status text when the
-    // response body carries no usable message of its own.
+    // Nest falls back to the status text.
     /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.any() is untyped (any) in vitest */
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
     /* eslint-enable @typescript-eslint/no-unsafe-assignment */
@@ -155,14 +151,6 @@ describe('GlobalExceptionFilter', () => {
     );
   });
 
-  // extractMessage()'s `exception instanceof Error ? exception.message :
-  // 'Unknown error'` fallback looks reachable for a non-Error throw, but
-  // isn't: statusCodeOf() only ever returns something other than 500 for
-  // an HttpException (handled earlier) or an isExposedHttpError() match,
-  // which itself requires `exception instanceof Error`. So any non-Error
-  // throw always has statusCode === 500, and extractMessage returns
-  // 'Internal server error' one branch earlier — 'Unknown error' is
-  // currently dead code, not exercised by this or any other case.
   it('reports a generic "Internal server error", not the raw value, for a thrown non-Error', async () => {
     const res = fakeResponse();
     await filter.catch('a raw string throw', fakeArgumentsHost(fakeRequest(), res));

@@ -23,29 +23,22 @@ import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
-// Never distinguishes an invalid/expired key from an already-registered
-// email from an attestation failure — a single generic error path for all
-// of them, same discipline as every other token-gated flow in this app.
+// One generic error for an invalid/expired key, a registered email and an
+// attestation failure alike.
 const SIGNUP_FAILED = 'Sign-up link is invalid or has expired.';
 
 function signupFailed(): BusinessError {
   return new BusinessError(HttpStatus.BAD_REQUEST, 'signup_link_invalid', SIGNUP_FAILED);
 }
 
-// Postgres unique_violation — the email-uniqueness backstop for the
-// member-row insert below (see race-safe-unique-email.ts, whose write side
-// this mirrors without needing the shared helper itself: there's no
-// existing row to exempt via `excludeId` here, and the anti-enumeration
-// framing is already handled one step earlier, in RegistrationService).
+// Postgres unique_violation: the email-uniqueness backstop for the member
+// insert below.
 const UNIQUE_VIOLATION = '23505';
 
 /**
- * Completes sign-up: runs an unauthenticated WebAuthn registration ceremony
- * against a token minted by RegistrationService, and — only on success —
- * atomically inserts the member row *and* its first passkey together, then
- * signs them in. There is no earlier "row exists but not yet real" state to
- * transition out of (contrast the old activation flow): the account comes
- * into existence at the moment this ceremony succeeds, fully usable.
+ * Completes sign-up: a registration ceremony against the emailed sign-up
+ * token that, only on success, inserts the member and its first passkey
+ * together and signs them in. The account exists from that moment on.
  */
 @Injectable()
 export class WebauthnSignupService {
@@ -68,9 +61,7 @@ export class WebauthnSignupService {
       throw signupFailed();
     }
 
-    // Safe to reveal here (not an enumeration oracle): only whoever holds
-    // this specific signed/encrypted token — i.e. controls the mailbox it
-    // was sent to — can ever reach this branch at all.
+    // Not an enumeration oracle: only the mailbox owner holds the token.
     const [existing] = await this.db
       .select({ id: member.id })
       .from(member)
@@ -100,8 +91,7 @@ export class WebauthnSignupService {
       throw signupFailed();
     }
 
-    // Re-parsed fresh, never trusting the options-time parse — the token
-    // could have expired in the gap between the two calls.
+    // Re-parsed: the token may have expired since options().
     const payload = parseSignupToken(this.crypto, key);
     if (!payload) {
       throw signupFailed();
@@ -144,11 +134,7 @@ export class WebauthnSignupService {
       });
     } catch (err) {
       if ((err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION) {
-        // Someone else completed sign-up for this email in the meantime
-        // (e.g. a second outstanding link for the same address, see
-        // signup-token.ts's TTL-only trade-off) — same generic error, not
-        // an enumeration signal (only the mailbox owner reaches this at
-        // all).
+        // Another link for the same address completed sign-up first.
         throw signupFailed();
       }
       throw err;

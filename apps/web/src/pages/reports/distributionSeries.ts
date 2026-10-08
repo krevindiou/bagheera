@@ -8,12 +8,7 @@ import type {
 } from '../../components/RankedChart.vue';
 import type { ReportDistribution, ReportDistributionLabelSeries } from './reports.types';
 
-// A muted, palette-independent color for the collapsed "Other" bucket — it
-// isn't a real category, so it shouldn't compete for a spot in the
-// categorical palette the way a genuine label does (two different reports'
-// "Other" bars staying visually distinct from each other would be
-// meaningless; what matters is that it reads as "not a real category" in
-// every report).
+// Muted and outside the palette: "Other" isn't a real label.
 const OTHER_COLOR = 'rgba(242, 239, 233, 0.35)';
 
 function labelText(label: string | null, t: (key: string) => string): string {
@@ -24,14 +19,7 @@ function labelColor(label: string | null): string {
   return label === null ? OTHER_COLOR : colorForLabel(label);
 }
 
-// A facet is a snapshot when every label series (both sides) has at most
-// one point — a single period ('all' periodGrouping, or a date range that
-// happens to fall within one period) has nothing to stack against, so it
-// renders as a horizontal ranked bar chart instead of a stacked-over-time
-// one. Debit and credit always share the same period axis for a given
-// currency (report-distribution.service.ts computes both from the same
-// per-currency period set), so checking either side alone would do, but
-// checking both is a cheap extra guard against that invariant drifting.
+// A single period has nothing to stack: render ranked bars instead.
 function isSnapshot(
   debit: ReportDistributionLabelSeries[],
   credit: ReportDistributionLabelSeries[],
@@ -39,11 +27,8 @@ function isSnapshot(
   return debit.every((s) => s.points.length <= 1) && credit.every((s) => s.points.length <= 1);
 }
 
-// Debit is negated (credit stays positive) so the two sides diverge from one
-// shared zero baseline in a single chart — the standard "cash flow"
-// convention — rather than needing a separate chart per side. `sign * 0`
-// produces `-0` for a negated zero-filled gap, which some renderers show as
-// "-$0.00" — `+ 0` normalizes it back to plain `0`.
+// Debit negated so both sides diverge from zero in one chart. `+ 0` turns
+// `-0` (shown as "-$0.00") into `0`.
 function negate(value: number, sign: 1 | -1, currency: string): number {
   return sign * toDisplayAmount(value, currency) + 0;
 }
@@ -84,10 +69,7 @@ function toRankedFacet(
   labelOf: (label: string | null) => string,
 ): RankedChartFacet {
   if (isSnapshot(debit, credit)) {
-    // Credit's and debit's own top-N rankings are independent (see
-    // report-distribution.service.ts) — merging them into one list here
-    // orders by magnitude regardless of side, so the chart reads as one
-    // ranking rather than two concatenated ones.
+    // One ranking by magnitude across both sides.
     const bars = [
       ...toBars(credit, currency, 1, labelOf),
       ...toBars(debit, currency, -1, labelOf),
@@ -102,13 +84,8 @@ function toRankedFacet(
 }
 
 /**
- * A distribution report is per-currency, with a separate debit and credit
- * ranking (apps/api/src/reports/report-distribution.service.ts) — combined
- * here into one facet per currency (debit negated, credit positive, one
- * diverging chart) rather than a chart per side. `t` is vue-i18n's
- * translate function, passed in rather than called via `useI18n()` here
- * since this isn't a component/composable — mirrors chartSeries.ts's
- * toChartSeries.
+ * One diverging facet per currency from its debit and credit rankings. `t`
+ * is passed in, as in toChartSeries.
  */
 export function toDistributionFacets(
   distribution: ReportDistribution,

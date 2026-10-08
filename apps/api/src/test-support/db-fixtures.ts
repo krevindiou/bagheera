@@ -4,11 +4,7 @@ import * as schema from '../db/schema';
 import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { uniqueEmail } from './auth-fixture';
 
-// Tier 1 (db/schema/*.integration-spec.ts) drives Drizzle directly instead
-// of going through HTTP — these are plain insert helpers for building the
-// member → bank → account chain those specs need before exercising their
-// own table's constraints, plus the pg error-code accessor every one of
-// them uses to assert *which* constraint fired.
+// Direct-insert helpers for specs that drive Drizzle rather than HTTP.
 
 type Db = NodePgDatabase<typeof schema>;
 

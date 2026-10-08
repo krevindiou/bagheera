@@ -2,22 +2,16 @@ import type { Request } from 'express';
 
 export const RATE_LIMIT_OPTIONS = Symbol('RATE_LIMIT_OPTIONS');
 
-// Mirrors eslint.config.mjs's MUTATING_HTTP_DECORATORS — kept as a separate
-// runtime list rather than shared, since one reads decorator names off an
-// AST at lint time and the other reads `req.method` at request time.
+// Runtime twin of eslint.config.mjs's MUTATING_HTTP_DECORATORS.
 export const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export function isMutatingRequest(req: Request): boolean {
   return MUTATING_METHODS.has(req.method);
 }
 
-// The IP dimension defaults to a looser budget than the identifier
-// dimension: many legitimate accounts can share one source address (NAT,
-// a corporate gateway), so the account-level limit is what should bite
-// first for credential stuffing. The IP dimension still exists and still
-// throttles independently — it's what stops account spraying — it's just
-// not tuned to trip at the same low threshold as a single targeted
-// account.
+// The IP dimension is looser than the identifier one: many legitimate
+// accounts can share an address (NAT), so the per-account limit should
+// bite first.
 const DEFAULT_IP_BUDGET_MULTIPLIER = 4;
 
 export interface RateLimitOptions {
@@ -25,20 +19,13 @@ export interface RateLimitOptions {
   points: number;
   durationSeconds: number;
   /**
-   * Field read off `req.body` to name a second, independent throttle
-   * dimension (e.g. `'email'` for registration) alongside the source IP —
-   * an account limit and a source-address limit are each
-   * required, checked and throttled separately, so exceeding either one
-   * rejects the request and rotating the other dimension doesn't help an
-   * attacker dodge it. Absent or missing on the body: only the IP
-   * dimension applies.
+   * `req.body` field naming a second, independent dimension (e.g.
+   * `'email'`). Absent from the body: only the IP dimension applies.
    */
   identifierField?: string;
   /**
-   * Requests allowed for the source-IP dimension within `durationSeconds`.
-   * Defaults to `points * DEFAULT_IP_BUDGET_MULTIPLIER` (or to `points`
-   * itself when there's no `identifierField`, i.e. IP is the only
-   * dimension). Override to tune the two dimensions independently.
+   * The IP dimension's budget. Defaults to `points *
+   * DEFAULT_IP_BUDGET_MULTIPLIER`, or `points` without `identifierField`.
    */
   ipPoints?: number;
   /**
@@ -49,10 +36,9 @@ export interface RateLimitOptions {
    */
   appliesTo?: (req: Request) => boolean;
   /**
-   * Key the budget on the signed-in member rather than the source address:
-   * on an authenticated route the member is who's accountable, and a
-   * shared address (a household behind one router, an office) mustn't pool
-   * everyone's requests. Falls back to the address when there's no member.
+   * Key the budget on the signed-in member instead of the address, so a
+   * shared address doesn't pool everyone's requests. Falls back to the
+   * address without a member.
    */
   perMember?: boolean;
   /** Share one counter across every route naming the same scope, instead of one per route. */

@@ -15,8 +15,6 @@ import { uuidPk } from './id';
 import { member } from './member';
 import { dataGroupingEnum, periodGroupingEnum, reportTypeEnum } from './enums';
 
-// Account selection is a plain many-to-many join table — replaced wholesale
-// on save at the app layer.
 export const report = pgTable(
   'report',
   {
@@ -47,6 +45,7 @@ export const report = pgTable(
   (table) => [index('report_member_id_idx').on(table.memberId)],
 );
 
+// Replaced wholesale on save.
 export const reportAccount = pgTable(
   'report_account',
   {
@@ -60,10 +59,7 @@ export const reportAccount = pgTable(
   (table) => [primaryKey({ columns: [table.reportId, table.accountId] })],
 );
 
-// Category selection is the same kind of join table as reportAccount — empty
-// = no filter (every category), replaced wholesale on save. Unlike accounts,
-// categories are fixed reference data (not member-owned), so there's no
-// ownership chain to fall back through when the selection is empty.
+// Empty = every category. Replaced wholesale on save.
 export const reportCategory = pgTable(
   'report_category',
   {

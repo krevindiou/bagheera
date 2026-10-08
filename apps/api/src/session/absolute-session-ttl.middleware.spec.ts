@@ -4,13 +4,7 @@ import { SESSION_MAX_AGE_MS } from './session.constants';
 import { fakeRequest, fakeResponse } from '../test-support/fake-http-context';
 import { vi } from 'vitest';
 
-// absoluteSessionTtl takes a real Express Response — this middleware never
-// reads anything off it, but the signature still needs satisfying.
-// fakeResponse() is deliberately typed as its own FakeResponse shape, not
-// Response itself (see fake-http-context.ts), so the cast lives here, at
-// the one place calling production code directly instead of through
-// fakeArgumentsHost/fakeExecutionContext (which already accept the loose
-// shape).
+// Never read by the middleware; only the signature needs a Response.
 function res(): Response {
   return fakeResponse() as unknown as Response;
 }

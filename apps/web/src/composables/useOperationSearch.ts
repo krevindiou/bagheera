@@ -10,17 +10,13 @@ import { useToast } from './useToast';
 const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: 20 };
 
 /**
- * An account's operations list together with the search the server
- * remembers for it (GET /operations re-applies that search; POST/DELETE
- * /operations/search set and clear it), plus the search panel's own state.
+ * An account's operations list, the search the server remembers for it
+ * (GET /operations re-applies it; POST/DELETE /operations/search set and
+ * clear it), and the search panel's state.
  *
- * Whether a search is active is read from the cached page itself, never
- * mirrored into a separate flag, so a mutation that writes the cache can't
- * be "undone" by a watcher reacting to that same write. The panel is
- * restored (opened, hydrated with the remembered criteria) once per account
- * load, the first time that account's list arrives, and never again on a
- * later refetch: paging, or the invalidation after a save, doesn't pop it
- * back open.
+ * "Active" is read from the cached page, not mirrored into a flag a watcher
+ * could undo. The panel is restored from the remembered search once per
+ * account, on its first load only: paging or a refetch never reopens it.
  */
 export function useOperationSearch(accountId: Ref<string>) {
   const { t } = useI18n();

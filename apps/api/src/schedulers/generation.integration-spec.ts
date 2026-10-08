@@ -168,8 +168,6 @@ describe('scheduler occurrence generation', () => {
     expect(await generatedFor([id])).toHaveLength(0);
   });
 
-  // M5: a save used to insert up to a thousand operations (two thousand
-  // with a transfer) while the request waited.
   it('leaves generation to the queued job, off the request path', async () => {
     const { mutate } = await seedSignedInMember(app);
     const accountId = await createAccount(mutate, await createBank(mutate));
@@ -274,9 +272,8 @@ describe('scheduler occurrence generation', () => {
     expect(await generatedFor(ids)).toHaveLength(2 * perScheduler);
   });
 
-  // The generation cursor is the scheduler's own `lastGeneratedDate`, not
-  // the surviving operation rows — these three cover the cases that used
-  // to corrupt it when it was inferred from `max(valueDate)`.
+  // The cursor is `lastGeneratedDate`, not inferred from the surviving
+  // operation rows.
   describe('cursor independence from generated operations', () => {
     it('does not regenerate a deleted latest occurrence', async () => {
       const { accountId } = await memberWithAccount();

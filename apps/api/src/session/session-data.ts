@@ -1,13 +1,10 @@
 import 'express-session';
 
-// Global augmentation: the authenticated member id carried by the session,
-// set on sign-in (see auth/sign-in.*) and read wherever a request needs to
-// know who's signed in.
+// The signed-in member, set on sign-in and sign-up completion.
 declare module 'express-session' {
   interface SessionData {
     memberId?: string;
-    // Written by CsrfTokenController to force session persistence — see
-    // that controller for why.
+    // Forces session persistence (see CsrfTokenController).
     csrfIssued?: boolean;
   }
 }

@@ -10,18 +10,14 @@ import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MemberId } from '../security/ids';
 import { isFullyActive, reachableAccountsOf } from '../security/reachable';
 
-// The "Transfer" debit/credit payment methods — the only two that can carry
-// a pairing; flipping between them mirrors a transfer from one side to the
-// other. The list itself is shared with apps/web (packages/reference-data)
-// — re-exported here so existing imports of it from this module don't
-// change.
+// The "Transfer" debit/credit payment methods, the only two that can carry
+// a pairing; a mirror flips one into the other.
 export { TRANSFER_PAYMENT_METHOD_IDS };
 export const TRANSFER_DEBIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_DEBIT;
 export const TRANSFER_CREDIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_CREDIT;
 
-// Any object exposing the query-builder surface: the plain db handle or an
-// open transaction — every method below accepts either so callers can chain
-// pairing side effects into their own transaction.
+// The db handle or an open transaction, so callers can run pairing side
+// effects inside their own transaction.
 type Db = NodePgDatabase | Executor;
 
 // Facts needed to validate a *new* transfer target (attach or retarget) —
@@ -32,18 +28,14 @@ export interface PairingEligibility {
   memberId: string;
 }
 
-// Adds the source operation's own id, needed to stamp a brand-new mirror's
-// back-reference — only attach()/sync() ever create a mirror, so only they
-// need this; validateSchedulerTarget (no row to reference) doesn't.
+// Adds the source operation's id, for a new mirror's back-reference.
 export interface PairingSource extends PairingEligibility {
   sourceOperationId: string;
 }
 
-// The mirror's own editable content: everything about the transfer that
-// isn't the pairing relationship itself. Callers pass the *source's* own
-// values here — attach/sync flip the payment method and swap debit/credit
-// internally; never pre-flip them yourself. `reconciled` is deliberately
-// excluded: a mirror's reconciled state is never inherited from the source.
+// The mirror's content, given as the *source's* values: attach/sync flip
+// the payment method and swap debit/credit themselves. `reconciled` is
+// excluded: a mirror never inherits it.
 export interface MirrorContent {
   paymentMethodId: string;
   debit: MinorUnits | null;
@@ -54,9 +46,7 @@ export interface MirrorContent {
   schedulerId: string | null;
 }
 
-// The pairing state stored on the source row before this save. Both null
-// when the source has never been paired; both set otherwise — never mixed,
-// on any row this module itself wrote.
+// The source row's pairing before this save: both null or both set.
 export interface PreviousPairing {
   targetAccountId: string | null;
   mirrorOperationId: string | null;
@@ -69,11 +59,7 @@ export type PairingEdit =
   | { action: 'refresh'; mirrorOperationId: string }
   | { action: 'detach'; mirrorOperationId: string };
 
-// Pure — no Db, no `this`. Classifies previous-vs-desired pairing state
-// into the one transition it represents. Exported standalone so it's
-// unit-testable with zero DB (see transfer-pairing.spec.ts), and so a
-// future caller could inspect intent before acting on it (e.g. confirming
-// before a retarget) without going through sync() itself.
+// Pure: classifies previous-vs-desired pairing into one transition.
 export function classifyPairingEdit(
   previous: PreviousPairing,
   desiredTargetAccountId: string | null,
@@ -97,9 +83,6 @@ export function classifyPairingEdit(
 
 @Injectable()
 export class TransferService {
-  // Extracts the mirror-content fields from an operation row. Used by
-  // insertWithMirror to avoid field-by-field rebuilding; also available
-  // for callers that need to derive content from an existing row.
   mirrorContentOf(row: InferSelectModel<typeof operation>): MirrorContent {
     return {
       paymentMethodId: row.paymentMethodId,
@@ -112,13 +95,9 @@ export class TransferService {
     };
   }
 
-  // Inserts an operation and, if transferAccountId is non-null, attaches a
-  // mirror in the target account and back-fills the source row's own
-  // transferOperationId. Returns the inserted operation row with
-  // transferOperationId populated (null if no mirror). Validates the target
-  // before the mirror insert, so validation order stays consistent with
-  // attach(). Used by both operation.service.ts create and
-  // SchedulerGenerationService to avoid duplicating the pairing protocol.
+  // Inserts an operation and, when it has a transferAccountId, attaches a
+  // mirror and back-fills the row's transferOperationId. Shared by
+  // operation creation and scheduler generation.
   async insertWithMirror(
     db: Db,
     values: InferInsertModel<typeof operation>,
@@ -126,9 +105,6 @@ export class TransferService {
   ): Promise<InferSelectModel<typeof operation>> {
     const [created] = await db.insert(operation).values(values).returning();
 
-    // A transfer target was chosen: pair the operation with a mirror in the
-    // target account (see attach() for the pairing rules). A fresh operation
-    // can never have prior pairing state, so this is always an attach.
     if (values.transferAccountId) {
       const transferOperationId = await this.attach(
         db,
@@ -158,20 +134,12 @@ export class TransferService {
       : TRANSFER_DEBIT_PAYMENT_METHOD_ID;
   }
 
-  // Only fully active accounts, owned by the same member and sharing the
-  // source's currency, are eligible as a *new* transfer target — whether
-  // that's a first-time pairing or a retarget. An operation's already-paired
-  // target that has since gone inactive is left alone by the caller instead
-  // of routed through here (see sync()'s 'refresh' branch).
+  // A *new* target (attach or retarget) must be another fully active
+  // account of the same member, in the source's currency. An existing
+  // target that went inactive is never re-checked (see 'refresh').
   //
-  // Runs on the caller's own `db` (often an open transaction — attach()/
-  // sync() are called mid-transaction by operation.service.ts and
-  // SchedulerGenerationService), not OwnershipService's injected connection
-  // — same reachableAccountsOf() the rest of the ownership-scoping surface
-  // uses, so "deleted along the chain" means not-found here too, but kept
-  // as this module's own BusinessError (BAD_REQUEST) rather than
-  // OwnershipService's NotFoundException, since callers surface these as
-  // form-field errors.
+  // Runs on the caller's `db` (often a transaction), not OwnershipService,
+  // and throws 400s, which callers surface as form-field errors.
   private async requireEligibleTarget(
     db: Db,
     targetAccountId: string,
@@ -226,13 +194,9 @@ export class TransferService {
     };
   }
 
-  // Pairs `source` with a FRESH mirror in `targetAccountId` — always
-  // validates the target first, then inserts the mirror (its own
-  // transferOperationId pointing back at source.sourceOperationId). Never
-  // writes the source row itself: the caller persists the returned id onto
-  // its own transferOperationId column (its own transferAccountId it
-  // already knows and sets itself). Call only when the source has no
-  // existing mirror — use sync() instead when it might.
+  // Validates the target and inserts a new mirror pointing back at the
+  // source. Never writes the source row: the caller persists the returned
+  // id. Only for a source with no mirror yet; otherwise use sync().
   async attach(
     db: Db,
     source: PairingSource,
@@ -253,13 +217,9 @@ export class TransferService {
     return mirror.id;
   }
 
-  // Reconciles an existing operation's transfer pairing against a newly
-  // desired target — the only entry point that can hit all four
-  // transitions a full edit can produce (classifyPairingEdit above decides
-  // which). Never writes the source row: the caller must persist the
-  // returned transferOperationId, and `desiredTargetAccountId` onto
-  // transferAccountId, in the same write that saves the operation's other
-  // edited fields.
+  // Applies an edit's pairing transition. Never writes the source row
+  // (except to unlink on detach): the caller persists the returned
+  // transferOperationId and `desiredTargetAccountId` with its other fields.
   async sync(
     db: Db,
     source: PairingSource,
@@ -284,10 +244,7 @@ export class TransferService {
         return null;
 
       case 'refresh':
-        // Same target as before: the mirror is reused in place, syncing
-        // content only — no eligibility re-check, since a paired target
-        // that went inactive after the fact stays syncable (only *new*
-        // targets require active state).
+        // Same target: sync content only, with no eligibility re-check.
         await db
           .update(operation)
           .set(this.mirrorFieldsFrom(content))
@@ -310,11 +267,8 @@ export class TransferService {
     }
   }
 
-  // Eligibility-only check for a scheduler template's transfer target — no
-  // mirror row exists for a scheduler, so there's nothing to sync. `null`,
-  // or unchanged from `previous.targetAccountId`, is always a no-op (an
-  // unchanged target is left alone even if it's since gone inactive — same
-  // rule as sync()'s 'refresh' branch).
+  // A scheduler has no mirror, so only a new target is checked; `null` or
+  // an unchanged one is a no-op, as in sync()'s 'refresh'.
   async validateSchedulerTarget(
     db: Db,
     source: PairingEligibility,
@@ -327,11 +281,9 @@ export class TransferService {
     await this.requireEligibleTarget(db, desiredTargetAccountId, source);
   }
 
-  // Deleting an operation leaves any counterpart in place, converted to an
-  // External transfer: pair link removed, transfer account cleared. Ids
-  // whose mirror is itself among the deleted ids need no such fix-up — both
-  // sides are gone. Must run before the deletion itself, in the same
-  // transaction.
+  // A deleted operation's surviving counterpart becomes an External
+  // transfer (link and transfer account cleared). Run before the delete,
+  // in the same transaction.
   async convertSurvivorsOfDeleted(db: Db, deletedIds: string[]): Promise<void> {
     if (deletedIds.length === 0) {
       return;
@@ -351,9 +303,8 @@ export class TransferService {
     }
   }
 
-  // Soft-deleting an account converts every transfer reference pointing at
-  // it — on other accounts' operations and schedulers — to the External
-  // placeholder: a one-time, irreversible conversion at deletion time.
+  // Soft-deleting an account turns every operation/scheduler transfer
+  // reference to it into External, irreversibly.
   async convertAccountReferencesToExternal(db: Db, accountId: string): Promise<void> {
     await db
       .update(operation)

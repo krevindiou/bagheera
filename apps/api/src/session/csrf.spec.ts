@@ -3,18 +3,13 @@ import { doubleCsrf, DoubleCsrfConfigOptions } from 'csrf-csrf';
 import { vi, type Mock } from 'vitest';
 import { buildCsrf } from './csrf';
 
-// buildCsrf's own job is the config object it hands to doubleCsrf() — the
-// token-generation/cookie machinery on the other side of that call is
-// csrf-csrf's own tested concern. Spying on the real doubleCsrf (rather
-// than faking a whole Express request/response/cookie-parser stack) tests
-// exactly that boundary.
+// buildCsrf's job is the config it hands doubleCsrf(); the rest is
+// csrf-csrf's.
 vi.mock('csrf-csrf', async () => {
   const actual = await vi.importActual<typeof import('csrf-csrf')>('csrf-csrf');
   return { ...actual, doubleCsrf: vi.fn(actual.doubleCsrf) };
 });
 
-// Cast once, here, to the real call signature — every later `.mock.calls`
-// read stays properly typed instead of leaking `any`.
 const mockedDoubleCsrf = vi.mocked(doubleCsrf);
 
 function lastConfigOptions(): DoubleCsrfConfigOptions {
@@ -22,9 +17,8 @@ function lastConfigOptions(): DoubleCsrfConfigOptions {
   return calls[calls.length - 1][0];
 }
 
-// A plain shape, not typed as ConfigService — extracting `.getOrThrow` off
-// a value typed as the real class trips @typescript-eslint/unbound-method
-// (a false positive for vitest's expect(fn).toHaveBeenCalledWith(...)).
+// Not typed as ConfigService, which would trip
+// @typescript-eslint/unbound-method on `.getOrThrow` assertions.
 function fakeConfig(getOrThrow: Mock) {
   return { getOrThrow };
 }

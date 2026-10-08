@@ -1,11 +1,9 @@
 import { vi } from 'vitest';
 
 /**
- * Stand-in for the `apiClient` singleton (openapi-fetch): every HTTP method
- * is a `vi.fn()` defaulting to an empty 200 response. Called from *inside*
- * a `vi.mock` factory (never hoisted via `vi.hoisted` — that runs before
- * this module's own import is linked, so calling it there throws) so each
- * spec's mocked client is a fresh instance:
+ * Stand-in for `apiClient`: every method a `vi.fn()` resolving to an empty
+ * 200. Call it inside the `vi.mock` factory (`vi.hoisted` runs before this
+ * import is linked):
  *
  *   vi.mock("../../api/client", () => ({ apiClient: mockApiClient() }));
  *   import { apiClient as realApiClient } from "../../api/client";
@@ -28,10 +26,8 @@ export function mockApiClient() {
 export type MockedApiClient = ReturnType<typeof mockApiClient>;
 
 /**
- * Re-types an `apiClient` import that's actually the `mockApiClient()`
- * installed above via `vi.mock` — openapi-fetch's real client type is a
- * generic, path-keyed union that a plain mocked resolved value can't
- * usefully satisfy, so `vi.mocked()` alone doesn't help here.
+ * Re-types the mocked `apiClient` import: openapi-fetch's path-keyed
+ * generic type defeats `vi.mocked()`.
  */
 export function asMockedApiClient(client: unknown): MockedApiClient {
   return client as MockedApiClient;

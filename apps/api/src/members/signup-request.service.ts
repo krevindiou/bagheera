@@ -12,11 +12,8 @@ import { sendSignupEmail } from './send-signup-email';
 
 /**
  * The worker half of registration (see RegistrationService): turns a queued
- * sign-up request into exactly one email. A new address gets its sign-up
- * link; a registered one is told it already has an account, in its member's
- * own language, with no link that could create a second one. Doing this
- * lookup off the request path is what keeps the request's timing the same
- * either way.
+ * request into one email. A new address gets a sign-up link; a registered
+ * one an "account exists" notice in its member's language.
  */
 @Injectable()
 export class SignupRequestService {

@@ -1,6 +1,6 @@
 import fr from './fr';
 
-// Mirrors en.spec.ts — same XSS-escaping guarantee, same catalog.
+// Mirrors en.spec.ts.
 const XSS_PAYLOAD = '<script>alert(1)</script>';
 const ESCAPED_PAYLOAD = '&lt;script&gt;alert(1)&lt;/script&gt;';
 

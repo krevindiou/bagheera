@@ -4,9 +4,7 @@ import { withGlobalPlugins } from './test-support/withGlobalPlugins';
 import App from './App.vue';
 import BaseLayout from './layouts/BaseLayout.vue';
 
-// App.vue has no logic of its own — just wires up BaseLayout, which has its
-// own full spec (src/layouts/BaseLayout.spec.ts). Shallow-mount so this test
-// doesn't re-exercise BaseLayout's internals (queries, router, session).
+// App.vue only wires up BaseLayout (own spec): shallow-mounted.
 describe('App', () => {
   it('renders BaseLayout', () => {
     const wrapper = shallowMount(App, withGlobalPlugins());

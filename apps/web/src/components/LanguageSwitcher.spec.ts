@@ -12,9 +12,7 @@ import { useSessionStore } from '../stores/session.store';
 import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import LanguageSwitcher from './LanguageSwitcher.vue';
 
-// Mirrors waitForRouteName's own rationale: choose()'s router.replace()
-// resolves through the router's async guard, which flushPromises() alone
-// doesn't reliably observe — poll for the param it eventually sets instead.
+// Polls, like waitForRouteName: the replace() goes through an async guard.
 async function waitForLocale(locale: string): Promise<void> {
   await vi.waitFor(() => {
     if (router.currentRoute.value.params.locale !== locale) {
@@ -67,10 +65,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('also persists the choice server-side when signed in', async () => {
-    // withGlobalPlugins() mints its own fresh Pinia and activates it — the
-    // store must be grabbed after mount(), or this resolves a different
-    // (pre-mount) instance than the one actually injected into the
-    // component tree.
+    // After mount(): withGlobalPlugins() activates its own Pinia.
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
     const session = useSessionStore();
     session.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });

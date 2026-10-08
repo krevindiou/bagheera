@@ -15,21 +15,15 @@ import { CryptoService } from '../security/crypto.service';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
 import { getDb } from './create-test-app';
 
-// Postgres/Valkey are shared for the whole `--runInBand` run (one
-// Testcontainer pair, see integration-infra.ts) — every spec gets
-// isolation from a unique identifier per call, never from cleanup between
-// tests or a fixed literal that could collide with another file.
+// Postgres/Valkey are shared by the whole run: isolation comes from unique
+// identifiers, never from cleanup between tests.
 export function uniqueEmail(label = 'member'): string {
   return `${label}-${randomUUID()}@example.test`;
 }
 
 type Agent = ReturnType<typeof request.agent>;
 type MutateMethod = 'post' | 'patch' | 'put' | 'delete';
-// supertest's Test is itself thenable (PromiseLike<Response>) — an async
-// function returning one gets auto-flattened to Promise<Response> by plain
-// JS await semantics, not a typing quirk. So `mutate` below resolves the
-// request fully (optionally send()ing a body first) rather than handing
-// back a Test for the caller to chain .send()/.expect() onto.
+// A supertest Test is thenable, so `mutate` resolves to the Response itself.
 type SupertestResponse = Awaited<ReturnType<Agent['get']>>;
 
 export interface SignedInFixture {
@@ -39,33 +33,20 @@ export interface SignedInFixture {
   /** The credential id backing this session's own passkey — for specs that need to drive a step-up ceremony (see `completeStepUp`). */
   credentialId: string;
   /**
-   * GETs a fresh CSRF token for this session — echo it back via the
-   * `x-csrf-token` header on every mutating call, same as
-   * apps/web/src/api/client.ts.
-   *
-   * Prefer `mutate()` below over calling this directly: supertest's agent
-   * snapshots the cookie jar synchronously the moment `.post(url)` is
-   * called, not when the request is later awaited, so `agent.post(url)
-   * .set('x-csrf-token', await getCsrfToken())` calls `.post(url)` first
-   * (freezing the *current* cookies) and resolves the token after — the
-   * very GET this makes can itself rotate the csrf cookie, leaving the
-   * frozen request with a mismatched pair and a spurious 403.
+   * GETs a fresh CSRF token for this session. Resolve it *before* calling
+   * `agent.post(url)`, or prefer `mutate()`: the agent snapshots its cookie
+   * jar at `.post(url)`, and this GET can rotate the CSRF cookie, giving a
+   * spurious 403.
    */
   getCsrfToken: () => Promise<string>;
   /**
-   * The CSRF-safe way to make a mutating request: resolves a fresh token
-   * *before* constructing it, so the ordering hazard above can't happen,
-   * then sends `body` (if given) and awaits the full response. Usage:
-   * `const res = await mutate('post', '/banks/choice', { name: 'X' });
-   * expect(res.status).toBe(200);` — plain `res.status`/`res.body`
-   * checks rather than supertest's `.expect(...)` chaining, since a Test
-   * is thenable and would otherwise auto-flatten to a Response the
-   * moment it crosses this function's own `await` boundary anyway.
+   * A mutating request with a fresh CSRF token, resolved in the safe order.
+   * Assert on `res.status`/`res.body`; there's no `.expect()` chaining.
    */
   mutate: (method: MutateMethod, url: string, body?: object) => Promise<SupertestResponse>;
 }
 
-/** Exposed for specs that drive their own raw supertest calls instead of going through a fixture above. */
+/** For specs driving raw supertest calls. */
 export async function csrfTokenFor(agent: Agent): Promise<string> {
   const res = await agent.get('/auth/csrf-token').expect(200);
   return (res.body as { csrfToken: string }).csrfToken;
@@ -111,11 +92,8 @@ function verifiedAuthentication(newCounter = 1): VerifiedAuthenticationResponse 
 }
 
 /**
- * Inserts a member row and one passkey directly via Drizzle — no HTTP, no
- * crypto. The building block behind `seedSignedInMember`; exposed
- * separately for specs that need a real member/credential pair without an
- * authenticated agent (e.g. webauthn-authentication's own ownership/
- * anti-enumeration cases).
+ * Inserts a member and one passkey straight in the database, without
+ * signing in.
  */
 export async function insertMemberWithCredential(
   app: INestApplication<Server>,
@@ -143,13 +121,8 @@ export async function insertMemberWithCredential(
 }
 
 /**
- * Drives the real `/webauthn/authentication` HTTP funnel for an
- * already-inserted member/credential pair, stubbing only
- * `WebauthnCryptoService.verifyAuthenticationResponse` — the one step that
- * would otherwise need a real authenticator-held private key — via
- * `vi.spyOn` on the app's own DI-resolved instance. `mockResolvedValueOnce`
- * queues exactly one canned success for this one verify() call, so this
- * needs no cleanup/reset between fixture calls or spec files.
+ * Drives the real sign-in ceremony, stubbing only
+ * `verifyAuthenticationResponse` (which needs a real authenticator), once.
  */
 export async function signInWithPasskey(
   app: INestApplication<Server>,
@@ -157,8 +130,6 @@ export async function signInWithPasskey(
   credentialId: string,
 ): Promise<void> {
   const csrfToken = await csrfTokenFor(agent);
-  // Usernameless: options take no email — the credential presented to
-  // verify() is what identifies the member.
   await agent.post('/webauthn/authentication/options').set('x-csrf-token', csrfToken).expect(200);
 
   vi.spyOn(app.get(WebauthnCryptoService), 'verifyAuthenticationResponse').mockResolvedValueOnce(
@@ -172,10 +143,8 @@ export async function signInWithPasskey(
 }
 
 /**
- * Fast path for every tier other than members/auth/webauthn itself: inserts
- * an already-usable member with one passkey directly via Drizzle, then
- * drives only the real sign-in ceremony (crypto stubbed, see
- * `signInWithPasskey`) for a real cookie/session.
+ * A signed-in member: inserted directly, then signed in for a real session.
+ * What every spec outside members/auth/webauthn should use.
  */
 export async function seedSignedInMember(
   app: INestApplication<Server>,
@@ -197,13 +166,7 @@ export async function seedSignedInMember(
   };
 }
 
-/**
- * Drives the real `/webauthn/step-up` ceremony for an already-signed-in
- * fixture, stubbing `WebauthnCryptoService.verifyAuthenticationResponse`
- * the same way `signInWithPasskey` does — the passkey-era analog of
- * "submit the current password" wherever a mutation needs step-up proof
- * (see ProfileService.updateEmail).
- */
+/** Drives the real step-up ceremony, stubbed like `signInWithPasskey`. */
 export async function completeStepUp(
   app: INestApplication<Server>,
   fixture: Pick<SignedInFixture, 'agent' | 'credentialId' | 'getCsrfToken'>,
@@ -222,13 +185,9 @@ export async function completeStepUp(
 }
 
 /**
- * Drives the real end-to-end funnel: register → mint a valid sign-up token
- * directly (no email round trip — see create-test-app.ts's fake email
- * queue) → the `/webauthn/signup` options/verify ceremony (crypto stubbed
- * the same way `signInWithPasskey` stubs it, but on the registration side)
- * → lands signed in. Reserved for the members/auth/webauthn tier itself,
- * which needs to prove the funnel works; every other tier should use
- * `seedSignedInMember` instead.
+ * The real sign-up funnel from a directly minted token (no email round
+ * trip), registration crypto stubbed, ending signed in. For the
+ * members/auth/webauthn specs; others use `seedSignedInMember`.
  */
 export async function registerAndCompleteSignup(
   app: INestApplication<Server>,

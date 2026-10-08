@@ -5,10 +5,8 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { Pool } from 'pg';
 import { seedDatabase } from '../src/db/seed';
 
-// Started once for the whole `pnpm test:integration` run (Vitest's
-// globalSetup keeps this module instance alive between setup and
-// teardown), giving the integration suite real Postgres/Valkey instances
-// instead of a developer-started `docker compose` pair.
+// Real Postgres/Valkey, started once for the whole `pnpm test:integration`
+// run.
 const POSTGRES_IMAGE = 'postgres:18-alpine';
 const VALKEY_IMAGE = 'valkey/valkey:9-alpine';
 const POSTGRES_USER = 'bagheera';
@@ -39,12 +37,8 @@ export async function startIntegrationInfra(): Promise<void> {
 
   process.env.DATABASE_URL = databaseUrl;
   process.env.VALKEY_URL = valkeyUrl;
-  // Every createTestApp() boots a real Nest app with the real pino logger
-  // (logging.module.ts defaults to 'info', logging a JSON line per HTTP
-  // request) — across the whole suite that's hundreds of lines of noise
-  // burying the actual test output. Quiet by default; still overridable by
-  // setting LOG_LEVEL before running the suite, for anyone who actually
-  // wants request-level logs while debugging one.
+  // pino logs a line per request at 'info', burying test output; set
+  // LOG_LEVEL to get them back.
   if (!process.env.LOG_LEVEL) {
     process.env.LOG_LEVEL = 'silent';
   }

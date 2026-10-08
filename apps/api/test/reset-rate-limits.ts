@@ -1,19 +1,8 @@
 import IORedis from 'ioredis';
 
-// Every integration spec file runs in the same process against the same
-// shared Valkey instance for the whole `test:integration` run (see
-// integration-global-setup.ts) — and every request in this suite comes
-// from the same loopback source IP. Without a reset, the real
-// RateLimitGuard's ip-dimension counters/lockouts (rl:ip:..., rl:block:
-// ip:...) bleed across files: a burst of failed requests in one file (e.g.
-// webauthn/*, members/profile) can trip the shared IP's lockout, and every
-// request after that — even a valid one, in an unrelated file — gets
-// throttled, so the false throttle looks like a broken test instead of a
-// rate-limit hit.
-//
-// Flush the guard's own keys before every test across the whole suite —
-// the same cleanup security/rate-limit.integration-spec.ts already does
-// for itself, just applied globally instead of to one file.
+// Every spec shares one Valkey and one loopback IP, so RateLimitGuard's
+// counters and lockouts (`rl:*`) would bleed across tests and throttle
+// unrelated ones. Flushed before every test.
 let redis: IORedis;
 
 beforeAll(() => {

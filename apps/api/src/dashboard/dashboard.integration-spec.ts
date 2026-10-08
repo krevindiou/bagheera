@@ -24,7 +24,7 @@ async function createAccount(
   return (res.body as { account: { id: string } }).account.id;
 }
 
-/** A date guaranteed to fall in the previous calendar month relative to whenever this test actually runs. */
+/** A day in the previous calendar month (UTC, like APP_TIMEZONE in tests). */
 function dayInPreviousCalendarMonth(): string {
   const now = new Date();
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 15));
@@ -112,11 +112,8 @@ describe('GET /dashboard', () => {
   it("ends both the synthesis chart and each tile's sparkline at the latest operation, not today", async () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
-    // No initial balance — that operation would be dated today (see
-    // `operation.valueDate`'s `defaultNow()`), defeating the point below.
+    // No initial balance: that operation would be dated today.
     const accountId = await createAccount(mutate, bankId);
-    // Dated years before "today" — if either window were anchored to the
-    // real current date, the last point's period would be this month.
     await mutate('post', '/operations', {
       accountId,
       type: 'debit',
@@ -163,9 +160,8 @@ describe('GET /dashboard', () => {
   it('reports the total reconciled balance separately, excluding unreconciled operations', async () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
-    // The initial-balance opening operation is always reconciled (see
-    // AccountService.create) — a second, unreconciled operation is what
-    // makes the total and reconciled total actually diverge.
+    // The opening operation is reconciled; the unreconciled one below makes
+    // the two totals diverge.
     const accountId = await createAccount(mutate, bankId, 250);
     await mutate('post', '/operations', {
       accountId,

@@ -29,12 +29,10 @@ const JOB_OPTIONS: JobsOptions = {
 };
 
 /**
- * Producer side of scheduler generation: a save or a sign-in queues the
- * work and returns, and the worker (generation.worker.ts) does it one job
- * at a time. An hourly sweep (see scheduleSweep) also catches up members
- * who neither save nor sign in, e.g. one whose session crosses midnight. A save can be due up to a thousand operations (two thousand with
- * a transfer), which used to be inserted while the request waited, holding
- * one of the few database connections every member's requests share.
+ * Producer side of scheduler generation: a save or sign-in queues the work,
+ * and the worker (generation.worker.ts) does it one job at a time, off the
+ * request (a save can be due a thousand operations, two with a transfer).
+ * An hourly sweep catches up members who neither save nor sign in.
  */
 @Injectable()
 export class GenerationQueueService {
@@ -48,10 +46,8 @@ export class GenerationQueueService {
     await this.queue.add('member', { memberId }, JOB_OPTIONS);
   }
 
-  // Registers (or updates in place) the BullMQ job scheduler that queues a
-  // sweep job every hour. The scheduler lives in Valkey and keeps only its
-  // next run pending, so calling this on every boot, from any number of
-  // instances, never duplicates it.
+  // Upserts the hourly sweep's job scheduler: safe on every boot, from any
+  // number of instances.
   async scheduleSweep(): Promise<void> {
     await this.queue.upsertJobScheduler(
       SWEEP_JOB_SCHEDULER_ID,

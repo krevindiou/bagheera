@@ -2,11 +2,7 @@
 import AppIcon from './AppIcon.vue';
 import type { IconName } from './appIcons';
 
-// Compact icon-only action button (row-level Edit/Close/Delete/View/Remove).
-// The action name is kept as the accessible name (aria-label) and hover
-// tooltip (title) — only the visible text goes away. Keeps the
-// `btn-outline-secondary`/`btn-outline-danger` classes so existing
-// selectors/theming keyed off them still apply.
+// Icon-only row action button; `label` is its aria-label and title.
 
 defineProps<{
   icon: IconName;

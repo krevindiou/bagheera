@@ -1,9 +1,6 @@
 import { expect, test } from '../support/fixtures';
 
-// docker/compose.e2e.yml sets SESSION_IDLE_TTL_SECONDS=8 for exactly this
-// test (see its comment, which names this file) — short enough to exercise
-// a real server-side expiry without waiting out the 30-minute production
-// default.
+// docker/compose.e2e.yml shortens SESSION_IDLE_TTL_SECONDS for this test.
 test('an idle session expires server-side and bounces the next navigation to sign-in', async ({
   signedInMember,
 }) => {
@@ -12,8 +9,7 @@ test('an idle session expires server-side and bounces the next navigation to sig
   await page.goto('/en/home');
   await expect(page.getByText(email, { exact: true })).toBeVisible();
 
-  // Genuinely waiting for a real idle TTL to elapse server-side — nothing
-  // to poll on instead.
+  // A real server-side TTL: nothing to poll.
   await page.waitForTimeout(10_000);
 
   await page.reload();

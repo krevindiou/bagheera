@@ -25,12 +25,8 @@ function decoratorNames(node) {
 const MUTATING_HTTP_DECORATORS = new Set(['Post', 'Put', 'Patch', 'Delete']);
 
 // Every *.controller.ts mutating handler (@Post/@Put/@Patch/@Delete) must
-// carry either @RateLimit(...) or @SkipRateLimit(), checked at the method
-// or — since every current use of both is uniform across a whole
-// controller — at the class level. This is the deepening that replaced
-// "RateLimitGuard exists, applying it is opt-in and easy to forget" (see
-// security/skip-rate-limit.decorator.ts): a missing decision now fails the
-// build instead of surfacing months later as its own "we forgot" commit.
+// carry @RateLimit(...) or @SkipRateLimit(), on the method or its class, so
+// a forgotten rate-limit decision fails the build.
 const requireRateLimitDecisionRule = {
   meta: {
     type: 'problem',

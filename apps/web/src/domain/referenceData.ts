@@ -30,9 +30,8 @@ export interface CategoryGroup {
   categories: Category[];
 }
 
-// Category choice lists are grouped (here, by parent — a top-level
-// category with children becomes an <optgroup>, itself included as the
-// group's first, still-selectable option).
+// Groups by parent: a top-level category with children becomes an
+// <optgroup>, itself its first, still selectable option.
 export function groupCategories(categories: Category[]): CategoryGroup[] {
   const topLevel = categories.filter((c) => c.parentId === null);
   const groups: CategoryGroup[] = [];
@@ -48,19 +47,10 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
   return standalone.length > 0 ? [{ label: null, categories: standalone }, ...groups] : groups;
 }
 
-// Fetched live from GET /reference-data/payment-methods (the same fixed,
-// seeded list as apps/api/src/db/seed-data.ts — ids are stable UUID
-// literals relied on across the app), the same way categories already are.
-// `type` is null only for the Initial balance method (the system-generated
-// opening operation) — never a user choice, and naturally excluded from
-// any debit/credit-filtered choice list since null matches neither.
+// `type` is null only for Initial balance, so type-filtered choice lists
+// never offer it.
 export type PaymentMethod = Schemas['PaymentMethodDto'];
 
-// The fixed UUID literals themselves live in packages/reference-data,
-// shared with apps/api (see db/seed-data.ts) — re-exported here so
-// existing `PAYMENT_METHOD_ID` imports from this module don't change.
-// Named lookup, not array position, is what business logic (icons, the
-// transfer-method check below) keys off.
 export { PAYMENT_METHOD_ID };
 
 export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): string {
@@ -77,9 +67,7 @@ export function thirdPartyLabel(thirdParty: string, paymentMethodId: string): st
     : thirdParty;
 }
 
-// Display icons: initial balance = gauge, credit card = card, check =
-// list, cash withdrawal/deposit = cash, transfer/direct debit =
-// exchange arrows. Web-only — no equivalent column server-side.
+// Web-only: the API has no icon column.
 export const PAYMENT_METHOD_ICONS: Record<string, IconName> = {
   [PAYMENT_METHOD_ID.CREDIT_CARD]: 'card',
   [PAYMENT_METHOD_ID.CHECK_DEBIT]: 'checkList',
@@ -96,9 +84,7 @@ export function paymentMethodIcon(id: string): IconName | null {
   return PAYMENT_METHOD_ICONS[id] ?? null;
 }
 
-// The "Transfer" debit/credit payment methods — the only two that can carry
-// a transfer pairing (apps/api/src/operations/transfer.service.ts) —
-// re-exported here so existing imports of it from this module don't change.
+// The only two payment methods that can carry a transfer pairing.
 export { TRANSFER_PAYMENT_METHOD_IDS };
 
 export type SearchCriteria = Schemas['SearchCriteriaDto'];

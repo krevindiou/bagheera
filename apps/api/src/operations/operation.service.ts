@@ -39,7 +39,6 @@ export class OperationService {
     const transferAccountId = transferAccountIdFor(dto.paymentMethodId, dto.transferAccountId);
 
     return this.db.transaction(async (tx) => {
-      // Re-validate fully-active state inside transaction under row locks
       await requireFullyActiveLocked(tx, dto.accountId as AccountId);
 
       const created = await this.transfers.insertWithMirror(
@@ -94,10 +93,9 @@ export class OperationService {
     const reconciled = dto.reconciled ?? false;
 
     await this.db.transaction(async (tx) => {
-      // Re-validate fully-active state inside transaction under row locks
       await requireFullyActiveLocked(tx, dto.accountId as AccountId);
 
-      // Lock the operation row and read pairing state from it
+      // Pairing state comes from the locked row.
       const [lockedOp] = await tx
         .select()
         .from(operation)
@@ -112,9 +110,6 @@ export class OperationService {
         );
       }
 
-      // Resolved from the pairing state stored in the locked row — creates,
-      // updates, retargets or removes the mirror as needed (see
-      // transfer.service.ts).
       const transferOperationId = await this.transfers.sync(
         tx,
         {

@@ -13,10 +13,7 @@ import BaseLayout from './BaseLayout.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
-// A dedicated, minimal router instead of the app's real singleton: BaseLayout
-// only cares that these names resolve and that push() works, not about what
-// `<router-view>` actually renders — using the real route table would drag
-// real (heavy) page components into every test here.
+// A minimal router: the real route table would pull in every page.
 function createTestRouter(): Router {
   const stub = { template: '<div />' };
   return createRouter({
@@ -112,14 +109,10 @@ describe('BaseLayout', () => {
     useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
 
-    // Sign-out lives behind the account menu trigger now (AccountMenu.vue
-    // has its own dedicated tests for the menu's full behavior — this is
-    // just confirming BaseLayout wires it up).
+    // Through the account menu (tested in AccountMenu.spec.ts).
     await wrapper.find('.account-trigger').trigger('click');
     await wrapper.find('.account-logout').trigger('click');
-    // signOut() doesn't await its own router.push(...), so the click
-    // handler's promise settles once navigation has merely started — poll
-    // the route itself rather than assume it's finished by then.
+    // Polls: signOut() doesn't await its navigation.
     await vi.waitFor(() => {
       if (router.currentRoute.value.name !== 'sign-in') throw new Error('not navigated yet');
     });

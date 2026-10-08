@@ -1,9 +1,6 @@
 <script setup lang="ts">
-// Shared "FinTech-Noir" pre-auth shell — dark gradient + vignette + blurred
-// violet halo behind a centered card (see Bagheera App v3.dc.html). Used by
-// sign-in and every other pre-auth page (register, activate,
-// confirm-email-change) so they all read as one consistent entry
-// experience rather than only sign-in being restyled.
+// The pre-auth shell (sign-in, register, activate, confirm-email-change):
+// dark gradient, vignette and violet halo behind a centered card.
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 </script>
 

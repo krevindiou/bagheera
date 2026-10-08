@@ -15,32 +15,24 @@ async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
 
 /**
  * The bank→account(→operation/scheduler) ownership chain, and the flat
- * report.memberId check, in one place. Every `requireOwned*` method answers
- * only "does this row belong to this member, and is it still reachable" —
- * a deleted bank or account makes everything under it unreachable (404,
- * even for the owner). "Closed" is never folded in here: closed rows stay
- * reachable (listable-only), and it's each caller's job to decide whether
- * it needs a fully-active chain for a mutation (operation/scheduler
- * services' own `requireFullyActive`) or just an active bank (the
- * closed/deleted check callers run themselves right after
- * `requireOwnedBank`, same as `bank.service.ts` always has).
+ * report.memberId check, in one place. `requireOwned*` answers "does this
+ * row belong to this member and is it still reachable": a deleted bank or
+ * account makes everything under it 404, even for the owner
+ * (`requireOwnedBank` aside, see there). "Closed" is never folded in:
+ * closed rows stay reachable, and each caller decides whether a mutation
+ * needs a fully-active chain.
  *
- * The `filterOwned*` siblings serve batch endpoints: given a set of ids,
- * each returns only the ones that are owned AND fully active (bank/account
- * both neither closed nor deleted) — silently dropping the rest, never
- * throwing. `filterOwnedAccountIds` is the one exception: like the
- * `requireOwned*` methods, closed stays allowed there (it serves report
- * account selection, which lists closed accounts same as everything else).
- * That's a different policy from the `requireOwned*` methods
- * above, not just a different arity of the same one.
+ * The `filterOwned*` siblings serve batch endpoints: they silently drop
+ * every id not owned AND fully active (bank and account neither closed nor
+ * deleted). `filterOwnedAccountIds` is the exception: closed is allowed
+ * there, for report account selection.
  */
 @Injectable()
 export class OwnershipService {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
-  // How many of `kind` the member holds, for MEMBER_QUOTAS: every row still
-  // reachable by the rules above (nothing deleted along its chain), closed
-  // ones included.
+  // How many of `kind` the member holds, for MEMBER_QUOTAS: reachable rows,
+  // closed ones included. Runs on the pool, not a caller's transaction.
   async countOwned(kind: QuotaKind, memberId: MemberId): Promise<number> {
     const reachable = reachableAccountsOf(this.db, memberId);
     switch (kind) {
@@ -75,8 +67,7 @@ export class OwnershipService {
     }
   }
 
-  // List all non-deleted banks owned by this member, ordered by name.
-  // Closed banks are included (reachable/listable).
+  // Closed banks included.
   async listOwnedBanks(memberId: MemberId) {
     return this.db
       .select()
@@ -85,10 +76,8 @@ export class OwnershipService {
       .orderBy(asc(bank.name));
   }
 
-  // Unlike every other method here, a bank's own `deleted`/`closed` is not
-  // folded into the throw — a non-owner still 404s regardless, but the
-  // owner sees the row and decides what a closed/deleted bank means for
-  // their call (bank.service.ts rejects it; account creation does too).
+  // Unlike the account/operation/scheduler checks, a deleted bank doesn't
+  // 404 for its owner: callers check `closed`/`deleted` themselves.
   async requireOwnedBank(id: BankId, memberId: MemberId) {
     const [row] = await this.db.select().from(bank).where(eq(bank.id, id));
     if (!row || row.memberId !== (memberId as string)) {
@@ -114,13 +103,9 @@ export class OwnershipService {
     return row;
   }
 
-  // Only for call sites that need a fully-active target, not merely a
-  // reachable one — unlike requireOwnedAccount above, "closed" IS folded
-  // into the throw here. Bound to this service's own injected connection,
-  // so it's for callers running outside a transaction (account.service.ts's
-  // update/close) — TransferService.requireEligibleTarget needs the same
-  // check inside its caller's own transaction instead, so it uses
-  // isFullyActive directly against a row it fetches itself.
+  // requireOwnedAccount plus a 422 when the account or its bank is closed.
+  // Runs on the pool; inside a transaction, use isFullyActive on a row
+  // fetched through it (as TransferService.requireEligibleTarget does).
   async requireOwnedFullyActiveAccount(id: AccountId, memberId: MemberId) {
     const row = await this.requireOwnedAccount(id, memberId);
     if (!isFullyActive(row.account, row.bank)) {
@@ -238,8 +223,8 @@ export class OwnershipService {
       .map((row) => row.id);
   }
 
-  // Same policy as the filterOwned*Ids siblings above: closed allowed,
-  // foreign/unknown/deleted-chain ids dropped silently.
+  // Unlike the siblings above, closed accounts are kept; foreign, unknown
+  // and deleted-chain ids are dropped.
   async filterOwnedAccountIds(ids: string[], memberId: MemberId): Promise<string[]> {
     if (ids.length === 0) {
       return [];

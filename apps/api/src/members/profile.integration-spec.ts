@@ -132,8 +132,8 @@ describe('POST /members/profile', () => {
       expect(row.pendingEmail).toBeNull();
     });
 
-    // M2: a taken address used to skip the write and the email, which
-    // showed in both the response time and the previous link (next test).
+    // Neither the response time nor the previous link (next test) may
+    // reveal a taken address.
     it('handles an address another member holds the same way, but sends its owner a notice, not a link', async () => {
       const other = await insertMemberWithCredential(app, { locale: 'fr' });
       const fixture = await seedSignedInMember(app);

@@ -1,8 +1,4 @@
-// Range options for the synthesis chart's window selector, rendered by
-// SynthesisChartPanel.vue for both the dashboard chart (DashboardPage.vue)
-// and the per-account chart (OperationsPage.vue), which both send the
-// chosen value straight through as the API's `range` query param (see
-// apps/api/src/common/synthesis-chart.ts's `parseSynthesisChartWindow`).
+// The synthesis chart's window choices, sent as the API's `range` param.
 export type SynthesisChartRange = '12' | '24' | 'all';
 
 export const SYNTHESIS_CHART_RANGES: SynthesisChartRange[] = ['12', '24', 'all'];

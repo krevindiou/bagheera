@@ -12,11 +12,10 @@ import { SchedulerGenerationService } from './generation.service';
 const logger = new Logger('SchedulerGenerationWorker');
 
 /**
- * Consumes GenerationQueueService's jobs one at a time: however many
- * members save schedulers or sign in at once, generation holds a single
- * database connection, and each job stops at MAX_OCCURRENCES_PER_RUN — the
- * next save or sign-in picks up anything left. Built and closed by
- * SchedulersModule.
+ * Consumes GenerationQueueService's jobs one at a time, so generation holds
+ * a single database connection. Each job stops at MAX_OCCURRENCES_PER_RUN;
+ * the next save, sign-in or hourly sweep picks up the rest. Built and
+ * closed by SchedulersModule.
  */
 export function createGenerationWorker(
   connection: IORedis,

@@ -35,9 +35,8 @@ test('create a bank and an account, then edit the bank and close the account', a
   const bankRow = page.getByTestId('bank-row').filter({ hasText: bankName });
   await expect(bankRow.getByText(accountName)).toBeVisible();
 
-  // The bank's own controls render before its nested account list in the
-  // DOM, so .first() is the bank's "Edit", not the account row's. Editing
-  // now opens a page-level drawer rather than replacing the row inline.
+  // .first() is the bank's "Edit" (it precedes its accounts in the DOM);
+  // editing opens a drawer.
   await bankRow.getByRole('button', { name: en.accounts.edit, exact: true }).first().click();
   const editBankDrawer = page.locator('.drawer-backdrop');
   await editBankDrawer.getByLabel(en.accounts.bankNameLabel, { exact: true }).fill(renamedBankName);
@@ -50,8 +49,7 @@ test('create a bank and an account, then edit the bank and close the account', a
   await page.getByRole('button', { name: en.common.ok, exact: true }).click();
   await expect(alertWithText(page, en.accounts.accountClosed)).toBeVisible();
 
-  // Closed stays listed/reachable rather than disappearing (see
-  // CLAUDE.md's ownership-scoping note on "closed").
+  // Closed stays listed.
   await expect(accountRow).toBeVisible();
   await expect(accountRow.getByText(en.accounts.closed)).toBeVisible();
 });

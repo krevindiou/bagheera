@@ -1,13 +1,6 @@
-// Thin wrapper over Mailpit's HTTP API (see docker/compose.yml's `mailpit`
-// service and the `playwright` service's `E2E_MAILPIT_HTTP_URL`). Every
-// email this app sends carries at most one actionable link, built server
-// -side as a plain `<a href="...">...</a>` — see
-// apps/api/src/email/i18n/en.ts — so "the link in the email" is
-// unambiguous.
-//
-// Deliberately not a fixture: it's used both from spec files (clicking a
-// real link is part of what's under test) and from fixtures.ts's fast-path
-// setup helpers, so a plain importable function is the simpler shape.
+// Mailpit's HTTP API (docker/compose.yml). Every email carries at most one
+// distinct link, so "the link in the email" is unambiguous. Plain functions,
+// not fixtures: specs and fixtures.ts both use them.
 
 const MAILPIT_URL = process.env.E2E_MAILPIT_HTTP_URL ?? 'http://localhost:8025';
 
@@ -37,16 +30,9 @@ async function messagesTo(toAddress: string): Promise<MailpitMessageSummary[]> {
 }
 
 /**
- * Snapshots the message ids already sitting in `toAddress`'s inbox. Pass
- * the result as `waitForEmailLink`'s `excludeIds` when a test sends a
- * *second* email to an address that's already received one (e.g.
- * email-change.spec.ts's confirmation email, sent to a *different* address
- * than the account's original sign-up email) — without it, that earlier,
- * already-read email is a false-positive match, returned before the real
- * (asynchronously-queued, BullMQ) one has even arrived. Call this *before*
- * triggering whatever action queues the new email. Unnecessary (but
- * harmless) for a fresh, never-before-emailed address, since there's
- * nothing yet to exclude.
+ * The ids already in `toAddress`'s inbox, as `waitForEmailLink`'s
+ * `excludeIds`: take it before triggering a second email to an address, or
+ * the earlier one matches before the queued one arrives.
  */
 export async function existingMessageIds(toAddress: string): Promise<Set<string>> {
   return new Set((await messagesTo(toAddress)).map((message) => message.ID));
@@ -60,11 +46,8 @@ async function findMessageId(toAddress: string, excludeIds: Set<string>): Promis
 }
 
 /**
- * Polls Mailpit until an email has arrived for `toAddress`, then returns the
- * single link found in its HTML body. Pass `excludeIds` (from
- * `existingMessageIds`, captured before the triggering action) whenever
- * this isn't the first email ever sent to `toAddress` — see its doc comment
- * for why.
+ * Polls until a new email reaches `toAddress` and returns its link (see
+ * `existingMessageIds` for `excludeIds`).
  */
 export async function waitForEmailLink(
   toAddress: string,
@@ -96,9 +79,7 @@ export async function waitForEmailLink(
   return match[1].replace(/&amp;/g, '&');
 }
 
-/** Every emailed link here (activate / confirm-email-change) is a
- * single-use `?key=` token — see the matching onMounted() in each page
- * under apps/web/src/pages/auth/. */
+/** The `?key=` token of an activate / confirm-email-change link. */
 export function keyFromLink(link: string): string {
   const key = new URL(link).searchParams.get('key');
   if (!key) {

@@ -1,7 +1,6 @@
-// The app's calendar day (`YYYY-MM-DD`) follows a time zone, not UTC, so
-// "today" and month boundaries match what members see on their wall clock:
-// the member's own `time_zone` where one is known (see member-today.ts),
-// else APP_TIMEZONE.
+// Calendar days follow a time zone, not UTC, so "today" and month
+// boundaries match the member's wall clock: their own `time_zone` when
+// known (see member-today.ts), else APP_TIMEZONE.
 export function appTimeZone(): string {
   return process.env.APP_TIMEZONE || 'UTC';
 }

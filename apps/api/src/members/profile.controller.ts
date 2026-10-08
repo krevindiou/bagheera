@@ -54,10 +54,7 @@ export class ProfileController {
     return { message: 'Time zone updated.' };
   }
 
-  // Public: reached from the confirmation link mailed to the new address,
-  // not from an authenticated session — the token itself (see
-  // ProfileService.confirmEmailChange) is what proves the caller controls
-  // that mailbox.
+  // Public: reached from the emailed link; the token proves mailbox control.
   @Post('profile/confirm-email-change')
   @HttpCode(200)
   @Public()

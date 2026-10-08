@@ -15,10 +15,8 @@ import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response
 
 export type WebauthnCredentialSummary = WebauthnCredentialSummaryDto;
 
-// Authentication is passkey-only with no password fallback and no account
-// recovery — deleting your last remaining passkey would be a permanent,
-// total lockout from a single settings click. Blocked below, not just
-// discouraged.
+// No password and no account recovery: removing the last passkey would be
+// a permanent lockout.
 const LAST_PASSKEY_ERROR = 'Cannot remove your last passkey — it would lock you out permanently.';
 
 /** Listing/removal for a member's own passkeys — never exposes the public key or counter. */
@@ -45,10 +43,8 @@ export class WebauthnCredentialsService {
     return rows;
   }
 
-  // Step-up gated like registration (see WebauthnRegistrationService): a
-  // hijacked session that could delete passkeys would, right after planting
-  // its own, lock the real owner out for good — there's no recovery path.
-  // The alert email mirrors registration's for the same reason.
+  // Step-up gated and alerted like registration: a hijacked session could
+  // otherwise plant its own passkey, then delete the owner's.
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
     consumeStepUp(req);

@@ -16,11 +16,8 @@ import {
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
-// Same reasoning as webauthn-registration.integration-spec.ts: mock only
-// the one function a real authenticator would otherwise be needed for —
-// exercised here via the app's own injected WebauthnCryptoService instance
-// rather than vi.mock(), so this file can freely interleave with
-// test-support/auth-fixture.ts's own use of the same spy trick.
+// Only verification is stubbed (it needs a real authenticator), by spying
+// on the injected WebauthnCryptoService like auth-fixture.ts.
 function verifiedRegistration(credentialId: string): VerifiedRegistrationResponse {
   return {
     verified: true,
@@ -193,9 +190,8 @@ describe('webauthn signup', () => {
         .send({ response: fakeResponseFor(credentialIdA) })
         .expect(200);
 
-      // A second outstanding link for the same email (see
-      // signup-token.ts's TTL-only trade-off) reaching verify() after the
-      // first already created the row.
+      // A second outstanding link for the same email, after the first
+      // created the row.
       const agentB = request.agent(app.getHttpServer());
       const csrfB = await csrfTokenFor(agentB);
       await agentB
@@ -203,12 +199,8 @@ describe('webauthn signup', () => {
         .set('x-csrf-token', csrfB)
         .send({ key: tokenFor(email) })
         .expect(400); // email now exists — same generic rejection as options() above
-      // Forcing verify() to run anyway (bypassing options()'s own guard)
-      // still can't succeed: no session challenge is stashed without a
-      // successful options() call, so this exercises the same "no prior
-      // options()" branch, not the unique-violation branch specifically —
-      // options()'s own existence check is what actually prevents a second
-      // completion in practice, and is asserted above.
+      // verify() anyway fails on the missing challenge (not the
+      // unique-violation branch).
       const res = await agentB
         .post('/webauthn/signup/verify')
         .set('x-csrf-token', csrfB)

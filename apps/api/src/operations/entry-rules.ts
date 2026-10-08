@@ -12,19 +12,14 @@ import { TRANSFER_PAYMENT_METHOD_IDS } from './transfer.service';
 
 export type EntryType = 'debit' | 'credit';
 
-// The "Initial balance" payment method, reserved for the system-generated
-// opening operation — exported once here rather than each of
-// operation.service.ts/batch.service.ts/account.service.ts redeclaring its
-// own local alias for the same id.
+// Reserved for the system-generated opening operation.
 export const OPENING_BALANCE_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.INITIAL_BALANCE;
 
 // Rules shared by operations and schedulers, which are both "an entry on an
 // account with a type, a payment method and a category".
 
-// Required for creating an entry and for editing/reconciling/deleting an
-// existing one; an entry on a merely-closed account (or a closed bank)
-// stays listable-only. See security/reachable.ts's isFullyActive for what
-// "fully active" means.
+// Required to create, edit, reconcile or delete an entry: one on a closed
+// account or bank stays listable-only.
 export function requireFullyActive(row: {
   account: { closed: boolean; deleted: boolean };
   bank: { closed: boolean; deleted: boolean };
@@ -38,8 +33,7 @@ export function requireFullyActive(row: {
   }
 }
 
-// Shared by operation.service.ts and scheduler.service.ts's own update():
-// an entry's account is fixed at creation, same rule for both.
+// An entry's account is fixed at creation.
 export function accountCannotBeChanged(): BusinessError {
   return new BusinessError(
     HttpStatus.BAD_REQUEST,
@@ -96,8 +90,8 @@ export function transferAccountIdFor(
   return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId) ? (transferAccountId ?? null) : null;
 }
 
-// Re-validates fully-active state inside a transaction under row locks.
-// Called after locking the account and bank rows via FOR UPDATE.
+// Locks the account and bank rows (FOR UPDATE) and re-checks they're fully
+// active, inside the caller's transaction.
 export async function requireFullyActiveLocked(
   tx: Executor,
   accountId: AccountId,

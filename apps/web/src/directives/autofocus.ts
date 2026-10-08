@@ -1,11 +1,7 @@
 import type { Directive } from 'vue';
 
-// A drop-in replacement for the native `autofocus` HTML attribute. Native
-// autofocus always scrolls the focused element into view, even when it's
-// already fully visible — inside a fixed-position drawer, that still nudges
-// the *page's own* scroll position, visibly shifting the content behind the
-// backdrop by a few pixels the instant the drawer opens.
-// `{ preventScroll: true }` focuses the field without that jump.
+// Native `autofocus` without the scroll: inside a fixed drawer, native
+// autofocus nudges the page behind the backdrop.
 export const vAutofocus: Directive<HTMLElement, boolean | undefined> = {
   mounted(el, binding) {
     if (binding.value === false) return;

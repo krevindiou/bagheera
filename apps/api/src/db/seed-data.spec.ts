@@ -6,9 +6,7 @@ import {
   SALARY_CATEGORY_SEED_ID,
 } from './seed-data';
 
-// class-validator isn't pulled in here — this only checks the version/variant
-// nibbles the app actually relies on (IsUUID('7') elsewhere checks the same
-// shape), via a plain regex rather than adding a test dependency on it.
+// The version/variant nibbles IsUUID('7') checks.
 const UUID_V7_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function flattenCategories(seeds: CategorySeed[]): CategorySeed[] {

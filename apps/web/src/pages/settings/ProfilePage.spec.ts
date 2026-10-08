@@ -26,10 +26,7 @@ function errorResult(status: number, error?: unknown) {
 
 type ApiResult = ReturnType<typeof jsonResult> | ReturnType<typeof errorResult>;
 
-// ProfilePage reads session.member.email once, synchronously, as its form's
-// initial value — the session needs to be populated on the *same* pinia
-// instance before mount(), not after (see withGlobalPlugins' own doc-comment
-// on why a fresh pinia is activated as soon as it's called).
+// The form reads session.member.email once, so it's set before mount().
 function mountWithSession(email: string, attachTo?: Element) {
   const plugins = withGlobalPlugins();
   useSessionStore().setMember({ email, locale: 'en', timeZone: 'UTC' });

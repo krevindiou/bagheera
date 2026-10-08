@@ -1,12 +1,9 @@
 import 'express-session';
 
-// Global augmentation, same pattern as webauthn-session-data.ts. Stashes the
-// sign-up ceremony's challenge and the raw token key between the "options"
-// and "verify" round trip — separate fields from webauthnChallenge so a
-// leftover sign-in ceremony's challenge can never satisfy a sign-up
-// verify, and vice versa. `pendingSignupKey` is re-parsed
-// fresh at verify time (see WebauthnSignupService) — never trust a cached
-// parse of it.
+// The sign-up ceremony's challenge and raw token key, between "options" and
+// "verify". Separate from webauthnChallenge so a sign-in challenge can't
+// satisfy a sign-up verify, and vice versa. `pendingSignupKey` is re-parsed
+// at verify time, never trusted as cached.
 declare module 'express-session' {
   interface SessionData {
     pendingSignupChallenge?: string;

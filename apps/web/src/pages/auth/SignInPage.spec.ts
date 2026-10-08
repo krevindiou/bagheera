@@ -27,11 +27,8 @@ function jsonResult(status: number, data?: unknown) {
 describe('SignInPage', () => {
   beforeEach(async () => {
     apiClient.POST.mockReset();
-    // Navigating to "home" (requiresAuth) after a successful sign-in runs
-    // the real router guard, which restores the session via GET /auth/me
-    // since a fresh store starts unrestored — default to "no session" and
-    // have the success-path tests below override it, or the guard's own
-    // restore() overwrites the member sign-in just set.
+    // The guard on "home" calls GET /auth/me: default to "no session",
+    // overridden by the success-path tests.
     apiClient.GET.mockReset();
     apiClient.GET.mockResolvedValue(jsonResult(200, undefined));
     vi.mocked(browserSupportsWebAuthn).mockReturnValue(true);
@@ -40,8 +37,7 @@ describe('SignInPage', () => {
     await router.push({ name: 'sign-in' });
   });
 
-  // M1: sign-in is usernameless — asking for an email first used to let
-  // anyone learn which addresses have an account.
+  // Usernameless: no email field to probe which addresses have an account.
   it('asks for no email — just the passkey button', () => {
     const wrapper = mount(SignInPage, withGlobalPlugins());
     expect(wrapper.find('input').exists()).toBe(false);

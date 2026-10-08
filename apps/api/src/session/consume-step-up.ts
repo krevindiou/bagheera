@@ -9,22 +9,15 @@ import './step-up-session-data';
 export const STEP_UP_TTL_MS = 5 * 60 * 1000;
 
 /**
- * Gates a sensitive mutation — an email change, adding a passkey, removing
- * one — on a fresh step-up proof (see WebauthnStepUpService, the
- * passkey-era analog of "enter your current password"). A signed-in session
- * alone isn't enough for these: a stolen cookie or an unlocked, unattended
- * device carries one too, and adding a passkey or swapping the email is how
- * that temporary access becomes a permanent takeover.
+ * Gates a sensitive mutation (email change, adding or removing a passkey)
+ * on a fresh step-up proof: a stolen cookie or an unattended device would
+ * otherwise turn temporary access into a permanent takeover.
  *
- * Consumed on read regardless of outcome — single-use, not just
- * time-bounded — so one ceremony authorizes exactly one action and a stale
- * flag can never gate a second, unrelated one.
+ * Consumed on read whatever the outcome, so one ceremony authorizes exactly
+ * one action.
  *
- * 422, not 400: this isn't malformed input (what 400 means elsewhere, see
- * error-response.ts) but a credential-check-equivalent failing, the same
- * bucket requireFullyActive() uses for a business-rule denial — and it can
- * never collide with the reserved "no active session" meaning of a bare 401
- * (see apps/web/src/api/client.ts's onResponse).
+ * 422: not malformed input (400), and a 401 would make the web client sign
+ * the member out.
  */
 export function consumeStepUp(req: Request): void {
   const verifiedAt = req.session.stepUpVerifiedAt;

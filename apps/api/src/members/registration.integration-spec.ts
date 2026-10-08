@@ -58,14 +58,12 @@ describe('registration', () => {
       expect(queued).toMatchObject({ email, country: 'FR', locale: 'fr' });
       // For the audit row the worker writes once it knows what it sent.
       expect(queued.sourceAddress).toContain('127.0.0.1');
-      // The account only comes into existence once the emailed link's
-      // WebAuthn ceremony completes — see WebauthnSignupService.
+      // No member row until the emailed link's passkey ceremony completes.
       const rows = await getDb(app).select().from(member).where(eq(member.email, email));
       expect(rows).toHaveLength(0);
     });
 
-    // M2: looking the address up here made a registered one measurably
-    // faster to answer than a new one, despite the identical body.
+    // A lookup on the request path would leak registration through timing.
     it('does exactly the same for an already-registered email', async () => {
       const { email } = await insertMemberWithCredential(app);
 

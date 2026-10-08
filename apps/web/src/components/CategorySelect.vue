@@ -1,14 +1,9 @@
 <script setup lang="ts" generic="T extends string | string[] | undefined">
 import { categoryLabel, type Category, type CategoryGroup } from '../domain/referenceData';
 
-// The category <select> every form shares: the operation/scheduler forms
-// (single, type-filtered, with a "No category" choice), the search panel
-// and the report form (multiple). Options come grouped by parent (see
-// groupCategories): a standalone category is a plain option, a parent
-// with children an <optgroup> listing the parent itself first. Generic
-// over the bound value — a single id or an array of them, whichever the
-// caller's v-model holds. Attributes (`id`, `multiple`, vee-validate's
-// field listeners) land on the <select>.
+// The category <select> every form shares, single or multiple (generic
+// over the v-model), with options grouped as groupCategories returns them.
+// Attributes land on the <select>.
 defineProps<{
   groups: CategoryGroup[];
   // The flat list `categoryLabel` looks each option's parent up in, for

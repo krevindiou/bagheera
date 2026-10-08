@@ -33,7 +33,6 @@ describe('SchedulerCatchUpService', () => {
     expect(queue.enqueueMember).toHaveBeenCalledWith('m1');
   });
 
-  // The member is already signed in by the time this runs.
   it('never fails sign-in: a catch-up that errors is left to the queue', async () => {
     const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
     const { service, queue } = setup(new Error('canceling statement due to statement timeout'));

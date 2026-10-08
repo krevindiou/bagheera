@@ -1,5 +1,4 @@
-// French translation catalog. Every key here must mirror en.ts's shape
-// exactly — checked at build time by src/i18n/parity.spec.ts.
+// French catalog; must mirror en.ts's shape (checked by parity.spec.ts).
 export default {
   app: {
     brand: 'Bagheera',

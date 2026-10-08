@@ -5,15 +5,10 @@ const optionalDate = z.preprocess(
   z.string().optional(),
 );
 
-// A distribution report ranks buckets by amount and shows at most this many
-// individually before collapsing the rest into "Other" — mirrors the API's
-// MAX_SIGNIFICANT_RESULTS_NUMBER (apps/api/src/reports/dto/create-report.dto.ts).
+// Mirrors the API's MAX_SIGNIFICANT_RESULTS_NUMBER.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
-// Field rules mirror the API DTOs (apps/api/src/reports/dto/*): periodGrouping
-// is required for every type — a 'distribution' report ranks *within* each
-// period too, defaulting to 'all' (a single whole-range bucket).
-// dataGrouping/significantResultsNumber are required for 'distribution' only.
+// Field rules mirror the API DTOs.
 export const reportSchema = z
   .object({
     type: z.enum(['sum', 'average', 'distribution']),
@@ -46,9 +41,7 @@ export const reportSchema = z
         ctx.addIssue({ code: 'custom', path: ['significantResultsNumber'], message: 'Required' });
       }
     }
-    // Mirrors the API's IsOnOrAfter check on valueDateEnd — an inverted
-    // range otherwise matches no operations and the report just renders
-    // empty, with nothing telling the member why.
+    // Mirrors the API's IsOnOrAfter.
     if (value.valueDateStart && value.valueDateEnd && value.valueDateEnd < value.valueDateStart) {
       ctx.addIssue({
         code: 'custom',

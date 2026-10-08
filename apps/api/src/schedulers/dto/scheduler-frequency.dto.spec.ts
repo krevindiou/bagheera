@@ -29,9 +29,7 @@ describe.each([
     expect(await validate(dto)).toEqual([]);
   });
 
-  // Regression case for 726f0aed: an unbounded frequencyValue paired with
-  // 'month'/'year' can push a generated occurrence date past what
-  // schedulers/generation/interval.ts's date arithmetic can safely handle.
+  // A huge interval would push occurrences past year 9999 (see the DTO).
   it('rejects frequencyValue above the 100 cap', async () => {
     const dto = plainToInstance(Dto, base(101, 'month'));
     const errors = await validate(dto);

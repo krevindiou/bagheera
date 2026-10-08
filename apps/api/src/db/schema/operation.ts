@@ -28,8 +28,7 @@ export const operation = pgTable(
     accountId: uuid('account_id')
       .notNull()
       .references(() => account.id),
-    // Set on generated occurrences; added alongside the Scheduler table
-    // itself in this same migration.
+    // Set on scheduler-generated occurrences.
     schedulerId: uuid('scheduler_id').references(() => scheduler.id),
     // Mirror of a transfer pair; nullable + unique so at most one operation
     // points back to any given counterpart.

@@ -5,14 +5,9 @@ import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixtur
 import { createTestApp } from '../test-support/create-test-app';
 
 /**
- * The domain-specific *.integration-spec.ts files each already prove their
- * own creation-time ownership check (e.g. "can't create an account under
- * someone else's bank"). What none of them individually cover is the
- * complementary case — mutating a resource that already exists and is
- * owned outright by someone else — across every resource OwnershipService
- * guards. That's this file's one job: a focused sweep of exactly the
- * update/close/delete-on-a-foreign-id gap, not a re-run of checks the
- * domain files already make.
+ * Sweeps update/close/delete on another member's existing resources, for
+ * every resource OwnershipService guards; the domain specs cover the
+ * creation-time checks.
  */
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {

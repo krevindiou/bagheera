@@ -7,12 +7,8 @@ export interface ThirdPartySuggestion {
 }
 
 /**
- * Debounced third-party autocomplete: queries once the field holds at
- * least 2 characters, 300ms after the member stops typing, and reports an
- * exact match's category back via `onExactMatch` so the caller can
- * prefill it. Doesn't own the datalist's focus-on-pick behavior — that's
- * bound to a DOM ref declared in each form's own template, so it stays
- * there rather than being forced into this composable's interface.
+ * Debounced third-party autocomplete (2+ characters, 300ms), reporting an
+ * exact match's category via `onExactMatch` so the caller can prefill it.
  */
 export function useThirdPartyAutocomplete(
   thirdParty: Ref<string | undefined>,

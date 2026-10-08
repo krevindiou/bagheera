@@ -381,9 +381,7 @@ export default {
   },
   language: {
     label: 'Language',
-    // Each language's own name, in that language — never translated, so a
-    // visitor can always find their language regardless of which one is
-    // currently active.
+    // Each language's own name, never translated.
     en: 'English',
     fr: 'Français',
     success: 'Language updated.',

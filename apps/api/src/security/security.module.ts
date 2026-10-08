@@ -12,20 +12,12 @@ import {
 } from './rate-limit-valkey-client.provider';
 import { RateLimitGuard } from './rate-limit.guard';
 
-// AuditService needs DRIZZLE — importing DbModule here (also @Global())
-// means every existing consumer of SecurityModule keeps working without
-// having to add DbModule itself.
 @Global()
 @Module({
   imports: [DbModule],
   providers: [
     CryptoService,
     rateLimitValkeyClientProvider,
-    // Global, the same way SessionModule wires SessionAuthGuard — nothing
-    // resolves RateLimitGuard as its own injectable token (a route opts out
-    // with @SkipRateLimit or overrides with @RateLimit instead), so unlike
-    // AuditService/CryptoService it isn't also listed as a plain provider or
-    // exported.
     { provide: APP_GUARD, useClass: RateLimitGuard },
     AuditService,
     OwnershipService,
@@ -38,14 +30,8 @@ export class SecurityModule implements OnModuleDestroy {
     private readonly rateLimitValkeyClient: IORedis,
   ) {}
 
-  // Mirrors SessionModule's own onModuleDestroy for its Valkey client — this
-  // module's rate-limit client had no such hook, so every Nest testing
-  // module compiled per integration-spec file (~30 of them) leaked its own
-  // open connection. Harmless in the running app (one process, one
-  // shutdown), but in the test suite each leaked client kept retrying after
-  // globalTeardown stopped the shared Testcontainers Valkey instance out
-  // from under it, spamming ECONNREFUSED/SocketClosedUnexpectedlyError once
-  // the whole run had already finished and reported its result.
+  // Otherwise each integration spec's app leaks a client that keeps
+  // retrying after Testcontainers stops Valkey.
   async onModuleDestroy(): Promise<void> {
     await closeValkeyClient(this.rateLimitValkeyClient);
   }

@@ -1,9 +1,8 @@
 import { safeHtml } from '../../common/escape-html';
 import { emailButton, renderEmailLayout } from '../templates/layout';
 
-// French translation catalog — see en.ts for the interpolation/safeHtml
-// and layout rationale; every entry here must mirror en.ts's keys exactly
-// (checked by i18n/index.spec.ts).
+// French email catalog; must mirror en.ts's shape (checked by
+// `satisfies` in index.ts).
 export default {
   registration: {
     subject: 'Inscription Bagheera',

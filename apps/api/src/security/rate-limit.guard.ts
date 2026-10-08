@@ -34,34 +34,20 @@ const MAX_BLOCK_SECONDS = 3600;
 /**
  * Valkey-backed request throttling with progressive lockout.
  *
- * Brute-force protection is rate-limited *per account and per source
- * address*, each enforced independently, with repeated failures
- * triggering progressive throttling. This guard therefore checks two
- * separate dimensions per request — the source IP, and (when the route
- * declares `identifierField`) the submitted identifier, e.g. email — each
- * with its own fixed-window counter. Exceeding either dimension's budget
- * locks that dimension out; each further violation while the lockout
- * "strike" count hasn't decayed doubles the block duration, up to
- * `MAX_BLOCK_SECONDS`. Rotating IPs against one account, or rotating
- * accounts from one IP, therefore doesn't dodge the limit.
+ * Checks two independent dimensions per request: the source IP (or the
+ * member, for `perMember`), and the submitted identifier when the route
+ * names an `identifierField` — so rotating one doesn't dodge the other.
+ * Exceeding a budget locks that dimension out; each further violation
+ * before the strikes decay doubles the block, up to `MAX_BLOCK_SECONDS`.
  *
- * Registered globally as `APP_GUARD` (`SecurityModule`), the same way
- * `SessionAuthGuard` enforces sign-in — see that guard's own doc for why a
- * per-route opt-in kept getting forgotten. `app.module.ts` imports
- * `SessionModule` before `SecurityModule` deliberately, so an unauthenticated
- * flood against a session-only route gets rejected there first, before
- * spending a Valkey round-trip here; `rate-limit.integration-spec.ts` pins
- * that ordering rather than leaving it to import position alone.
+ * Registered as a global `APP_GUARD`. SessionModule is imported before
+ * SecurityModule so SessionAuthGuard rejects unauthenticated floods first,
+ * without a Valkey round-trip (pinned by session.integration-spec.ts).
  *
- * A route opts out entirely with `@SkipRateLimit()`, or overrides the
- * budget with `@RateLimit(...)` — on any verb, not just mutating ones, so
- * an explicit decision is never silently ignored. Absent either decorator,
- * a plain read (not in `MUTATING_METHODS`) is let through untouched; a
- * mutating request instead falls back to `DEFAULT_RATE_LIMIT`. That
- * fallback is a backstop, not the common path — every route that exists
- * today resolves through an explicit decision, one the
- * `require-rate-limit-decision` eslint rule already requires of every
- * mutating handler. It only fires for a future one that dodges that rule.
+ * `@SkipRateLimit()` opts out and `@RateLimit(...)` sets the budget, on any
+ * verb. Without either, reads pass and mutations get `DEFAULT_RATE_LIMIT`,
+ * a backstop: the `require-rate-limit-decision` eslint rule already
+ * demands a decision on every mutating handler.
  */
 @Injectable()
 export class RateLimitGuard implements CanActivate, OnModuleDestroy {
@@ -74,10 +60,8 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   ) {}
 
   async onModuleDestroy(): Promise<void> {
-    // Nest resolves a guard referenced via @UseGuards() once per consuming
-    // module even when its provider is global, so this hook can run more
-    // than once against the same underlying client — guard against a
-    // double quit() on an already-closed connection.
+    // SecurityModule closes this same client too; closeValkeyClient
+    // tolerates the second call.
     await closeValkeyClient(this.valkeyClient);
   }
 
@@ -95,9 +79,6 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
 
     const req = context.switchToHttp().getRequest<Request>();
     if (!explicitOptions && !isMutatingRequest(req)) {
-      // No explicit budget and nothing to throttle by default — the same
-      // scope require-rate-limit-decision already draws around what needs
-      // a decision at all.
       return true;
     }
 
@@ -105,12 +86,7 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     if (options.appliesTo && !options.appliesTo(req)) {
       return true;
     }
-    // Scopes every dimension's Valkey key to this handler — without it,
-    // every route sharing the bare "ip:<ip>"/"id:<value>" key would consume
-    // from the very same counter regardless of each route's own configured
-    // budget (see the class doc's "per route" language, which the key
-    // construction didn't actually honor before this) — unless the options
-    // name a scope for several routes to share on purpose.
+    // One counter per route, unless the options name a shared scope.
     const routeKey = options.scope ?? `${context.getClass().name}#${context.getHandler().name}`;
     for (const dimension of this.dimensions(req, options, routeKey)) {
       await this.checkDimension(dimension, options.durationSeconds);
@@ -119,13 +95,8 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   }
 
   /**
-   * Independent throttle dimensions for this request: the source IP — or,
-   * for a `perMember` budget, the signed-in member instead — plus the
-   * submitted identifier (e.g. email) when the route names one, each with
-   * its own budget (see `ipPointsFor`), scoped to `routeKey` so unrelated
-   * routes never share a counter. A single route still checks both
-   * dimensions together (an attacker can't dodge one by rotating the
-   * other), it's only cross-route sharing that's excluded.
+   * The source IP (or the member, for `perMember`), plus the submitted
+   * identifier when the route names one, each keyed under `routeKey`.
    */
   private dimensions(
     req: Request,
@@ -142,17 +113,11 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
       ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]
       : undefined;
     if (typeof rawIdentifier === 'string' && rawIdentifier.length > 0) {
-      // Normalized the same way every flow looks the value up
-      // (`lower(email) = lower(...)`, see e.g. registration.service.ts) —
-      // otherwise varying letter case mints a fresh dimension key per
-      // variant, letting an attacker with a handful of source IPs bypass
-      // the per-account budget entirely by pairing each IP with its own
-      // case variant of the target email.
+      // Normalized like the email lookups (find-member-by-email.ts), or
+      // each case variant of one address would get its own budget.
       const normalizedIdentifier = rawIdentifier.trim().toLowerCase();
-      // Then hashed rather than used as-is: guards run before
-      // ValidationPipe, so this is whatever the body held — up to the body
-      // size limit — and a raw key would also store emails and one-time
-      // tokens verbatim in Valkey key names.
+      // Hashed: guards run before ValidationPipe, so this is unbounded raw
+      // input, and a raw key would store emails and tokens in Valkey.
       const identifierHash = createHash('sha256').update(normalizedIdentifier).digest('base64url');
       dims.push({
         key: `${routeKey}:id:${identifierHash}`,

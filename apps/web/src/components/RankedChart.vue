@@ -19,20 +19,11 @@ import type { Locale } from '../i18n/locales';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Legend, Tooltip);
 
-// Matches ChartJS.defaults.borderColor (set once, app-wide, in
-// SynthesisChart.vue) — the ordinary gridline color every chart already
-// uses, so the zero baseline's gridline blends in except for its own
-// emphasis below.
+// The app-wide gridline color (ChartJS.defaults.borderColor).
 const GRID_COLOR = 'rgba(242, 239, 233, 0.1)';
-// A visibly stronger line specifically at the zero baseline — credit and
-// debit diverge from it in both chart modes, so it needs to read as a
-// deliberate axis, not just another gridline.
+// Credit and debit diverge from zero, so its gridline reads as an axis.
 const ZERO_LINE_COLOR = 'rgba(242, 239, 233, 0.45)';
 
-// Scriptable grid color/width: every gridline gets the ordinary color and
-// a hairline width, except the one at value 0, which is thicker and more
-// opaque — the shared "separate positive from negative" treatment for
-// both the snapshot chart's x-axis and the temporal chart's y-axis.
 function emphasizeZero(ctx: { tick: { value: number } }): string {
   return ctx.tick.value === 0 ? ZERO_LINE_COLOR : GRID_COLOR;
 }
@@ -42,10 +33,7 @@ function emphasizeZeroWidth(ctx: { tick: { value: number } }): number {
 
 export interface RankedChartBar {
   label: string;
-  // Decimal amount (already converted with toDisplayAmount, same convention as
-  // SynthesisChart's points) — credit positive, debit negative, so debit
-  // and credit bars diverge from one shared zero baseline in the same
-  // chart (distributionSeries.ts negates debit before building this).
+  // Decimal amount: credit positive, debit negative, diverging from zero.
   value: number;
   color: string;
 }
@@ -58,26 +46,13 @@ export interface RankedChartStackedPoint {
 export interface RankedChartStackedSeries {
   label: string;
   color: string;
-  // Same credit-positive/debit-negative convention as RankedChartBar.value
-  // — Chart.js stacks positive-valued datasets upward and negative-valued
-  // ones downward from zero within the same `stack` group, so credit and
-  // debit series diverge in one stacked chart rather than needing two.
+  // Signed like RankedChartBar.value: Chart.js stacks negatives downward.
   points: RankedChartStackedPoint[];
 }
 
-// A facet is one currency, combining both debit and credit (as a diverging
-// chart — see the sign convention on RankedChartBar/RankedChartStackedSeries
-// above) rather than one chart per side. Ranked once over its whole date
-// range: with a single period ('all' periodGrouping, or a range that
-// happens to fall in one period), that ranking has nothing to stack against
-// and renders as a plain horizontal ranked bar chart; with more than one
-// period, the same ranking becomes the fixed segment set of a
-// stacked-over-time bar chart. Both are Chart.js `Bar` — only the axis
-// orientation and dataset shape differ — rather than a plain-HTML fallback
-// for the single-period case, so the whole component stays one rendering
-// technology. `report-distribution.service.ts`'s per-label `points` arrays
-// already carry both shapes — `toDistributionFacets` (distributionSeries.ts)
-// picks the mode from how many points are present.
+// One diverging chart per currency. A single period renders as horizontal
+// ranked bars ('snapshot'); several as bars stacked over time ('temporal'),
+// with the ranking as fixed segments. toDistributionFacets picks the kind.
 export type RankedChartFacet =
   | { kind: 'snapshot'; title: string; currency: string; bars: RankedChartBar[] }
   | { kind: 'temporal'; title: string; currency: string; series: RankedChartStackedSeries[] };
@@ -86,17 +61,14 @@ const props = defineProps<{ facets: RankedChartFacet[] }>();
 
 const { locale } = useI18n();
 
-// Hidden whenever every facet has no data, same hide-when-empty rule used
-// by SynthesisChart/reports/dashboard.
+// Hidden when every facet is empty.
 const hasData = computed(() =>
   props.facets.some(
     (facet) => (facet.kind === 'snapshot' ? facet.bars.length : facet.series.length) > 0,
   ),
 );
 
-// A ranked bar list needs enough vertical room per row to stay legible —
-// unlike the stacked (temporal) chart, whose height doesn't depend on how
-// many labels it has (they're stacked, not stacked *rows*).
+// Height per row, unlike the stacked chart.
 function snapshotHeight(bars: RankedChartBar[]): number {
   return Math.max(bars.length * 32, 80);
 }
@@ -125,9 +97,7 @@ function snapshotChartOptions(currency: string): ChartOptions<'bar'> {
         beginAtZero: true,
         grid: { color: emphasizeZero, lineWidth: emphasizeZeroWidth },
       },
-      // Chart.js draws a horizontal bar chart's first category at the
-      // bottom by default — `reverse` puts the highest-ranked (first)
-      // label at the top, matching how a ranking normally reads.
+      // Highest-ranked on top.
       y: { reverse: true },
     },
     plugins: {

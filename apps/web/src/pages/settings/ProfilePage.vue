@@ -39,9 +39,7 @@ const onSubmit = handleSubmit(async (values) => {
     return;
   }
 
-  // The address on file doesn't change yet — only once the confirmation
-  // link just emailed to it is clicked — so the session's email stays as
-  // it was.
+  // The email only changes once the emailed link is clicked.
   toast(t('settings.profile.success'), 'success');
 });
 </script>

@@ -8,14 +8,8 @@ import { AuditService } from '../security/audit.service';
 import { OwnershipService } from '../security/ownership.service';
 
 /**
- * Batch delete. Ownership is resolved per id via
- * OwnershipService.filterOwnedSchedulerIds, the same bank/account chain as
- * the single-scheduler endpoints: an id belonging to another member, or
- * reachable only through a deleted or closed bank/account, is dropped
- * rather than rejected — the caller never learns which of its ids were
- * foreign vs. simply didn't exist. Closed accounts are dropped too:
- * existing schedulers on closed accounts are listable only, so batch
- * delete must reject them the same way the single-scheduler `remove()` does.
+ * Batch delete. Ids that are foreign, unknown, or on a closed or deleted
+ * chain (see filterOwnedSchedulerIds) are silently dropped.
  */
 @Injectable()
 export class SchedulerBatchService {

@@ -6,10 +6,7 @@ import { RateLimit } from '../security/rate-limit.decorator';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { WebauthnRegistrationService } from './webauthn-registration.service';
 
-// Authenticated (no @Public()) — registering an additional passkey
-// requires an existing signed-in session *and* a fresh step-up proof,
-// consumed by options() (see WebauthnRegistrationService's own doc comment
-// for why the session alone isn't enough).
+// Signed-in only, plus a step-up proof consumed by options().
 @Controller('webauthn/registration')
 export class WebauthnRegistrationController {
   constructor(private readonly registration: WebauthnRegistrationService) {}

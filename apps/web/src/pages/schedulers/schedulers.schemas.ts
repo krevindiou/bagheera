@@ -8,9 +8,7 @@ const optionalId = z.preprocess(
   z.string().uuid().optional(),
 );
 
-// Field rules mirror the API DTOs (apps/api/src/schedulers/dto/*) — the
-// same recurring-fields-on-top-of-an-operation shape as operationSchema,
-// plus the recurrence config (limitDate/frequencyUnit/frequencyValue/active).
+// Field rules mirror the API DTOs: operationSchema's plus recurrence.
 export const schedulerSchema = z
   .object({
     type: z.enum(['debit', 'credit']),

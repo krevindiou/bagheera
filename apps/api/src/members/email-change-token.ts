@@ -1,25 +1,16 @@
 import { CryptoService } from '../security/crypto.service';
 
-// Shorter-lived than activation's 24h, matching password-reset's reasoning:
-// this token proves control of a mailbox that's about to become the
-// account's contact address, so the exposure window matters more than
-// convenience does.
+// Short-lived: it proves control of the mailbox about to become the
+// account's contact address.
 const EMAIL_CHANGE_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 export interface EmailChangeTokenPayload {
   type: 'email_change';
-  /**
-   * The member requesting the change, not their (possibly since-changed)
-   * email — unlike activation/reset tokens, which are minted before the
-   * caller is known any other way, an email change is always requested
-   * from an authenticated session, so the stable id is already in hand and
-   * is what this token should stay bound to.
-   */
+  /** The requesting member's stable id, not their (changeable) email. */
   memberId: string;
   newEmail: string;
-  /** Must match the member's current `emailChangeTokenVersion`; a fresh
-   * change request bumps the stored version, invalidating every
-   * outstanding confirmation link minted under the previous one. */
+  /** Must match `member.emailChangeTokenVersion`, which each new request
+   * bumps, invalidating older links. */
   version: number;
   /** Epoch milliseconds. */
   exp: number;
@@ -42,11 +33,8 @@ export function buildEmailChangeToken(
 }
 
 /**
- * Decrypts and validates the shape/expiry of an email-change confirmation
- * key. Returns `null` for anything wrong with the token itself —
- * tampered/malformed ciphertext, bad JSON, wrong shape, expired — never
- * throws. Does *not* check the member's current pending-email/token
- * version; that requires a DB lookup and is the caller's job.
+ * Decrypts and checks shape/expiry; `null` for any bad token, never throws.
+ * The pending-email/version check against the DB is the caller's job.
  */
 export function parseEmailChangeToken(
   crypto: CryptoService,

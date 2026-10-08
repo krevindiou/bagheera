@@ -1,35 +1,16 @@
-# A second, independent Kamal app — not a "role" under config/deploy.yml's
-# `servers:` (Kamal roles are multiple *processes of the same image*, e.g. a
-# web + a job role; api is a genuinely separate image/Dockerfile/codebase
-# from the web app). Two independent Kamal apps sharing one host share that
-# host's single kamal-proxy instance automatically (the first `kamal deploy`
-# to run installs it; this one just reuses it) — disambiguated by the
-# `proxy.path_prefix` below rather than a second hostname, so the API stays
-# on the same origin as the web app (cookies, CORS).
+# The API, its own Kamal app (a separate image, so not a role of
+# config/deploy.yml). It shares the host's kamal-proxy and the web app's
+# hostname, routed by `proxy.path_prefix`, so it stays same-origin. Being an
+# app (not an accessory) gets it health-checked, zero-downtime deploys.
 #
-# Deployed with `-c config/deploy.api.yml` (or `-d api`, see ci.yml) on every
-# command — `kamal` alone always targets config/deploy.yml.
+# Pass `-c config/deploy.api.yml` (see ci.yml) on every command: `kamal`
+# alone targets config/deploy.yml.
 #
-# This replaces the api *accessory* config/deploy.yml used to carry: an
-# accessory only ever gets `kamal accessory reboot` (hard stop-then-start,
-# no health check, no overlap — see tech-debt.md #16). As its own app, `api`
-# now gets Kamal's normal `kamal deploy`: boot the new container, wait for
-# kamal-proxy's healthcheck below to pass, *then* swap traffic and stop the
-# old one.
+# Unverified against a live deploy when added: check that pages, /api/* and
+# /health all resolve, and that kamal-proxy didn't try to issue a second
+# TLS cert for APP_DOMAIN (Let's Encrypt rate limits).
 #
-# UNVERIFIED AGAINST A LIVE DEPLOY as of the commit that added this file —
-# multiple pieces of this config (path-prefix routing sharing web's
-# hostname, the build/migrate/deploy command sequence in ci.yml) are built
-# from Kamal's documented config surface but not proven against this app's
-# actual host. Watch the first real deploy closely: confirm a plain page
-# load (served by the *other* Kamal app, config/deploy.yml) and an API call
-# under /api/* and a bare /health both still resolve correctly, and that
-# kamal-proxy didn't attempt to reprovision a TLS cert for APP_DOMAIN (it
-# already holds one from the web app; a second independent issuance
-# attempt could hit Let's Encrypt's rate limit).
-#
-# Required at deploy time (see .kamal/secrets — shared with config/deploy.yml,
-# same variable names):
+# Required at deploy time (see .kamal/secrets):
 #   KAMAL_REGISTRY_PASSWORD, DATABASE_URL, VALKEY_URL, VALKEY_PASSWORD,
 #   CRYPTO_KEYS, CRYPTO_ACTIVE_KEY_ID, SESSION_SECRET, CSRF_SECRET,
 #   EMAIL_SMTP_URL, EMAIL_FROM
@@ -58,16 +39,10 @@ ssh:
 proxy:
   ssl: true
   host: <%= ENV.fetch("APP_DOMAIN") %>
-  # Same origin as the web app (config/deploy.yml's own proxy.host) — the
-  # two apps' kamal-proxy entries for that one hostname are disambiguated by
-  # path instead. /health stays unprefixed (see apps/api/src/main.ts's
-  # setGlobalPrefix: Dockerfile.api's own HEALTHCHECK and docker-compose.yml
-  # both curl it unprefixed too), so it needs its own prefix entry alongside
-  # /api itself.
+  # The web app's hostname, told apart by path. /health is unprefixed (see
+  # apps/api/src/main.ts), hence its own entry.
   path_prefix: "/health,/api"
-  # Without this, kamal-proxy strips the prefix before forwarding — every
-  # route the API actually registers (under /api, plus bare /health) would
-  # 404 with it stripped.
+  # The API's routes include the prefix; stripping it would 404 them all.
   strip_path_prefix: false
   healthcheck:
     path: /health
@@ -85,8 +60,6 @@ builder:
   dockerfile: docker/Dockerfile.api
   context: "."
 
-# Unchanged from the api accessory this replaces (config/deploy.yml, before
-# this commit) — same env, same secrets.
 env:
   clear:
     PORT: "3000"

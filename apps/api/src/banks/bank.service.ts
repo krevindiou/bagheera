@@ -54,7 +54,7 @@ export class BankService {
     }
 
     const created = await this.db.transaction(async (tx) => {
-      // Lock member row and check quota inside transaction
+      // Serializes concurrent creates for the quota check below.
       const [memberRow] = await tx
         .select()
         .from(member)

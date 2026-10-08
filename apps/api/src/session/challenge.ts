@@ -32,12 +32,9 @@ export function storeChallenge(
 }
 
 /**
- * Reads and clears a pending challenge — single-use, whatever the outcome.
- * Returns undefined when there is none or it has outlived CHALLENGE_TTL_MS
- * (without this, a ceremony abandoned halfway — e.g. a cancelled
- * "add a passkey" prompt, whose step-up proof is already spent — leaves a
- * challenge anyone holding the session cookie could answer for the rest of
- * the session). A challenge stored without a timestamp counts as expired.
+ * Reads and clears a pending challenge: single-use, whatever the outcome.
+ * Undefined when absent, undated, or older than CHALLENGE_TTL_MS, so an
+ * abandoned ceremony doesn't leave one answerable for the whole session.
  */
 export function takeChallenge(session: ChallengeSession, key: ChallengeKey): string | undefined {
   const challenge = session[key];

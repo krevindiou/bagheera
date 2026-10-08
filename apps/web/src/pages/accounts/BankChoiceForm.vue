@@ -11,9 +11,7 @@ import { useToast } from '../../composables/useToast';
 import { bankChoiceSchema, type BankChoiceForm } from './accounts.schemas';
 import type { Bank } from './accounts.types';
 
-// "New account" starts here — choose one of the member's existing
-// active banks, or create a new one — before account creation even
-// starts.
+// "New account" step one: pick an active bank or name a new one.
 const props = defineProps<{ banks: Bank[] }>();
 const emit = defineEmits<{ chosen: [bankId: string]; cancel: [] }>();
 

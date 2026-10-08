@@ -72,10 +72,9 @@ export class SchedulerService {
     );
 
     const created = await this.db.transaction(async (tx) => {
-      // Re-validate fully-active state inside transaction under row locks
       await requireFullyActiveLocked(tx, dto.accountId as AccountId);
 
-      // Lock member row and check quota inside transaction
+      // Serializes concurrent creates for the quota check below.
       const [memberRow] = await tx
         .select()
         .from(member)
@@ -112,8 +111,7 @@ export class SchedulerService {
       return created;
     });
 
-    // A newly-created scheduler may already be due — e.g. a value date of
-    // today, or in the past. Generation is queued after every save.
+    // May already be due (a value date today or in the past).
     await this.generation.enqueueScheduler(created.id);
 
     return created;
@@ -141,7 +139,6 @@ export class SchedulerService {
     );
 
     await this.db.transaction(async (tx) => {
-      // Re-validate fully-active state inside transaction under row locks
       await requireFullyActiveLocked(tx, dto.accountId as AccountId);
 
       await tx
@@ -164,9 +161,7 @@ export class SchedulerService {
         .where(eq(scheduler.id, id));
     });
 
-    // Editing a scheduler (e.g. changing its value date, interval, or
-    // flipping it active) can bring new occurrences into range; generation
-    // is queued after every save.
+    // An edit can bring new occurrences into range.
     await this.generation.enqueueScheduler(id);
   }
 
@@ -175,7 +170,6 @@ export class SchedulerService {
     requireFullyActive(owned);
 
     await this.db.transaction(async (tx) => {
-      // Re-validate fully-active state inside transaction under row locks
       await requireFullyActiveLocked(tx, owned.scheduler.accountId as AccountId);
 
       // Already-generated operations survive deletion; only their link to

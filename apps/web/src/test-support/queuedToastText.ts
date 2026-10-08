@@ -1,9 +1,8 @@
 import { useToast } from '../composables/useToast';
 
 /**
- * Every queued toast's text, joined — what a spec substring-matches
- * against instead of a page's own rendered text. Toasts render once, in
- * BaseLayout's ToastContainer, not inside any page a spec mounts alone.
+ * Every queued toast's text, joined: toasts render in BaseLayout, not in a
+ * page mounted alone.
  */
 export function queuedToastText(): string {
   return useToast()

@@ -57,14 +57,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
-  // Express-level middleware outside Nest's own guard/pipe/interceptor
-  // pipeline (e.g. csrf-csrf's doubleCsrfProtection) throws via the
-  // `http-errors` package rather than Nest's HttpException, so it never
-  // matches `instanceof HttpException` above. `http-errors` marks any
-  // exception it's safe to show the client with `expose: true` (true for
-  // 4xx, false for 5xx) — trust that flag rather than a bare numeric
-  // `statusCode`, so an unrelated object that merely happens to carry a
-  // `statusCode` property doesn't get misread as a deliberate HTTP error.
+  // Express middleware (e.g. csrf-csrf) throws `http-errors`, not
+  // HttpException. Trust its `expose` flag (true for 4xx) rather than a bare
+  // `statusCode`, which an unrelated error could carry too.
   private isExposedHttpError(exception: unknown): exception is Error & { statusCode: number } {
     return (
       exception instanceof Error &&
@@ -74,8 +69,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     );
   }
 
-  // Pulled straight off a BusinessError's own response body — no
-  // message-text matching involved, unlike the old errorCodeOf().
   private extractBusinessCode(
     exception: unknown,
   ): { code: string; params?: Record<string, string | number> } | Record<string, never> {
@@ -105,9 +98,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
       return exception.message;
     }
-    // 500, spelled out: statusCode is a plain number here
-    // (HttpException.getStatus() returns number, not the HttpStatus enum),
-    // so comparing it against the enum member trips the linter.
+    // A plain number: comparing against the HttpStatus enum trips the linter.
     const INTERNAL_SERVER_ERROR_STATUS = 500;
     if (statusCode === INTERNAL_SERVER_ERROR_STATUS) {
       return 'Internal server error';

@@ -2,27 +2,17 @@ import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { member } from '../db/schema';
 
-// Postgres unique_violation — guards the email-uniqueness race between the
-// precheck below and `write()` (see member schema's case-insensitive
-// unique index).
+// Postgres unique_violation (member_email_unique).
 const UNIQUE_VIOLATION = '23505';
 
 /**
- * Runs `write()` (an INSERT or UPDATE that sets `member.email` to `email`)
- * race-safely against the anti-enumeration requirement: resolves to
- * `{ ok: false }`, doing nothing else, if `email` is already taken by
- * another member — whether that's caught by the precheck here, or by the
- * database's unique index rejecting `write()` because another request
- * landed in the TOCTOU gap between the precheck and the write. A caller
- * must not let `{ ok: false }` show in its response unless whoever gets
- * that response has already proved they control `email` — as
- * `ProfileService.confirmEmailChange`'s caller has, through the emailed
- * link — or it becomes an oracle for enumerating registered accounts.
+ * Runs `write()` (setting `member.email` to `email`), resolving to
+ * `{ ok: false }` when another member holds `email`, whether caught by the
+ * precheck or by the unique index in the gap after it. Only surface
+ * `{ ok: false }` to a caller who has proved control of `email`, or it
+ * becomes an account-enumeration oracle.
  *
- * `excludeId`, when given, exempts that member's own current row from the
- * "taken" check — for an email *change*, "does someone else already have
- * this email" is the right question, not "does any row have it, including
- * the member's own unchanged one".
+ * `excludeId` exempts that member's own row from the check.
  */
 export async function raceSafeUniqueEmail<T>(
   db: NodePgDatabase,

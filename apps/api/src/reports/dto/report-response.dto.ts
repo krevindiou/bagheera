@@ -53,12 +53,9 @@ export class ReportSeriesDto {
 }
 
 export class ReportDistributionLabelSeriesDto {
-  // null = the collapsed "Other" bucket: the ranked tail past the top N,
-  // plus any uncategorized operations. The top-N label set is ranked once
-  // over the report's *whole* date range and then held fixed across every
-  // period — so with a month/quarter/year periodGrouping, a stacked chart's
-  // segments never appear, disappear, or reorder from one period to the
-  // next depending on which period happens to be looked at.
+  // null = "Other": the tail past the top N, plus uncategorized operations.
+  // The top N is ranked over the whole range and fixed across periods, so
+  // stacked segments don't reshuffle from one period to the next.
   label!: string | null;
   points!: ChartPointDto[];
 }

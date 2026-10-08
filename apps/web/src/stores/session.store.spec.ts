@@ -134,10 +134,8 @@ describe('useSessionStore', () => {
         response: new Response(null, { status: 200 }),
       });
       const store = useSessionStore();
-      // Pinia wraps each action call's returned promise in its own `.then()`,
-      // so the two calls' return values aren't `===` even though the store
-      // internally reuses the same underlying `restorePromise` — what
-      // actually matters is both settle and only one network call happens.
+      // Pinia wraps each action's promise, so they aren't `===`: assert one
+      // network call instead.
       await Promise.all([store.restore(), store.restore()]);
       expect(apiClient.GET).toHaveBeenCalledTimes(1);
       expect(store.member).toEqual({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });

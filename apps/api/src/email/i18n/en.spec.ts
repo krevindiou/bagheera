@@ -1,10 +1,7 @@
 import en from './en';
 
-// escape-html.spec.ts already covers safeHtml() itself; this pins that
-// every templated (non-static) email body actually routes its interpolated
-// value through it — a future template forgetting to wrap a newly added
-// interpolated field in safeHtml would otherwise open a stored-XSS path in
-// a transactional email (these bodies are rendered as HTML by mail clients).
+// Pins that every templated body routes its interpolated value through
+// safeHtml.
 const XSS_PAYLOAD = '<script>alert(1)</script>';
 const ESCAPED_PAYLOAD = '&lt;script&gt;alert(1)&lt;/script&gt;';
 

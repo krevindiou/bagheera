@@ -3,9 +3,8 @@ import { uuidPk } from './id';
 import { member } from './member';
 import { securityEventTypeEnum } from './enums';
 
-// Addition beyond the core entity catalog, required for audit-log
-// requirements. memberId is nullable: some events (e.g. a failed sign-in
-// against an unknown email) have no resolvable member.
+// Audit log. memberId is nullable: some events (e.g. a failed sign-in with
+// an unknown passkey) have no resolvable member.
 export const securityEvent = pgTable(
   'security_event',
   {

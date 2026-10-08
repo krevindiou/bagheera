@@ -2,16 +2,11 @@ import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
-// This module *is* what `mockApiClient()` stands in for everywhere else —
-// tested directly here: mock the network one layer below it, and exercise
-// the real client (real middlewares, real router, real session store)
-// against that.
+// The real client and middlewares, with only the network mocked.
 import { apiClient } from './client';
 
-// Node's fetch/Request implementation (unlike a browser) has no ambient
-// document to resolve a relative URL against, so every call below passes an
-// absolute `baseUrl` override — openapi-fetch supports this per-call,
-// independently of the "/" baseUrl the app itself configures in production.
+// Node can't resolve a relative URL, so each call passes an absolute
+// `baseUrl` override.
 const TEST_BASE_URL = 'http://localhost:3000';
 
 function jsonResponse(status: number, body: unknown = {}): Response {
@@ -32,18 +27,14 @@ describe('apiClient', () => {
     setActivePinia(createPinia());
     await router.push({ name: 'register' });
 
-    // Explicit generic: inferring it from the callback alone collapses to
-    // vitest's generic `Procedure | Constructable` mock type, which doesn't
-    // structurally match the `(input: Request) => Promise<Response>` shape
-    // openapi-fetch's per-call `fetch` option expects (see below).
+    // Explicit generic, or the type won't fit openapi-fetch's `fetch` option.
     fetchMock = vi.fn<(input: RequestInfo | URL) => Promise<Response>>(async (input) =>
       urlOf(input).includes('csrf-token')
         ? jsonResponse(200, { csrfToken: 'test-csrf-token' })
         : jsonResponse(200, {}),
     );
-    // Covers the CSRF pre-flight call, which always reads the live global
-    // directly. The client's own request goes through the `fetch` override
-    // passed to each call below instead (see TEST_BASE_URL comment).
+    // For the CSRF mint, which uses the global fetch; requests use the
+    // per-call override.
     vi.stubGlobal('fetch', fetchMock);
   });
 

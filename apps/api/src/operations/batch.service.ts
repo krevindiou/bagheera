@@ -10,18 +10,9 @@ import { OPENING_BALANCE_PAYMENT_METHOD_ID } from './entry-rules';
 import { TransferService } from './transfer.service';
 
 /**
- * Batch delete/reconcile. Ownership is resolved per id via
- * OwnershipService.filterOwnedOperationIds, the same bank/account chain as
- * the single-operation endpoints: an id belonging to another member, or
- * reachable only through a deleted or closed bank/account, is dropped
- * rather than rejected — the caller never learns which of its ids were
- * foreign vs. simply didn't exist. Closed accounts are dropped too:
- * existing operations on closed accounts are listable only, so batch
- * delete/reconcile must reject them like any other edit attempt. The
- * system-generated opening-balance operation is dropped the same way —
- * it carries no individual Edit/Delete affordance of its own (see
- * OperationsPage.vue's isEditable()) and must stay just as unreachable
- * through a multi-select.
+ * Batch delete/reconcile. Ids that are foreign, unknown, on a closed or
+ * deleted chain (see filterOwnedOperationIds), or the opening-balance
+ * operation (not editable individually either) are silently dropped.
  */
 @Injectable()
 export class OperationBatchService {
@@ -56,8 +47,6 @@ export class OperationBatchService {
     );
     if (owned.length > 0) {
       await this.db.transaction(async (tx) => {
-        // A deleted operation's paired counterpart survives, converted to
-        // an External transfer — must run before the rows themselves go.
         await this.transfers.convertSurvivorsOfDeleted(tx, owned);
         await tx.delete(operation).where(inArray(operation.id, owned));
       });

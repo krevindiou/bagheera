@@ -1,6 +1,3 @@
-// classifyPairingEdit is pure and exported standalone from transfer.service.ts
-// specifically so it's unit-testable with zero DB — see that file's own doc
-// comment on the function.
 import { classifyPairingEdit, PreviousPairing } from './transfer.service';
 
 const noMirror: PreviousPairing = {

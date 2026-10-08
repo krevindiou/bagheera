@@ -17,9 +17,8 @@ function times<T>(count: number, row: (i: number) => T): T[] {
   return Array.from({ length: count }, (_, i) => row(i));
 }
 
-// M5: nothing capped how many banks, accounts, schedulers or reports one
-// member could pile up. Filled straight in the database up to each cap —
-// through the API, the write budget would run out first.
+// Filled straight in the database up to each cap: through the API, the
+// write budget would run out first.
 describe('member quotas', () => {
   let app: INestApplication<Server>;
 

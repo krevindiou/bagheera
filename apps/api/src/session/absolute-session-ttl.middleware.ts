@@ -9,17 +9,14 @@ declare module 'express-session' {
 }
 
 /**
- * express-session's rolling cookie only enforces an idle timeout. This
- * enforces the 24h absolute cap: the first time a stored session comes back
- * it stamps `createdAt`; once that's more than 24h in the past the session
- * is destroyed regardless of recent activity.
+ * The rolling cookie only enforces an idle timeout; this adds the 24h
+ * absolute cap. A stored session gets `createdAt` stamped the first time it
+ * comes back, and is destroyed once that's over 24h old.
  *
- * A session generated for this very request is left alone: stamping it
- * would mark it modified, so express-session would store it and send a
- * cookie for every anonymous request — health checks and any other GET
- * included — rather than only for the ones that keep something (the CSRF
- * mint, sign-in). Its clock starts on its next request instead, at most one
- * idle timeout later.
+ * A session generated for this request is left alone: stamping it would
+ * make express-session store it and set a cookie on every anonymous
+ * request. Its clock starts on its next request, at most one idle timeout
+ * later.
  */
 export function absoluteSessionTtl(req: Request, res: Response, next: NextFunction): void {
   if (!req.session) {

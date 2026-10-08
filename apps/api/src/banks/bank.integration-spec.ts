@@ -146,7 +146,7 @@ describe('banks', () => {
       const [row] = await getDb(app).select().from(bank).where(eq(bank.id, id));
       expect(row.closed).toBe(true);
 
-      // Closed stays reachable/listable — never folded into ownership checks.
+      // Closed banks stay listable.
       const list = await agent.get('/banks').expect(200);
       expect((list.body as { id: string }[]).some((b) => b.id === id)).toBe(true);
 

@@ -150,10 +150,7 @@ describe('OperationForm', () => {
     await wrapper.find('#operation-amount').setValue('50');
     await wrapper.find('#operation-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
     await wrapper.find('button.btn-outline-primary').trigger('click');
-    // This button goes through the same vee-validate handleSubmit chain as
-    // a form submit, which needs several flush/tick rounds to settle (see
-    // submitAndSettle) — but it isn't a form submit, so that helper (which
-    // triggers a "submit" event) doesn't apply; loop the same way inline.
+    // Not a form submit, so submitAndSettle doesn't apply: same loop inline.
     for (let i = 0; i < 5; i++) {
       await flushPromises();
       await new Promise((resolve) => setTimeout(resolve, 0));

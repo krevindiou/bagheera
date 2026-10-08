@@ -2,8 +2,8 @@ import { boolean, index, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/p
 import { bank } from './bank';
 import { uuidPk } from './id';
 
-// Bank is immutable after creation — enforced at the application layer, not
-// the schema.
+// Bank and currency are immutable after creation (enforced by
+// AccountService, not the schema).
 export const account = pgTable(
   'account',
   {

@@ -1,15 +1,9 @@
-# Override for docker/compose.yml — run with `-p <project>` (see the
-# Makefile's `e2e` target) to bring up a fully separate, ephemeral stack
-# for e2e: distinct containers, network, and volumes from your regular
-# dev stack (Compose automatically prefixes those by project name), so
-# running e2e never touches the DB/data you're working with in dev.
+# Override for docker/compose.yml, run under its own `-p <project>` (see
+# the Makefile) so e2e gets separate containers, network and volumes and
+# never touches dev data.
 #
-# Strips every service's host port publishing — nothing here needs one:
-# the playwright service reaches web directly (network_mode: "service:web",
-# see compose.yml), and every other service is reached by the others
-# purely over the project's own internal network. Removing them is also
-# what avoids port clashes with your already-running dev stack on the same
-# host ports.
+# No published ports: everything is reached over the project network, and
+# none clash with a running dev stack.
 services:
   postgres:
     ports: !reset []

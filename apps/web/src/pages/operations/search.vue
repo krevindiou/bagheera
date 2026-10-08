@@ -38,9 +38,8 @@ const notes = ref('');
 // Three-state, default "Reconciled & not reconciled" (no filter).
 const reconciled = ref<'' | 'true' | 'false'>('');
 
-// Hydrate the panel's fields from a remembered search recalled by the
-// parent (e.g. on mount/navigate-back), so a docked-open panel reflects
-// the criteria that are actually applied.
+// Fills the fields from the remembered search, so the panel shows what's
+// applied.
 function hydrate(criteria: SearchCriteria | undefined) {
   if (!criteria) return;
   type.value = criteria.type ?? 'debit';
@@ -62,9 +61,6 @@ watch(() => props.initialCriteria, hydrate, { immediate: true });
 
 const AMOUNT_OPERATORS: AmountComparatorOperator[] = ['gt', 'gte', 'lt', 'lte', 'eq'];
 
-// Selecting the type rebuilds the category/payment-method choices to
-// show only entries of that type (previous selection preserved when
-// still valid) — same field logic as OperationForm/SchedulerForm.
 const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
   () => props.categories,

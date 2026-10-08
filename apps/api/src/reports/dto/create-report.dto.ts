@@ -18,11 +18,8 @@ import {
 } from 'class-validator';
 import { ReportTitleField, ValueDateField } from '../../common/dto-fields';
 
-// Both are optional independently, but when both are set the range has to
-// make sense — otherwise the operation query (valueDate >= start AND <= end)
-// silently matches nothing and the report just renders empty with no
-// indication why. String comparison is safe here: both are ValueDateField
-// ('YYYY-MM-DD'), whose lexicographic order matches chronological order.
+// An inverted range would silently match nothing. Both are ValueDateField
+// ('YYYY-MM-DD'), so string order is chronological.
 function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string): void {
     registerDecorator({
@@ -47,9 +44,8 @@ function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
   };
 }
 
-// A ranked distribution report shows at most this many individual buckets
-// before collapsing the remainder into "Other" — a real ceiling since it
-// drives how many rows the UI renders.
+// Most labels a distribution report shows before folding the rest into
+// "Other".
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
 export class CreateReportDto {
@@ -100,15 +96,13 @@ export class CreateReportDto {
   @IsUUID('7', { each: true })
   categoryIds?: string[];
 
-  // Required for every type — a 'distribution' report ranks *within* each
-  // period too (defaulting to 'all', a single whole-range bucket).
+  // Required for every type: a 'distribution' report ranks within each
+  // period too.
   @IsIn(['month', 'quarter', 'year', 'all'])
   periodGrouping!: 'month' | 'quarter' | 'year' | 'all';
 
-  // The next two are required for 'distribution' only — genuinely optional
-  // TS properties (not `!:`) so the Swagger CLI plugin (nest-cli.json) marks
-  // them optional in the generated schema too, matching @ValidateIf's
-  // conditional requirement rather than always-required.
+  // Required for 'distribution' only; `?:` so the Swagger plugin marks them
+  // optional.
   @ValidateIf((dto: CreateReportDto) => dto.type === 'distribution')
   @IsIn(['category', 'third_party', 'payment_method'])
   dataGrouping?: 'category' | 'third_party' | 'payment_method';

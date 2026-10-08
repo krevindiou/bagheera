@@ -27,8 +27,6 @@ ChartJS.defaults.font.family = "'Archivo', sans-serif";
 ChartJS.defaults.color = 'rgba(242, 239, 233, 0.62)'; // --paper-dim: ticks/legend text
 ChartJS.defaults.borderColor = 'rgba(242, 239, 233, 0.1)'; // --hair: gridlines
 
-// A translucent fill under a solid line (rather than a flat, opaque one)
-// matches the design's "abstract filled line-chart" look.
 function withAlpha(hex: string, alpha: number): string {
   const match = /^#([0-9a-f]{6})$/i.exec(hex);
   if (!match) return hex;
@@ -61,10 +59,8 @@ export interface SynthesisChartPoint {
 export interface SynthesisChartSeries {
   label: string;
   color: string;
-  // Chart.js dash pattern (e.g. [8, 4]) — a secondary, non-color channel for
-  // distinguishing series (debit vs credit on the reports chart) that must
-  // survive grayscale/CVD simulation, not just a distinct hue. Omitted/empty
-  // renders a solid line.
+  // Chart.js dash pattern (e.g. [8, 4]): a non-color cue (debit vs credit)
+  // that survives CVD. Solid when omitted.
   dash?: number[];
   points: SynthesisChartPoint[];
 }
@@ -81,8 +77,7 @@ const props = defineProps<{
 
 const { locale } = useI18n();
 
-// Hidden whenever every series has no data points, per the shared
-// hide-when-empty rule used by reports/dashboard/operation-list charts.
+// Hidden when every series is empty.
 const hasData = computed(() => props.series.some((series) => series.points.length > 0));
 
 // Every series is expected to share the same set of periods (callers
@@ -125,11 +120,8 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
       suggestedMin: props.axisBounds?.min,
       suggestedMax: props.axisBounds?.max,
       ticks: {
-        // Default linear-scale ticking crowds the axis with a mark per
-        // ~30px, which on money values means long decimal-laden labels
-        // shoulder to shoulder. Cap the count and round for display —
-        // same "legible over precise" tradeoff as the point-radius
-        // thinning above.
+        // Default ticking crowds the axis with long money labels: fewer,
+        // rounded ticks.
         maxTicksLimit: 6,
         precision: 0,
         callback: (value) =>

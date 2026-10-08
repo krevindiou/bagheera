@@ -1,11 +1,9 @@
 import type { Breadcrumb, ErrorEvent } from '@sentry/vue';
 
 /**
- * Emailed links (sign-up, email change) carry a live one-time token in
- * `?key=`. The pages drop it from the address bar (see composables/
- * takeUrlKey.ts), but an error or breadcrumb captured before that — or a
- * referrer — can still hold the full URL; scrub it before it leaves the
- * browser.
+ * Emailed links carry a one-time token in `?key=`. The pages drop it from
+ * the address bar (takeUrlKey.ts), but an earlier error, breadcrumb or
+ * referrer can still hold it.
  */
 export function scrubKeyParam(value: string): string {
   return value.replace(/([?&])key=[^&#]*/g, '$1key=[Filtered]');

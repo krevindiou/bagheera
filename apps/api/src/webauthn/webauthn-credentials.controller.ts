@@ -6,8 +6,7 @@ import { WebauthnCredentialsService } from './webauthn-credentials.service';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
 import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response.dto';
 
-// Authenticated (no @Public()) — managing one's own passkeys. Removal also
-// consumes a fresh step-up proof (see WebauthnCredentialsService.remove).
+// Signed-in only; removal also consumes a step-up proof.
 @Controller('webauthn/credentials')
 export class WebauthnCredentialsController {
   constructor(private readonly credentials: WebauthnCredentialsService) {}

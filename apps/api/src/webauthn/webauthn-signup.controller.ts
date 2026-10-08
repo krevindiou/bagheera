@@ -8,7 +8,7 @@ import { SignupOptionsDto } from './dto/signup-options.dto';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { WebauthnSignupService } from './webauthn-signup.service';
 
-// Public — reached with no session yet, same as WebauthnAuthenticationController.
+// Public: the caller has no session yet.
 @Controller('webauthn/signup')
 @Public()
 export class WebauthnSignupController {
@@ -26,13 +26,9 @@ export class WebauthnSignupController {
 
   @Post('verify')
   @HttpCode(200)
-  // No identifierField: there's nothing in this body to key a second
-  // dimension off (unlike options's `key`), so this is IP-only. Verify()
-  // itself isn't a guessable-credential surface (it requires a signature
-  // over a challenge only this caller's own prior options() call stashed),
-  // so a generous budget here mainly protects against raw request-volume
-  // abuse, not brute-forcing — same reasoning that keeps
-  // WebauthnRegistrationController's own verify() endpoint IP-only.
+  // IP-only: the body has no identifier. Nothing here is guessable (it
+  // needs a signature over this session's own challenge), so the budget
+  // only caps raw volume.
   @RateLimit({ points: 30, durationSeconds: 60 })
   async verify(
     @Req() req: Request,

@@ -30,12 +30,7 @@ const { data: dashboard, isError } = useQuery({
     ),
 });
 
-// The synthesis chart is one line per currency (not a fixed debit/credit
-// pair), colored by `colorForCurrency` — see chartColors.ts for why that's
-// a hash of the currency itself rather than "index among the currencies
-// on this page": every chart that colors by currency (this one, an
-// account tile's sparkline, a single account's own chart on
-// OperationsPage) needs to agree without knowing what the others show.
+// One line per currency, colored like every other per-currency chart.
 function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
   return chart.series.map((s) => ({
     label: s.currency,
@@ -44,8 +39,7 @@ function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries
   }));
 }
 
-// Flattened across every bank — the mock shows one grid of account tiles
-// (each labeled "Bank — Account"), not a grid per bank.
+// One grid of "Bank — Account" tiles, not one per bank.
 const accountTiles = computed(() =>
   (dashboard.value?.accountsOverview ?? []).flatMap((bank) =>
     bank.accounts.map((account) => ({ ...account, bankName: bank.name })),
@@ -146,10 +140,6 @@ const accountTiles = computed(() =>
         <p v-if="accountTiles.length === 0" class="text-muted">
           {{ $t('dashboard.noAccounts') }}
         </p>
-        <!-- One flat grid across every bank's accounts (see the mock: 3
-             tiles side by side, each labeled "Bank — Account") — not
-             grouped per bank, which left a lone single-account bank
-             stretching its one tile across the full row width. -->
         <div v-else class="tile-grid">
           <StatCard
             v-for="account in accountTiles"
@@ -194,8 +184,7 @@ const accountTiles = computed(() =>
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 14px;
 }
-/* Distinct from .stat-grid: the mock gives the accounts-overview tile grid
-   its own column/gap sizing (180px/12px vs the stat row's 160px/14px). */
+/* Own sizing, unlike .stat-grid (160px/14px). */
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -213,25 +202,14 @@ const accountTiles = computed(() =>
   border-color: var(--violet-dim);
   color: inherit;
 }
-/* Tiles in the same tile-grid row sit at variable "Bank — Account" name
-   lengths — some wrap to 2 lines, some fit on 1. Without a reserved height
-   here, a 1-line tile stays shorter than its 2-line neighbors, so its
-   balance/reconciled/sparkline all shift up out of alignment with them.
-   Scoped to .acct-tile (not StatCard's own .stat-label) because standalone
-   stat-cards, like the total-balance card above, have no row neighbor to
-   align against, so the reserved space there just reads as a dead gap
-   under a label that was always going to be 1 line.
-   :deep() reaches past StatCard.vue's own scoped style — .stat-label etc.
-   are elements StatCard renders internally, not this component's own. */
+/* Two lines reserved for the label, so tiles in a row stay aligned whether
+   their names wrap or not. Tiles only: a standalone card would show a gap. */
 .acct-tile :deep(.stat-label) {
   line-height: 1.3;
   min-height: 2.6em;
 }
-/* !important, not source order, guarantees these win over StatCard's own
-   .stat-card .stat-value(-primary) rules: both are now separately-scoped
-   selectors of equal specificity (two classes each), so which one wins
-   would otherwise depend on which component's <style> block Vite happens
-   to inject first — not something to build a visual override on. */
+/* !important: equal specificity with StatCard's rules, so otherwise the
+   winner depends on style injection order. */
 .acct-tile :deep(.stat-value) {
   font-size: 19px !important;
   margin-top: 4px;

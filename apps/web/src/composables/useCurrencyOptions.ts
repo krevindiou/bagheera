@@ -1,17 +1,14 @@
 import { i18n } from '../i18n';
 
-// Currency dropdown for account creation. Unlike useCountryOptions
-// (Intl.supportedValuesOf has no "region" key), "currency" is a valid
-// key per ECMA-402, so the code list is generated at runtime rather than
-// hardcoded. Names come from Intl.DisplayNames, sorted alphabetically.
+// Account creation's currency dropdown, from Intl.supportedValuesOf and
+// Intl.DisplayNames.
 
 export interface CurrencyOption {
   code: string;
   name: string;
 }
 
-// Called once at setup time by each caller, same caveat as
-// useCountryOptions.getCountryOptions() re: a mid-session locale switch.
+// Not reactive to a locale switch, like getCountryOptions().
 export function getCurrencyOptions(): CurrencyOption[] {
   const currencyNames = new Intl.DisplayNames([i18n.global.locale.value], { type: 'currency' });
   const toOption = (code: string): CurrencyOption => ({
@@ -24,11 +21,8 @@ export function getCurrencyOptions(): CurrencyOption[] {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-// Best-guess currency prefill for new accounts, derived from the visitor's
-// browser-locale region. There's no Intl API mapping region → currency
-// (unlike DisplayNames/supportedValuesOf above), so this table is static —
-// each country's primary official currency. It's a starting point only;
-// the field stays a normal, freely-changeable dropdown.
+// Each country's primary currency, to prefill a new account from the
+// browser's region (no Intl API maps region → currency).
 // prettier-ignore
 const COUNTRY_TO_CURRENCY: Record<string, string> = {
   AD: "EUR", AE: "AED", AF: "AFN", AG: "XCD", AI: "XCD", AL: "ALL", AM: "AMD", AO: "AOA",

@@ -1,10 +1,5 @@
-// The point of this module is the escaping it does before ever calling
-// drizzle's own `ilike()` — asserting on the pattern string `ilike` is
-// called with is more direct and less brittle than trying to unpack the
-// `SQL` chunk object real drizzle-orm returns. Importing `ilike` by name
-// is banned everywhere but like-pattern.ts itself (see eslint.config.mjs's
-// no-restricted-imports) — the eslint-disable below is that ban, lifted
-// only to reach the mocked export for assertions.
+// Asserts on the pattern passed to a mocked `ilike()` rather than unpacking
+// drizzle's SQL chunks. The import ban is lifted only to reach that mock.
 // eslint-disable-next-line no-restricted-imports
 import { ilike } from 'drizzle-orm';
 import { vi } from 'vitest';
@@ -16,8 +11,7 @@ vi.mock('drizzle-orm', async () => {
 });
 
 describe('ilikeContains', () => {
-  // Opaque stand-in for a real drizzle column — ilikeContains never reads
-  // it, only forwards it to the (mocked) `ilike()`.
+  // Only forwarded to `ilike()`, never read.
   const column = { name: 'third_party' } as never;
 
   it('wraps a plain term in % wildcards', () => {

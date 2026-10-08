@@ -194,9 +194,7 @@ describe('operation transfer pairing', () => {
   });
 
   it('retargets: the same mirror row moves to the new target account', async () => {
-    // sync()'s 'retarget' branch updates the existing mirror's accountId in
-    // place rather than delete+recreate — same mirror id survives, just
-    // relocated.
+    // 'retarget' moves the existing mirror: same id, new account.
     const { mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
     const accountA = await createAccount(mutate, bankId);

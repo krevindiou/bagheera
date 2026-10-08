@@ -21,9 +21,7 @@ import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 
 const apiClient = asMockedApiClient(realApiClient);
 
-// "reports" carries meta.requiresAuth on the real route table — a dedicated
-// guard-free stub avoids the real guard redirecting every push to sign-in
-// (see the AccountsPage/OperationsPage specs for the same reasoning).
+// A stub router: the real one's auth guard would redirect to sign-in.
 function createTestRouter(): Router {
   return createRouter({
     history: createMemoryHistory(),

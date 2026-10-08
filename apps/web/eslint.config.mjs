@@ -7,12 +7,8 @@ import globals from "globals";
 
 export default tseslint.config(
   {
-    // test-results/ and playwright-report/ are Playwright's own generated
-    // output (see docker/Dockerfile.playwright's comment on why they land
-    // here, bind-mounted onto the host) — already in .gitignore, but that
-    // doesn't stop eslint from also finding them: run `pnpm lint` right
-    // after an e2e run (before cleaning up) and it choked on thousands of
-    // errors against the html reporter's own generated JS bundle.
+    // test-results/ and playwright-report/: Playwright output, gitignored
+    // but still found by eslint after an e2e run.
     ignores: [
       "dist/**",
       "coverage/**",

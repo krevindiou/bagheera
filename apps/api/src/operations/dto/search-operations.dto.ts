@@ -21,11 +21,8 @@ export class AmountComparatorDto {
   @IsIn(['gt', 'gte', 'lt', 'lte', 'eq'])
   operator!: 'gt' | 'gte' | 'lt' | 'lte' | 'eq';
 
-  // Not routed through AmountField(): a filter threshold, not a stored
-  // amount — 0 (and, harmlessly, negative) stays a legal comparator value
-  // here, unlike an actual operation/scheduler amount. Only the same
-  // overflow-safety ceiling applies, shared via AMOUNT_CEILING rather than
-  // a second hand-typed copy of the literal.
+  // Not AmountField(): a threshold may be 0 (or negative), only the
+  // ceiling applies.
   @IsNumber()
   @Max(AMOUNT_CEILING)
   value!: number;

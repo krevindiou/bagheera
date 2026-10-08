@@ -49,10 +49,7 @@ export class AccountService {
       .orderBy(asc(account.name));
     const accounts = rows.map((r) => r.account);
 
-    // The accounts screen shows each account's running balance (and its
-    // reconciled counterpart, muted/smaller — see AccountsPage.vue) next to
-    // its name — one bulk aggregate query for the whole list rather than N
-    // calls to the single-account `balance()` below.
+    // One bulk aggregate for the whole list rather than N `balance()` calls.
     const balances = await balancesByAccount(
       this.db,
       accounts.map((a) => a.id),
@@ -79,7 +76,8 @@ export class AccountService {
 
     const minorUnits = toMinorUnits(dto.initialBalance ?? 0);
     return this.db.transaction(async (tx) => {
-      // Lock member and bank rows, re-validate bank active status inside transaction
+      // The member lock serializes concurrent creates for the quota check
+      // below; the bank lock pins its active status.
       const [memberRow] = await tx
         .select()
         .from(member)
@@ -104,7 +102,6 @@ export class AccountService {
         );
       }
 
-      // Check quota inside transaction
       const held = await this.ownership.countOwned('accounts', memberId);
       requireBelowQuota('accounts', held);
 
@@ -132,13 +129,9 @@ export class AccountService {
     });
   }
 
-  // Cumulative end-of-month balance for a trailing window (12/24 months,
-  // or the full history — see `range`) — the same synthesis chart shown on
-  // the dashboard, scoped to this one account (and therefore its one
-  // currency). The window ends at this account's latest operation, not
-  // today (see synthesis-chart.ts's `latestValueDate`). Empty (no
-  // operations at all, ever) is signalled by an empty `points` array; the
-  // chart component hides itself in that case.
+  // The dashboard's synthesis chart scoped to one account (so one
+  // currency). The window ends at the account's latest operation, not
+  // today. No operations at all → empty `points`.
   async chart(memberId: MemberId, id: string, range?: string): Promise<AccountChart> {
     const { account: acc } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
 

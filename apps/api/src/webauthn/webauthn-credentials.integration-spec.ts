@@ -12,10 +12,7 @@ import {
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { vi } from 'vitest';
 
-// Every :id path param in this API goes through ParseUuidV7Pipe, which
-// checks the version nibble — a plain (v4) randomUUID() would 400 before
-// ever reaching the "does it exist" check this test wants. Force the
-// version nibble to look like a real (but nonexistent) v7 id instead.
+// A v4 id would 400 at ParseUuidV7Pipe before the existence check.
 function nonexistentV7Id(): string {
   const v4 = randomUUID();
   return `${v4.slice(0, 14)}7${v4.slice(15)}`;
@@ -52,9 +49,7 @@ describe('webauthn credentials', () => {
 
   describe('GET /webauthn/credentials', () => {
     it("lists only the caller's own credentials, without exposing the public key or counter", async () => {
-      // seedSignedInMember already gives the member one passkey (the one
-      // it signs in with) — this adds a second, distinct one to prove
-      // listing isn't accidentally capped at one.
+      // A second passkey besides the fixture's own.
       const { agent, memberId } = await seedSignedInMember(app);
       await insertCredential(app, memberId, 'My laptop');
       const { memberId: otherMemberId } = await seedSignedInMember(app);
@@ -128,8 +123,7 @@ describe('webauthn credentials', () => {
       await otherDevice.get('/auth/me').expect(401);
     });
 
-    // M3: with only a session, a hijacker who planted a passkey could then
-    // delete the owner's — a permanent lockout, since there's no recovery.
+    // A hijacked session alone must not delete the owner's passkey.
     it('rejects removal without a fresh step-up and leaves the credential in place', async () => {
       const { memberId, mutate } = await seedSignedInMember(app);
       const credential = await insertCredential(app, memberId, 'Still here');

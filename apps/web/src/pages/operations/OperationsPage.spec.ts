@@ -31,11 +31,8 @@ const apiClient = asMockedApiClient(realApiClient);
 const ACCOUNT_ID = '00000000-0000-7000-8000-000000000201';
 const CATEGORY_FOOD = '00000000-0000-7000-8000-000000000101';
 
-// "operations" carries meta.requiresAuth on the real route table (see the
-// AccountsPage/BaseLayout specs for the same reasoning) — a dedicated stub
-// avoids the real guard silently redirecting every push to sign-in.
-// "accounts" is also registered: the page's "← back to Accounts" link
-// resolves that route name even though these tests never navigate to it.
+// A stub router: the real one's auth guard would redirect to sign-in.
+// "accounts" is there for the back link to resolve.
 function createTestRouter(): Router {
   const stub = { template: '<div />' };
   return createRouter({
@@ -256,9 +253,8 @@ describe('OperationsPage', () => {
 
     const rows = wrapper.findAll('[data-testid="operation-row"]');
     expect(rows[1].find('button').exists()).toBe(false);
-    // Not batch-selectable either — it has no Delete/Reconcile affordance
-    // of its own, the same reason it has no Edit button (see batch.vue /
-    // OperationBatchService, which now drops it server-side too).
+    // Not batch-selectable either, like it has no Edit button (the API
+    // drops it from batches too).
     expect(rows[1].find('input[type="checkbox"]').exists()).toBe(false);
     expect(rows[0].find('input[type="checkbox"]').exists()).toBe(true);
 
@@ -451,10 +447,7 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     const chart = wrapper.findComponent(SynthesisChart);
-    // Not a hardcoded color — see chartColors.ts's colorForCurrency, the
-    // same function the dashboard's synthesis chart and account tiles use,
-    // so a USD account's chart doesn't read as an arbitrary color that
-    // happens to differ from what USD means elsewhere in the app.
+    // The app-wide per-currency color.
     expect(chart.props('series')).toEqual([
       { label: 'USD', color: colorForCurrency('USD'), points: [{ period: '2026-01', value: 500 }] },
     ]);

@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
 
-// The caller's address as recorded in the audit log.
+// Audit-log address when the request has no `ip`.
 export const CLIENT_IP_FALLBACK = 'unknown';
 
 export const ClientIp = createParamDecorator(

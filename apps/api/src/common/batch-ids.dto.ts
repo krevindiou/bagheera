@@ -1,15 +1,9 @@
 import { ArrayMaxSize, ArrayNotEmpty, IsUUID } from 'class-validator';
 
-// Batch actions: caller submits the ids it believes it owns; foreign
-// or nonexistent ids are silently skipped rather than rejected. Capped
-// well above any realistic UI selection to bound the resulting query/
-// transaction size.
-//
-// Shared by operations/reports/schedulers' batch endpoints — the class was
-// byte-identical in all three before this, and Nest's Swagger plugin
-// already emitted one `BatchIdsDto` schema for all of them (a class name
-// collision, not a real distinction), so consolidating it changes nothing
-// about the generated API contract.
+// Batch actions (operations/reports/schedulers): the caller submits the ids
+// it believes it owns; foreign or nonexistent ids are silently skipped.
+// Capped well above any realistic UI selection to bound query/transaction
+// size.
 export class BatchIdsDto {
   @ArrayNotEmpty()
   @ArrayMaxSize(500)

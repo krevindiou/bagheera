@@ -81,8 +81,8 @@ services:
       - api_node_modules:/app/apps/api/node_modules
       - api_money_node_modules:/app/packages/money/node_modules
       - api_reference_data_node_modules:/app/packages/reference-data/node_modules
-      # Lets `pnpm test:integration` (Testcontainers) reach the host Docker
-      # daemon from inside this dev container to spin up its own ephemeral
+      # Lets `pnpm test:integration` (Testcontainers) start its own
+      # Postgres/Valkey containers on the host Docker daemon.
       - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
       test:
@@ -145,30 +145,16 @@ services:
         # Makefile fails fast instead of silently using some other
         # version's browser binaries.
         PLAYWRIGHT_VERSION: ${PLAYWRIGHT_VERSION:?}
-    # Shares the web container's network namespace instead of joining the
-    # bridge network under its own hostname — visiting http://web:5173
-    # (rather than genuine localhost) both trips Vite's allowedHosts guard
-    # and, worse, makes Chromium refuse to store the Secure-flagged
-    # session/CSRF cookies at all (only localhost/127.0.0.1 count as a
-    # "potentially trustworthy origin" for that over plain HTTP) — every
-    # mutating request 403s with no cookie ever persisting. Sharing web's
-    # netns makes localhost:5173 genuinely reach it, matching the
-    # already-proven host-run path exactly. Sibling services (api,
-    # mailpit, ...) stay reachable by service name — DNS resolution comes
-    # along with the shared netns, unaffected by ports/ any of that.
+    # Shares web's network namespace so the app is reached on localhost:
+    # http://web:5173 trips Vite's allowedHosts, and over plain HTTP
+    # Chromium only stores Secure cookies for localhost. Other services stay
+    # reachable by name.
     network_mode: "service:web"
     environment:
-      # mailpit isn't part of web's netns, so it still needs the
-      # container-network hostname (unlike E2E_BASE_URL, left at its
-      # localhost default — see network_mode above).
+      # Not in web's namespace, so reached by service name.
       E2E_MAILPIT_HTTP_URL: http://mailpit:8025
-      # Docker doesn't forward host env vars into containers on its own —
-      # without this, playwright.config.ts's `process.env.CI` check never
-      # sees the CI runner's CI=true, the html reporter (and so
-      # playwright-report/) never gets produced, and ci.yml's
-      # upload-artifact step silently has nothing to upload. Empty locally
-      # (not run from a shell with CI set), which is the correct "list
-      # reporter only" behavior there too.
+      # Forwards the CI runner's CI=true so playwright.config.ts produces
+      # the html report ci.yml uploads; empty locally.
       CI: ${CI:-}
     volumes:
       - ../apps/web:/app/apps/web
@@ -186,35 +172,18 @@ services:
       - |
         until curl -sf http://api:3000/health >/dev/null; do sleep 2; done
         until curl -sf http://localhost:5173/ >/dev/null; do sleep 2; done
-        # `.npmrc`'s confirm-modules-purge=false doesn't cover this: pnpm's
-        # pre-script deps-status-check (which fires here whenever the
-        # lockfile changed since these volumes' node_modules were last
-        # installed — e.g. any apps/api-only dependency change, since it's
-        # one shared lockfile) only skips its interactive TTY prompt when
-        # CI is set, and this service deliberately leaves CI unset for
-        # `pnpm e2e` itself (see the environment: block above — playwright
-        # reads the same var for its own reporter choice). Scope CI=true to
-        # only this one install so it never reaches that second read.
+        # CI=true skips pnpm's interactive purge prompt, scoped to this
+        # install so `pnpm e2e` still sees the real CI value.
         CI=true pnpm install --frozen-lockfile --filter web...
         pnpm e2e
 
 volumes:
   postgres_data:
   valkey_data:
-  # Each service gets its own root node_modules volume — api and web's
-  # deps/ trees differ now that each Dockerfile installs with `--filter
-  # <app>...`, so sharing one volume let whichever container started
-  # first silently win the other's dependency tree. playwright gets its
-  # own for the same reason, and to keep its glibc-built native deps
-  # (this image, unlike web's, isn't Alpine/musl) from mixing with web's.
-  # Same story for each packages/* member's own node_modules (money,
-  # reference-data): it's bind-mounted from the host via ../packages (so a
-  # fresh package can show up without a compose edit), but a bare bind
-  # mount leaves it un-populated — nothing ever `pnpm install`s into the
-  # host dir directly — and reusing one of the volumes above would hit the
-  # same silent-cross-contamination
-  # problem they were split up to avoid. So it gets its own named volume
-  # per service too.
+  # One set of node_modules volumes per service, packages/* included: each
+  # Dockerfile installs `--filter <app>...`, so a shared volume would let
+  # one service's tree overwrite another's (and playwright's are glibc
+  # builds, web's musl).
   api_root_node_modules:
   web_root_node_modules:
   api_node_modules:

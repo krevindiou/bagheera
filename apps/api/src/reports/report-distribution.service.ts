@@ -18,7 +18,6 @@ import {
   ReportDistributionSeriesDto,
 } from './dto/report-response.dto';
 
-// Response shapes: the Swagger DTOs themselves (dto/report-response.dto.ts).
 export type ReportDistributionPoint = ChartPointDto;
 
 export type ReportDistributionLabelSeries = ReportDistributionLabelSeriesDto;
@@ -47,10 +46,7 @@ export class ReportDistributionService {
     return this.computeDistribution(rpt, memberId);
   }
 
-  // Split out from `getDistribution` so the dashboard's homepage-report
-  // section can reuse the aggregation for reports it already fetched and
-  // owns, without a second ownership round-trip — same split as
-  // ReportSeriesService.computeSeries.
+  // For the dashboard, which already holds the owned report.
   async computeDistribution(
     rpt: typeof report.$inferSelect,
     memberId: string,
@@ -62,16 +58,13 @@ export class ReportDistributionService {
     const accountIds = accounts.map((a) => a.id);
     const categoryIds = await effectiveCategoryIds(this.db, rpt.id);
 
-    // Only 'distribution' reports reach this service — dataGrouping and
-    // significantResultsNumber are both required for it (see
-    // CreateReportDto's conditional validation), so they're never null
-    // here despite the columns themselves being nullable.
+    // Required for 'distribution' reports (see CreateReportDto), the only
+    // ones reaching this service.
     const limit = rpt.significantResultsNumber!;
     const grouping = rpt.periodGrouping;
 
-    // Pass 1: whole-range totals per (currency, label) — 'all' grouping
-    // regardless of the report's own periodGrouping — used only to rank
-    // labels and fix the top-N set each side keeps as its own series.
+    // Pass 1: whole-range totals per (currency, label), only to rank labels
+    // and pick each side's top N.
     const totals = await this.groupedRows(rpt, accountIds, categoryIds, 'all');
     const topDebit = new Map<string, Set<string>>();
     const topCredit = new Map<string, Set<string>>();
@@ -81,9 +74,7 @@ export class ReportDistributionService {
       topCredit.set(currency, topLabels(rows, 'creditSum', limit));
     }
 
-    // Pass 2: per (currency, period, label) breakdown, at the report's own
-    // periodGrouping — reuses pass 1's rows outright when that grouping is
-    // itself 'all' rather than issuing an identical query twice.
+    // Pass 2: per (currency, period, label), reusing pass 1 for 'all'.
     const periodRows =
       grouping === 'all' ? totals : await this.groupedRows(rpt, accountIds, categoryIds, grouping);
 
@@ -153,14 +144,9 @@ export class ReportDistributionService {
     return { hidden: series.length === 0, dataGrouping: rpt.dataGrouping!, series };
   }
 
-  // Grouping + sum aggregation happens in Postgres (GROUP BY on the
-  // resolved label column, plus period when requested), not by streaming
-  // every raw operation row into Node — the result set here is one row per
-  // currency/period/label actually present, not one row per operation.
-  // Three near-identical branches rather than one dynamically-joined
-  // query: the join (or lack of one) differs per dataGrouping, and
-  // drizzle's query builder doesn't thread a conditional join through its
-  // return type cleanly.
+  // Aggregated in Postgres: one row per currency/period/label. Three
+  // branches because the join differs per dataGrouping, which drizzle's
+  // types don't express as one conditional query.
   private async groupedRows(
     rpt: typeof report.$inferSelect,
     accountIds: string[],
@@ -175,12 +161,7 @@ export class ReportDistributionService {
     const creditSum = sql<
       string | null
     >`sum(${operation.credit}) filter (where ${operation.credit} is not null)`;
-    // GROUP BY the *output column position* (2 = period) rather than a
-    // second rendering of the date_trunc expression — see
-    // report-series.service.ts's computeSeries for why repeating it would
-    // make Postgres reject the query. The label column, unlike period, is a
-    // plain column reference (no bind params to duplicate), so it's grouped
-    // by directly.
+    // GROUP BY position 2 (period), as in report-series.service.ts.
     const periodGroupBy = grouping === 'all' ? [] : [sql`2`];
 
     switch (rpt.dataGrouping) {
@@ -260,11 +241,8 @@ function addAmount(
   periods.set(period, ((periods.get(period) ?? 0) + value) as MinorUnits);
 }
 
-// Assembles one series per label present, in rank order (topSet's insertion
-// order is its whole-range rank, since it was built from an already-sorted
-// list), with "Other" last when present — each with a zero-filled point per
-// `periodKeys`, so every series in a stacked chart shares the same period
-// axis even where a given label had no activity in some period.
+// One series per label, in rank order (topSet's insertion order), "Other"
+// last, each zero-filled over `periodKeys` so stacked series share an axis.
 function assembleLabelSeries(
   bySide: Map<string | null, Map<string, MinorUnits>>,
   periodKeys: string[],

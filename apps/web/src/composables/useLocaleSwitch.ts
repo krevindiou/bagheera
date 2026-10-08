@@ -7,9 +7,7 @@ import { isSupportedLocale, setStoredLocale, type Locale } from '../i18n/locales
 import { useSessionStore } from '../stores/session.store';
 import { useToast } from './useToast';
 
-// Shared by LanguageSwitcher.vue (the pre-auth shell's standalone picker)
-// and AccountMenu.vue (the sidebar's language section) — same switching
-// logic, two different trigger UIs wrapped around it.
+// Shared by LanguageSwitcher.vue (signed out) and AccountMenu.vue.
 export function useLocaleSwitch() {
   const route = useRoute();
   const router = useRouter();
@@ -24,10 +22,7 @@ export function useLocaleSwitch() {
   async function choose(locale: Locale): Promise<void> {
     if (locale === current.value) return;
 
-    // Every call site elsewhere navigates by name and lets the router fill
-    // in `locale` from the current route (see router/index.ts's withLocale)
-    // — this is the one place that instead passes it explicitly, since
-    // switching *is* the locale change.
+    // The one navigation passing `locale` explicitly (see withLocale).
     await setLocale(locale);
     setStoredLocale(locale);
     await router.replace({ name: route.name ?? undefined, params: { ...route.params, locale } });

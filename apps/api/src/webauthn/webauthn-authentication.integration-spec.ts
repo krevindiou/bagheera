@@ -56,9 +56,8 @@ describe('webauthn authentication', () => {
   }
 
   describe('POST /webauthn/authentication/options', () => {
-    // M1: options used to take an email and answer with that member's
-    // credential ids (or none) — an open "is this address registered?"
-    // oracle. They now say nothing about any account.
+    // Options must say nothing about any account (no "is this address
+    // registered?" oracle).
     it('names no credentials and requires user verification', async () => {
       const { options } = await startCeremony();
 
@@ -72,9 +71,8 @@ describe('webauthn authentication', () => {
       expect(body.userVerification).toBe('required');
     });
 
-    // M6: with no identifier left on this route, repeating it for one
-    // victim's address can't lock that account out — only the (generous)
-    // per-IP budget applies.
+    // No identifier, so no way to lock one account out: only the per-IP
+    // budget applies.
     it('has no per-account rate limit to exhaust', async () => {
       const agent = request.agent(app.getHttpServer());
       const csrfToken = await csrfTokenFor(agent);

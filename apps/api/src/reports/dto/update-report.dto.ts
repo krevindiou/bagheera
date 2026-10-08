@@ -1,5 +1,5 @@
 import { CreateReportDto } from './create-report.dto';
 
-// Saving the edit form replaces the stored account selection wholesale —
-// same shape as create.
+// Same shape as create; account and category selections are replaced
+// wholesale.
 export class UpdateReportDto extends CreateReportDto {}

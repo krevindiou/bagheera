@@ -7,8 +7,8 @@ import { categorySeeds, paymentMethodSeeds, CategorySeed } from './seed-data';
 
 type Db = ReturnType<typeof drizzle>;
 
-// Idempotent: re-running the seed leaves existing rows (matched by
-// name + parent) untouched instead of duplicating them.
+// Idempotent: existing rows (payment methods by id, categories by name +
+// parent) are left untouched.
 export async function seedDatabase(db: Db): Promise<void> {
   await db.insert(paymentMethod).values(paymentMethodSeeds).onConflictDoNothing();
 

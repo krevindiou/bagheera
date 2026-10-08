@@ -2,18 +2,15 @@ import { eq, gte, lte, SQL, inArray } from 'drizzle-orm';
 import { ilikeContains } from '../common/like-pattern';
 import { operation, report } from '../db/schema';
 
-// The operation-level filters shared by every report aggregation (date
-// range, third-party text search, reconciled-only, category) — scoped to
-// the given account ids. Callers `and(...)` this with any grouping/join-
-// specific conditions of their own.
+// Operation filters shared by every report aggregation, scoped to
+// `accountIds`.
 export function reportOperationConditions(
   rpt: Pick<
     typeof report.$inferSelect,
     'valueDateStart' | 'valueDateEnd' | 'thirdParties' | 'reconciledOnly'
   >,
   accountIds: string[],
-  // Empty = no category filter (every category), same "absent link rows"
-  // convention as accountIds/effectiveAccounts — see effective-categories.ts.
+  // Empty = no category filter.
   categoryIds: string[] = [],
 ): SQL[] {
   const conditions: SQL[] = [inArray(operation.accountId, accountIds)];

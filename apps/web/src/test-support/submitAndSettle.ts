@@ -2,11 +2,8 @@ import { nextTick } from 'vue';
 import { flushPromises, type VueWrapper } from '@vue/test-utils';
 
 /**
- * VeeValidate's zod validation resolves through several chained
- * macrotask/microtask hops, so a single `flushPromises()` call after
- * submitting isn't reliably enough to observe either the validation
- * errors or the submit handler's side effects — loop a few rounds of
- * flush + tick instead.
+ * Submits, then flushes a few rounds: VeeValidate's validation takes several
+ * task hops, more than one `flushPromises()`.
  */
 export async function submitAndSettle(wrapper: VueWrapper): Promise<void> {
   await wrapper.find('form').trigger('submit');

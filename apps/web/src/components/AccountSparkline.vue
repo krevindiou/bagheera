@@ -1,16 +1,10 @@
 <script setup lang="ts">
-// Minimalist decorative sparkline for the dashboard's account tiles — no
-// axes, ticks, legend, or tooltip, deliberately unlike SynthesisChart.vue's
-// full Chart.js line chart. Plain inline SVG so a few-pixel-tall trend line
-// stays cheap for a whole grid of tiles.
+// Decorative sparkline for the dashboard's account tiles: plain inline SVG,
+// no axes or tooltip, cheap for a whole grid.
 import { computed } from 'vue';
 
-// `values` is optional/defaulted — a defensive fallback for a stale or
-// mid-refetch API response (e.g. a session-expiry 401 briefly leaving the
-// tile without its history) rather than crashing the render tree. `color`
-// is the caller's job (DashboardPage.vue assigns it per currency, the same
-// palette/order as the 12-month synthesis chart) — this component has no
-// opinion of its own on what the line should mean.
+// `values` defaults to empty in case a response briefly lacks the history;
+// the caller picks `color` (per currency).
 const props = withDefaults(
   defineProps<{
     values?: number[];
@@ -44,8 +38,7 @@ const linePath = computed(() => {
     .join(' ');
 });
 
-// Line path closed down to the baseline, for a subtle translucent fill
-// under it (the same "filled line" treatment SynthesisChart.vue uses).
+// The line closed down to the baseline, for the fill under it.
 const areaPath = computed(() => {
   if (!linePoints.value) return '';
   const [firstX] = linePoints.value[0];

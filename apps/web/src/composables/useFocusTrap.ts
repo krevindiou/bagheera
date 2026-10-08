@@ -1,8 +1,6 @@
 import { onMounted, onUnmounted, type Ref } from 'vue';
 
-// Everything a Tab press can land on — disabled controls and
-// tabindex="-1" elements are skipped, same as the browser's own
-// sequential navigation skips them.
+// What Tab can land on (disabled and tabindex="-1" skipped).
 const TABBABLE = [
   'a[href]',
   'button:not([disabled])',
@@ -13,15 +11,10 @@ const TABBABLE = [
 ].join(',');
 
 /**
- * Keeps keyboard focus inside `container` for as long as the calling
- * component is mounted — what an `aria-modal="true"` dialog promises
- * assistive tech (everything outside it is out of reach). Tab past the
- * last tabbable element wraps to the first, Shift+Tab before the first
- * wraps to the last, and a Tab pressed while focus has escaped the
- * container (e.g. onto <body> after a click on blank space) pulls it back
- * in. On unmount, focus goes back to whatever held it before the
- * container opened — typically the button that opened it — if that
- * element is still on the page.
+ * Keeps Tab focus inside `container` while the caller is mounted, as an
+ * `aria-modal` dialog promises: wrapping at both ends, and pulling escaped
+ * focus back in. On unmount, focus returns to what held it before, if still
+ * on the page.
  */
 export function useFocusTrap(container: Ref<HTMLElement | null>): void {
   // Captured during setup, not onMounted: by the time the caller's own

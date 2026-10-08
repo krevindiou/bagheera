@@ -1,8 +1,5 @@
-// class-transformer's @Type() (used below via SearchOperationsDto's
-// @ValidateNested amountComparators) reads decorator metadata through
-// Reflect.getMetadata — normally polyfilled once by main.ts at process
-// start; an isolated unit-test file never runs main.ts, so it needs the
-// same polyfill imported for itself.
+// @Type() needs Reflect.getMetadata, which Nest loads at runtime but an
+// isolated unit test doesn't.
 import 'reflect-metadata';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { plainToInstance } from 'class-transformer';
@@ -66,9 +63,7 @@ describe('SearchOperationsDto', () => {
     });
     const errors = await validate(dto);
     const nested = errors.find((e) => e.property === 'amountComparators');
-    // children[0] is the per-array-index wrapper (property '0'); its own
-    // children[0] is where the nested AmountComparatorDto's own field
-    // errors land.
+    // Array-index wrapper, then the nested DTO's field errors.
     expect(nested?.children?.[0]?.children?.[0]?.constraints).toHaveProperty('isIn');
   });
 

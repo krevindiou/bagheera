@@ -24,10 +24,8 @@ import { WebauthnModule } from './webauthn/webauthn.module';
     LoggingModule,
     DbModule,
     HealthModule,
-    // SessionModule before SecurityModule: both register a global APP_GUARD
-    // (SessionAuthGuard, RateLimitGuard), and this ordering is what makes
-    // SessionAuthGuard run first — see RateLimitGuard's own doc. Pinned by
-    // rate-limit.integration-spec.ts too; don't reorder on a hunch.
+    // SessionModule before SecurityModule: this order makes SessionAuthGuard
+    // run before RateLimitGuard (pinned by session.integration-spec.ts).
     SessionModule,
     SecurityModule,
     EmailModule,

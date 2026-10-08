@@ -1,24 +1,16 @@
-# Kamal deploys the public edge container (docker/Dockerfile.caddy — the built
-# SPA served by Caddy). Kamal's own proxy terminates TLS and does the
-# health-checked, zero-downtime container swap in front of it; the Caddyfile
-# is told (via CADDY_SITE_ADDRESS below) not to also manage TLS.
+# The web app: the built SPA served by Caddy (docker/Dockerfile.caddy).
+# kamal-proxy terminates TLS (so CADDY_SITE_ADDRESS turns Caddy's off) and
+# swaps containers with zero downtime.
 #
-# The API is a second, independent Kamal app — see config/deploy.api.yml —
-# sharing this app's kamal-proxy and hostname via path-based routing
-# (/health, /api/*), not an accessory of this one and not proxied through
-# Caddy at all anymore (kamal-proxy routes those paths to it directly,
-# before Caddy ever sees them).
+# The API is its own Kamal app (config/deploy.api.yml) on the same
+# kamal-proxy and hostname, which routes /health and /api/* to it.
 #
-# postgres/valkey still run as accessories below: fixed, Kamal-managed
-# containers reachable by the api app at their accessory name (e.g.
-# "postgres:5432"), stable across every deploy of either app. A backing
-# store restarting for a few seconds during its own `kamal accessory
-# reboot` is fine; a live web process doing the same isn't — that
-# distinction, not "shared vs. app-specific," is why these stay accessories
-# while api doesn't.
+# postgres/valkey are accessories: stable containers the api reaches by
+# name (e.g. "postgres:5432"). A few seconds' restart is fine for a backing
+# store, not for a live app, hence api being an app.
 #
 # Required at deploy time (see .kamal/secrets):
-#   KAMAL_REGISTRY_PASSWORD, POSTGRES_PASSWORD
+#   KAMAL_REGISTRY_PASSWORD, POSTGRES_PASSWORD, VALKEY_PASSWORD
 # Required as plain env (export before running kamal):
 #   DEPLOY_HOST, APP_DOMAIN, KAMAL_REGISTRY_SERVER, KAMAL_REGISTRY_USERNAME
 # Optional (Sentry error reporting, off when unset):

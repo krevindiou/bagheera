@@ -32,8 +32,7 @@ test('filtering operations by third-party text narrows the list, and clearing re
   await page.getByTestId('toggle-search').click();
   const searchDrawer = page.getByTestId('search-form');
   await page.getByLabel(en.operations.thirdParty, { exact: true }).fill('Coffee');
-  // Scoped to the drawer: its own "Search" submit button shares the toggle
-  // button's label, which no longer flips to "Hide search" once open.
+  // Scoped to the drawer: its submit shares the toggle button's label.
   await searchDrawer
     .getByRole('button', { name: en.operations.search.submit, exact: true })
     .click();

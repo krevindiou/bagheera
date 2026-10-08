@@ -15,10 +15,8 @@ const JOB_OPTIONS: JobsOptions = {
 };
 
 /**
- * Producer-side API: call sites enqueue a job and return immediately;
- * `EmailWorker` (same queue name) performs the actual send. Kept as a thin
- * wrapper so call sites (and their tests) depend on this instead of BullMQ
- * directly.
+ * Producer side: call sites enqueue and return immediately; `EmailWorker`
+ * sends. Keeps call sites off BullMQ directly.
  */
 @Injectable()
 export class EmailQueueService {

@@ -4,12 +4,10 @@
 # `backup` user (a member of the `docker` group — enough for `docker exec`
 # against the postgres container, without needing root).
 #
-# In production this is installed root-owned at /usr/local/bin/backup.sh and
-# is the *forced command* of the backup user's CI-only SSH key, which reads
-# its configuration from /etc/bagheera-backup.env on the host (below) — the
+# In production: root-owned at /usr/local/bin/backup.sh, the forced command
+# of the backup user's CI key, configured from /etc/bagheera-backup.env. The
 # caller sends nothing, so a leaked key can start a backup but not redirect
-# it. See docs/backup-restore.md's "Deploy host SSH setup" for the
-# provisioning.
+# it. See docs/backup-restore.md's "Deploy host SSH setup".
 #
 # Required env (from the environment, or from the env file below):
 #   RESTIC_REPOSITORY, RESTIC_PASSWORD (or RESTIC_PASSWORD_FILE) — restic
@@ -45,11 +43,8 @@ BACKUP_KEEP_WEEKLY="${BACKUP_KEEP_WEEKLY:-4}"
 BACKUP_KEEP_MONTHLY="${BACKUP_KEEP_MONTHLY:-6}"
 
 dump_file="$(mktemp -t bagheera-backup-XXXXXX.pgdump)"
-# `docker exec -e PGPASSWORD=...` would put the password directly in the
-# `docker` CLI's own argv, visible via `ps`/`/proc/<pid>/cmdline` to
-# anything else on this host for the run's duration. --env-file instead
-# puts only this file's *path* on argv; the value itself travels via the
-# file (mode 600, deleted with the dump on exit either way).
+# --env-file, not `-e PGPASSWORD=...`, which would show the password in
+# `ps`. The file is mode 600 and deleted on exit.
 pgpass_env_file="$(mktemp -t bagheera-backup-env-XXXXXX)"
 chmod 600 "$pgpass_env_file"
 trap 'rm -f "$dump_file" "$pgpass_env_file"' EXIT

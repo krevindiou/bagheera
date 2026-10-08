@@ -2,18 +2,12 @@ import { computed, watch, type Ref } from 'vue';
 import { groupCategories, type Category, type PaymentMethod } from '../domain/referenceData';
 
 /**
- * Category/payment-method choices filtered to the selected debit/credit
- * type — the same field logic every operation-like form (and the search
- * panel) needs, matching the server-side type-filtered validation
- * (validateTypedRefs). A payment method with a null type ("Initial
- * balance") matches neither filter — excluded from both without needing
- * a special case, same as it always has been.
+ * Category/payment-method choices filtered to the debit/credit type,
+ * mirroring the API's validateTypedRefs ("Initial balance", typed null,
+ * matches neither).
  *
- * Optionally also clears a single-select categoryId/paymentMethodId pair
- * when switching type leaves the current choice no longer valid (a still-
- * valid selection is preserved) — pass `clearOnMismatch` for a form field,
- * omit it for a multi-select consumer like the search panel, which filters
- * its own array selections down instead.
+ * `clearOnMismatch` clears a form's single selections that a type switch
+ * invalidates; the search panel omits it and filters its own arrays.
  */
 export function useTypedReferenceData(
   type: Ref<'debit' | 'credit'>,

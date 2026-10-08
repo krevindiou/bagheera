@@ -268,12 +268,8 @@ describe('accounts', () => {
     it("ends the 12-month window at the account's latest operation, not today", async () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
-      // No initial balance — that operation would be dated today (see
-      // `operation.valueDate`'s `defaultNow()`), defeating the point below.
+      // No initial balance: that operation would be dated today.
       const accountId = await createAccount(mutate, bankId);
-      // Dated years before "today" — if the window were anchored to the
-      // real current date, the last point's period would be this month,
-      // not '2020-01-01'.
       await mutate('post', '/operations', {
         accountId,
         type: 'debit',
@@ -291,9 +287,8 @@ describe('accounts', () => {
       });
     });
 
-    // M5: totals are now summed per month in SQL rather than from every
-    // operation row in Node — pins that nothing changes: a balance carried
-    // in from before the window, a month netting to a loss, a gap month.
+    // Covers a balance carried in from before the window, a month netting
+    // to a loss, and a gap month.
     it('plots each month-end running balance, carrying earlier operations in', async () => {
       const { agent, mutate } = await seedSignedInMember(app);
       const accountId = await createAccount(mutate, await createBank(mutate));
@@ -454,10 +449,8 @@ describe('accounts', () => {
     });
 
     it('404s deleting an already-deleted account', async () => {
-      // Unlike bank removal, OwnershipService.requireOwnedAccount folds
-      // account.deleted into its own 404 (see its doc comment — banks are
-      // the one exception) — so AccountService.remove()'s own "already
-      // deleted" 422 check is never actually reached via this endpoint.
+      // Unlike banks, requireOwnedAccount 404s a deleted account, so
+      // AccountService.remove()'s own "already deleted" 422 is unreachable.
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);

@@ -18,9 +18,8 @@ import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
-// Never distinguishes a missing/expired challenge from an ownership
-// mismatch from a bad signature — a single generic error path for all of
-// them, same discipline as sign-in's own WebAuthn ceremony.
+// One generic error for a missing challenge, a foreign credential and a bad
+// signature alike.
 const STEP_UP_FAILED = 'Step-up verification failed.';
 
 function stepUpFailed(): BusinessError {
@@ -28,15 +27,10 @@ function stepUpFailed(): BusinessError {
 }
 
 /**
- * Proves the caller still holds one of their own registered passkeys,
- * without creating a new session — the WebAuthn analog of "enter your
- * current password", gating the mutations a hijacked session could turn
- * into a permanent takeover (email change, adding or removing a passkey)
- * now that there is no password to ask for. Unlike
- * WebauthnAuthenticationService, this never calls SessionRotationService:
- * it only sets a short-lived, single-use `stepUpVerifiedAt` flag the
- * caller's next sensitive request consumes (see session/consume-step-up.ts
- * for the TTL and single-use rule).
+ * Proves the signed-in caller still holds one of their passkeys, for the
+ * mutations a hijacked session could turn into a takeover. Doesn't rotate
+ * the session: it only sets the single-use `stepUpVerifiedAt` flag that
+ * consumeStepUp() checks.
  */
 @Injectable()
 export class WebauthnStepUpService {
@@ -60,8 +54,7 @@ export class WebauthnStepUpService {
         id: credential.credentialId,
         transports: credential.transports ?? undefined,
       })),
-      // Matches what verify() enforces (verifyAuthenticationResponse's
-      // default), same as sign-in's own options.
+      // What verifyAuthenticationResponse enforces by default.
       userVerification: 'required',
     });
 

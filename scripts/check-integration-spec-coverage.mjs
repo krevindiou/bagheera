@@ -1,20 +1,10 @@
 #!/usr/bin/env node
-// Axis-1 "surface completeness" CI gate for the api integration suite: every
-// apps/api/src/**/*.controller.ts must have a same-directory,
-// same-basename *.integration-spec.ts, or an explicit, reviewable opt-out
-// comment inside the controller file itself.
-//
-// The opt-out lives in the controller (not a separate allowlist file) so a
-// new exception shows up in the diff/review of the change that creates it,
-// instead of rotting silently in a list nobody re-reads. Format, anywhere
-// in the file:
+// CI gate: every apps/api/src/**/*.controller.ts needs a same-basename
+// *.integration-spec.ts beside it, or an opt-out comment in the controller
+// itself (so an exception shows up in review), anywhere in the file:
 //   // integration-spec: <reason>
 //
-// Zero dependencies (only node:fs/node:path) — deliberately runnable with
-// plain `node`, matching how the rest of the "lint" CI job already runs
-// (pnpm lint/format/tsc directly on the runner, no Docker). Not wired into
-// the Makefile: this checks source-tree shape, not app behavior, so it
-// doesn't need the dev stack running.
+// Dependency-free, run with plain `node` in CI's lint job.
 //
 // Usage: node scripts/check-integration-spec-coverage.mjs
 

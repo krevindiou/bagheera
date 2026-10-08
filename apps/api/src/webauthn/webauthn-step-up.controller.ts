@@ -6,8 +6,7 @@ import { RateLimit } from '../security/rate-limit.decorator';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { WebauthnStepUpService } from './webauthn-step-up.service';
 
-// Authenticated (no @Public()) — proving you still hold a passkey requires
-// an existing signed-in session, same as the old change-password.
+// Signed-in only.
 @Controller('webauthn/step-up')
 export class WebauthnStepUpController {
   constructor(private readonly stepUp: WebauthnStepUpService) {}

@@ -2,7 +2,7 @@ import { DEFAULT_LOCALE, type Locale } from '../../common/locale';
 import { EmailMessage } from '../email-message';
 import { emailCatalog } from '../i18n';
 
-/** Registration/activation-resend email. */
+/** Sign-up link email. */
 export function registrationEmail(
   to: string,
   activationLink: string,

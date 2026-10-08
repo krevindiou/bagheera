@@ -75,8 +75,7 @@ describe('session lifecycle', () => {
     await app.close();
   });
 
-  // M4: an anonymous request that keeps nothing used to store a session
-  // anyway — flooding any URL filled Valkey.
+  // Otherwise flooding any URL would fill Valkey.
   it('stores no session and sends no cookie for an anonymous request that keeps nothing', async () => {
     const valkey = app.get<IORedis>(VALKEY_CLIENT);
     const before = await countSessions(valkey);
@@ -163,21 +162,10 @@ describe('session lifecycle', () => {
     expect(brandNewKeys.length).toBeGreaterThan(0);
   });
 
-  // KNOWN BUG, not a test mistake — kept as `it.fails` rather than
-  // asserting the crash as correct: CurrentSessionController.me() is
-  // @Public() (deliberately, so an anonymous caller gets a clean 401
-  // instead of SessionAuthGuard's) and reads `req.session.memberId`
-  // directly with no optional chaining. absoluteSessionTtl's destroy()
-  // path (session past the 24h absolute cap) deletes `req.session`
-  // entirely mid-request (express-session's Session.prototype.destroy
-  // does `delete this.req.session`) — every *other* protected path is
-  // safe from this because SessionAuthGuard checks `req.session?.
-  // memberId` (session-auth.guard.ts) before requireMemberId() ever runs,
-  // but this one route has no guard in front of it and skips the `?.`
-  // both. Net effect: the first request to /auth/me after a session
-  // crosses the absolute TTL 500s instead of 401ing. One-line fix:
-  // `req.session?.memberId` in current-session.controller.ts. Flagged for
-  // the user rather than fixed here — out of scope for a test-writing pass.
+  // KNOWN BUG, hence `it.fails`: past the absolute TTL, absoluteSessionTtl
+  // deletes `req.session`, and /auth/me (@Public(), so no SessionAuthGuard
+  // with its `?.`) reads `req.session.memberId`: a 500, not a 401. Fix:
+  // `req.session?.memberId` in current-session.controller.ts.
   it.fails('force-expires a session past the absolute TTL, regardless of activity', async () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);

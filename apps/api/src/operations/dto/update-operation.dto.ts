@@ -1,9 +1,8 @@
 import { IsBoolean, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 
-// accountId is shown read-only on the edit form but still submitted — the
-// server rejects any attempt to actually move the operation to another
-// account — an operation's account is immutable after creation.
+// accountId is immutable but still submitted (read-only on the edit form);
+// the service rejects any change.
 export class UpdateOperationDto {
   @IsUUID('7')
   accountId!: string;

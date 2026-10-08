@@ -16,8 +16,6 @@ describe('DbModule', () => {
     await app.close();
   });
 
-  // M5: with no timeout, one runaway query could hold one of the pool's
-  // connections — shared by every member's requests — for as long as it ran.
   it("caps every statement on the app's connections with a server-side timeout", async () => {
     const { rows } = await app
       .get<Pool>(PG_POOL)

@@ -16,11 +16,6 @@ import AppIcon from '../../components/AppIcon.vue';
 import { formatTimestampDate } from '../../domain/money';
 import SettingsTabs from './SettingsTabs.vue';
 
-// Swagger can't introspect @simplewebauthn/server's WebAuthn-spec types
-// (they carry no Nest/class-validator decorators of their own), so the
-// generated client types these bodies as an opaque `Record<string, never>`
-// — cast at the boundary rather than widening the real API contract.
-
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
 const { t } = useI18n();
@@ -43,9 +38,7 @@ const adding = ref(false);
 async function addPasskey() {
   adding.value = true;
   try {
-    // The API only starts a registration after a fresh step-up with a
-    // passkey the member already holds (a session alone could be a stolen
-    // one) — see WebauthnRegistrationService.
+    // The API requires a fresh step-up first.
     if (!(await completeStepUp())) {
       toast(t('settings.passkeys.stepUpFailed'), 'error');
       return;
@@ -55,8 +48,7 @@ async function addPasskey() {
       verifyBody: { deviceName: deviceName.value.trim() || undefined },
     });
     if (!result.ok) {
-      // A cancelled platform prompt is not a server error — just abandon
-      // the attempt.
+      // A cancelled prompt isn't an error.
       if (result.reason !== 'cancelled') toast(t('settings.passkeys.genericError'), 'error');
       return;
     }
@@ -77,8 +69,7 @@ async function removePasskey(id: string) {
     toast(t('settings.passkeys.lastPasskeyError'), 'error');
     return;
   }
-  // Removal is step-up gated like registration: a stolen session that
-  // could delete passkeys could lock the real owner out for good.
+  // Step-up gated, like registration.
   if (!(await completeStepUp())) {
     toast(t('settings.passkeys.stepUpFailed'), 'error');
     return;
@@ -87,10 +78,7 @@ async function removePasskey(id: string) {
     params: { path: { id } },
   });
   if (!response.ok) {
-    // Branches on the status code, not the server's English text (same
-    // rule ProfilePage.vue/PasskeysPage's own registration flow follow) —
-    // a 400 here specifically means "that's your last passkey", distinct
-    // from every other failure mode, which stays the generic toast.
+    // A 400 here means "last passkey" (branch on status, not English text).
     if (response.status === 400) {
       toast(t('settings.passkeys.lastPasskeyError'), 'error');
       return;

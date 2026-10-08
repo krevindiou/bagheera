@@ -8,11 +8,9 @@ import './session-data';
 import { CsrfTokenResponseDto } from './dto/csrf-token-response.dto';
 
 /**
- * Mints a CSRF token for the caller's session. The CSRF cookie itself is
- * httpOnly (never readable by page scripts), so the SPA calls this before
- * each mutating request and echoes the returned value back via the
- * `x-csrf-token` header — the standard double-submit pattern adapted for an
- * httpOnly cookie.
+ * Mints a CSRF token for the caller's session. The CSRF cookie is httpOnly,
+ * so the SPA calls this before each mutating request and echoes the value
+ * in `x-csrf-token`.
  */
 @ApiTags('auth')
 @Controller('auth')
@@ -26,10 +24,8 @@ export class CsrfTokenController {
   // SPA mints a token per mutation (apps/web/src/api/client.ts).
   @RateLimit({ points: 30, durationSeconds: 60, appliesTo: isNewSession })
   csrfToken(@Req() req: Request): CsrfTokenResponseDto {
-    // Force the session to persist so the id the token's HMAC is derived
-    // from stays stable — without this, saveUninitialized:false would drop
-    // a never-otherwise-modified session and a later request would see a
-    // different id.
+    // Persist the session: the token's HMAC is bound to its id, which an
+    // unsaved (saveUninitialized: false) session wouldn't keep.
     req.session.csrfIssued = true;
     return { csrfToken: req.csrfToken!() };
   }

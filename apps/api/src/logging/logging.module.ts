@@ -3,10 +3,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { LOG_REDACT_PATHS } from './redact-paths';
 
 /**
- * Structured JSON logging on stdout, for `docker compose logs`/any log
- * shipper. Pretty-prints in dev (LOG_PRETTY=true, set by the api's own
- * start:dev script) so local output stays readable; production leaves it as
- * plain JSON lines.
+ * JSON logs on stdout; pretty-printed when LOG_PRETTY=true (start:dev).
  */
 @Module({
   imports: [

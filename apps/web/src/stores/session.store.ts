@@ -13,10 +13,8 @@ export interface SessionMember {
 export const useSessionStore = defineStore('session', {
   state: () => ({
     member: null as SessionMember | null,
-    // The httpOnly session cookie survives a page refresh but this store
-    // doesn't — `restore()` asks the API whether the cookie still carries a
-    // valid session, so a reload doesn't bounce a signed-in member to the
-    // sign-in page before that round trip has had a chance to complete.
+    // Whether `restore()` has asked the API if the session cookie, which
+    // survives a reload unlike this store, is still valid.
     restored: false,
     restorePromise: null as Promise<void> | null,
   }),
@@ -27,32 +25,26 @@ export const useSessionStore = defineStore('session', {
     setMember(member: SessionMember | null) {
       this.member = member;
     },
-    // Optimistic local update after the language switcher's own
-    // `POST /members/locale` succeeds — avoids a round trip through
-    // fetchMember() just to reflect a change this tab already knows about.
+    // Local update after `POST /members/locale` succeeds.
     setLocale(locale: Locale) {
       if (this.member) {
         this.member = { ...this.member, locale };
       }
     },
-    // Same, after the settings page's own `POST /members/time-zone`.
+    // Same, after `POST /members/time-zone`.
     setTimeZone(timeZone: string) {
       if (this.member) {
         this.member = { ...this.member, timeZone };
       }
     },
-    // Sign-out and the 401 handler both land here. Dropping every cached
-    // query too means whoever signs in next on this tab doesn't see the
-    // previous member's accounts or balances while their own data loads.
+    // Also drops every cached query, so the next member on this tab never
+    // sees the previous one's data.
     clear() {
       this.member = null;
       queryClient.clear();
     },
-    // Always hits the network — unlike restore() below, never reuses a
-    // cached result. Used right after sign-in (passkey), where
-    // the member is known to have just changed and any earlier restore()
-    // call (e.g. the router guard's, resolved to `null` while this was
-    // still the sign-in page) must not be trusted anymore.
+    // Always hits the network, unlike restore(): used right after sign-in,
+    // when an earlier restore() result is stale.
     async fetchMember(): Promise<void> {
       try {
         const { data } = await apiClient.GET('/auth/me');
@@ -65,8 +57,7 @@ export const useSessionStore = defineStore('session', {
         this.restored = true;
       }
     },
-    // Idempotent and safe to call from multiple guards/components — only
-    // ever performs the round trip once per app load.
+    // One round trip per app load, however many callers.
     restore(): Promise<void> {
       if (this.restorePromise) return this.restorePromise;
       this.restorePromise = this.fetchMember();

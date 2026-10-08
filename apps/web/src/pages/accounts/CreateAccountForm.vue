@@ -20,11 +20,8 @@ import type { Account, Bank } from './accounts.types';
 // boundary rather than widening the form's own type.
 type CurrencyCode = components['schemas']['CreateAccountDto']['currency'];
 
-// Account creation, reached after the bank-choice step, pre-scoped to the
-// chosen/created bank (the bank field stays an editable dropdown of the
-// member's active banks). Editing reuses this same form: same fields, but
-// bank and currency are shown read-only and there's no initial-balance
-// field.
+// Account creation, preselecting the bank chosen in the previous step.
+// Edit mode shows bank and currency read-only, without an initial balance.
 const props = defineProps<{
   banks: Bank[];
   bankId?: string;

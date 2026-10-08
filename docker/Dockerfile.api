@@ -22,12 +22,8 @@ FROM deps AS dev
 # without a rebuild. node_modules paths are covered by named volumes there
 # so the bind mount doesn't shadow them.
 RUN chown -R node:node /app
-# Lets the `node` user read/write the host's docker.sock (bind-mounted in
-# compose.yml's dev volumes) so `pnpm test:integration` (Testcontainers)
-# can run without `docker compose exec -u root`. The Makefile derives this
-# host's own docker.sock gid and passes it as a build arg — no default
-# here, so a bare `docker build`/`docker compose build` bypassing the
-# Makefile fails fast instead of silently baking in some other host's gid.
+# Gives `node` the host docker.sock's group, for Testcontainers. The
+# Makefile passes the gid; no default, so building without it fails fast.
 ARG DOCKER_GID
 RUN (addgroup -g "$DOCKER_GID" docker || true) \
   && EXISTING_GROUP="$(getent group "$DOCKER_GID" | cut -d: -f1)" \

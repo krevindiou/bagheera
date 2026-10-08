@@ -4,12 +4,10 @@ import * as nodemailer from 'nodemailer';
 import { EmailMessage, EmailProvider } from './email-message';
 
 /**
- * Mail carries sign-up and email-change links, so in production it must never
- * travel in clear. `smtps://` is TLS from the first byte; on `smtp://`
- * nodemailer only upgrades via STARTTLS *if the server offers it*, which a
- * network attacker can prevent by stripping the offer — `requireTLS` turns
- * that silent downgrade into a send failure. Outside production the
- * catch-all dev SMTP server (Mailpit) speaks no TLS at all.
+ * Mail carries sign-up and email-change links, so production never sends in
+ * clear. On `smtp://`, nodemailer only upgrades via STARTTLS if offered,
+ * which an attacker can strip; `requireTLS` makes that a send failure.
+ * `smtps://` is TLS already, and dev's Mailpit speaks no TLS.
  */
 export function smtpTransportOptions(
   smtpUrl: string,
@@ -21,10 +19,8 @@ export function smtpTransportOptions(
 }
 
 /**
- * SMTP-backed provider. Configured via `EMAIL_SMTP_URL` and
- * `EMAIL_FROM`; failures are logged and swallowed so a mail-server hiccup
- * never surfaces to the caller — email sending failures are logged
- * internally without changing the visible response.
+ * SMTP provider (`EMAIL_SMTP_URL`, `EMAIL_FROM`). Failures are logged and
+ * swallowed.
  */
 @Injectable()
 export class SmtpEmailProvider implements EmailProvider {

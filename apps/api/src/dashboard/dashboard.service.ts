@@ -27,7 +27,6 @@ import {
   TotalBalanceDto,
 } from './dto/dashboard-response.dto';
 
-// Response shapes: the Swagger DTOs themselves (dto/dashboard-response.dto.ts).
 export type OnboardingTip = DashboardResponseDto['onboarding'];
 
 export type TotalBalance = TotalBalanceDto;
@@ -40,9 +39,7 @@ export type HomepageReport = SeriesHomepageReportDto | DistributionHomepageRepor
 
 export type DashboardResponse = DashboardResponseDto;
 
-// Sparkline tiles show only a short recent window — a fraction of the
-// synthesis chart's full 12-month one — since they carry no axis/labels to
-// orient a longer history against.
+// Sparkline tiles have no axis or labels, so a short window reads best.
 const SPARKLINE_MONTHS = 6;
 
 const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
@@ -76,14 +73,9 @@ export class DashboardService {
     private readonly reportDistributions: ReportDistributionService,
   ) {}
 
-  // Per-account cumulative balance history, last `SPARKLINE_MONTHS` months —
-  // one `computeSynthesisChart` call per account (reusing the exact same
-  // per-account scoping AccountService.chart uses for the full 12-month
-  // chart, including that each account's own window ends at its own latest
-  // operation, not today), just trimmed to a shorter trailing window for
-  // the tile sparkline. A single query sums every account's monthly
-  // movements up front so this stays one round trip regardless of account
-  // count.
+  // Per-account sparkline: AccountService.chart's synthesis chart (window
+  // ending at the account's latest operation) trimmed to the last
+  // SPARKLINE_MONTHS. `monthly` is fetched once for every account.
   private accountHistories(
     accounts: (typeof account.$inferSelect)[],
     monthly: MonthlyNet[],
@@ -147,11 +139,8 @@ export class DashboardService {
       accounts.map((a) => a.id),
     );
 
-    // Total balance per currency — closed accounts/banks count here, only
-    // deleted ones are excluded; ordered by the raw stored integer sum,
-    // largest first, no currency conversion across the tie-break. The
-    // reconciled total is the same sum restricted to reconciled operations
-    // (see AccountService.balance's identical per-account computation).
+    // Total balance per currency, closed accounts included. Sorted by raw
+    // amount, largest first, with no currency conversion; ties by currency.
     const rawTotals = new Map<string, number>();
     const rawReconciledTotals = new Map<string, number>();
     for (const acc of accounts) {
@@ -170,9 +159,7 @@ export class DashboardService {
       )
       .map(([currency, amount]) => ({
         currency,
-        // `amount` came from rawTotals, a plain-number accumulator — see
-        // the comment on synthesis-chart.ts's `running` for why `+=`
-        // always drops the brand even though every addend was MinorUnits.
+        // `+=` dropped the MinorUnits brand.
         amount: amount as MinorUnits,
         reconciledAmount: (rawReconciledTotals.get(currency) ?? 0) as MinorUnits,
       }));
@@ -206,9 +193,7 @@ export class DashboardService {
             id: a.id,
             name: a.name,
             currency: a.currency,
-            // The `?? 0` fallback is an unbranded literal, so the whole
-            // expression reads as plain `number` even on the found-in-map
-            // branch.
+            // The `?? 0` literal widens the expression to `number`.
             balance: (balances.get(a.id)?.balance ?? 0) as MinorUnits,
             reconciledBalance: (balances.get(a.id)?.reconciledBalance ?? 0) as MinorUnits,
             history: histories.get(a.id) ?? [],
@@ -228,14 +213,9 @@ export class DashboardService {
     };
   }
 
-  // Cumulative end-of-month balance, one line per currency, over a
-  // trailing window (12/24 months, or the full history — see `range`) —
-  // scoped to the same non-deleted-bank/non-deleted-account set as
-  // `accounts` above (closed included, deleted excluded, per 2.3). The
-  // window ends at the latest operation across every account in scope, not
-  // today (see synthesis-chart.ts's `latestValueDate`) — one shared end
-  // date for the whole chart, since every series must share the same
-  // period labels.
+  // Over every reachable account (closed included). One window end — the
+  // latest operation across all of them — since every series shares the
+  // same period labels.
   private getSynthesisChart(
     accounts: (typeof account.$inferSelect)[],
     monthly: MonthlyNet[],
@@ -318,8 +298,7 @@ export class DashboardService {
         };
       }),
     );
-    // A homepage report whose series/distribution has zero data points is
-    // omitted.
+    // Reports with no data points are omitted.
     return entries.filter((entry) =>
       entry.kind === 'distribution' ? !entry.distribution.hidden : !entry.series.hidden,
     );

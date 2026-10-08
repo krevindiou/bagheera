@@ -15,7 +15,6 @@ import { ALL_PERIOD_KEY, currentYearStart, periodExpr } from './report-periods';
 import { ChartPointDto } from '../common/dto/chart-response.dto';
 import { ReportSeriesDto, ReportSeriesEntryDto } from './dto/report-response.dto';
 
-// Response shapes: the Swagger DTOs themselves (dto/report-response.dto.ts).
 export type ReportSeriesPoint = ChartPointDto;
 
 export type ReportSeriesEntry = ReportSeriesEntryDto;
@@ -41,9 +40,7 @@ export class ReportSeriesService {
     return this.computeSeries(rpt, memberId);
   }
 
-  // Split out from `getSeries` so the dashboard's homepage-report section
-  // (step 37) can reuse the aggregation for reports it already fetched and
-  // owns, without a second ownership round-trip.
+  // For the dashboard, which already holds the owned report.
   async computeSeries(rpt: typeof report.$inferSelect, memberId: string): Promise<ReportSeries> {
     const accounts = await effectiveAccounts(this.db, rpt.id, memberId);
     if (accounts.length === 0) {
@@ -59,10 +56,7 @@ export class ReportSeriesService {
 
     const grouping = rpt.periodGrouping;
 
-    // Period + sum/count aggregation happens in Postgres (GROUP BY +
-    // date_trunc), not by streaming every raw operation row into Node and
-    // bucketing it in a JS Map — the result set here is one row per
-    // currency/period actually present, not one row per operation.
+    // Aggregated in Postgres: one row per currency/period, not per operation.
     const aggregated = await this.db
       .select({
         currency: account.currency,
@@ -79,15 +73,9 @@ export class ReportSeriesService {
       .from(operation)
       .innerJoin(account, eq(operation.accountId, account.id))
       .where(and(...conditions))
-      // GROUP BY the *output column position* (2 = period), not a second
-      // rendering of `periodExpr` — Drizzle binds each `sql` usage as its
-      // own parameter, so repeating the expression here would give
-      // Postgres two `date_trunc($1, ...)` calls referencing different
-      // bind params it can't prove are equal, and it rejects the query
-      // ("must appear in the GROUP BY clause or be used in an aggregate
-      // function"). Ordinal position always refers back to the same
-      // already-computed SELECT-list expression. For 'all' grouping,
-      // `period` is a constant (`null`), which needs no GROUP BY entry.
+      // GROUP BY position 2 (period): repeating `periodExpr` would bind a
+      // second parameter Postgres can't prove equal to the SELECT's ("must
+      // appear in the GROUP BY clause"). 'all' has a constant period.
       .groupBy(...(grouping === 'all' ? [account.currency] : [account.currency, sql`2`]));
 
     const byCurrency = new Map<string, Map<string, Bucket>>();
@@ -137,9 +125,7 @@ export class ReportSeriesService {
             : rpt.type === 'sum'
               ? bucket.debitSum
               : bucket.debitSum / bucket.debitCount;
-        // Both ternaries' non-zero branches are already MinorUnits, but the
-        // `0` fallback and the `/ count` average branch each widen back to
-        // plain `number` — cast at the finished total, same as elsewhere.
+        // The `0` and average branches widen to `number`.
         const creditValue = creditRaw as MinorUnits;
         const debitValue = debitRaw as MinorUnits;
         const label = grouping === 'all' ? currentYearStart() : key;

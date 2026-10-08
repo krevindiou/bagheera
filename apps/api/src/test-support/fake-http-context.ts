@@ -2,14 +2,7 @@ import type { ArgumentsHost, ExecutionContext } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { vi, type Mock } from 'vitest';
 
-/**
- * Shared fakes for guard/filter/middleware unit specs — these all take a
- * slice of the real Express `Request`/`Response` plus (for guards) a Nest
- * `ExecutionContext`/`ArgumentsHost`, and hand-rolling that shape per spec
- * file just repeats the same few `vi.fn()`s. Built for the "mocked DB"
- * unit-test style (see CLAUDE.md): no real Nest bootstrap, just enough
- * shape for the code under test to read.
- */
+/** Minimal Express/Nest context fakes for guard, filter and middleware unit specs. */
 
 /** A minimal fake `Request`, overridable per test (e.g. `session`, `body`, `method`, `ip`). */
 export function fakeRequest(overrides: Partial<Request> = {}): Request {
@@ -24,12 +17,9 @@ export function fakeRequest(overrides: Partial<Request> = {}): Request {
 }
 
 /**
- * A fake `Response`, typed as its own plain shape rather than the real
- * Express `Response` — that type's `status`/`json` use old-style method
- * syntax, which trips `@typescript-eslint/unbound-method` the moment a spec
- * extracts `res.status`/`res.json` into `expect(...)` (a false positive:
- * vitest's matchers never call the method with a foreign `this`). `status()`
- * is chainable (returns itself) like the real one.
+ * Not typed as Express's `Response`, whose method syntax trips
+ * `@typescript-eslint/unbound-method` in `expect(res.status)`. `status()`
+ * chains like the real one.
  */
 export interface FakeResponse {
   status: Mock;
@@ -58,9 +48,7 @@ export function fakeArgumentsHost(req: Request, res: FakeResponse): ArgumentsHos
 
 /**
  * Wraps a request as the `ExecutionContext` a guard receives. `handler` and
- * `klass` are only ever passed on to a mocked `Reflector` in these specs —
- * their identity doesn't matter beyond being stable, distinguishable
- * references, so plain defaults are enough unless a test asserts on them.
+ * `klass` only need to be stable references for a mocked `Reflector`.
  */
 export function fakeExecutionContext(
   req: Request,

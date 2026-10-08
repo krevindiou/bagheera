@@ -42,9 +42,8 @@ export class SchedulerBatchDeleteResponseDto {
   deletedCount!: number;
 }
 
-// See common/dto/same-keys.ts.
-// lastGeneratedDate is the internal generation cursor, selected out of every
-// response (see SchedulerService's schedulerResponseColumns).
+// See common/dto/same-keys.ts. lastGeneratedDate is selected out of every
+// response.
 export type SchedulerDtoMatchesRow = Assert<
   SameKeys<SchedulerDto, Omit<typeof scheduler.$inferSelect, 'lastGeneratedDate'>>
 >;

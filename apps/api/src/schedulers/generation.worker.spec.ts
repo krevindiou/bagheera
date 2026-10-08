@@ -7,20 +7,16 @@ import type { SchedulerGenerationService } from './generation.service';
 import { createGenerationWorker } from './generation.worker';
 import { vi, type Mock } from 'vitest';
 
-// The real Worker would connect to Valkey and start polling — capture what
-// it's handed instead. (Prefixed `mock` so vi.mock's hoisted factory may
-// reference it.)
+// Capture what the Worker is handed. (`mock` prefix: vi.mock's hoisted
+// factory may reference it.)
 const mockWorker = { on: vi.fn() };
 vi.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: vi.fn() }));
 vi.mock('bullmq', () => ({
   Worker: vi.fn().mockImplementation(function Worker() {
     return mockWorker;
   }),
-  // Unused by this spec directly, but SWC's emitted decorator metadata for
-  // GenerationQueueService's constructor (Queue<GenerationJob>) reads this
-  // named export the moment generation-queue.service.ts loads (transitively,
-  // via generation.worker.ts) — vi.mock rejects reads of exports the
-  // factory doesn't provide.
+  // Read by GenerationQueueService's decorator metadata when it loads
+  // transitively; vi.mock rejects exports the factory doesn't provide.
   Queue: class Queue {},
 }));
 

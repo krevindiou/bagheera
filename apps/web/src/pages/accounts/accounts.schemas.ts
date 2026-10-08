@@ -17,9 +17,7 @@ export const editAccountSchema = z.object({
 });
 export type EditAccountForm = z.infer<typeof editAccountSchema>;
 
-// The bank-choice step (its own screen) offers two mutually exclusive
-// options — pick an existing active bank (bankId) or type a new bank's
-// name (bankName) — before account creation even starts.
+// Either an existing bank (bankId) or a new one's name (bankName).
 export const bankChoiceSchema = z
   .object({
     bankId: z.string().optional(),
@@ -31,9 +29,6 @@ export const bankChoiceSchema = z
   });
 export type BankChoiceForm = z.infer<typeof bankChoiceSchema>;
 
-// Account creation, pre-scoped to the bank chosen/created above (the
-// bank field stays editable — a dropdown of the member's active banks —
-// but starts pre-selected to that bank).
 export const createAccountSchema = z.object({
   bankId: z.string().min(1, 'required'),
   name: accountName,

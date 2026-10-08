@@ -7,9 +7,8 @@ import type { EmailMessage, SignupRequest } from './email-message';
 import { EmailWorker } from './email.worker';
 import { vi } from 'vitest';
 
-// The real Worker would connect to Valkey and start polling — capture the
-// processor it's handed instead, and drive it directly. (Prefixed `mock` so
-// vi.mock's hoisted factory may reference it.)
+// Capture the processor the Worker is handed and drive it directly.
+// (`mock` prefix: vi.mock's hoisted factory may reference it.)
 type Processor = (job: Job<EmailMessage | SignupRequest>) => Promise<void>;
 const mockWorker = { on: vi.fn(), close: vi.fn().mockResolvedValue(undefined) };
 let mockProcessor: Processor | undefined;
@@ -19,11 +18,8 @@ vi.mock('bullmq', () => ({
     mockProcessor = processor;
     return mockWorker;
   }),
-  // Unused by this spec directly, but SWC's emitted decorator metadata for
-  // EmailQueueService's constructor (Queue<...>) reads this named export
-  // the moment email-queue.service.ts loads (transitively, via
-  // signup-request.service.ts) — vi.mock rejects reads of exports the
-  // factory doesn't provide.
+  // Read by EmailQueueService's decorator metadata when it loads
+  // transitively; vi.mock rejects exports the factory doesn't provide.
   Queue: class Queue {},
 }));
 

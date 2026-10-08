@@ -11,10 +11,8 @@ export const CSRF_COOKIE_NAME = '__Host-bagheera.csrf';
 export const SESSION_KEY_PREFIX = 'sess:';
 
 /**
- * Idle timeout: session expires this many seconds after the last request.
- * Defaults to 30 minutes; overridable via `SESSION_IDLE_TTL_SECONDS` so the
- * E2E idle-timeout journey can use a short-lived session instead of
- * actually waiting half an hour.
+ * Idle timeout after the last request: 30 minutes, overridable via
+ * `SESSION_IDLE_TTL_SECONDS` (the E2E idle-timeout journey shortens it).
  */
 export const SESSION_IDLE_TTL_SECONDS = process.env.SESSION_IDLE_TTL_SECONDS
   ? Number(process.env.SESSION_IDLE_TTL_SECONDS)

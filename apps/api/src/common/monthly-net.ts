@@ -13,10 +13,9 @@ export interface MonthlyNet {
 }
 
 /**
- * Each account's net movement per calendar month, summed in Postgres. The
- * synthesis charts bucket by month anyway, so this gives them exactly what
- * they'd compute from every operation row, without pulling those rows into
- * Node — one row per account and month instead of one per operation.
+ * Each account's net movement per calendar month, summed in Postgres: the
+ * synthesis charts bucket by month anyway, so one row per account and month
+ * replaces one per operation.
  */
 export async function monthlyNetByAccount(
   db: NodePgDatabase,

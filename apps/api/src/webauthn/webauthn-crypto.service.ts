@@ -17,16 +17,9 @@ import type {
 } from '@simplewebauthn/server';
 
 /**
- * Thin DI wrapper around @simplewebauthn/server's four ceremony functions —
- * the one seam every webauthn-*.service.ts calls through instead of
- * importing the library directly. Exists so code that only needs "some
- * valid session" or "some valid passkey" rather than to prove the ceremony's
- * crypto itself — chiefly test-support/auth-fixture.ts, reused by every
- * unrelated module's integration tests — can `vi.spyOn` the one injected
- * instance instead of `vi.mock`-ing the module in every consuming spec
- * file. This class is a plain pass-through, so the
- * webauthn-*.integration-spec.ts files that DO test the ceremony itself keep
- * working unchanged with their existing `vi.mock('@simplewebauthn/server', ...)`.
+ * Pass-through DI wrapper around @simplewebauthn/server's ceremony
+ * functions, so integration specs can `vi.spyOn` the injected instance
+ * rather than `vi.mock` the library.
  */
 @Injectable()
 export class WebauthnCryptoService {

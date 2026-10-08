@@ -105,12 +105,8 @@ const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
 
-// Both money-changing: every cached page of this account's operations (not
-// just the one showing — the old per-page key left stale rows on any other
-// page until its own next visit), this account's own chart/balance, and —
-// since a single operation edit moves this account's balance — the
-// dashboard's totals and the accounts list's own balances, wherever else
-// they're cached.
+// Every page of this account's operations, its chart and balance, and the
+// dashboard and accounts list balances.
 async function refreshAfterSave() {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) }),

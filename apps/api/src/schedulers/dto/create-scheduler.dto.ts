@@ -5,16 +5,14 @@ export class CreateSchedulerDto {
   @IsUUID('7')
   accountId!: string;
 
-  // Radio Debit / Credit; drives the debit/credit column exclusivity
-  // and the server-side type-filtered category/payment-method validation.
+  // Decides the debit/credit column and the allowed category/payment method.
   @IsIn(['debit', 'credit'])
   type!: 'debit' | 'credit';
 
   @ThirdPartyField()
   thirdParty!: string;
 
-  // Decimal money value; sign is derived from `type` (÷10,000 boundary
-  // conversion happens server-side).
+  // Major units; the sign comes from `type`.
   @AmountField()
   amount!: number;
 
@@ -25,8 +23,7 @@ export class CreateSchedulerDto {
   @IsUUID('7')
   paymentMethodId!: string;
 
-  // Visible/meaningful only when the payment method is a transfer method;
-  // discarded server-side otherwise.
+  // Only kept for a transfer payment method; discarded otherwise.
   @IsOptional()
   @IsUUID('7')
   transferAccountId?: string;
@@ -50,12 +47,8 @@ export class CreateSchedulerDto {
   @IsIn(['day', 'week', 'month', 'year'])
   frequencyUnit?: 'day' | 'week' | 'month' | 'year';
 
-  // Upper-bounded, not just positive: generation/interval.ts's date
-  // arithmetic assumes occurrence dates stay well within JS `Date`'s
-  // representable range — an unbounded value (paired with 'month'/'year')
-  // can push a generated date past that range, corrupting the ISO-string
-  // comparison dueOccurrences() relies on to terminate correctly. 100 is
-  // already far beyond any real recurrence.
+  // Capped: a huge interval pushes occurrences past year 9999, where the
+  // string comparison ending dueOccurrences() breaks.
   @IsInt()
   @IsPositive()
   @Max(100)

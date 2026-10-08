@@ -10,13 +10,8 @@ import { TransferService } from '../operations/transfer.service';
 import { isFullyActive } from '../security/reachable';
 import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
 
-// The transaction surface TransferService also takes — generation always
-// runs inside one, so its advisory lock holds until the run commits.
-
-// A scheduler's occurrences due as of `now`, after its generation cursor, up
-// to the owning member's "today" (or its limit date if earlier) — at most
-// `limit`. The member's own zone, so an occurrence due on their wall clock
-// isn't held back (or generated early) by the server's.
+// Occurrences after the generation cursor, up to the member's own "today"
+// (or the limit date if earlier), at most `limit`.
 function dueDates(
   row: typeof scheduler.$inferSelect,
   timeZone: string | null,
@@ -49,14 +44,10 @@ export class SchedulerGenerationService {
     return this.db.transaction((tx) => this.generateForScheduler(tx, schedulerId, budget));
   }
 
-  // Generates every occurrence a single scheduler is due for, up to today
-  // (or its limit date if earlier) — at most `budget`, so an oversized
-  // backlog is worked through a batch at a time rather than in one
-  // unbounded run. Safe to call repeatedly — occurrence tracking is the
-  // scheduler's own `lastGeneratedDate` cursor, not the surviving operation
-  // rows (which can be edited or hard-deleted afterwards), so re-running is
-  // a no-op once caught up (or, mid-backlog, resumes exactly where the
-  // previous run's cap cut it off). Resolves to how many it generated.
+  // Generates up to `budget` due occurrences. Idempotent: progress is the
+  // `lastGeneratedDate` cursor, not the (editable, deletable) operation
+  // rows, so a re-run resumes where the last one stopped. Resolves to how
+  // many it generated.
   private async generateForScheduler(
     db: Executor,
     schedulerId: string,
@@ -117,9 +108,8 @@ export class SchedulerGenerationService {
     }
 
     if (dates.length > 0) {
-      // dueOccurrences returns dates in chronological order, so the last
-      // one is the new cursor — advanced here, in the same transaction as
-      // the inserts above, so a crash between them can't desync the two.
+      // Chronological, so the last date is the new cursor; same transaction
+      // as the inserts.
       await db
         .update(scheduler)
         .set({ lastGeneratedDate: dates[dates.length - 1] })
@@ -128,13 +118,10 @@ export class SchedulerGenerationService {
     return dates.length;
   }
 
-  // Every member with at least one occurrence due right now on an active
-  // scheduler whose account chain is fully active — what the hourly sweep
-  // queues a catch-up for. Same due-date rule as generateForScheduler, so a
-  // caught-up member drops out until their next occurrence comes due. Reads
-  // every active scheduler, which the per-member scheduler quota keeps
-  // small. A scheduler whose transfer target has since gone inactive still
-  // counts here; its member's catch-up then generates nothing for it.
+  // Members with an occurrence due now on an active scheduler of a fully
+  // active account: what the hourly sweep queues. Reads every active
+  // scheduler (the quota keeps that bounded). An inactive transfer target
+  // isn't checked here; the catch-up then generates nothing for it.
   async dueMemberIds(now = new Date()): Promise<string[]> {
     const rows = await this.db
       .select({ scheduler, account, bank, timeZone: member.timeZone })
