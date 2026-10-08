@@ -23,6 +23,10 @@ overrides:
   # GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf,
   # GHSA-jqff-g426-hqxp.
   fast-uri: '>=3.1.6'
+  # Transitive via vue>@vue/compiler-sfc (and postcss/vite); direct upgrade of
+  # the parents isn't available yet. Remove when they ship source-map-js >=1.2.2.
+  # Clears GHSA-68fv-2mgg-jv7q (high, event-loop DoS via indexed source maps).
+  source-map-js: '>=1.2.2'
 allowBuilds:
   '@scarf/scarf': false # telemetry postinstall, not needed
   '@swc/core': true # native compiler binary, needed by unplugin-swc (apps/api's Vitest decorator-metadata plugin)
