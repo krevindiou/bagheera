@@ -14,6 +14,7 @@ import ReportChart from './ReportChart.vue';
 import ReportForm from './ReportForm.vue';
 import type { Report, ReportChartData } from './reports.types';
 import IconButton from '../../components/IconButton.vue';
+import ListState from '../../components/ListState.vue';
 import AppIcon from '../../components/AppIcon.vue';
 
 const { t } = useI18n();
@@ -159,13 +160,12 @@ function toggleView(report: Report) {
       </div>
     </div>
 
-    <div v-if="reportsError" class="alert alert-danger" data-testid="reports-error">
-      {{ $t('common.loadError') }}
-    </div>
-
-    <p v-else-if="reports.length === 0" class="text-muted">{{ $t('reports.empty') }}</p>
-
-    <template v-else>
+    <ListState
+      :error="reportsError"
+      :empty="reports.length === 0"
+      :empty-text="$t('reports.empty')"
+      error-testid="reports-error"
+    >
       <BatchActions :selected-ids="selectedIdList" @done="onBatchDeleted" />
 
       <div class="table-responsive">
@@ -237,7 +237,7 @@ function toggleView(report: Report) {
           </tbody>
         </table>
       </div>
-    </template>
+    </ListState>
 
     <ReportForm
       v-if="showForm"

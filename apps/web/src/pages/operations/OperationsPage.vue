@@ -29,6 +29,7 @@ import BatchActions from './batch.vue';
 import SearchPanel from './search.vue';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
+import ListState from '../../components/ListState.vue';
 import StatCard from '../../components/StatCard.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
@@ -239,15 +240,12 @@ function isEditable(operation: Operation): boolean {
     <div>
       <BatchActions v-if="isFullyActive" :selected-ids="selectedIdList" @done="refreshAfterBatch" />
 
-      <div v-if="operationsError" class="alert alert-danger mb-3" data-testid="operations-error">
-        {{ $t('common.loadError') }}
-      </div>
-
-      <div v-else-if="list.items.length === 0" class="mb-3">
-        <p class="text-muted">{{ $t('operations.empty') }}</p>
-      </div>
-
-      <div v-else>
+      <ListState
+        :error="operationsError"
+        :empty="list.items.length === 0"
+        :empty-text="$t('operations.empty')"
+        error-testid="operations-error"
+      >
         <div class="table-responsive">
           <table class="table" data-testid="operations-table">
             <thead>
@@ -325,7 +323,7 @@ function isEditable(operation: Operation): boolean {
           :page-size="list.pageSize"
           @update:page="page = $event"
         />
-      </div>
+      </ListState>
 
       <OperationForm
         v-if="showForm"

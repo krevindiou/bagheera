@@ -20,6 +20,7 @@ import BatchActions from './batch.vue';
 import type { Scheduler } from './schedulers.types';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
+import ListState from '../../components/ListState.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
 
@@ -122,13 +123,12 @@ async function onSaved() {
 
     <BatchActions :selected-ids="selectedIdList" @done="reloadSchedulers" />
 
-    <div v-if="isError" class="alert alert-danger" data-testid="schedulers-error">
-      {{ $t('common.loadError') }}
-    </div>
-
-    <p v-else-if="list.items.length === 0" class="text-muted">{{ $t('schedulers.empty') }}</p>
-
-    <div v-else>
+    <ListState
+      :error="isError"
+      :empty="list.items.length === 0"
+      :empty-text="$t('schedulers.empty')"
+      error-testid="schedulers-error"
+    >
       <div class="table-responsive">
         <table class="table" data-testid="schedulers-table">
           <thead>
@@ -198,7 +198,7 @@ async function onSaved() {
         :page-size="list.pageSize"
         @update:page="page = $event"
       />
-    </div>
+    </ListState>
 
     <SchedulerForm
       v-if="showForm"

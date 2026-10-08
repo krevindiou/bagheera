@@ -11,6 +11,7 @@ import { runRegistration } from '../../api/webauthn';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import IconButton from '../../components/IconButton.vue';
+import ListState from '../../components/ListState.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import { formatTimestampDate } from '../../domain/money';
 import SettingsTabs from './SettingsTabs.vue';
@@ -135,44 +136,46 @@ async function removePasskey(id: string) {
         </button>
       </div>
 
-      <div v-if="credentialsError" class="alert alert-danger" data-testid="passkeys-error">
-        {{ $t('common.loadError') }}
-      </div>
-
-      <div v-else-if="credentials.length > 0" class="table-responsive">
-        <table class="table align-middle mb-0">
-          <thead>
-            <tr>
-              <th>{{ $t('settings.passkeys.device') }}</th>
-              <th>{{ $t('settings.passkeys.createdAt') }}</th>
-              <th>{{ $t('settings.passkeys.lastUsedAt') }}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="credential in credentials" :key="credential.id">
-              <td>{{ credential.deviceName || $t('settings.passkeys.unnamed') }}</td>
-              <td>{{ formatTimestampDate(credential.createdAt) }}</td>
-              <td>
-                {{
-                  credential.lastUsedAt
-                    ? formatTimestampDate(credential.lastUsedAt)
-                    : $t('settings.passkeys.neverUsed')
-                }}
-              </td>
-              <td class="text-end">
-                <IconButton
-                  icon="trash"
-                  danger
-                  :label="$t('settings.passkeys.remove')"
-                  @click="removePasskey(credential.id)"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-else class="text-muted">{{ $t('settings.passkeys.empty') }}</p>
+      <ListState
+        :error="credentialsError"
+        :empty="credentials.length === 0"
+        :empty-text="$t('settings.passkeys.empty')"
+        error-testid="passkeys-error"
+      >
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>{{ $t('settings.passkeys.device') }}</th>
+                <th>{{ $t('settings.passkeys.createdAt') }}</th>
+                <th>{{ $t('settings.passkeys.lastUsedAt') }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="credential in credentials" :key="credential.id">
+                <td>{{ credential.deviceName || $t('settings.passkeys.unnamed') }}</td>
+                <td>{{ formatTimestampDate(credential.createdAt) }}</td>
+                <td>
+                  {{
+                    credential.lastUsedAt
+                      ? formatTimestampDate(credential.lastUsedAt)
+                      : $t('settings.passkeys.neverUsed')
+                  }}
+                </td>
+                <td class="text-end">
+                  <IconButton
+                    icon="trash"
+                    danger
+                    :label="$t('settings.passkeys.remove')"
+                    @click="removePasskey(credential.id)"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ListState>
     </div>
   </div>
 </template>

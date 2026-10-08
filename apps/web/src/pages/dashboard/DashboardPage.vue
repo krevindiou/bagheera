@@ -14,6 +14,7 @@ import {
 } from '../../components/synthesisChartRange';
 import { formatDate, toDisplayBounds, toDisplayPoints } from '../../domain/money';
 import StatCard from '../../components/StatCard.vue';
+import LoadError from '../../components/LoadError.vue';
 import ReportChart from '../reports/ReportChart.vue';
 import type { DashboardSynthesisChart } from './dashboard.types';
 
@@ -53,9 +54,7 @@ const accountTiles = computed(() =>
 </script>
 
 <template>
-  <div v-if="isError" class="alert alert-danger" data-testid="dashboard-error">
-    {{ $t('common.loadError') }}
-  </div>
+  <LoadError v-if="isError" data-testid="dashboard-error" />
   <div v-else-if="dashboard">
     <h1 class="mb-1" style="font-size: 28px">{{ $t('dashboard.title') }}</h1>
     <p class="mb-4" style="color: var(--paper-dim); font-size: 15px">
