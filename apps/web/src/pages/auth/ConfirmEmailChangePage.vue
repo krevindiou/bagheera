@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
+import { takeUrlKey } from '../../composables/takeUrlKey';
 import { useToast } from '../../composables/useToast';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
@@ -13,8 +14,8 @@ const { t } = useI18n();
 const pending = ref(true);
 
 onMounted(async () => {
-  const key = route.query.key;
-  if (typeof key !== 'string' || key.length === 0) {
+  const key = takeUrlKey(route, router);
+  if (!key) {
     toast(t('auth.confirmEmailChange.error'), 'error');
     void router.replace({ name: 'sign-in' });
     return;

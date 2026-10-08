@@ -51,6 +51,26 @@ describe('ActivatePage', () => {
     expect(wrapper.find('button.btn-primary').exists()).toBe(true);
   });
 
+  it('drops the key from the address bar while waiting for the click, and still uses it', async () => {
+    apiClient.POST.mockResolvedValue(jsonResult(200, {}));
+    await router.push({ name: 'activate', query: { key: 'abc123' } });
+    const wrapper = mount(ActivatePage, withGlobalPlugins());
+    await wrapper.vm.$nextTick();
+    await router.isReady();
+    await vi.waitFor(() => expect(router.currentRoute.value.query.key).toBeUndefined());
+    expect(router.currentRoute.value.name).toBe('activate');
+
+    vi.mocked(startRegistration).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startRegistration>>,
+    );
+    await wrapper.find('button.btn-primary').trigger('click');
+    await vi.waitFor(() =>
+      expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/signup/options', {
+        body: { key: 'abc123' },
+      }),
+    );
+  });
+
   it('creates the account and lands signed in once the button is clicked', async () => {
     apiClient.POST.mockImplementation(async (path: string) => {
       if (path === '/webauthn/signup/options') return jsonResult(200, {});

@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { runRegistration } from '../../api/webauthn';
 import { useSessionStore } from '../../stores/session.store';
+import { takeUrlKey } from '../../composables/takeUrlKey';
 import { useToast } from '../../composables/useToast';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
@@ -23,12 +24,13 @@ const key = ref<string | null>(null);
 const submitting = ref(false);
 
 onMounted(() => {
-  const raw = route.query.key;
-  if (typeof raw !== 'string' || raw.length === 0) {
+  // Held in memory only: the link's token leaves the address bar at once
+  // (history, copied URLs and error reports would otherwise keep it while
+  // the page waits for the click).
+  key.value = takeUrlKey(route, router);
+  if (!key.value) {
     fail();
-    return;
   }
-  key.value = raw;
 });
 
 function fail() {

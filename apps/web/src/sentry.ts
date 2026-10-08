@@ -1,6 +1,7 @@
 import type { App } from 'vue';
 import * as Sentry from '@sentry/vue';
 import { router } from './router';
+import { scrubBreadcrumb, scrubEvent } from './sentry-scrub';
 
 /**
  * No-ops when VITE_SENTRY_DSN isn't set (local dev, CI, e2e), so this is
@@ -17,5 +18,7 @@ export function initSentry(app: App): void {
     environment: import.meta.env.MODE,
     integrations: [Sentry.browserTracingIntegration({ router })],
     tracesSampleRate: 0,
+    beforeSend: scrubEvent,
+    beforeBreadcrumb: scrubBreadcrumb,
   });
 }
