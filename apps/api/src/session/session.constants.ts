@@ -1,6 +1,11 @@
 export const VALKEY_CLIENT = Symbol('VALKEY_CLIENT');
 
-export const SESSION_COOKIE_NAME = 'bagheera.sid';
+// `__Host-` makes the browser refuse to store the cookie unless it is
+// Secure, Path=/ and has no Domain — so a sibling subdomain can't plant a
+// session or CSRF cookie of its own (cookie tossing) by setting one for the
+// parent domain.
+export const SESSION_COOKIE_NAME = '__Host-bagheera.sid';
+export const CSRF_COOKIE_NAME = '__Host-bagheera.csrf';
 
 /** Key prefix connect-redis stores sessions under (`sess:<sid>`). */
 export const SESSION_KEY_PREFIX = 'sess:';

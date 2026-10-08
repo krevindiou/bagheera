@@ -59,7 +59,7 @@ export class SessionModule implements NestModule, OnModuleDestroy {
       cookie: {
         secure: true,
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'strict',
         maxAge: SESSION_IDLE_TTL_SECONDS * 1000,
       },
     });

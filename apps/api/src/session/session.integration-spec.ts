@@ -11,7 +11,12 @@ import {
 } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
-import { SESSION_COOKIE_NAME, SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
+import {
+  CSRF_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_MS,
+  VALKEY_CLIENT,
+} from './session.constants';
 
 interface StoredSession {
   memberId?: string;
@@ -83,6 +88,25 @@ describe('session lifecycle', () => {
 
     expect(await countSessions(valkey)).toBe(before);
   });
+
+  // Both cookies must satisfy the browser's `__Host-` rules (Secure, Path=/,
+  // no Domain) or it silently drops them — and then nothing signs in. Secure
+  // itself can't be seen here: createTestApp strips it for plain http (see
+  // fixSecureCookiesForPlainHttp); csrf.spec.ts pins it for the CSRF cookie.
+  it.each([SESSION_COOKIE_NAME, CSRF_COOKIE_NAME])(
+    'sets %s as a host-locked, strict, httpOnly cookie',
+    async (name) => {
+      const res = await request(app.getHttpServer()).get('/auth/csrf-token').expect(200);
+      const setCookie = ([] as string[]).concat(res.headers['set-cookie'] ?? []);
+      const cookie = setCookie.find((c) => c.startsWith(`${name}=`));
+
+      expect(name.startsWith('__Host-')).toBe(true);
+      expect(cookie).toBeDefined();
+      const attributes = cookie!.split(';').map((part) => part.trim().toLowerCase());
+      expect(attributes).toEqual(expect.arrayContaining(['httponly', 'path=/', 'samesite=strict']));
+      expect(attributes.some((part) => part.startsWith('domain='))).toBe(false);
+    },
+  );
 
   it("starts a kept session's absolute clock on its next request", async () => {
     const valkey = app.get<IORedis>(VALKEY_CLIENT);

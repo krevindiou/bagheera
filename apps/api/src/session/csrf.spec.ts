@@ -34,9 +34,9 @@ describe('buildCsrf', () => {
     const config = fakeConfig(vi.fn().mockReturnValue('a-csrf-secret'));
     buildCsrf(config as unknown as ConfigService);
     expect(lastConfigOptions()).toMatchObject({
-      cookieName: 'bagheera.csrf',
+      cookieName: '__Host-bagheera.csrf',
       cookieOptions: {
-        sameSite: 'lax',
+        sameSite: 'strict',
         secure: true,
         httpOnly: true,
         path: '/',
