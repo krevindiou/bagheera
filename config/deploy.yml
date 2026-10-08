@@ -33,6 +33,12 @@ servers:
     hosts:
       - <%= ENV.fetch("DEPLOY_HOST") %>
 
+ssh:
+  # Opt-in: set the KAMAL_SSH_USER repo variable to a non-root account once
+  # the host has one (docs/backup-restore.md, "Deploy host SSH setup"). Until
+  # then Kamal keeps connecting as root.
+  user: <%= ENV["KAMAL_SSH_USER"].to_s.empty? ? "root" : ENV["KAMAL_SSH_USER"] %>
+
 proxy:
   ssl: true
   host: <%= ENV.fetch("APP_DOMAIN") %>

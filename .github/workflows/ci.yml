@@ -176,6 +176,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      KAMAL_SSH_USER: ${{ vars.KAMAL_SSH_USER }}
       APP_DOMAIN: ${{ vars.APP_DOMAIN }}
       KAMAL_REGISTRY_SERVER: ${{ vars.KAMAL_REGISTRY_SERVER }}
       KAMAL_REGISTRY_USERNAME: ${{ vars.KAMAL_REGISTRY_USERNAME }}

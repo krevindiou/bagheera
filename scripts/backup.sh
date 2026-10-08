@@ -2,11 +2,16 @@
 # Nightly backup: pg_dump of the running postgres container, pushed to a
 # restic repository. Run on the deploy host itself, as the dedicated
 # `backup` user (a member of the `docker` group — enough for `docker exec`
-# against the postgres container, without needing root). See
-# docs/backup-restore.md's "Deploy host SSH setup" for how that user is
-# provisioned.
+# against the postgres container, without needing root).
 #
-# Required env:
+# In production this is installed root-owned at /usr/local/bin/backup.sh and
+# is the *forced command* of the backup user's CI-only SSH key, which reads
+# its configuration from /etc/bagheera-backup.env on the host (below) — the
+# caller sends nothing, so a leaked key can start a backup but not redirect
+# it. See docs/backup-restore.md's "Deploy host SSH setup" for the
+# provisioning.
+#
+# Required env (from the environment, or from the env file below):
 #   RESTIC_REPOSITORY, RESTIC_PASSWORD (or RESTIC_PASSWORD_FILE) — restic
 #     target; any restic-supported backend works (S3-compatible via
 #     AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY, etc — see restic's own docs).
@@ -19,6 +24,16 @@
 #   BACKUP_KEEP_DAILY / BACKUP_KEEP_WEEKLY / BACKUP_KEEP_MONTHLY
 #     (defaults: 7 / 4 / 6) — retention passed to `restic forget --prune`.
 set -euo pipefail
+
+# Host-held configuration; see the header. Skipped when absent (e.g. a
+# manual run with the variables already exported).
+BACKUP_ENV_FILE="${BACKUP_ENV_FILE:-/etc/bagheera-backup.env}"
+if [[ -r "$BACKUP_ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$BACKUP_ENV_FILE"
+  set +a
+fi
 
 : "${RESTIC_REPOSITORY:?RESTIC_REPOSITORY must be set}"
 : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}"
