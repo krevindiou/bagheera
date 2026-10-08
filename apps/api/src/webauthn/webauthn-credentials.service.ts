@@ -50,10 +50,12 @@ export class WebauthnCredentialsService {
     consumeStepUp(req);
 
     await this.db.transaction(async (tx) => {
+      // Locked, so concurrent removals can't both pass the last-passkey check.
       const owned = await tx
         .select({ id: webauthnCredential.id })
         .from(webauthnCredential)
-        .where(eq(webauthnCredential.memberId, memberId));
+        .where(eq(webauthnCredential.memberId, memberId))
+        .for('update');
       if (!owned.some((row) => row.id === id)) {
         throw new NotFoundException();
       }

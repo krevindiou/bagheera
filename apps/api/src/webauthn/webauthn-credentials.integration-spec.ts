@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import request from 'supertest';
 import { securityEvent, webauthnCredential } from '../db/schema';
 import {
@@ -33,6 +33,19 @@ async function insertCredential(
     })
     .returning();
   return row;
+}
+
+// Resolves once some database connection is waiting on a row lock.
+async function waitForLockWaiter(db: ReturnType<typeof getDb>): Promise<void> {
+  await vi.waitFor(
+    async () => {
+      const { rows } = await db.execute<{ waiting: number }>(
+        sql`select count(*)::int as waiting from pg_stat_activity where wait_event_type = 'Lock'`,
+      );
+      if (rows[0].waiting === 0) throw new Error('no connection waiting on a lock yet');
+    },
+    { timeout: 5000, interval: 20 },
+  );
 }
 
 describe('webauthn credentials', () => {
@@ -185,6 +198,41 @@ describe('webauthn credentials', () => {
         .from(webauthnCredential)
         .where(eq(webauthnCredential.id, only.id));
       expect(rows).toHaveLength(1);
+    });
+
+    // Two removals at once, one per passkey, must not both pass the
+    // last-passkey check. The transaction below plays the other removal: it
+    // holds the member's passkeys locked, and deletes one while this request
+    // waits.
+    it('keeps the last passkey when a concurrent removal commits first', async () => {
+      const fixture = await seedSignedInMember(app);
+      const db = getDb(app);
+      const [first] = await db
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, fixture.credentialId));
+      const second = await insertCredential(app, fixture.memberId, 'Second device');
+      await completeStepUp(app, fixture);
+
+      let removal!: ReturnType<typeof fixture.mutate>;
+      await db.transaction(async (tx) => {
+        await tx
+          .select({ id: webauthnCredential.id })
+          .from(webauthnCredential)
+          .where(eq(webauthnCredential.memberId, fixture.memberId))
+          .for('update');
+        removal = fixture.mutate('delete', `/webauthn/credentials/${second.id}`);
+        await waitForLockWaiter(db);
+        await tx.delete(webauthnCredential).where(eq(webauthnCredential.id, first.id));
+      });
+
+      const res = await removal;
+      expect(res.status).toBe(400);
+      const remaining = await db
+        .select({ id: webauthnCredential.id })
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.memberId, fixture.memberId));
+      expect(remaining).toEqual([{ id: second.id }]);
     });
   });
 });
