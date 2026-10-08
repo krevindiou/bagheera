@@ -192,7 +192,7 @@ function isEditable(operation: Operation): boolean {
           :title="hasActiveSearch ? $t('operations.search.activeHint') : undefined"
           @click="openSearch"
         >
-          <AppIcon name="search" />
+          <AppIcon name="search" :size="16" />
           {{ $t('operations.search.show') }}
           <span
             v-if="hasActiveSearch"
