@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { EmailMessage, EmailProvider } from './email-message';
@@ -19,12 +19,11 @@ export function smtpTransportOptions(
 }
 
 /**
- * SMTP provider (`EMAIL_SMTP_URL`, `EMAIL_FROM`). Failures are logged and
- * swallowed.
+ * SMTP provider (`EMAIL_SMTP_URL`, `EMAIL_FROM`). A failed send rejects, so
+ * the email queue retries it and alerts on the last attempt.
  */
 @Injectable()
 export class SmtpEmailProvider implements EmailProvider {
-  private readonly logger = new Logger('SmtpEmailProvider');
   private readonly transport: nodemailer.Transporter;
   private readonly from: string;
 
@@ -36,7 +35,7 @@ export class SmtpEmailProvider implements EmailProvider {
     this.from = this.config.getOrThrow<string>('EMAIL_FROM');
   }
 
-  async send(message: EmailMessage, jobId?: string): Promise<void> {
+  async send(message: EmailMessage): Promise<void> {
     try {
       await this.transport.sendMail({
         from: this.from,
@@ -45,11 +44,12 @@ export class SmtpEmailProvider implements EmailProvider {
         html: message.html,
       });
     } catch (err) {
-      // Neither the recipient nor the error message: SMTP servers echo the
-      // rejected address back in theirs. The job id leads to the queue entry.
+      // Only the code, not the original error: SMTP servers echo the
+      // recipient in their messages, and this one reaches logs, Sentry and
+      // the failed job kept in Valkey.
       const { code } = err as { code?: unknown };
-      const reason = typeof code === 'string' ? code : 'unknown';
-      this.logger.error(`Failed to send email job ${jobId ?? 'unknown'}: ${reason}`);
+      // eslint-disable-next-line preserve-caught-error -- a `cause` would carry the recipient into Sentry
+      throw new Error(`SMTP send failed: ${typeof code === 'string' ? code : 'unknown'}`);
     }
   }
 }

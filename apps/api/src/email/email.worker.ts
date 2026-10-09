@@ -42,7 +42,7 @@ export class EmailWorker implements OnModuleDestroy {
       await this.signupRequests.handle(job.data as SignupRequest);
       return;
     }
-    await this.provider.send(job.data as EmailMessage, job.id);
+    await this.provider.send(job.data as EmailMessage);
   }
 
   async onModuleDestroy(): Promise<void> {

@@ -46,8 +46,18 @@ describe('EmailWorker', () => {
 
     await mockProcessor!(job('send', message));
 
-    expect(provider.send).toHaveBeenCalledWith(message, 'job-1');
+    expect(provider.send).toHaveBeenCalledWith(message);
     expect(signupRequests.handle).not.toHaveBeenCalled();
+  });
+
+  // So BullMQ retries the job, and alerts once the last attempt fails.
+  it("fails the job when the provider can't send", async () => {
+    const message: EmailMessage = { to: 'member@example.test', subject: 'S', html: '<p>B</p>' };
+    provider.send.mockRejectedValueOnce(new Error('SMTP send failed: ECONNECTION'));
+
+    await expect(mockProcessor!(job('send', message))).rejects.toThrow(
+      'SMTP send failed: ECONNECTION',
+    );
   });
 
   it('hands a sign-up request to SignupRequestService, sending nothing itself', async () => {

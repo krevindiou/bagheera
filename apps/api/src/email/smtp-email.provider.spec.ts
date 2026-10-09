@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { vi } from 'vitest';
 import * as nodemailer from 'nodemailer';
@@ -67,7 +66,7 @@ describe('SmtpEmailProvider', () => {
 
   it('sends the message from the configured sender', async () => {
     mockSendMail.mockResolvedValue(undefined);
-    await provider().send(message, 'job-1');
+    await provider().send(message);
     expect(mockSendMail).toHaveBeenCalledWith({
       from: 'value-of-EMAIL_FROM',
       to: message.to,
@@ -76,28 +75,33 @@ describe('SmtpEmailProvider', () => {
     });
   });
 
-  it('logs a failure by job id and error code, without the recipient or the server message', async () => {
-    const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+  // Rejecting is what lets the queue retry the send and alert on the last
+  // attempt; the error keeps only the code, since SMTP servers echo the
+  // recipient in their messages.
+  it('rejects a failed send with only its error code, not the recipient or the server message', async () => {
     mockSendMail.mockRejectedValue(
       Object.assign(new Error('550 <member@example.test>: Recipient rejected'), {
         code: 'EENVELOPE',
       }),
     );
 
-    await expect(provider().send(message, 'job-42')).resolves.toBeUndefined();
+    const failure = await provider()
+      .send(message)
+      .then(
+        () => undefined,
+        (err: unknown) => err,
+      );
 
-    expect(error).toHaveBeenCalledWith('Failed to send email job job-42: EENVELOPE');
-    expect(JSON.stringify(error.mock.calls)).not.toContain('member@example.test');
-    error.mockRestore();
+    expect(failure).toBeInstanceOf(Error);
+    expect((failure as Error).message).toBe('SMTP send failed: EENVELOPE');
+    expect(JSON.stringify(failure, Object.getOwnPropertyNames(failure))).not.toContain(
+      'member@example.test',
+    );
   });
 
-  it('copes with an error without a code and a call without a job id', async () => {
-    const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+  it('rejects an error without a code as an unknown failure', async () => {
     mockSendMail.mockRejectedValue(new Error('boom'));
 
-    await provider().send(message);
-
-    expect(error).toHaveBeenCalledWith('Failed to send email job unknown: unknown');
-    error.mockRestore();
+    await expect(provider().send(message)).rejects.toThrow('SMTP send failed: unknown');
   });
 });
