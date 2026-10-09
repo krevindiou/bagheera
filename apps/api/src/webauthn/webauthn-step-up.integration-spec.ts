@@ -111,7 +111,7 @@ describe('webauthn step-up', () => {
         .post('/webauthn/step-up/verify')
         .set('x-csrf-token', csrfToken)
         .send({ response: fakeResponseFor(fixture.credentialId) })
-        .expect(401);
+        .expect(422);
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
     });
 
@@ -128,7 +128,7 @@ describe('webauthn step-up', () => {
         .post('/webauthn/step-up/verify')
         .set('x-csrf-token', csrfToken)
         .send({ response: fakeResponseFor(other.credentialId) })
-        .expect(401);
+        .expect(422);
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
     });
 
@@ -148,13 +148,15 @@ describe('webauthn step-up', () => {
           .set('x-csrf-token', csrfToken)
           .send({ response: fakeResponseFor(fixture.credentialId) }),
       );
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(422);
       // Refused on the stale challenge alone, before any signature check.
       expect(verifySpy).not.toHaveBeenCalled();
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
     });
 
-    it('rejects when the ceremony fails verification', async () => {
+    // 422, not 401: the web client signs the member out on any 401, and
+    // the session is still valid.
+    it('rejects when the ceremony fails verification, leaving the member signed in', async () => {
       const fixture = await seedSignedInMember(app);
       const csrfToken = await fixture.getCsrfToken();
       await fixture.agent
@@ -170,8 +172,9 @@ describe('webauthn step-up', () => {
         .post('/webauthn/step-up/verify')
         .set('x-csrf-token', csrfToken)
         .send({ response: fakeResponseFor(fixture.credentialId) })
-        .expect(401);
+        .expect(422);
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
+      await fixture.agent.get('/auth/me').expect(200);
     });
   });
 });

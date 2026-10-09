@@ -19,11 +19,12 @@ import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 // One generic error for a missing challenge, a foreign credential and a bad
-// signature alike.
+// signature alike. 422, like consumeStepUp(): the member is still signed in,
+// and the web client signs them out on any 401.
 const STEP_UP_FAILED = 'Step-up verification failed.';
 
 function stepUpFailed(): BusinessError {
-  return new BusinessError(HttpStatus.UNAUTHORIZED, 'step_up_failed', STEP_UP_FAILED);
+  return new BusinessError(HttpStatus.UNPROCESSABLE_ENTITY, 'step_up_failed', STEP_UP_FAILED);
 }
 
 /**
