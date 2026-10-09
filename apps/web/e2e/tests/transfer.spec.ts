@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import en from '../../src/i18n/locales/en';
-import { formatMoney } from '../../src/pages/operations/money';
-import { PAYMENT_METHOD_ID } from '../../src/pages/operations/operations.types';
+import { formatMoney } from '../../src/domain/money';
+import { PAYMENT_METHOD_ID } from '../../src/domain/referenceData';
 import { alertWithText, expect, fetchCsrfToken, test } from '../support/fixtures';
 
 test("a transfer between two of the member's own accounts moves money on both sides", async ({

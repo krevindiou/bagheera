@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { formatMoney } from '../../src/pages/operations/money';
+import { formatMoney } from '../../src/domain/money';
 import { expect, test } from '../support/fixtures';
 
 test.describe('dashboard', () => {

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import en from '../../src/i18n/locales/en';
-import { formatMoney } from '../../src/pages/operations/money';
+import { formatMoney } from '../../src/domain/money';
 import { alertWithText, expect, test } from '../support/fixtures';
 
 test('create a bank and an account, then edit the bank and close the account', async ({

@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { PAYMENT_METHOD_ID } from '../../src/pages/operations/operations.types';
+import { PAYMENT_METHOD_ID } from '../../src/domain/referenceData';
 import { alertWithText, expect, test } from '../support/fixtures';
 
 test('create, pause, then batch-delete a recurring scheduler', async ({ accountWithBank }) => {
