@@ -266,20 +266,4 @@ describe('RateLimitGuard', () => {
     await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST' }), routeB));
     expect((RateLimiterRedis as Mock).mock.calls).toHaveLength(1);
   });
-
-  describe('onModuleDestroy', () => {
-    it('quits an open valkey connection', async () => {
-      const valkey = fakeValkeyClient({ status: 'ready' });
-      const guard = new RateLimitGuard(valkey, fakeReflector());
-      await guard.onModuleDestroy();
-      expect(valkey.quit).toHaveBeenCalled();
-    });
-
-    it('does not quit an already-closed connection', async () => {
-      const valkey = fakeValkeyClient({ status: 'end' });
-      const guard = new RateLimitGuard(valkey, fakeReflector());
-      await guard.onModuleDestroy();
-      expect(valkey.quit).not.toHaveBeenCalled();
-    });
-  });
 });

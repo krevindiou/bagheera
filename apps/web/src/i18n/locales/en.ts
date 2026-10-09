@@ -352,7 +352,6 @@ export default {
     bank_not_active: 'This bank is not active.',
     bank_already_deleted: 'This bank is already deleted.',
     account_not_active: 'This account is not active.',
-    account_already_deleted: 'This account is already deleted.',
     account_cannot_be_changed: 'The account cannot be changed.',
     bank_currency_immutable: 'The bank and currency cannot be changed.',
     bank_required: 'You must select a bank.',

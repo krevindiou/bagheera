@@ -24,7 +24,7 @@ cp apps/api/.env.example apps/api/.env
 make up
 ```
 
-That's it — migrations run automatically on API startup. The root `.env.example` is only needed to override default ports/credentials; every var it sets already has a default in `docker/compose.yml`.
+That's it — migrations run automatically on API startup. To override the default ports or dev credentials, copy `docker/.env.example` to `docker/.env`; every var it sets already has a default in `docker/compose.yml`.
 
 | Service | URL |
 |---|---|

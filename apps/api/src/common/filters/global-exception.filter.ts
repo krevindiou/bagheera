@@ -103,6 +103,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (statusCode === INTERNAL_SERVER_ERROR_STATUS) {
       return 'Internal server error';
     }
-    return exception instanceof Error ? exception.message : 'Unknown error';
+    // Only an exposed http-errors error gets here, and that is an Error.
+    return (exception as Error).message;
   }
 }

@@ -5,7 +5,6 @@ import {
   HttpStatus,
   Inject,
   Injectable,
-  OnModuleDestroy,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { createHash } from 'crypto';
@@ -20,7 +19,6 @@ import {
   RATE_LIMIT_OPTIONS,
   RateLimitOptions,
 } from './rate-limit.constants';
-import { closeValkeyClient } from '../common/valkey-client';
 import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 
@@ -50,7 +48,7 @@ const MAX_BLOCK_SECONDS = 3600;
  * demands a decision on every mutating handler.
  */
 @Injectable()
-export class RateLimitGuard implements CanActivate, OnModuleDestroy {
+export class RateLimitGuard implements CanActivate {
   private readonly limiters = new Map<string, RateLimiterRedis>();
 
   constructor(
@@ -58,12 +56,6 @@ export class RateLimitGuard implements CanActivate, OnModuleDestroy {
     private readonly valkeyClient: IORedis,
     private readonly reflector: Reflector,
   ) {}
-
-  async onModuleDestroy(): Promise<void> {
-    // SecurityModule closes this same client too; closeValkeyClient
-    // tolerates the second call.
-    await closeValkeyClient(this.valkeyClient);
-  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const skip =

@@ -15,6 +15,7 @@ import { CryptoService } from '../security/crypto.service';
 import '../session/session-data';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { consumeStepUp } from '../session/consume-step-up';
+import { requireMemberId } from '../session/require-member-id';
 import type { MemberId } from '../security/ids';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
@@ -55,10 +56,7 @@ export class ProfileService {
    * of the attempt instead of getting a link.
    */
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
+    const memberId = requireMemberId(req);
 
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {

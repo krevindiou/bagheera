@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
@@ -33,11 +33,7 @@ export class BankService {
   ) {}
 
   async list(memberId: MemberId) {
-    return this.db
-      .select()
-      .from(bank)
-      .where(and(eq(bank.memberId, memberId), eq(bank.deleted, false)))
-      .orderBy(asc(bank.name));
+    return this.ownership.listOwnedBanks(memberId);
   }
 
   async choose(memberId: MemberId, dto: ChooseBankDto): Promise<ChooseBankResult> {

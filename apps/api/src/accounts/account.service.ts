@@ -196,14 +196,8 @@ export class AccountService {
   }
 
   async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
-    const { account: row } = await this.ownership.requireOwnedAccount(id as AccountId, memberId);
-    if (row.deleted) {
-      throw new BusinessError(
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        'account_already_deleted',
-        'Account is already deleted.',
-      );
-    }
+    // A deleted account already 404s here.
+    await this.ownership.requireOwnedAccount(id as AccountId, memberId);
     await this.db.transaction(async (tx) => {
       await tx.update(account).set({ deleted: true }).where(eq(account.id, id));
       // Other accounts' transfer references pointing at this one convert

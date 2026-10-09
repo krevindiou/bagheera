@@ -449,8 +449,7 @@ describe('accounts', () => {
     });
 
     it('404s deleting an already-deleted account', async () => {
-      // Unlike banks, requireOwnedAccount 404s a deleted account, so
-      // AccountService.remove()'s own "already deleted" 422 is unreachable.
+      // Unlike banks, requireOwnedAccount 404s a deleted account.
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
