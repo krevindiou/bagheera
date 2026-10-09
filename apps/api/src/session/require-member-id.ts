@@ -6,7 +6,7 @@ import './session-data';
 // The signed-in member's id, as a branded MemberId. Throws a 401 again
 // even though SessionAuthGuard already does: defense in depth.
 export function requireMemberId(req: Request): MemberId {
-  const memberId = req.session.memberId;
+  const memberId = req.session?.memberId;
   if (!memberId) {
     throw new UnauthorizedException();
   }

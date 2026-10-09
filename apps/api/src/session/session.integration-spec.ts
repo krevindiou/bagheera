@@ -162,11 +162,9 @@ describe('session lifecycle', () => {
     expect(brandNewKeys.length).toBeGreaterThan(0);
   });
 
-  // KNOWN BUG, hence `it.fails`: past the absolute TTL, absoluteSessionTtl
-  // deletes `req.session`, and /auth/me (@Public(), so no SessionAuthGuard
-  // with its `?.`) reads `req.session.memberId`: a 500, not a 401. Fix:
-  // `req.session?.memberId` in current-session.controller.ts.
-  it.fails('force-expires a session past the absolute TTL, regardless of activity', async () => {
+  // absoluteSessionTtl deletes `req.session` outright: every route must still
+  // answer 401, not crash reading it.
+  it('force-expires a session past the absolute TTL, regardless of activity', async () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);
 

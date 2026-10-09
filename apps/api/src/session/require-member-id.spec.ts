@@ -12,4 +12,10 @@ describe('requireMemberId', () => {
     const req = fakeRequest({ session: {} as never });
     expect(() => requireMemberId(req)).toThrow(UnauthorizedException);
   });
+
+  // absoluteSessionTtl deletes an expired session from the request.
+  it('throws UnauthorizedException when the request has no session at all', () => {
+    const req = fakeRequest({ session: undefined as never });
+    expect(() => requireMemberId(req)).toThrow(UnauthorizedException);
+  });
 });

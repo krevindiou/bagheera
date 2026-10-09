@@ -1,12 +1,11 @@
-import { Controller, Get, Inject, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Inject, UnauthorizedException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { Request } from 'express';
 import { DRIZZLE } from '../db/db.constants';
 import { effectiveTimeZone } from '../common/member-today';
 import { member } from '../db/schema';
-import { Public } from '../session/public.decorator';
-import '../session/session-data';
+import type { MemberId } from '../security/ids';
+import { CurrentMember } from '../session/current-member.decorator';
 import { CurrentMemberDto } from './dto/session-response.dto';
 
 @Controller('auth')
@@ -17,13 +16,7 @@ export class CurrentSessionController {
   // cookie survives, the in-memory member info doesn't. Also 401s when the
   // session's member row no longer exists.
   @Get('me')
-  @Public()
-  async me(@Req() req: Request): Promise<CurrentMemberDto> {
-    const memberId = req.session.memberId;
-    if (!memberId) {
-      throw new UnauthorizedException();
-    }
-
+  async me(@CurrentMember() memberId: MemberId): Promise<CurrentMemberDto> {
     const [row] = await this.db
       .select({ email: member.email, locale: member.locale, timeZone: member.timeZone })
       .from(member)
