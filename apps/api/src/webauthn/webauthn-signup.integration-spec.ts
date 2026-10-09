@@ -14,6 +14,8 @@ import {
   uniqueEmail,
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { withClockAhead } from '../test-support/with-clock-ahead';
+import { CHALLENGE_TTL_MS } from '../session/challenge';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 // Only verification is stubbed (it needs a real authenticator), by spying
@@ -232,6 +234,38 @@ describe('webauthn signup', () => {
         .send({ response: fakeResponseFor('whatever') })
         .expect(400);
       expect(messageOf(res)).toBe(SIGNUP_FAILED);
+
+      const rows = await getDb(app).select().from(member).where(eq(member.email, email));
+      expect(rows).toHaveLength(0);
+    });
+
+    // Like the other ceremonies' challenges: an abandoned sign-up mustn't
+    // leave one answerable for the rest of the session. The sign-up token
+    // itself (an hour) is still valid here.
+    it('rejects a challenge answered after it expired, and creates nothing', async () => {
+      const email = uniqueEmail();
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/signup/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ key: tokenFor(email) })
+        .expect(200);
+
+      const verifySpy = vi
+        .spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse')
+        .mockResolvedValueOnce(verifiedRegistration(`cred-${email}`));
+      const res = await withClockAhead(CHALLENGE_TTL_MS + 1000, () =>
+        agent
+          .post('/webauthn/signup/verify')
+          .set('x-csrf-token', csrfToken)
+          .send({ response: fakeResponseFor(`cred-${email}`) }),
+      );
+      expect(res.status).toBe(400);
+      expect(messageOf(res)).toBe(SIGNUP_FAILED);
+      // Refused on the stale challenge alone, before any ceremony check.
+      expect(verifySpy).not.toHaveBeenCalled();
+      verifySpy.mockRestore();
 
       const rows = await getDb(app).select().from(member).where(eq(member.email, email));
       expect(rows).toHaveLength(0);

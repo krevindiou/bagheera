@@ -12,6 +12,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
+import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/signup-session-data';
@@ -75,16 +76,15 @@ export class WebauthnSignupService {
       excludeCredentials: [],
     });
 
-    req.session.pendingSignupChallenge = options.challenge;
+    storeChallenge(req.session, 'pendingSignupChallenge', options.challenge);
     req.session.pendingSignupKey = dto.key;
     return options;
   }
 
   async verify(req: Request, dto: VerifyRegistrationDto): Promise<{ message: string }> {
     const sourceAddress = req.ip ?? 'unknown';
-    const expectedChallenge = req.session.pendingSignupChallenge;
+    const expectedChallenge = takeChallenge(req.session, 'pendingSignupChallenge');
     const key = req.session.pendingSignupKey;
-    delete req.session.pendingSignupChallenge;
     delete req.session.pendingSignupKey;
 
     if (!expectedChallenge || !key) {

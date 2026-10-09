@@ -9,13 +9,15 @@ import type { Session, SessionData } from 'express-session';
 export const CHALLENGE_TTL_MS = 2 * 60 * 1000;
 
 /** The session fields that hold a pending ceremony's challenge. */
-export type ChallengeKey = 'webauthnChallenge' | 'registrationChallenge' | 'stepUpChallenge';
+export type ChallengeKey =
+  'webauthnChallenge' | 'registrationChallenge' | 'stepUpChallenge' | 'pendingSignupChallenge';
 
 declare module 'express-session' {
   interface SessionData {
     webauthnChallengeIssuedAt?: number;
     registrationChallengeIssuedAt?: number;
     stepUpChallengeIssuedAt?: number;
+    pendingSignupChallengeIssuedAt?: number;
   }
 }
 
