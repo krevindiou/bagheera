@@ -84,14 +84,14 @@ Bagheera — personal finance manager
 }
 
 /**
- * Table-based CTA button plus the link spelled out, for clients that strip
- * button styling. Escapes `label` and `url` itself.
+ * Table-based CTA button plus the link spelled out after `copyLinkText`, for
+ * clients that strip button styling. Escapes every argument itself.
  */
-export function emailButton(label: string, url: string): string {
+export function emailButton(label: string, url: string, copyLinkText: string): string {
   const button = safeHtml`<a href="${url}" target="_blank" rel="noopener noreferrer" style="display:inline-block; padding:12px 24px; font-family:${FONT}; font-size:14px; font-weight:700; color:#ffffff; text-decoration:none; border-radius:6px;">${label}</a>`;
-  const plainLink = safeHtml`<a href="${url}" style="color:${COLOR.violetBright};">${url}</a>`;
+  const copyLink = safeHtml`${copyLinkText} <a href="${url}" style="color:${COLOR.violetBright};">${url}</a>`;
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 20px;">
 <tr><td style="border-radius:6px; background-color:${COLOR.violet};">${button}</td></tr>
 </table>
-<p style="margin:0; font-size:13px; color:${COLOR.paperFaint}; word-break:break-all;">Or copy this link: ${plainLink}</p>`;
+<p style="margin:0; font-size:13px; color:${COLOR.paperFaint}; word-break:break-all;">${copyLink}</p>`;
 }

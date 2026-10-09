@@ -1,6 +1,9 @@
 import { safeHtml } from '../../common/escape-html';
 import { emailButton, renderEmailLayout } from '../templates/layout';
 
+// Introduces the plain-text copy of a button's link.
+const COPY_LINK = 'Ou copiez ce lien :';
+
 // French email catalog; must mirror en.ts's shape (checked by
 // `satisfies` in index.ts).
 export default {
@@ -13,7 +16,7 @@ export default {
         heading: 'Bienvenue sur Bagheera',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Cliquez sur le bouton ci-dessous pour créer votre compte et enregistrer votre première clé d'accès.</p>` +
-          emailButton('Créer mon compte', activationLink),
+          emailButton('Créer mon compte', activationLink, COPY_LINK),
       }),
   },
   accountExists: {
@@ -25,7 +28,7 @@ export default {
         heading: 'Vous avez déjà un compte',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Quelqu'un, sans doute vous, a demandé à créer un compte Bagheera avec cette adresse email, mais elle en a déjà un. Connectez-vous plutôt avec votre clé d'accès. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email — rien n'a été modifié.</p>` +
-          emailButton('Me connecter', signInLink),
+          emailButton('Me connecter', signInLink, COPY_LINK),
       }),
   },
   emailChanged: {
@@ -47,7 +50,7 @@ export default {
         heading: 'Confirmez votre nouvelle adresse email',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Un changement de l'adresse email de votre compte Bagheera vers cette adresse a été demandé. Cliquez sur le bouton ci-dessous pour le confirmer. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email — l'adresse email de votre compte ne change pas tant que ce lien n'est pas cliqué.</p>` +
-          emailButton('Confirmer mon adresse email', confirmLink),
+          emailButton('Confirmer mon adresse email', confirmLink, COPY_LINK),
       }),
   },
   addressInUse: {

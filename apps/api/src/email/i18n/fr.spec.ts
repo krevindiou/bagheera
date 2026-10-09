@@ -30,6 +30,17 @@ describe('email/i18n/fr', () => {
     expect(fr.confirmEmailChange.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
   });
 
+  it('introduces the plain-text copy of every emailed link in French', () => {
+    for (const body of [
+      fr.registration.body('https://app.example/fr/activate?key=k'),
+      fr.accountExists.body('https://app.example/fr/sign-in'),
+      fr.confirmEmailChange.body('https://app.example/fr/confirm-email-change?key=k'),
+    ]) {
+      expect(body).toContain('Ou copiez ce lien :');
+      expect(body).not.toContain('Or copy this link');
+    }
+  });
+
   it('every entry has a non-empty subject', () => {
     for (const entry of Object.values(fr)) {
       expect(entry.subject.length).toBeGreaterThan(0);

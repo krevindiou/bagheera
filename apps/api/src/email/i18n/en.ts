@@ -1,6 +1,9 @@
 import { safeHtml } from '../../common/escape-html';
 import { emailButton, renderEmailLayout } from '../templates/layout';
 
+// Introduces the plain-text copy of a button's link.
+const COPY_LINK = 'Or copy this link:';
+
 // English email catalog. Bodies interpolating a value use safeHtml`...`.
 export default {
   registration: {
@@ -12,7 +15,7 @@ export default {
         heading: 'Welcome to Bagheera',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Click the button below to create your account and register your first passkey.</p>` +
-          emailButton('Create account', activationLink),
+          emailButton('Create account', activationLink, COPY_LINK),
       }),
   },
   accountExists: {
@@ -24,7 +27,7 @@ export default {
         heading: 'You already have an account',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">Someone, probably you, asked to create a Bagheera account with this email address, but it already has one. Sign in with your passkey instead. If this wasn't you, ignore this email — nothing was changed.</p>` +
-          emailButton('Sign in', signInLink),
+          emailButton('Sign in', signInLink, COPY_LINK),
       }),
   },
   emailChanged: {
@@ -46,7 +49,7 @@ export default {
         heading: 'Confirm your new email address',
         bodyHtml:
           safeHtml`<p style="margin:0 0 20px;">A change of your Bagheera account's email address to this address was requested. Click the button below to confirm it. If you did not request this, ignore this email — your account's email address stays unchanged until this link is clicked.</p>` +
-          emailButton('Confirm email address', confirmLink),
+          emailButton('Confirm email address', confirmLink, COPY_LINK),
       }),
   },
   addressInUse: {

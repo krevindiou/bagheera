@@ -30,19 +30,27 @@ describe('email/templates/layout', () => {
     const ESCAPED_PAYLOAD = '&lt;script&gt;alert(1)&lt;/script&gt;';
 
     it('escapes the label', () => {
-      const html = emailButton(XSS_PAYLOAD, 'https://example.com');
+      const html = emailButton(XSS_PAYLOAD, 'https://example.com', 'Or copy this link:');
       expect(html).toContain(ESCAPED_PAYLOAD);
       expect(html).not.toContain(XSS_PAYLOAD);
     });
 
     it('escapes the url, in both the button href and the plain-text copy', () => {
-      const html = emailButton('Click me', XSS_PAYLOAD);
+      const html = emailButton('Click me', XSS_PAYLOAD, 'Or copy this link:');
       expect(html).toContain(ESCAPED_PAYLOAD);
       expect(html).not.toContain(XSS_PAYLOAD);
     });
 
+    it('puts the given text, escaped, before the plain-text link', () => {
+      const html = emailButton('Click me', 'https://example.com', 'Ou copiez ce lien :');
+      expect(html).toMatch(/Ou copiez ce lien : <a href="https:\/\/example\.com"/);
+      expect(emailButton('Click me', 'https://example.com', XSS_PAYLOAD)).toContain(
+        ESCAPED_PAYLOAD,
+      );
+    });
+
     it('includes the url as a visible plain-text link', () => {
-      const html = emailButton('Click me', 'https://example.com/confirm');
+      const html = emailButton('Click me', 'https://example.com/confirm', 'Or copy this link:');
       expect(html).toContain('https://example.com/confirm');
     });
   });

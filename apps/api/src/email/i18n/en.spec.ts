@@ -16,6 +16,16 @@ describe('email/i18n/en', () => {
     expect(en.accountExists.body(XSS_PAYLOAD)).not.toContain(XSS_PAYLOAD);
   });
 
+  it('introduces the plain-text copy of every emailed link in English', () => {
+    for (const body of [
+      en.registration.body('https://app.example/en/activate?key=k'),
+      en.accountExists.body('https://app.example/en/sign-in'),
+      en.confirmEmailChange.body('https://app.example/en/confirm-email-change?key=k'),
+    ]) {
+      expect(body).toContain('Or copy this link:');
+    }
+  });
+
   // Sent instead of a link: nothing in it may let anyone act on the account.
   it('puts no link in the address-in-use notice', () => {
     expect(en.addressInUse.body).toContain('already belongs to your account');
