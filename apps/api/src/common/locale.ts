@@ -1,5 +1,4 @@
-// Source of truth for UI/email locales: the `locale` pg enum and
-// LocaleField() derive from it. Adding one needs a migration too.
-export const SUPPORTED_LOCALES = ['en', 'fr'] as const;
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'en';
+// Re-export of packages/reference-data, shared with apps/web; the `locale`
+// pg enum and LocaleField() derive from it.
+export { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@bagheera/reference-data';
+export type { Locale } from '@bagheera/reference-data';

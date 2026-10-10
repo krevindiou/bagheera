@@ -18,3 +18,9 @@ export const TRANSFER_PAYMENT_METHOD_IDS: readonly string[] = [
   PAYMENT_METHOD_ID.TRANSFER_DEBIT,
   PAYMENT_METHOD_ID.TRANSFER_CREDIT,
 ];
+
+// UI/email locales. The API's `locale` pg enum derives from this list, so
+// adding one needs a migration, plus web and email catalogs for it.
+export const SUPPORTED_LOCALES = ['en', 'fr'] as const;
+export type Locale = (typeof SUPPORTED_LOCALES)[number];
+export const DEFAULT_LOCALE: Locale = 'en';

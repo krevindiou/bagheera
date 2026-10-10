@@ -1,8 +1,8 @@
-// Mirrors apps/api/src/common/locale.ts. A new language needs both arrays,
-// src/i18n/locales/<code>.ts and the API's email/i18n/<code>.ts.
-export const SUPPORTED_LOCALES = ['en', 'fr'] as const;
-export type Locale = (typeof SUPPORTED_LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'en';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from '@bagheera/reference-data';
+
+// A new language needs src/i18n/locales/<code>.ts too.
+export { DEFAULT_LOCALE, SUPPORTED_LOCALES };
+export type { Locale };
 
 export function isSupportedLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(value);
