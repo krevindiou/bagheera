@@ -47,7 +47,7 @@ test.describe('registration, passkey signup ceremony, sign-in, sign-out', () => 
     const { email } = await registerAndCompletePasskeySignup(page);
 
     // The single email this account ever received — still sitting in
-    // Mailpit, so re-fetching it (no excludeIds) returns the same link.
+    // Mailpit, so re-fetching it returns the same link.
     const activationLink = await waitForEmailLink(email);
     await page.goto(activationLink);
     await page.getByRole('button', { name: en.auth.activate.submit, exact: true }).click();
