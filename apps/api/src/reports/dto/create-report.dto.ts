@@ -16,6 +16,7 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
+import { MAX_SIGNIFICANT_RESULTS_NUMBER } from '@bagheera/reference-data';
 import { ReportTitleField, ValueDateField } from '../../common/dto-fields';
 
 // An inverted range would silently match nothing. Both are ValueDateField
@@ -43,10 +44,6 @@ function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
     });
   };
 }
-
-// Most labels a distribution report shows before folding the rest into
-// "Other".
-export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
 export class CreateReportDto {
   @IsIn(['sum', 'average', 'distribution'])

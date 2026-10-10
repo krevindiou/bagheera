@@ -24,3 +24,7 @@ export const TRANSFER_PAYMENT_METHOD_IDS: readonly string[] = [
 export const SUPPORTED_LOCALES = ['en', 'fr'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
+
+// Most labels a distribution report shows before folding the rest into
+// "Other"; the API's CreateReportDto and the web report form both cap at it.
+export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;

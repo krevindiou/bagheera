@@ -1,12 +1,10 @@
+import { MAX_SIGNIFICANT_RESULTS_NUMBER } from '../../domain/referenceData';
 import { z } from 'zod';
 
 const optionalDate = z.preprocess(
   (value) => (value === '' ? undefined : value),
   z.string().optional(),
 );
-
-// Mirrors the API's MAX_SIGNIFICANT_RESULTS_NUMBER.
-export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
 // Field rules mirror the API DTOs.
 export const reportSchema = z

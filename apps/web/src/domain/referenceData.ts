@@ -1,4 +1,8 @@
-import { PAYMENT_METHOD_ID, TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
+import {
+  MAX_SIGNIFICANT_RESULTS_NUMBER,
+  PAYMENT_METHOD_ID,
+  TRANSFER_PAYMENT_METHOD_IDS,
+} from '@bagheera/reference-data';
 import type { components } from '../api/schema';
 import type { IconName } from '../components/appIcons';
 import { referenceName } from '../i18n/referenceNames';
@@ -85,7 +89,7 @@ export function paymentMethodIcon(id: string): IconName | null {
 }
 
 // The only two payment methods that can carry a transfer pairing.
-export { TRANSFER_PAYMENT_METHOD_IDS };
+export { MAX_SIGNIFICANT_RESULTS_NUMBER, TRANSFER_PAYMENT_METHOD_IDS };
 
 export type SearchCriteria = Schemas['SearchCriteriaDto'];
 export type AmountComparator = Schemas['AmountComparatorDto'];
