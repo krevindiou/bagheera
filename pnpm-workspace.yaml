@@ -16,6 +16,10 @@ overrides:
   # the parents isn't available yet. Remove when they ship source-map-js >=1.2.2.
   # Clears GHSA-68fv-2mgg-jv7q (high, event-loop DoS via indexed source maps).
   source-map-js: '>=1.2.2'
+peerDependencyRules:
+  allowedVersions:
+    # Remove when openapi-typescript supports TypeScript 6.
+    'openapi-typescript>typescript': '6'
 allowBuilds:
   '@scarf/scarf': false # telemetry postinstall, not needed
   '@swc/core': true # native compiler binary, needed by unplugin-swc (apps/api's Vitest decorator-metadata plugin)
