@@ -19,6 +19,7 @@ import '../session/webauthn-session-data';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
+import { clientIp } from '../common/client-ip.decorator';
 
 // Unknown/removed credential and a bad signature are indistinguishable —
 // one generic error path for both. A bare 401 here is safe: this only ever
@@ -60,7 +61,7 @@ export class WebauthnAuthenticationService {
   }
 
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
-    const sourceAddress = req.ip ?? 'unknown';
+    const sourceAddress = clientIp(req);
     const expectedChallenge = takeChallenge(req.session, 'webauthnChallenge');
 
     if (!expectedChallenge) {

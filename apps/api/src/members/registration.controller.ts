@@ -5,6 +5,7 @@ import { RateLimit } from '../security/rate-limit.decorator';
 import { Public } from '../session/public.decorator';
 import { RegisterDto } from './dto/register.dto';
 import { RegistrationService } from './registration.service';
+import { clientIp } from '../common/client-ip.decorator';
 
 @Controller('members')
 @Public()
@@ -15,7 +16,7 @@ export class RegistrationController {
   @HttpCode(201)
   @RateLimit({ points: 5, durationSeconds: 60, identifierField: 'email' })
   async register(@Req() req: Request, @Body() dto: RegisterDto): Promise<MessageResponseDto> {
-    await this.registration.register(dto, req.ip ?? 'unknown');
+    await this.registration.register(dto, clientIp(req));
     // Identical response whether or not the email was already registered —
     // see the service's own doc for why.
     return {

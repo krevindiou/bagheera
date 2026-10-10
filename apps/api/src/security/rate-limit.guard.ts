@@ -21,6 +21,7 @@ import {
 } from './rate-limit.constants';
 import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
+import { clientIp } from '../common/client-ip.decorator';
 
 // Strikes (lockout violations) decay after an hour of no further
 // violations on that dimension, so a stale block count doesn't keep
@@ -99,7 +100,7 @@ export class RateLimitGuard implements CanActivate {
     const dims = [
       memberId
         ? { key: `${routeKey}:member:${memberId}`, points: options.points }
-        : { key: `${routeKey}:ip:${req.ip ?? 'unknown'}`, points: ipPointsFor(options) },
+        : { key: `${routeKey}:ip:${clientIp(req)}`, points: ipPointsFor(options) },
     ];
     const rawIdentifier = options.identifierField
       ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]

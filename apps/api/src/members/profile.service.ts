@@ -23,6 +23,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateTimeZoneDto } from './dto/update-time-zone.dto';
 import { findMemberByEmail } from './find-member-by-email';
 import { raceSafeUniqueEmail } from './race-safe-unique-email';
+import { CLIENT_IP_FALLBACK, clientIp } from '../common/client-ip.decorator';
 
 // Never distinguishes missing/malformed/expired/superseded/already-used
 // keys from one another — a single generic error path for all of them,
@@ -89,7 +90,7 @@ export class ProfileService {
       const confirmLink = `${appUrl}/${row.locale}/confirm-email-change?key=${encodeURIComponent(token)}`;
       await this.emailQueue.enqueue(confirmEmailChangeEmail(dto.email, confirmLink, row.locale));
     }
-    await this.audit.record('email_change_requested', row.id, req.ip ?? 'unknown');
+    await this.audit.record('email_change_requested', row.id, clientIp(req));
   }
 
   /**
@@ -99,7 +100,7 @@ export class ProfileService {
    */
   async confirmEmailChange(
     key: string,
-    sourceAddress = 'unknown',
+    sourceAddress = CLIENT_IP_FALLBACK,
     currentSessionId?: string,
   ): Promise<void> {
     const payload = parseEmailChangeToken(this.crypto, key);

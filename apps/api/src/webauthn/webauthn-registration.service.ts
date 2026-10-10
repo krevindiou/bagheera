@@ -20,6 +20,7 @@ import { credentialInsertValues } from './credential-insert-values';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
+import { clientIp } from '../common/client-ip.decorator';
 
 const REGISTRATION_FAILED = 'Passkey registration failed.';
 
@@ -114,6 +115,6 @@ export class WebauthnRegistrationService {
     if (row) {
       await this.emailQueue.enqueue(passkeyRegisteredEmail(row.email, row.locale));
     }
-    await this.audit.record('webauthn_credential_registered', memberId, req.ip ?? 'unknown');
+    await this.audit.record('webauthn_credential_registered', memberId, clientIp(req));
   }
 }

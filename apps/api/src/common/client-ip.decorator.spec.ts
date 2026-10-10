@@ -1,5 +1,6 @@
 import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants';
-import { ClientIp } from './client-ip.decorator';
+import type { Request } from 'express';
+import { ClientIp, clientIp } from './client-ip.decorator';
 
 function factoryOf(decorator: ParameterDecorator) {
   class Host {
@@ -24,5 +25,12 @@ describe('ClientIp', () => {
 
   it("falls back to 'unknown' when the address is missing", () => {
     expect(factory(undefined, ctxWith({}))).toBe('unknown');
+  });
+});
+
+describe('clientIp', () => {
+  it("returns the request's address, else 'unknown'", () => {
+    expect(clientIp({ ip: '203.0.113.7' } as Request)).toBe('203.0.113.7');
+    expect(clientIp({} as Request)).toBe('unknown');
   });
 });

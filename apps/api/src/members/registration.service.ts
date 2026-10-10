@@ -3,6 +3,7 @@ import { isValidTimeZone } from '../common/local-date';
 import { DEFAULT_LOCALE } from '../common/locale';
 import { EmailQueueService } from '../email/email-queue.service';
 import { RegisterDto } from './dto/register.dto';
+import { CLIENT_IP_FALLBACK } from '../common/client-ip.decorator';
 
 @Injectable()
 export class RegistrationService {
@@ -14,7 +15,7 @@ export class RegistrationService {
    * timing. SignupRequestService does it on the worker. No member row is
    * created until the emailed link's passkey ceremony completes.
    */
-  async register(dto: RegisterDto, sourceAddress = 'unknown'): Promise<void> {
+  async register(dto: RegisterDto, sourceAddress = CLIENT_IP_FALLBACK): Promise<void> {
     await this.emailQueue.enqueueSignupRequest({
       email: dto.email,
       country: dto.country.toUpperCase(),

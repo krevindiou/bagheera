@@ -23,6 +23,7 @@ import { SignupOptionsDto } from './dto/signup-options.dto';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
+import { clientIp } from '../common/client-ip.decorator';
 
 // One generic error for an invalid/expired key, a registered email and an
 // attestation failure alike.
@@ -82,7 +83,7 @@ export class WebauthnSignupService {
   }
 
   async verify(req: Request, dto: VerifyRegistrationDto): Promise<{ message: string }> {
-    const sourceAddress = req.ip ?? 'unknown';
+    const sourceAddress = clientIp(req);
     const expectedChallenge = takeChallenge(req.session, 'pendingSignupChallenge');
     const key = req.session.pendingSignupKey;
     delete req.session.pendingSignupKey;

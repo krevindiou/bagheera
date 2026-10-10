@@ -4,7 +4,10 @@ import type { Request } from 'express';
 // Audit-log address when the request has no `ip`.
 export const CLIENT_IP_FALLBACK = 'unknown';
 
-export const ClientIp = createParamDecorator(
-  (_data: unknown, ctx: ExecutionContext): string =>
-    ctx.switchToHttp().getRequest<Request>().ip ?? CLIENT_IP_FALLBACK,
+export function clientIp(req: Request): string {
+  return req.ip ?? CLIENT_IP_FALLBACK;
+}
+
+export const ClientIp = createParamDecorator((_data: unknown, ctx: ExecutionContext): string =>
+  clientIp(ctx.switchToHttp().getRequest<Request>()),
 );

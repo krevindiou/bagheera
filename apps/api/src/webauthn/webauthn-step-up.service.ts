@@ -17,6 +17,7 @@ import '../session/step-up-session-data';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
+import { clientIp } from '../common/client-ip.decorator';
 
 // One generic error for a missing challenge, a foreign credential and a bad
 // signature alike. 422, like consumeStepUp(): the member is still signed in,
@@ -66,7 +67,7 @@ export class WebauthnStepUpService {
 
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const memberId = requireMemberId(req);
-    const sourceAddress = req.ip ?? 'unknown';
+    const sourceAddress = clientIp(req);
     const expectedChallenge = takeChallenge(req.session, 'stepUpChallenge');
     const stashedMemberId = req.session.stepUpMemberId;
     delete req.session.stepUpMemberId;

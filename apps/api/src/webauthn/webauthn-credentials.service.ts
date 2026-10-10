@@ -12,6 +12,7 @@ import { consumeStepUp } from '../session/consume-step-up';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { requireMemberId } from '../session/require-member-id';
 import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response.dto';
+import { clientIp } from '../common/client-ip.decorator';
 
 export type WebauthnCredentialSummary = WebauthnCredentialSummaryDto;
 
@@ -79,6 +80,6 @@ export class WebauthnCredentialsService {
     if (row) {
       await this.emailQueue.enqueue(passkeyRemovedEmail(row.email, row.locale));
     }
-    await this.audit.record('webauthn_credential_removed', memberId, req.ip ?? 'unknown');
+    await this.audit.record('webauthn_credential_removed', memberId, clientIp(req));
   }
 }
