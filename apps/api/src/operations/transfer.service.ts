@@ -10,12 +10,6 @@ import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MemberId } from '../security/ids';
 import { isFullyActive, reachableAccountsOf } from '../security/reachable';
 
-// The "Transfer" debit/credit payment methods, the only two that can carry
-// a pairing; a mirror flips one into the other.
-export { TRANSFER_PAYMENT_METHOD_IDS };
-export const TRANSFER_DEBIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_DEBIT;
-export const TRANSFER_CREDIT_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.TRANSFER_CREDIT;
-
 // The db handle or an open transaction, so callers can run pairing side
 // effects inside their own transaction.
 type Db = NodePgDatabase | Executor;
@@ -128,10 +122,11 @@ export class TransferService {
     return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId);
   }
 
+  // A mirror carries the opposite transfer method.
   private flip(paymentMethodId: string): string {
-    return paymentMethodId === TRANSFER_DEBIT_PAYMENT_METHOD_ID
-      ? TRANSFER_CREDIT_PAYMENT_METHOD_ID
-      : TRANSFER_DEBIT_PAYMENT_METHOD_ID;
+    return paymentMethodId === PAYMENT_METHOD_ID.TRANSFER_DEBIT
+      ? PAYMENT_METHOD_ID.TRANSFER_CREDIT
+      : PAYMENT_METHOD_ID.TRANSFER_DEBIT;
   }
 
   // A *new* target (attach or retarget) must be another fully active

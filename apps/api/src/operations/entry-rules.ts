@@ -8,7 +8,7 @@ import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AccountId } from '../security/ids';
 import type { Executor } from '../db/executor';
 import { isFullyActive } from '../security/reachable';
-import { TRANSFER_PAYMENT_METHOD_IDS } from './transfer.service';
+import { TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
 
 export type EntryType = 'debit' | 'credit';
 
