@@ -1,17 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { vi } from 'vitest';
 import { INestApplication } from '@nestjs/common';
-import type {
-  VerifiedAuthenticationResponse,
-  VerifiedRegistrationResponse,
-} from '@simplewebauthn/server';
-import { eq } from 'drizzle-orm';
+import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import type { Server } from 'http';
 import request from 'supertest';
 import type { Locale } from '../common/locale';
 import { member, webauthnCredential } from '../db/schema';
-import { buildSignupToken } from '../members/signup-token';
-import { CryptoService } from '../security/crypto.service';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
 import { getDb } from './create-test-app';
 
@@ -182,62 +176,4 @@ export async function completeStepUp(
     .set('x-csrf-token', csrfToken)
     .send({ response: fakeAuthenticationResponseFor(fixture.credentialId) })
     .expect(200);
-}
-
-/**
- * The real sign-up funnel from a directly minted token (no email round
- * trip), registration crypto stubbed, ending signed in. For the
- * members/auth/webauthn specs; others use `seedSignedInMember`.
- */
-export async function registerAndCompleteSignup(
-  app: INestApplication<Server>,
-  overrides: FixtureOverrides = {},
-): Promise<SignedInFixture> {
-  const email = overrides.email ?? uniqueEmail();
-  const country = overrides.country ?? 'FR';
-  const locale = overrides.locale ?? 'en';
-  const credentialId = `cred-${randomUUID()}`;
-
-  const key = buildSignupToken(app.get(CryptoService), email, country, locale);
-
-  const agent = request.agent(app.getHttpServer());
-  const csrfToken = await csrfTokenFor(agent);
-
-  await agent
-    .post('/webauthn/signup/options')
-    .set('x-csrf-token', csrfToken)
-    .send({ key })
-    .expect(200);
-
-  vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce({
-    verified: true,
-    registrationInfo: {
-      credential: { id: credentialId, publicKey: fakePublicKey(), counter: 0 },
-    },
-  } as unknown as VerifiedRegistrationResponse);
-  await agent
-    .post('/webauthn/signup/verify')
-    .set('x-csrf-token', csrfToken)
-    .send({
-      response: {
-        id: credentialId,
-        rawId: credentialId,
-        response: {},
-        clientExtensionResults: {},
-        type: 'public-key',
-      },
-    })
-    .expect(200);
-
-  const [row] = await getDb(app).select().from(member).where(eq(member.email, email));
-
-  const getCsrfToken = () => csrfTokenFor(agent);
-  return {
-    agent,
-    email,
-    memberId: row.id,
-    credentialId,
-    getCsrfToken,
-    mutate: buildMutate(agent, getCsrfToken),
-  };
 }
