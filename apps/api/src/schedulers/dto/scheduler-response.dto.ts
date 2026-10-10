@@ -1,3 +1,4 @@
+import { FREQUENCY_UNITS, type FrequencyUnit } from '@bagheera/reference-data';
 import { ApiProperty } from '@nestjs/swagger';
 import type { Assert, SameKeys } from '../../common/dto/same-keys';
 import type { scheduler } from '../../db/schema';
@@ -16,8 +17,8 @@ export class SchedulerDto {
   reconciled!: boolean;
   notes!: string;
   limitDate!: string | null;
-  @ApiProperty({ enum: ['day', 'week', 'month', 'year'] })
-  frequencyUnit!: 'day' | 'week' | 'month' | 'year';
+  @ApiProperty({ enum: FREQUENCY_UNITS })
+  frequencyUnit!: FrequencyUnit;
   frequencyValue!: number;
   active!: boolean;
   createdAt!: Date;

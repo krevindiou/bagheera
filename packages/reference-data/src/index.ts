@@ -30,6 +30,21 @@ export const DEFAULT_LOCALE: Locale = 'en';
 export const ENTRY_TYPES = ['debit', 'credit'] as const;
 export type EntryType = (typeof ENTRY_TYPES)[number];
 
+// A scheduler's recurrence unit. The API's `frequency_unit` pg enum derives
+// from this list.
+export const FREQUENCY_UNITS = ['day', 'week', 'month', 'year'] as const;
+export type FrequencyUnit = (typeof FREQUENCY_UNITS)[number];
+
+// A report's aggregation kind, chart period grouping and, for a distribution
+// report, the dimension operations are ranked by. The API's `report_type`,
+// `period_grouping` and `data_grouping` pg enums derive from these lists.
+export const REPORT_TYPES = ['sum', 'average', 'distribution'] as const;
+export const PERIOD_GROUPINGS = ['month', 'quarter', 'year', 'all'] as const;
+export const DATA_GROUPINGS = ['category', 'third_party', 'payment_method'] as const;
+export type ReportType = (typeof REPORT_TYPES)[number];
+export type PeriodGrouping = (typeof PERIOD_GROUPINGS)[number];
+export type DataGrouping = (typeof DATA_GROUPINGS)[number];
+
 // Most labels a distribution report shows before folding the rest into
 // "Other"; the API's CreateReportDto and the web report form both cap at it.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;

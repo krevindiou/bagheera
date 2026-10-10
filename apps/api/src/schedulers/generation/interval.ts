@@ -1,7 +1,7 @@
 // Pure date arithmetic for occurrence generation, on plain 'YYYY-MM-DD'
 // strings (never a JS `Date`, so no timezone drift).
 
-export type FrequencyUnit = 'day' | 'week' | 'month' | 'year';
+import type { FrequencyUnit } from '@bagheera/reference-data';
 
 interface YearMonthDay {
   year: number;

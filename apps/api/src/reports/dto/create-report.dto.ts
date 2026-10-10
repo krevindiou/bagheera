@@ -16,9 +16,16 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
-import { MAX_SIGNIFICANT_RESULTS_NUMBER } from '@bagheera/reference-data';
+import {
+  DATA_GROUPINGS,
+  MAX_SIGNIFICANT_RESULTS_NUMBER,
+  PERIOD_GROUPINGS,
+  REPORT_TYPES,
+  type DataGrouping,
+  type PeriodGrouping,
+  type ReportType,
+} from '@bagheera/reference-data';
 import { ReportTitleField, ValueDateField } from '../../common/dto-fields';
-import { dataGroupingEnum, periodGroupingEnum, reportTypeEnum } from '../../db/schema/enums';
 
 // An inverted range would silently match nothing. Both are ValueDateField
 // ('YYYY-MM-DD'), so string order is chronological.
@@ -47,8 +54,8 @@ function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
 }
 
 export class CreateReportDto {
-  @IsIn(reportTypeEnum.enumValues)
-  type!: 'sum' | 'average' | 'distribution';
+  @IsIn(REPORT_TYPES)
+  type!: ReportType;
 
   @ReportTitleField()
   title!: string;
@@ -96,14 +103,14 @@ export class CreateReportDto {
 
   // Required for every type: a 'distribution' report ranks within each
   // period too.
-  @IsIn(periodGroupingEnum.enumValues)
-  periodGrouping!: 'month' | 'quarter' | 'year' | 'all';
+  @IsIn(PERIOD_GROUPINGS)
+  periodGrouping!: PeriodGrouping;
 
   // Required for 'distribution' only; `?:` so the Swagger plugin marks them
   // optional.
   @ValidateIf((dto: CreateReportDto) => dto.type === 'distribution')
-  @IsIn(dataGroupingEnum.enumValues)
-  dataGrouping?: 'category' | 'third_party' | 'payment_method';
+  @IsIn(DATA_GROUPINGS)
+  dataGrouping?: DataGrouping;
 
   @ValidateIf((dto: CreateReportDto) => dto.type === 'distribution')
   @IsInt()

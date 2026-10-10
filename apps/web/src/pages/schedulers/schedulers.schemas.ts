@@ -2,7 +2,7 @@ import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
 import { valueDateSchema, type FormValues } from '../operations/operations.schemas';
 import { TRANSFER_PAYMENT_METHOD_IDS } from '../../domain/referenceData';
-import { ENTRY_TYPES } from '@bagheera/reference-data';
+import { ENTRY_TYPES, FREQUENCY_UNITS } from '@bagheera/reference-data';
 
 const optionalId = z.preprocess(
   (value) => (value === '' || value === undefined || value === null ? undefined : value),
@@ -29,7 +29,7 @@ export const schedulerSchema = z
       (value) => (value === '' ? undefined : value),
       valueDateSchema.optional(),
     ),
-    frequencyUnit: z.enum(['day', 'week', 'month', 'year']),
+    frequencyUnit: z.enum(FREQUENCY_UNITS),
     frequencyValue: z.preprocess(
       (value) =>
         value === '' || value === undefined || value === null ? undefined : Number(value),

@@ -1,7 +1,11 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
-import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
-import { frequencyUnitEnum } from '../../db/schema/enums';
+import {
+  ENTRY_TYPES,
+  FREQUENCY_UNITS,
+  type EntryType,
+  type FrequencyUnit,
+} from '@bagheera/reference-data';
 
 // accountId is immutable but still submitted (read-only on the edit form);
 // the service rejects any change.
@@ -44,8 +48,8 @@ export class UpdateSchedulerDto {
   limitDate?: string;
 
   @IsOptional()
-  @IsIn(frequencyUnitEnum.enumValues)
-  frequencyUnit?: 'day' | 'week' | 'month' | 'year';
+  @IsIn(FREQUENCY_UNITS)
+  frequencyUnit?: FrequencyUnit;
 
   // Capped: see CreateSchedulerDto.
   @IsInt()

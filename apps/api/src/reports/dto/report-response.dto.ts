@@ -1,17 +1,21 @@
+import {
+  DATA_GROUPINGS,
+  PERIOD_GROUPINGS,
+  REPORT_TYPES,
+  type DataGrouping,
+  type PeriodGrouping,
+  type ReportType,
+} from '@bagheera/reference-data';
 import { ApiProperty } from '@nestjs/swagger';
 import { AxisBoundsDto, ChartPointDto } from '../../common/dto/chart-response.dto';
 import type { Assert, SameKeys } from '../../common/dto/same-keys';
 import type { report } from '../../db/schema';
 
-const REPORT_TYPES = ['sum', 'average', 'distribution'] as const;
-const PERIOD_GROUPINGS = ['month', 'quarter', 'year', 'all'] as const;
-const DATA_GROUPINGS = ['category', 'third_party', 'payment_method'] as const;
-
 export class ReportDto {
   id!: string;
   memberId!: string;
   @ApiProperty({ enum: REPORT_TYPES })
-  type!: (typeof REPORT_TYPES)[number];
+  type!: ReportType;
   title!: string;
   homepage!: boolean;
   valueDateStart!: string | null;
@@ -19,10 +23,10 @@ export class ReportDto {
   thirdParties!: string | null;
   reconciledOnly!: boolean | null;
   @ApiProperty({ enum: PERIOD_GROUPINGS })
-  periodGrouping!: (typeof PERIOD_GROUPINGS)[number];
+  periodGrouping!: PeriodGrouping;
   // Set only for a 'distribution' report.
   @ApiProperty({ enum: DATA_GROUPINGS, nullable: true })
-  dataGrouping!: (typeof DATA_GROUPINGS)[number] | null;
+  dataGrouping!: DataGrouping | null;
   significantResultsNumber!: number | null;
   createdAt!: Date;
   updatedAt!: Date;
@@ -71,7 +75,7 @@ export class ReportDistributionDto {
   // What the labels are (categories, third parties or payment methods), so
   // clients know whether a label is reference data they can translate.
   @ApiProperty({ enum: DATA_GROUPINGS })
-  dataGrouping!: (typeof DATA_GROUPINGS)[number];
+  dataGrouping!: DataGrouping;
   series!: ReportDistributionSeriesDto[];
 }
 

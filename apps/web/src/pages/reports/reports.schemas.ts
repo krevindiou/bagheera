@@ -1,4 +1,5 @@
 import { MAX_SIGNIFICANT_RESULTS_NUMBER } from '../../domain/referenceData';
+import { DATA_GROUPINGS, PERIOD_GROUPINGS, REPORT_TYPES } from '@bagheera/reference-data';
 import { z } from 'zod';
 
 const optionalDate = z.preprocess(
@@ -9,7 +10,7 @@ const optionalDate = z.preprocess(
 // Field rules mirror the API DTOs.
 export const reportSchema = z
   .object({
-    type: z.enum(['sum', 'average', 'distribution']),
+    type: z.enum(REPORT_TYPES),
     title: z.string().trim().min(1).max(64),
     homepage: z.boolean().optional(),
     valueDateStart: optionalDate,
@@ -21,8 +22,8 @@ export const reportSchema = z
     accountIds: z.array(z.string()).optional(),
     categoryIds: z.array(z.string()).optional(),
     reconciledOnly: z.boolean().optional(),
-    periodGrouping: z.enum(['month', 'quarter', 'year', 'all']),
-    dataGrouping: z.enum(['category', 'third_party', 'payment_method']).optional(),
+    periodGrouping: z.enum(PERIOD_GROUPINGS),
+    dataGrouping: z.enum(DATA_GROUPINGS).optional(),
     significantResultsNumber: z
       .number()
       .int()

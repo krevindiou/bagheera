@@ -1,7 +1,11 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
-import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
-import { frequencyUnitEnum } from '../../db/schema/enums';
+import {
+  ENTRY_TYPES,
+  FREQUENCY_UNITS,
+  type EntryType,
+  type FrequencyUnit,
+} from '@bagheera/reference-data';
 
 export class CreateSchedulerDto {
   @IsUUID('7')
@@ -46,8 +50,8 @@ export class CreateSchedulerDto {
   limitDate?: string;
 
   @IsOptional()
-  @IsIn(frequencyUnitEnum.enumValues)
-  frequencyUnit?: 'day' | 'week' | 'month' | 'year';
+  @IsIn(FREQUENCY_UNITS)
+  frequencyUnit?: FrequencyUnit;
 
   // Capped: a huge interval pushes occurrences past year 9999, where the
   // string comparison ending dueOccurrences() breaks.

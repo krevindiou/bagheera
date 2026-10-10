@@ -1,5 +1,11 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
-import { ENTRY_TYPES } from '@bagheera/reference-data';
+import {
+  DATA_GROUPINGS,
+  ENTRY_TYPES,
+  FREQUENCY_UNITS,
+  PERIOD_GROUPINGS,
+  REPORT_TYPES,
+} from '@bagheera/reference-data';
 import { SUPPORTED_LOCALES } from '../../common/locale';
 
 // Shared debit/credit typing used by PaymentMethod, Category, Operation and
@@ -10,19 +16,15 @@ export const entryTypeEnum = pgEnum('entry_type', ENTRY_TYPES);
 export const localeEnum = pgEnum('locale', SUPPORTED_LOCALES);
 
 // Scheduler recurrence unit.
-export const frequencyUnitEnum = pgEnum('frequency_unit', ['day', 'week', 'month', 'year']);
+export const frequencyUnitEnum = pgEnum('frequency_unit', FREQUENCY_UNITS);
 
 // Report aggregation kind and chart period grouping.
-export const reportTypeEnum = pgEnum('report_type', ['sum', 'average', 'distribution']);
-export const periodGroupingEnum = pgEnum('period_grouping', ['month', 'quarter', 'year', 'all']);
+export const reportTypeEnum = pgEnum('report_type', REPORT_TYPES);
+export const periodGroupingEnum = pgEnum('period_grouping', PERIOD_GROUPINGS);
 
 // Grouping key for a 'distribution' report — which dimension operations are
 // ranked by.
-export const dataGroupingEnum = pgEnum('data_grouping', [
-  'category',
-  'third_party',
-  'payment_method',
-]);
+export const dataGroupingEnum = pgEnum('data_grouping', DATA_GROUPINGS);
 
 // Audit-log event kinds (see AuditService).
 export const securityEventTypeEnum = pgEnum('security_event_type', [

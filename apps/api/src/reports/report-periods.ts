@@ -1,8 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { AnyPgColumn } from 'drizzle-orm/pg-core';
+import type { PeriodGrouping } from '@bagheera/reference-data';
 import { localIsoDate } from '../common/local-date';
-
-export type PeriodGrouping = 'month' | 'quarter' | 'year' | 'all';
 
 // Map key for the 'all' bucket (a SQL NULL period).
 export const ALL_PERIOD_KEY = 'all';
