@@ -59,6 +59,7 @@ export default defineConfig({
         '**/*.provider.ts',
         'main.ts',
         'db/db.constants.ts',
+        'db/migrate.ts',
         'db/seed.ts',
         'logging/sentry.ts',
         'session/session-data.ts',
