@@ -1,6 +1,7 @@
+import { CURRENCY_CODES } from '@bagheera/reference-data';
 import { i18n } from '../i18n';
 
-// Account creation's currency dropdown, from Intl.supportedValuesOf and
+// Account creation's currency dropdown: the shared code list, labelled by
 // Intl.DisplayNames.
 
 export interface CurrencyOption {
@@ -16,9 +17,7 @@ export function getCurrencyOptions(): CurrencyOption[] {
     name: currencyNames.of(code) ?? code,
   });
 
-  return Intl.supportedValuesOf('currency')
-    .map(toOption)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return CURRENCY_CODES.map(toOption).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // Each country's primary currency, to prefill a new account from the

@@ -1,6 +1,6 @@
 import { IsIn, IsOptional, IsUUID } from 'class-validator';
 import { AccountNameField, SignedAmountField } from '../../common/dto-fields';
-import { ISO_CURRENCY_CODES } from '../../common/currency';
+import { CURRENCY_CODES } from '../../common/currency';
 
 export class CreateAccountDto {
   @IsUUID('7')
@@ -9,7 +9,7 @@ export class CreateAccountDto {
   @AccountNameField()
   name!: string;
 
-  @IsIn(ISO_CURRENCY_CODES)
+  @IsIn(CURRENCY_CODES)
   currency!: string;
 
   // Major units. Positive → opening credit, negative → opening debit,

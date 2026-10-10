@@ -1,3 +1,3 @@
-// ISO 4217 codes validating the account currency; mirrors the web
-// dropdown (apps/web/src/composables/useCurrencyOptions.ts).
-export const ISO_CURRENCY_CODES: readonly string[] = Intl.supportedValuesOf('currency');
+// Re-export of packages/reference-data, shared with apps/web; validates the
+// account currency.
+export { CURRENCY_CODES } from '@bagheera/reference-data';

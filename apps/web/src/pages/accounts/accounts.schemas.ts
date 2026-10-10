@@ -1,3 +1,4 @@
+import { CURRENCY_CODES } from '@bagheera/reference-data';
 import { z } from 'zod';
 
 // Field rules mirror the API DTOs (apps/api/src/{banks,accounts}/dto/*).
@@ -5,7 +6,7 @@ const accountName = z.string().trim().min(1).max(64);
 const currency = z
   .string()
   .trim()
-  .refine((code) => Intl.supportedValuesOf('currency').includes(code));
+  .refine((code) => CURRENCY_CODES.includes(code));
 
 export const editBankSchema = z.object({
   name: z.string().trim().min(1).max(32),

@@ -1,6 +1,6 @@
 import { IsIn, IsUUID } from 'class-validator';
 import { AccountNameField } from '../../common/dto-fields';
-import { ISO_CURRENCY_CODES } from '../../common/currency';
+import { CURRENCY_CODES } from '../../common/currency';
 
 // Bank and currency are immutable but still submitted (read-only on the
 // edit form); the service rejects any change to them.
@@ -11,6 +11,6 @@ export class UpdateAccountDto {
   @IsUUID('7')
   bankId!: string;
 
-  @IsIn(ISO_CURRENCY_CODES)
+  @IsIn(CURRENCY_CODES)
   currency!: string;
 }
