@@ -307,15 +307,14 @@ describe('OperationsPage', () => {
       params: { query: { page: 1 } },
       body: expect.objectContaining({ accountId: ACCOUNT_ID, thirdParty: 'Landlord' }),
     });
-    // Submitting closes the panel and shows the active-search dot, without
-    // waiting for a reload — regression test for both getting clobbered by
-    // the operationsQuery watch that reruns off the mutation's own cache write.
+    // Submitting closes the panel and shows the active-search dot at once,
+    // and both survive the `list` refetch the mutation's own cache write
+    // triggers.
     expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="search-active-dot"]').exists()).toBe(true);
 
-    // Reopening must show what was actually submitted, not a blank form —
-    // regression test for the panel being hydrated from the (suppressed)
-    // watch instead of from the mutation's own criteria.
+    // Reopening shows the criteria the search was submitted with, not a
+    // blank form.
     await wrapper.find('[data-testid="toggle-search"]').trigger('click');
     expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe(
       'Landlord',
