@@ -43,8 +43,8 @@ export default defineConfig({
       reportsDirectory: '../coverage',
       reporter: ['text', 'lcov', 'json-summary'],
       all: true,
-      // Controllers, services and email/** are left to integration
-      // coverage, except the files kept below.
+      // Controllers and services are left to integration coverage, except
+      // the files kept below.
       include: ['**/*.ts', '**/*.js'],
       exclude: [
         '**/*.integration-spec.ts',
@@ -54,9 +54,8 @@ export default defineConfig({
         '**/*.module.ts',
         ...allExcept('.controller.ts', ['health/health.controller.ts']),
         ...allExcept('.service.ts', ['security/crypto.service.ts']),
-        ...allSrcFiles().filter((rel) => rel.startsWith('email/') && rel !== 'email/i18n/en.ts'),
         '**/db/schema/**',
-        '**/*.provider.ts',
+        ...allExcept('.provider.ts', ['email/smtp-email.provider.ts']),
         'main.ts',
         'db/db.constants.ts',
         'db/migrate.ts',
