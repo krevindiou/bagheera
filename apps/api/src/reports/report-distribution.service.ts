@@ -11,14 +11,11 @@ import { effectiveAccounts } from './effective-accounts';
 import { effectiveCategoryIds } from './effective-categories';
 import { reportOperationConditions } from './report-filters';
 import { ALL_PERIOD_KEY, currentYearStart, PeriodGrouping, periodExpr } from './report-periods';
-import { ChartPointDto } from '../common/dto/chart-response.dto';
 import {
   ReportDistributionDto,
   ReportDistributionLabelSeriesDto,
   ReportDistributionSeriesDto,
 } from './dto/report-response.dto';
-
-export type ReportDistributionPoint = ChartPointDto;
 
 export type ReportDistributionLabelSeries = ReportDistributionLabelSeriesDto;
 

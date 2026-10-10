@@ -13,8 +13,6 @@ type Schemas = components['schemas'];
 // left out. Amounts are minor units (real value × 10,000).
 export type Operation = Omit<Schemas['OperationDto'], 'createdAt' | 'updatedAt'>;
 
-export type OperationList = Omit<Schemas['OperationListDto'], 'items'> & { items: Operation[] };
-
 export type Category = Schemas['CategoryDto'];
 
 // Displayed as "Parent > Child" when nested.

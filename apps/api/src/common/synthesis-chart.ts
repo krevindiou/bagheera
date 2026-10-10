@@ -6,15 +6,9 @@ import { computeAxisBounds } from './chart-axis';
 import { localIsoDate } from './local-date';
 import { MinorUnits } from './money';
 import { addMonths, fillPeriodGaps, periodStart } from '../reports/chart/period';
-import {
-  ChartPointDto,
-  SynthesisChartDto,
-  SynthesisChartSeriesDto,
-} from './dto/chart-response.dto';
+import { SynthesisChartDto, SynthesisChartSeriesDto } from './dto/chart-response.dto';
 
 const WINDOW_MONTHS = 12;
-
-export type SynthesisChartPoint = ChartPointDto;
 
 export type SynthesisChartSeries = SynthesisChartSeriesDto;
 
