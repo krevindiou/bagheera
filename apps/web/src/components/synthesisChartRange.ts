@@ -1,7 +1,6 @@
-// The synthesis chart's window choices, sent as the API's `range` param.
-export type SynthesisChartRange = '12' | '24' | 'all';
+import type { SynthesisChartRange } from '@bagheera/reference-data';
 
-export const SYNTHESIS_CHART_RANGES: SynthesisChartRange[] = ['12', '24', 'all'];
+export { SYNTHESIS_CHART_RANGES, type SynthesisChartRange } from '@bagheera/reference-data';
 
 export const DEFAULT_SYNTHESIS_CHART_RANGE: SynthesisChartRange = '12';
 

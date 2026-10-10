@@ -2,6 +2,7 @@
 // (12 or 24 months, or the full history), one line per currency. Shared by
 // the dashboard and the per-account chart.
 
+import { SYNTHESIS_CHART_RANGES, type SynthesisChartRange } from '@bagheera/reference-data';
 import { computeAxisBounds } from './chart-axis';
 import { localIsoDate } from './local-date';
 import { MinorUnits } from './money';
@@ -41,12 +42,18 @@ export function earliestValueDate(rows: { valueDate: string }[]): string | undef
 
 export type SynthesisChartWindow = 12 | 24 | 'all';
 
+const WINDOW_BY_RANGE: Record<SynthesisChartRange, SynthesisChartWindow> = {
+  '12': 12,
+  '24': 24,
+  all: 'all',
+};
+
 // The `range` query param of the dashboard and per-account chart. Anything
 // unrecognized falls back to 12 rather than a 400.
 export function parseSynthesisChartWindow(range: unknown): SynthesisChartWindow {
-  if (range === '24') return 24;
-  if (range === 'all') return 'all';
-  return 12;
+  return (SYNTHESIS_CHART_RANGES as readonly unknown[]).includes(range)
+    ? WINDOW_BY_RANGE[range as SynthesisChartRange]
+    : 12;
 }
 
 // Real callers pass `latestValueDate(rows)` as `today`; the default is for

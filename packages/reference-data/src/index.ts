@@ -49,6 +49,11 @@ export type DataGrouping = (typeof DATA_GROUPINGS)[number];
 // "Other"; the API's CreateReportDto and the web report form both cap at it.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
+// The synthesis chart's window choices (the trailing 12 or 24 months, or the
+// full history), sent as the dashboard and account chart's `range` param.
+export const SYNTHESIS_CHART_RANGES = ['12', '24', 'all'] as const;
+export type SynthesisChartRange = (typeof SYNTHESIS_CHART_RANGES)[number];
+
 // The rule for every date a member submits: plain 'YYYY-MM-DD', a real
 // calendar day, inside these bounds. The bounds keep chart period walks
 // small (the API's reports/chart/period.ts sizes MAX_PERIODS from them): one
