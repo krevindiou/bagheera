@@ -1,7 +1,7 @@
 import type { EntryType } from '@bagheera/reference-data';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
@@ -34,6 +34,9 @@ async function createOperation(
     amount?: number;
     reconciled?: boolean;
     valueDate?: string;
+    paymentMethodId?: string;
+    categoryId?: string;
+    notes?: string;
   } = {},
 ) {
   const type = overrides.type ?? 'debit';
@@ -42,8 +45,12 @@ async function createOperation(
     type,
     thirdParty: overrides.thirdParty ?? 'X',
     amount: overrides.amount ?? 10,
-    paymentMethodId: type === 'debit' ? PAYMENT_METHOD_ID.CREDIT_CARD : PAYMENT_METHOD_ID.DEPOSIT,
+    paymentMethodId:
+      overrides.paymentMethodId ??
+      (type === 'debit' ? PAYMENT_METHOD_ID.CREDIT_CARD : PAYMENT_METHOD_ID.DEPOSIT),
+    categoryId: overrides.categoryId,
     valueDate: overrides.valueDate ?? '2026-01-01',
+    notes: overrides.notes,
     reconciled: overrides.reconciled,
   });
   expect(res.status).toBe(200);
@@ -137,6 +144,51 @@ describe('operations search', () => {
     });
     const body = res.body as SearchResult;
     expect(body.total).toBe(1);
+  });
+
+  describe('each criterion on its own', () => {
+    let mutate: SignedInFixture['mutate'];
+    let accountId: string;
+
+    beforeAll(async () => {
+      ({ mutate } = await seedSignedInMember(app));
+      ({ accountId } = await createAccount(mutate));
+      await createOperation(mutate, accountId, {
+        thirdParty: 'Cafe',
+        valueDate: '2026-01-01',
+        notes: 'Team lunch',
+        reconciled: true,
+      });
+      await createOperation(mutate, accountId, {
+        thirdParty: 'Landlord',
+        paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
+        valueDate: '2026-06-01',
+        notes: 'Rent',
+        reconciled: false,
+      });
+      await createOperation(mutate, accountId, {
+        thirdParty: 'Employer',
+        type: 'credit',
+        categoryId: SALARY_CATEGORY_SEED_ID,
+        valueDate: '2026-03-01',
+        reconciled: false,
+      });
+    });
+
+    it.each([
+      ['type', { type: 'credit' }, ['Employer']],
+      ['categoryIds', { categoryIds: [SALARY_CATEGORY_SEED_ID] }, ['Employer']],
+      ['paymentMethodIds', { paymentMethodIds: [PAYMENT_METHOD_ID.CHECK_DEBIT] }, ['Landlord']],
+      ['dateTo', { dateTo: '2026-02-01' }, ['Cafe']],
+      ['notes, case-insensitively', { notes: 'LUNCH' }, ['Cafe']],
+      ['reconciled: true', { reconciled: true }, ['Cafe']],
+      ['reconciled: false', { reconciled: false }, ['Employer', 'Landlord']],
+    ])('filters by %s', async (_name, criteria, expected) => {
+      const res = await mutate('post', '/operations/search?page=1', { accountId, ...criteria });
+      expect(res.status).toBe(200);
+      const thirdParties = (res.body as SearchResult).items.map((item) => item.thirdParty);
+      expect(thirdParties.sort()).toEqual(expected);
+    });
   });
 
   it("404s searching, recalling, and clearing another member's account", async () => {
