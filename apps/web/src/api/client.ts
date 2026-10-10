@@ -6,7 +6,7 @@ import type { paths } from './schema';
 // Same-origin: kamal-proxy routes /api to the API in production, Vite's dev
 // proxy locally. schema.d.ts paths leave out the API's /api prefix (Swagger
 // ignores it), so it's added back here.
-const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const baseUrl = '/api';
 
 export const apiClient = createClient<paths>({
   baseUrl,
