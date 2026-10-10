@@ -1,5 +1,6 @@
 import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
+import { UNIT_COVERED_SERVICES_AND_CONTROLLERS } from './vitest.config.mts';
 
 // Integration tests (`pnpm test:integration`) against one shared
 // Testcontainers Postgres/Valkey (test/integration-infra.ts), so files run
@@ -35,7 +36,7 @@ export default defineConfig({
       // The services/controllers unit coverage leaves out.
       all: true,
       include: ['**/*.service.ts', '**/*.controller.ts'],
-      exclude: ['**/coverage/**', '**/test-support/**'],
+      exclude: ['**/coverage/**', '**/test-support/**', ...UNIT_COVERED_SERVICES_AND_CONTROLLERS],
       // Just under the 83.7% measured when added. Raise it to track real
       // gains; never lower it to silence a dip.
       thresholds: { branches: 83 },

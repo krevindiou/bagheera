@@ -22,6 +22,14 @@ function allExcept(suffix: string, keep: string[]): string[] {
   return allSrcFiles().filter((rel) => rel.endsWith(suffix) && !keepSet.has(rel));
 }
 
+// The services and controllers whose coverage the unit report keeps; the
+// integration report (vitest.integration.config.mts) leaves them out.
+export const UNIT_COVERED_SERVICES_AND_CONTROLLERS = [
+  'health/health.controller.ts',
+  'security/crypto.service.ts',
+  'session/session-rotation.service.ts',
+];
+
 // Unit tests (integration specs: vitest.integration.config.mts).
 // decoratorMetadata is what Nest's DI reads for constructor param types.
 export default defineConfig({
@@ -52,11 +60,8 @@ export default defineConfig({
         '**/coverage/**',
         '**/test-support/**',
         '**/*.module.ts',
-        ...allExcept('.controller.ts', ['health/health.controller.ts']),
-        ...allExcept('.service.ts', [
-          'security/crypto.service.ts',
-          'session/session-rotation.service.ts',
-        ]),
+        ...allExcept('.controller.ts', UNIT_COVERED_SERVICES_AND_CONTROLLERS),
+        ...allExcept('.service.ts', UNIT_COVERED_SERVICES_AND_CONTROLLERS),
         '**/db/schema/**',
         ...allExcept('.provider.ts', ['email/smtp-email.provider.ts']),
         'main.ts',
