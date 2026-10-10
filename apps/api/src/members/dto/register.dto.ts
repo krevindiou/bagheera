@@ -1,4 +1,6 @@
-import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import { COUNTRY_CODES } from '@bagheera/reference-data';
+import { Transform } from 'class-transformer';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { EmailField, LocaleField } from '../../common/dto-fields';
 import { TIME_ZONE_MAX_LENGTH } from '../../common/local-date';
 import type { Locale } from '../../common/locale';
@@ -7,7 +9,10 @@ export class RegisterDto {
   @EmailField()
   email!: string;
 
-  @Matches(/^[A-Za-z]{2}$/, { message: 'country must be a 2-letter code' })
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @IsIn(COUNTRY_CODES, { message: 'country must be an ISO 3166-1 alpha-2 code' })
   country!: string;
 
   // The registering browser's locale; DEFAULT_LOCALE when absent.

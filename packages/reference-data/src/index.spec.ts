@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  COUNTRY_CODES,
   DEFAULT_LOCALE,
   PAYMENT_METHOD_ID,
   SUPPORTED_LOCALES,
@@ -25,5 +26,12 @@ describe('TRANSFER_PAYMENT_METHOD_IDS', () => {
 describe('DEFAULT_LOCALE', () => {
   it('is one of SUPPORTED_LOCALES', () => {
     expect(SUPPORTED_LOCALES).toContain(DEFAULT_LOCALE);
+  });
+});
+
+describe('COUNTRY_CODES', () => {
+  it('holds distinct two-letter uppercase codes', () => {
+    expect(new Set(COUNTRY_CODES).size).toBe(COUNTRY_CODES.length);
+    expect(COUNTRY_CODES.every((code) => /^[A-Z]{2}$/.test(code))).toBe(true);
   });
 });

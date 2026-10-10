@@ -17,4 +17,16 @@ describe('RegisterDto', () => {
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('maxLength');
   });
+
+  it('accepts a known country code in any case, uppercased', async () => {
+    const dto = plainToInstance(RegisterDto, { ...valid, country: 'fr' });
+    expect(await validate(dto)).toEqual([]);
+    expect(dto.country).toBe('FR');
+  });
+
+  it.each(['ZZ', 'FRA', 'F', 42])('rejects %p as a country', async (country) => {
+    const dto = plainToInstance(RegisterDto, { ...valid, country });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('isIn');
+  });
 });
