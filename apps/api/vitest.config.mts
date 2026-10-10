@@ -53,7 +53,10 @@ export default defineConfig({
         '**/test-support/**',
         '**/*.module.ts',
         ...allExcept('.controller.ts', ['health/health.controller.ts']),
-        ...allExcept('.service.ts', ['security/crypto.service.ts']),
+        ...allExcept('.service.ts', [
+          'security/crypto.service.ts',
+          'session/session-rotation.service.ts',
+        ]),
         '**/db/schema/**',
         ...allExcept('.provider.ts', ['email/smtp-email.provider.ts']),
         'main.ts',
