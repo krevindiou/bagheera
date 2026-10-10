@@ -72,7 +72,7 @@ export function thirdPartyLabel(thirdParty: string, paymentMethodId: string): st
 }
 
 // Web-only: the API has no icon column.
-export const PAYMENT_METHOD_ICONS: Record<string, IconName> = {
+const PAYMENT_METHOD_ICONS: Record<string, IconName> = {
   [PAYMENT_METHOD_ID.CREDIT_CARD]: 'card',
   [PAYMENT_METHOD_ID.CHECK_DEBIT]: 'checkList',
   [PAYMENT_METHOD_ID.CASH_WITHDRAWAL]: 'cash',
