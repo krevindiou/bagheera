@@ -202,8 +202,8 @@ describe('SignedAmountField', () => {
   });
 });
 
-// The exact date rule is covered by value-date.spec.ts — this only pins the
-// decorator's wiring and message.
+// The exact date rule is covered by packages/reference-data's index.spec.ts
+// — this only pins the decorator's wiring and message.
 describe('ValueDateField', () => {
   it('accepts a plain in-range date', async () => {
     const dto = plainToInstance(ValueDateFieldHost, { valueDate: '2026-01-01' });
