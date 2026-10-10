@@ -1,3 +1,5 @@
+import { isoDateIn } from '@bagheera/reference-data';
+
 // Calendar days follow a time zone, not UTC, so "today" and month
 // boundaries match the member's wall clock: their own `time_zone` when
 // known (see member-today.ts), else APP_TIMEZONE.
@@ -6,13 +8,7 @@ export function appTimeZone(): string {
 }
 
 export function localIsoDate(now: Date = new Date(), timeZone: string = appTimeZone()): string {
-  // The en-CA locale formats dates as YYYY-MM-DD.
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
+  return isoDateIn(timeZone, now);
 }
 
 // Fits the `member.time_zone` column.

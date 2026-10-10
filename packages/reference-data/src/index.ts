@@ -74,6 +74,18 @@ export function isValueDate(value: unknown): value is string {
   return month >= 1 && month <= 12 && day >= 1 && day <= lastDayOfMonth;
 }
 
+// The calendar day `now` falls on in `timeZone` (the runtime's own zone when
+// omitted), as 'YYYY-MM-DD': what "today" means for a member.
+export function isoDateIn(timeZone?: string, now: Date = new Date()): string {
+  // The en-CA locale formats dates as YYYY-MM-DD.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
 // ISO 3166-1 alpha-2 codes accepted as a member's country.
 // `Intl.supportedValuesOf` has no "region" key, so the list is static.
 // prettier-ignore

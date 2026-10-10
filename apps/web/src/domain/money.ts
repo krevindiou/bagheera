@@ -4,7 +4,7 @@ import {
   toMajorUnits,
   type MinorUnits,
 } from '@bagheera/money';
-import { MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
+import { isoDateIn, MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { i18n } from '../i18n';
 
 // API minor units (a plain `number`: brands don't survive JSON) to a
@@ -27,13 +27,7 @@ function currentLocale(): string {
 // a new operation or scheduler: in the member's own time zone when given
 // (the same one the API's "today" follows), else the browser's.
 export function today(timeZone?: string): string {
-  // The en-CA locale formats dates as YYYY-MM-DD.
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
+  return isoDateIn(timeZone);
 }
 
 // Money inputs display the account currency symbol as an input add-on.

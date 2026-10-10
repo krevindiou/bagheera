@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   COUNTRY_CODES,
   DEFAULT_LOCALE,
+  isoDateIn,
   isValueDate,
   MAX_VALUE_DATE,
   MIN_VALUE_DATE,
@@ -73,5 +74,18 @@ describe('isValueDate', () => {
 
   it.each([undefined, null, 20260101, new Date('2026-01-01')])('rejects non-string %p', (value) => {
     expect(isValueDate(value)).toBe(false);
+  });
+});
+
+describe('isoDateIn', () => {
+  // 23:30 UTC on Jan 1 is already Jan 2 in Paris and still Jan 1 in New York.
+  const lateEvening = new Date('2026-01-01T23:30:00Z');
+
+  it.each([
+    ['UTC', '2026-01-01'],
+    ['Europe/Paris', '2026-01-02'],
+    ['America/New_York', '2026-01-01'],
+  ])('reads the calendar day in %s', (timeZone, expected) => {
+    expect(isoDateIn(timeZone, lateEvening)).toBe(expected);
   });
 });
