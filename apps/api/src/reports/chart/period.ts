@@ -30,7 +30,7 @@ function periodStartFromMonthIndex(index: number): string {
   return formatPeriodStart(Math.floor(index / 12), (((index % 12) + 12) % 12) + 1);
 }
 
-// Ceiling on fillPeriodGaps' keys: the widest range value-date.ts accepts,
+// Ceiling on fillPeriodGaps' keys: the widest range isValueDate accepts,
 // so it only ever truncates rows stored before dates were range-checked.
 export const MAX_PERIODS = monthIndex(MAX_VALUE_DATE) - monthIndex(MIN_VALUE_DATE) + 1;
 

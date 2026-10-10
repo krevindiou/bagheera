@@ -130,8 +130,8 @@ export function SignedAmountField(): PropertyDecorator {
 
 /**
  * A member-submitted date (value/limit dates, report range, search filter);
- * see common/value-date.ts for the rule. Required; optional callers stack
- * `@IsOptional()` on top.
+ * see @bagheera/reference-data's isValueDate for the rule. Required;
+ * optional callers stack `@IsOptional()` on top.
  */
 export function ValueDateField(): PropertyDecorator {
   return ValidateBy({
