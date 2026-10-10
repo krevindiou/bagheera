@@ -189,6 +189,39 @@ describe('schedulers', () => {
       expect(after.length).toBeGreaterThan(0);
     });
 
+    it('checks a new transfer target, rejecting a closed one and accepting an active one', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const firstTarget = await createAccount(mutate, bankId);
+      const closedTarget = await createAccount(mutate, bankId);
+      const activeTarget = await createAccount(mutate, bankId);
+      expect((await mutate('post', `/accounts/${closedTarget}/close`)).status).toBe(200);
+      const transfer = { paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT };
+      const created = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { ...transfer, transferAccountId: firstTarget }),
+      );
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+
+      const rejected = await mutate(
+        'patch',
+        `/schedulers/${id}`,
+        schedulerPayload(accountId, { ...transfer, transferAccountId: closedTarget }),
+      );
+      expect(rejected.status).toBe(400);
+
+      const accepted = await mutate(
+        'patch',
+        `/schedulers/${id}`,
+        schedulerPayload(accountId, { ...transfer, transferAccountId: activeTarget }),
+      );
+      expect(accepted.status).toBe(200);
+      const [row] = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
+      expect(row.transferAccountId).toBe(activeTarget);
+    });
+
     it('rejects moving a scheduler to a different account', async () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);

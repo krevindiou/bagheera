@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
-import { operation } from '../db/schema';
+import { operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
@@ -163,6 +163,37 @@ describe('operation transfer pairing', () => {
     expect(res.status).toBe(400);
   });
 
+  it('attaches a mirror when an edit turns a plain operation into a transfer', async () => {
+    const { mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const accountA = await createAccount(mutate, bankId);
+    const accountB = await createAccount(mutate, bankId);
+    const sourceId = await createOperation(mutate, accountA, {
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      thirdParty: 'Shop',
+    });
+
+    const res = await mutate('patch', `/operations/${sourceId}`, {
+      accountId: accountA,
+      type: 'debit',
+      thirdParty: 'Savings',
+      amount: 100,
+      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+      transferAccountId: accountB,
+      valueDate: '2026-01-01',
+    });
+    expect(res.status).toBe(200);
+
+    const after = await opRow(app, sourceId);
+    expect(after.transferAccountId).toBe(accountB);
+    expect(after.transferOperationId).not.toBeNull();
+    const mirror = await opRow(app, after.transferOperationId!);
+    expect(mirror.accountId).toBe(accountB);
+    expect(mirror.paymentMethodId).toBe(PAYMENT_METHOD_ID.TRANSFER_CREDIT);
+    expect(mirror.credit).toBe(toMinorUnits(100));
+    expect(mirror.transferOperationId).toBe(sourceId);
+  });
+
   it('refreshes the mirror in place when the target is unchanged', async () => {
     const { mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
@@ -267,5 +298,40 @@ describe('operation transfer pairing', () => {
     const after = await opRow(app, sourceId);
     expect(after.transferAccountId).toBeNull();
     expect(after.transferOperationId).toBeNull();
+  });
+
+  it('deleting a bank converts operations and schedulers transferring into its accounts to External references', async () => {
+    const { mutate } = await seedSignedInMember(app);
+    const accountA = await createAccount(mutate, await createBank(mutate));
+    const deletedBankId = await createBank(mutate);
+    const accountB = await createAccount(mutate, deletedBankId);
+    const sourceId = await createOperation(mutate, accountA, {
+      transferAccountId: accountB,
+    });
+    const created = await mutate('post', '/schedulers', {
+      accountId: accountA,
+      type: 'debit',
+      thirdParty: 'Monthly savings',
+      amount: 20,
+      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+      transferAccountId: accountB,
+      valueDate: '2099-01-01',
+      frequencyValue: 1,
+      frequencyUnit: 'month',
+    });
+    expect(created.status).toBe(200);
+    const schedulerId = (created.body as { scheduler: { id: string } }).scheduler.id;
+
+    const del = await mutate('delete', `/banks/${deletedBankId}`);
+    expect(del.status).toBe(200);
+
+    const after = await opRow(app, sourceId);
+    expect(after.transferAccountId).toBeNull();
+    expect(after.transferOperationId).toBeNull();
+    const [schedulerRow] = await getDb(app)
+      .select()
+      .from(scheduler)
+      .where(eq(scheduler.id, schedulerId));
+    expect(schedulerRow.transferAccountId).toBeNull();
   });
 });
