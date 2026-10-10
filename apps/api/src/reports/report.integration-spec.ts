@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { eq } from 'drizzle-orm';
-import { report, reportAccount, reportCategory } from '../db/schema';
+import { eq, inArray } from 'drizzle-orm';
+import { category, report, reportAccount, reportCategory } from '../db/schema';
 import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
@@ -238,6 +238,35 @@ describe('reports', () => {
         .from(reportCategory)
         .where(eq(reportCategory.reportId, id));
       expect(links).toHaveLength(0);
+    });
+
+    it('replaces the category selection with a new non-empty one', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const created = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+      );
+      const { id } = (created.body as { report: { id: string } }).report;
+      const replacements = await getDb(app)
+        .select({ id: category.id })
+        .from(category)
+        .where(inArray(category.name, ['Food', 'Transport']));
+      const replacementIds = replacements.map((c) => c.id).sort();
+      expect(replacementIds).toHaveLength(2);
+
+      const res = await mutate(
+        'patch',
+        `/reports/${id}`,
+        reportPayload({ categoryIds: replacementIds }),
+      );
+      expect(res.status).toBe(200);
+
+      const links = await getDb(app)
+        .select()
+        .from(reportCategory)
+        .where(eq(reportCategory.reportId, id));
+      expect(links.map((l) => l.categoryId).sort()).toEqual(replacementIds);
     });
 
     it("404s updating another member's report", async () => {
