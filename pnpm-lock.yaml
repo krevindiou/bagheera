@@ -163,7 +163,6 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@nestjs/swagger>js-yaml': '>=5.2.2'
   '@esbuild-kit/core-utils>esbuild': '>=0.24.3'
   qs: '>=6.16.0'
   fast-uri: '>=3.1.6'

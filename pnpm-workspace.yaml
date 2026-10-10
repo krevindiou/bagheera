@@ -2,9 +2,6 @@ packages:
   - "apps/*"
   - "packages/*"
 overrides:
-  # Both are transitive; direct upgrade of the parent isn't available yet.
-  # Remove when @nestjs/swagger bumps js-yaml itself.
-  '@nestjs/swagger>js-yaml': '>=5.2.2' # GHSA-pm4m-ph32-ghv5 (high, ReDoS)
   # Remove when drizzle-kit stops depending on @esbuild-kit.
   '@esbuild-kit/core-utils>esbuild': '>=0.24.3' # GHSA-67mh-4wv8-2f99 (moderate)
   # Transitive via express>body-parser. Remove when they ship qs >=6.16.
