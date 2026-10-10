@@ -46,12 +46,13 @@ make shell-api # shell into the api container
 make shell-web # shell into the web container
 ```
 
-Anything not covered by `make` can be run directly, e.g.:
+Any other command runs inside a container through `make exec-api` / `make exec-web`, e.g.:
 
 ```bash
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm test:cov
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:generate --name <snake_case_description>
-make test-e2e   # Playwright needs the separate e2e stack
+make exec-api CMD="pnpm test:cov"
+make exec-api CMD="pnpm db:generate --name <snake_case_description>"
+make exec-web CMD="pnpm generate:api-client"
+make test-e2e E2E_ARGS="auth.spec.ts"   # one e2e spec, on the separate e2e stack
 ```
 
 ## Project layout

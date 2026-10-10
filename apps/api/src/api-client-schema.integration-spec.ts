@@ -96,7 +96,7 @@ describe.skipIf(!hasWebWorkspace)('generated web API client', () => {
       if (result.status !== 0) {
         throw new Error(
           'apps/web/src/api/schema.d.ts is out of date with the API. Regenerate it with ' +
-            '`pnpm --filter web generate:api-client` (with the API running) and commit the ' +
+            '`make exec-web CMD="pnpm generate:api-client"` (with the stack up) and commit the ' +
             `result.\n\n${result.stdout}${result.stderr}`,
         );
       }

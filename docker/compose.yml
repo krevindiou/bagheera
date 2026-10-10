@@ -131,9 +131,7 @@ services:
   # Runs apps/web's e2e suite against this stack, from a container — needed
   # because Playwright's Chromium build requires glibc (this repo's own web
   # dev image is Alpine/musl). Not part of the default `docker compose up`
-  # set (profile-gated); invoke explicitly:
-  #   docker compose exec api pnpm db:seed   # once, or whenever you want a clean DB
-  #   docker compose --profile e2e run --rm playwright
+  # set (profile-gated); `make test-e2e` runs it against its own stack.
   playwright:
     profiles: ["e2e"]
     build:
@@ -175,7 +173,7 @@ services:
         # CI=true skips pnpm's interactive purge prompt, scoped to this
         # install so `pnpm e2e` still sees the real CI value.
         CI=true pnpm install --frozen-lockfile --filter web...
-        pnpm e2e
+        pnpm e2e ${E2E_ARGS:-}
 
 volumes:
   postgres_data:

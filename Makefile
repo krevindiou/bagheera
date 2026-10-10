@@ -8,7 +8,7 @@ export DOCKER_GID := $(shell stat -c %g /var/run/docker.sock)
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
-.PHONY: help build build-images up down ps shell-api shell-web migrate test test-unit test-integration test-e2e lint format
+.PHONY: help build build-images up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e lint format
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -36,6 +36,12 @@ shell-api: ## Shell into api container
 shell-web: ## Shell into web container
 	$(COMPOSE) exec web sh
 
+exec-api: ## Run CMD in the api container from apps/api, e.g. make exec-api CMD="pnpm test:cov"
+	$(COMPOSE) exec --workdir /app/apps/api api $(CMD)
+
+exec-web: ## Run CMD in the web container from apps/web, e.g. make exec-web CMD="pnpm generate:api-client"
+	$(COMPOSE) exec --workdir /app/apps/web web $(CMD)
+
 migrate: ## Run db migrations
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm db:migrate
 
@@ -50,7 +56,7 @@ test-unit: ## Run api + web + packages/* unit tests
 test-integration: ## Run api integration tests
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm test:integration
 
-test-e2e: ## Run e2e tests
+test-e2e: ## Run e2e tests; E2E_ARGS="auth.spec.ts" narrows to matching specs
 	$(COMPOSE_E2E) up -d --build
 	@echo "Waiting for api (db:migrate runs as part of its startup command)..."
 	@until [ "$$($(COMPOSE_E2E) ps api --format '{{.Health}}')" = "healthy" ]; do sleep 2; done

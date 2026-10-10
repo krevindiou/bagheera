@@ -7,8 +7,8 @@ no local runtime"). Don't run these `package.json` scripts directly from
 the host; run them inside the `web` container instead, e.g.:
 
 ```bash
-make shell-web                                  # or:
-docker compose -f ../../docker/compose.yml exec web pnpm <script>
+make shell-web                     # or, from the repo root:
+make exec-web CMD="pnpm <script>"
 ```
 
 ## Scripts

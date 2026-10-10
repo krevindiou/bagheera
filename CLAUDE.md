@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Docker only — no local runtime
 
-**Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, or `docker compose -f docker/compose.yml exec ...`), or you'll hit permission errors and/or touch the wrong DB.
+**Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, `make exec-api CMD=...`, `make exec-web CMD=...`), or you'll hit permission errors and/or touch the wrong DB.
 
 The only host-level requirement is Docker + Docker Compose.
 
@@ -31,25 +31,30 @@ make lint                # lint api + web + packages/*
 make format              # format api + web + packages/*
 make shell-api           # shell into the api container
 make shell-web           # shell into the web container
+make exec-api CMD="..."   # run a command in the api container, from apps/api
+make exec-web CMD="..."   # run a command in the web container, from apps/web
 
 make test                # unit + integration + e2e
 make test-unit           # api + web + packages/* unit tests (all vitest)
 make test-integration    # api integration tests (vitest.integration.config.mts, uses Testcontainers)
-make test-e2e            # boots a separate `bagheera-e2e` compose stack, seeds it, runs Playwright
+make test-e2e            # boots a separate `bagheera-e2e` compose stack, seeds it, runs Playwright (E2E_ARGS="auth.spec.ts" for one spec)
 ```
 
-Anything not covered by `make`, run the same way `docker compose exec` — e.g.:
+Anything not covered by a dedicated target goes through `make exec-api`/`make exec-web` — e.g.:
 
 ```bash
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm test:cov
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm test -- path/to/file.spec.ts   # single api test
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:generate --name <snake_case_description>  # new drizzle migration after schema changes — always pass --name, or drizzle-kit picks a random adjective_noun tag instead
-docker compose -f docker/compose.yml exec --workdir /app/apps/api api pnpm db:seed                         # seed payment_method/category reference data
-docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm test -- path/to/file.spec.ts    # single web test
-docker compose -f docker/compose.yml exec --workdir /app/apps/web web pnpm e2e -- e2e/some.spec.ts         # single e2e test (needs the e2e stack, see make test-e2e)
+make exec-api CMD="pnpm test:cov"
+make exec-api CMD="pnpm test common/like-pattern.spec.ts"    # single api test (no `--`: vitest would drop the filter)
+make exec-api CMD="pnpm db:generate --name <snake_case_description>"  # new drizzle migration after schema changes — always pass --name, or drizzle-kit picks a random adjective_noun tag instead
+make exec-api CMD="pnpm db:seed"                             # seed payment_method/category reference data
+make exec-web CMD="pnpm test src/domain/money.spec.ts"      # single web test
+make exec-web CMD="pnpm generate:api-client"                 # regenerate src/api/schema.d.ts from the running api
+make test-e2e E2E_ARGS="auth.spec.ts"                        # single e2e spec (Playwright needs glibc, so it never runs in the musl `web` container)
 ```
 
-Every `make`/`docker compose` target above is dev-only; deploys go through Kamal (`.kamal/secrets`) as two apps: `config/deploy.yml` builds `docker/Dockerfile.caddy` (Caddy serving the built SPA, plus the Postgres/Valkey accessories) and `config/deploy.api.yml` builds `docker/Dockerfile.api`. kamal-proxy routes `/api` and `/health` to the API by path; Caddy never proxies it. See `scripts/backup.sh` for the Postgres backup routine that runs on the deploy host.
+A raw `docker compose -f docker/compose.yml ...` fails with "required variable DOCKER_GID is missing a value" unless `DOCKER_GID` and `PLAYWRIGHT_VERSION` are exported; the Makefile exports both.
+
+Every `make` target above is dev-only; deploys go through Kamal (`.kamal/secrets`) as two apps: `config/deploy.yml` builds `docker/Dockerfile.caddy` (Caddy serving the built SPA, plus the Postgres/Valkey accessories) and `config/deploy.api.yml` builds `docker/Dockerfile.api`. kamal-proxy routes `/api` and `/health` to the API by path; Caddy never proxies it. See `scripts/backup.sh` for the Postgres backup routine that runs on the deploy host.
 
 ## Before committing
 
