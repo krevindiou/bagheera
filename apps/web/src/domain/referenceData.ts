@@ -86,7 +86,6 @@ export function paymentMethodIcon(id: string): IconName | null {
   return PAYMENT_METHOD_ICONS[id] ?? null;
 }
 
-// The only two payment methods that can carry a transfer pairing.
 export { MAX_SIGNIFICANT_RESULTS_NUMBER, TRANSFER_PAYMENT_METHOD_IDS };
 
 export type SearchCriteria = Schemas['SearchCriteriaDto'];
