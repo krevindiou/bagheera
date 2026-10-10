@@ -4,13 +4,14 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits, toMinorUnits } from '../common/money';
 import { account, bank, category, paymentMethod } from '../db/schema';
-import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AccountId } from '../security/ids';
 import type { Executor } from '../db/executor';
 import { isFullyActive } from '../security/reachable';
-import { TRANSFER_PAYMENT_METHOD_IDS, type EntryType } from '@bagheera/reference-data';
-
-export type { EntryType };
+import {
+  PAYMENT_METHOD_ID,
+  TRANSFER_PAYMENT_METHOD_IDS,
+  type EntryType,
+} from '@bagheera/reference-data';
 
 // Reserved for the system-generated opening operation.
 export const OPENING_BALANCE_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.INITIAL_BALANCE;
