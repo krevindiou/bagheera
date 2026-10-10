@@ -45,8 +45,8 @@ install -d -m 700 -o backup -g backup /home/backup/.ssh
 # changes in the repo.
 install -m 755 -o root -g root scripts/backup.sh /usr/local/bin/backup.sh
 
-# Its configuration — the values backup.yml used to receive from GitHub
-# secrets. Readable by the backup user, writable by nobody but root.
+# Its configuration: the env vars listed in scripts/backup.sh's header.
+# Readable by the backup user, writable by nobody but root.
 install -m 640 -o root -g backup /dev/null /etc/bagheera-backup.env
 $EDITOR /etc/bagheera-backup.env
 ```

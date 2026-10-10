@@ -189,8 +189,8 @@ describe('computeSynthesisChart', () => {
     expect(points[0].value).toBe(10000);
   });
 
-  // Regression: a row dated 9999-12-31 used to turn this default 12-month
-  // window into ~1.08 million points (see fillPeriodGaps).
+  // The window must not stretch to a far-future row: gap-filling up to
+  // 9999-12-31 would emit ~1.08 million points (see fillPeriodGaps).
   it('keeps a 12-point window when the latest row is dated in year 9999', () => {
     const rows: SynthesisChartRow[] = [
       { currency: 'USD', debit: null, credit: minor(10000), valueDate: '2026-01-15' },
