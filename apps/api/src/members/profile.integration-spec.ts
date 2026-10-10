@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import request from 'supertest';
 import { member } from '../db/schema';
 import type { EmailMessage } from '../email/email-message';
@@ -286,6 +286,71 @@ describe('POST /members/profile', () => {
         .send({ key })
         .expect(400);
       expect(messageOf(replay)).toBe('Email change error (link expired or already used?)');
+    });
+
+    it('lets only one of two confirmations racing on the same link through', async () => {
+      const fixture = await seedSignedInMember(app);
+      const newEmail = uniqueEmail('raced');
+      await completeStepUp(app, fixture);
+      const startCsrfToken = await fixture.getCsrfToken();
+      await fixture.agent
+        .post('/members/profile')
+        .set('x-csrf-token', startCsrfToken)
+        .send({ email: newEmail })
+        .expect(200);
+      fakeEmailQueue.enqueue.mockClear();
+      const key = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        newEmail,
+        await versionOf(fixture.memberId),
+      );
+      const agents = await Promise.all(
+        [1, 2].map(async () => {
+          const agent = request.agent(app.getHttpServer());
+          return { agent, csrfToken: await csrfTokenFor(agent) };
+        }),
+      );
+      // Supertest otherwise opens and closes a listener on the shared server
+      // per request, which requests in flight together trip over.
+      const server = app.getHttpServer();
+      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+      const db = getDb(app);
+      let pending: Promise<request.Response[]> | undefined;
+      try {
+        // Holding the member row lets both confirmations read the pending
+        // change, then queues both on their UPDATE until it is released.
+        await db.transaction(async (tx) => {
+          await tx.execute(
+            sql`select 1 from ${member} where ${member.id} = ${fixture.memberId} for update`,
+          );
+          // `.then` sends each request now, while the row is held.
+          pending = Promise.all(
+            agents.map(({ agent, csrfToken }) =>
+              agent
+                .post('/members/profile/confirm-email-change')
+                .set('x-csrf-token', csrfToken)
+                .send({ key })
+                .then((res) => res),
+            ),
+          );
+          for (let waited = 0; ; waited += 20) {
+            const { rows } = await db.execute<{ waiting: number }>(
+              sql`select count(*)::int as waiting from pg_stat_activity
+                  where datname = current_database() and wait_event_type = 'Lock'`,
+            );
+            if (rows[0].waiting === 2) break;
+            if (waited > 5000) throw new Error('confirmations never queued on the row lock');
+            await new Promise((resolve) => setTimeout(resolve, 20));
+          }
+        });
+        const submits = await pending!;
+        expect(submits.map((res) => res.status).sort()).toEqual([200, 400]);
+      } finally {
+        await new Promise<void>((resolve) => server.close(() => resolve()));
+      }
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledTimes(1);
     });
 
     it('rejects a malformed key', async () => {

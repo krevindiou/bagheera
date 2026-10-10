@@ -1,6 +1,6 @@
 import { HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { BusinessError } from '../common/filters/business-error';
@@ -132,10 +132,19 @@ export class ProfileService {
             // Bumped again so this same link can't be replayed.
             emailChangeTokenVersion: row.emailChangeTokenVersion + 1,
           })
-          .where(eq(member.id, row.id)),
+          // Re-checked at write time: a concurrent confirmation of this link,
+          // or a newer change request, may have landed since the read.
+          .where(
+            and(
+              eq(member.id, row.id),
+              eq(member.emailChangeTokenVersion, payload.version),
+              eq(member.pendingEmail, payload.newEmail),
+            ),
+          )
+          .returning({ id: member.id }),
       row.id,
     );
-    if (!result.ok) {
+    if (!result.ok || result.value.length === 0) {
       throw emailChangeError();
     }
 
