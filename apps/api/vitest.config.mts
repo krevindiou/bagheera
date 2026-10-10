@@ -66,6 +66,7 @@ export default defineConfig({
         'session/session.constants.ts',
         'common/money.ts',
         'common/currency.ts',
+        'common/value-date.ts',
         'common/parse-uuid-v7.pipe.ts',
       ],
       thresholds: { branches: 97 },

@@ -63,7 +63,7 @@ apps/
   web/       Vue frontend
 packages/
   money/           cross-stack code shared by api and web (minor-units money math)
-  reference-data/  shared reference data (payment-method ids, locales, entry types, country and currency codes, report result cap)
+  reference-data/  shared reference data (payment-method ids, locales, entry types, country and currency codes, report result cap, value-date bounds)
 docker/      Dockerfiles, Compose files, Caddyfile
 config/      Kamal deploy configs (deploy.yml: web, deploy.api.yml: api)
 docs/        backup-restore.md
