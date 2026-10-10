@@ -6,10 +6,9 @@ import type { ScriptableContext } from 'chart.js';
 // Gold, indigo, wine, violet, forest, mauve: validated against the dark
 // panel surface (#171220) for lightness, chroma, 3:1 contrast and
 // adjacent-pair separation (ΔE 10.0 CVD / 19.1 normal). The order matters:
-// wine keeps indigo and violet apart. Re-run the dataviz skill's
-// `node scripts/validate_palette.js "<hexes>" --mode dark --surface "#171220"`
-// before changing a value or the order. --green/--red are left out: they
-// already mean credit/debit.
+// wine keeps indigo and violet apart. Re-check lightness, chroma, 3:1
+// contrast on #171220 and adjacent-pair ΔE before changing a value or the
+// order. --green/--red are left out: they already mean credit/debit.
 export const SYNTHESIS_COLORS = ['#b17834', '#0077bd', '#b7445d', '#916fd4', '#48823b', '#af578c'];
 
 // FNV-1a, 32-bit: stable, not cryptographic.
