@@ -221,4 +221,20 @@ describe('OperationFields', () => {
     expect(wrapper.get('#x-amount').classes()).toContain('is-invalid');
     wrapper.unmount();
   });
+
+  it('bounds the value date to the range the API accepts, and explains one outside it', async () => {
+    const { wrapper, form } = mountFields();
+    const input = wrapper.get('#x-value-date');
+    expect(input.attributes('min')).toBe('1900-01-01');
+    expect(input.attributes('max')).toBe('2100-12-31');
+
+    await input.setValue('2101-01-01');
+    await form().validate();
+    await flushPromises();
+    expect(input.element.closest('.mb-3')!.textContent).toContain(
+      'Enter a date between 1/1/1900 and 12/31/2100.',
+    );
+    expect(input.classes()).toContain('is-invalid');
+    wrapper.unmount();
+  });
 });

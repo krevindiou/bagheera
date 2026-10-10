@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EntryType } from '@bagheera/reference-data';
+import { MAX_VALUE_DATE, MIN_VALUE_DATE, type EntryType } from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -214,6 +214,8 @@ function onClear() {
           id="search-date-from"
           v-model="dateFrom"
           type="date"
+          :min="MIN_VALUE_DATE"
+          :max="MAX_VALUE_DATE"
           :lang="locale"
           class="form-control"
         />
@@ -223,6 +225,8 @@ function onClear() {
           id="search-date-to"
           v-model="dateTo"
           type="date"
+          :min="MIN_VALUE_DATE"
+          :max="MAX_VALUE_DATE"
           :lang="locale"
           class="form-control"
         />

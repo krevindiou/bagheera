@@ -69,4 +69,18 @@ describe('schedulerSchema', () => {
   it("doesn't require a transferAccountId for a non-transfer payment method", () => {
     expect(schedulerSchema.safeParse(base).success).toBe(true);
   });
+
+  it('rejects a valueDate outside the range the API accepts', () => {
+    expect(schedulerSchema.safeParse({ ...base, valueDate: '2101-01-01' }).success).toBe(false);
+  });
+
+  it('treats an empty limitDate as omitted', () => {
+    const result = schedulerSchema.safeParse({ ...base, limitDate: '' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.limitDate).toBeUndefined();
+  });
+
+  it('rejects a limitDate outside the range the API accepts', () => {
+    expect(schedulerSchema.safeParse({ ...base, limitDate: '2101-01-01' }).success).toBe(false);
+  });
 });

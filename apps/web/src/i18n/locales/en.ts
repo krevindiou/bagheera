@@ -149,6 +149,7 @@ export default {
     validation: {
       amount: 'Enter an amount greater than zero.',
       amountTooHigh: 'Enter a smaller amount.',
+      valueDate: 'Enter a date between {min} and {max}.',
     },
     batch: {
       delete: 'Delete selected',

@@ -4,6 +4,7 @@ import {
   toMajorUnits,
   type MinorUnits,
 } from '@bagheera/money';
+import { MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { i18n } from '../i18n';
 
 // API minor units (a plain `number`: brands don't survive JSON) to a
@@ -52,6 +53,11 @@ export function formatDate(date: string): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
   return new Intl.DateTimeFormat(currentLocale()).format(parsed);
+}
+
+// The accepted value-date range, localized, for validation messages.
+export function valueDateRange(): { min: string; max: string } {
+  return { min: formatDate(MIN_VALUE_DATE), max: formatDate(MAX_VALUE_DATE) };
 }
 
 // The same, for a full ISO timestamp (e.g. a passkey's `createdAt`):

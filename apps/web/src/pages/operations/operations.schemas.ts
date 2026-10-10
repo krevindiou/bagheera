@@ -1,11 +1,14 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
-import { ENTRY_TYPES } from '@bagheera/reference-data';
+import { ENTRY_TYPES, isValueDate } from '@bagheera/reference-data';
 
 const optionalId = z.preprocess(
   (value) => (value === '' || value === undefined || value === null ? undefined : value),
   z.string().uuid().optional(),
 );
+
+// A date inside the API's MIN_VALUE_DATE..MAX_VALUE_DATE range.
+export const valueDateSchema = z.string().refine(isValueDate);
 
 // Field rules mirror the API DTOs. An empty transfer account means
 // "External account" (no mirror).
@@ -19,7 +22,7 @@ export const operationSchema = z.object({
   categoryId: optionalId,
   paymentMethodId: z.string().uuid(),
   transferAccountId: optionalId,
-  valueDate: z.string().min(1),
+  valueDate: valueDateSchema,
   notes: z.string().max(4096).optional(),
   reconciled: z.boolean().optional(),
 });

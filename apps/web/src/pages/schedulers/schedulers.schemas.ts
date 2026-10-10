@@ -1,6 +1,6 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
-import type { FormValues } from '../operations/operations.schemas';
+import { valueDateSchema, type FormValues } from '../operations/operations.schemas';
 import { TRANSFER_PAYMENT_METHOD_IDS } from '../../domain/referenceData';
 import { ENTRY_TYPES } from '@bagheera/reference-data';
 
@@ -22,10 +22,13 @@ export const schedulerSchema = z
     categoryId: optionalId,
     paymentMethodId: z.string().uuid(),
     transferAccountId: optionalId,
-    valueDate: z.string().min(1),
+    valueDate: valueDateSchema,
     notes: z.string().max(4096).optional(),
     reconciled: z.boolean().optional(),
-    limitDate: z.preprocess((value) => (value === '' ? undefined : value), z.string().optional()),
+    limitDate: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      valueDateSchema.optional(),
+    ),
     frequencyUnit: z.enum(['day', 'week', 'month', 'year']),
     frequencyValue: z.preprocess(
       (value) =>

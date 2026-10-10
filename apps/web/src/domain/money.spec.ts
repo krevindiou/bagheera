@@ -8,6 +8,7 @@ import {
   formatTimestampDate,
   toDisplayAmount,
   today,
+  valueDateRange,
 } from './money';
 
 describe('toDisplayAmount', () => {
@@ -58,6 +59,12 @@ describe('formatDate', () => {
 
   it("returns the raw string when it doesn't parse as a date", () => {
     expect(formatDate('not-a-date')).toBe('not-a-date');
+  });
+});
+
+describe('valueDateRange', () => {
+  it('formats the accepted value-date bounds in the active locale', () => {
+    expect(valueDateRange()).toEqual({ min: '1/1/1900', max: '12/31/2100' });
   });
 });
 

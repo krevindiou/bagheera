@@ -58,4 +58,13 @@ describe('operationSchema', () => {
   it('rejects notes over 4096 chars', () => {
     expect(operationSchema.safeParse({ ...base, notes: 'a'.repeat(4097) }).success).toBe(false);
   });
+
+  it('rejects a missing valueDate', () => {
+    expect(operationSchema.safeParse({ ...base, valueDate: '' }).success).toBe(false);
+  });
+
+  it('rejects a valueDate outside the range the API accepts', () => {
+    expect(operationSchema.safeParse({ ...base, valueDate: '1899-12-31' }).success).toBe(false);
+    expect(operationSchema.safeParse({ ...base, valueDate: '2101-01-01' }).success).toBe(false);
+  });
 });

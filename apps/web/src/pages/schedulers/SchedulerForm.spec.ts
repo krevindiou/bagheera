@@ -275,6 +275,22 @@ describe('SchedulerForm', () => {
     );
   });
 
+  it('refuses a limit date outside the range the API accepts, and explains why', async () => {
+    const wrapper = mountForm();
+    await wrapper.find('#scheduler-third-party').setValue('Landlord');
+    await wrapper.find('#scheduler-amount').setValue('50');
+    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+    await wrapper.find('#scheduler-limit-date').setValue('2101-01-01');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    const limitDate = wrapper.get('#scheduler-limit-date');
+    expect(limitDate.element.closest('.mb-3')!.textContent).toContain(
+      'Enter a date between 1/1/1900 and 12/31/2100.',
+    );
+    expect(limitDate.classes()).toContain('is-invalid');
+  });
+
   it('submits active: false once unchecked', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mountForm();

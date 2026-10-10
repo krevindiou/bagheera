@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EntryType } from '@bagheera/reference-data';
+import { MAX_VALUE_DATE, MIN_VALUE_DATE, type EntryType } from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { computed, nextTick, ref } from 'vue';
 import { useField } from 'vee-validate';
@@ -13,6 +13,7 @@ import { useTransferTargets } from '../../composables/useTransferTargets';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { referenceName } from '../../i18n/referenceNames';
+import { valueDateRange } from '../../domain/money';
 import {
   TRANSFER_PAYMENT_METHOD_IDS,
   type Category,
@@ -52,7 +53,7 @@ const { value: paymentMethodId, errorMessage: paymentMethodError } = useField<st
 const { value: transferAccountId, errorMessage: transferAccountError } = useField<
   string | undefined
 >('transferAccountId');
-const { value: valueDate } = useField<string>('valueDate');
+const { value: valueDate, errorMessage: valueDateError } = useField<string>('valueDate');
 const { value: notes } = useField<string | undefined>('notes');
 const { value: reconciled } = useField<boolean | undefined>('reconciled');
 
@@ -183,13 +184,20 @@ function onThirdPartyChange() {
     </select>
   </FormField>
 
-  <FormField :label="valueDateLabel" :for="`${idPrefix}-value-date`">
+  <FormField
+    :label="valueDateLabel"
+    :for="`${idPrefix}-value-date`"
+    :error="valueDateError && $t('operations.validation.valueDate', valueDateRange())"
+  >
     <input
       :id="`${idPrefix}-value-date`"
       v-model="valueDate"
       type="date"
+      :min="MIN_VALUE_DATE"
+      :max="MAX_VALUE_DATE"
       :lang="locale"
       class="form-control"
+      :class="{ 'is-invalid': valueDateError }"
     />
   </FormField>
 

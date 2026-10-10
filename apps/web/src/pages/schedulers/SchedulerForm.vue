@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
+import { MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
@@ -11,6 +12,7 @@ import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from '../operations/entryForm';
 import OperationFields from '../operations/OperationFields.vue';
+import { valueDateRange } from '../../domain/money';
 import type { Category, PaymentMethod } from '../../domain/referenceData';
 import {
   schedulerSchema,
@@ -143,14 +145,21 @@ const onSubmit = handleSubmit(async (submitted) => {
           </FormField>
         </div>
 
-        <FormField :label="$t('schedulers.limitDate')" for="scheduler-limit-date">
+        <FormField
+          :label="$t('schedulers.limitDate')"
+          for="scheduler-limit-date"
+          :error="errors.limitDate && $t('operations.validation.valueDate', valueDateRange())"
+        >
           <input
             id="scheduler-limit-date"
             v-model="limitDate"
             v-bind="limitDateAttrs"
             type="date"
+            :min="MIN_VALUE_DATE"
+            :max="MAX_VALUE_DATE"
             :lang="locale"
             class="form-control"
+            :class="{ 'is-invalid': errors.limitDate }"
           />
         </FormField>
       </template>

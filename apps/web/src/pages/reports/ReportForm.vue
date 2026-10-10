@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
+import { MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
@@ -150,6 +151,8 @@ const onSubmit = handleSubmit(async (submitted) => {
           v-model="valueDateStart"
           v-bind="valueDateStartAttrs"
           type="date"
+          :min="MIN_VALUE_DATE"
+          :max="MAX_VALUE_DATE"
           :lang="locale"
           class="form-control"
         />
@@ -165,6 +168,8 @@ const onSubmit = handleSubmit(async (submitted) => {
           v-model="valueDateEnd"
           v-bind="valueDateEndAttrs"
           type="date"
+          :min="MIN_VALUE_DATE"
+          :max="MAX_VALUE_DATE"
           :lang="locale"
           class="form-control"
           :class="{ 'is-invalid': errors.valueDateEnd }"
