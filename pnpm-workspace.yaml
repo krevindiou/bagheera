@@ -4,18 +4,6 @@ packages:
 overrides:
   # Remove when drizzle-kit stops depending on @esbuild-kit.
   '@esbuild-kit/core-utils>esbuild': '>=0.24.3' # GHSA-67mh-4wv8-2f99 (moderate)
-  # Transitive via express>body-parser. Remove when they ship qs >=6.16.
-  # Clears GHSA-4mjr-xmp4-gh2g (high, DoS) and GHSA-x5fp-wj9c-mxmx (moderate).
-  qs: '>=6.16.0'
-  # Transitive via @nestjs/cli (dev only) and vue-router's unused codegen
-  # plugin: no runtime path. Remove when both bump fast-uri. Clears 4 high
-  # advisories: GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc,
-  # GHSA-fph4-wmhf-6fwf, GHSA-jqff-g426-hqxp.
-  fast-uri: '>=3.1.6'
-  # Transitive via vue>@vue/compiler-sfc (and postcss/vite); direct upgrade of
-  # the parents isn't available yet. Remove when they ship source-map-js >=1.2.2.
-  # Clears GHSA-68fv-2mgg-jv7q (high, event-loop DoS via indexed source maps).
-  source-map-js: '>=1.2.2'
 peerDependencyRules:
   allowedVersions:
     # Remove when openapi-typescript supports TypeScript 6.
