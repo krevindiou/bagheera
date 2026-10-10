@@ -38,6 +38,7 @@ That's it — migrations run automatically on API startup. To override the defau
 ```bash
 make help      # list all targets
 make ps        # container status
+make build     # build api + web and their packages/* deps, as CI does
 make migrate   # run db migrations
 make test      # unit + integration + e2e (or test-unit/test-integration/test-e2e individually)
 make lint      # lint api + web + packages/*

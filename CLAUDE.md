@@ -26,6 +26,7 @@ make up                          # start full stack (hot reload); migrations run
 make help              # list all targets
 make ps                # container status
 make down               # stop stack
+make build              # build api + web and their packages/* deps, as CI does
 make migrate            # run db migrations
 make lint                # lint api + web + packages/*
 make format              # format api + web + packages/*
