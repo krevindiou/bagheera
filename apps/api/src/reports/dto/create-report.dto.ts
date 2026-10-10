@@ -62,7 +62,7 @@ export class CreateReportDto {
 
   @IsOptional()
   @ValueDateField()
-  @IsOnOrAfter('valueDateStart', { message: 'valueDateEnd must be on or after valueDateStart' })
+  @IsOnOrAfter('valueDateStart')
   valueDateEnd?: string;
 
   // A filter, not stored text — its own cap, unrelated to ReportTitleField's.
