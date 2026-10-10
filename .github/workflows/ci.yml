@@ -24,6 +24,9 @@ jobs:
       - run: pnpm --filter api exec tsc -p tsconfig.json --noEmit
       - run: node scripts/check-integration-spec-coverage.mjs
       - run: pnpm audit --prod --audit-level=high
+      # Workspace-wide checks: no dev container mounts every package.
+      - run: pnpm dedupe --check
+      - run: pnpm dlx knip@6.41.0
 
   build:
     name: Build

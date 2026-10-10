@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Docker only — no local runtime
 
-**Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, `make exec-api CMD=...`, `make exec-web CMD=...`), or you'll hit permission errors and/or touch the wrong DB.
+**Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, `make exec-api CMD=...`, `make exec-web CMD=...`), or you'll hit permission errors and/or touch the wrong DB. Each container mounts only its own app plus `packages/`, so workspace-wide checks (`pnpm dedupe --check`, knip) run in CI, not through `make`.
 
 The only host-level requirement is Docker + Docker Compose.
 
