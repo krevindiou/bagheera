@@ -97,6 +97,39 @@ describe('GET /dashboard', () => {
     expect(body.accountsOverview[0].accounts[0].balance).toBe(toMinorUnits(250));
   });
 
+  it('orders banks, accounts and currency totals, and gives an account with no operations an empty history', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankNamed = async (name: string) =>
+      ((await mutate('post', '/banks/choice', { name })).body as { id: string }).id;
+    const openAccount = async (
+      bankId: string,
+      name: string,
+      currency: string,
+      initialBalance?: number,
+    ) =>
+      (
+        (await mutate('post', '/accounts', { bankId, name, currency, initialBalance })).body as {
+          account: { id: string };
+        }
+      ).account.id;
+    const zetaBank = await bankNamed('Zeta bank');
+    const alphaBank = await bankNamed('Alpha bank');
+    const main = await openAccount(zetaBank, 'Main', 'GBP', 300);
+    const empty = await openAccount(zetaBank, 'Empty', 'EUR');
+    const savings = await openAccount(alphaBank, 'Savings', 'EUR', 100);
+    const checking = await openAccount(alphaBank, 'Checking', 'USD', 100);
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+
+    // Largest total first; EUR and USD tie, so they go by currency code.
+    expect(body.totalBalances.map((t) => t.currency)).toEqual(['GBP', 'EUR', 'USD']);
+    expect(body.accountsOverview.map((b) => b.id)).toEqual([alphaBank, zetaBank]);
+    expect(body.accountsOverview[0].accounts.map((a) => a.id)).toEqual([checking, savings]);
+    expect(body.accountsOverview[1].accounts.map((a) => a.id)).toEqual([empty, main]);
+    expect(body.accountsOverview[1].accounts[0].history).toEqual([]);
+  });
+
   it("ends each account overview tile's sparkline history at its current balance", async () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
