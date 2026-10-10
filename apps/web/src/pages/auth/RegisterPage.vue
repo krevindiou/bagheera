@@ -8,7 +8,7 @@ import { apiClient } from '../../api/client';
 import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';
 import { useToast } from '../../composables/useToast';
 import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
-import { registerSchema, type RegisterForm } from './auth.schemas';
+import { registerSchema, type RegisterBody, type RegisterForm } from './auth.schemas';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 import FormField from '../../components/FormField.vue';
 
@@ -19,7 +19,10 @@ const { t } = useI18n();
 
 const countryOptions = getCountryOptions();
 
-const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<RegisterForm>({
+const { defineField, handleSubmit, errors, isSubmitting, resetForm } = useForm<
+  RegisterForm,
+  RegisterBody
+>({
   validationSchema: toTypedSchema(registerSchema),
   initialValues: {
     email: '',
@@ -42,7 +45,7 @@ const onSubmit = handleSubmit(async (values) => {
   // wall clock; changeable afterwards from settings.
   const { timeZone } = Intl.DateTimeFormat().resolvedOptions();
   const { response } = await apiClient.POST('/members/register', {
-    body: { ...values, country: values.country.toUpperCase(), locale, timeZone },
+    body: { ...values, locale, timeZone },
   });
 
   if (!response.ok) {
