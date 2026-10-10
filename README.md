@@ -12,7 +12,7 @@ Bagheera is a manual-entry personal finance manager. Users track banks, accounts
 | API | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, cache, rate limiting) · BullMQ (email jobs) |
 | Web | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js |
 | Auth | Passkeys (WebAuthn), cookie-based server-side revocable sessions |
-| Infra | Docker Compose · Caddy (reverse proxy + static SPA) · Kamal (deploy) |
+| Infra | Docker Compose · Caddy (static SPA) · Kamal + kamal-proxy (deploy, TLS, routing) |
 
 ## Getting started
 
@@ -64,13 +64,20 @@ packages/
   money/           cross-stack code shared by api and web (minor-units money math)
   reference-data/  shared fixed payment-method ids
 docker/      Dockerfiles, Compose files, Caddyfile
+config/      Kamal deploy configs (deploy.yml: web, deploy.api.yml: api)
+docs/        backup-restore.md
 scripts/     backup.sh
-.kamal/      deploy config/secrets
+.kamal/      Kamal secrets (env references only)
 ```
 
 ## Production
 
-Deploys go through [Kamal](https://kamal-deploy.org) (`config/deploy.yml`, `.kamal/`), which builds `docker/Dockerfile.caddy` (Caddy serving the built SPA, reverse-proxying API routes) and rolls it out over SSH. See `docker/Caddyfile` for the edge/TLS setup and `scripts/backup.sh` for the Postgres backup routine.
+Deploys go through [Kamal](https://kamal-deploy.org) as two apps on one host, rolled out over SSH by CI on pushes to `main`:
+
+- `config/deploy.yml` builds `docker/Dockerfile.caddy` (Caddy serving the built SPA, see `docker/Caddyfile` for its security headers) and runs the Postgres and Valkey accessories.
+- `config/deploy.api.yml` builds `docker/Dockerfile.api`; migrations run from the new image before it goes live.
+
+kamal-proxy terminates TLS and routes `/api` and `/health` to the API, everything else to Caddy. Secrets come from the deploying environment via `.kamal/secrets`. See `scripts/backup.sh` and `docs/backup-restore.md` for backups and restores.
 
 ## License
 
