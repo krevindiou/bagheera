@@ -9,7 +9,7 @@ Bagheera is a manual-entry personal finance manager. Users track banks, accounts
 
 | Layer | Choice |
 |---|---|
-| API | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, cache, rate limiting) · BullMQ (email jobs) |
+| API | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, rate limiting, BullMQ queue) · BullMQ (email jobs) |
 | Web | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js |
 | Auth | Passkeys (WebAuthn), cookie-based server-side revocable sessions |
 | Infra | Docker Compose · Caddy (static SPA) · Kamal + kamal-proxy (deploy, TLS, routing) |
