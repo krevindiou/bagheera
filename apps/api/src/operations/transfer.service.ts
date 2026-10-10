@@ -4,7 +4,6 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits } from '../common/money';
 import type { Executor } from '../db/executor';
-import { TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
 import { account, bank, operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MemberId } from '../security/ids';
@@ -116,10 +115,6 @@ export class TransferService {
     }
 
     return created;
-  }
-
-  isTransferMethod(paymentMethodId: string): boolean {
-    return TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId);
   }
 
   // A mirror carries the opposite transfer method.
