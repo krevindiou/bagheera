@@ -6,7 +6,6 @@ export type DashboardResponse = Schemas['DashboardResponseDto'];
 export type OnboardingTip = DashboardResponse['onboarding'];
 export type TotalBalance = Schemas['TotalBalanceDto'];
 export type DashboardIndicator = Schemas['DashboardIndicatorDto'];
-export type AccountsOverviewAccount = Schemas['AccountsOverviewAccountDto'];
 export type AccountsOverviewBank = Schemas['AccountsOverviewBankDto'];
 export type SynthesisChartPoint = Schemas['ChartPointDto'];
 export type SynthesisChartSeries = Schemas['SynthesisChartSeriesDto'];

@@ -15,7 +15,6 @@ export type EditBankForm = z.infer<typeof editBankSchema>;
 export const editAccountSchema = z.object({
   name: accountName,
 });
-export type EditAccountForm = z.infer<typeof editAccountSchema>;
 
 // Either an existing bank (bankId) or a new one's name (bankName).
 export const bankChoiceSchema = z

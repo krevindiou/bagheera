@@ -21,10 +21,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { reachableAccountsOf } from '../security/reachable';
-import { ChartPointDto } from '../common/dto/chart-response.dto';
 import { AccountChartDto } from './dto/account-response.dto';
-
-export type AccountChartPoint = ChartPointDto;
 
 export type AccountChart = AccountChartDto;
 
