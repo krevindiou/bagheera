@@ -60,7 +60,6 @@ export default defineConfig({
         'main.ts',
         'db/db.constants.ts',
         'db/seed.ts',
-        '**/db/test-utils/**',
         'logging/sentry.ts',
         'session/session-data.ts',
         'session/webauthn-session-data.ts',
