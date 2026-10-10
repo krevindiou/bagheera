@@ -65,17 +65,3 @@ describe('CryptoService', () => {
     );
   });
 });
-
-describe('CryptoService.safeEqual', () => {
-  it('returns true for identical strings', () => {
-    expect(CryptoService.safeEqual('secret', 'secret')).toBe(true);
-  });
-
-  it('returns false for different strings of the same length', () => {
-    expect(CryptoService.safeEqual('secret', 'secreT')).toBe(false);
-  });
-
-  it('returns false for strings of different lengths, without calling into timingSafeEqual', () => {
-    expect(CryptoService.safeEqual('short', 'a-lot-longer')).toBe(false);
-  });
-});
