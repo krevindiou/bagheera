@@ -1,9 +1,10 @@
 import { pgEnum } from 'drizzle-orm/pg-core';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 import { SUPPORTED_LOCALES } from '../../common/locale';
 
 // Shared debit/credit typing used by PaymentMethod, Category, Operation and
 // Scheduler.
-export const entryTypeEnum = pgEnum('entry_type', ['debit', 'credit']);
+export const entryTypeEnum = pgEnum('entry_type', ENTRY_TYPES);
 
 // Member's UI/email language; edit SUPPORTED_LOCALES, not this line.
 export const localeEnum = pgEnum('locale', SUPPORTED_LOCALES);

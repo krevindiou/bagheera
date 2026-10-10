@@ -1,4 +1,5 @@
 import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 
 export class AutocompleteThirdPartyDto {
   // ThirdPartyField's cap, with a 2-char minimum before querying.
@@ -10,6 +11,6 @@ export class AutocompleteThirdPartyDto {
   // When given, a category of the other type is dropped; the third party
   // is still returned.
   @IsOptional()
-  @IsIn(['debit', 'credit'])
+  @IsIn(ENTRY_TYPES)
   type?: 'debit' | 'credit';
 }

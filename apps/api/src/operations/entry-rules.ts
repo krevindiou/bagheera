@@ -8,9 +8,9 @@ import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { AccountId } from '../security/ids';
 import type { Executor } from '../db/executor';
 import { isFullyActive } from '../security/reachable';
-import { TRANSFER_PAYMENT_METHOD_IDS } from '@bagheera/reference-data';
+import { TRANSFER_PAYMENT_METHOD_IDS, type EntryType } from '@bagheera/reference-data';
 
-export type EntryType = 'debit' | 'credit';
+export type { EntryType };
 
 // Reserved for the system-generated opening operation.
 export const OPENING_BALANCE_PAYMENT_METHOD_ID: string = PAYMENT_METHOD_ID.INITIAL_BALANCE;

@@ -25,6 +25,11 @@ export const SUPPORTED_LOCALES = ['en', 'fr'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
 
+// Direction of a payment method, category, operation or scheduler. The API's
+// `entry_type` pg enum derives from this list.
+export const ENTRY_TYPES = ['debit', 'credit'] as const;
+export type EntryType = (typeof ENTRY_TYPES)[number];
+
 // Most labels a distribution report shows before folding the rest into
 // "Other"; the API's CreateReportDto and the web report form both cap at it.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;

@@ -2,6 +2,7 @@ import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
 import type { FormValues } from '../operations/operations.schemas';
 import { TRANSFER_PAYMENT_METHOD_IDS } from '../../domain/referenceData';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 
 const optionalId = z.preprocess(
   (value) => (value === '' || value === undefined || value === null ? undefined : value),
@@ -11,7 +12,7 @@ const optionalId = z.preprocess(
 // Field rules mirror the API DTOs: operationSchema's plus recurrence.
 export const schedulerSchema = z
   .object({
-    type: z.enum(['debit', 'credit']),
+    type: z.enum(ENTRY_TYPES),
     thirdParty: z.string().trim().min(1).max(64),
     amount: z.preprocess(
       (value) =>

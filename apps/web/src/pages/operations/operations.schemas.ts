@@ -1,5 +1,6 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 
 const optionalId = z.preprocess(
   (value) => (value === '' || value === undefined || value === null ? undefined : value),
@@ -9,7 +10,7 @@ const optionalId = z.preprocess(
 // Field rules mirror the API DTOs. An empty transfer account means
 // "External account" (no mirror).
 export const operationSchema = z.object({
-  type: z.enum(['debit', 'credit']),
+  type: z.enum(ENTRY_TYPES),
   thirdParty: z.string().trim().min(1).max(64),
   amount: z.preprocess(
     (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),

@@ -16,6 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ThirdPartyField, ValueDateField } from '../../common/dto-fields';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 
 export class AmountComparatorDto {
   @IsIn(['gt', 'gte', 'lt', 'lte', 'eq'])
@@ -36,7 +37,7 @@ export class SearchOperationsDto {
   accountId!: string;
 
   @IsOptional()
-  @IsIn(['debit', 'credit'])
+  @IsIn(ENTRY_TYPES)
   type?: 'debit' | 'credit';
 
   @IsOptional()

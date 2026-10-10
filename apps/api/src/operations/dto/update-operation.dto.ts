@@ -1,5 +1,6 @@
 import { IsBoolean, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 
 // accountId is immutable but still submitted (read-only on the edit form);
 // the service rejects any change.
@@ -7,7 +8,7 @@ export class UpdateOperationDto {
   @IsUUID('7')
   accountId!: string;
 
-  @IsIn(['debit', 'credit'])
+  @IsIn(ENTRY_TYPES)
   type!: 'debit' | 'credit';
 
   @ThirdPartyField()

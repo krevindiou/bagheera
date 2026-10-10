@@ -1,12 +1,13 @@
 import { IsBoolean, IsIn, IsOptional, IsUUID } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
+import { ENTRY_TYPES } from '@bagheera/reference-data';
 
 export class CreateOperationDto {
   @IsUUID('7')
   accountId!: string;
 
   // Decides the debit/credit column and the allowed category/payment method.
-  @IsIn(['debit', 'credit'])
+  @IsIn(ENTRY_TYPES)
   type!: 'debit' | 'credit';
 
   @ThirdPartyField()
