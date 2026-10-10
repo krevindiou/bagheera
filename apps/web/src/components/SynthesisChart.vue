@@ -16,6 +16,7 @@ import {
   type ScriptableContext,
   type TooltipItem,
 } from 'chart.js';
+import { verticalFillGradient } from './chartColors';
 import { formatPeriodLabel } from './periodLabel';
 import type { Locale } from '../i18n/locales';
 
@@ -26,28 +27,6 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 ChartJS.defaults.font.family = "'Archivo', sans-serif";
 ChartJS.defaults.color = 'rgba(242, 239, 233, 0.62)'; // --paper-dim: ticks/legend text
 ChartJS.defaults.borderColor = 'rgba(242, 239, 233, 0.1)'; // --hair: gridlines
-
-function withAlpha(hex: string, alpha: number): string {
-  const match = /^#([0-9a-f]{6})$/i.exec(hex);
-  if (!match) return hex;
-  const value = parseInt(match[1], 16);
-  const r = (value >> 16) & 255;
-  const g = (value >> 8) & 255;
-  const b = value & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-// Fades the fill from the line down to transparent, rather than a flat
-// wash — scriptable so Chart.js can rebuild it against the live chart area
-// (canvas size/zoom changes invalidate a cached gradient).
-function verticalFillGradient(color: string, ctx: ScriptableContext<'line'>) {
-  const { chartArea, ctx: canvasCtx } = ctx.chart;
-  if (!chartArea) return withAlpha(color, 0.18);
-  const gradient = canvasCtx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-  gradient.addColorStop(0, withAlpha(color, 0.28));
-  gradient.addColorStop(1, withAlpha(color, 0));
-  return gradient;
-}
 
 export interface SynthesisChartPoint {
   // Period start as an ISO date string ('YYYY-MM-DD') or any parseable
