@@ -9,6 +9,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint & typecheck
@@ -171,32 +174,38 @@ jobs:
     runs-on: ubuntu-latest
     needs: e2e
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Gate deploys with the environment's protection rules (Settings →
+    # Environments → production).
+    environment: production
     env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
       KAMAL_SSH_USER: ${{ vars.KAMAL_SSH_USER }}
       APP_DOMAIN: ${{ vars.APP_DOMAIN }}
       KAMAL_REGISTRY_SERVER: ${{ vars.KAMAL_REGISTRY_SERVER }}
       KAMAL_REGISTRY_USERNAME: ${{ vars.KAMAL_REGISTRY_USERNAME }}
-      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      VALKEY_URL: ${{ secrets.VALKEY_URL }}
-      VALKEY_PASSWORD: ${{ secrets.VALKEY_PASSWORD }}
-      CRYPTO_KEYS: ${{ secrets.CRYPTO_KEYS }}
-      CRYPTO_ACTIVE_KEY_ID: ${{ secrets.CRYPTO_ACTIVE_KEY_ID }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
-      EMAIL_SMTP_URL: ${{ secrets.EMAIL_SMTP_URL }}
-      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-      SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
           ruby-version: "3.4"
-      - run: gem install kamal --no-document --version "~> 2.12"
+      - run: gem install kamal --no-document --version 2.12.0
+      # Secrets go only to the steps that run kamal, not to the third-party
+      # steps above and below.
       - name: Check .kamal/secrets env vars are set
+        env: &deploy-secrets
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          VALKEY_URL: ${{ secrets.VALKEY_URL }}
+          VALKEY_PASSWORD: ${{ secrets.VALKEY_PASSWORD }}
+          CRYPTO_KEYS: ${{ secrets.CRYPTO_KEYS }}
+          CRYPTO_ACTIVE_KEY_ID: ${{ secrets.CRYPTO_ACTIVE_KEY_ID }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          CSRF_SECRET: ${{ secrets.CSRF_SECRET }}
+          EMAIL_SMTP_URL: ${{ secrets.EMAIL_SMTP_URL }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
         run: |
           missing=0
           for name in $(grep -oP '^\w+(?==\$\w+$)' .kamal/secrets); do
@@ -218,12 +227,16 @@ jobs:
         env:
           DEPLOY_HOST_KNOWN_HOSTS: ${{ secrets.DEPLOY_HOST_KNOWN_HOSTS }}
       - name: Build and push the api image
+        env: *deploy-secrets
         run: kamal build push -c config/deploy.api.yml
       - name: Run database migrations from the new image
         # kamal app exec runs a one-off container from the image just built
         # above, without touching the still-running (old-image) api
         # container, so the schema is up to date before any new code runs.
+        env: *deploy-secrets
         run: kamal app exec -c config/deploy.api.yml "node dist/db/migrate.js"
       - name: Deploy the api app (health-gated, zero-downtime)
+        env: *deploy-secrets
         run: kamal deploy -c config/deploy.api.yml
-      - run: kamal deploy
+      - env: *deploy-secrets
+        run: kamal deploy
