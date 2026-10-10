@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { isNewSession } from './is-new-session';
 import { SESSION_MAX_AGE_MS } from './session.constants';
 

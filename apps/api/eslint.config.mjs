@@ -102,7 +102,7 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
-      'no-restricted-imports': [
+      '@typescript-eslint/no-restricted-imports': [
         'error',
         {
           paths: [
@@ -112,6 +112,13 @@ export default tseslint.config(
               message:
                 "Don't build ILIKE conditions by hand — a raw term needs escaping. Use ilikeContains() from '../common/like-pattern' instead.",
             },
+            {
+              // express is only a transitive dependency (via
+              // @nestjs/platform-express); its types come from @types/express.
+              name: 'express',
+              allowTypeImports: true,
+              message: "Use `import type` from 'express': it isn't a direct dependency.",
+            },
           ],
         },
       ],
@@ -120,7 +127,7 @@ export default tseslint.config(
   {
     files: ['src/common/like-pattern.ts'],
     rules: {
-      'no-restricted-imports': 'off',
+      '@typescript-eslint/no-restricted-imports': 'off',
     },
   },
   {

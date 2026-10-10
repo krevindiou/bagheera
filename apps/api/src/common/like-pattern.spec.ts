@@ -1,6 +1,6 @@
 // Asserts on the pattern passed to a mocked `ilike()` rather than unpacking
 // drizzle's SQL chunks. The import ban is lifted only to reach that mock.
-// eslint-disable-next-line no-restricted-imports
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { ilike } from 'drizzle-orm';
 import { vi } from 'vitest';
 import { ilikeContains } from './like-pattern';

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { createHash } from 'crypto';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { RateLimiterRedis } from 'rate-limiter-flexible';
 import type IORedis from 'ioredis';
 import '../session/session-data';
