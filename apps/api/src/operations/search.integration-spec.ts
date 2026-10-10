@@ -1,3 +1,4 @@
+import type { EntryType } from '@bagheera/reference-data';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
@@ -28,7 +29,7 @@ async function createOperation(
   mutate: SignedInFixture['mutate'],
   accountId: string,
   overrides: {
-    type?: 'debit' | 'credit';
+    type?: EntryType;
     thirdParty?: string;
     amount?: number;
     reconciled?: boolean;

@@ -1,3 +1,4 @@
+import type { EntryType } from '@bagheera/reference-data';
 import { ref, watch, type Ref } from 'vue';
 import { apiClient } from '../api/client';
 
@@ -12,7 +13,7 @@ export interface ThirdPartySuggestion {
  */
 export function useThirdPartyAutocomplete(
   thirdParty: Ref<string | undefined>,
-  type: Ref<'debit' | 'credit'>,
+  type: Ref<EntryType>,
   onExactMatch: (categoryId: string) => void,
 ) {
   const suggestions = ref<ThirdPartySuggestion[]>([]);

@@ -1,9 +1,10 @@
+import type { EntryType } from '@bagheera/reference-data';
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import EntryTypeRadio from './EntryTypeRadio.vue';
 
-function mountRadio(props: { modelValue?: 'debit' | 'credit'; legend?: string } = {}) {
+function mountRadio(props: { modelValue?: EntryType; legend?: string } = {}) {
   return mount(EntryTypeRadio, {
     ...withGlobalPlugins(),
     props: { idPrefix: 'x-type', modelValue: 'debit', ...props },

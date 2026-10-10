@@ -1,11 +1,11 @@
 // Plain data, free of any DB dependency so it unit-tests without Postgres.
-import { PAYMENT_METHOD_ID } from '@bagheera/reference-data';
+import { PAYMENT_METHOD_ID, type EntryType } from '@bagheera/reference-data';
 export { PAYMENT_METHOD_ID };
 
 export interface PaymentMethodSeed {
   id: string;
   name: string;
-  type: 'debit' | 'credit' | null;
+  type: EntryType | null;
 }
 
 // Fixed list — ids/names/types are exact.
@@ -38,7 +38,7 @@ export interface CategorySeed {
   // DB-generated one.
   id?: string;
   name: string;
-  type: 'debit' | 'credit';
+  type: EntryType;
   children?: CategorySeed[];
 }
 

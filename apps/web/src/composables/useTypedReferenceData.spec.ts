@@ -1,3 +1,4 @@
+import type { EntryType } from '@bagheera/reference-data';
 import { nextTick, ref } from 'vue';
 import { describe, expect, it } from 'vitest';
 import type { Category, PaymentMethod } from '../domain/referenceData';
@@ -16,7 +17,7 @@ const paymentMethods: PaymentMethod[] = [
 
 describe('useTypedReferenceData', () => {
   it('filters categories and payment methods to the selected type', () => {
-    const type = ref<'debit' | 'credit'>('debit');
+    const type = ref<EntryType>('debit');
     const { filteredCategories, filteredPaymentMethods } = useTypedReferenceData(
       type,
       () => categories,
@@ -27,7 +28,7 @@ describe('useTypedReferenceData', () => {
   });
 
   it('excludes a null-type payment method (Initial balance) from either type', () => {
-    const type = ref<'debit' | 'credit'>('credit');
+    const type = ref<EntryType>('credit');
     const { filteredPaymentMethods } = useTypedReferenceData(
       type,
       () => categories,
@@ -37,7 +38,7 @@ describe('useTypedReferenceData', () => {
   });
 
   it('re-filters reactively when the type changes', () => {
-    const type = ref<'debit' | 'credit'>('debit');
+    const type = ref<EntryType>('debit');
     const { filteredCategories } = useTypedReferenceData(
       type,
       () => categories,
@@ -48,7 +49,7 @@ describe('useTypedReferenceData', () => {
   });
 
   it('groups the filtered categories the same way groupCategories does', () => {
-    const type = ref<'debit' | 'credit'>('debit');
+    const type = ref<EntryType>('debit');
     const { groupedCategories } = useTypedReferenceData(
       type,
       () => categories,
@@ -61,7 +62,7 @@ describe('useTypedReferenceData', () => {
 
   describe('clearOnMismatch', () => {
     it('clears a selected categoryId/paymentMethodId once the type switch invalidates them', async () => {
-      const type = ref<'debit' | 'credit'>('debit');
+      const type = ref<EntryType>('debit');
       const categoryId = ref<string | undefined>('c1');
       const paymentMethodId = ref<string>('p1');
       useTypedReferenceData(
@@ -82,7 +83,7 @@ describe('useTypedReferenceData', () => {
     });
 
     it('leaves an already-empty categoryId alone', async () => {
-      const type = ref<'debit' | 'credit'>('debit');
+      const type = ref<EntryType>('debit');
       const categoryId = ref<string | undefined>(undefined);
       const paymentMethodId = ref<string>('p1');
       useTypedReferenceData(

@@ -1,3 +1,4 @@
+import type { EntryType } from '@bagheera/reference-data';
 import { computed, watch, type Ref } from 'vue';
 import { groupCategories, type Category, type PaymentMethod } from '../domain/referenceData';
 
@@ -10,7 +11,7 @@ import { groupCategories, type Category, type PaymentMethod } from '../domain/re
  * invalidates; the search panel omits it and filters its own arrays.
  */
 export function useTypedReferenceData(
-  type: Ref<'debit' | 'credit'>,
+  type: Ref<EntryType>,
   categories: () => Category[],
   paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {

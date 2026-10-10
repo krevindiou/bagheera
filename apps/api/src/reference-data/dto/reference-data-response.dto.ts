@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import type { Assert, SameKeys } from '../../common/dto/same-keys';
 import type { category, paymentMethod } from '../../db/schema';
-import { ENTRY_TYPES } from '@bagheera/reference-data';
+import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
 
 export class CategoryDto {
   id!: string;
   parentId!: string | null;
   @ApiProperty({ enum: ENTRY_TYPES })
-  type!: 'debit' | 'credit';
+  type!: EntryType;
   name!: string;
 }
 
@@ -16,7 +16,7 @@ export class PaymentMethodDto {
   name!: string;
   // Null only for the system-generated "Initial balance" method.
   @ApiProperty({ enum: ENTRY_TYPES, nullable: true })
-  type!: 'debit' | 'credit' | null;
+  type!: EntryType | null;
 }
 
 // See common/dto/same-keys.ts.

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EntryType } from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { computed, nextTick, ref } from 'vue';
 import { useField } from 'vee-validate';
@@ -37,7 +38,7 @@ const props = defineProps<{
 
 const { locale } = useI18n();
 
-const { value: type } = useField<'debit' | 'credit'>('type');
+const { value: type } = useField<EntryType>('type');
 const { value: thirdParty, errorMessage: thirdPartyError } = useField<string | undefined>(
   'thirdParty',
 );

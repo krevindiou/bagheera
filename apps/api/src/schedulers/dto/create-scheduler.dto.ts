@@ -1,6 +1,6 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
-import { ENTRY_TYPES } from '@bagheera/reference-data';
+import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
 import { frequencyUnitEnum } from '../../db/schema/enums';
 
 export class CreateSchedulerDto {
@@ -9,7 +9,7 @@ export class CreateSchedulerDto {
 
   // Decides the debit/credit column and the allowed category/payment method.
   @IsIn(ENTRY_TYPES)
-  type!: 'debit' | 'credit';
+  type!: EntryType;
 
   @ThirdPartyField()
   thirdParty!: string;

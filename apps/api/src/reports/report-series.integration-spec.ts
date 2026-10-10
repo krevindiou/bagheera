@@ -1,3 +1,4 @@
+import type { EntryType } from '@bagheera/reference-data';
 import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
@@ -22,7 +23,7 @@ async function createAccount(mutate: SignedInFixture['mutate'], bankId: string):
 async function createOperation(
   mutate: SignedInFixture['mutate'],
   accountId: string,
-  type: 'debit' | 'credit',
+  type: EntryType,
   amount: number,
   valueDate: string,
   categoryId?: string,

@@ -1,6 +1,6 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'class-validator';
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
-import { ENTRY_TYPES } from '@bagheera/reference-data';
+import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
 import { frequencyUnitEnum } from '../../db/schema/enums';
 
 // accountId is immutable but still submitted (read-only on the edit form);
@@ -10,7 +10,7 @@ export class UpdateSchedulerDto {
   accountId!: string;
 
   @IsIn(ENTRY_TYPES)
-  type!: 'debit' | 'credit';
+  type!: EntryType;
 
   @ThirdPartyField()
   thirdParty!: string;

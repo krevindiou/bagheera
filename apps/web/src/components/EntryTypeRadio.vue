@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { EntryType } from '@bagheera/reference-data';
+
 // The debit/credit radio pair of the operation, scheduler and search forms.
 // `idPrefix` makes the input ids `<prefix>-debit` / `<prefix>-credit`; the
 // debit radio takes focus when the form opens. An optional `legend` heads
 // the pair (the search panel labels it).
 defineProps<{ idPrefix: string; legend?: string }>();
-const type = defineModel<'debit' | 'credit'>({ required: true });
+const type = defineModel<EntryType>({ required: true });
 </script>
 
 <template>

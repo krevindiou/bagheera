@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { EntryType } from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -24,7 +25,7 @@ const emit = defineEmits<{ submit: [SearchCriteria]; clear: []; cancel: [] }>();
 
 const { locale } = useI18n();
 
-const type = ref<'debit' | 'credit'>('debit');
+const type = ref<EntryType>('debit');
 const thirdParty = ref('');
 const categoryIds = ref<string[]>([]);
 const paymentMethodIds = ref<string[]>([]);
