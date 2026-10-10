@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../api/client';
 import { setLocale } from '../i18n';
-import { isSupportedLocale, setStoredLocale, type Locale } from '../i18n/locales';
+import { DEFAULT_LOCALE, isSupportedLocale, setStoredLocale, type Locale } from '../i18n/locales';
 import { useSessionStore } from '../stores/session.store';
 import { useToast } from './useToast';
 
@@ -16,7 +16,7 @@ export function useLocaleSwitch() {
   const { push: toast } = useToast();
 
   const current = computed<Locale>(() =>
-    isSupportedLocale(route.params.locale) ? route.params.locale : 'en',
+    isSupportedLocale(route.params.locale) ? route.params.locale : DEFAULT_LOCALE,
   );
 
   async function choose(locale: Locale): Promise<void> {
