@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "ignore": ["apps/web/src/api/schema.d.ts"],
+  "ignoreIssues": {
+    "apps/api/src/**/dto/*.ts": ["types"]
+  },
+  "workspaces": {
+    "apps/api": {
+      "entry": ["src/main.ts", "src/db/migrate.ts", "drizzle.config.ts"],
+      "drizzle": false,
+      "ignoreDependencies": ["pino-pretty"]
+    }
+  }
+}
