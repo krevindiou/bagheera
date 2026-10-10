@@ -6,7 +6,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
 import { Locale } from '../common/locale';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
-import { buildSignupToken } from '../members/signup-token';
+import { buildSignupToken, SIGNUP_TOKEN_TTL_MS } from '../members/signup-token';
 import { CryptoService } from '../security/crypto.service';
 import {
   csrfTokenFor,
@@ -212,6 +212,108 @@ describe('webauthn signup', () => {
 
       const rows = await getDb(app).select().from(member).where(eq(member.email, email));
       expect(rows).toHaveLength(1);
+    });
+
+    it('collapses a lost race between two links for the same email into the generic error', async () => {
+      const email = uniqueEmail();
+      const credentialIdA = `cred-a-${email}`;
+      const credentialIdB = `cred-b-${email}`;
+
+      // Both ceremonies start before either completes, so B's options()
+      // still sees no member for the address.
+      const agentA = request.agent(app.getHttpServer());
+      const csrfA = await csrfTokenFor(agentA);
+      await agentA
+        .post('/webauthn/signup/options')
+        .set('x-csrf-token', csrfA)
+        .send({ key: tokenFor(email) })
+        .expect(200);
+      const agentB = request.agent(app.getHttpServer());
+      const csrfB = await csrfTokenFor(agentB);
+      await agentB
+        .post('/webauthn/signup/options')
+        .set('x-csrf-token', csrfB)
+        .send({ key: tokenFor(email) })
+        .expect(200);
+
+      const verifySpy = vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse');
+      verifySpy.mockResolvedValueOnce(verifiedRegistration(credentialIdA));
+      await agentA
+        .post('/webauthn/signup/verify')
+        .set('x-csrf-token', csrfA)
+        .send({ response: fakeResponseFor(credentialIdA) })
+        .expect(200);
+
+      verifySpy.mockResolvedValueOnce(verifiedRegistration(credentialIdB));
+      const res = await agentB
+        .post('/webauthn/signup/verify')
+        .set('x-csrf-token', csrfB)
+        .send({ response: fakeResponseFor(credentialIdB) })
+        .expect(400);
+      expect(messageOf(res)).toBe(SIGNUP_FAILED);
+      await agentB.get('/auth/me').expect(401);
+
+      const rows = await getDb(app).select().from(member).where(eq(member.email, email));
+      expect(rows).toHaveLength(1);
+      const orphans = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, credentialIdB));
+      expect(orphans).toHaveLength(0);
+    });
+
+    it('rejects a sign-up token that expired between options() and verify()', async () => {
+      const email = uniqueEmail();
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      // Minted almost an hour ago: still valid for options(), not a minute later.
+      const key = await withClockAhead(-(SIGNUP_TOKEN_TTL_MS - 30_000), () =>
+        Promise.resolve(tokenFor(email)),
+      );
+      await agent
+        .post('/webauthn/signup/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ key })
+        .expect(200);
+
+      const verifySpy = vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse');
+      verifySpy.mockClear();
+      const res = await withClockAhead(60_000, () =>
+        agent
+          .post('/webauthn/signup/verify')
+          .set('x-csrf-token', csrfToken)
+          .send({ response: fakeResponseFor(`cred-${email}`) }),
+      );
+      expect(res.status).toBe(400);
+      expect(messageOf(res)).toBe(SIGNUP_FAILED);
+      expect(verifySpy).not.toHaveBeenCalled();
+
+      const rows = await getDb(app).select().from(member).where(eq(member.email, email));
+      expect(rows).toHaveLength(0);
+    });
+
+    it('rejects an attestation check that throws, and creates nothing', async () => {
+      const email = uniqueEmail();
+      const agent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(agent);
+      await agent
+        .post('/webauthn/signup/options')
+        .set('x-csrf-token', csrfToken)
+        .send({ key: tokenFor(email) })
+        .expect(200);
+
+      vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockRejectedValueOnce(
+        new Error('bad attestation'),
+      );
+      const res = await agent
+        .post('/webauthn/signup/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(`cred-${email}`) })
+        .expect(400);
+      expect(messageOf(res)).toBe(SIGNUP_FAILED);
+
+      const rows = await getDb(app).select().from(member).where(eq(member.email, email));
+      expect(rows).toHaveLength(0);
     });
 
     it('rejects when the ceremony fails verification', async () => {

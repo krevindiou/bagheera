@@ -213,6 +213,54 @@ describe('webauthn authentication', () => {
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
     });
 
+    it('rejects a signature check that throws, and records webauthn_sign_in_failure against the owner', async () => {
+      const { memberId, credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockRejectedValueOnce(new Error('signature mismatch'));
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      await agent.get('/auth/me').expect(401);
+
+      const failures = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_sign_in_failure'),
+            eq(securityEvent.memberId, memberId),
+          ),
+        );
+      expect(failures).toHaveLength(1);
+    });
+
+    it('rejects a member deleted while their passkey was being verified', async () => {
+      const { memberId, credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockImplementationOnce(async () => {
+        await getDb(app).delete(member).where(eq(member.id, memberId));
+        return verifiedResult(1);
+      });
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      await agent.get('/auth/me').expect(401);
+    });
+
     it('consumes the challenge — a replayed verify() fails', async () => {
       const { credentialId } = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();

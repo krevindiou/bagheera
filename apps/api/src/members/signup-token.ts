@@ -5,7 +5,7 @@ import { CryptoService } from '../security/crypto.service';
 // No member row exists yet, so no version counter: a resubmitted sign-up
 // mints a second valid token, bounded only by this TTL. Replay is stopped
 // by `member.email`'s unique index instead.
-const SIGNUP_TOKEN_TTL_MS = 60 * 60 * 1000;
+export const SIGNUP_TOKEN_TTL_MS = 60 * 60 * 1000;
 
 export interface SignupTokenPayload {
   type: 'signup';
