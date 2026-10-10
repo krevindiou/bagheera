@@ -78,10 +78,7 @@ rm backup_key backup_key.pub
 ```
 
 `restrict` turns off port/agent/X11 forwarding, PTY allocation and
-`~/.ssh/rc`; `command=` runs the script whatever the client asks for. Once
-this works, the `RESTIC_*`, `RESTIC_AWS_*` and (if nothing else uses it)
-backup-only `BACKUP_POSTGRES_CONTAINER` values can be deleted from GitHub:
-the workflow no longer sends them.
+`~/.ssh/rc`; `command=` runs the script whatever the client asks for.
 
 What this does *not* do: the `docker` group is root-equivalent for anyone
 with a shell as that user. The forced command is what keeps the *key* away
