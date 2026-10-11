@@ -1,3 +1,5 @@
+import type { BusinessErrorCode } from '@bagheera/reference-data';
+
 export default {
   app: {
     brand: 'Bagheera',
@@ -352,10 +354,12 @@ export default {
     bank_not_active: 'This bank is not active.',
     bank_already_deleted: 'This bank is already deleted.',
     account_not_active: 'This account is not active.',
+    account_not_found: 'This account could not be found.',
     account_cannot_be_changed: 'The account cannot be changed.',
     bank_currency_immutable: 'The bank and currency cannot be changed.',
     bank_required: 'You must select a bank.',
     opening_operation_locked: 'The opening operation cannot be edited.',
+    operation_not_found: 'This operation could not be found.',
     transfer_account_not_active: 'The transfer account is not active.',
     transfer_currency_mismatch: 'The transfer account must use the same currency.',
     transfer_account_invalid: 'Invalid transfer account.',
@@ -377,7 +381,7 @@ export default {
       schedulers: 'schedulers',
       reports: 'reports',
     },
-  },
+  } satisfies Record<BusinessErrorCode, string> & { kinds: Record<string, string> },
   language: {
     label: 'Language',
     // Each language's own name, never translated.

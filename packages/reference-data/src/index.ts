@@ -106,6 +106,35 @@ export function isoDateIn(timeZone?: string, now: Date = new Date()): string {
   }).format(now);
 }
 
+// Every code the API's BusinessError can throw, so the web's locale
+// catalogs can be typed to require a translation for each one.
+export const BUSINESS_ERROR_CODES = [
+  'account_cannot_be_changed',
+  'account_not_active',
+  'account_not_found',
+  'bank_already_deleted',
+  'bank_currency_immutable',
+  'bank_not_active',
+  'bank_required',
+  'category_invalid',
+  'email_change_link_invalid',
+  'last_passkey',
+  'opening_operation_locked',
+  'operation_not_found',
+  'passkey_registration_failed',
+  'passkey_sign_in_failed',
+  'payment_method_invalid',
+  'quota_exceeded',
+  'signup_link_invalid',
+  'step_up_failed',
+  'step_up_required',
+  'transfer_account_invalid',
+  'transfer_account_not_active',
+  'transfer_currency_mismatch',
+  'transfer_same_account',
+] as const;
+export type BusinessErrorCode = (typeof BUSINESS_ERROR_CODES)[number];
+
 // ISO 3166-1 alpha-2 codes accepted as a member's country.
 // `Intl.supportedValuesOf` has no "region" key, so the list is static.
 // prettier-ignore

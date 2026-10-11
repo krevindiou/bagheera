@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BUSINESS_ERROR_CODES,
   COUNTRY_CODES,
   DEFAULT_LOCALE,
   FIELD_LIMITS,
@@ -25,6 +26,13 @@ describe('TRANSFER_PAYMENT_METHOD_IDS', () => {
       PAYMENT_METHOD_ID.TRANSFER_DEBIT,
       PAYMENT_METHOD_ID.TRANSFER_CREDIT,
     ]);
+  });
+});
+
+describe('BUSINESS_ERROR_CODES', () => {
+  it('holds distinct, non-empty codes', () => {
+    expect(new Set(BUSINESS_ERROR_CODES).size).toBe(BUSINESS_ERROR_CODES.length);
+    expect(BUSINESS_ERROR_CODES.every((code) => code.length > 0)).toBe(true);
   });
 });
 
