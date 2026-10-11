@@ -926,9 +926,9 @@ export interface components {
             paymentMethodId: string;
             /** Format: uuid */
             transferAccountId?: string;
-            valueDate: string;
             notes?: string;
             reconciled?: boolean;
+            valueDate: string;
         };
         BatchDeleteResponseDto: {
             message: string;
