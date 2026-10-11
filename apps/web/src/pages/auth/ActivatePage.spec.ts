@@ -5,9 +5,12 @@ import { waitForRouteName } from '../../test-support/waitForRouteName';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
-vi.mock('@simplewebauthn/browser', () => ({ startRegistration: vi.fn() }));
+vi.mock('@simplewebauthn/browser', () => ({
+  browserSupportsWebAuthn: vi.fn(() => true),
+  startRegistration: vi.fn(),
+}));
 
-import { startRegistration } from '@simplewebauthn/browser';
+import { browserSupportsWebAuthn, startRegistration } from '@simplewebauthn/browser';
 import { apiClient as realApiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
 import { router } from '../../router';
@@ -25,6 +28,7 @@ describe('ActivatePage', () => {
     apiClient.POST.mockReset();
     apiClient.GET.mockReset();
     apiClient.GET.mockResolvedValue(jsonResult(200, undefined));
+    vi.mocked(browserSupportsWebAuthn).mockReturnValue(true);
     vi.mocked(startRegistration).mockReset();
     useToast().toasts.splice(0);
   });
@@ -61,6 +65,20 @@ describe('ActivatePage', () => {
 
     expect(apiClient.POST).not.toHaveBeenCalled();
     expect(wrapper.find('button.btn-primary').exists()).toBe(true);
+  });
+
+  it("shows a warning instead of the Continue button when the browser doesn't support WebAuthn", async () => {
+    vi.mocked(browserSupportsWebAuthn).mockReturnValue(false);
+    await router.push({ name: 'activate', query: { key: 'abc123' } });
+    const wrapper = mount(ActivatePage, withGlobalPlugins());
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[role="alert"]').text()).toContain(
+      "This browser doesn't support passkeys",
+    );
+    expect(wrapper.find('button.btn-primary').exists()).toBe(false);
+    expect(router.currentRoute.value.name).toBe('activate');
+    expect(useToast().toasts).toHaveLength(0);
   });
 
   it('drops the key from the address bar while waiting for the click, and still uses it', async () => {
@@ -118,16 +136,47 @@ describe('ActivatePage', () => {
     expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');
   });
 
-  it('shows an error toast and redirects to sign-in when the passkey prompt is cancelled', async () => {
-    apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
+  it('stays on the page with the key kept for a retry when the passkey prompt is cancelled', async () => {
+    apiClient.POST.mockResolvedValue(jsonResult(200, {}));
     vi.mocked(startRegistration).mockRejectedValueOnce(new Error('cancelled'));
 
     await router.push({ name: 'activate', query: { key: 'abc123' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
     await wrapper.vm.$nextTick();
     await wrapper.find('button.btn-primary').trigger('click');
-    await waitForRouteName(router, 'sign-in');
+    await vi.waitFor(() => expect(wrapper.find('[role="alert"]').exists()).toBe(true));
 
-    expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');
+    expect(wrapper.find('[role="alert"]').text()).toBe(
+      'Passkey creation was cancelled. Click Continue to try again.',
+    );
+    expect(router.currentRoute.value.name).toBe('activate');
+    expect(useToast().toasts).toHaveLength(0);
+    expect(wrapper.find('button.btn-primary').attributes('disabled')).toBeUndefined();
+
+    apiClient.POST.mockClear();
+    vi.mocked(startRegistration).mockRejectedValueOnce(new Error('cancelled'));
+    await wrapper.find('button.btn-primary').trigger('click');
+    await vi.waitFor(() =>
+      expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/signup/options', {
+        body: { key: 'abc123' },
+      }),
+    );
+  });
+
+  it('stays on the page with a too-many-attempts message when rate-limited', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(429));
+
+    await router.push({ name: 'activate', query: { key: 'abc123' } });
+    const wrapper = mount(ActivatePage, withGlobalPlugins());
+    await wrapper.vm.$nextTick();
+    await wrapper.find('button.btn-primary').trigger('click');
+    await vi.waitFor(() => expect(wrapper.find('[role="alert"]').exists()).toBe(true));
+
+    expect(wrapper.find('[role="alert"]').text()).toBe(
+      'Too many attempts. Please wait a minute and try again.',
+    );
+    expect(router.currentRoute.value.name).toBe('activate');
+    expect(useToast().toasts).toHaveLength(0);
+    expect(wrapper.find('button.btn-primary').attributes('disabled')).toBeUndefined();
   });
 });

@@ -56,6 +56,8 @@ export default {
       submit: 'Continuer',
       success: 'Compte créé. Vous êtes maintenant connecté.',
       error: 'Ce lien est invalide ou a expiré.',
+      cancelled:
+        'La création de la clé d’accès a été annulée. Cliquez sur Continuer pour réessayer.',
       signInLink: 'Aller à la connexion',
     },
     confirmEmailChange: {

@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { runRegistration } from '../../api/webauthn';
 import { useSessionStore } from '../../stores/session.store';
 import { takeUrlKey } from '../../composables/takeUrlKey';
@@ -18,6 +19,10 @@ const { t } = useI18n();
 // and browsers silently block it otherwise (unit tests don't enforce this).
 const key = ref<string | null>(null);
 const submitting = ref(false);
+type Banner = 'cancelled' | 'rate-limited' | null;
+const banner = ref<Banner>(null);
+// Without it every attempt reports 'cancelled', so a retry would never help.
+const passkeysSupported = browserSupportsWebAuthn();
 
 onMounted(() => {
   // Signing in remounts this page inside the app shell (BaseLayout) while
@@ -40,15 +45,17 @@ function fail() {
 
 async function createAccount() {
   if (!key.value) return;
+  banner.value = null;
   submitting.value = true;
   try {
-    // Cancelled counts as a failure too; the emailed link stays valid for a
-    // retry until its TTL.
     const result = await runRegistration('/webauthn/signup', {
       optionsBody: { key: key.value },
     });
     if (!result.ok) {
-      fail();
+      // Only a rejected key is final; the emailed link stays valid until its
+      // TTL, so the member retries from here rather than from the email.
+      if (result.reason === 'rejected') fail();
+      else banner.value = result.reason;
       return;
     }
 
@@ -65,8 +72,17 @@ async function createAccount() {
   <AuthLayout>
     <h1>{{ $t('auth.activate.title') }}</h1>
 
-    <template v-if="key">
+    <div v-if="key && !passkeysSupported" class="alert alert-warning mt-3" role="alert">
+      {{ $t('auth.signIn.passkeysUnsupported') }}
+    </div>
+    <template v-else-if="key">
       <p class="text-muted">{{ $t('auth.activate.intro') }}</p>
+      <div v-if="banner === 'cancelled'" class="alert alert-warning" role="alert">
+        {{ $t('auth.activate.cancelled') }}
+      </div>
+      <div v-else-if="banner === 'rate-limited'" class="alert alert-warning" role="alert">
+        {{ $t('auth.signIn.tooManyAttempts') }}
+      </div>
       <button
         type="button"
         class="btn btn-primary w-100"

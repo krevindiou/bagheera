@@ -54,6 +54,7 @@ export default {
       submit: 'Continue',
       success: 'Account created. You are now signed in.',
       error: 'This link is invalid or has expired.',
+      cancelled: 'Passkey creation was cancelled. Click Continue to try again.',
       signInLink: 'Go to sign in',
     },
     confirmEmailChange: {
