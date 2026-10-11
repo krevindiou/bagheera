@@ -94,21 +94,24 @@ export class ReportSeriesService {
       });
     }
 
+    if (byCurrency.size === 0) {
+      return { hidden: true, axisBounds: null, series: [] };
+    }
+
+    // One range across every currency: the chart plots all series against
+    // the first one's periods, so they must share the same list.
+    const seenKeys = [...byCurrency.values()].flatMap((periods) => [...periods.keys()]).sort();
+    const periodKeys =
+      grouping === 'all'
+        ? [ALL_PERIOD_KEY]
+        : fillPeriodGaps(seenKeys[0], seenKeys.at(-1)!, grouping);
+
     const series: ReportSeriesEntry[] = [];
     let dataMin = Infinity;
     let dataMax = -Infinity;
 
     for (const currency of [...byCurrency.keys()].sort()) {
       const periods = byCurrency.get(currency)!;
-      const periodKeys =
-        grouping === 'all'
-          ? [ALL_PERIOD_KEY]
-          : fillPeriodGaps(
-              [...periods.keys()].sort()[0],
-              [...periods.keys()].sort().at(-1)!,
-              grouping,
-            );
-
       const credit: ReportSeriesPoint[] = [];
       const debit: ReportSeriesPoint[] = [];
       for (const key of periodKeys) {
@@ -135,10 +138,6 @@ export class ReportSeriesService {
         dataMax = Math.max(dataMax, creditValue, debitValue);
       }
       series.push({ currency, credit, debit });
-    }
-
-    if (series.length === 0) {
-      return { hidden: true, axisBounds: null, series: [] };
     }
 
     return {

@@ -11,11 +11,15 @@ async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   return (res.body as { id: string }).id;
 }
 
-async function createAccount(mutate: SignedInFixture['mutate'], bankId: string): Promise<string> {
+async function createAccount(
+  mutate: SignedInFixture['mutate'],
+  bankId: string,
+  currency = 'EUR',
+): Promise<string> {
   const res = await mutate('post', '/accounts', {
     bankId,
     name: 'Account',
-    currency: 'EUR',
+    currency,
   });
   return (res.body as { account: { id: string } }).account.id;
 }
@@ -90,6 +94,37 @@ describe('GET /reports/:id/series', () => {
     expect(body.hidden).toBe(false);
     expect(body.series).toHaveLength(1);
     expect(body.series[0].currency).toBe('EUR');
+  });
+
+  it('gives every currency the same period list', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const usdAccountId = await createAccount(mutate, bankId, 'USD');
+    const eurAccountId = await createAccount(mutate, bankId, 'EUR');
+    await createOperation(mutate, usdAccountId, 'debit', 10, '2026-01-15');
+    await createOperation(mutate, usdAccountId, 'debit', 20, '2026-03-15');
+    await createOperation(mutate, eurAccountId, 'debit', 5, '2026-03-10');
+
+    const created = await mutate('post', '/reports', {
+      type: 'sum',
+      title: 'Two currencies',
+      periodGrouping: 'month',
+      accountIds: [usdAccountId, eurAccountId],
+    });
+    const { id } = (created.body as { report: { id: string } }).report;
+
+    const res = await agent.get(`/reports/${id}/series`).expect(200);
+    const body = res.body as {
+      series: { currency: string; debit: { period: string; value: number }[] }[];
+    };
+    const months = ['2026-01-01', '2026-02-01', '2026-03-01'];
+    expect(body.series.map((s) => s.currency)).toEqual(['EUR', 'USD']);
+    expect(body.series[0].debit).toEqual([
+      { period: '2026-01-01', value: 0 },
+      { period: '2026-02-01', value: 0 },
+      { period: '2026-03-01', value: toMinorUnits(5) },
+    ]);
+    expect(body.series[1].debit.map((p) => p.period)).toEqual(months);
   });
 
   it('scopes the series to the linked categories only', async () => {
