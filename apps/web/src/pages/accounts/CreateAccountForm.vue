@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
@@ -127,7 +128,11 @@ const onSubmit = handleSubmit(async (values) => {
     <FormField
       :label="$t('accounts.accountName')"
       for="account-name"
-      :error="errors.name && $t('auth.validation.required')"
+      :error="
+        errors.name === 'tooLong'
+          ? $t('auth.validation.maxLength', { max: FIELD_LIMITS.ACCOUNT_NAME })
+          : errors.name && $t('auth.validation.required')
+      "
     >
       <input
         id="account-name"
@@ -135,6 +140,7 @@ const onSubmit = handleSubmit(async (values) => {
         v-bind="nameAttrs"
         v-autofocus="isEdit"
         type="text"
+        :maxlength="FIELD_LIMITS.ACCOUNT_NAME"
         class="form-control"
         :class="{ 'is-invalid': errors.name }"
       />

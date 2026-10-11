@@ -221,6 +221,21 @@ describe('OperationFields', () => {
     wrapper.unmount();
   });
 
+  it('caps third party input and explains a too-long value distinctly from a required one', async () => {
+    const { wrapper, form } = mountFields();
+    const thirdPartyField = () =>
+      wrapper.get('#x-third-party').element.closest('.mb-3')!.textContent;
+
+    expect(wrapper.get('#x-third-party').attributes('maxlength')).toBe('64');
+
+    await wrapper.get('#x-third-party').setValue('a'.repeat(65));
+    await form().validate();
+    await flushPromises();
+    expect(thirdPartyField()).toContain('At most 64 characters.');
+    expect(wrapper.get('#x-third-party').classes()).toContain('is-invalid');
+    wrapper.unmount();
+  });
+
   it('bounds the value date to the range the API accepts, and explains one outside it', async () => {
     const { wrapper, form } = mountFields();
     const input = wrapper.get('#x-value-date');

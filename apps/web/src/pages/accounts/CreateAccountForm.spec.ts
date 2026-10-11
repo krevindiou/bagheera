@@ -182,4 +182,19 @@ describe('CreateAccountForm', () => {
     await wrapper.find('button.btn-outline-secondary').trigger('click');
     expect(wrapper.emitted('cancel')).toHaveLength(1);
   });
+
+  it('caps the account name input and explains a too-long value distinctly from a required one', async () => {
+    const wrapper = mount(CreateAccountForm, {
+      ...withGlobalPlugins(),
+      props: { banks, bankId: 'b1' },
+    });
+    expect(wrapper.find('#account-name').attributes('maxlength')).toBe('64');
+
+    await wrapper.find('#account-name').setValue('a'.repeat(65));
+    await wrapper.find('#account-currency').setValue('USD');
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('At most 64 characters.');
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
 });

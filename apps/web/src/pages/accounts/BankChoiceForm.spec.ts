@@ -95,6 +95,18 @@ describe('BankChoiceForm', () => {
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
+  it('caps the bank name input and explains a too-long value distinctly from the bank-choice message', async () => {
+    const wrapper = mount(BankChoiceForm, { ...withGlobalPlugins(), props: { banks } });
+    expect(wrapper.find('#account-bank-name').attributes('maxlength')).toBe('32');
+
+    await wrapper.find('#account-bank-name').setValue('a'.repeat(33));
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('At most 32 characters.');
+    expect(wrapper.text()).not.toContain('You must select a bank.');
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
   it('emits cancel when the cancel button is clicked', async () => {
     const wrapper = mount(BankChoiceForm, { ...withGlobalPlugins(), props: { banks } });
     await wrapper.find('button.btn-outline-secondary').trigger('click');

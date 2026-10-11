@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { MAX_VALUE_DATE, MIN_VALUE_DATE, type EntryType } from '@bagheera/reference-data';
+import {
+  FIELD_LIMITS,
+  MAX_VALUE_DATE,
+  MIN_VALUE_DATE,
+  type EntryType,
+} from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { computed, nextTick, ref } from 'vue';
 import { useField } from 'vee-validate';
@@ -101,13 +106,18 @@ function onThirdPartyChange() {
     class="position-relative"
     :label="$t('operations.thirdParty')"
     :for="`${idPrefix}-third-party`"
-    :error="thirdPartyError && $t('auth.validation.required')"
+    :error="
+      thirdPartyError === 'tooLong'
+        ? $t('auth.validation.maxLength', { max: FIELD_LIMITS.THIRD_PARTY })
+        : thirdPartyError && $t('auth.validation.required')
+    "
   >
     <input
       :id="`${idPrefix}-third-party`"
       v-model="thirdParty"
       type="text"
       :list="`${idPrefix}-third-party-suggestions`"
+      :maxlength="FIELD_LIMITS.THIRD_PARTY"
       autocomplete="off"
       class="form-control"
       :class="{ 'is-invalid': thirdPartyError }"

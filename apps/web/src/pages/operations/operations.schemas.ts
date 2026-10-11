@@ -14,7 +14,7 @@ export const valueDateSchema = z.string().refine(isValueDate);
 // "External account" (no mirror).
 export const operationSchema = z.object({
   type: z.enum(ENTRY_TYPES),
-  thirdParty: z.string().trim().min(1).max(FIELD_LIMITS.THIRD_PARTY),
+  thirdParty: z.string().trim().min(1).max(FIELD_LIMITS.THIRD_PARTY, 'tooLong'),
   amount: z.preprocess(
     (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),
     z.number().positive().max(AMOUNT_CEILING),

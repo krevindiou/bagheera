@@ -80,6 +80,17 @@ describe('EditBankForm', () => {
     expect(apiClient.PATCH).not.toHaveBeenCalled();
   });
 
+  it('caps the bank name input and explains a too-long value distinctly from a required one', async () => {
+    const wrapper = mount(EditBankForm, { ...withGlobalPlugins(), props: { bank } });
+    expect(wrapper.find('#bank-name').attributes('maxlength')).toBe('32');
+
+    await wrapper.find('#bank-name').setValue('a'.repeat(33));
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('At most 32 characters.');
+    expect(apiClient.PATCH).not.toHaveBeenCalled();
+  });
+
   it('emits cancel when the cancel button is clicked', async () => {
     const wrapper = mount(EditBankForm, { ...withGlobalPlugins(), props: { bank } });
     await wrapper.find('button.btn-outline-secondary').trigger('click');

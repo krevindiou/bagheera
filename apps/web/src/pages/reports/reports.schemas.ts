@@ -16,7 +16,7 @@ const optionalDate = z.preprocess(
 export const reportSchema = z
   .object({
     type: z.enum(REPORT_TYPES),
-    title: z.string().trim().min(1).max(FIELD_LIMITS.REPORT_TITLE),
+    title: z.string().trim().min(1).max(FIELD_LIMITS.REPORT_TITLE, 'tooLong'),
     homepage: z.boolean().optional(),
     valueDateStart: optionalDate,
     valueDateEnd: optionalDate,

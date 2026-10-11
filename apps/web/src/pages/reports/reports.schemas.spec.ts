@@ -16,6 +16,12 @@ describe('reportSchema', () => {
     expect(reportSchema.safeParse({ ...base, title: '' }).success).toBe(false);
   });
 
+  it('rejects a title over 64 chars with a distinct tooLong message', () => {
+    const result = reportSchema.safeParse({ ...base, title: 'a'.repeat(65) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('tooLong');
+  });
+
   it('rejects an invalid type or periodGrouping', () => {
     expect(reportSchema.safeParse({ ...base, type: 'invalid' }).success).toBe(false);
     expect(reportSchema.safeParse({ ...base, periodGrouping: 'invalid' }).success).toBe(false);

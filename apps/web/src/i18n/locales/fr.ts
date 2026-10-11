@@ -72,6 +72,7 @@ export default {
       required: 'Ce champ est requis.',
       email: 'Saisissez une adresse email valide.',
       country: 'Le pays doit être un code à 2 lettres.',
+      maxLength: 'Au maximum {max} caractères.',
     },
   },
   nav: {

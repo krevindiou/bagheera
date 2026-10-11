@@ -15,8 +15,10 @@ describe('editBankSchema', () => {
     expect(editBankSchema.safeParse({ name: '   ' }).success).toBe(false);
   });
 
-  it('rejects a name over 32 chars', () => {
-    expect(editBankSchema.safeParse({ name: 'a'.repeat(33) }).success).toBe(false);
+  it('rejects a name over 32 chars with a distinct tooLong message', () => {
+    const result = editBankSchema.safeParse({ name: 'a'.repeat(33) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('tooLong');
   });
 });
 
@@ -25,8 +27,10 @@ describe('editAccountSchema', () => {
     expect(editAccountSchema.safeParse({ name: 'Checking' }).success).toBe(true);
   });
 
-  it('rejects a name over 64 chars', () => {
-    expect(editAccountSchema.safeParse({ name: 'a'.repeat(65) }).success).toBe(false);
+  it('rejects a name over 64 chars with a distinct tooLong message', () => {
+    const result = editAccountSchema.safeParse({ name: 'a'.repeat(65) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('tooLong');
   });
 });
 
@@ -45,6 +49,12 @@ describe('bankChoiceSchema', () => {
 
   it('rejects neither bankId nor bankName set', () => {
     expect(bankChoiceSchema.safeParse({}).success).toBe(false);
+  });
+
+  it('rejects a bankName over 32 chars with a distinct tooLong message', () => {
+    const result = bankChoiceSchema.safeParse({ bankName: 'a'.repeat(33) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('tooLong');
   });
 });
 
@@ -73,5 +83,11 @@ describe('createAccountSchema', () => {
 
   it('rejects a missing bankId', () => {
     expect(createAccountSchema.safeParse({ ...base, bankId: '' }).success).toBe(false);
+  });
+
+  it('rejects a name over 64 chars with a distinct tooLong message', () => {
+    const result = createAccountSchema.safeParse({ ...base, name: 'a'.repeat(65) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('tooLong');
   });
 });

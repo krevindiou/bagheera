@@ -1,4 +1,4 @@
-import type { EntryType } from '@bagheera/reference-data';
+import { FIELD_LIMITS, type EntryType } from '@bagheera/reference-data';
 import { onScopeDispose, ref, watch, type Ref } from 'vue';
 import { apiClient } from '../api/client';
 
@@ -26,7 +26,9 @@ export function useThirdPartyAutocomplete(
     if (debounceHandle) clearTimeout(debounceHandle);
     const query = value?.trim() ?? '';
     const currentQuery = ++querySequence;
-    if (query.length < 2) {
+    // A pasted value can exceed the field's maxlength before the DOM
+    // truncates it; the API would reject such a query anyway.
+    if (query.length < 2 || query.length > FIELD_LIMITS.THIRD_PARTY) {
       suggestions.value = [];
       return;
     }

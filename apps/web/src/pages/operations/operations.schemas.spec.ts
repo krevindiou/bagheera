@@ -47,8 +47,10 @@ describe('operationSchema', () => {
     expect(operationSchema.safeParse({ ...base, thirdParty: '  ' }).success).toBe(false);
   });
 
-  it('rejects a thirdParty over 64 chars', () => {
-    expect(operationSchema.safeParse({ ...base, thirdParty: 'a'.repeat(65) }).success).toBe(false);
+  it('rejects a thirdParty over 64 chars with a distinct tooLong message', () => {
+    const result = operationSchema.safeParse({ ...base, thirdParty: 'a'.repeat(65) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('tooLong');
   });
 
   it('rejects an invalid type', () => {

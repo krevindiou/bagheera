@@ -178,6 +178,18 @@ describe('useThirdPartyAutocomplete', () => {
     expect(onExactMatch).not.toHaveBeenCalled();
   });
 
+  it("doesn't query an over-limit value (e.g. a pasted string bypassing the input's maxlength)", async () => {
+    const thirdParty = ref<string | undefined>('');
+    const { suggestions } = mount(thirdParty, ref('debit'), vi.fn());
+
+    thirdParty.value = 'a'.repeat(65);
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(300);
+
+    expect(apiClient.GET).not.toHaveBeenCalled();
+    expect(suggestions.value).toEqual([]);
+  });
+
   it('clears suggestions once the field drops back under 2 characters', async () => {
     apiClient.GET.mockResolvedValueOnce({
       data: [{ thirdParty: 'Landlord', categoryId: null }],

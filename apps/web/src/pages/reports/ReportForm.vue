@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
+import { FIELD_LIMITS, MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
@@ -131,7 +131,11 @@ const onSubmit = handleSubmit(async (submitted) => {
     <FormField
       :label="$t('reports.reportTitle')"
       for="report-title"
-      :error="errors.title && $t('auth.validation.required')"
+      :error="
+        errors.title === 'tooLong'
+          ? $t('auth.validation.maxLength', { max: FIELD_LIMITS.REPORT_TITLE })
+          : errors.title && $t('auth.validation.required')
+      "
     >
       <input
         id="report-title"
@@ -139,6 +143,7 @@ const onSubmit = handleSubmit(async (submitted) => {
         v-bind="titleAttrs"
         v-autofocus
         type="text"
+        :maxlength="FIELD_LIMITS.REPORT_TITLE"
         class="form-control"
         :class="{ 'is-invalid': errors.title }"
       />

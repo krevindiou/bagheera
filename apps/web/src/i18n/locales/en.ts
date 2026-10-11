@@ -69,6 +69,7 @@ export default {
       required: 'This field is required.',
       email: 'Enter a valid email address.',
       country: 'Country must be a 2-letter code.',
+      maxLength: 'At most {max} characters.',
     },
   },
   nav: {

@@ -145,6 +145,17 @@ describe('ReportForm', () => {
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
+  it('caps the title input and explains a too-long value distinctly from a required one', async () => {
+    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    expect(wrapper.find('#report-title').attributes('maxlength')).toBe('64');
+
+    await wrapper.find('#report-title').setValue('a'.repeat(65));
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('At most 64 characters.');
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
   it("shows a validation error and doesn't submit for a backwards date range", async () => {
     const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
     await wrapper.find('#report-title').setValue('Rent');
