@@ -6,11 +6,12 @@ import {
   type EntryType,
 } from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EntryTypeRadio from '../../components/EntryTypeRadio.vue';
 import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
+import CheckboxList from '../../components/CheckboxList.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
 import { paymentMethodName } from '../../domain/referenceData';
@@ -73,6 +74,12 @@ const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTyp
   type,
   () => props.categories,
   () => props.paymentMethods,
+);
+const paymentMethodItems = computed(() =>
+  filteredPaymentMethods.value.map((pm) => ({
+    id: pm.id,
+    label: paymentMethodName(pm.id, props.paymentMethods),
+  })),
 );
 
 function isAmount(value: number | '' | undefined): value is number {
@@ -170,11 +177,11 @@ function onClear() {
     </FormField>
 
     <FormField :label="$t('operations.paymentMethod')" for="search-payment-methods">
-      <select id="search-payment-methods" v-model="paymentMethodIds" multiple class="form-select">
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-          {{ paymentMethodName(pm.id, paymentMethods) }}
-        </option>
-      </select>
+      <CheckboxList
+        id="search-payment-methods"
+        v-model="paymentMethodIds"
+        :items="paymentMethodItems"
+      />
     </FormField>
 
     <div class="row mb-3 align-items-end">

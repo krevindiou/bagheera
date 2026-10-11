@@ -188,8 +188,10 @@ describe('ReportForm', () => {
     await wrapper.find('#report-value-date-start').setValue('2026-02-01');
     await wrapper.find('#report-value-date-end').setValue('2026-02-28');
     await wrapper.find('#report-third-parties').setValue('Amazon');
-    await wrapper.find('#report-accounts').setValue(['a1', 'a2']);
-    await wrapper.find('#report-categories').setValue(['c1', 'c2']);
+    await wrapper.find('#report-accounts-a1').setValue(true);
+    await wrapper.find('#report-accounts-a2').setValue(true);
+    await wrapper.find('#report-categories-c1').setValue(true);
+    await wrapper.find('#report-categories-c2').setValue(true);
     await wrapper.find('#report-reconciled').setValue(true);
     await wrapper.find('#report-period-grouping').setValue('year');
     await submitAndSettle(wrapper);
@@ -295,6 +297,17 @@ describe('ReportForm', () => {
     expect((wrapper.find('#report-period-grouping').element as HTMLSelectElement).value).toBe(
       'quarter',
     );
+  });
+
+  it('offers categories and accounts as checkbox lists rather than Ctrl/Cmd multi-selects', () => {
+    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+
+    expect(wrapper.find('#report-accounts select').exists()).toBe(false);
+    expect(wrapper.find('#report-accounts').attributes('role')).toBe('group');
+    expect(wrapper.find('#report-accounts').attributes('aria-labelledby')).toBe(
+      'report-accounts-label',
+    );
+    expect(wrapper.find('#report-categories').attributes('role')).toBe('group');
   });
 
   it('emits cancel when the cancel button is clicked', async () => {

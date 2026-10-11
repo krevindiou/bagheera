@@ -8,6 +8,7 @@ import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
+import CheckboxList from '../../components/CheckboxList.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
 import type { Account } from '../accounts/accounts.types';
@@ -28,6 +29,7 @@ const props = defineProps<{
 
 // A report spans debit and credit, so every category is offered.
 const groupedCategories = computed(() => groupCategories(props.categories));
+const accountItems = computed(() => props.accounts.map((a) => ({ id: a.id, label: a.name })));
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
@@ -216,15 +218,12 @@ const onSubmit = handleSubmit(async (submitted) => {
       for="report-accounts"
       :hint="$t('reports.accountsHint')"
     >
-      <select
+      <CheckboxList
         id="report-accounts"
         v-model="accountIds"
         v-bind="accountIdsAttrs"
-        multiple
-        class="form-select"
-      >
-        <option v-for="a in props.accounts" :key="a.id" :value="a.id">{{ a.name }}</option>
-      </select>
+        :items="accountItems"
+      />
     </FormField>
 
     <div class="mb-3 form-check">

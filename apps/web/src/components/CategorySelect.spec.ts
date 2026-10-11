@@ -15,7 +15,7 @@ const groups = groupCategories(categories);
 
 function mountSelect(
   options: {
-    props?: { emptyLabel?: string; modelValue?: string | string[] };
+    props?: { emptyLabel?: string; modelValue?: string | string[]; multiple?: boolean };
     attrs?: Record<string, unknown>;
   } = {},
 ) {
@@ -62,14 +62,39 @@ describe('CategorySelect', () => {
     expect(wrapper.emitted('update:modelValue')).toEqual([['c3']]);
   });
 
-  it('binds an array of ids once `multiple` is passed through', async () => {
-    const wrapper = mountSelect({ props: { modelValue: ['c1'] }, attrs: { multiple: '' } });
-    const select = wrapper.find('select');
-    expect((select.element as HTMLSelectElement).multiple).toBe(true);
+  it('renders a checkbox list instead of a <select> once `multiple` is passed', () => {
+    const wrapper = mountSelect({ props: { multiple: true, modelValue: ['c1'] } });
 
-    await select.setValue(['c3', 'c2']);
+    expect(wrapper.find('select').exists()).toBe(false);
+    expect(wrapper.find('[role="group"]').exists()).toBe(true);
+    expect(
+      wrapper
+        .findAll('input[type="checkbox"]')
+        .map((input) => (input.element as HTMLInputElement).value),
+    ).toEqual(['c3', 'c1', 'c2']);
+  });
 
-    expect(wrapper.emitted('update:modelValue')).toEqual([[['c3', 'c2']]]);
+  it('binds an array of ids both ways in multiple mode, checking several without Ctrl/Cmd', async () => {
+    const wrapper = mountSelect({ props: { multiple: true, modelValue: ['c1'] } });
+    const checkboxes = wrapper.findAll('input[type="checkbox"]');
+    const c1 = checkboxes.find((i) => (i.element as HTMLInputElement).value === 'c1')!;
+    const c3 = checkboxes.find((i) => (i.element as HTMLInputElement).value === 'c3')!;
+
+    expect((c1.element as HTMLInputElement).checked).toBe(true);
+
+    await c3.setValue(true);
+
+    expect(wrapper.emitted('update:modelValue')!.at(-1)).toEqual([['c1', 'c3']]);
+  });
+
+  it('indents a child category under its group heading', () => {
+    const wrapper = mountSelect({ props: { multiple: true } });
+
+    expect(wrapper.find('.checkbox-list-group-label').text()).toBe('Food');
+    const childLabel = wrapper
+      .findAll('label')
+      .find((label) => label.text() === 'Food > Groceries')!;
+    expect(childLabel.element.closest('.form-check')!.className).toContain('form-check-child');
   });
 
   it('puts the id and listeners it is given on the <select>', async () => {
@@ -80,5 +105,14 @@ describe('CategorySelect', () => {
     expect(select.attributes('id')).toBe('category');
     await select.trigger('blur');
     expect(onBlur).toHaveBeenCalledTimes(1);
+  });
+
+  it('derives the checkbox-list group id and aria-labelledby from the given id', () => {
+    const wrapper = mountSelect({ props: { multiple: true }, attrs: { id: 'report-categories' } });
+    const group = wrapper.find('[role="group"]');
+
+    expect(group.attributes('id')).toBe('report-categories');
+    expect(group.attributes('aria-labelledby')).toBe('report-categories-label');
+    expect(wrapper.find('#report-categories-c3').exists()).toBe(true);
   });
 });

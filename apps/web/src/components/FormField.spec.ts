@@ -21,6 +21,12 @@ describe('FormField', () => {
     expect(wrapper.classes()).toContain('mb-3');
   });
 
+  it('gives the label an id a non-labelable control can reference via aria-labelledby', () => {
+    const wrapper = mountField();
+
+    expect(wrapper.get('label').attributes('id')).toBe('amount-label');
+  });
+
   it('shows no error or hint by default', () => {
     const wrapper = mountField();
 

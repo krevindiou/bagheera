@@ -252,6 +252,35 @@ input[type='radio'] {
   color: var(--paper-faint);
 }
 
+/* A scrollable checkbox group standing in for a native <select multiple> —
+   picking several no longer needs Ctrl/Cmd+click. */
+.checkbox-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--hair-strong);
+  border-radius: 4px;
+  padding: 9px 13px;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+.checkbox-list .form-check {
+  margin-bottom: 6px;
+}
+.checkbox-list .form-check:last-child {
+  margin-bottom: 0;
+}
+.checkbox-list .form-check-child {
+  margin-left: 1.5rem;
+}
+.checkbox-list-group-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--paper-faint);
+  margin: 10px 0 4px;
+}
+.checkbox-list-group-label:first-child {
+  margin-top: 0;
+}
+
 /* ---------- Pills (Closed/Deleted/Homepage tags) ---------- */
 .pill {
   display: inline-block;

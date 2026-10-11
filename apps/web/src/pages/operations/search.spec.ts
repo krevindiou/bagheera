@@ -43,14 +43,14 @@ describe('SearchPanel', () => {
   it('offers categories/payment methods of both types when "Any" is picked', () => {
     const wrapper = mountPanel();
     const options = wrapper
-      .findAll('#search-payment-methods option')
-      .map((o) => (o.element as HTMLOptionElement).value);
+      .findAll('#search-payment-methods input[type="checkbox"]')
+      .map((o) => (o.element as HTMLInputElement).value);
     expect(options).toEqual(['p1', 'p2']);
   });
 
   it('keeps a selection made under "Any" when switching to its matching type', async () => {
     const wrapper = mountPanel();
-    await wrapper.find('#search-categories').setValue(['c1']);
+    await wrapper.find('#search-categories-c1').setValue(true);
     await wrapper.find('#search-type-debit').setValue(true);
     await wrapper.find('form').trigger('submit');
 
@@ -60,7 +60,7 @@ describe('SearchPanel', () => {
 
   it('drops a selection that no longer matches once switched away from "Any"', async () => {
     const wrapper = mountPanel();
-    await wrapper.find('#search-categories').setValue(['c2']);
+    await wrapper.find('#search-categories-c2').setValue(true);
     await wrapper.find('#search-type-debit').setValue(true);
     await wrapper.find('form').trigger('submit');
 
@@ -95,8 +95,8 @@ describe('SearchPanel', () => {
   it('builds and emits criteria on submit, trimming text and dropping empty fields', async () => {
     const wrapper = mountPanel();
     await wrapper.find('#search-third-party').setValue('  Landlord  ');
-    await wrapper.find('#search-categories').setValue(['c1']);
-    await wrapper.find('#search-payment-methods').setValue(['p1']);
+    await wrapper.find('#search-categories-c1').setValue(true);
+    await wrapper.find('#search-payment-methods-p1').setValue(true);
     await wrapper.find('#search-amount-operator-1').setValue('gt');
     await wrapper.findAll('input[type="number"]')[0].setValue(100);
     await wrapper.find('#search-date-from').setValue('2026-01-01');
@@ -129,9 +129,8 @@ describe('SearchPanel', () => {
         paymentMethods,
       },
     });
-    const group = wrapper.find('optgroup');
-    expect(group.attributes('label')).toBe('Food');
-    expect(group.text()).toContain('Groceries');
+    expect(wrapper.find('.checkbox-list-group-label').text()).toBe('Food');
+    expect(wrapper.find('#search-categories-c3').exists()).toBe(true);
   });
 
   it('ignores the second amount row when the first is empty', async () => {
@@ -181,7 +180,7 @@ describe('SearchPanel', () => {
 
     // And switching back to debit restores the debit-only choices.
     await wrapper.find('#search-type-debit').setValue(true);
-    await wrapper.find('#search-categories').setValue(['c1']);
+    await wrapper.find('#search-categories-c1').setValue(true);
     await wrapper.find('form').trigger('submit');
 
     const [secondCriteria] = wrapper.emitted('submit')![1] as [SearchCriteria];
