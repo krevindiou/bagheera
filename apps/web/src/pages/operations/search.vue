@@ -35,9 +35,10 @@ const thirdParty = ref('');
 const categoryIds = ref<string[]>([]);
 const paymentMethodIds = ref<string[]>([]);
 const amountOperator1 = ref<'' | AmountComparatorOperator>('');
-const amountValue1 = ref<number | undefined>(undefined);
+// v-model.number leaves '' as-is (not undefined) when the input is cleared.
+const amountValue1 = ref<number | '' | undefined>(undefined);
 const amountOperator2 = ref<'' | AmountComparatorOperator>('');
-const amountValue2 = ref<number | undefined>(undefined);
+const amountValue2 = ref<number | '' | undefined>(undefined);
 const dateFrom = ref('');
 const dateTo = ref('');
 const notes = ref('');
@@ -73,12 +74,16 @@ const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTyp
   () => props.paymentMethods,
 );
 
+function isAmount(value: number | '' | undefined): value is number {
+  return typeof value === 'number' && !isNaN(value);
+}
+
 function buildCriteria(): SearchCriteria {
   const amountComparators: SearchCriteria['amountComparators'] = [];
   // The second row is ignored unless the first has a value.
-  if (amountOperator1.value && amountValue1.value !== undefined) {
+  if (amountOperator1.value && isAmount(amountValue1.value)) {
     amountComparators.push({ operator: amountOperator1.value, value: amountValue1.value });
-    if (amountOperator2.value && amountValue2.value !== undefined) {
+    if (amountOperator2.value && isAmount(amountValue2.value)) {
       amountComparators.push({ operator: amountOperator2.value, value: amountValue2.value });
     }
   }

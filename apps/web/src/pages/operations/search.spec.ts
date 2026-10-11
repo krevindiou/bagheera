@@ -103,6 +103,18 @@ describe('SearchPanel', () => {
     expect(criteria.amountComparators).toBeUndefined();
   });
 
+  it('drops the amount comparator when a typed value is cleared back out', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-amount-operator-1').setValue('gt');
+    const amountInput = wrapper.findAll('input[type="number"]')[0];
+    await amountInput.setValue(100);
+    await amountInput.setValue('');
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.amountComparators).toBeUndefined();
+  });
+
   it('includes the second amount row once the first is set too', async () => {
     const wrapper = mountPanel();
     await wrapper.find('#search-amount-operator-1').setValue('gte');
