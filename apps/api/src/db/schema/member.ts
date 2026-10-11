@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { integer, pgTable, timestamp, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { TIME_ZONE_MAX_LENGTH } from '../../common/local-date';
 import { DEFAULT_LOCALE } from '../../common/locale';
 import { localeEnum } from './enums';
@@ -11,7 +12,7 @@ export const member = pgTable(
   'member',
   {
     id: uuidPk(),
-    email: varchar('email', { length: 128 }).notNull(),
+    email: varchar('email', { length: FIELD_LIMITS.EMAIL }).notNull(),
     country: varchar('country', { length: 2 }).notNull(),
     // UI/email language, independent of `country`. Set at registration from
     // the browser's locale, changeable from settings.
@@ -25,7 +26,7 @@ export const member = pgTable(
     // Set while an email change is awaiting confirmation at the new
     // address; null the rest of the time. `email` itself is only ever
     // written once that confirmation lands — see ProfileService.
-    pendingEmail: varchar('pending_email', { length: 128 }),
+    pendingEmail: varchar('pending_email', { length: FIELD_LIMITS.EMAIL }),
     emailChangeTokenVersion: integer('email_change_token_version').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })

@@ -1,4 +1,5 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { describe, expect, it } from 'vitest';
 import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import { schedulerSchema } from './schedulers.schemas';
@@ -29,6 +30,12 @@ describe('schedulerSchema', () => {
   it('rejects a zero or fractional frequencyValue', () => {
     expect(schedulerSchema.safeParse({ ...base, frequencyValue: 0 }).success).toBe(false);
     expect(schedulerSchema.safeParse({ ...base, frequencyValue: 1.5 }).success).toBe(false);
+  });
+
+  it('accepts a frequencyValue at the cap and rejects one above it', () => {
+    const max = FIELD_LIMITS.FREQUENCY_VALUE;
+    expect(schedulerSchema.safeParse({ ...base, frequencyValue: max }).success).toBe(true);
+    expect(schedulerSchema.safeParse({ ...base, frequencyValue: max + 1 }).success).toBe(false);
   });
 
   it('rejects a missing frequencyValue (empty string, undefined, or null)', () => {

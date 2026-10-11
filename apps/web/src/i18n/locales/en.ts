@@ -202,7 +202,7 @@ export default {
     genericError: 'Something went wrong. Please try again.',
     empty: 'No scheduled operations yet.',
     validation: {
-      frequencyValue: 'Enter a frequency of at least 1.',
+      frequencyValue: 'Enter a whole number between 1 and {max}.',
     },
     batch: {
       delete: 'Delete selected',

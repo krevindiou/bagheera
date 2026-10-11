@@ -206,7 +206,7 @@ export default {
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération planifiée pour l'instant.",
     validation: {
-      frequencyValue: 'Saisissez une fréquence d’au moins 1.',
+      frequencyValue: 'Saisissez un nombre entier entre 1 et {max}.',
     },
     batch: {
       delete: 'Supprimer la sélection',

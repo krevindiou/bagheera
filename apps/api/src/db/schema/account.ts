@@ -1,4 +1,5 @@
 import { boolean, index, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { bank } from './bank';
 import { uuidPk } from './id';
 
@@ -11,7 +12,7 @@ export const account = pgTable(
     bankId: uuid('bank_id')
       .notNull()
       .references(() => bank.id),
-    name: varchar('name', { length: 64 }).notNull(),
+    name: varchar('name', { length: FIELD_LIMITS.ACCOUNT_NAME }).notNull(),
     currency: varchar('currency', { length: 3 }).notNull(),
     closed: boolean('closed').notNull().default(false),
     deleted: boolean('deleted').notNull().default(false),

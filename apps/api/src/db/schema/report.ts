@@ -9,6 +9,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { account } from './account';
 import { category } from './category';
 import { uuidPk } from './id';
@@ -23,7 +24,7 @@ export const report = pgTable(
       .notNull()
       .references(() => member.id),
     type: reportTypeEnum('type').notNull(),
-    title: varchar('title', { length: 64 }).notNull(),
+    title: varchar('title', { length: FIELD_LIMITS.REPORT_TITLE }).notNull(),
     homepage: boolean('homepage').notNull().default(false),
     valueDateStart: date('value_date_start'),
     valueDateEnd: date('value_date_end'),

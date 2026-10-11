@@ -1,5 +1,10 @@
 import { MAX_SIGNIFICANT_RESULTS_NUMBER } from '../../domain/referenceData';
-import { DATA_GROUPINGS, PERIOD_GROUPINGS, REPORT_TYPES } from '@bagheera/reference-data';
+import {
+  DATA_GROUPINGS,
+  FIELD_LIMITS,
+  PERIOD_GROUPINGS,
+  REPORT_TYPES,
+} from '@bagheera/reference-data';
 import { z } from 'zod';
 
 const optionalDate = z.preprocess(
@@ -11,7 +16,7 @@ const optionalDate = z.preprocess(
 export const reportSchema = z
   .object({
     type: z.enum(REPORT_TYPES),
-    title: z.string().trim().min(1).max(64),
+    title: z.string().trim().min(1).max(FIELD_LIMITS.REPORT_TITLE),
     homepage: z.boolean().optional(),
     valueDateStart: optionalDate,
     valueDateEnd: optionalDate,

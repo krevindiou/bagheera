@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
+import { FIELD_LIMITS, MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
@@ -112,7 +112,10 @@ const onSubmit = handleSubmit(async (submitted) => {
             class="col"
             :label="$t('schedulers.every')"
             for="scheduler-frequency-value"
-            :error="errors.frequencyValue && $t('schedulers.validation.frequencyValue')"
+            :error="
+              errors.frequencyValue &&
+              $t('schedulers.validation.frequencyValue', { max: FIELD_LIMITS.FREQUENCY_VALUE })
+            "
           >
             <input
               id="scheduler-frequency-value"
@@ -120,6 +123,7 @@ const onSubmit = handleSubmit(async (submitted) => {
               v-bind="frequencyValueAttrs"
               type="number"
               min="1"
+              :max="FIELD_LIMITS.FREQUENCY_VALUE"
               step="1"
               class="form-control"
               :class="{ 'is-invalid': errors.frequencyValue }"

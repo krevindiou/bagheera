@@ -2,6 +2,7 @@ import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'cla
 import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 import {
   ENTRY_TYPES,
+  FIELD_LIMITS,
   FREQUENCY_UNITS,
   type EntryType,
   type FrequencyUnit,
@@ -57,7 +58,7 @@ export class CreateSchedulerDto {
   // string comparison ending dueOccurrences() breaks.
   @IsInt()
   @IsPositive()
-  @Max(100)
+  @Max(FIELD_LIMITS.FREQUENCY_VALUE)
   frequencyValue!: number;
 
   @IsOptional()

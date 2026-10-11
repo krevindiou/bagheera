@@ -12,6 +12,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { MinorUnits } from '../../common/money';
 import { account } from './account';
 import { category } from './category';
@@ -33,7 +34,7 @@ export const scheduler = pgTable(
     paymentMethodId: uuid('payment_method_id')
       .notNull()
       .references(() => paymentMethod.id),
-    thirdParty: varchar('third_party', { length: 64 }).notNull(),
+    thirdParty: varchar('third_party', { length: FIELD_LIMITS.THIRD_PARTY }).notNull(),
     debit: bigint('debit', { mode: 'number' }).$type<MinorUnits>(),
     credit: bigint('credit', { mode: 'number' }).$type<MinorUnits>(),
     valueDate: date('value_date').notNull(),

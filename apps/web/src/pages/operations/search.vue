@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { MAX_VALUE_DATE, MIN_VALUE_DATE, type EntryType } from '@bagheera/reference-data';
+import {
+  FIELD_LIMITS,
+  MAX_VALUE_DATE,
+  MIN_VALUE_DATE,
+  type EntryType,
+} from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -138,7 +143,7 @@ function onClear() {
         id="search-third-party"
         v-model="thirdParty"
         type="text"
-        maxlength="64"
+        :maxlength="FIELD_LIMITS.THIRD_PARTY"
         class="form-control"
       />
     </FormField>

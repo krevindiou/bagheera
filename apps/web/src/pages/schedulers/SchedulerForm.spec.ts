@@ -1,4 +1,5 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
@@ -365,17 +366,22 @@ describe('SchedulerForm', () => {
     expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
   });
 
-  it("shows a validation error and doesn't submit for a zero frequency", async () => {
-    const wrapper = mountForm();
-    await wrapper.find('#scheduler-third-party').setValue('Landlord');
-    await wrapper.find('#scheduler-amount').setValue('50');
-    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
-    await wrapper.find('#scheduler-frequency-value').setValue('0');
-    await submitAndSettle(wrapper);
+  it.each(['0', String(FIELD_LIMITS.FREQUENCY_VALUE + 1)])(
+    "shows a validation error and doesn't submit for a frequency of %s",
+    async (frequencyValue) => {
+      const wrapper = mountForm();
+      await wrapper.find('#scheduler-third-party').setValue('Landlord');
+      await wrapper.find('#scheduler-amount').setValue('50');
+      await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+      await wrapper.find('#scheduler-frequency-value').setValue(frequencyValue);
+      await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('Enter a frequency of at least 1.');
-    expect(apiClient.POST).not.toHaveBeenCalled();
-  });
+      expect(wrapper.text()).toContain(
+        `Enter a whole number between 1 and ${FIELD_LIMITS.FREQUENCY_VALUE}.`,
+      );
+      expect(apiClient.POST).not.toHaveBeenCalled();
+    },
+  );
 
   it("shows an error toast and doesn't emit saved when submission fails", async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(400, undefined, { message: 'Bad request' }));

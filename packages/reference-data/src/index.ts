@@ -49,6 +49,21 @@ export type DataGrouping = (typeof DATA_GROUPINGS)[number];
 // "Other"; the API's CreateReportDto and the web report form both cap at it.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
+// Caps on member-submitted fields, shared by the API's column widths, its
+// DTOs and the web forms. Text caps are character counts; changing one
+// that sizes a varchar column needs a migration.
+export const FIELD_LIMITS = {
+  BANK_NAME: 32,
+  ACCOUNT_NAME: 64,
+  THIRD_PARTY: 64,
+  REPORT_TITLE: 64,
+  EMAIL: 128,
+  // Notes are an unbounded `text` column; this only bounds the request.
+  NOTES: 4096,
+  // A scheduler's recurrence interval, in its frequency unit.
+  FREQUENCY_VALUE: 100,
+} as const;
+
 // The synthesis chart's window choices (the trailing 12 or 24 months, or the
 // full history), sent as the dashboard and account chart's `range` param.
 export const SYNTHESIS_CHART_RANGES = ['12', '24', 'all'] as const;

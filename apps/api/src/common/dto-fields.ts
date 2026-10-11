@@ -1,4 +1,5 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import {
   IsEmail,
   IsIn,
@@ -24,7 +25,7 @@ import { isValueDate, MAX_VALUE_DATE, MIN_VALUE_DATE } from './value-date';
 export function EmailField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsEmail()(target, propertyKey);
-    MaxLength(128)(target, propertyKey);
+    MaxLength(FIELD_LIMITS.EMAIL)(target, propertyKey);
   };
 }
 
@@ -72,7 +73,7 @@ function boundedName(maxLength: number): PropertyDecorator {
 
 /** An account's display name: capped to the `account.name` column width. */
 export function AccountNameField(): PropertyDecorator {
-  return boundedName(64);
+  return boundedName(FIELD_LIMITS.ACCOUNT_NAME);
 }
 
 /**
@@ -80,17 +81,17 @@ export function AccountNameField(): PropertyDecorator {
  * `third_party` column width shared by both tables.
  */
 export function ThirdPartyField(): PropertyDecorator {
-  return boundedName(64);
+  return boundedName(FIELD_LIMITS.THIRD_PARTY);
 }
 
 /** A report's title: capped to the `report.title` column width. */
 export function ReportTitleField(): PropertyDecorator {
-  return boundedName(64);
+  return boundedName(FIELD_LIMITS.REPORT_TITLE);
 }
 
 /** A bank's display name: capped to the `bank.name` column width. */
 export function BankNameField(): PropertyDecorator {
-  return boundedName(32);
+  return boundedName(FIELD_LIMITS.BANK_NAME);
 }
 
 /** Free-text notes on an operation/scheduler; the column is unbounded `text`. */
@@ -98,7 +99,7 @@ export function NotesField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsOptional()(target, propertyKey);
     IsString()(target, propertyKey);
-    MaxLength(4096)(target, propertyKey);
+    MaxLength(FIELD_LIMITS.NOTES)(target, propertyKey);
   };
 }
 

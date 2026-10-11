@@ -1,15 +1,15 @@
-import { CURRENCY_CODES } from '@bagheera/reference-data';
+import { CURRENCY_CODES, FIELD_LIMITS } from '@bagheera/reference-data';
 import { z } from 'zod';
 
 // Field rules mirror the API DTOs (apps/api/src/{banks,accounts}/dto/*).
-const accountName = z.string().trim().min(1).max(64);
+const accountName = z.string().trim().min(1).max(FIELD_LIMITS.ACCOUNT_NAME);
 const currency = z
   .string()
   .trim()
   .refine((code) => CURRENCY_CODES.includes(code));
 
 export const editBankSchema = z.object({
-  name: z.string().trim().min(1).max(32),
+  name: z.string().trim().min(1).max(FIELD_LIMITS.BANK_NAME),
 });
 export type EditBankForm = z.infer<typeof editBankSchema>;
 
@@ -21,7 +21,7 @@ export const editAccountSchema = z.object({
 export const bankChoiceSchema = z
   .object({
     bankId: z.string().optional(),
-    bankName: z.string().trim().max(32).optional(),
+    bankName: z.string().trim().max(FIELD_LIMITS.BANK_NAME).optional(),
   })
   .refine((form) => Boolean(form.bankId) !== Boolean(form.bankName), {
     message: 'bankChoiceRequired',

@@ -1,6 +1,6 @@
 import { AMOUNT_CEILING } from '@bagheera/money';
 import { z } from 'zod';
-import { ENTRY_TYPES, isValueDate } from '@bagheera/reference-data';
+import { ENTRY_TYPES, FIELD_LIMITS, isValueDate } from '@bagheera/reference-data';
 
 const optionalId = z.preprocess(
   (value) => (value === '' || value === undefined || value === null ? undefined : value),
@@ -14,7 +14,7 @@ export const valueDateSchema = z.string().refine(isValueDate);
 // "External account" (no mirror).
 export const operationSchema = z.object({
   type: z.enum(ENTRY_TYPES),
-  thirdParty: z.string().trim().min(1).max(64),
+  thirdParty: z.string().trim().min(1).max(FIELD_LIMITS.THIRD_PARTY),
   amount: z.preprocess(
     (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),
     z.number().positive().max(AMOUNT_CEILING),
@@ -23,7 +23,7 @@ export const operationSchema = z.object({
   paymentMethodId: z.string().uuid(),
   transferAccountId: optionalId,
   valueDate: valueDateSchema,
-  notes: z.string().max(4096).optional(),
+  notes: z.string().max(FIELD_LIMITS.NOTES).optional(),
   reconciled: z.boolean().optional(),
 });
 export type OperationForm = z.infer<typeof operationSchema>;

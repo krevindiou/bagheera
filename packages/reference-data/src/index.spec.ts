@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   COUNTRY_CODES,
   DEFAULT_LOCALE,
+  FIELD_LIMITS,
   isoDateIn,
   isValueDate,
   MAX_VALUE_DATE,
@@ -37,6 +38,14 @@ describe('COUNTRY_CODES', () => {
   it('holds distinct two-letter uppercase codes', () => {
     expect(new Set(COUNTRY_CODES).size).toBe(COUNTRY_CODES.length);
     expect(COUNTRY_CODES.every((code) => /^[A-Z]{2}$/.test(code))).toBe(true);
+  });
+});
+
+describe('FIELD_LIMITS', () => {
+  it('holds positive integer caps', () => {
+    for (const limit of Object.values(FIELD_LIMITS)) {
+      expect(Number.isInteger(limit) && limit > 0).toBe(true);
+    }
   });
 });
 
