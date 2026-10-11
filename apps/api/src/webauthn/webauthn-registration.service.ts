@@ -7,6 +7,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
+import { isUniqueViolation } from '../db/pg-errors';
 import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
 import { passkeyRegisteredEmail } from '../email/templates/passkey-registered.template';
@@ -103,9 +104,12 @@ export class WebauthnRegistrationService {
       await this.db
         .insert(webauthnCredential)
         .values(credentialInsertValues(memberId, verification.registrationInfo, dto.deviceName));
-    } catch {
-      // Most likely the credentialId unique constraint (a retried request).
-      throw registrationFailed();
+    } catch (err) {
+      // webauthn_credential_credential_id_unique: a retried request.
+      if (isUniqueViolation(err)) {
+        throw registrationFailed();
+      }
+      throw err;
     }
 
     const [row] = await this.db

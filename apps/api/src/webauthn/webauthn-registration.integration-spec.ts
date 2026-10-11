@@ -250,6 +250,7 @@ describe('webauthn registration', () => {
         response: FAKE_RESPONSE,
       });
       expect(second.status).toBe(400);
+      expect((second.body as { code: string }).code).toBe('passkey_registration_failed');
     });
   });
 });
