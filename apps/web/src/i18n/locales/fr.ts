@@ -168,6 +168,8 @@ export default {
       title: 'Rechercher des opérations',
       show: 'Rechercher',
       activeHint: 'Un filtre de recherche est actif',
+      filterActiveSuffix: '(filtre actif)',
+      filteredNotice: 'Opérations filtrées affichées',
       any: 'Indifférent',
       yes: 'Rapprochées uniquement',
       no: 'Non rapprochées uniquement',

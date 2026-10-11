@@ -307,11 +307,14 @@ describe('OperationsPage', () => {
       params: { query: { page: 1 } },
       body: expect.objectContaining({ accountId: ACCOUNT_ID, thirdParty: 'Landlord' }),
     });
-    // Submitting closes the panel and shows the active-search dot at once,
-    // and both survive the `list` refetch the mutation's own cache write
-    // triggers.
+    // Submitting closes the panel and shows the active-search dot and
+    // banner at once, and all three survive the `list` refetch the
+    // mutation's own cache write triggers.
     expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="search-active-dot"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="search-active-banner"]').text()).toContain(
+      'Showing filtered operations',
+    );
 
     // Reopening shows the criteria the search was submitted with, not a
     // blank form.
@@ -337,6 +340,42 @@ describe('OperationsPage', () => {
 
     expect(queuedToastText()).toContain("Couldn't load this. Please try again.");
     expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(true);
+  });
+
+  it('shows the active-search banner only once a search is active, not just from opening the panel', async () => {
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('[data-testid="search-active-banner"]').exists()).toBe(false);
+
+    await wrapper.find('[data-testid="toggle-search"]').trigger('click');
+    expect(wrapper.find('[data-testid="search-active-banner"]').exists()).toBe(false);
+  });
+
+  it("clears the search via the banner's Clear search button", async () => {
+    mockGet({
+      operations: {
+        items: [operation()],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+        active: true,
+        criteria: { thirdParty: 'Landlord' },
+      },
+    });
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="search-active-clear"]').trigger('click');
+    await flushPromises();
+
+    expect(apiClient.DELETE).toHaveBeenCalledWith('/operations/search', {
+      params: { query: { accountId: ACCOUNT_ID } },
+    });
   });
 
   it('clears the search via the DELETE endpoint', async () => {

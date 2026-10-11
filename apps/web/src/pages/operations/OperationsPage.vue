@@ -177,9 +177,13 @@ function isEditable(operation: Operation): boolean {
         >
           <AppIcon name="search" :size="16" />
           {{ $t('operations.search.show') }}
+          <span v-if="hasActiveSearch" class="visually-hidden">
+            {{ $t('operations.search.filterActiveSuffix') }}
+          </span>
           <span
             v-if="hasActiveSearch"
             class="dot dot-active"
+            aria-hidden="true"
             data-testid="search-active-dot"
           ></span>
         </button>
@@ -225,6 +229,22 @@ function isEditable(operation: Operation): boolean {
         :selected-ids="selectedIdList"
         @done="refreshAccountData"
       />
+
+      <div
+        v-if="hasActiveSearch"
+        class="alert alert-secondary d-flex justify-content-between align-items-center py-2 mb-3"
+        data-testid="search-active-banner"
+      >
+        <span>{{ $t('operations.search.filteredNotice') }}</span>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          data-testid="search-active-clear"
+          @click="clearSearch"
+        >
+          {{ $t('operations.search.clear') }}
+        </button>
+      </div>
 
       <ListState
         :error="operationsError"

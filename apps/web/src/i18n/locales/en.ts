@@ -165,6 +165,8 @@ export default {
       title: 'Search operations',
       show: 'Search',
       activeHint: 'A search filter is active',
+      filterActiveSuffix: '(filter active)',
+      filteredNotice: 'Showing filtered operations',
       any: 'Any',
       yes: 'Reconciled only',
       no: 'Not reconciled only',
