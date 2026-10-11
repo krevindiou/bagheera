@@ -1,5 +1,5 @@
 import type { EntryType } from '@bagheera/reference-data';
-import { ref, watch, type Ref } from 'vue';
+import { onScopeDispose, ref, watch, type Ref } from 'vue';
 import { apiClient } from '../api/client';
 
 export interface ThirdPartySuggestion {
@@ -18,18 +18,28 @@ export function useThirdPartyAutocomplete(
 ) {
   const suggestions = ref<ThirdPartySuggestion[]>([]);
   let debounceHandle: ReturnType<typeof setTimeout> | undefined;
+  // Bumped on every query; a response only applies if it's still current,
+  // so a stale response can't clobber a newer one or re-fire onExactMatch.
+  let querySequence = 0;
 
   watch(thirdParty, (value) => {
     if (debounceHandle) clearTimeout(debounceHandle);
     const query = value?.trim() ?? '';
+    const currentQuery = ++querySequence;
     if (query.length < 2) {
       suggestions.value = [];
       return;
     }
     debounceHandle = setTimeout(async () => {
-      const { data } = await apiClient.GET('/operations/autocomplete', {
-        params: { query: { q: query, type: type.value } },
-      });
+      let data: ThirdPartySuggestion[] | undefined;
+      try {
+        ({ data } = await apiClient.GET('/operations/autocomplete', {
+          params: { query: { q: query, type: type.value } },
+        }));
+      } catch {
+        data = undefined;
+      }
+      if (currentQuery !== querySequence) return;
       suggestions.value = data ?? [];
       const exact = suggestions.value.find(
         (s) => s.thirdParty.toLowerCase() === query.toLowerCase(),
@@ -38,6 +48,10 @@ export function useThirdPartyAutocomplete(
         onExactMatch(exact.categoryId);
       }
     }, 300);
+  });
+
+  onScopeDispose(() => {
+    if (debounceHandle) clearTimeout(debounceHandle);
   });
 
   return { suggestions };
