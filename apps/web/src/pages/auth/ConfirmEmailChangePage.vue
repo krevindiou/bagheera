@@ -21,12 +21,17 @@ onMounted(async () => {
     return;
   }
 
-  const { response } = await apiClient.POST('/members/profile/confirm-email-change', {
-    body: { key },
-  });
-  if (response.ok) {
-    toast(t('auth.confirmEmailChange.success'), 'success');
-  } else {
+  try {
+    const { response } = await apiClient.POST('/members/profile/confirm-email-change', {
+      body: { key },
+    });
+    if (response.ok) {
+      toast(t('auth.confirmEmailChange.success'), 'success');
+    } else {
+      toast(t('auth.confirmEmailChange.error'), 'error');
+    }
+  } catch {
+    // A network failure confirms nothing either, same as a rejected key.
     toast(t('auth.confirmEmailChange.error'), 'error');
   }
   void router.replace({ name: 'sign-in' });

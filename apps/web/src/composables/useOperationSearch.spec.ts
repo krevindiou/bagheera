@@ -149,6 +149,25 @@ describe('useOperationSearch', () => {
     expect(search.isActive.value).toBe(false);
   });
 
+  it('toasts a failed clear and leaves the remembered search active', async () => {
+    apiClient.GET.mockResolvedValue(ok(ACTIVE));
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'boom' },
+      response: new Response(null, { status: 500 }),
+    });
+    const { search } = run();
+    await flushPromises();
+    search.closePanel();
+
+    search.clear();
+    await flushPromises();
+
+    expect(queuedToastText()).toContain("Couldn't load this. Please try again.");
+    expect(search.panelOpen.value).toBe(false);
+    expect(search.isActive.value).toBe(true);
+  });
+
   it("switching account resets the page and panel, then restores the new account's own search", async () => {
     apiClient.GET.mockResolvedValue(ok(page()));
     const { search, accountId } = run();

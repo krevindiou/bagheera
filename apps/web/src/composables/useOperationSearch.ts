@@ -91,15 +91,19 @@ export function useOperationSearch(accountId: Ref<string>) {
   });
 
   const clearMutation = useMutation({
-    mutationFn: async () => {
-      await apiClient.DELETE('/operations/search', {
-        params: { query: { accountId: accountId.value } },
-      });
-    },
+    mutationFn: async () =>
+      unwrap(
+        await apiClient.DELETE('/operations/search', {
+          params: { query: { accountId: accountId.value } },
+        }),
+      ),
     async onSuccess() {
       page.value = 1;
       panelOpen.value = false;
       await queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) });
+    },
+    onError() {
+      toast(t('common.loadError'), 'error');
     },
   });
 

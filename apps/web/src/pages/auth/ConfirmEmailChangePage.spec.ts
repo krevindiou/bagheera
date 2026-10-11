@@ -56,4 +56,13 @@ describe('ConfirmEmailChangePage', () => {
 
     expect(useToast().toasts[0]?.text).toBe('Email change error (link expired or already used?)');
   });
+
+  it('shows an error toast and still redirects when the request itself fails', async () => {
+    apiClient.POST.mockRejectedValueOnce(new Error('network failure'));
+    await router.push({ name: 'confirm-email-change', query: { key: 'abc123' } });
+    mount(ConfirmEmailChangePage, withGlobalPlugins());
+    await waitForRouteName(router, 'sign-in');
+
+    expect(useToast().toasts[0]?.text).toBe('Email change error (link expired or already used?)');
+  });
 });
