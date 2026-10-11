@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
 import {
   bankChoiceSchema,
@@ -76,6 +77,22 @@ describe('createAccountSchema', () => {
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.initialBalance).toBe(42.5);
   });
+
+  it.each([AMOUNT_CEILING, -AMOUNT_CEILING, 0, -12.5])(
+    'accepts the initialBalance %d within the API bounds',
+    (initialBalance) => {
+      expect(createAccountSchema.safeParse({ ...base, initialBalance }).success).toBe(true);
+    },
+  );
+
+  it.each([AMOUNT_CEILING + 1, -AMOUNT_CEILING - 1, 99999999999999])(
+    'rejects the out-of-bounds initialBalance %d',
+    (initialBalance) => {
+      const result = createAccountSchema.safeParse({ ...base, initialBalance });
+      expect(result.success).toBe(false);
+      if (!result.success) expect(result.error.issues[0]?.path).toEqual(['initialBalance']);
+    },
+  );
 
   it.each(['US', 'ZZZ', 'usd'])('rejects the unknown currency code %j', (currency) => {
     expect(createAccountSchema.safeParse({ ...base, currency }).success).toBe(false);

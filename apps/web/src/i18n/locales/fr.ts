@@ -124,6 +124,7 @@ export default {
     validation: {
       bankChoiceRequired: 'Vous devez sélectionner une banque.',
       currency: 'Saisissez un code devise à 3 lettres.',
+      initialBalance: 'Saisissez un solde inférieur à un milliard, positif ou négatif.',
     },
   },
   operations: {

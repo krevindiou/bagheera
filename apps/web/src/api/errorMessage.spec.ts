@@ -11,6 +11,20 @@ describe('errorMessage', () => {
     expect(errorMessage({ message: ['First problem', 'Second problem'] })).toBe('First problem');
   });
 
+  it('returns undefined for an uncoded validation error, whose message is raw DTO text', () => {
+    expect(
+      errorMessage({
+        statusCode: 400,
+        category: 'validation_error',
+        message: ['initialBalance must not be greater than 999999999.9999'],
+      }),
+    ).toBeUndefined();
+  });
+
+  it('returns the message for a non-validation error', () => {
+    expect(errorMessage({ category: 'not_found', message: 'Not Found' })).toBe('Not Found');
+  });
+
   it('returns undefined for an error with no message property', () => {
     expect(errorMessage({ status: 500 })).toBeUndefined();
   });
@@ -53,6 +67,22 @@ describe('errorMessage', () => {
           message: 'x',
         }),
       ).toBe('Vous pouvez avoir au maximum 50 banques.');
+    });
+
+    it('translates a known code on a validation error', () => {
+      expect(
+        errorMessage({
+          category: 'validation_error',
+          code: 'account_not_active',
+          message: 'Account is not active.',
+        }),
+      ).toBe('This account is not active.');
+    });
+
+    it('returns undefined for an unknown code on a validation error', () => {
+      expect(
+        errorMessage({ category: 'validation_error', code: 'brand_new', message: 'Fallback text' }),
+      ).toBeUndefined();
     });
 
     it('falls back to the message for an unknown code', () => {

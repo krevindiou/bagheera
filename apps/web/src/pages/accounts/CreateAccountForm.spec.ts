@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
@@ -87,6 +88,47 @@ describe('CreateAccountForm', () => {
       expect(useToast().toasts[0]?.text).toBe('Name already used');
     });
 
+    it('shows a generic error rather than raw DTO text for an uncoded validation error', async () => {
+      apiClient.POST.mockResolvedValueOnce({
+        data: undefined,
+        error: {
+          statusCode: 400,
+          category: 'validation_error',
+          message: ['name must be shorter than or equal to 64 characters'],
+        },
+        response: new Response(null, { status: 400 }),
+      });
+      const wrapper = mount(CreateAccountForm, {
+        ...withGlobalPlugins(),
+        props: { banks, bankId: 'b1' },
+      });
+      await wrapper.find('#account-name').setValue('Checking');
+      await wrapper.find('#account-currency').setValue('USD');
+      await submitAndSettle(wrapper);
+
+      expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
+    });
+
+    it.each([AMOUNT_CEILING + 1, -AMOUNT_CEILING - 1])(
+      'flags the out-of-bounds initial balance %d on the field without calling the API',
+      async (initialBalance) => {
+        const wrapper = mount(CreateAccountForm, {
+          ...withGlobalPlugins(),
+          props: { banks, bankId: 'b1' },
+        });
+        await wrapper.find('#account-name').setValue('Checking');
+        await wrapper.find('#account-currency').setValue('USD');
+        await wrapper.find('#account-initial-balance').setValue(String(initialBalance));
+        await submitAndSettle(wrapper);
+
+        expect(wrapper.text()).toContain(
+          'Enter a balance under one billion, positive or negative.',
+        );
+        expect(wrapper.find('#account-initial-balance').classes()).toContain('is-invalid');
+        expect(apiClient.POST).not.toHaveBeenCalled();
+      },
+    );
+
     it('submits the chosen bank and initial balance', async () => {
       const twoBanks: Bank[] = [
         ...banks,
@@ -110,6 +152,7 @@ describe('CreateAccountForm', () => {
       expect(apiClient.POST).toHaveBeenCalledWith('/accounts', {
         body: { bankId: 'b2', name: 'Checking', currency: 'USD', initialBalance: 100.5 },
       });
+      expect(wrapper.find('#account-initial-balance').classes()).not.toContain('is-invalid');
     });
   });
 

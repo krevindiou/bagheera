@@ -1,3 +1,4 @@
+import { AMOUNT_CEILING } from '@bagheera/money';
 import { CURRENCY_CODES, FIELD_LIMITS } from '@bagheera/reference-data';
 import { z } from 'zod';
 
@@ -35,7 +36,7 @@ export const createAccountSchema = z.object({
   currency,
   initialBalance: z.preprocess(
     (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),
-    z.number().optional(),
+    z.number().min(-AMOUNT_CEILING).max(AMOUNT_CEILING).optional(),
   ),
 });
 export type CreateAccountForm = z.infer<typeof createAccountSchema>;

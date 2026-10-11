@@ -169,12 +169,18 @@ const onSubmit = handleSubmit(async (values) => {
       </select>
     </FormField>
 
-    <FormField v-if="!isEdit" :label="$t('accounts.initialBalance')" for="account-initial-balance">
+    <FormField
+      v-if="!isEdit"
+      :label="$t('accounts.initialBalance')"
+      for="account-initial-balance"
+      :error="errors.initialBalance && $t('accounts.validation.initialBalance')"
+    >
       <MoneyInput
         id="account-initial-balance"
         v-model="initialBalance"
         v-bind="initialBalanceAttrs"
         :symbol="initialBalanceCurrencySymbol"
+        :invalid="!!errors.initialBalance"
       />
     </FormField>
 

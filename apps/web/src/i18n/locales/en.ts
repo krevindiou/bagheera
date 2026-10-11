@@ -121,6 +121,7 @@ export default {
     validation: {
       bankChoiceRequired: 'You must select a bank.',
       currency: 'Enter a 3-letter currency code.',
+      initialBalance: 'Enter a balance under one billion, positive or negative.',
     },
   },
   operations: {
