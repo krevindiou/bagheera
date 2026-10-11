@@ -1,5 +1,6 @@
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useToast } from '../composables/useToast';
 import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
 // The real client and middlewares, with only the network mocked.
@@ -38,6 +39,7 @@ describe('apiClient', () => {
     // For the CSRF mint, which uses the global fetch; requests use the
     // per-call override.
     vi.stubGlobal('fetch', fetchMock);
+    useToast().toasts.splice(0);
   });
 
   afterEach(() => {
@@ -100,6 +102,57 @@ describe('apiClient', () => {
       expect(pushSpy).toHaveBeenCalledWith({ name: 'sign-in' });
     });
 
+    describe('when the session expires mid-session', () => {
+      beforeEach(async () => {
+        const session = useSessionStore();
+        session.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+        await router.push('/en/accounts/42/schedulers?page=2');
+        fetchMock.mockImplementation(async () => jsonResponse(401));
+      });
+
+      it('sends the member to sign-in with the page to come back to', async () => {
+        const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
+
+        await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+
+        expect(pushSpy).toHaveBeenCalledWith({
+          name: 'sign-in',
+          query: { redirect: '/en/accounts/42/schedulers?page=2' },
+        });
+      });
+
+      it('adds no redirect when the member was on home, where sign-in lands anyway', async () => {
+        await router.push({ name: 'home' });
+        const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
+
+        await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+
+        expect(pushSpy).toHaveBeenCalledWith({ name: 'sign-in' });
+      });
+
+      it('explains why, once, however many requests fail together', async () => {
+        vi.spyOn(router, 'push').mockResolvedValue(undefined);
+
+        await Promise.all([
+          apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock }),
+          apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock }),
+        ]);
+
+        expect(useToast().toasts.map((toast) => toast.text)).toEqual([
+          'Your session has expired. Please sign in again.',
+        ]);
+      });
+    });
+
+    it("shows no session-expired notice for a visitor who wasn't signed in", async () => {
+      fetchMock.mockImplementation(async () => jsonResponse(401));
+      vi.spyOn(router, 'push').mockResolvedValue(undefined);
+
+      await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+
+      expect(useToast().toasts).toHaveLength(0);
+    });
+
     it("doesn't redirect again when already on sign-in", async () => {
       await router.push({ name: 'sign-in' });
       fetchMock.mockImplementation(async () => jsonResponse(401));
@@ -108,6 +161,7 @@ describe('apiClient', () => {
       await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
 
       expect(pushSpy).not.toHaveBeenCalled();
+      expect(useToast().toasts).toHaveLength(0);
     });
 
     it('leaves the session and route alone on a non-401 response', async () => {

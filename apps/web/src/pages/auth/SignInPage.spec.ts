@@ -75,6 +75,45 @@ describe('SignInPage', () => {
     await waitForRouteName(router, 'home');
   });
 
+  function mockSuccessfulCeremony() {
+    apiClient.POST.mockImplementation(async (path: string) =>
+      path.startsWith('/webauthn/authentication/') ? jsonResult(200, {}) : jsonResult(404),
+    );
+    vi.mocked(startAuthentication).mockResolvedValueOnce(
+      {} as unknown as Awaited<ReturnType<typeof startAuthentication>>,
+    );
+  }
+
+  // Opens sign-in with `?redirect=`, as the guard does for a denied deep link.
+  async function mountWithRedirect(redirect: string) {
+    const plugins = withGlobalPlugins();
+    await router.push({ name: 'sign-in', query: { redirect } });
+    const wrapper = mount(SignInPage, plugins);
+    apiClient.GET.mockResolvedValue(jsonResult(200, { email: 'member@example.com' }));
+    return wrapper;
+  }
+
+  it('returns to the page the member asked for after signing in', async () => {
+    mockSuccessfulCeremony();
+    const wrapper = await mountWithRedirect('/en/accounts/42/schedulers');
+    await submitAndSettle(wrapper);
+
+    await waitForRouteName(router, 'schedulers');
+    expect(router.currentRoute.value.fullPath).toBe('/en/accounts/42/schedulers');
+  });
+
+  it.each(['https://evil.example/en/home', '//evil.example', '/en/no/such/page', '/en/register'])(
+    'lands home instead of on the unsafe redirect %s',
+    async (redirect) => {
+      mockSuccessfulCeremony();
+      const wrapper = await mountWithRedirect(redirect);
+      await submitAndSettle(wrapper);
+
+      await waitForRouteName(router, 'home');
+      expect(router.currentRoute.value.fullPath).toBe('/en/home');
+    },
+  );
+
   it('shows a rate-limit banner, distinct from invalid-credentials, on a 429 from options', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(429));
     const wrapper = mount(SignInPage, withGlobalPlugins());

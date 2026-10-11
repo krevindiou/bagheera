@@ -59,6 +59,19 @@ describe('router auth guard', () => {
     expect(router.currentRoute.value.name).toBe('sign-in');
   });
 
+  it('remembers the denied deep link on the sign-in redirect', async () => {
+    apiClient.GET.mockResolvedValueOnce(signedOut());
+    await router.push('/en/accounts/42/schedulers?page=2');
+    expect(router.currentRoute.value.name).toBe('sign-in');
+    expect(router.currentRoute.value.query.redirect).toBe('/en/accounts/42/schedulers?page=2');
+  });
+
+  it('remembers the denied deep link when no Pinia instance is active', async () => {
+    setActivePinia(undefined);
+    await router.push('/en/reports');
+    expect(router.currentRoute.value.query.redirect).toBe('/en/reports');
+  });
+
   it('allows navigation once restore() resolves with an authenticated member', async () => {
     apiClient.GET.mockResolvedValueOnce({
       data: { email: 'member@example.com', locale: 'en', timeZone: 'UTC' },
@@ -120,6 +133,21 @@ describe('router guest-only pages', () => {
     await router.push({ name: 'sign-in', params: { locale: 'fr' } });
     expect(router.currentRoute.value.fullPath).toBe('/fr/home');
   });
+
+  it('sends a signed-in member on to a safe redirect instead of home', async () => {
+    apiClient.GET.mockResolvedValueOnce(signedIn());
+    await router.push({ name: 'sign-in', query: { redirect: '/en/reports' } });
+    expect(router.currentRoute.value.fullPath).toBe('/en/reports');
+  });
+
+  it.each(['https://evil.example/', '//evil.example/en/home', '/en/no/such/page', '/en/register'])(
+    'sends a signed-in member home rather than to the unsafe redirect %s',
+    async (redirect) => {
+      apiClient.GET.mockResolvedValueOnce(signedIn());
+      await router.push({ name: 'sign-in', query: { redirect } });
+      expect(router.currentRoute.value.fullPath).toBe('/en/home');
+    },
+  );
 
   it('lets a signed-in member open an activation link', async () => {
     const store = useSessionStore();

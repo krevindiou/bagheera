@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { runAuthentication } from '../../api/webauthn';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
+import { safeRedirect } from '../../router/safeRedirect';
 import AuthLayout from '../../layouts/AuthLayout.vue';
 
 const router = useRouter();
+const route = useRoute();
 const session = useSessionStore();
 const { push: toast } = useToast();
 const { t } = useI18n();
@@ -34,7 +36,7 @@ async function onSubmit() {
 
     await session.fetchMember();
     toast(t('auth.signIn.success'), 'success');
-    void router.push({ name: 'home' });
+    void router.push(safeRedirect(router, route.query.redirect) ?? { name: 'home' });
   } finally {
     submitting.value = false;
   }

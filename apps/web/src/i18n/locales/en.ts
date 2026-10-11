@@ -36,6 +36,7 @@ export default {
       registerLink: 'Create an account',
       success: 'Signed in.',
       tooManyAttempts: 'Too many attempts. Please wait a minute and try again.',
+      sessionExpired: 'Your session has expired. Please sign in again.',
     },
     register: {
       title: 'Create an account',

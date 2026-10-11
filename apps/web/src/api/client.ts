@@ -1,4 +1,6 @@
 import createClient from 'openapi-fetch';
+import { useToast } from '../composables/useToast';
+import { i18n } from '../i18n';
 import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
 import type { paths } from './schema';
@@ -52,13 +54,27 @@ apiClient.use({
   onResponse({ response, schemaPath }) {
     if (response.status !== 401 || schemaPath === '/auth/me') return response;
 
+    // Only the first of several parallel 401s still finds the member signed
+    // in, so the notice shows once.
+    let sessionExpired = false;
     try {
-      useSessionStore().clear();
+      const session = useSessionStore();
+      sessionExpired = session.isAuthenticated;
+      session.clear();
     } catch {
       // No active Pinia: nothing to clear.
     }
-    if (router.currentRoute.value.name !== 'sign-in') {
-      void router.push({ name: 'sign-in' });
+    const current = router.currentRoute.value;
+    if (current.name !== 'sign-in') {
+      if (sessionExpired) {
+        useToast().push(i18n.global.t('auth.signIn.sessionExpired'), 'info');
+      }
+      void router.push({
+        name: 'sign-in',
+        ...(current.meta.requiresAuth && current.name !== 'home'
+          ? { query: { redirect: current.fullPath } }
+          : {}),
+      });
     }
     return response;
   },

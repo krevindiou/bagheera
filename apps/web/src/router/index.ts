@@ -7,6 +7,7 @@ import {
 import { setLocale } from '../i18n';
 import { detectLocale, isSupportedLocale, SUPPORTED_LOCALES } from '../i18n/locales';
 import { useSessionStore } from '../stores/session.store';
+import { safeRedirect } from './safeRedirect';
 
 // Every path lives under `/:locale`, constrained to SUPPORTED_LOCALES so an
 // unsupported value falls through to the catch-all.
@@ -128,12 +129,19 @@ router.beforeEach(async (to) => {
   if (!requiresAuth && !guestOnly && !restoresSession) {
     return true;
   }
+  // Sign-in sends the member back to the page they asked for; home is
+  // where it lands anyway.
+  const toSignIn = {
+    name: 'sign-in',
+    params: { locale },
+    ...(to.name === 'home' ? {} : { query: { redirect: to.fullPath } }),
+  };
   // No active Pinia counts as signed out.
   let store: ReturnType<typeof useSessionStore>;
   try {
     store = useSessionStore();
   } catch {
-    return requiresAuth ? { name: 'sign-in' } : true;
+    return requiresAuth ? toSignIn : true;
   }
   // After a reload, wait to learn whether the session cookie is still valid.
   // A failed restore() leaves the member signed out, so sign-in still renders.
@@ -142,10 +150,11 @@ router.beforeEach(async (to) => {
   }
   // The target's locale, not withLocale's current-route fallback.
   if (guestOnly) {
-    return store.isAuthenticated ? { name: 'home', params: { locale } } : true;
+    if (!store.isAuthenticated) return true;
+    return safeRedirect(router, to.query.redirect) ?? { name: 'home', params: { locale } };
   }
   if (requiresAuth) {
-    return store.isAuthenticated ? true : { name: 'sign-in', params: { locale } };
+    return store.isAuthenticated ? true : toSignIn;
   }
   return true;
 });
