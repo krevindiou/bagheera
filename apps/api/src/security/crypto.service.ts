@@ -5,6 +5,8 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const KEY_LENGTH = 32;
+// Pinned so a truncated tag can't shrink the forgery search space.
+const AUTH_TAG_LENGTH = 16;
 
 /**
  * AES-256-GCM token/secret encryption with key-id-prefixed rotation.
@@ -54,7 +56,7 @@ export class CryptoService implements OnModuleInit {
       throw new Error('Crypto keys not loaded');
     }
     const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv(ALGORITHM, key, iv);
+    const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
     const ciphertext = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
     return [
@@ -77,8 +79,11 @@ export class CryptoService implements OnModuleInit {
     }
     const iv = Buffer.from(ivB64, 'base64');
     const authTag = Buffer.from(authTagB64, 'base64');
+    if (authTag.length !== AUTH_TAG_LENGTH) {
+      throw new Error('Malformed ciphertext');
+    }
     const ciphertext = Buffer.from(ciphertextB64, 'base64');
-    const decipher = createDecipheriv(ALGORITHM, key, iv);
+    const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
     decipher.setAuthTag(authTag);
     return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
   }

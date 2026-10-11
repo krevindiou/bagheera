@@ -50,6 +50,17 @@ describe('CryptoService', () => {
     expect(() => crypto.decrypt(`${keyId}:${iv}:${tamperedAuthTag}:${body}`)).toThrow();
   });
 
+  it('throws when the auth tag has been truncated', () => {
+    const crypto = testCryptoService();
+    const ciphertext = crypto.encrypt('truncate me');
+    const [keyId, iv, authTag, body] = ciphertext.split(':');
+    // A prefix of the genuine tag, which GCM would otherwise accept.
+    const truncatedAuthTag = Buffer.from(authTag, 'base64').subarray(0, 4).toString('base64');
+    expect(() => crypto.decrypt(`${keyId}:${iv}:${truncatedAuthTag}:${body}`)).toThrow(
+      'Malformed ciphertext',
+    );
+  });
+
   it('loadKeys rejects a key that does not decode to 32 bytes', () => {
     const crypto = new CryptoService({} as never);
     const shortKey = Buffer.from('too-short').toString('base64');
