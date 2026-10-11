@@ -3,11 +3,10 @@ import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
-import { bank, member } from '../db/schema';
+import { bank } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
 import { MemberId, BankId } from '../security/ids';
-import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { ChooseBankDto } from './dto/choose-bank.dto';
 import { UpdateBankDto } from './dto/update-bank.dto';
@@ -50,19 +49,7 @@ export class BankService {
     }
 
     const created = await this.db.transaction(async (tx) => {
-      // Serializes concurrent creates for the quota check below.
-      const [memberRow] = await tx
-        .select()
-        .from(member)
-        .where(eq(member.id, memberId))
-        .for('update');
-
-      if (!memberRow) {
-        throw new Error('Member not found');
-      }
-
-      const held = await this.ownership.countOwned('banks', memberId);
-      requireBelowQuota('banks', held);
+      await this.ownership.requireBelowQuotaLocked(tx, 'banks', memberId);
 
       const [created] = await tx.insert(bank).values({ memberId, name: dto.name! }).returning();
       return created;

@@ -1,11 +1,18 @@
-import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { and, asc, count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, operation, report, scheduler } from '../db/schema';
+import type { Executor } from '../db/executor';
+import { account, bank, member, operation, report, scheduler } from '../db/schema';
 import { AccountId, BankId, MemberId, OperationId, ReportId, SchedulerId } from './ids';
-import type { QuotaKind } from './member-quotas';
+import { QuotaKind, requireBelowQuota } from './member-quotas';
 import { isFullyActive, reachableAccountsOf } from './reachable';
 
 async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
@@ -65,6 +72,22 @@ export class OwnershipService {
           this.db.select({ total: count() }).from(report).where(eq(report.memberId, memberId)),
         );
     }
+  }
+
+  // Locks the member row inside `tx` first, so concurrent creates of any
+  // kind queue up behind it and can't both pass the count.
+  async requireBelowQuotaLocked(tx: Executor, kind: QuotaKind, memberId: MemberId): Promise<void> {
+    const [memberRow] = await tx
+      .select({ id: member.id })
+      .from(member)
+      .where(eq(member.id, memberId))
+      .for('update');
+
+    if (!memberRow) {
+      throw new UnauthorizedException();
+    }
+
+    requireBelowQuota(kind, await this.countOwned(kind, memberId));
   }
 
   // Closed banks included.

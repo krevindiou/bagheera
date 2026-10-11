@@ -3,9 +3,8 @@ import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { DataGrouping } from '@bagheera/reference-data';
 import { DRIZZLE } from '../db/db.constants';
-import { category, member, report, reportAccount, reportCategory } from '../db/schema';
+import { category, report, reportAccount, reportCategory } from '../db/schema';
 import { MemberId, ReportId } from '../security/ids';
-import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
@@ -106,19 +105,7 @@ export class ReportService {
     const categoryIds = await this.filterExistingCategoryIds(dto.categoryIds ?? []);
 
     const created = await this.db.transaction(async (tx) => {
-      // Serializes concurrent creates for the quota check below.
-      const [memberRow] = await tx
-        .select()
-        .from(member)
-        .where(eq(member.id, memberId))
-        .for('update');
-
-      if (!memberRow) {
-        throw new Error('Member not found');
-      }
-
-      const held = await this.ownership.countOwned('reports', memberId);
-      requireBelowQuota('reports', held);
+      await this.ownership.requireBelowQuotaLocked(tx, 'reports', memberId);
 
       const [row] = await tx
         .insert(report)

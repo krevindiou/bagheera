@@ -11,12 +11,11 @@ import {
   parseSynthesisChartWindow,
 } from '../common/synthesis-chart';
 import { DRIZZLE } from '../db/db.constants';
-import { account, bank, member, operation } from '../db/schema';
+import { account, bank, operation } from '../db/schema';
 import { OPENING_BALANCE_PAYMENT_METHOD_ID } from '../operations/entry-rules';
 import { TransferService } from '../operations/transfer.service';
 import { AuditService } from '../security/audit.service';
 import { MemberId, AccountId, BankId } from '../security/ids';
-import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -73,18 +72,9 @@ export class AccountService {
 
     const minorUnits = toMinorUnits(dto.initialBalance ?? 0);
     return this.db.transaction(async (tx) => {
-      // The member lock serializes concurrent creates for the quota check
-      // below; the bank lock pins its active status.
-      const [memberRow] = await tx
-        .select()
-        .from(member)
-        .where(eq(member.id, memberId))
-        .for('update');
+      await this.ownership.requireBelowQuotaLocked(tx, 'accounts', memberId);
 
-      if (!memberRow) {
-        throw new Error('Member not found');
-      }
-
+      // Pins the bank's active status until the insert commits.
       const [lockedBank] = await tx
         .select()
         .from(bank)
@@ -98,9 +88,6 @@ export class AccountService {
           'Bank is not active.',
         );
       }
-
-      const held = await this.ownership.countOwned('accounts', memberId);
-      requireBelowQuota('accounts', held);
 
       const [created] = await tx
         .insert(account)

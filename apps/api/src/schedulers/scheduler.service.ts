@@ -11,10 +11,9 @@ import {
   transferAccountIdFor,
   validateTypedRefs,
 } from '../operations/entry-rules';
-import { operation, scheduler, member } from '../db/schema';
+import { operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { MemberId, AccountId, SchedulerId } from '../security/ids';
-import { requireBelowQuota } from '../security/member-quotas';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
@@ -74,19 +73,7 @@ export class SchedulerService {
     const created = await this.db.transaction(async (tx) => {
       await requireFullyActiveLocked(tx, dto.accountId as AccountId);
 
-      // Serializes concurrent creates for the quota check below.
-      const [memberRow] = await tx
-        .select()
-        .from(member)
-        .where(eq(member.id, memberId))
-        .for('update');
-
-      if (!memberRow) {
-        throw new Error('Member not found');
-      }
-
-      const held = await this.ownership.countOwned('schedulers', memberId);
-      requireBelowQuota('schedulers', held);
+      await this.ownership.requireBelowQuotaLocked(tx, 'schedulers', memberId);
 
       const [created] = await tx
         .insert(scheduler)
