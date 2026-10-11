@@ -1,9 +1,6 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type {
-  PublicKeyCredentialRequestOptionsJSON,
-  VerifiedAuthenticationResponse,
-} from '@simplewebauthn/server';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -16,6 +13,7 @@ import { requireMemberId } from '../session/require-member-id';
 import '../session/step-up-session-data';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
+import { WebauthnAssertionService } from './webauthn-assertion.service';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 import { clientIp } from '../common/client-ip.decorator';
 
@@ -40,6 +38,7 @@ export class WebauthnStepUpService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
     private readonly crypto: WebauthnCryptoService,
+    private readonly assertion: WebauthnAssertionService,
     private readonly audit: AuditService,
   ) {}
 
@@ -76,43 +75,21 @@ export class WebauthnStepUpService {
       throw stepUpFailed();
     }
 
-    const [credentialRow] = await this.db
-      .select()
-      .from(webauthnCredential)
-      .where(eq(webauthnCredential.credentialId, dto.response.id));
+    const credentialRow = await this.assertion.findCredential(dto.response.id);
     if (!credentialRow || credentialRow.memberId !== memberId) {
       throw stepUpFailed();
     }
 
-    let verification: VerifiedAuthenticationResponse;
-    try {
-      verification = await this.crypto.verifyAuthenticationResponse({
-        response: dto.response,
-        expectedChallenge,
-        expectedOrigin: rpConfig(this.config).origin,
-        expectedRPID: rpConfig(this.config).rpID,
-        credential: {
-          id: credentialRow.credentialId,
-          publicKey: Buffer.from(credentialRow.publicKey, 'base64'),
-          counter: credentialRow.counter,
-          transports: credentialRow.transports ?? undefined,
-        },
-      });
-    } catch {
-      throw stepUpFailed();
-    }
-
+    const verification = await this.assertion.verify(
+      credentialRow,
+      dto.response,
+      expectedChallenge,
+    );
     if (!verification.verified) {
       throw stepUpFailed();
     }
 
-    await this.db
-      .update(webauthnCredential)
-      .set({
-        counter: verification.authenticationInfo.newCounter,
-        lastUsedAt: new Date(),
-      })
-      .where(eq(webauthnCredential.id, credentialRow.id));
+    await this.assertion.recordUse(credentialRow, verification.newCounter);
 
     req.session.stepUpVerifiedAt = Date.now();
     await this.audit.record('step_up_verified', memberId, sourceAddress);

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
 import { SessionModule } from '../session/session.module';
+import { WebauthnAssertionService } from './webauthn-assertion.service';
 import { WebauthnAuthenticationController } from './webauthn-authentication.controller';
 import { WebauthnAuthenticationService } from './webauthn-authentication.service';
 import { WebauthnCredentialsController } from './webauthn-credentials.controller';
@@ -24,6 +25,7 @@ import { WebauthnStepUpService } from './webauthn-step-up.service';
   ],
   providers: [
     WebauthnCryptoService,
+    WebauthnAssertionService,
     WebauthnRegistrationService,
     WebauthnAuthenticationService,
     WebauthnCredentialsService,

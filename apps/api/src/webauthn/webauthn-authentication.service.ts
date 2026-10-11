@@ -1,16 +1,13 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type {
-  PublicKeyCredentialRequestOptionsJSON,
-  VerifiedAuthenticationResponse,
-} from '@simplewebauthn/server';
+import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { SchedulerCatchUpService } from '../auth/scheduler-catch-up.service';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
-import { member, webauthnCredential } from '../db/schema';
+import { member } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
@@ -18,6 +15,7 @@ import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/webauthn-session-data';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
+import { WebauthnAssertionService } from './webauthn-assertion.service';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 import { clientIp } from '../common/client-ip.decorator';
 
@@ -44,6 +42,7 @@ export class WebauthnAuthenticationService {
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
     private readonly crypto: WebauthnCryptoService,
+    private readonly assertion: WebauthnAssertionService,
     private readonly sessionRotation: SessionRotationService,
     private readonly sessionRegistry: SessionRegistryService,
     private readonly schedulerCatchUp: SchedulerCatchUpService,
@@ -69,35 +68,18 @@ export class WebauthnAuthenticationService {
       throw invalidPasskey();
     }
 
-    const [credentialRow] = await this.db
-      .select()
-      .from(webauthnCredential)
-      .where(eq(webauthnCredential.credentialId, dto.response.id));
+    const credentialRow = await this.assertion.findCredential(dto.response.id);
     if (!credentialRow) {
       await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);
       throw invalidPasskey();
     }
     const memberId = credentialRow.memberId;
 
-    let verification: VerifiedAuthenticationResponse;
-    try {
-      verification = await this.crypto.verifyAuthenticationResponse({
-        response: dto.response,
-        expectedChallenge,
-        expectedOrigin: rpConfig(this.config).origin,
-        expectedRPID: rpConfig(this.config).rpID,
-        credential: {
-          id: credentialRow.credentialId,
-          publicKey: Buffer.from(credentialRow.publicKey, 'base64'),
-          counter: credentialRow.counter,
-          transports: credentialRow.transports ?? undefined,
-        },
-      });
-    } catch {
-      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
-      throw invalidPasskey();
-    }
-
+    const verification = await this.assertion.verify(
+      credentialRow,
+      dto.response,
+      expectedChallenge,
+    );
     if (!verification.verified) {
       await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
       throw invalidPasskey();
@@ -109,13 +91,7 @@ export class WebauthnAuthenticationService {
       throw invalidPasskey();
     }
 
-    await this.db
-      .update(webauthnCredential)
-      .set({
-        counter: verification.authenticationInfo.newCounter,
-        lastUsedAt: new Date(),
-      })
-      .where(eq(webauthnCredential.id, credentialRow.id));
+    await this.assertion.recordUse(credentialRow, verification.newCounter);
 
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;

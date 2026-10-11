@@ -28,6 +28,7 @@ export const UNIT_COVERED_SERVICES_AND_CONTROLLERS = [
   'health/health.controller.ts',
   'security/crypto.service.ts',
   'session/session-rotation.service.ts',
+  'webauthn/webauthn-assertion.service.ts',
 ];
 
 // Unit tests (integration specs: vitest.integration.config.mts).
