@@ -21,10 +21,51 @@ function mountPanel(initialCriteria?: SearchCriteria) {
 }
 
 describe('SearchPanel', () => {
-  it('defaults to debit with every other field empty', () => {
+  it('defaults to "Any" type (no filter) with every other field empty', () => {
     const wrapper = mountPanel();
-    expect((wrapper.find('#search-type-debit').element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find('#search-type-any').element as HTMLInputElement).checked).toBe(true);
     expect((wrapper.find('#search-reconciled').element as HTMLSelectElement).value).toBe('');
+  });
+
+  it('matches both types by default — no type is sent when "Any" is picked', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.type).toBeUndefined();
+  });
+
+  it('hydrates "Any" when the remembered criteria have no type', () => {
+    const wrapper = mountPanel({ thirdParty: 'Foo' });
+    expect((wrapper.find('#search-type-any').element as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('offers categories/payment methods of both types when "Any" is picked', () => {
+    const wrapper = mountPanel();
+    const options = wrapper
+      .findAll('#search-payment-methods option')
+      .map((o) => (o.element as HTMLOptionElement).value);
+    expect(options).toEqual(['p1', 'p2']);
+  });
+
+  it('keeps a selection made under "Any" when switching to its matching type', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-categories').setValue(['c1']);
+    await wrapper.find('#search-type-debit').setValue(true);
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.categoryIds).toEqual(['c1']);
+  });
+
+  it('drops a selection that no longer matches once switched away from "Any"', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-categories').setValue(['c2']);
+    await wrapper.find('#search-type-debit').setValue(true);
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.categoryIds).toBeUndefined();
   });
 
   it('hydrates every field from the initial criteria', () => {
@@ -67,7 +108,6 @@ describe('SearchPanel', () => {
     expect(wrapper.emitted('submit')).toEqual([
       [
         {
-          type: 'debit',
           thirdParty: 'Landlord',
           categoryIds: ['c1'],
           paymentMethodIds: ['p1'],
@@ -153,7 +193,7 @@ describe('SearchPanel', () => {
     const wrapper = mountPanel({ type: 'credit', thirdParty: 'Foo', notes: 'bar' });
     await wrapper.find('button.btn-outline-secondary').trigger('click');
 
-    expect((wrapper.find('#search-type-debit').element as HTMLInputElement).checked).toBe(true);
+    expect((wrapper.find('#search-type-any').element as HTMLInputElement).checked).toBe(true);
     expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe('');
     expect(wrapper.emitted('clear')).toHaveLength(1);
   });

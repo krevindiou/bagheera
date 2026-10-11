@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import EntryTypeRadio from './EntryTypeRadio.vue';
 
-function mountRadio(props: { modelValue?: EntryType; legend?: string } = {}) {
+function mountRadio(props: { modelValue?: EntryType; legend?: string; anyLabel?: string } = {}) {
   return mount(EntryTypeRadio, {
     ...withGlobalPlugins(),
     props: { idPrefix: 'x-type', modelValue: 'debit', ...props },
@@ -55,5 +55,29 @@ describe('EntryTypeRadio', () => {
     expect(legended.get('.form-label').text()).toBe('Type');
     plain.unmount();
     legended.unmount();
+  });
+
+  it('omits the "any" radio unless anyLabel is given', () => {
+    const wrapper = mountRadio();
+
+    expect(wrapper.find('#x-type-any').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('adds a leading "any" radio with the given label when anyLabel is given', () => {
+    const wrapper = mountRadio({ anyLabel: 'Any', modelValue: undefined });
+
+    expect(wrapper.get('label[for="x-type-any"]').text()).toBe('Any');
+    expect((wrapper.get('#x-type-any').element as HTMLInputElement).checked).toBe(true);
+    wrapper.unmount();
+  });
+
+  it('emits undefined when the "any" radio is chosen', async () => {
+    const wrapper = mountRadio({ anyLabel: 'Any' });
+
+    await wrapper.get('#x-type-any').setValue(true);
+
+    expect(wrapper.emitted('update:modelValue')).toEqual([[undefined]]);
+    wrapper.unmount();
   });
 });

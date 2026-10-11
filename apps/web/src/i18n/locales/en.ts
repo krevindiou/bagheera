@@ -167,6 +167,7 @@ export default {
       no: 'Not reconciled only',
       both: 'Reconciled & not reconciled',
       type: 'Type',
+      anyType: 'Any',
       amount: 'Amount',
       dateFrom: 'From date',
       dateTo: 'To date',

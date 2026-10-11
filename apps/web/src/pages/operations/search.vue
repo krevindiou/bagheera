@@ -30,7 +30,8 @@ const emit = defineEmits<{ submit: [SearchCriteria]; clear: []; cancel: [] }>();
 
 const { locale } = useI18n();
 
-const type = ref<EntryType>('debit');
+// Default "Any" (no type filter) — matches both debit and credit.
+const type = ref<EntryType | undefined>(undefined);
 const thirdParty = ref('');
 const categoryIds = ref<string[]>([]);
 const paymentMethodIds = ref<string[]>([]);
@@ -49,7 +50,7 @@ const reconciled = ref<'' | 'true' | 'false'>('');
 // applied.
 function hydrate(criteria: SearchCriteria | undefined) {
   if (!criteria) return;
-  type.value = criteria.type ?? 'debit';
+  type.value = criteria.type;
   thirdParty.value = criteria.thirdParty ?? '';
   categoryIds.value = criteria.categoryIds ?? [];
   paymentMethodIds.value = criteria.paymentMethodIds ?? [];
@@ -114,7 +115,7 @@ function onSubmit() {
 }
 
 function reset() {
-  type.value = 'debit';
+  type.value = undefined;
   thirdParty.value = '';
   categoryIds.value = [];
   paymentMethodIds.value = [];
@@ -141,7 +142,12 @@ function onClear() {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <EntryTypeRadio v-model="type" id-prefix="search-type" :legend="$t('operations.search.type')" />
+    <EntryTypeRadio
+      v-model="type"
+      id-prefix="search-type"
+      :legend="$t('operations.search.type')"
+      :any-label="$t('operations.search.anyType')"
+    />
 
     <FormField :label="$t('operations.thirdParty')" for="search-third-party">
       <input

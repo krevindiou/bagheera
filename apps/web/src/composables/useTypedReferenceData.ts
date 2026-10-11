@@ -5,13 +5,14 @@ import { groupCategories, type Category, type PaymentMethod } from '../domain/re
 /**
  * Category/payment-method choices filtered to the debit/credit type,
  * mirroring the API's validateTypedRefs ("Initial balance", typed null,
- * matches neither).
+ * matches neither). An undefined `type` ("any" — only the search panel
+ * offers it) keeps every non-system choice instead of filtering.
  *
  * `clearOnMismatch` clears a form's single selections that a type switch
  * invalidates; the search panel omits it and filters its own arrays.
  */
 export function useTypedReferenceData(
-  type: Ref<EntryType>,
+  type: Ref<EntryType | undefined>,
   categories: () => Category[],
   paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {
@@ -19,10 +20,14 @@ export function useTypedReferenceData(
     paymentMethodId: Ref<string | undefined>;
   },
 ) {
-  const filteredCategories = computed(() => categories().filter((c) => c.type === type.value));
+  const filteredCategories = computed(() =>
+    type.value === undefined ? categories() : categories().filter((c) => c.type === type.value),
+  );
   const groupedCategories = computed(() => groupCategories(filteredCategories.value));
   const filteredPaymentMethods = computed(() =>
-    paymentMethods().filter((pm) => pm.type === type.value),
+    type.value === undefined
+      ? paymentMethods().filter((pm) => pm.type !== null)
+      : paymentMethods().filter((pm) => pm.type === type.value),
   );
 
   if (clearOnMismatch) {

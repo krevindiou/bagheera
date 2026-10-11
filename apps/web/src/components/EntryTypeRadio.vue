@@ -2,16 +2,29 @@
 import type { EntryType } from '@bagheera/reference-data';
 
 // The debit/credit radio pair of the operation, scheduler and search forms.
-// `idPrefix` makes the input ids `<prefix>-debit` / `<prefix>-credit`; the
-// debit radio takes focus when the form opens. An optional `legend` heads
-// the pair (the search panel labels it).
-defineProps<{ idPrefix: string; legend?: string }>();
-const type = defineModel<EntryType>({ required: true });
+// `idPrefix` makes the input ids `<prefix>-debit` / `<prefix>-credit`
+// (/ `<prefix>-any`); the debit radio takes focus when the form opens. An
+// optional `legend` heads the pair (the search panel labels it). `anyLabel`
+// adds a third, leading "any type" (undefined) choice — only the search
+// panel passes it; the operation/scheduler forms omit it and so still
+// require debit or credit.
+defineProps<{ idPrefix: string; legend?: string; anyLabel?: string }>();
+const type = defineModel<EntryType | undefined>({ required: true });
 </script>
 
 <template>
   <div class="mb-3">
     <div v-if="legend" class="form-label">{{ legend }}</div>
+    <div v-if="anyLabel" class="form-check form-check-inline">
+      <input
+        :id="`${idPrefix}-any`"
+        v-model="type"
+        class="form-check-input"
+        type="radio"
+        :value="undefined"
+      />
+      <label class="form-check-label" :for="`${idPrefix}-any`">{{ anyLabel }}</label>
+    </div>
     <div class="form-check form-check-inline">
       <input
         :id="`${idPrefix}-debit`"

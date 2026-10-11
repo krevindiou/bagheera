@@ -37,6 +37,17 @@ describe('useTypedReferenceData', () => {
     expect(filteredPaymentMethods.value.some((p) => p.id === 'p3')).toBe(false);
   });
 
+  it('offers every category and non-system payment method when type is undefined ("any")', () => {
+    const type = ref<EntryType | undefined>(undefined);
+    const { filteredCategories, filteredPaymentMethods } = useTypedReferenceData(
+      type,
+      () => categories,
+      () => paymentMethods,
+    );
+    expect(filteredCategories.value.map((c) => c.id)).toEqual(['c1', 'c2', 'c3']);
+    expect(filteredPaymentMethods.value.map((p) => p.id)).toEqual(['p1', 'p2']);
+  });
+
   it('re-filters reactively when the type changes', () => {
     const type = ref<EntryType>('debit');
     const { filteredCategories } = useTypedReferenceData(

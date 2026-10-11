@@ -118,6 +118,20 @@ describe('operations search', () => {
     expect(afterClearBody.total).toBe(2);
   });
 
+  it('matches both debit and credit operations when type is omitted', async () => {
+    const { mutate } = await seedSignedInMember(app);
+    const { accountId } = await createAccount(mutate);
+    await createOperation(mutate, accountId, { thirdParty: 'Shop 1', type: 'debit' });
+    await createOperation(mutate, accountId, { thirdParty: 'Shop 1 refund', type: 'credit' });
+
+    const res = await mutate('post', '/operations/search?page=1', {
+      accountId,
+      thirdParty: 'Shop 1',
+    });
+    const body = res.body as SearchResult;
+    expect(body.total).toBe(2);
+  });
+
   it('filters by an amount comparator', async () => {
     const { mutate } = await seedSignedInMember(app);
     const { accountId } = await createAccount(mutate);

@@ -169,6 +169,7 @@ export default {
       no: 'Non rapprochées uniquement',
       both: 'Rapprochées et non rapprochées',
       type: 'Type',
+      anyType: 'Indifférent',
       amount: 'Montant',
       dateFrom: 'Date de début',
       dateTo: 'Date de fin',
