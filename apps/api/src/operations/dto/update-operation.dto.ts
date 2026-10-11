@@ -1,40 +1,11 @@
-import { IsBoolean, IsIn, IsOptional, IsUUID } from 'class-validator';
-import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
-import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
+import { OmitType } from '@nestjs/swagger';
+import { ValueDateField } from '../../common/dto-fields';
+import { CreateOperationDto } from './create-operation.dto';
 
 // accountId is immutable but still submitted (read-only on the edit form);
-// the service rejects any change.
-export class UpdateOperationDto {
-  @IsUUID('7')
-  accountId!: string;
-
-  @IsIn(ENTRY_TYPES)
-  type!: EntryType;
-
-  @ThirdPartyField()
-  thirdParty!: string;
-
-  @AmountField()
-  amount!: number;
-
-  @IsOptional()
-  @IsUUID('7')
-  categoryId?: string;
-
-  @IsUUID('7')
-  paymentMethodId!: string;
-
-  @IsOptional()
-  @IsUUID('7')
-  transferAccountId?: string;
-
+// the service rejects any change. valueDate is required on edit: OmitType
+// drops create's @IsOptional(), which a plain `extends` would inherit.
+export class UpdateOperationDto extends OmitType(CreateOperationDto, ['valueDate'] as const) {
   @ValueDateField()
   valueDate!: string;
-
-  @NotesField()
-  notes?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  reconciled?: boolean;
 }
