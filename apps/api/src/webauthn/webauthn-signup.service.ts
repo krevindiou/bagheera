@@ -4,11 +4,11 @@ import type {
   PublicKeyCredentialCreationOptionsJSON,
   VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
-import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
+import { isUniqueViolation } from '../db/pg-errors';
 import { member, webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
@@ -16,6 +16,7 @@ import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
 import '../session/signup-session-data';
+import { findMemberByEmail } from '../members/find-member-by-email';
 import { parseSignupToken } from '../members/signup-token';
 import { buildRegistrationOptions } from './build-registration-options';
 import { credentialInsertValues } from './credential-insert-values';
@@ -32,10 +33,6 @@ const SIGNUP_FAILED = 'Sign-up link is invalid or has expired.';
 function signupFailed(): BusinessError {
   return new BusinessError(HttpStatus.BAD_REQUEST, 'signup_link_invalid', SIGNUP_FAILED);
 }
-
-// Postgres unique_violation: the email-uniqueness backstop for the member
-// insert below.
-const UNIQUE_VIOLATION = '23505';
 
 /**
  * Completes sign-up: a registration ceremony against the emailed sign-up
@@ -64,11 +61,7 @@ export class WebauthnSignupService {
     }
 
     // Not an enumeration oracle: only the mailbox owner holds the token.
-    const [existing] = await this.db
-      .select({ id: member.id })
-      .from(member)
-      .where(sql`lower(${member.email}) = lower(${payload.email})`);
-    if (existing) {
+    if (await findMemberByEmail(this.db, payload.email)) {
       throw signupFailed();
     }
 
@@ -134,8 +127,9 @@ export class WebauthnSignupService {
         return row.id;
       });
     } catch (err) {
-      if ((err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION) {
-        // Another link for the same address completed sign-up first.
+      // member_email_unique: another link for the same address completed
+      // sign-up first.
+      if (isUniqueViolation(err)) {
         throw signupFailed();
       }
       throw err;

@@ -1,9 +1,6 @@
-import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { member } from '../db/schema';
-
-// Postgres unique_violation (member_email_unique).
-const UNIQUE_VIOLATION = '23505';
+import { isUniqueViolation } from '../db/pg-errors';
+import { findMemberByEmail } from './find-member-by-email';
 
 /**
  * Runs `write()` (setting `member.email` to `email`), resolving to
@@ -20,10 +17,7 @@ export async function raceSafeUniqueEmail<T>(
   write: () => Promise<T>,
   excludeId?: string,
 ): Promise<{ ok: true; value: T } | { ok: false }> {
-  const [existing] = await db
-    .select({ id: member.id })
-    .from(member)
-    .where(sql`lower(${member.email}) = lower(${email})`);
+  const existing = await findMemberByEmail(db, email);
   if (existing && existing.id !== excludeId) {
     return { ok: false };
   }
@@ -32,7 +26,8 @@ export async function raceSafeUniqueEmail<T>(
     const value = await write();
     return { ok: true, value };
   } catch (err) {
-    if ((err as { cause?: { code?: string } }).cause?.code === UNIQUE_VIOLATION) {
+    // The member_email_unique index caught a write that raced the precheck.
+    if (isUniqueViolation(err)) {
       return { ok: false };
     }
     throw err;
