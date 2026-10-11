@@ -8,6 +8,7 @@ import {
   isValueDate,
   MAX_VALUE_DATE,
   MIN_VALUE_DATE,
+  PAGE_SIZE,
   PAYMENT_METHOD_ID,
   SUPPORTED_LOCALES,
   TRANSFER_PAYMENT_METHOD_IDS,
@@ -54,6 +55,12 @@ describe('FIELD_LIMITS', () => {
     for (const limit of Object.values(FIELD_LIMITS)) {
       expect(Number.isInteger(limit) && limit > 0).toBe(true);
     }
+  });
+});
+
+describe('PAGE_SIZE', () => {
+  it('is a positive integer', () => {
+    expect(Number.isInteger(PAGE_SIZE) && PAGE_SIZE > 0).toBe(true);
   });
 });
 

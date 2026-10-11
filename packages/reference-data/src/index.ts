@@ -49,6 +49,9 @@ export type DataGrouping = (typeof DATA_GROUPINGS)[number];
 // "Other"; the API's CreateReportDto and the web report form both cap at it.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
+// Page size of the paginated lists, shared so the web's placeholder matches.
+export const PAGE_SIZE = 20;
+
 // Caps on member-submitted fields, shared by the API's column widths, its
 // DTOs and the web forms. Text caps are character counts; changing one
 // that sizes a varchar column needs a migration.

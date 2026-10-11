@@ -1,13 +1,14 @@
 import { computed, ref, watch, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
+import { PAGE_SIZE } from '@bagheera/reference-data';
 import { apiClient } from '../api/client';
 import { queryKeys } from '../api/queryKeys';
 import { unwrap } from '../api/unwrap';
 import type { SearchCriteria } from '../domain/referenceData';
 import { useToast } from './useToast';
 
-const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: 20 };
+const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: PAGE_SIZE };
 
 /**
  * An account's operations list, the search the server remembers for it

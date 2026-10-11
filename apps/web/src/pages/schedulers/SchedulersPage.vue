@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { PAGE_SIZE } from '@bagheera/reference-data';
 import { apiClient } from '../../api/client';
 import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
@@ -54,7 +55,7 @@ const schedulersQuery = useQuery({
     ),
 });
 const list = computed(
-  () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: 20 },
+  () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: PAGE_SIZE },
 );
 const isError = computed(() => schedulersQuery.isError.value);
 watch(

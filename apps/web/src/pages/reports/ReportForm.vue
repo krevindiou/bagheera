@@ -272,7 +272,7 @@ const onSubmit = handleSubmit(async (submitted) => {
         v-bind="significantResultsNumberAttrs"
         type="number"
         min="1"
-        max="50"
+        :max="MAX_SIGNIFICANT_RESULTS_NUMBER"
         class="form-control"
         :class="{ 'is-invalid': errors.significantResultsNumber }"
       />
