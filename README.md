@@ -81,6 +81,12 @@ Deploys go through [Kamal](https://kamal-deploy.org) as two apps on one host, ro
 
 kamal-proxy terminates TLS and routes `/api` and `/health` to the API, everything else to Caddy. Secrets come from the deploying environment via `.kamal/secrets`. See `scripts/backup.sh` and `docs/backup-restore.md` for backups and restores.
 
+### Deploying schema changes
+
+Migrations run from the new API image while the previous release is still serving traffic, so every migration must work against the API version currently running: expand first (add columns/tables, backfill, widen types), and only drop, rename, or tighten a shape in a later release once no running code depends on the old one. Drizzle migrations here are forward-only — there's no down migration to undo one.
+
+Rolling back the API (`kamal rollback <version> -c config/deploy.api.yml`, e.g. after a failed health check) leaves the schema exactly as the last migration left it; it does not undo anything. Undoing a migration means a restore per `docs/backup-restore.md`.
+
 ## License
 
 MIT — see [`package.json`](package.json).
