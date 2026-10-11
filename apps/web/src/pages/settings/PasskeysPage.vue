@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import { queryKeys } from '../../api/queryKeys';
@@ -63,8 +64,8 @@ async function addPasskey() {
 
 async function removePasskey(id: string) {
   if (!(await confirm())) return;
-  // The API refuses this anyway (the 400 below) — checked here too only so
-  // the member isn't asked for a step-up that can't lead anywhere.
+  // The API refuses this anyway — checked here too only so the member
+  // isn't asked for a step-up that can't lead anywhere.
   if (credentials.value.length <= 1) {
     toast(t('settings.passkeys.lastPasskeyError'), 'error');
     return;
@@ -78,11 +79,6 @@ async function removePasskey(id: string) {
     params: { path: { id } },
   });
   if (!response.ok) {
-    // A 400 here means "last passkey" (branch on status, not English text).
-    if (response.status === 400) {
-      toast(t('settings.passkeys.lastPasskeyError'), 'error');
-      return;
-    }
     toast(errorMessage(error) ?? t('settings.passkeys.genericError'), 'error');
     return;
   }
@@ -110,6 +106,7 @@ async function removePasskey(id: string) {
             v-model="deviceName"
             type="text"
             class="form-control"
+            :maxlength="FIELD_LIMITS.DEVICE_NAME"
             :placeholder="$t('settings.passkeys.deviceNamePlaceholder')"
           />
         </div>

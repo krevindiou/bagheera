@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
@@ -153,6 +154,15 @@ describe('PasskeysPage', () => {
     expect(row.text()).toContain('15/01/2026');
   });
 
+  it('caps the device-name input length to match the API limit', async () => {
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    expect(wrapper.find('#passkey-device-name').attributes('maxlength')).toBe(
+      String(FIELD_LIMITS.DEVICE_NAME),
+    );
+  });
+
   it('steps up first, then registers a passkey end to end and reloads the list', async () => {
     mockPost();
     vi.mocked(startRegistration).mockResolvedValueOnce(
@@ -289,14 +299,15 @@ describe('PasskeysPage', () => {
   });
 
   // The client-side check above works off a possibly stale list (another
-  // tab may have removed a passkey since) — the API's 400 stays the
-  // authority, with its own specific message rather than the generic toast.
-  it('shows the specific last-passkey error, not the generic toast, on a 400', async () => {
+  // tab may have removed a passkey since) — the API's error stays the
+  // authority, translated from its business code rather than shown as the
+  // generic toast.
+  it('shows the translated last-passkey error, not the generic toast, on that business code', async () => {
     mockCredentials(TWO_PASSKEYS);
     mockPost();
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
-      error: { message: 'Cannot remove your last passkey — it would lock you out permanently.' },
+      error: { code: 'last_passkey', message: 'Cannot remove your last passkey.' },
       response: new Response(null, { status: 400 }),
     });
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
@@ -307,6 +318,18 @@ describe('PasskeysPage', () => {
     expect(useToast().toasts[0]?.text).toBe(
       "This is your last passkey — you can't remove it, or you'd be permanently locked out.",
     );
+  });
+
+  it('shows the generic error, not the last-passkey one, on a 400 without that business code', async () => {
+    mockCredentials(TWO_PASSKEYS);
+    mockPost();
+    apiClient.DELETE.mockResolvedValueOnce(jsonResult(400));
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await clickRemoveAndConfirm(wrapper);
+
+    expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
   });
 
   it("doesn't remove a passkey when the confirmation is cancelled", async () => {
