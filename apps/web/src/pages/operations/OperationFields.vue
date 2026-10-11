@@ -34,7 +34,6 @@ const props = defineProps<{
   // if it has since gone inactive.
   storedTransferAccountId?: string | null;
   valueDateLabel: string;
-  transferPlaceholder: string;
 }>();
 
 const { locale } = useI18n();
@@ -50,9 +49,7 @@ const { value: categoryId } = useField<string | undefined>('categoryId');
 const { value: paymentMethodId, errorMessage: paymentMethodError } = useField<string | undefined>(
   'paymentMethodId',
 );
-const { value: transferAccountId, errorMessage: transferAccountError } = useField<
-  string | undefined
->('transferAccountId');
+const { value: transferAccountId } = useField<string | undefined>('transferAccountId');
 const { value: valueDate, errorMessage: valueDateError } = useField<string>('valueDate');
 const { value: notes } = useField<string | undefined>('notes');
 const { value: reconciled } = useField<boolean | undefined>('reconciled');
@@ -171,15 +168,9 @@ function onThirdPartyChange() {
     class="transfer-accent"
     :label="$t('operations.transferAccount')"
     :for="`${idPrefix}-transfer-account`"
-    :error="transferAccountError && $t('auth.validation.required')"
   >
-    <select
-      :id="`${idPrefix}-transfer-account`"
-      v-model="transferAccountId"
-      class="form-select"
-      :class="{ 'is-invalid': transferAccountError }"
-    >
-      <option value="">{{ transferPlaceholder }}</option>
+    <select :id="`${idPrefix}-transfer-account`" v-model="transferAccountId" class="form-select">
+      <option value="">{{ $t('operations.externalAccount') }}</option>
       <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
     </select>
   </FormField>

@@ -73,7 +73,6 @@ function mountFields(initial: Partial<OperationForm> = {}) {
             accounts,
             banks,
             valueDateLabel: 'Value date',
-            transferPlaceholder: 'Pick an account',
           },
           slots,
         );
@@ -177,14 +176,14 @@ describe('OperationFields', () => {
     wrapper.unmount();
   });
 
-  it('shows the transfer account only for a transfer payment method, with its placeholder', async () => {
+  it('shows the transfer account only for a transfer payment method, blank meaning External', async () => {
     const { wrapper } = mountFields();
     expect(wrapper.find('#x-transfer-account').exists()).toBe(false);
 
     await wrapper.get('#x-payment-method').setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
 
     const transfer = wrapper.get('#x-transfer-account');
-    expect(optionLabels(transfer)).toEqual(['Pick an account', 'Savings']);
+    expect(optionLabels(transfer)).toEqual(['External account', 'Savings']);
     wrapper.unmount();
   });
 

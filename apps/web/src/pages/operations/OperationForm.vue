@@ -90,7 +90,6 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
       :banks="banks"
       :stored-transfer-account-id="operation?.transferAccountId"
       :value-date-label="$t('operations.valueDate')"
-      :transfer-placeholder="$t('operations.externalAccount')"
     />
 
     <template #actions>

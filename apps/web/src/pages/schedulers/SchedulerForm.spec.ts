@@ -213,6 +213,54 @@ describe('SchedulerForm', () => {
     );
   });
 
+  it('saves a transfer scheduler with no target account as External', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mountForm();
+    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
+    const transfer = wrapper.get('#scheduler-transfer-account');
+    expect(transfer.findAll('option')[0].text()).toBe('External account');
+
+    await wrapper.find('#scheduler-third-party').setValue('Broker');
+    await wrapper.find('#scheduler-amount').setValue('20');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).toHaveBeenCalledWith(
+      '/schedulers',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+          transferAccountId: undefined,
+        }),
+      }),
+    );
+    expect(wrapper.emitted('saved')).toHaveLength(1);
+  });
+
+  // A deleted target account leaves its schedulers on a transfer method with
+  // no target; they must stay editable.
+  it('updates a stored transfer scheduler that has no target account', async () => {
+    apiClient.PATCH.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mountForm({
+      scheduler: {
+        ...scheduler,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+        transferAccountId: null,
+      },
+    });
+    expect((wrapper.get('#scheduler-transfer-account').element as HTMLSelectElement).value).toBe(
+      '',
+    );
+
+    await wrapper.find('#scheduler-amount').setValue('75');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.PATCH).toHaveBeenCalledWith('/schedulers/{id}', {
+      params: { path: { id: 's1' } },
+      body: expect.objectContaining({ amount: 75, transferAccountId: undefined }),
+    });
+    expect(wrapper.emitted('saved')).toHaveLength(1);
+  });
+
   it('filters category/payment-method choices to the selected type', async () => {
     const wrapper = mountForm();
     expect(wrapper.text()).toContain('Food');

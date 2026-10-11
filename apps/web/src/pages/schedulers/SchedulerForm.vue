@@ -105,7 +105,6 @@ const onSubmit = handleSubmit(async (submitted) => {
       :banks="banks"
       :stored-transfer-account-id="scheduler?.transferAccountId"
       :value-date-label="$t('schedulers.firstOccurrence')"
-      :transfer-placeholder="$t('operations.chooseTransferAccount')"
     >
       <template #after-value-date>
         <div class="row">

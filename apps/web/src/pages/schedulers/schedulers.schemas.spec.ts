@@ -47,16 +47,19 @@ describe('schedulerSchema', () => {
     if (result.success) expect(result.data.limitDate).toBeUndefined();
   });
 
-  it('requires a transferAccountId when the payment method is a transfer method', () => {
-    const result = schedulerSchema.safeParse({
-      ...base,
-      paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
-    });
-    expect(result.success).toBe(false);
-    if (!result.success) expect(result.error.issues[0].path).toEqual(['transferAccountId']);
+  it('accepts a transfer payment method with no transferAccountId, as External', () => {
+    for (const transferAccountId of [undefined, '']) {
+      const result = schedulerSchema.safeParse({
+        ...base,
+        paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+        transferAccountId,
+      });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.transferAccountId).toBeUndefined();
+    }
   });
 
-  it('accepts a transfer payment method once transferAccountId is provided', () => {
+  it('accepts a transfer payment method with a transferAccountId', () => {
     expect(
       schedulerSchema.safeParse({
         ...base,
@@ -64,10 +67,6 @@ describe('schedulerSchema', () => {
         transferAccountId: ACCOUNT_ID,
       }).success,
     ).toBe(true);
-  });
-
-  it("doesn't require a transferAccountId for a non-transfer payment method", () => {
-    expect(schedulerSchema.safeParse(base).success).toBe(true);
   });
 
   it('rejects a valueDate outside the range the API accepts', () => {
