@@ -62,6 +62,13 @@ export const FIELD_LIMITS = {
   NOTES: 4096,
   // A scheduler's recurrence interval, in its frequency unit.
   FREQUENCY_VALUE: 100,
+  // A report's third-party filter; a `varchar` column width.
+  REPORT_THIRD_PARTIES: 255,
+  // A passkey's device name; a `varchar` column width.
+  DEVICE_NAME: 100,
+  // The operation search panel's notes filter — request-only, narrower
+  // than NOTES (what's actually saved).
+  SEARCH_NOTES: 128,
 } as const;
 
 // The synthesis chart's window choices (the trailing 12 or 24 months, or the

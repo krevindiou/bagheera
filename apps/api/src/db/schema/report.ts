@@ -28,7 +28,7 @@ export const report = pgTable(
     homepage: boolean('homepage').notNull().default(false),
     valueDateStart: date('value_date_start'),
     valueDateEnd: date('value_date_end'),
-    thirdParties: varchar('third_parties', { length: 255 }),
+    thirdParties: varchar('third_parties', { length: FIELD_LIMITS.REPORT_THIRD_PARTIES }),
     reconciledOnly: boolean('reconciled_only'),
     // Required for every report type — a 'distribution' report ranks *within*
     // each period (defaulting to 'all', a single whole-range bucket) rather

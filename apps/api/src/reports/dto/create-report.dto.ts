@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import {
   DATA_GROUPINGS,
+  FIELD_LIMITS,
   MAX_SIGNIFICANT_RESULTS_NUMBER,
   PERIOD_GROUPINGS,
   REPORT_TYPES,
@@ -76,7 +77,7 @@ export class CreateReportDto {
   // A filter, not stored text — its own cap, unrelated to ReportTitleField's.
   @IsOptional()
   @IsString()
-  @MaxLength(255)
+  @MaxLength(FIELD_LIMITS.REPORT_THIRD_PARTIES)
   thirdParties?: string;
 
   // Empty/omitted = all of the member's non-deleted accounts in non-deleted

@@ -22,7 +22,7 @@ export const reportSchema = z
     valueDateEnd: optionalDate,
     thirdParties: z.preprocess(
       (value) => (value === '' ? undefined : value),
-      z.string().max(255).optional(),
+      z.string().max(FIELD_LIMITS.REPORT_THIRD_PARTIES).optional(),
     ),
     accountIds: z.array(z.string()).optional(),
     categoryIds: z.array(z.string()).optional(),

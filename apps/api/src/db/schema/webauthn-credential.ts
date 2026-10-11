@@ -9,6 +9,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { uuidPk } from './id';
 import { member } from './member';
 
@@ -30,7 +31,7 @@ export const webauthnCredential = pgTable(
     counter: bigint('counter', { mode: 'number' }).notNull().default(0),
     transports: jsonb('transports').$type<string[]>(),
     // User-supplied label (e.g. "MacBook Touch ID"), shown in the settings list.
-    deviceName: varchar('device_name', { length: 100 }),
+    deviceName: varchar('device_name', { length: FIELD_LIMITS.DEVICE_NAME }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
   },

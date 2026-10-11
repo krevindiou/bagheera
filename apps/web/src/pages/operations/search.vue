@@ -244,7 +244,13 @@ function onClear() {
     </div>
 
     <FormField :label="$t('operations.notes')" for="search-notes">
-      <input id="search-notes" v-model="notes" type="text" maxlength="128" class="form-control" />
+      <input
+        id="search-notes"
+        v-model="notes"
+        type="text"
+        :maxlength="FIELD_LIMITS.SEARCH_NOTES"
+        class="form-control"
+      />
     </FormField>
 
     <FormField :label="$t('operations.reconciled')" for="search-reconciled">

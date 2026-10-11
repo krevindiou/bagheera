@@ -16,7 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { ThirdPartyField, ValueDateField } from '../../common/dto-fields';
-import { ENTRY_TYPES, type EntryType } from '@bagheera/reference-data';
+import { ENTRY_TYPES, FIELD_LIMITS, type EntryType } from '@bagheera/reference-data';
 
 export class AmountComparatorDto {
   @IsIn(['gt', 'gte', 'lt', 'lte', 'eq'])
@@ -81,7 +81,7 @@ export class SearchOperationsDto {
   @IsOptional()
   @IsString()
   @MinLength(1)
-  @MaxLength(128)
+  @MaxLength(FIELD_LIMITS.SEARCH_NOTES)
   notes?: string;
 
   @IsOptional()
