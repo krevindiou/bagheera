@@ -1,4 +1,5 @@
-import { queryKeys } from './queryKeys';
+import { describe, expect, it, vi } from 'vitest';
+import { invalidateAccountData, queryKeys } from './queryKeys';
 
 describe('queryKeys', () => {
   it('keeps every static (top-level array) key unique', () => {
@@ -24,5 +25,23 @@ describe('queryKeys', () => {
     expect(queryKeys.schedulers.page('a1', 2).slice(0, 2)).toEqual(queryKeys.schedulers.all('a1'));
     expect(queryKeys.chart.range('a1', '24').slice(0, 2)).toEqual(queryKeys.chart.all('a1'));
     expect(queryKeys.dashboard.range('24').slice(0, 1)).toEqual(queryKeys.dashboard.all);
+  });
+});
+
+describe('invalidateAccountData', () => {
+  it("invalidates the account's operations, chart, and balance, plus the dashboard and accounts list", async () => {
+    const invalidateQueries = vi.fn().mockResolvedValue(undefined);
+    const queryClient = { invalidateQueries } as unknown as Parameters<
+      typeof invalidateAccountData
+    >[0];
+
+    await invalidateAccountData(queryClient, 'a1');
+
+    const invalidatedKeys = invalidateQueries.mock.calls.map((call) => call[0]?.queryKey);
+    expect(invalidatedKeys).toContainEqual(queryKeys.operations.all('a1'));
+    expect(invalidatedKeys).toContainEqual(queryKeys.chart.all('a1'));
+    expect(invalidatedKeys).toContainEqual(queryKeys.balance('a1'));
+    expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
+    expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });
 });

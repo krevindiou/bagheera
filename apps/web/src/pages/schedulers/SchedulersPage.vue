@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import { queryKeys } from '../../api/queryKeys';
+import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useAccountContext } from '../../composables/useAccountContext';
 import {
@@ -68,8 +68,13 @@ const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
 
+// A saved/deleted scheduler also queues background generation of operations
+// on this account, so its data needs refreshing too, not just the list.
 async function reloadSchedulers() {
-  await queryClient.invalidateQueries({ queryKey: queryKeys.schedulers.all(accountId.value) });
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.schedulers.all(accountId.value) }),
+    invalidateAccountData(queryClient, accountId.value),
+  ]);
 }
 
 function amountLabel(scheduler: Scheduler): string {

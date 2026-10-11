@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
-import { queryKeys } from '../../api/queryKeys';
+import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
@@ -106,24 +106,10 @@ const categoryNames = computed(
 );
 
 // Every page of this account's operations, its chart and balance, and the
-// dashboard and accounts list balances.
-async function refreshAfterSave() {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.chart.all(accountId.value) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.balance(accountId.value) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-  ]);
-}
-
-async function refreshAfterBatch() {
-  await Promise.all([
-    queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId.value) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.balance(accountId.value) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
-  ]);
+// dashboard and accounts list balances — shared by both the form save and
+// the batch bar, since either can change the same data.
+async function refreshAccountData() {
+  await invalidateAccountData(queryClient, accountId.value);
 }
 
 function amountLabel(operation: Operation): string {
@@ -143,7 +129,7 @@ function startEdit(operation: Operation) {
 
 async function onSaved() {
   editingOperation.value = null;
-  await refreshAfterSave();
+  await refreshAccountData();
 }
 
 async function onSavedAndClose() {
@@ -234,7 +220,11 @@ function isEditable(operation: Operation): boolean {
     />
 
     <div>
-      <BatchActions v-if="isFullyActive" :selected-ids="selectedIdList" @done="refreshAfterBatch" />
+      <BatchActions
+        v-if="isFullyActive"
+        :selected-ids="selectedIdList"
+        @done="refreshAccountData"
+      />
 
       <ListState
         :error="operationsError"

@@ -1,3 +1,5 @@
+import type { QueryClient } from '@tanstack/vue-query';
+
 // Every query key comes from here: a typo in a literal key silently skips
 // invalidation. Paged/ranged entries expose an `.all(...)` prefix, since
 // invalidateQueries matches by prefix and should clear every page.
@@ -32,3 +34,16 @@ export const queryKeys = {
   reportSeries: (reportId: string | null) => ['report-series', reportId] as const,
   reportDistribution: (reportId: string | null) => ['report-distribution', reportId] as const,
 } as const;
+
+// Every query that can change when an account's operations change (direct
+// edits, batch actions, or scheduler-generated operations) — one call site
+// per caller instead of each one hand-listing the same keys.
+export function invalidateAccountData(queryClient: QueryClient, accountId: string) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.chart.all(accountId) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.balance(accountId) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
+  ]);
+}

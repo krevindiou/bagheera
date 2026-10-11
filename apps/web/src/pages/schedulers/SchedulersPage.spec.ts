@@ -276,7 +276,7 @@ describe('SchedulersPage', () => {
     expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
   });
 
-  it('invalidates every cached page (not just the current one) after a batch delete', async () => {
+  it('invalidates every cached page (not just the current one), plus the account data a scheduler can generate, after a batch delete', async () => {
     mockGet({ schedulers: { items: [scheduler()], total: 1, page: 1, pageSize: 20 } });
     apiClient.POST.mockResolvedValueOnce({
       data: { deletedCount: 1 },
@@ -297,6 +297,11 @@ describe('SchedulersPage', () => {
       (call) => (call[0] as { queryKey?: unknown } | undefined)?.queryKey,
     );
     expect(invalidatedKeys).toContainEqual(queryKeys.schedulers.all(ACCOUNT_ID));
+    // A scheduler save/delete queues background generation of operations on
+    // this account, so its operations/chart/balance need invalidating too.
+    expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.chart.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.balance(ACCOUNT_ID));
   });
 
   it('creates a scheduler and closes the form on save', async () => {
@@ -317,6 +322,32 @@ describe('SchedulersPage', () => {
     await submitAndSettle(wrapper);
 
     expect(wrapper.find('#scheduler-third-party').exists()).toBe(false);
+  });
+
+  it('invalidates the account data a scheduler can generate after saving', async () => {
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    const { global, queryClient } = withGlobalPlugins(router);
+    wrapper = mount(SchedulersPage, { global });
+    await flushPromises();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    await wrapper.find('button.btn-primary').trigger('click');
+    await wrapper.find('#scheduler-third-party').setValue('Landlord');
+    await wrapper.find('#scheduler-amount').setValue('50');
+    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+    await submitAndSettle(wrapper);
+
+    const invalidatedKeys = invalidateSpy.mock.calls.map(
+      (call) => (call[0] as { queryKey?: unknown } | undefined)?.queryKey,
+    );
+    expect(invalidatedKeys).toContainEqual(queryKeys.schedulers.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.chart.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.balance(ACCOUNT_ID));
   });
 
   it('cancels the create form without saving', async () => {

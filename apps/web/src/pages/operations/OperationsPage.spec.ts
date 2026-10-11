@@ -396,7 +396,7 @@ describe('OperationsPage', () => {
     expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
   });
 
-  it('invalidates every cached page, plus the dashboard and accounts list, after a batch action', async () => {
+  it('invalidates every cached page, the chart, plus the dashboard and accounts list, after a batch action', async () => {
     mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
     apiClient.POST.mockResolvedValueOnce({
       data: { deletedCount: 1 },
@@ -417,6 +417,9 @@ describe('OperationsPage', () => {
       (call) => (call[0] as { queryKey?: unknown } | undefined)?.queryKey,
     );
     expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
+    // The chart shows the same deleted operations, so it needs invalidating too.
+    expect(invalidatedKeys).toContainEqual(queryKeys.chart.all(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.balance(ACCOUNT_ID));
     expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
     expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });
