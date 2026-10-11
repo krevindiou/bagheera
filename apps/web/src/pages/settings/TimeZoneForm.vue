@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
 import FormField from '../../components/FormField.vue';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
@@ -23,11 +24,11 @@ const options = [...new Set([...Intl.supportedValuesOf('timeZone'), timeZone.val
 async function onSubmit(): Promise<void> {
   isSubmitting.value = true;
   try {
-    const { response } = await apiClient.POST('/members/time-zone', {
+    const { error, response } = await apiClient.POST('/members/time-zone', {
       body: { timeZone: timeZone.value },
     });
     if (!response.ok) {
-      toast(t('settings.timeZone.genericError'), 'error');
+      toast(errorMessage(error) ?? t('settings.timeZone.genericError'), 'error');
       return;
     }
     session.setTimeZone(timeZone.value);

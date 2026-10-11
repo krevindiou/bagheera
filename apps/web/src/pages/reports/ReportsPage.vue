@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
 import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useConfirm } from '../../composables/useConfirm';
@@ -78,11 +79,11 @@ async function onBatchDeleted() {
 
 async function deleteReport(report: Report) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.DELETE('/reports/{id}', {
+  const { error, response } = await apiClient.DELETE('/reports/{id}', {
     params: { path: { id: report.id } },
   });
   if (!response.ok) {
-    toast(t('reports.genericError'), 'error');
+    toast(errorMessage(error) ?? t('reports.genericError'), 'error');
     return;
   }
   if (viewingReportId.value === report.id) viewingReportId.value = null;

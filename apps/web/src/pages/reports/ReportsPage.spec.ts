@@ -286,7 +286,24 @@ describe('ReportsPage', () => {
     expect(apiClient.DELETE).not.toHaveBeenCalled();
   });
 
-  it('shows an error toast when deleting a report fails', async () => {
+  it("shows the API's error message when deleting a report fails", async () => {
+    mockGet([report()]);
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: { code: 'bank_already_deleted', message: 'This bank is already deleted.' },
+      response: new Response(null, { status: 409 }),
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"] button.btn-outline-danger').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(queuedToastText()).toContain('This bank is already deleted.');
+  });
+
+  it('falls back to a generic error toast when deleting a report fails without a code', async () => {
     mockGet([report()]);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,

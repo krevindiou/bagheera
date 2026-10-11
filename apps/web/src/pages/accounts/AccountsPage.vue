@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
+import { errorMessage } from '../../api/errorMessage';
 import { queryKeys } from '../../api/queryKeys';
 import { useAccountsQuery, useBanksQuery } from '../../composables/useReferenceQueries';
 import { useToast } from '../../composables/useToast';
@@ -94,28 +95,35 @@ async function onBankSaved() {
   await reload();
 }
 
-async function closeBank(bank: Bank) {
+// Shared by the four row actions below: confirm, send the request, toast
+// the API's error (or the generic one) on failure, else the success toast
+// and a reload.
+async function confirmAndRun(
+  request: () => Promise<{ error?: unknown; response: Response }>,
+  successKey: string,
+) {
   if (!(await confirm())) return;
-  const { response } = await apiClient.POST('/banks/{id}/close', {
-    params: { path: { id: bank.id } },
-  });
+  const { error, response } = await request();
   if (!response.ok) {
-    toast(t('accounts.genericError'), 'error');
+    toast(errorMessage(error) ?? t('accounts.genericError'), 'error');
     return;
   }
-  toast(t('accounts.bankClosed'), 'success');
+  toast(t(successKey), 'success');
   await reload();
 }
 
+async function closeBank(bank: Bank) {
+  await confirmAndRun(
+    () => apiClient.POST('/banks/{id}/close', { params: { path: { id: bank.id } } }),
+    'accounts.bankClosed',
+  );
+}
+
 async function deleteBank(bank: Bank) {
-  if (!(await confirm())) return;
-  const { response } = await apiClient.DELETE('/banks/{id}', { params: { path: { id: bank.id } } });
-  if (!response.ok) {
-    toast(t('accounts.genericError'), 'error');
-    return;
-  }
-  toast(t('accounts.bankDeleted'), 'success');
-  await reload();
+  await confirmAndRun(
+    () => apiClient.DELETE('/banks/{id}', { params: { path: { id: bank.id } } }),
+    'accounts.bankDeleted',
+  );
 }
 
 // -- Edit account (reuses the creation form, with bank and currency
@@ -133,29 +141,17 @@ async function onAccountUpdated() {
 }
 
 async function closeAccount(account: Account) {
-  if (!(await confirm())) return;
-  const { response } = await apiClient.POST('/accounts/{id}/close', {
-    params: { path: { id: account.id } },
-  });
-  if (!response.ok) {
-    toast(t('accounts.genericError'), 'error');
-    return;
-  }
-  toast(t('accounts.accountClosed'), 'success');
-  await reload();
+  await confirmAndRun(
+    () => apiClient.POST('/accounts/{id}/close', { params: { path: { id: account.id } } }),
+    'accounts.accountClosed',
+  );
 }
 
 async function deleteAccount(account: Account) {
-  if (!(await confirm())) return;
-  const { response } = await apiClient.DELETE('/accounts/{id}', {
-    params: { path: { id: account.id } },
-  });
-  if (!response.ok) {
-    toast(t('accounts.genericError'), 'error');
-    return;
-  }
-  toast(t('accounts.accountDeleted'), 'success');
-  await reload();
+  await confirmAndRun(
+    () => apiClient.DELETE('/accounts/{id}', { params: { path: { id: account.id } } }),
+    'accounts.accountDeleted',
+  );
 }
 
 // Clicking anywhere in a row (outside its checkbox/controls) opens the

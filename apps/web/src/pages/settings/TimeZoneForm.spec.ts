@@ -18,6 +18,10 @@ function result(status: number) {
   return { data: undefined, error: undefined, response: new Response(null, { status }) };
 }
 
+function errorResult(status: number, code: string, message: string) {
+  return { data: undefined, error: { code, message }, response: new Response(null, { status }) };
+}
+
 // The form reads session.member.timeZone once, as its initial value — the
 // session is populated on the same pinia instance before mount().
 function mountWithTimeZone(timeZone: string) {
@@ -65,7 +69,20 @@ describe('TimeZoneForm', () => {
     expect(queuedToastText()).toContain('Time zone updated');
   });
 
-  it('keeps the session unchanged and shows an error toast when saving fails', async () => {
+  it("keeps the session unchanged and shows the API's error message when saving fails", async () => {
+    apiClient.POST.mockResolvedValueOnce(
+      errorResult(409, 'bank_already_deleted', 'This bank is already deleted.'),
+    );
+    const wrapper = mountWithTimeZone('Europe/Paris');
+
+    await select(wrapper).setValue('America/New_York');
+    await submitAndSettle(wrapper);
+
+    expect(useSessionStore().member?.timeZone).toBe('Europe/Paris');
+    expect(queuedToastText()).toContain('This bank is already deleted.');
+  });
+
+  it('keeps the session unchanged and falls back to a generic error toast when saving fails without a code', async () => {
     apiClient.POST.mockResolvedValueOnce(result(400));
     const wrapper = mountWithTimeZone('Europe/Paris');
 

@@ -313,7 +313,26 @@ describe('AccountsPage', () => {
     expect(apiClient.PATCH).not.toHaveBeenCalled();
   });
 
-  it('shows an error toast when closing a bank fails', async () => {
+  it("shows the API's error message when closing a bank fails", async () => {
+    mockData([bank('b1', 'Chase')], []);
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: { code: 'bank_already_deleted', message: 'This bank is already deleted.' },
+      response: new Response(null, { status: 409 }),
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
+    await chaseRow.findAll('button')[1].trigger('click'); // Edit, Close, Delete
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(queuedToastText()).toContain('This bank is already deleted.');
+  });
+
+  it('falls back to a generic error toast when closing a bank fails without a code', async () => {
     mockData([bank('b1', 'Chase')], []);
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
@@ -354,7 +373,26 @@ describe('AccountsPage', () => {
     expect(queuedToastText()).toContain('Bank deleted');
   });
 
-  it('shows an error toast when deleting a bank fails', async () => {
+  it("shows the API's error message when deleting a bank fails", async () => {
+    mockData([bank('b1', 'Chase')], []);
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: { code: 'bank_already_deleted', message: 'This bank is already deleted.' },
+      response: new Response(null, { status: 409 }),
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
+    await chaseRow.findAll('button')[2].trigger('click'); // Edit, Close, Delete
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(queuedToastText()).toContain('This bank is already deleted.');
+  });
+
+  it('falls back to a generic error toast when deleting a bank fails without a code', async () => {
     mockData([bank('b1', 'Chase')], []);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
@@ -435,7 +473,26 @@ describe('AccountsPage', () => {
     expect(queuedToastText()).toContain('Account closed');
   });
 
-  it('shows an error toast when closing an account fails', async () => {
+  it("shows the API's error message when closing an account fails", async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: { code: 'account_not_active', message: 'This account is not active.' },
+      response: new Response(null, { status: 409 }),
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const buttons = wrapper.findAll('[data-testid="account-row"] button');
+    await buttons[1].trigger('click'); // Close
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(queuedToastText()).toContain('This account is not active.');
+  });
+
+  it('falls back to a generic error toast when closing an account fails without a code', async () => {
     mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
@@ -476,7 +533,26 @@ describe('AccountsPage', () => {
     expect(queuedToastText()).toContain('Account deleted');
   });
 
-  it('shows an error toast when deleting an account fails', async () => {
+  it("shows the API's error message when deleting an account fails", async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: { code: 'account_not_active', message: 'This account is not active.' },
+      response: new Response(null, { status: 409 }),
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const buttons = wrapper.findAll('[data-testid="account-row"] button');
+    await buttons[2].trigger('click'); // Delete
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(queuedToastText()).toContain('This account is not active.');
+  });
+
+  it('falls back to a generic error toast when deleting an account fails without a code', async () => {
     mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
     apiClient.DELETE.mockResolvedValueOnce({
       data: undefined,
