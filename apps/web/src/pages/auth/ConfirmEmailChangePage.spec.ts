@@ -13,9 +13,25 @@ import ConfirmEmailChangePage from './ConfirmEmailChangePage.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
 
+const member = { email: 'new@example.com', locale: 'en', timeZone: 'UTC' };
+
+function signedIn() {
+  apiClient.GET.mockResolvedValue({
+    data: member,
+    error: undefined,
+    response: new Response(null, { status: 200 }),
+  });
+}
+
 describe('ConfirmEmailChangePage', () => {
   beforeEach(() => {
     apiClient.POST.mockReset();
+    // Signed out: the session probe finds no member.
+    apiClient.GET.mockReset().mockResolvedValue({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 401 }),
+    });
     useToast().toasts.splice(0);
   });
 
@@ -64,5 +80,48 @@ describe('ConfirmEmailChangePage', () => {
     await waitForRouteName(router, 'sign-in');
 
     expect(useToast().toasts[0]?.text).toBe('Email change error (link expired or already used?)');
+  });
+
+  it('keeps a signed-in member in the app, with their new address, on a valid key', async () => {
+    signedIn();
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    await router.push({ name: 'confirm-email-change', query: { key: 'abc123' } });
+    mount(ConfirmEmailChangePage, withGlobalPlugins());
+    await waitForRouteName(router, 'home');
+
+    expect(useToast().toasts[0]?.text).toBe('Your email address has been updated.');
+    await vi.waitFor(() => {
+      expect(
+        apiClient.GET.mock.calls.filter(([path]) => path === '/auth/me').length,
+      ).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it('sends a signed-in member home with an error toast when the link has no key', async () => {
+    signedIn();
+    await router.push({ name: 'confirm-email-change' });
+    mount(ConfirmEmailChangePage, withGlobalPlugins());
+    await waitForRouteName(router, 'home');
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(useToast().toasts[0]?.text).toBe('Email change error (link expired or already used?)');
+  });
+
+  it('falls back to sign-in when the session probe itself fails', async () => {
+    apiClient.GET.mockRejectedValue(new Error('network failure'));
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    await router.push({ name: 'confirm-email-change', query: { key: 'abc123' } });
+    mount(ConfirmEmailChangePage, withGlobalPlugins());
+    await waitForRouteName(router, 'sign-in');
+
+    expect(useToast().toasts[0]?.text).toBe('Your email address has been updated.');
   });
 });

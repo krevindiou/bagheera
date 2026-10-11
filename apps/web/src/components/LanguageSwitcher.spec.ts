@@ -69,6 +69,8 @@ describe('LanguageSwitcher', () => {
     const wrapper = mount(LanguageSwitcher, withGlobalPlugins());
     const session = useSessionStore();
     session.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+    // Or the route guard's session probe, on the locale switch, signs them out.
+    session.restored = true;
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
 
     await wrapper.get('.lang-trigger').trigger('click');

@@ -25,6 +25,8 @@ describe('apiClient', () => {
 
   beforeEach(async () => {
     setActivePinia(createPinia());
+    // Keeps the route guard from probing the session on these pushes.
+    useSessionStore().restored = true;
     await router.push({ name: 'register' });
 
     // Explicit generic, or the type won't fit openapi-fetch's `fetch` option.
@@ -92,7 +94,7 @@ describe('apiClient', () => {
       );
       const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
-      await apiClient.GET('/auth/me', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+      await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
 
       expect(useSessionStore().member).toBeNull();
       expect(pushSpy).toHaveBeenCalledWith({ name: 'sign-in' });
@@ -103,7 +105,7 @@ describe('apiClient', () => {
       fetchMock.mockImplementation(async () => jsonResponse(401));
       const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
-      await apiClient.GET('/auth/me', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+      await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
 
       expect(pushSpy).not.toHaveBeenCalled();
     });
@@ -112,7 +114,7 @@ describe('apiClient', () => {
       useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
       const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
 
-      await apiClient.GET('/auth/me', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+      await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
 
       expect(useSessionStore().member).toEqual({
         email: 'member@example.com',
@@ -122,11 +124,20 @@ describe('apiClient', () => {
       expect(pushSpy).not.toHaveBeenCalled();
     });
 
+    it('leaves the redirect to the route guard on a 401 from the /auth/me probe', async () => {
+      fetchMock.mockImplementation(async () => jsonResponse(401));
+      const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
+
+      await apiClient.GET('/auth/me', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+
+      expect(pushSpy).not.toHaveBeenCalled();
+    });
+
     it("doesn't throw when a 401 arrives with no active Pinia instance", async () => {
       setActivePinia(undefined);
       fetchMock.mockImplementation(async () => jsonResponse(401));
 
-      const result = await apiClient.GET('/auth/me', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+      const result = await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
 
       expect(result.response.status).toBe(401);
     });

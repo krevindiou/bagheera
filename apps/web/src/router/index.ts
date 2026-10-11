@@ -13,7 +13,8 @@ import { useSessionStore } from '../stores/session.store';
 const localePattern = SUPPORTED_LOCALES.join('|');
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: () => `/${detectLocale()}/sign-in` },
+  // The auth guard sends a signed-out visitor on to sign-in.
+  { path: '/', redirect: () => `/${detectLocale()}/home` },
   {
     path: `/:locale(${localePattern})`,
     children: [
@@ -21,11 +22,13 @@ const routes: RouteRecordRaw[] = [
         path: 'sign-in',
         name: 'sign-in',
         component: () => import('../pages/auth/SignInPage.vue'),
+        meta: { guestOnly: true },
       },
       {
         path: 'register',
         name: 'register',
         component: () => import('../pages/auth/RegisterPage.vue'),
+        meta: { guestOnly: true },
       },
       {
         path: 'activate',
@@ -36,6 +39,9 @@ const routes: RouteRecordRaw[] = [
         path: 'confirm-email-change',
         name: 'confirm-email-change',
         component: () => import('../pages/auth/ConfirmEmailChangePage.vue'),
+        // Session known before mounting: learning it afterwards swaps the
+        // layout, remounting the page once its one-time key is gone.
+        meta: { restoresSession: true },
       },
       {
         path: 'home',
@@ -81,7 +87,7 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
-  { path: '/:pathMatch(.*)*', redirect: () => `/${detectLocale()}/sign-in` },
+  { path: '/:pathMatch(.*)*', redirect: () => `/${detectLocale()}/home` },
 ];
 
 export const router = createRouter({
@@ -118,7 +124,8 @@ router.beforeEach(async (to) => {
     await setLocale(locale);
   }
 
-  if (!to.meta.requiresAuth) {
+  const { requiresAuth, guestOnly, restoresSession } = to.meta;
+  if (!requiresAuth && !guestOnly && !restoresSession) {
     return true;
   }
   // No active Pinia counts as signed out.
@@ -126,12 +133,19 @@ router.beforeEach(async (to) => {
   try {
     store = useSessionStore();
   } catch {
-    return { name: 'sign-in' };
+    return requiresAuth ? { name: 'sign-in' } : true;
   }
   // After a reload, wait to learn whether the session cookie is still valid.
+  // A failed restore() leaves the member signed out, so sign-in still renders.
   if (!store.restored) {
     await store.restore();
   }
   // The target's locale, not withLocale's current-route fallback.
-  return store.isAuthenticated ? true : { name: 'sign-in', params: { locale } };
+  if (guestOnly) {
+    return store.isAuthenticated ? { name: 'home', params: { locale } } : true;
+  }
+  if (requiresAuth) {
+    return store.isAuthenticated ? true : { name: 'sign-in', params: { locale } };
+  }
+  return true;
 });

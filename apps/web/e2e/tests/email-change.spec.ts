@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { alertWithText, expect, randomEmail, test } from '../support/fixtures';
+import { alertWithText, expect, randomEmail, signOut, test } from '../support/fixtures';
 import { waitForEmailLink } from '../support/mailpit';
 
 // ProfilePage's email change (step-up gated) mails a link to the new
@@ -18,10 +18,15 @@ test('changing the account email requires a step-up passkey confirmation and con
   const confirmLink = await waitForEmailLink(newEmail);
   await page.goto(confirmLink);
   await expect(alertWithText(page, en.auth.confirmEmailChange.success)).toBeVisible();
-  await expect(page).toHaveURL(/\/en\/sign-in$/);
+  // The confirming browser keeps its session.
+  await expect(page).toHaveURL(/\/en\/home$/);
+  await expect(page.getByText(newEmail, { exact: true })).toBeVisible();
+  await expect(page.getByText(oldEmail, { exact: true })).toHaveCount(0);
 
   // Sign-in is usernameless: the same passkey signs back into the account,
   // which now answers to the new address only.
+  await signOut(page);
+  await expect(page).toHaveURL(/\/en\/sign-in$/);
   await page.getByRole('button', { name: en.auth.signIn.passkeySubmit, exact: true }).click();
   await expect(page).toHaveURL(/\/en\/home$/);
   await expect(page.getByText(newEmail, { exact: true })).toBeVisible();

@@ -45,10 +45,12 @@ apiClient.use({
 });
 
 // A 401 means "no active session". A failed sign-in ceremony is a 401 too,
-// but fires on the sign-in page, where the redirect is a no-op.
+// but fires on the sign-in page, where the redirect is a no-op. Except from
+// /auth/me: that probe answers "signed out" on purpose, and the route guard
+// decides where a guest belongs (register and emailed links included).
 apiClient.use({
-  onResponse({ response }) {
-    if (response.status !== 401) return response;
+  onResponse({ response, schemaPath }) {
+    if (response.status !== 401 || schemaPath === '/auth/me') return response;
 
     try {
       useSessionStore().clear();

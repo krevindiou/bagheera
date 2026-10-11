@@ -74,6 +74,8 @@ describe('AccountMenu', () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(AccountMenu, withGlobalPlugins());
     useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
+    // Or the route guard's session probe, on the locale switch, signs them out.
+    useSessionStore().restored = true;
     await wrapper.vm.$nextTick();
 
     await wrapper.get('.account-trigger').trigger('click');
