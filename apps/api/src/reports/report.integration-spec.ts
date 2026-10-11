@@ -177,6 +177,22 @@ describe('reports', () => {
       expect(res.status).toBe(400);
     });
 
+    it('ignores dataGrouping/significantResultsNumber on a non-distribution report, even malformed', async () => {
+      const { mutate } = await seedSignedInMember(app);
+
+      const res = await mutate(
+        'post',
+        '/reports',
+        reportPayload({ dataGrouping: 'bogus', significantResultsNumber: 'abc' }),
+      );
+      expect(res.status).toBe(200);
+      const { report: created } = res.body as { report: { id: string } };
+
+      const [row] = await getDb(app).select().from(report).where(eq(report.id, created.id));
+      expect(row.dataGrouping).toBeNull();
+      expect(row.significantResultsNumber).toBeNull();
+    });
+
     it('clears dataGrouping/significantResultsNumber when edited back to a sum report', async () => {
       const { mutate } = await seedSignedInMember(app);
       const created = await mutate('post', '/reports', {
@@ -195,6 +211,33 @@ describe('reports', () => {
       expect(row.dataGrouping).toBeNull();
       expect(row.significantResultsNumber).toBeNull();
       expect(row.periodGrouping).toBe('month');
+    });
+
+    it('clears stale dataGrouping/significantResultsNumber the web form still submits when switching to sum', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const created = await mutate('post', '/reports', {
+        type: 'distribution',
+        title: 'Was a distribution',
+        dataGrouping: 'category',
+        significantResultsNumber: 5,
+        periodGrouping: 'all',
+      });
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      const res = await mutate(
+        'patch',
+        `/reports/${id}`,
+        reportPayload({
+          title: 'Now a sum',
+          dataGrouping: 'category',
+          significantResultsNumber: 5,
+        }),
+      );
+      expect(res.status).toBe(200);
+
+      const [row] = await getDb(app).select().from(report).where(eq(report.id, id));
+      expect(row.dataGrouping).toBeNull();
+      expect(row.significantResultsNumber).toBeNull();
     });
   });
 

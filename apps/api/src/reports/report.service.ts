@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import type { DataGrouping } from '@bagheera/reference-data';
 import { DRIZZLE } from '../db/db.constants';
 import { category, member, report, reportAccount, reportCategory } from '../db/schema';
 import { MemberId, ReportId } from '../security/ids';
@@ -34,6 +35,21 @@ export class ReportService {
       map.set(link.reportId, list);
     }
     return map;
+  }
+
+  // Distribution-only: for any other type the DTO skips their validators
+  // but still lets them through, so they're dropped here.
+  private distributionOnlyFields(dto: CreateReportDto): {
+    dataGrouping: DataGrouping | null;
+    significantResultsNumber: number | null;
+  } {
+    if (dto.type !== 'distribution') {
+      return { dataGrouping: null, significantResultsNumber: null };
+    }
+    return {
+      dataGrouping: dto.dataGrouping ?? null,
+      significantResultsNumber: dto.significantResultsNumber ?? null,
+    };
   }
 
   // Categories aren't member-owned: only check they exist.
@@ -116,8 +132,7 @@ export class ReportService {
           thirdParties: dto.thirdParties,
           reconciledOnly: dto.reconciledOnly,
           periodGrouping: dto.periodGrouping,
-          dataGrouping: dto.dataGrouping,
-          significantResultsNumber: dto.significantResultsNumber,
+          ...this.distributionOnlyFields(dto),
         })
         .returning();
       if (accountIds.length > 0) {
@@ -153,10 +168,7 @@ export class ReportService {
           thirdParties: dto.thirdParties ?? null,
           reconciledOnly: dto.reconciledOnly ?? null,
           periodGrouping: dto.periodGrouping,
-          // `?? null`, not undefined (= untouched): leaving 'distribution'
-          // must clear these.
-          dataGrouping: dto.dataGrouping ?? null,
-          significantResultsNumber: dto.significantResultsNumber ?? null,
+          ...this.distributionOnlyFields(dto),
         })
         .where(eq(report.id, id));
 
