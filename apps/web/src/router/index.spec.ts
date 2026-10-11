@@ -228,3 +228,24 @@ describe('router locale segment', () => {
     expect(router.currentRoute.value.params.locale).toBe('fr');
   });
 });
+
+describe('router document title', () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await resetToSignIn();
+  });
+
+  it('sets document.title from the route it lands on', async () => {
+    await router.push({ name: 'activate', params: { locale: 'en' } });
+    expect(document.title).toBe('Create your account · Bagheera');
+  });
+
+  it('retitles the current page when the locale segment changes', async () => {
+    await router.push({ name: 'activate', params: { locale: 'en' } });
+    expect(document.title).toBe('Create your account · Bagheera');
+
+    await router.push({ name: 'activate', params: { locale: 'fr' } });
+
+    expect(document.title).toBe('Créer votre compte · Bagheera');
+  });
+});

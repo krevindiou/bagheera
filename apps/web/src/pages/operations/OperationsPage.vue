@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
@@ -13,6 +14,7 @@ import {
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
 import { useAccountContext } from '../../composables/useAccountContext';
+import { usePageTitle } from '../../composables/useDocumentTitle';
 import {
   useAccountsQuery,
   useBanksQuery,
@@ -65,6 +67,11 @@ const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 const { paymentMethods } = usePaymentMethodsQuery();
 const { account, bank, isFullyActive, currency } = useAccountContext(accountId);
+
+const { t } = useI18n();
+usePageTitle(
+  computed(() => (account.value ? `${account.value.name} · ${t('operations.title')}` : null)),
+);
 
 const balanceQuery = useQuery({
   queryKey: computed(() => queryKeys.balance(accountId.value)),

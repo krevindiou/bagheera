@@ -4,10 +4,19 @@ import {
   type RouteLocationRaw,
   type RouteRecordRaw,
 } from 'vue-router';
+import { setupDocumentTitle } from '../composables/useDocumentTitle';
 import { setLocale } from '../i18n';
 import { detectLocale, isSupportedLocale, SUPPORTED_LOCALES } from '../i18n/locales';
 import { useSessionStore } from '../stores/session.store';
 import { safeRedirect } from './safeRedirect';
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    // i18n key for this route's document title; a page may override it
+    // (see `usePageTitle`) with something more specific, e.g. an account name.
+    titleKey?: string;
+  }
+}
 
 // Every path lives under `/:locale`, constrained to SUPPORTED_LOCALES so an
 // unsupported value falls through to the catch-all.
@@ -23,18 +32,19 @@ const routes: RouteRecordRaw[] = [
         path: 'sign-in',
         name: 'sign-in',
         component: () => import('../pages/auth/SignInPage.vue'),
-        meta: { guestOnly: true },
+        meta: { guestOnly: true, titleKey: 'auth.signIn.title' },
       },
       {
         path: 'register',
         name: 'register',
         component: () => import('../pages/auth/RegisterPage.vue'),
-        meta: { guestOnly: true },
+        meta: { guestOnly: true, titleKey: 'auth.register.title' },
       },
       {
         path: 'activate',
         name: 'activate',
         component: () => import('../pages/auth/ActivatePage.vue'),
+        meta: { titleKey: 'auth.activate.title' },
       },
       {
         path: 'confirm-email-change',
@@ -42,49 +52,52 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/auth/ConfirmEmailChangePage.vue'),
         // Session known before mounting: learning it afterwards swaps the
         // layout, remounting the page once its one-time key is gone.
-        meta: { restoresSession: true },
+        meta: { restoresSession: true, titleKey: 'auth.confirmEmailChange.title' },
       },
       {
         path: 'home',
         name: 'home',
         component: () => import('../pages/dashboard/DashboardPage.vue'),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, titleKey: 'dashboard.title' },
       },
       {
         path: 'accounts',
         name: 'accounts',
         component: () => import('../pages/accounts/AccountsPage.vue'),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, titleKey: 'accounts.title' },
       },
       {
         path: 'accounts/:accountId/operations',
         name: 'operations',
         component: () => import('../pages/operations/OperationsPage.vue'),
-        meta: { requiresAuth: true },
+        // The page overrides this with the account name once it's known
+        // (see `usePageTitle` in OperationsPage.vue).
+        meta: { requiresAuth: true, titleKey: 'operations.title' },
       },
       {
         path: 'accounts/:accountId/schedulers',
         name: 'schedulers',
         component: () => import('../pages/schedulers/SchedulersPage.vue'),
-        meta: { requiresAuth: true },
+        // Same account-name override as operations.
+        meta: { requiresAuth: true, titleKey: 'schedulers.title' },
       },
       {
         path: 'reports',
         name: 'reports',
         component: () => import('../pages/reports/ReportsPage.vue'),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, titleKey: 'reports.title' },
       },
       {
         path: 'settings/profile',
         name: 'settings-profile',
         component: () => import('../pages/settings/ProfilePage.vue'),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, titleKey: 'settings.profile.title' },
       },
       {
         path: 'settings/passkeys',
         name: 'settings-passkeys',
         component: () => import('../pages/settings/PasskeysPage.vue'),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, titleKey: 'settings.passkeys.title' },
       },
     ],
   },
@@ -158,3 +171,5 @@ router.beforeEach(async (to) => {
   }
   return true;
 });
+
+setupDocumentTitle(router);

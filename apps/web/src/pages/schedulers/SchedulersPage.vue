@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { PAGE_SIZE } from '@bagheera/reference-data';
@@ -7,6 +8,7 @@ import { apiClient } from '../../api/client';
 import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useAccountContext } from '../../composables/useAccountContext';
+import { usePageTitle } from '../../composables/useDocumentTitle';
 import {
   useAccountsQuery,
   useBanksQuery,
@@ -44,6 +46,11 @@ const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 const { paymentMethods } = usePaymentMethodsQuery();
 const { account, isFullyActive, currency } = useAccountContext(accountId);
+
+const { t } = useI18n();
+usePageTitle(
+  computed(() => (account.value ? `${account.value.name} · ${t('schedulers.title')}` : null)),
+);
 
 const schedulersQuery = useQuery({
   queryKey: computed(() => queryKeys.schedulers.page(accountId.value, page.value)),
