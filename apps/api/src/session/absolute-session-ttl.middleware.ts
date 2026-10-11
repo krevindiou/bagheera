@@ -18,7 +18,7 @@ declare module 'express-session' {
  * request. Its clock starts on its next request, at most one idle timeout
  * later.
  */
-export function absoluteSessionTtl(req: Request, res: Response, next: NextFunction): void {
+export function absoluteSessionTtl(req: Request, _res: Response, next: NextFunction): void {
   if (!req.session) {
     next();
     return;

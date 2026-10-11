@@ -1,5 +1,5 @@
 import type { ArgumentsHost, ExecutionContext } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { Request } from 'express';
 import { vi, type Mock } from 'vitest';
 
 /** Minimal Express/Nest context fakes for guard, filter and middleware unit specs. */

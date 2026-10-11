@@ -1,5 +1,4 @@
 import { Controller, Get } from '@nestjs/common';
-import type { Request } from 'express';
 import { ReferenceDataService } from './reference-data.service';
 import { CategoryDto, PaymentMethodDto } from './dto/reference-data-response.dto';
 
