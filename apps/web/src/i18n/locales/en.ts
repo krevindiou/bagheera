@@ -44,7 +44,8 @@ export default {
       submit: 'Continue',
       passkeyHint: "You'll register a passkey to finish creating your account.",
       success:
-        "If this email isn't already registered, you'll receive a link to create your account.",
+        "If {email} isn't already registered, you'll receive a link there to create your account.",
+      useDifferentEmail: 'Use a different email address',
       genericError: 'Something went wrong. Please try again.',
       signInLink: 'Already have an account? Sign in',
     },

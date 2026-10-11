@@ -22,7 +22,8 @@ test.describe('registration, passkey signup ceremony, sign-in, sign-out', () => 
     await page.getByLabel(en.auth.register.email, { exact: true }).fill(email);
     await page.getByLabel(en.auth.register.country, { exact: true }).selectOption(REGISTER_COUNTRY);
     await page.getByRole('button', { name: en.auth.register.submit, exact: true }).click();
-    await expect(page).toHaveURL(/\/en\/sign-in$/);
+    await expect(page).toHaveURL(/\/en\/register$/);
+    await expect(page.getByText(en.auth.register.success.replace('{email}', email))).toBeVisible();
 
     const activationLink = await waitForEmailLink(email);
     await page.goto(activationLink);

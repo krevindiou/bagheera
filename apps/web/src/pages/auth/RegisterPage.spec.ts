@@ -2,13 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 import { asMockedApiClient, mockApiClient } from '../../test-support/mockApiClient';
 import { submitAndSettle } from '../../test-support/submitAndSettle';
-import { waitForRouteName } from '../../test-support/waitForRouteName';
 import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
-import { useToast } from '../../composables/useToast';
 import { router } from '../../router';
 import RegisterPage from './RegisterPage.vue';
 
@@ -22,7 +20,6 @@ async function fillValidForm(wrapper: VueWrapper) {
 describe('RegisterPage', () => {
   beforeEach(async () => {
     apiClient.POST.mockReset();
-    useToast().toasts.splice(0);
     localStorage.clear();
     await router.push({ name: 'register', params: { locale: 'en' } });
   });
@@ -42,7 +39,7 @@ describe('RegisterPage', () => {
     wrapper.unmount();
   });
 
-  it('registers, shows a toast, and redirects to sign-in', async () => {
+  it('registers and replaces the form with a persistent check-your-inbox panel', async () => {
     apiClient.POST.mockResolvedValueOnce({
       data: undefined,
       error: undefined,
@@ -60,10 +57,29 @@ describe('RegisterPage', () => {
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       },
     });
-    expect(useToast().toasts[0]?.text).toBe(
-      "If this email isn't already registered, you'll receive a link to create your account.",
+    expect(wrapper.text()).toContain(
+      "If member@example.com isn't already registered, you'll receive a link there to create your account.",
     );
-    await waitForRouteName(router, 'sign-in');
+    expect(wrapper.find('#register-email').exists()).toBe(false);
+    // Stays put: the only link to the activation email is on this panel, so
+    // navigating away (e.g. to a toast-driven redirect) would lose it.
+    expect(router.currentRoute.value.name).toBe('register');
+  });
+
+  it('lets the member go back to the form to use a different email', async () => {
+    apiClient.POST.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 201 }),
+    });
+    const wrapper = mount(RegisterPage, withGlobalPlugins());
+    await fillValidForm(wrapper);
+    await submitAndSettle(wrapper);
+
+    await wrapper.find('button[type="button"].btn-outline-secondary').trigger('click');
+
+    expect(wrapper.find('#register-email').exists()).toBe(true);
+    expect((wrapper.find('#register-email').element as HTMLInputElement).value).toBe('');
   });
 
   it('sends the locale segment the page is currently shown under', async () => {

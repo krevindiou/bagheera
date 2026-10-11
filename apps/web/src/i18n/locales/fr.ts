@@ -45,7 +45,8 @@ export default {
       submit: 'Continuer',
       passkeyHint: 'Vous enregistrerez une clé d’accès pour finaliser la création de votre compte.',
       success:
-        "Si cet email n'est pas déjà enregistré, vous recevrez un lien pour créer votre compte.",
+        "Si {email} n'est pas déjà enregistré, vous recevrez un lien à cette adresse pour créer votre compte.",
+      useDifferentEmail: 'Utiliser une autre adresse email',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
       signInLink: 'Vous avez déjà un compte ? Connectez-vous',
     },
