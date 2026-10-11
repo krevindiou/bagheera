@@ -20,6 +20,10 @@ const key = ref<string | null>(null);
 const submitting = ref(false);
 
 onMounted(() => {
+  // Signing in remounts this page inside the app shell (BaseLayout) while
+  // the route is still /activate and the key already gone; the instance
+  // that signed in handles the redirect.
+  if (session.isAuthenticated) return;
   // Held in memory only: the link's token leaves the address bar at once
   // (history, copied URLs and error reports would otherwise keep it while
   // the page waits for the click).

@@ -38,6 +38,21 @@ describe('ActivatePage', () => {
     expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');
   });
 
+  it('neither toasts an error nor redirects to sign-in when remounted signed in without a key', async () => {
+    // Signing in remounts the page inside the app shell, key already gone.
+    await router.push({ name: 'activate' });
+    const plugins = withGlobalPlugins();
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+    const wrapper = mount(ActivatePage, plugins);
+    await wrapper.vm.$nextTick();
+    await router.isReady();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(router.currentRoute.value.name).toBe('activate');
+    expect(useToast().toasts).toHaveLength(0);
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
   it('shows a Continue button instead of auto-running the ceremony — it needs a real user gesture', async () => {
     // The ceremony needs a user gesture (see ActivatePage.vue).
     await router.push({ name: 'activate', query: { key: 'abc123' } });
