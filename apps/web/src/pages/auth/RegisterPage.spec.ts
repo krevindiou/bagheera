@@ -122,4 +122,17 @@ describe('RegisterPage', () => {
     expect(wrapper.text()).toContain('Enter a valid email address.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
+
+  it('ties the blank-email error to the field for assistive technology', async () => {
+    const wrapper = mount(RegisterPage, withGlobalPlugins());
+    const email = wrapper.get('#register-email');
+
+    expect(email.attributes('aria-invalid')).toBeUndefined();
+    expect(email.attributes('aria-describedby')).toBeUndefined();
+
+    await submitAndSettle(wrapper);
+
+    expect(email.attributes('aria-invalid')).toBe('true');
+    expect(email.attributes('aria-describedby')).toBe('register-email-error');
+  });
 });

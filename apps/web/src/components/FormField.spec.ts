@@ -59,4 +59,64 @@ describe('FormField', () => {
     expect(wrapper.classes()).toEqual(expect.arrayContaining(['mb-3', 'flex-grow-1']));
     expect(wrapper.attributes('data-testid')).toBe('field');
   });
+
+  it('gives the error and hint elements ids the control can be described by', () => {
+    const wrapper = mountField({ error: 'Too high', hint: 'Up to 50' });
+
+    expect(wrapper.get('.invalid-feedback').attributes('id')).toBe('amount-error');
+    expect(wrapper.get('.form-text').attributes('id')).toBe('amount-hint');
+  });
+
+  it('has no aria-invalid or aria-describedby on the control by default', () => {
+    const input = mountField().get('input#amount');
+
+    expect(input.attributes('aria-invalid')).toBeUndefined();
+    expect(input.attributes('aria-describedby')).toBeUndefined();
+  });
+
+  it('marks the matching control invalid and describes it by the error and hint shown', () => {
+    const input = mountField({ error: 'Too high', hint: 'Up to 50' }).get('input#amount');
+
+    expect(input.attributes('aria-invalid')).toBe('true');
+    expect(input.attributes('aria-describedby')).toBe('amount-error amount-hint');
+  });
+
+  it('describes the control by the hint alone when there is no error', () => {
+    const input = mountField({ hint: 'Up to 50' }).get('input#amount');
+
+    expect(input.attributes('aria-invalid')).toBeUndefined();
+    expect(input.attributes('aria-describedby')).toBe('amount-hint');
+  });
+
+  it('clears aria-invalid and aria-describedby once the error and hint are gone', async () => {
+    const wrapper = mountField({ error: 'Too high', hint: 'Up to 50' });
+    await wrapper.setProps({ error: undefined, hint: undefined });
+    const input = wrapper.get('input#amount');
+
+    expect(input.attributes('aria-invalid')).toBeUndefined();
+    expect(input.attributes('aria-describedby')).toBeUndefined();
+  });
+
+  it('merges its own id into an existing aria-describedby and leaves a pre-set aria-invalid alone', () => {
+    const wrapper = mount(FormField, {
+      props: { label: 'Amount', for: 'amount', error: 'Too high' },
+      slots: {
+        default:
+          '<input id="amount" aria-invalid="false" aria-describedby="custom-hint" class="form-control" />',
+      },
+    });
+    const input = wrapper.get('input#amount');
+
+    expect(input.attributes('aria-invalid')).toBe('false');
+    expect(input.attributes('aria-describedby')).toBe('custom-hint amount-error');
+  });
+
+  it('does nothing when no control matches `for` by id', () => {
+    expect(() =>
+      mount(FormField, {
+        props: { label: 'Amount', for: 'does-not-exist', error: 'Too high' },
+        slots: { default: '<input id="amount" class="form-control" />' },
+      }),
+    ).not.toThrow();
+  });
 });

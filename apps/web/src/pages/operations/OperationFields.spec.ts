@@ -201,6 +201,20 @@ describe('OperationFields', () => {
     ]);
     expect(wrapper.get('#x-third-party').classes()).toContain('is-invalid');
     expect(wrapper.get('#x-payment-method').classes()).toContain('is-invalid');
+
+    // A plain native input, MoneyInput's own <input>, and a plain native
+    // <select> all get the same wiring from FormField, without each one
+    // (or OperationFields) setting it up itself.
+    expect(wrapper.get('#x-third-party').attributes('aria-invalid')).toBe('true');
+    expect(wrapper.get('#x-third-party').attributes('aria-describedby')).toBe(
+      'x-third-party-error',
+    );
+    expect(wrapper.get('#x-amount').attributes('aria-invalid')).toBe('true');
+    expect(wrapper.get('#x-amount').attributes('aria-describedby')).toBe('x-amount-error');
+    expect(wrapper.get('#x-payment-method').attributes('aria-invalid')).toBe('true');
+    expect(wrapper.get('#x-payment-method').attributes('aria-describedby')).toBe(
+      'x-payment-method-error',
+    );
     wrapper.unmount();
   });
 
