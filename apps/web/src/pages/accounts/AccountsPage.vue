@@ -79,6 +79,13 @@ watch(
       chosenBankId.value = activeBanks.value[0].id;
       creationStep.value = 'account';
     }
+    // Once consumed, drop it so reloading or returning to this history
+    // entry doesn't reopen the drawer unasked.
+    if (route.query.start !== undefined) {
+      const rest = { ...route.query };
+      delete rest.start;
+      void router.replace({ query: rest });
+    }
   },
   { immediate: true },
 );

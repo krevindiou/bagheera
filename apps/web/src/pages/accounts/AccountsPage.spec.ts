@@ -249,7 +249,7 @@ describe('AccountsPage', () => {
     expect(wrapper.find('button.btn-primary').exists()).toBe(true);
   });
 
-  it('opens the bank-choice step via the ?start=bank-choice deep link', async () => {
+  it('opens the bank-choice step via the ?start=bank-choice deep link, then drops it from the URL', async () => {
     mockData([bank('b1', 'Chase')], []);
     await router.push({ name: 'accounts', query: { start: 'bank-choice' } });
     const wrapper = mount(AccountsPage, withGlobalPlugins(router));
@@ -258,6 +258,8 @@ describe('AccountsPage', () => {
     await vi.waitFor(() => {
       if (!wrapper.find('#account-bank-id').exists()) throw new Error('not opened yet');
     });
+
+    expect(router.currentRoute.value.query.start).toBeUndefined();
   });
 
   it('opens account creation for the first active bank via the ?start=new-account deep link, and navigates on success', async () => {
@@ -274,8 +276,10 @@ describe('AccountsPage', () => {
     });
 
     expect((wrapper.find('#account-bank').element as HTMLSelectElement).value).toBe('b1');
+    expect(router.currentRoute.value.query.start).toBeUndefined();
 
     await wrapper.find('#account-name').setValue('Checking');
+
     await wrapper.find('#account-currency').setValue('USD');
     const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
     await submitAndSettle(wrapper);
@@ -284,6 +288,25 @@ describe('AccountsPage', () => {
       name: 'operations',
       params: { accountId: 'new-account' },
     });
+  });
+
+  it('drops only the start param from the URL, keeping other query params and without adding a history entry', async () => {
+    mockData([bank('b1', 'Chase')], []);
+    // A prior entry lets us tell a `replace` (one `back()` reaches it) apart
+    // from a `push` (which would need two).
+    await router.push({ name: 'operations', params: { accountId: 'a1' } });
+    await router.push({ name: 'accounts', query: { start: 'bank-choice', foo: 'bar' } });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+
+    await vi.waitFor(() => {
+      if (!wrapper.find('#account-bank-id').exists()) throw new Error('not opened yet');
+    });
+
+    expect(router.currentRoute.value.query).toEqual({ foo: 'bar' });
+
+    router.back();
+    await flushPromises();
+    expect(router.currentRoute.value.name).toBe('operations');
   });
 
   it("edits a bank's name", async () => {
