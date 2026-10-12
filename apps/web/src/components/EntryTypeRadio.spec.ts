@@ -40,21 +40,42 @@ describe('EntryTypeRadio', () => {
     wrapper.unmount();
   });
 
-  it('focuses the debit radio when it appears', () => {
-    const wrapper = mountRadio();
+  it('focuses the checked radio when it appears', () => {
+    const debitChecked = mountRadio();
+    expect(document.activeElement).toBe(debitChecked.get('#x-type-debit').element);
+    debitChecked.unmount();
 
-    expect(document.activeElement).toBe(wrapper.get('#x-type-debit').element);
+    const creditChecked = mountRadio({ modelValue: 'credit' });
+    expect(document.activeElement).toBe(creditChecked.get('#x-type-credit').element);
+    creditChecked.unmount();
+  });
+
+  it('focuses the "any" radio when it is the checked one', () => {
+    const wrapper = mountRadio({ anyLabel: 'Any', modelValue: undefined });
+
+    expect(document.activeElement).toBe(wrapper.get('#x-type-any').element);
     wrapper.unmount();
   });
 
-  it('shows a legend only when given one', () => {
+  it('shows a visible legend only when given one, else a hidden one naming the group', () => {
     const plain = mountRadio();
     const legended = mountRadio({ legend: 'Type' });
 
     expect(plain.find('.form-label').exists()).toBe(false);
-    expect(legended.get('.form-label').text()).toBe('Type');
+    expect(plain.get('legend.visually-hidden').text()).toBe('Type');
+    expect(legended.get('legend.form-label').text()).toBe('Type');
     plain.unmount();
     legended.unmount();
+  });
+
+  it('shares one name across the radios so they form a native group', () => {
+    const wrapper = mountRadio({ anyLabel: 'Any' });
+
+    const name = wrapper.get('#x-type-debit').attributes('name');
+    expect(name).toBeTruthy();
+    expect(wrapper.get('#x-type-credit').attributes('name')).toBe(name);
+    expect(wrapper.get('#x-type-any').attributes('name')).toBe(name);
+    wrapper.unmount();
   });
 
   it('omits the "any" radio unless anyLabel is given', () => {

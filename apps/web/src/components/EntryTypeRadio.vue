@@ -3,8 +3,10 @@ import type { EntryType } from '@bagheera/reference-data';
 
 // The debit/credit radio pair of the operation, scheduler and search forms.
 // `idPrefix` makes the input ids `<prefix>-debit` / `<prefix>-credit`
-// (/ `<prefix>-any`); the debit radio takes focus when the form opens. An
-// optional `legend` heads the pair (the search panel labels it). `anyLabel`
+// (/ `<prefix>-any`) and is the radios' shared `name`, so they form one
+// native group: one Tab stop, arrow keys to switch. The checked radio takes
+// focus when the form opens. The legend is visible only when `legend` is
+// given (the search panel), otherwise kept for screen readers. `anyLabel`
 // adds a third, leading "any type" (undefined) choice — only the search
 // panel passes it; the operation/scheduler forms omit it and so still
 // require debit or credit.
@@ -13,12 +15,16 @@ const type = defineModel<EntryType | undefined>({ required: true });
 </script>
 
 <template>
-  <div class="mb-3">
-    <div v-if="legend" class="form-label">{{ legend }}</div>
+  <fieldset class="mb-3">
+    <legend :class="legend ? 'form-label' : 'visually-hidden'">
+      {{ legend ?? $t('operations.search.type') }}
+    </legend>
     <div v-if="anyLabel" class="form-check form-check-inline">
       <input
         :id="`${idPrefix}-any`"
         v-model="type"
+        v-autofocus="type === undefined"
+        :name="idPrefix"
         class="form-check-input"
         type="radio"
         :value="undefined"
@@ -29,7 +35,8 @@ const type = defineModel<EntryType | undefined>({ required: true });
       <input
         :id="`${idPrefix}-debit`"
         v-model="type"
-        v-autofocus
+        v-autofocus="type === 'debit'"
+        :name="idPrefix"
         class="form-check-input"
         type="radio"
         value="debit"
@@ -42,6 +49,8 @@ const type = defineModel<EntryType | undefined>({ required: true });
       <input
         :id="`${idPrefix}-credit`"
         v-model="type"
+        v-autofocus="type === 'credit'"
+        :name="idPrefix"
         class="form-check-input"
         type="radio"
         value="credit"
@@ -50,5 +59,5 @@ const type = defineModel<EntryType | undefined>({ required: true });
         $t('operations.credit')
       }}</label>
     </div>
-  </div>
+  </fieldset>
 </template>
