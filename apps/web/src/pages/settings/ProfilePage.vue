@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useI18n } from 'vue-i18n';
@@ -22,7 +23,18 @@ const { defineField, handleSubmit, errors, isSubmitting } = useForm<ProfileForm>
 });
 const [email, emailAttrs] = defineField('email');
 
+// The API only mails a confirmation link for a new address, so saving the
+// current one would promise a link that never comes.
+const isUnchanged = computed(
+  () =>
+    (email.value ?? '').trim().toLowerCase() === (session.member?.email ?? '').trim().toLowerCase(),
+);
+
 const onSubmit = handleSubmit(async (values) => {
+  if (isUnchanged.value) {
+    return;
+  }
+
   const stepUpOk = await completeStepUp();
   if (!stepUpOk) {
     toast(t('settings.profile.stepUpFailed'), 'error');
@@ -69,7 +81,7 @@ const onSubmit = handleSubmit(async (values) => {
 
       <p class="text-muted" style="font-size: 13.5px">{{ $t('settings.profile.stepUpHint') }}</p>
 
-      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting">
+      <button type="submit" class="btn btn-primary w-100" :disabled="isSubmitting || isUnchanged">
         {{ $t('settings.profile.submit') }}
       </button>
     </form>

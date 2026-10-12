@@ -77,6 +77,7 @@ describe('ProfilePage', () => {
   it('completes the step-up ceremony, then submits the change and shows a success toast', async () => {
     mockSuccessfulStepUp();
     const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('new@example.com');
     await submitAndSettle(wrapper);
 
     expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/step-up/options');
@@ -84,7 +85,7 @@ describe('ProfilePage', () => {
       body: { response: {} },
     });
     expect(apiClient.POST).toHaveBeenCalledWith('/members/profile', {
-      body: { email: 'member@example.com' },
+      body: { email: 'new@example.com' },
     });
     expect(queuedToastText()).toContain(
       "If this email isn't already registered to another account",
@@ -96,6 +97,7 @@ describe('ProfilePage', () => {
     vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
 
     const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('new@example.com');
     await submitAndSettle(wrapper);
 
     expect(queuedToastText()).toContain('Passkey confirmation failed');
@@ -112,6 +114,7 @@ describe('ProfilePage', () => {
     );
 
     const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('new@example.com');
     await submitAndSettle(wrapper);
 
     expect(queuedToastText()).toContain('Passkey confirmation failed');
@@ -120,6 +123,7 @@ describe('ProfilePage', () => {
   it('shows a toast for any other /members/profile failure', async () => {
     mockSuccessfulStepUp(errorResult(400, { message: 'Email already taken' }));
     const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('new@example.com');
     await submitAndSettle(wrapper);
 
     expect(queuedToastText()).toContain('Email already taken');
@@ -128,6 +132,7 @@ describe('ProfilePage', () => {
   it('falls back to a generic error toast when the update fails without a message', async () => {
     mockSuccessfulStepUp(jsonResult(500));
     const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('new@example.com');
     await submitAndSettle(wrapper);
 
     expect(queuedToastText()).toContain('Something went wrong. Please try again.');
@@ -140,5 +145,49 @@ describe('ProfilePage', () => {
 
     expect(wrapper.text()).toContain('Enter a valid email address.');
     expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
+  it('disables the Save button while the email is unchanged, including surrounding whitespace/case differences', async () => {
+    const wrapper = mountWithSession('member@example.com');
+    const submitButton = wrapper.find('button[type="submit"]');
+
+    expect(submitButton.attributes('disabled')).toBeDefined();
+
+    await wrapper.find('#profile-email').setValue('  Member@Example.com  ');
+    expect(submitButton.attributes('disabled')).toBeDefined();
+
+    await wrapper.find('#profile-email').setValue('other@example.com');
+    expect(submitButton.attributes('disabled')).toBeUndefined();
+  });
+
+  it('re-enables Save once the field is edited back away from the current address, and disables it again once restored', async () => {
+    const wrapper = mountWithSession('member@example.com');
+    const submitButton = wrapper.find('button[type="submit"]');
+
+    await wrapper.find('#profile-email').setValue('other@example.com');
+    expect(submitButton.attributes('disabled')).toBeUndefined();
+
+    await wrapper.find('#profile-email').setValue('member@example.com');
+    expect(submitButton.attributes('disabled')).toBeDefined();
+  });
+
+  it('submitting an unchanged email (e.g. via Enter) runs no step-up and no request, and shows no toast', async () => {
+    mockSuccessfulStepUp();
+    const wrapper = mountWithSession('member@example.com');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(startAuthentication).not.toHaveBeenCalled();
+    expect(queuedToastText()).toBe('');
+  });
+
+  it('treats the unchanged check case-insensitively and ignoring surrounding whitespace', async () => {
+    mockSuccessfulStepUp();
+    const wrapper = mountWithSession('member@example.com');
+    await wrapper.find('#profile-email').setValue('  Member@Example.com  ');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    expect(startAuthentication).not.toHaveBeenCalled();
   });
 });
