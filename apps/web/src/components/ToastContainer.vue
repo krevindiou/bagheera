@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useToast } from '../composables/useToast';
 import AppIcon from './AppIcon.vue';
 
-const { toasts, dismiss } = useToast();
+const { toasts, dismiss, pause, resume } = useToast();
 const { t } = useI18n();
 
 const variantClass: Record<string, string> = {
@@ -11,6 +11,14 @@ const variantClass: Record<string, string> = {
   error: 'toast-error',
   info: 'toast-info',
 };
+
+// Only resume once focus has actually left the toast, not when it merely
+// moves from one child (e.g. the text) to another (the close button).
+function onFocusOut(id: number, event: FocusEvent) {
+  const toastItem = event.currentTarget as HTMLElement;
+  const next = event.relatedTarget as Node | null;
+  if (!next || !toastItem.contains(next)) resume(id);
+}
 </script>
 
 <template>
@@ -23,6 +31,10 @@ const variantClass: Record<string, string> = {
       class="toast-item"
       :class="variantClass[toast.variant]"
       role="alert"
+      @mouseenter="pause(toast.id)"
+      @mouseleave="resume(toast.id)"
+      @focusin="pause(toast.id)"
+      @focusout="onFocusOut(toast.id, $event)"
     >
       <span class="toast-text">{{ toast.text }}</span>
       <button
