@@ -10,6 +10,7 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 import { apiClient as realApiClient } from '../../api/client';
 import { queryKeys } from '../../api/queryKeys';
 import { useConfirm } from '../../composables/useConfirm';
+import { formatDate } from '../../domain/money';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import type { Category, PaymentMethod } from '../../domain/referenceData';
@@ -223,10 +224,31 @@ describe('SchedulersPage', () => {
     expect(rows[0].find('.dot').classes()).toContain('dot-active');
     expect(rows[0].find('.dot').attributes('aria-label')).toBe('Active');
     expect(rows[0].text()).toContain('-$50.00');
+    expect(rows[0].text()).toContain(formatDate('2026-01-15'));
     expect(rows[1].find('.dot').classes()).not.toContain('dot-active');
     expect(rows[1].find('.dot').attributes('aria-label')).toBe('Paused');
     expect(rows[1].text()).toContain('+$25.00');
-    expect(rows[1].text()).toContain('week(s)');
+    expect(rows[1].text()).toContain('Every 2 week(s)');
+  });
+
+  it('shows the limit date compactly under the frequency when one is set, and nothing when not', async () => {
+    mockGet({
+      schedulers: {
+        items: [
+          scheduler({ id: 's1', limitDate: '2026-12-31' }),
+          scheduler({ id: 's2', limitDate: null }),
+        ],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const rows = wrapper.findAll('[data-testid="scheduler-row"]');
+    expect(rows[0].text()).toContain(`until ${formatDate('2026-12-31')}`);
+    expect(rows[1].text()).not.toContain('until');
   });
 
   it('opens the edit form when a row is clicked', async () => {

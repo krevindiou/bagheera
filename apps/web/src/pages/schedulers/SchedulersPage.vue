@@ -16,7 +16,7 @@ import {
   usePaymentMethodsQuery,
 } from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
-import { formatMoney } from '../../domain/money';
+import { formatDate, formatMoney } from '../../domain/money';
 import { categoryLabel } from '../../domain/referenceData';
 import SchedulerForm from './SchedulerForm.vue';
 import BatchActions from './batch.vue';
@@ -162,7 +162,7 @@ async function onSaved() {
               <th class="text-end">{{ $t('operations.amount') }}</th>
               <th>{{ $t('operations.paymentMethod') }}</th>
               <th>{{ $t('operations.category') }}</th>
-              <th class="text-end">{{ $t('schedulers.every') }}</th>
+              <th>{{ $t('schedulers.firstOccurrence') }}</th>
               <th>{{ $t('schedulers.frequencyUnit') }}</th>
               <th></th>
             </tr>
@@ -204,8 +204,18 @@ async function onSaved() {
                 />
               </td>
               <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}</td>
-              <td class="text-end">{{ scheduler.frequencyValue }}</td>
-              <td>{{ $t(`schedulers.units.${scheduler.frequencyUnit}`) }}</td>
+              <td>{{ formatDate(scheduler.valueDate) }}</td>
+              <td>
+                {{
+                  $t('schedulers.everyN', {
+                    count: scheduler.frequencyValue,
+                    unit: $t(`schedulers.units.${scheduler.frequencyUnit}`),
+                  })
+                }}
+                <div v-if="scheduler.limitDate" class="text-muted small">
+                  {{ $t('schedulers.until', { date: formatDate(scheduler.limitDate) }) }}
+                </div>
+              </td>
               <td @click.stop>
                 <IconButton
                   icon="edit"

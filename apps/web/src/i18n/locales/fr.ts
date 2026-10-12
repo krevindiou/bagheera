@@ -221,6 +221,7 @@ export default {
     firstOccurrence: 'Première occurrence',
     every: 'Tous les',
     everyN: 'Tous les {count} {unit}',
+    until: "jusqu'au {date}",
     frequencyUnit: 'Fréquence',
     units: {
       day: 'jour(s)',

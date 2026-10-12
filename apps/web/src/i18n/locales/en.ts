@@ -218,6 +218,7 @@ export default {
     firstOccurrence: 'First occurrence',
     every: 'Every',
     everyN: 'Every {count} {unit}',
+    until: 'until {date}',
     frequencyUnit: 'Frequency',
     units: {
       day: 'day(s)',
