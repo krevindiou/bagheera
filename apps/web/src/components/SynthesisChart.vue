@@ -80,6 +80,7 @@ const chartData = computed<ChartData<'line'>>(() => ({
     borderWidth: 1.5,
     fill: true,
     tension: 0.2,
+    cubicInterpolationMode: 'monotone',
     pointRadius: 3,
     pointHoverRadius: 4,
   })),

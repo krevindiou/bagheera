@@ -78,6 +78,28 @@ describe('SynthesisChart', () => {
     });
   });
 
+  it('uses monotone cubic interpolation to prevent overshooting', () => {
+    const wrapper = mount(SynthesisChart, {
+      ...withGlobalPlugins(),
+      props: {
+        series: [
+          {
+            label: 'Balance',
+            color: '#0d6efd',
+            points: [
+              { period: '2026-01', value: 100 },
+              { period: '2026-02', value: 150 },
+            ],
+          },
+        ],
+      },
+    });
+    const chart = wrapper.findComponent(Line);
+    expect(chart.props('data').datasets[0]).toMatchObject({
+      cubicInterpolationMode: 'monotone',
+    });
+  });
+
   it('draws point markers for a short (12-month) window', () => {
     const points = Array.from({ length: 12 }, (_, i) => ({ period: `2026-${i + 1}`, value: i }));
     const wrapper = mount(SynthesisChart, {
