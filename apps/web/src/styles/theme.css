@@ -17,7 +17,9 @@
   --hair-strong: rgba(242, 239, 233, 0.18);
   --paper: #f2efe9;
   --paper-dim: rgba(242, 239, 233, 0.62);
-  --paper-faint: rgba(242, 239, 233, 0.4);
+  /* Lowest alpha with margin over AA's 4.5:1 for small text on --panel-2,
+     the lightest surface (~4.7:1); still a step below --paper-dim. */
+  --paper-faint: rgba(242, 239, 233, 0.5);
   --violet: #7c4fd1;
   --violet-dim: rgba(124, 79, 209, 0.5);
   --violet-bright: #9a72e8;
