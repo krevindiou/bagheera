@@ -27,6 +27,7 @@ const credentialsQuery = useQuery({
   queryFn: async () => unwrap(await apiClient.GET('/webauthn/credentials')),
 });
 const credentials = computed(() => credentialsQuery.data.value ?? []);
+type Credential = (typeof credentials.value)[number];
 const credentialsError = computed(() => credentialsQuery.isError.value);
 const credentialsPending = computed(() => credentialsQuery.isPending.value);
 const onlyPasskeyLeft = computed(() => credentials.value.length <= 1);
@@ -64,21 +65,28 @@ async function addPasskey() {
   }
 }
 
-async function removePasskey(id: string) {
+async function removePasskey(credential: Credential) {
   // The button is already disabled in that case — this only guards against
   // the list going stale (e.g. another tab removed a passkey meanwhile).
   if (credentials.value.length <= 1) {
     toast(t('settings.passkeys.lastPasskeyError'), 'error');
     return;
   }
-  if (!(await confirm())) return;
+  const confirmed = await confirm({
+    body: t('settings.passkeys.confirmRemove', {
+      name: credential.deviceName || t('settings.passkeys.unnamed'),
+    }),
+    confirmLabel: t('settings.passkeys.remove'),
+    danger: true,
+  });
+  if (!confirmed) return;
   // Step-up gated, like registration.
   if (!(await completeStepUp())) {
     toast(t('settings.passkeys.stepUpFailed'), 'error');
     return;
   }
   const { error, response } = await apiClient.DELETE('/webauthn/credentials/{id}', {
-    params: { path: { id } },
+    params: { path: { id: credential.id } },
   });
   if (!response.ok) {
     toast(errorMessage(error) ?? t('settings.passkeys.genericError'), 'error');
@@ -157,7 +165,7 @@ async function removePasskey(id: string) {
                     danger
                     :disabled="onlyPasskeyLeft"
                     :label="$t('settings.passkeys.remove')"
-                    @click="removePasskey(credential.id)"
+                    @click="removePasskey(credential)"
                   />
                 </td>
               </tr>

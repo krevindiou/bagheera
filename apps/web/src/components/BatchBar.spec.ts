@@ -11,6 +11,8 @@ function deleteAction(overrides: Partial<BatchAction> = {}): BatchAction {
     labelKey: 'schedulers.batch.delete',
     successKey: 'schedulers.batch.deleted',
     errorKey: 'schedulers.genericError',
+    confirmKey: 'schedulers.batch.confirmDelete',
+    confirmLabelKey: 'common.delete',
     testid: 'delete',
     danger: true,
     run: vi.fn().mockResolvedValue(2),
@@ -65,6 +67,36 @@ describe('BatchBar', () => {
     ]);
     expect(buttons[0].classes()).toContain('btn-outline-danger');
     expect(buttons[1].classes()).toContain('btn-outline-secondary');
+  });
+
+  it("asks to confirm with the action's own text, pluralized on the selection size", async () => {
+    const wrapper = mountBar([deleteAction()]);
+
+    await wrapper.find('[data-testid="delete"]').trigger('click');
+
+    expect(useConfirm().state.options).toEqual({
+      body: 'Delete 2 scheduled operations? The operations they already created are kept.',
+      confirmLabel: 'Delete',
+      danger: true,
+    });
+  });
+
+  it('confirms a single selected row in the singular, without danger for a non-danger action', async () => {
+    const reconcile = deleteAction({
+      confirmKey: 'operations.batch.confirmReconcile',
+      confirmLabelKey: 'operations.batch.reconcileConfirmLabel',
+      testid: 'reconcile',
+      danger: false,
+    });
+    const wrapper = mountBar([reconcile], ['o1']);
+
+    await wrapper.find('[data-testid="reconcile"]').trigger('click');
+
+    expect(useConfirm().state.options).toEqual({
+      body: 'Mark 1 operation as reconciled?',
+      confirmLabel: 'Reconcile',
+      danger: false,
+    });
   });
 
   it('runs the action on the selected ids once confirmed, then toasts success', async () => {

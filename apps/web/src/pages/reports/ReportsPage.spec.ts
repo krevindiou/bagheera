@@ -355,6 +355,11 @@ describe('ReportsPage', () => {
     await flushPromises();
 
     await wrapper.find('[data-testid="report-row"] button.btn-outline-danger').trigger('click');
+    expect(useConfirm().state.options).toEqual({
+      body: "Delete report “Rent”? This can't be undone.",
+      confirmLabel: 'Delete',
+      danger: true,
+    });
     useConfirm().settle(true);
     await flushPromises();
 

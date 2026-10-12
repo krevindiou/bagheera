@@ -277,6 +277,32 @@ describe('PasskeysPage', () => {
     expect(useToast().toasts[0]?.text).toBe('Passkey removed');
   });
 
+  it('names the passkey being removed in a danger confirmation', async () => {
+    mockCredentials(TWO_PASSKEYS);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find('button.btn-outline-danger').trigger('click');
+
+    expect(useConfirm().state.options).toEqual({
+      body: "Remove passkey “MacBook”? You won't be able to sign in with it anymore, and your other sessions will be signed out.",
+      confirmLabel: 'Remove',
+      danger: true,
+    });
+  });
+
+  it('calls an unnamed passkey "Unnamed passkey" in the confirmation', async () => {
+    mockCredentials([{ ...TWO_PASSKEYS[0], deviceName: null }, TWO_PASSKEYS[1]]);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find('button.btn-outline-danger').trigger('click');
+
+    expect(useConfirm().state.options?.body).toBe(
+      "Remove passkey “Unnamed passkey”? You won't be able to sign in with it anymore, and your other sessions will be signed out.",
+    );
+  });
+
   it('shows the step-up error and never deletes when step-up fails', async () => {
     mockCredentials(TWO_PASSKEYS);
     mockPost();

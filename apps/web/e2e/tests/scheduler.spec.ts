@@ -1,6 +1,6 @@
 import en from '../../src/i18n/locales/en';
 import { PAYMENT_METHOD_ID } from '../../src/domain/referenceData';
-import { alertWithText, expect, test } from '../support/fixtures';
+import { alertWithText, confirmDialog, expect, test } from '../support/fixtures';
 
 test('create, pause, then batch-delete a recurring scheduler', async ({ accountWithBank }) => {
   const { page, accountId } = accountWithBank;
@@ -26,7 +26,7 @@ test('create, pause, then batch-delete a recurring scheduler', async ({ accountW
 
   await row.locator('input[type="checkbox"]').check();
   await page.getByRole('button', { name: en.schedulers.batch.delete, exact: true }).click();
-  await page.getByRole('button', { name: en.common.ok, exact: true }).click();
+  await confirmDialog(page).getByRole('button', { name: en.common.delete, exact: true }).click();
   await expect(alertWithText(page, en.schedulers.batch.deleted)).toBeVisible();
   await expect(page.getByTestId('scheduler-row').filter({ hasText: 'Rent' })).toHaveCount(0);
 });

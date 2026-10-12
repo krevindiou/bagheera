@@ -79,7 +79,12 @@ async function onBatchDeleted() {
 }
 
 async function deleteReport(report: Report) {
-  if (!(await confirm())) return;
+  const confirmed = await confirm({
+    body: t('reports.confirmDelete', { title: report.title }),
+    confirmLabel: t('common.delete'),
+    danger: true,
+  });
+  if (!confirmed) return;
   const { error, response } = await apiClient.DELETE('/reports/{id}', {
     params: { path: { id: report.id } },
   });

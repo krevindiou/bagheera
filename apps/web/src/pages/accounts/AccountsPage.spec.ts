@@ -269,6 +269,10 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.findAll('button')[1].trigger('click'); // Edit, Close, Delete
+    expect(useConfirm().state.options).toEqual({
+      body: "Close bank “Chase”? Its accounts stay visible, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
+      confirmLabel: 'Close',
+    });
     useConfirm().settle(true);
     await flushPromises();
 
@@ -406,6 +410,11 @@ describe('AccountsPage', () => {
 
     const chaseRow = wrapper.findAll('[data-testid="bank-row"]')[0];
     await chaseRow.findAll('button')[2].trigger('click'); // Edit, Close, Delete
+    expect(useConfirm().state.options).toEqual({
+      body: "Delete bank “Chase” and all its accounts? Their operations and scheduled operations will be deleted too, and transfers with them in your other accounts will show as external. This can't be undone.",
+      confirmLabel: 'Delete',
+      danger: true,
+    });
     useConfirm().settle(true);
     await flushPromises();
 
@@ -506,6 +515,10 @@ describe('AccountsPage', () => {
 
     const buttons = wrapper.findAll('[data-testid="account-row"] button');
     await buttons[1].trigger('click'); // Edit, Close, Delete
+    expect(useConfirm().state.options).toEqual({
+      body: "Close account “Checking”? It stays visible, but its operations can no longer be added, edited or reconciled, and its scheduled operations stop. This can't be undone.",
+      confirmLabel: 'Close',
+    });
     useConfirm().settle(true);
     await flushPromises();
 
@@ -566,6 +579,11 @@ describe('AccountsPage', () => {
 
     const buttons = wrapper.findAll('[data-testid="account-row"] button');
     await buttons[2].trigger('click'); // Delete
+    expect(useConfirm().state.options).toEqual({
+      body: "Delete account “Checking”? Its operations and scheduled operations will be deleted too, and transfers with it in your other accounts will show as external. This can't be undone.",
+      confirmLabel: 'Delete',
+      danger: true,
+    });
     useConfirm().settle(true);
     await flushPromises();
 

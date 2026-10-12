@@ -1,7 +1,7 @@
 import en from '../../src/i18n/locales/en';
 import { formatMoney } from '../../src/domain/money';
 import { PAYMENT_METHOD_ID } from '../../src/domain/referenceData';
-import { alertWithText, expect, test } from '../support/fixtures';
+import { alertWithText, confirmDialog, expect, test } from '../support/fixtures';
 
 test.describe('operations CRUD', () => {
   test.beforeEach(async ({ accountWithBank }) => {
@@ -56,7 +56,7 @@ test.describe('operations CRUD', () => {
 
     await row.locator('input[type="checkbox"]').check();
     await page.getByTestId('batch-delete').click();
-    await page.getByRole('button', { name: en.common.ok, exact: true }).click();
+    await confirmDialog(page).getByRole('button', { name: en.common.delete, exact: true }).click();
     await expect(alertWithText(page, en.operations.batch.deleted)).toBeVisible();
     await expect(
       page.getByTestId('operation-row').filter({ hasText: 'Grocery Store' }),

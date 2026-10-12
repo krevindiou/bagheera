@@ -10,6 +10,8 @@ const actions: BatchAction[] = [
     labelKey: 'schedulers.batch.delete',
     successKey: 'schedulers.batch.deleted',
     errorKey: 'schedulers.genericError',
+    confirmKey: 'schedulers.batch.confirmDelete',
+    confirmLabelKey: 'common.delete',
     testid: 'scheduler-batch-delete',
     danger: true,
     async run(ids) {

@@ -10,6 +10,8 @@ const actions: BatchAction[] = [
     labelKey: 'operations.batch.delete',
     successKey: 'operations.batch.deleted',
     errorKey: 'operations.genericError',
+    confirmKey: 'operations.batch.confirmDelete',
+    confirmLabelKey: 'common.delete',
     testid: 'batch-delete',
     danger: true,
     async run(ids) {
@@ -24,6 +26,8 @@ const actions: BatchAction[] = [
     labelKey: 'operations.batch.reconcile',
     successKey: 'operations.batch.reconciled',
     errorKey: 'operations.genericError',
+    confirmKey: 'operations.batch.confirmReconcile',
+    confirmLabelKey: 'operations.batch.reconcileConfirmLabel',
     testid: 'batch-reconcile',
     async run(ids) {
       const { data, response } = await apiClient.POST('/operations/batch/reconcile', {

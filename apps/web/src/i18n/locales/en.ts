@@ -6,8 +6,8 @@ export default {
   },
   common: {
     confirmTitle: 'Confirmation',
-    confirmBody: 'Do you confirm?',
     ok: 'Ok',
+    delete: 'Delete',
     cancel: 'Cancel',
     close: 'Close',
     or: 'or',
@@ -118,6 +118,14 @@ export default {
     accountSaved: 'Account saved',
     accountClosed: 'Account closed',
     accountDeleted: 'Account deleted',
+    confirmCloseBank:
+      "Close bank “{name}”? Its accounts stay visible, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
+    confirmDeleteBank:
+      "Delete bank “{name}” and all its accounts? Their operations and scheduled operations will be deleted too, and transfers with them in your other accounts will show as external. This can't be undone.",
+    confirmCloseAccount:
+      "Close account “{name}”? It stays visible, but its operations can no longer be added, edited or reconciled, and its scheduled operations stop. This can't be undone.",
+    confirmDeleteAccount:
+      "Delete account “{name}”? Its operations and scheduled operations will be deleted too, and transfers with it in your other accounts will show as external. This can't be undone.",
     genericError: 'Something went wrong. Please try again.',
     validation: {
       bankChoiceRequired: 'You must select a bank.',
@@ -163,6 +171,11 @@ export default {
       reconcile: 'Reconcile selected',
       deleted: 'Operations deleted',
       reconciled: 'Operations reconciled',
+      confirmDelete:
+        "Delete {count} operation? This can't be undone. | Delete {count} operations? This can't be undone.",
+      confirmReconcile:
+        'Mark {count} operation as reconciled? | Mark {count} operations as reconciled?',
+      reconcileConfirmLabel: 'Reconcile',
     },
     search: {
       title: 'Search operations',
@@ -218,6 +231,8 @@ export default {
     batch: {
       delete: 'Delete selected',
       deleted: 'Schedulers deleted',
+      confirmDelete:
+        'Delete {count} scheduled operation? The operations it already created are kept. | Delete {count} scheduled operations? The operations they already created are kept.',
     },
   },
   reports: {
@@ -274,12 +289,15 @@ export default {
     hideChart: 'Hide chart',
     saved: 'Report saved',
     deleted: 'Report deleted',
+    confirmDelete: "Delete report “{title}”? This can't be undone.",
     genericError: 'Something went wrong. Please try again.',
     empty: 'No reports yet.',
     noData: 'No operations match this report yet.',
     batch: {
       delete: 'Delete selected',
       deleted: 'Reports deleted',
+      confirmDelete:
+        "Delete {count} report? This can't be undone. | Delete {count} reports? This can't be undone.",
     },
   },
   dashboard: {
@@ -336,6 +354,8 @@ export default {
       added: 'Passkey added',
       remove: 'Remove',
       removed: 'Passkey removed',
+      confirmRemove:
+        "Remove passkey “{name}”? You won't be able to sign in with it anymore, and your other sessions will be signed out.",
       lastPasskeyError:
         "This is your last passkey — you can't remove it, or you'd be permanently locked out.",
       onlyPasskeyHint: 'Add another passkey before removing this one.',

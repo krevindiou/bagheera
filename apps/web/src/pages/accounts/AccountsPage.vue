@@ -8,7 +8,7 @@ import { errorMessage } from '../../api/errorMessage';
 import { queryKeys } from '../../api/queryKeys';
 import { useAccountsQuery, useBanksQuery } from '../../composables/useReferenceQueries';
 import { useToast } from '../../composables/useToast';
-import { useConfirm } from '../../composables/useConfirm';
+import { useConfirm, type ConfirmOptions } from '../../composables/useConfirm';
 import { formatMoney } from '../../domain/money';
 import type { Bank, Account } from './accounts.types';
 import BankChoiceForm from './BankChoiceForm.vue';
@@ -104,10 +104,11 @@ async function onBankSaved() {
 // the API's error (or the generic one) on failure, else the success toast
 // and a reload.
 async function confirmAndRun(
+  confirmation: ConfirmOptions,
   request: () => Promise<{ error?: unknown; response: Response }>,
   successKey: string,
 ) {
-  if (!(await confirm())) return;
+  if (!(await confirm(confirmation))) return;
   const { error, response } = await request();
   if (!response.ok) {
     toast(errorMessage(error) ?? t('accounts.genericError'), 'error');
@@ -119,6 +120,10 @@ async function confirmAndRun(
 
 async function closeBank(bank: Bank) {
   await confirmAndRun(
+    {
+      body: t('accounts.confirmCloseBank', { name: bank.name }),
+      confirmLabel: t('accounts.close'),
+    },
     () => apiClient.POST('/banks/{id}/close', { params: { path: { id: bank.id } } }),
     'accounts.bankClosed',
   );
@@ -126,6 +131,11 @@ async function closeBank(bank: Bank) {
 
 async function deleteBank(bank: Bank) {
   await confirmAndRun(
+    {
+      body: t('accounts.confirmDeleteBank', { name: bank.name }),
+      confirmLabel: t('accounts.delete'),
+      danger: true,
+    },
     () => apiClient.DELETE('/banks/{id}', { params: { path: { id: bank.id } } }),
     'accounts.bankDeleted',
   );
@@ -147,6 +157,10 @@ async function onAccountUpdated() {
 
 async function closeAccount(account: Account) {
   await confirmAndRun(
+    {
+      body: t('accounts.confirmCloseAccount', { name: account.name }),
+      confirmLabel: t('accounts.close'),
+    },
     () => apiClient.POST('/accounts/{id}/close', { params: { path: { id: account.id } } }),
     'accounts.accountClosed',
   );
@@ -154,6 +168,11 @@ async function closeAccount(account: Account) {
 
 async function deleteAccount(account: Account) {
   await confirmAndRun(
+    {
+      body: t('accounts.confirmDeleteAccount', { name: account.name }),
+      confirmLabel: t('accounts.delete'),
+      danger: true,
+    },
     () => apiClient.DELETE('/accounts/{id}', { params: { path: { id: account.id } } }),
     'accounts.accountDeleted',
   );

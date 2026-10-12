@@ -5,8 +5,8 @@ export default {
   },
   common: {
     confirmTitle: 'Confirmation',
-    confirmBody: 'Confirmez-vous ?',
     ok: 'Ok',
+    delete: 'Supprimer',
     cancel: 'Annuler',
     close: 'Fermer',
     or: 'ou',
@@ -121,6 +121,14 @@ export default {
     accountSaved: 'Compte enregistré',
     accountClosed: 'Compte clôturé',
     accountDeleted: 'Compte supprimé',
+    confirmCloseBank:
+      'Clôturer la banque « {name} » ? Ses comptes restent visibles, mais leurs opérations ne peuvent plus être ajoutées, modifiées ni rapprochées, et leurs opérations planifiées s’arrêtent. Cette action est irréversible.',
+    confirmDeleteBank:
+      'Supprimer la banque « {name} » et tous ses comptes ? Leurs opérations et opérations planifiées seront aussi supprimées, et les virements avec ces comptes dans vos autres comptes apparaîtront comme externes. Cette action est irréversible.',
+    confirmCloseAccount:
+      'Clôturer le compte « {name} » ? Il reste visible, mais ses opérations ne peuvent plus être ajoutées, modifiées ni rapprochées, et ses opérations planifiées s’arrêtent. Cette action est irréversible.',
+    confirmDeleteAccount:
+      'Supprimer le compte « {name} » ? Ses opérations et opérations planifiées seront aussi supprimées, et les virements avec ce compte dans vos autres comptes apparaîtront comme externes. Cette action est irréversible.',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     validation: {
       bankChoiceRequired: 'Vous devez sélectionner une banque.',
@@ -166,6 +174,11 @@ export default {
       reconcile: 'Rapprocher la sélection',
       deleted: 'Opérations supprimées',
       reconciled: 'Opérations rapprochées',
+      confirmDelete:
+        'Supprimer {count} opération ? Cette action est irréversible. | Supprimer {count} opérations ? Cette action est irréversible.',
+      confirmReconcile:
+        'Marquer {count} opération comme rapprochée ? | Marquer {count} opérations comme rapprochées ?',
+      reconcileConfirmLabel: 'Rapprocher',
     },
     search: {
       title: 'Rechercher des opérations',
@@ -221,6 +234,8 @@ export default {
     batch: {
       delete: 'Supprimer la sélection',
       deleted: 'Planifications supprimées',
+      confirmDelete:
+        'Supprimer {count} opération planifiée ? Les opérations qu’elle a déjà créées sont conservées. | Supprimer {count} opérations planifiées ? Les opérations qu’elles ont déjà créées sont conservées.',
     },
   },
   reports: {
@@ -278,12 +293,15 @@ export default {
     hideChart: 'Masquer le graphique',
     saved: 'Rapport enregistré',
     deleted: 'Rapport supprimé',
+    confirmDelete: 'Supprimer le rapport « {title} » ? Cette action est irréversible.',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucun rapport pour l'instant.",
     noData: 'Aucune opération ne correspond encore à ce rapport.',
     batch: {
       delete: 'Supprimer la sélection',
       deleted: 'Rapports supprimés',
+      confirmDelete:
+        'Supprimer {count} rapport ? Cette action est irréversible. | Supprimer {count} rapports ? Cette action est irréversible.',
     },
   },
   dashboard: {
@@ -341,6 +359,8 @@ export default {
       added: 'Clé d’accès ajoutée',
       remove: 'Supprimer',
       removed: 'Clé d’accès supprimée',
+      confirmRemove:
+        'Supprimer la clé d’accès « {name} » ? Vous ne pourrez plus vous connecter avec, et vos autres sessions seront déconnectées.',
       lastPasskeyError:
         'Il s’agit de votre dernière clé d’accès — vous ne pouvez pas la supprimer, cela vous bloquerait définitivement hors de votre compte.',
       onlyPasskeyHint: 'Ajoutez une autre clé d’accès avant de supprimer celle-ci.',

@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { alertWithText, expect, test } from '../support/fixtures';
+import { alertWithText, confirmDialog, expect, test } from '../support/fixtures';
 
 test('create a sum report, view its chart, then batch-delete it', async ({ accountWithBank }) => {
   const { page } = accountWithBank;
@@ -19,7 +19,7 @@ test('create a sum report, view its chart, then batch-delete it', async ({ accou
 
   await row.getByTestId('report-checkbox').check();
   await page.getByRole('button', { name: en.reports.batch.delete, exact: true }).click();
-  await page.getByRole('button', { name: en.common.ok, exact: true }).click();
+  await confirmDialog(page).getByRole('button', { name: en.common.delete, exact: true }).click();
   await expect(alertWithText(page, en.reports.batch.deleted)).toBeVisible();
   await expect(page.getByTestId('report-row').filter({ hasText: title })).toHaveCount(0);
 });
@@ -36,7 +36,7 @@ test('deletes a single report via its own row action', async ({ accountWithBank 
 
   const row = page.getByTestId('report-row').filter({ hasText: title });
   await row.getByRole('button', { name: en.accounts.delete, exact: true }).click();
-  await page.getByRole('button', { name: en.common.ok, exact: true }).click();
+  await confirmDialog(page).getByRole('button', { name: en.common.delete, exact: true }).click();
   await expect(alertWithText(page, en.reports.deleted)).toBeVisible();
   await expect(page.getByTestId('report-row').filter({ hasText: title })).toHaveCount(0);
 });

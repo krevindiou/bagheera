@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import en from '../../src/i18n/locales/en';
 import { formatMoney } from '../../src/domain/money';
-import { alertWithText, expect, test } from '../support/fixtures';
+import { alertWithText, confirmDialog, expect, test } from '../support/fixtures';
 
 test('create a bank and an account, then edit the bank and close the account', async ({
   signedInMember,
@@ -46,7 +46,7 @@ test('create a bank and an account, then edit the bank and close the account', a
 
   const accountRow = page.getByTestId('account-row').filter({ hasText: accountName });
   await accountRow.getByRole('button', { name: en.accounts.close, exact: true }).click();
-  await page.getByRole('button', { name: en.common.ok, exact: true }).click();
+  await confirmDialog(page).getByRole('button', { name: en.accounts.close, exact: true }).click();
   await expect(alertWithText(page, en.accounts.accountClosed)).toBeVisible();
 
   // Closed stays listed.

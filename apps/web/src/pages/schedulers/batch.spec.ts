@@ -37,6 +37,11 @@ describe('schedulers BatchActions', () => {
       props: { selectedIds: ['s1', 's2'] },
     });
     await wrapper.find('[data-testid="scheduler-batch-delete"]').trigger('click');
+    expect(useConfirm().state.options).toEqual({
+      body: 'Delete 2 scheduled operations? The operations they already created are kept.',
+      confirmLabel: 'Delete',
+      danger: true,
+    });
     useConfirm().settle(true);
     await flushPromises();
 

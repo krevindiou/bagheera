@@ -17,12 +17,17 @@ useEscapeKey(() => {
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">{{ $t('common.confirmTitle') }}</h5>
+          <h5 class="modal-title">{{ state.options?.title ?? $t('common.confirmTitle') }}</h5>
         </div>
-        <div class="modal-body">{{ $t('common.confirmBody') }}</div>
+        <div class="modal-body">{{ state.options?.body }}</div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" @click="settle(true)">
-            {{ $t('common.ok') }}
+          <button
+            type="button"
+            class="btn"
+            :class="state.options?.danger ? 'btn-danger' : 'btn-primary'"
+            @click="settle(true)"
+          >
+            {{ state.options?.confirmLabel ?? $t('common.ok') }}
           </button>
           <button type="button" class="btn btn-secondary" @click="settle(false)">
             {{ $t('common.cancel') }}

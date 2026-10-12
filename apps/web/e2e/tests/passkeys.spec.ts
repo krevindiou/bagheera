@@ -1,5 +1,5 @@
 import en from '../../src/i18n/locales/en';
-import { alertWithText, expect, signOut, test } from '../support/fixtures';
+import { alertWithText, confirmDialog, expect, signOut, test } from '../support/fixtures';
 import { addVirtualAuthenticator } from '../support/webauthn';
 
 // The second passkey comes from a second virtual authenticator (a second
@@ -33,7 +33,9 @@ test('register a second passkey, sign in with it, then remove it', async ({ sign
     .getByRole('row', { name: 'E2E test device' })
     .getByRole('button', { name: en.settings.passkeys.remove, exact: true })
     .click();
-  await page.getByRole('button', { name: en.common.ok, exact: true }).click();
+  await confirmDialog(page)
+    .getByRole('button', { name: en.settings.passkeys.remove, exact: true })
+    .click();
   await expect(alertWithText(page, en.settings.passkeys.removed)).toBeVisible();
   await expect(page.getByRole('cell', { name: 'E2E test device', exact: true })).not.toBeVisible();
 
@@ -44,9 +46,8 @@ test('blocks removing the last remaining passkey', async ({ signedInMember }) =>
   const { page } = signedInMember;
 
   await page.goto('/en/settings/passkeys');
-  await page.getByRole('button', { name: en.settings.passkeys.remove, exact: true }).click();
-  await page.getByRole('button', { name: en.common.ok, exact: true }).click();
-
-  await expect(alertWithText(page, en.settings.passkeys.lastPasskeyError)).toBeVisible();
-  await expect(page.getByRole('button', { name: en.settings.passkeys.remove })).toHaveCount(1);
+  const remove = page.getByRole('button', { name: en.settings.passkeys.remove, exact: true });
+  await expect(remove).toHaveCount(1);
+  await expect(remove).toBeDisabled();
+  await expect(page.getByText(en.settings.passkeys.onlyPasskeyHint)).toBeVisible();
 });

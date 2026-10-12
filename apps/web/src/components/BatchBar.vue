@@ -9,6 +9,10 @@ export interface BatchAction {
   successKey: string;
   // Toasted when the request fails, or succeeds without changing anything.
   errorKey: string;
+  // Confirmation body, pluralized on the selection size ({count}).
+  confirmKey: string;
+  // The confirm button's label; also red when `danger` is set.
+  confirmLabelKey: string;
   testid: string;
   danger?: boolean;
   // Sends the batch request for these ids; resolves to how many rows it
@@ -29,7 +33,13 @@ const { push: toast } = useToast();
 const { t } = useI18n();
 
 async function perform(action: BatchAction) {
-  if (!(await confirm())) return;
+  const selected = props.selectedIds.length;
+  const confirmed = await confirm({
+    body: t(action.confirmKey, selected),
+    confirmLabel: t(action.confirmLabelKey),
+    danger: action.danger,
+  });
+  if (!confirmed) return;
 
   const count = await action.run(props.selectedIds);
   if (count === null) {

@@ -37,6 +37,11 @@ describe('reports BatchActions', () => {
       props: { selectedIds: ['r1', 'r2'] },
     });
     await wrapper.find('[data-testid="report-batch-delete"]').trigger('click');
+    expect(useConfirm().state.options).toEqual({
+      body: "Delete 2 reports? This can't be undone.",
+      confirmLabel: 'Delete',
+      danger: true,
+    });
     useConfirm().settle(true);
     await flushPromises();
 

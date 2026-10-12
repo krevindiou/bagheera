@@ -12,6 +12,12 @@ export function alertWithText(page: Page, text: string): Locator {
   return page.getByRole('alert').filter({ hasText: text });
 }
 
+// The confirmation dialog: its confirm button often shares its label with
+// the row action that opened it ("Delete", "Close", "Remove").
+export function confirmDialog(page: Page): Locator {
+  return page.locator('.modal');
+}
+
 /** Signs out through the account menu. */
 export async function signOut(page: Page): Promise<void> {
   await page.getByRole('button', { name: en.home.accountMenu }).click();

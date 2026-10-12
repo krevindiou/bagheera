@@ -39,6 +39,11 @@ describe('BatchActions', () => {
       });
 
       await wrapper.find('[data-testid="batch-delete"]').trigger('click');
+      expect(useConfirm().state.options).toEqual({
+        body: "Delete 2 operations? This can't be undone.",
+        confirmLabel: 'Delete',
+        danger: true,
+      });
       useConfirm().settle(true);
       await flushPromises();
 
@@ -98,6 +103,11 @@ describe('BatchActions', () => {
         props: { selectedIds: ['o1'] },
       });
       await wrapper.find('[data-testid="batch-reconcile"]').trigger('click');
+      expect(useConfirm().state.options).toEqual({
+        body: 'Mark 1 operation as reconciled?',
+        confirmLabel: 'Reconcile',
+        danger: undefined,
+      });
       useConfirm().settle(true);
       await flushPromises();
 
