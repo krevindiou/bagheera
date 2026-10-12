@@ -188,6 +188,8 @@ async function onSaved() {
                 <span
                   class="dot"
                   :class="{ 'dot-active': scheduler.active }"
+                  role="img"
+                  :aria-label="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')"
                   :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')"
                 ></span>
               </td>
