@@ -156,7 +156,7 @@ export default {
     transferAccount: 'Virement vers le compte',
     externalAccount: 'Compte externe',
     balance: 'Solde',
-    generatedByScheduler: 'Générée par une planification',
+    generatedByScheduler: 'Générée par une opération planifiée',
     firstOperationTip: 'Vous y êtes ! Ajoutez simplement votre première opération.',
     valueDate: 'Date de valeur',
     notes: 'Notes',
@@ -217,7 +217,7 @@ export default {
     title: 'Opérations planifiées',
     createTitle: 'Nouvelle opération planifiée',
     editTitle: "Modifier l'opération planifiée",
-    addScheduler: 'Nouvelle planification',
+    addScheduler: 'Nouvelle opération planifiée',
     firstOccurrence: 'Première occurrence',
     every: 'Tous les',
     everyN: 'Tous les {count} {unit}',
@@ -231,8 +231,8 @@ export default {
     limitDate: 'Arrêter après (facultatif)',
     active: 'Actif',
     paused: 'En pause',
-    created: 'Planification enregistrée',
-    updated: 'Planification enregistrée',
+    created: 'Opération planifiée enregistrée',
+    updated: 'Opération planifiée enregistrée',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération planifiée pour l'instant.",
     validation: {
@@ -240,7 +240,7 @@ export default {
     },
     batch: {
       delete: 'Supprimer la sélection',
-      deleted: 'Planifications supprimées',
+      deleted: 'Opérations planifiées supprimées',
       confirmDelete:
         'Supprimer {count} opération planifiée ? Les opérations qu’elle a déjà créées sont conservées. | Supprimer {count} opérations planifiées ? Les opérations qu’elles ont déjà créées sont conservées.',
     },
@@ -342,7 +342,7 @@ export default {
     },
     timeZone: {
       label: 'Fuseau horaire',
-      hint: "Détermine ce qu'est « aujourd'hui » : la date par défaut d'une nouvelle opération, et l'échéance des opérations programmées.",
+      hint: "Détermine ce qu'est « aujourd'hui » : la date par défaut d'une nouvelle opération, et l'échéance des opérations planifiées.",
       submit: 'Enregistrer le fuseau horaire',
       success: 'Fuseau horaire mis à jour',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
@@ -421,7 +421,7 @@ export default {
     kinds: {
       banks: 'banques',
       accounts: 'comptes',
-      schedulers: 'échéanciers',
+      schedulers: 'opérations planifiées',
       reports: 'rapports',
     },
   },

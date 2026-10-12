@@ -106,7 +106,7 @@ describe('BatchBar', () => {
     await clickAndSettle(wrapper, 'delete', true);
 
     expect(run).toHaveBeenCalledWith(['s1', 's2']);
-    expect(toasts()).toEqual([['Schedulers deleted', 'success']]);
+    expect(toasts()).toEqual([['Scheduled operations deleted', 'success']]);
     expect(wrapper.emitted('done')).toHaveLength(1);
   });
 

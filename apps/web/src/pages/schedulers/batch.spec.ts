@@ -48,7 +48,7 @@ describe('schedulers BatchActions', () => {
     expect(apiClient.POST).toHaveBeenCalledWith('/schedulers/batch/delete', {
       body: { ids: ['s1', 's2'] },
     });
-    expect(useToast().toasts[0]?.text).toBe('Schedulers deleted');
+    expect(useToast().toasts[0]?.text).toBe('Scheduled operations deleted');
     expect(wrapper.emitted('done')).toHaveLength(1);
   });
 

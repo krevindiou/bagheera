@@ -130,7 +130,7 @@ describe('SchedulerForm', () => {
         active: true,
       },
     });
-    expect(useToast().toasts[0]?.text).toBe('Scheduler saved');
+    expect(useToast().toasts[0]?.text).toBe('Scheduled operation saved');
     expect(wrapper.emitted('saved')).toHaveLength(1);
   });
 
