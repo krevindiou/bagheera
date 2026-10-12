@@ -101,6 +101,9 @@ const amountErrorKey = computed(() =>
 );
 
 const amountInput = ref<InstanceType<typeof MoneyInput> | null>(null);
+const thirdPartyInput = ref<HTMLInputElement | null>(null);
+// For "Save & add another", which starts the next entry here.
+defineExpose({ focus: () => thirdPartyInput.value?.focus() });
 const { suggestions } = useThirdPartyAutocomplete(thirdParty, type, (matchedCategoryId) => {
   categoryId.value = matchedCategoryId;
 });
@@ -130,6 +133,7 @@ function onThirdPartyChange() {
   >
     <input
       :id="`${idPrefix}-third-party`"
+      ref="thirdPartyInput"
       v-model="thirdParty"
       type="text"
       :list="`${idPrefix}-third-party-suggestions`"

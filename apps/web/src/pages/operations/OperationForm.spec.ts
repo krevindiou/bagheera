@@ -162,6 +162,24 @@ describe('OperationForm', () => {
     expect((wrapper.find('#operation-third-party').element as HTMLInputElement).value).toBe('');
   });
 
+  it("'Save & add another' refocuses the third-party field instead of leaving focus on body", async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mountForm({ attachTo: document.body });
+    await wrapper.find('#operation-third-party').setValue('Landlord');
+    await wrapper.find('#operation-amount').setValue('50');
+    await wrapper.find('#operation-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+    await wrapper.find('button.btn-outline-primary').trigger('click');
+    // Not a form submit, so submitAndSettle doesn't apply: same loop inline.
+    for (let i = 0; i < 5; i++) {
+      await flushPromises();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+    }
+
+    expect(document.activeElement).toBe(wrapper.find('#operation-third-party').element);
+    wrapper.unmount();
+  });
+
   it("doesn't offer 'Save & add another' when editing", () => {
     const wrapper = mountForm({ operation });
     expect(wrapper.find('button.btn-outline-primary').exists()).toBe(false);

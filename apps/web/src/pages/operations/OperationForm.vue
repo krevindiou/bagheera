@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
+import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
@@ -34,6 +35,8 @@ const { push: toast } = useToast();
 const { t } = useI18n();
 const session = useSessionStore();
 
+const fields = ref<InstanceType<typeof OperationFields> | null>(null);
+
 const { handleSubmit, isSubmitting, resetForm } = useForm<OperationFormValues, OperationForm>({
   validationSchema: toTypedSchema(operationSchema),
   initialValues: entryFormValues(props.operation, session.member?.timeZone),
@@ -65,11 +68,13 @@ const onSubmit = handleSubmit(async (submitted) => {
 });
 
 // Creation form only: saves and immediately returns to a fresh creation
-// form for the same account, instead of closing.
+// form for the same account, instead of closing, focused on its first field.
 const onSubmitAndNew = handleSubmit(async (submitted) => {
   if (await submitForm(submitted)) {
     resetForm({ values: entryFormValues(null, session.member?.timeZone) });
     emit('savedAndNew');
+    await nextTick();
+    fields.value?.focus();
   }
 });
 </script>
@@ -82,6 +87,7 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
     @close="emit('cancel')"
   >
     <OperationFields
+      ref="fields"
       id-prefix="operation"
       :account-id="accountId"
       :categories="categories"
