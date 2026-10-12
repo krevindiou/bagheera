@@ -29,6 +29,7 @@ const credentialsQuery = useQuery({
 const credentials = computed(() => credentialsQuery.data.value ?? []);
 const credentialsError = computed(() => credentialsQuery.isError.value);
 const credentialsPending = computed(() => credentialsQuery.isPending.value);
+const onlyPasskeyLeft = computed(() => credentials.value.length <= 1);
 
 async function reload() {
   await queryClient.invalidateQueries({ queryKey: queryKeys.webauthnCredentials });
@@ -64,13 +65,13 @@ async function addPasskey() {
 }
 
 async function removePasskey(id: string) {
-  if (!(await confirm())) return;
-  // The API refuses this anyway — checked here too only so the member
-  // isn't asked for a step-up that can't lead anywhere.
+  // The button is already disabled in that case — this only guards against
+  // the list going stale (e.g. another tab removed a passkey meanwhile).
   if (credentials.value.length <= 1) {
     toast(t('settings.passkeys.lastPasskeyError'), 'error');
     return;
   }
+  if (!(await confirm())) return;
   // Step-up gated, like registration.
   if (!(await completeStepUp())) {
     toast(t('settings.passkeys.stepUpFailed'), 'error');
@@ -154,6 +155,7 @@ async function removePasskey(id: string) {
                   <IconButton
                     icon="trash"
                     danger
+                    :disabled="onlyPasskeyLeft"
                     :label="$t('settings.passkeys.remove')"
                     @click="removePasskey(credential.id)"
                   />
@@ -162,6 +164,9 @@ async function removePasskey(id: string) {
             </tbody>
           </table>
         </div>
+        <p v-if="onlyPasskeyLeft" class="text-muted mt-2" style="font-size: 13.5px">
+          {{ $t('settings.passkeys.onlyPasskeyHint') }}
+        </p>
       </ListState>
     </div>
   </div>

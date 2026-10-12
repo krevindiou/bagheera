@@ -28,4 +28,13 @@ describe('IconButton', () => {
 
     expect(shapes('edit')).not.toBe(shapes('view'));
   });
+
+  it('can be disabled while keeping its accessible name', () => {
+    const wrapper = mount(IconButton, {
+      props: { icon: 'trash', label: 'Delete', disabled: true },
+    });
+
+    expect(wrapper.attributes('disabled')).toBeDefined();
+    expect(wrapper.attributes('aria-label')).toBe('Delete');
+  });
 });

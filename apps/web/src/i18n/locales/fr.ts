@@ -343,6 +343,7 @@ export default {
       removed: 'Clé d’accès supprimée',
       lastPasskeyError:
         'Il s’agit de votre dernière clé d’accès — vous ne pouvez pas la supprimer, cela vous bloquerait définitivement hors de votre compte.',
+      onlyPasskeyHint: 'Ajoutez une autre clé d’accès avant de supprimer celle-ci.',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
   },

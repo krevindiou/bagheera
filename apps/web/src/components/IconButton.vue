@@ -8,6 +8,7 @@ defineProps<{
   icon: IconName;
   label: string;
   danger?: boolean;
+  disabled?: boolean;
 }>();
 </script>
 
@@ -16,6 +17,7 @@ defineProps<{
     type="button"
     class="btn btn-sm btn-icon"
     :class="danger ? 'btn-outline-danger' : 'btn-outline-secondary'"
+    :disabled="disabled"
     :title="label"
     :aria-label="label"
   >

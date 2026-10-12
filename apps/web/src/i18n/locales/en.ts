@@ -338,6 +338,7 @@ export default {
       removed: 'Passkey removed',
       lastPasskeyError:
         "This is your last passkey — you can't remove it, or you'd be permanently locked out.",
+      onlyPasskeyHint: 'Add another passkey before removing this one.',
       genericError: 'Something went wrong. Please try again.',
     },
   },

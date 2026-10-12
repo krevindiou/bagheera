@@ -302,6 +302,29 @@ describe('PasskeysPage', () => {
     expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
   });
 
+  it('disables the remove button and shows a hint when there is only one passkey', async () => {
+    mockCredentials([
+      { id: 'p1', deviceName: 'Only one', createdAt: '2026-01-01', lastUsedAt: null },
+    ]);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    expect(wrapper.find('button.btn-outline-danger').attributes('disabled')).toBeDefined();
+    expect(wrapper.text()).toContain('Add another passkey before removing this one.');
+  });
+
+  it('leaves the remove button enabled and hides the hint when there are several passkeys', async () => {
+    mockCredentials(TWO_PASSKEYS);
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    expect(wrapper.find('button.btn-outline-danger').attributes('disabled')).toBeUndefined();
+    expect(wrapper.text()).not.toContain('Add another passkey before removing this one.');
+  });
+
+  // The button is already disabled in this case, so a real click can't reach
+  // the handler; this exercises the in-function guard directly, as a safety
+  // net for a stale list (e.g. another tab removed a passkey meanwhile).
   it('refuses to remove the only passkey without prompting for a step-up', async () => {
     mockCredentials([
       { id: 'p1', deviceName: 'Only one', createdAt: '2026-01-01', lastUsedAt: null },
@@ -309,7 +332,10 @@ describe('PasskeysPage', () => {
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 
-    await clickRemoveAndConfirm(wrapper);
+    const button = wrapper.find('button.btn-outline-danger');
+    (button.element as HTMLButtonElement).disabled = false;
+    await button.trigger('click');
+    await flushPromises();
 
     expect(startAuthentication).not.toHaveBeenCalled();
     expect(apiClient.DELETE).not.toHaveBeenCalled();
