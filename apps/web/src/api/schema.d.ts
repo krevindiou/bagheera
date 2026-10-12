@@ -1187,6 +1187,7 @@ export interface components {
             currency: string;
             amount: number;
             reconciledAmount: number;
+            includesClosedAccounts: boolean;
         };
         DashboardIndicatorDto: {
             amount: number;

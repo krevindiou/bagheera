@@ -7,6 +7,9 @@ export class TotalBalanceDto {
   currency!: string;
   amount!: number;
   reconciledAmount!: number;
+  // A closed account (or one under a closed bank) holds part of the total,
+  // so the accounts overview tiles don't add up to it.
+  includesClosedAccounts!: boolean;
 }
 
 export class DashboardIndicatorDto {

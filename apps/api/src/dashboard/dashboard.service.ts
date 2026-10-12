@@ -141,8 +141,12 @@ export class DashboardService {
 
     // Total balance per currency, closed accounts included. Sorted by raw
     // amount, largest first, with no currency conversion; ties by currency.
+    // The overview below lists only fully active accounts, so a currency
+    // whose total holds money in a closed one is flagged for the UI to
+    // explain why the tiles don't add up.
     const rawTotals = new Map<string, number>();
     const rawReconciledTotals = new Map<string, number>();
+    const currenciesWithClosedMoney = new Set<string>();
     for (const acc of accounts) {
       const entry = balances.get(acc.id);
       const balance = entry?.balance ?? 0;
@@ -152,6 +156,12 @@ export class DashboardService {
         acc.currency,
         (rawReconciledTotals.get(acc.currency) ?? 0) + reconciledBalance,
       );
+      if (
+        (balance !== 0 || reconciledBalance !== 0) &&
+        !isFullyActive(acc, bankById.get(acc.bankId)!)
+      ) {
+        currenciesWithClosedMoney.add(acc.currency);
+      }
     }
     const totalBalances: TotalBalance[] = [...rawTotals.entries()]
       .sort(([currencyA, a], [currencyB, b]) =>
@@ -162,6 +172,7 @@ export class DashboardService {
         // `+=` dropped the MinorUnits brand.
         amount: amount as MinorUnits,
         reconciledAmount: (rawReconciledTotals.get(currency) ?? 0) as MinorUnits,
+        includesClosedAccounts: currenciesWithClosedMoney.has(currency),
       }));
 
     const fullyActiveAccountIds = accounts

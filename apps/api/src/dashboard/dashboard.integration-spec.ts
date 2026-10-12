@@ -33,7 +33,12 @@ function dayInPreviousCalendarMonth(): string {
 
 interface DashboardBody {
   onboarding: string | null;
-  totalBalances: { currency: string; amount: number; reconciledAmount: number }[];
+  totalBalances: {
+    currency: string;
+    amount: number;
+    reconciledAmount: number;
+    includesClosedAccounts: boolean;
+  }[];
   lastBiggestIncome: {
     amount: number;
     currency: string;
@@ -91,7 +96,12 @@ describe('GET /dashboard', () => {
     const body = res.body as DashboardBody;
     expect(body.onboarding).toBeNull();
     expect(body.totalBalances).toEqual([
-      { currency: 'EUR', amount: toMinorUnits(250), reconciledAmount: toMinorUnits(250) },
+      {
+        currency: 'EUR',
+        amount: toMinorUnits(250),
+        reconciledAmount: toMinorUnits(250),
+        includesClosedAccounts: false,
+      },
     ]);
     expect(body.accountsOverview).toHaveLength(1);
     expect(body.accountsOverview[0].accounts[0].balance).toBe(toMinorUnits(250));
@@ -128,6 +138,36 @@ describe('GET /dashboard', () => {
     expect(body.accountsOverview[0].accounts.map((a) => a.id)).toEqual([checking, savings]);
     expect(body.accountsOverview[1].accounts.map((a) => a.id)).toEqual([empty, main]);
     expect(body.accountsOverview[1].accounts[0].history).toEqual([]);
+  });
+
+  it('keeps a closed account with money in the total, flagged, while its tile goes away', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const bankId = await createBank(mutate);
+    const openAccount = async (name: string, currency: string, initialBalance?: number) =>
+      (
+        (await mutate('post', '/accounts', { bankId, name, currency, initialBalance })).body as {
+          account: { id: string };
+        }
+      ).account.id;
+    const checking = await openAccount('Checking', 'EUR', 100);
+    const savings = await openAccount('Savings', 'EUR', 5300);
+    const emptyUsd = await openAccount('Empty', 'USD');
+    expect((await mutate('post', `/accounts/${savings}/close`)).status).toBe(200);
+    expect((await mutate('post', `/accounts/${emptyUsd}/close`)).status).toBe(200);
+
+    const res = await agent.get('/dashboard').expect(200);
+    const body = res.body as DashboardBody;
+    expect(body.totalBalances).toEqual([
+      {
+        currency: 'EUR',
+        amount: toMinorUnits(5400),
+        reconciledAmount: toMinorUnits(5400),
+        includesClosedAccounts: true,
+      },
+      // A closed account holding nothing doesn't skew the total.
+      { currency: 'USD', amount: 0, reconciledAmount: 0, includesClosedAccounts: false },
+    ]);
+    expect(body.accountsOverview[0].accounts.map((a) => a.id)).toEqual([checking]);
   });
 
   it("ends each account overview tile's sparkline history at its current balance", async () => {
@@ -209,7 +249,12 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.totalBalances).toEqual([
-      { currency: 'EUR', amount: toMinorUnits(200), reconciledAmount: toMinorUnits(250) },
+      {
+        currency: 'EUR',
+        amount: toMinorUnits(200),
+        reconciledAmount: toMinorUnits(250),
+        includesClosedAccounts: false,
+      },
     ]);
   });
 

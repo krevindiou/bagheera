@@ -72,7 +72,14 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         onboarding: 'no-account',
-        totalBalances: [{ currency: 'USD', amount: m(100), reconciledAmount: m(100) }],
+        totalBalances: [
+          {
+            currency: 'USD',
+            amount: m(100),
+            reconciledAmount: m(100),
+            includesClosedAccounts: false,
+          },
+        ],
       }),
     );
     expect(wrapper.find('[data-testid="onboarding-tip"]').text()).toContain(
@@ -86,8 +93,18 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         totalBalances: [
-          { currency: 'USD', amount: m(12345), reconciledAmount: m(12000) },
-          { currency: 'EUR', amount: m(-500), reconciledAmount: m(-400) },
+          {
+            currency: 'USD',
+            amount: m(12345),
+            reconciledAmount: m(12000),
+            includesClosedAccounts: false,
+          },
+          {
+            currency: 'EUR',
+            amount: m(-500),
+            reconciledAmount: m(-400),
+            includesClosedAccounts: false,
+          },
         ],
       }),
     );
@@ -102,8 +119,18 @@ describe('DashboardPage', () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         totalBalances: [
-          { currency: 'USD', amount: m(12345), reconciledAmount: m(12000) },
-          { currency: 'EUR', amount: m(-500), reconciledAmount: m(-400) },
+          {
+            currency: 'USD',
+            amount: m(12345),
+            reconciledAmount: m(12000),
+            includesClosedAccounts: false,
+          },
+          {
+            currency: 'EUR',
+            amount: m(-500),
+            reconciledAmount: m(-400),
+            includesClosedAccounts: false,
+          },
         ],
       }),
     );
@@ -115,6 +142,35 @@ describe('DashboardPage', () => {
     // Unlike the balance, the reconciled footnote stays muted when negative.
     expect(reconciled[1].text()).toBe('-€400.00');
     expect(reconciled[1].classes()).not.toContain('text-danger');
+  });
+
+  it('notes on a currency total when it includes closed accounts, and only there', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        totalBalances: [
+          {
+            currency: 'EUR',
+            amount: m(5400),
+            reconciledAmount: m(5400),
+            includesClosedAccounts: true,
+          },
+          {
+            currency: 'USD',
+            amount: m(100),
+            reconciledAmount: m(100),
+            includesClosedAccounts: false,
+          },
+        ],
+      }),
+    );
+    const cards = wrapper
+      .findAll('[data-testid="total-balance"]')
+      .map((value) => value.element.closest('.stat-card')!);
+    const notes = wrapper.findAll('[data-testid="total-includes-closed"]');
+    expect(notes).toHaveLength(1);
+    expect(notes[0].text()).toBe('Includes closed accounts');
+    expect(cards[0].contains(notes[0].element)).toBe(true);
+    expect(cards[1].contains(notes[0].element)).toBe(false);
   });
 
   it('shows the empty-balances message when there are no accounts', async () => {

@@ -323,6 +323,7 @@ export default {
     onboardingCta: 'Commencer',
     totalBalances: 'Solde total',
     totalReconciled: 'Rapproché',
+    totalIncludesClosed: 'Inclut des comptes clôturés',
     noBalances: 'Aucun compte pour le moment.',
     lastBiggestIncome: 'Plus gros revenu le mois dernier',
     lastBiggestExpense: 'Plus grosse dépense le mois dernier',

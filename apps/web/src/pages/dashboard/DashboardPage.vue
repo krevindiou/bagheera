@@ -91,7 +91,16 @@ const accountTiles = computed(() =>
             :reconciled="balance.reconciledAmount"
             value-testid="total-balance"
             reconciled-testid="total-reconciled"
-          />
+          >
+            <!-- Closed accounts have no tile below, so say why the tiles don't add up. -->
+            <div
+              v-if="balance.includesClosedAccounts"
+              class="stat-footnote"
+              data-testid="total-includes-closed"
+            >
+              <span class="stat-footnote-label">{{ $t('dashboard.totalIncludesClosed') }}</span>
+            </div>
+          </StatCard>
           <StatCard
             v-if="dashboard.lastBiggestIncome"
             :label="$t('dashboard.lastBiggestIncome')"

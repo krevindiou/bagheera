@@ -319,6 +319,7 @@ export default {
     onboardingCta: 'Get started',
     totalBalances: 'Total balance',
     totalReconciled: 'Reconciled',
+    totalIncludesClosed: 'Includes closed accounts',
     noBalances: 'No accounts yet.',
     lastBiggestIncome: 'Biggest income last month',
     lastBiggestExpense: 'Biggest expense last month',
