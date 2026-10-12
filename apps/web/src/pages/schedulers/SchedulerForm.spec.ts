@@ -248,9 +248,10 @@ describe('SchedulerForm', () => {
         transferAccountId: null,
       },
     });
-    expect((wrapper.get('#scheduler-transfer-account').element as HTMLSelectElement).value).toBe(
-      '',
-    );
+    // Selected, not just empty-valued: a select matching no option reads '' too.
+    expect(
+      (wrapper.get('#scheduler-transfer-account').element as HTMLSelectElement).selectedIndex,
+    ).toBe(0);
 
     await wrapper.find('#scheduler-amount').setValue('75');
     await submitAndSettle(wrapper);

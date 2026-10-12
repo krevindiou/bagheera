@@ -91,6 +91,12 @@ function mountFields(initial: Partial<OperationForm> = {}) {
 
 const optionLabels = (select: { findAll: (s: string) => { text: () => string }[] }) =>
   select.findAll('option').map((o) => o.text());
+// What the select visibly shows: Vue leaves a select whose value matches no
+// option with nothing selected (an empty box).
+const selectedLabel = (select: { element: Element }) => {
+  const el = select.element as HTMLSelectElement;
+  return el.selectedIndex === -1 ? null : el.options[el.selectedIndex].text.trim();
+};
 
 describe('OperationFields', () => {
   beforeEach(() => {
@@ -166,17 +172,31 @@ describe('OperationFields', () => {
     wrapper.unmount();
   });
 
-  it('clears a category that no longer matches after switching type', async () => {
-    const { wrapper, form } = mountFields({ categoryId: CATEGORY_FOOD });
+  it("starts a blank form on each select's placeholder option", () => {
+    const { wrapper } = mountFields();
+
+    expect(selectedLabel(wrapper.get('#x-category'))).toBe('No category');
+    expect(selectedLabel(wrapper.get('#x-payment-method'))).toBe('Choose a payment method…');
+    wrapper.unmount();
+  });
+
+  it('clears a category and payment method that no longer match after switching type, back to their placeholders', async () => {
+    const { wrapper, form } = mountFields({
+      categoryId: CATEGORY_FOOD,
+      paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
+    });
 
     await wrapper.get('#x-type-credit').setValue(true);
     await flushPromises();
 
     expect(form().values.categoryId).toBeUndefined();
+    expect(form().values.paymentMethodId).toBeUndefined();
+    expect(selectedLabel(wrapper.get('#x-category'))).toBe('No category');
+    expect(selectedLabel(wrapper.get('#x-payment-method'))).toBe('Choose a payment method…');
     wrapper.unmount();
   });
 
-  it('shows the transfer account only for a transfer payment method, blank meaning External', async () => {
+  it('shows the transfer account only for a transfer payment method, starting on External', async () => {
     const { wrapper } = mountFields();
     expect(wrapper.find('#x-transfer-account').exists()).toBe(false);
 
@@ -184,6 +204,7 @@ describe('OperationFields', () => {
 
     const transfer = wrapper.get('#x-transfer-account');
     expect(optionLabels(transfer)).toEqual(['External account', 'Savings']);
+    expect(selectedLabel(transfer)).toBe('External account');
     wrapper.unmount();
   });
 

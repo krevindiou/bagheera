@@ -6,7 +6,7 @@ import {
   type EntryType,
 } from '@bagheera/reference-data';
 import { AMOUNT_CEILING } from '@bagheera/money';
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, type Ref } from 'vue';
 import { useField } from 'vee-validate';
 import { useI18n } from 'vue-i18n';
 import CategorySelect from '../../components/CategorySelect.vue';
@@ -55,6 +55,20 @@ const { value: paymentMethodId, errorMessage: paymentMethodError } = useField<st
   'paymentMethodId',
 );
 const { value: transferAccountId } = useField<string | undefined>('transferAccountId');
+// An unset id is undefined in the form (the schema parses '' into it, even
+// in initial values), which matches no option and leaves a select blank:
+// bind it as '' so the empty-valued placeholder option shows instead.
+function selectModel(field: Ref<string | undefined>) {
+  return computed({
+    get: () => field.value ?? '',
+    set: (value: string) => {
+      field.value = value;
+    },
+  });
+}
+const categoryModel = selectModel(categoryId);
+const paymentMethodModel = selectModel(paymentMethodId);
+const transferAccountModel = selectModel(transferAccountId);
 const { value: valueDate, errorMessage: valueDateError } = useField<string>('valueDate');
 const { value: notes } = useField<string | undefined>('notes');
 const { value: reconciled } = useField<boolean | undefined>('reconciled');
@@ -146,7 +160,7 @@ function onThirdPartyChange() {
     <FormField class="flex-grow-1" :label="$t('operations.category')" :for="`${idPrefix}-category`">
       <CategorySelect
         :id="`${idPrefix}-category`"
-        v-model="categoryId"
+        v-model="categoryModel"
         :groups="groupedCategories"
         :all-categories="categories"
         :empty-label="$t('operations.noCategory')"
@@ -161,7 +175,7 @@ function onThirdPartyChange() {
     >
       <select
         :id="`${idPrefix}-payment-method`"
-        v-model="paymentMethodId"
+        v-model="paymentMethodModel"
         class="form-select"
         :class="{ 'is-invalid': paymentMethodError }"
       >
@@ -179,7 +193,7 @@ function onThirdPartyChange() {
     :label="$t('operations.transferAccount')"
     :for="`${idPrefix}-transfer-account`"
   >
-    <select :id="`${idPrefix}-transfer-account`" v-model="transferAccountId" class="form-select">
+    <select :id="`${idPrefix}-transfer-account`" v-model="transferAccountModel" class="form-select">
       <option value="">{{ $t('operations.externalAccount') }}</option>
       <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
     </select>

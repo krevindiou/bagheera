@@ -191,7 +191,10 @@ describe('OperationForm', () => {
     });
     expect((wrapper.find('#operation-type-credit').element as HTMLInputElement).checked).toBe(true);
     expect((wrapper.find('#operation-amount').element as HTMLInputElement).value).toBe('125');
-    expect((wrapper.find('#operation-category').element as HTMLSelectElement).value).toBe('');
+    // Selected, not just empty-valued: a select matching no option reads '' too.
+    expect((wrapper.find('#operation-category').element as HTMLSelectElement).selectedIndex).toBe(
+      0,
+    );
   });
 
   it('updates an operation via PATCH and emits saved', async () => {
