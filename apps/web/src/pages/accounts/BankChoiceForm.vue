@@ -60,7 +60,11 @@ const onSubmit = handleSubmit(async (values) => {
     @submit="onSubmit"
     @close="emit('cancel')"
   >
-    <FormField :label="$t('accounts.existingBank')" for="account-bank-id">
+    <FormField
+      v-if="props.banks.length > 0"
+      :label="$t('accounts.existingBank')"
+      for="account-bank-id"
+    >
       <select
         id="account-bank-id"
         v-model="bankId"
@@ -77,7 +81,7 @@ const onSubmit = handleSubmit(async (values) => {
     </FormField>
 
     <FormField
-      :label="$t('accounts.newBankName')"
+      :label="props.banks.length > 0 ? $t('accounts.newBankName') : $t('accounts.bankNameLabel')"
       for="account-bank-name"
       :error="
         errors.bankName === 'tooLong'
@@ -89,6 +93,7 @@ const onSubmit = handleSubmit(async (values) => {
         id="account-bank-name"
         v-model="bankName"
         v-bind="bankNameAttrs"
+        v-autofocus="props.banks.length === 0"
         type="text"
         :maxlength="FIELD_LIMITS.BANK_NAME"
         class="form-control"

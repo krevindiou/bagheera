@@ -112,4 +112,18 @@ describe('BankChoiceForm', () => {
     await wrapper.find('button.btn-outline-secondary').trigger('click');
     expect(wrapper.emitted('cancel')).toHaveLength(1);
   });
+
+  it('skips the existing-bank select and labels the name input plainly when there are no banks yet', async () => {
+    const wrapper = mount(BankChoiceForm, {
+      ...withGlobalPlugins(),
+      props: { banks: [] },
+      attachTo: document.body,
+    });
+
+    expect(wrapper.find('#account-bank-id').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Use an existing bank');
+    expect(wrapper.text()).toContain('Bank name');
+    expect(wrapper.text()).not.toContain('Or create a new bank');
+    expect(document.activeElement).toBe(wrapper.find('#account-bank-name').element);
+  });
 });

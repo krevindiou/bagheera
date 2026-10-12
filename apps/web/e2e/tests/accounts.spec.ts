@@ -15,7 +15,7 @@ test('create a bank and an account, then edit the bank and close the account', a
   await expect(page.getByText(en.accounts.empty)).toBeVisible();
 
   await page.getByRole('button', { name: en.accounts.addAccount, exact: true }).click();
-  await page.getByLabel(en.accounts.newBankName, { exact: true }).fill(bankName);
+  await page.getByLabel(en.accounts.bankNameLabel, { exact: true }).fill(bankName);
   await page.getByRole('button', { name: en.accounts.next, exact: true }).click();
   await expect(alertWithText(page, en.accounts.bankSaved)).toBeVisible();
 
