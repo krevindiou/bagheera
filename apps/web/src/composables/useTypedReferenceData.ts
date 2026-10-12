@@ -9,7 +9,9 @@ import { groupCategories, type Category, type PaymentMethod } from '../domain/re
  * offers it) keeps every non-system choice instead of filtering.
  *
  * `clearOnMismatch` clears a form's single selections that a type switch
- * invalidates; the search panel omits it and filters its own arrays.
+ * invalidates; the search panel omits it and filters its own arrays. A
+ * mismatching value is cleared through its setter without validating, so a
+ * type switch never shows a "required" error before a submit.
  */
 export function useTypedReferenceData(
   type: Ref<EntryType | undefined>,
@@ -17,7 +19,9 @@ export function useTypedReferenceData(
   paymentMethods: () => PaymentMethod[],
   clearOnMismatch?: {
     categoryId: Ref<string | undefined>;
+    setCategoryId: (value: string | undefined, shouldValidate: boolean) => void;
     paymentMethodId: Ref<string | undefined>;
+    setPaymentMethodId: (value: string | undefined, shouldValidate: boolean) => void;
   },
 ) {
   const filteredCategories = computed(() =>
@@ -31,13 +35,19 @@ export function useTypedReferenceData(
   );
 
   if (clearOnMismatch) {
-    const { categoryId, paymentMethodId } = clearOnMismatch;
+    const { categoryId, setCategoryId, paymentMethodId, setPaymentMethodId } = clearOnMismatch;
     watch(type, () => {
-      if (!filteredCategories.value.some((c) => c.id === categoryId.value)) {
-        categoryId.value = undefined;
+      if (
+        categoryId.value !== undefined &&
+        !filteredCategories.value.some((c) => c.id === categoryId.value)
+      ) {
+        setCategoryId(undefined, false);
       }
-      if (!filteredPaymentMethods.value.some((pm) => pm.id === paymentMethodId.value)) {
-        paymentMethodId.value = undefined;
+      if (
+        paymentMethodId.value !== undefined &&
+        !filteredPaymentMethods.value.some((pm) => pm.id === paymentMethodId.value)
+      ) {
+        setPaymentMethodId(undefined, false);
       }
     });
   }

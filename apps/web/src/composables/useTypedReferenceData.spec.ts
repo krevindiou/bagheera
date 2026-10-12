@@ -1,6 +1,6 @@
 import type { EntryType } from '@bagheera/reference-data';
 import { nextTick, ref } from 'vue';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { Category, PaymentMethod } from '../domain/referenceData';
 import { useTypedReferenceData } from './useTypedReferenceData';
 
@@ -72,45 +72,76 @@ describe('useTypedReferenceData', () => {
   });
 
   describe('clearOnMismatch', () => {
-    it('clears a selected categoryId/paymentMethodId once the type switch invalidates them', async () => {
+    // setCategoryId/setPaymentMethodId stand in for vee-validate's
+    // setValue: the composable must call them (with shouldValidate: false)
+    // rather than assigning the refs directly, since a direct assignment
+    // would run vee-validate's own validation on the field.
+    function mismatchRefs(
+      categoryValue: string | undefined,
+      paymentMethodValue: string | undefined,
+    ) {
+      const categoryId = ref<string | undefined>(categoryValue);
+      const paymentMethodId = ref<string | undefined>(paymentMethodValue);
+      const setCategoryId = vi.fn((value: string | undefined) => {
+        categoryId.value = value;
+      });
+      const setPaymentMethodId = vi.fn((value: string | undefined) => {
+        paymentMethodId.value = value;
+      });
+      return { categoryId, setCategoryId, paymentMethodId, setPaymentMethodId };
+    }
+
+    it('clears a selected categoryId/paymentMethodId once the type switch invalidates them, without validating', async () => {
       const type = ref<EntryType>('debit');
-      const categoryId = ref<string | undefined>('c1');
-      const paymentMethodId = ref<string>('p1');
+      const refs = mismatchRefs('c1', 'p1');
       useTypedReferenceData(
         type,
         () => categories,
         () => paymentMethods,
-        {
-          categoryId,
-          paymentMethodId,
-        },
+        refs,
       );
 
       type.value = 'credit';
       await nextTick();
 
-      expect(categoryId.value).toBeUndefined();
-      expect(paymentMethodId.value).toBeUndefined();
+      expect(refs.categoryId.value).toBeUndefined();
+      expect(refs.paymentMethodId.value).toBeUndefined();
+      expect(refs.setCategoryId).toHaveBeenCalledWith(undefined, false);
+      expect(refs.setPaymentMethodId).toHaveBeenCalledWith(undefined, false);
     });
 
-    it('leaves an already-empty categoryId alone', async () => {
+    it('leaves an already-empty categoryId alone, without calling its setter', async () => {
       const type = ref<EntryType>('debit');
-      const categoryId = ref<string | undefined>(undefined);
-      const paymentMethodId = ref<string>('p1');
+      const refs = mismatchRefs(undefined, 'p1');
       useTypedReferenceData(
         type,
         () => categories,
         () => paymentMethods,
-        {
-          categoryId,
-          paymentMethodId,
-        },
+        refs,
       );
 
       type.value = 'credit';
       await nextTick();
 
-      expect(categoryId.value).toBeUndefined();
+      expect(refs.categoryId.value).toBeUndefined();
+      expect(refs.setCategoryId).not.toHaveBeenCalled();
+    });
+
+    it('leaves a still-matching value alone (type switches to "any" offers every category)', async () => {
+      const type = ref<EntryType | undefined>('debit');
+      const refs = mismatchRefs('c1', 'p1');
+      useTypedReferenceData(
+        type,
+        () => categories,
+        () => paymentMethods,
+        refs,
+      );
+
+      type.value = undefined;
+      await nextTick();
+
+      expect(refs.categoryId.value).toBe('c1');
+      expect(refs.setCategoryId).not.toHaveBeenCalled();
     });
   });
 });

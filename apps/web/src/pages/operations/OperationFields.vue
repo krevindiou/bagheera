@@ -50,10 +50,12 @@ const { value: thirdParty, errorMessage: thirdPartyError } = useField<string | u
 const { value: amount, errorMessage: amountError } = useField<number | string | undefined>(
   'amount',
 );
-const { value: categoryId } = useField<string | undefined>('categoryId');
-const { value: paymentMethodId, errorMessage: paymentMethodError } = useField<string | undefined>(
-  'paymentMethodId',
-);
+const { value: categoryId, setValue: setCategoryId } = useField<string | undefined>('categoryId');
+const {
+  value: paymentMethodId,
+  errorMessage: paymentMethodError,
+  setValue: setPaymentMethodId,
+} = useField<string | undefined>('paymentMethodId');
 const { value: transferAccountId } = useField<string | undefined>('transferAccountId');
 // An unset id is undefined in the form (the schema parses '' into it, even
 // in initial values), which matches no option and leaves a select blank:
@@ -77,7 +79,7 @@ const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   type,
   () => props.categories,
   () => props.paymentMethods,
-  { categoryId, paymentMethodId },
+  { categoryId, setCategoryId, paymentMethodId, setPaymentMethodId },
 );
 const { transferTargets, amountCurrencySymbol } = useTransferTargets(
   () => props.accountId,

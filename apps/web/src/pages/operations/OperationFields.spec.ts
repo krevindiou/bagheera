@@ -196,6 +196,22 @@ describe('OperationFields', () => {
     wrapper.unmount();
   });
 
+  it('switching type on a blank form shows no premature error, but submitting still requires payment method', async () => {
+    const { wrapper, form } = mountFields();
+
+    await wrapper.get('#x-type-credit').setValue(true);
+    await flushPromises();
+
+    expect(wrapper.find('.invalid-feedback').exists()).toBe(false);
+    expect(wrapper.get('#x-payment-method').classes()).not.toContain('is-invalid');
+
+    await form().validate();
+    await flushPromises();
+
+    expect(wrapper.get('#x-payment-method').classes()).toContain('is-invalid');
+    wrapper.unmount();
+  });
+
   it('shows the transfer account only for a transfer payment method, starting on External', async () => {
     const { wrapper } = mountFields();
     expect(wrapper.find('#x-transfer-account').exists()).toBe(false);
