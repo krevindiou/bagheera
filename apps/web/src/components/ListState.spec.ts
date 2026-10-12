@@ -3,11 +3,12 @@ import { mount } from '@vue/test-utils';
 import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import ListState from './ListState.vue';
 
-function mountState(props: { error?: boolean; empty?: boolean }) {
+function mountState(props: { error?: boolean; loading?: boolean; empty?: boolean }) {
   return mount(ListState, {
     ...withGlobalPlugins(),
     props: {
       error: false,
+      loading: false,
       empty: false,
       emptyText: 'Nothing here',
       errorTestid: 'x-error',
@@ -47,5 +48,20 @@ describe('ListState', () => {
 
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(wrapper.find('p').exists()).toBe(false);
+  });
+
+  it('renders a loading status instead of the empty text while loading', () => {
+    const wrapper = mountState({ loading: true, empty: true });
+
+    const status = wrapper.get('[role="status"]');
+    expect(status.text()).toBe('Loading…');
+    expect(wrapper.find('[data-testid="content"]').exists()).toBe(false);
+  });
+
+  it('shows the error rather than the loading status when both apply', () => {
+    const wrapper = mountState({ error: true, loading: true });
+
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true);
+    expect(wrapper.find('[role="status"]').exists()).toBe(false);
   });
 });

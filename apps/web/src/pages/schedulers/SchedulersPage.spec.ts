@@ -169,6 +169,33 @@ describe('SchedulersPage', () => {
     expect(wrapper.text()).not.toContain('No scheduled operations yet.');
   });
 
+  it('shows a loading status instead of the empty state while schedulers are still loading', async () => {
+    let resolveSchedulers!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+      if (path === '/schedulers') return new Promise((resolve) => (resolveSchedulers = resolve));
+      if (path === '/accounts') return ok([account]);
+      if (path === '/banks') return ok([bank]);
+      if (path === '/reference-data/categories') return ok([category]);
+      if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+      return ok(undefined);
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.get('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.text()).not.toContain('No scheduled operations yet.');
+
+    resolveSchedulers({
+      data: { items: [], total: 0, page: 1, pageSize: 20 },
+      error: undefined,
+      response: new Response(),
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('No scheduled operations yet.');
+  });
+
   it('lists schedulers with an active/paused dot and signed, formatted amounts', async () => {
     mockGet({
       schedulers: {

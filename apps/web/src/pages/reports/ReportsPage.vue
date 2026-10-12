@@ -30,6 +30,7 @@ const reportsQuery = useQuery({
 });
 const reports = computed(() => reportsQuery.data.value ?? []);
 const reportsError = computed(() => reportsQuery.isError.value);
+const reportsPending = computed(() => reportsQuery.isPending.value);
 
 const { accounts } = useAccountsQuery();
 const { categories } = useCategoriesQuery();
@@ -163,6 +164,7 @@ function toggleView(report: Report) {
 
     <ListState
       :error="reportsError"
+      :loading="reportsPending"
       :empty="reports.length === 0"
       :empty-text="$t('reports.empty')"
       error-testid="reports-error"

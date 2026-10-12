@@ -49,6 +49,7 @@ const {
   page,
   list,
   isError: operationsError,
+  isPending: operationsPending,
   isActive: hasActiveSearch,
   panelOpen: showSearch,
   criteria: recalledCriteria,
@@ -204,7 +205,7 @@ function isEditable(operation: Operation): boolean {
     </div>
 
     <p
-      v-if="isFullyActive && list.items.length === 0 && !hasActiveSearch"
+      v-if="isFullyActive && !operationsPending && list.items.length === 0 && !hasActiveSearch"
       class="text-muted mb-3"
       data-testid="onboarding-tip"
     >
@@ -255,6 +256,7 @@ function isEditable(operation: Operation): boolean {
 
       <ListState
         :error="operationsError"
+        :loading="operationsPending"
         :empty="list.items.length === 0"
         :empty-text="$t('operations.empty')"
         error-testid="operations-error"

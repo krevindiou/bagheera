@@ -11,6 +11,7 @@ export default {
     close: 'Fermer',
     or: 'ou',
     loadError: 'Impossible de charger ces données. Veuillez réessayer.',
+    loading: 'Chargement…',
     pager: {
       label: 'Pagination',
       previous: 'Précédent',

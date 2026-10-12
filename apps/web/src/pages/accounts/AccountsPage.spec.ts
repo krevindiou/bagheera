@@ -90,6 +90,26 @@ describe('AccountsPage', () => {
     expect(wrapper.find('button.btn-primary').text()).toBe('New account');
   });
 
+  it('shows a loading status instead of the empty state while banks are still loading', async () => {
+    let resolveBanks!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/banks') return new Promise((resolve) => (resolveBanks = resolve));
+      if (path === '/accounts') return { data: [], error: undefined, response: new Response() };
+      return { data: undefined, error: undefined, response: new Response() };
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.get('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.text()).not.toContain("You don't have any bank yet.");
+
+    resolveBanks({ data: [], error: undefined, response: new Response() });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("You don't have any bank yet.");
+  });
+
   it('lists banks and accounts, with closed badges and a no-accounts message', async () => {
     mockData(
       [bank('b1', 'Chase'), bank('b2', 'Old Bank', true)],

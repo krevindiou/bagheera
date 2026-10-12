@@ -51,6 +51,7 @@ export function useOperationSearch(accountId: Ref<string>) {
 
   const list = computed(() => query.data.value ?? EMPTY_PAGE);
   const isError = computed(() => query.isError.value);
+  const isPending = computed(() => query.isPending.value);
   const isActive = computed(() => query.data.value?.active ?? false);
 
   watch(
@@ -112,6 +113,7 @@ export function useOperationSearch(accountId: Ref<string>) {
     page,
     list,
     isError,
+    isPending,
     isActive,
     panelOpen,
     criteria,

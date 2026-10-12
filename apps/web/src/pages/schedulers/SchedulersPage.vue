@@ -65,6 +65,7 @@ const list = computed(
   () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: PAGE_SIZE },
 );
 const isError = computed(() => schedulersQuery.isError.value);
+const isPending = computed(() => schedulersQuery.isPending.value);
 watch(
   () => schedulersQuery.data.value,
   () => {
@@ -136,6 +137,7 @@ async function onSaved() {
 
     <ListState
       :error="isError"
+      :loading="isPending"
       :empty="list.items.length === 0"
       :empty-text="$t('schedulers.empty')"
       error-testid="schedulers-error"

@@ -117,6 +117,26 @@ describe('PasskeysPage', () => {
     expect(wrapper.text()).not.toContain("You don't have any passkey yet.");
   });
 
+  it('shows a loading status instead of the empty state while passkeys are still loading', async () => {
+    let resolveCredentials!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/webauthn/credentials') {
+        return new Promise((resolve) => (resolveCredentials = resolve));
+      }
+      return jsonResult(200, undefined);
+    });
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    expect(wrapper.get('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.text()).not.toContain("You don't have any passkey yet.");
+
+    resolveCredentials(jsonResult(200, []));
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("You don't have any passkey yet.");
+  });
+
   it('lists passkeys, falling back for an unnamed device and a never-used one', async () => {
     mockCredentials([
       { id: 'p1', deviceName: 'MacBook', createdAt: '2026-01-01', lastUsedAt: '2026-01-15' },

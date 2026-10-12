@@ -213,6 +213,35 @@ describe('OperationsPage', () => {
     expect(wrapper.find('table').exists()).toBe(false);
   });
 
+  it('shows a loading status instead of the empty state and onboarding tip while operations are still loading', async () => {
+    let resolveOperations!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+      if (path === '/operations') return new Promise((resolve) => (resolveOperations = resolve));
+      if (path === '/accounts') return ok([account]);
+      if (path === '/banks') return ok([bank]);
+      if (path === '/reference-data/categories') return ok([category]);
+      if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+      return ok(undefined);
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.get('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.text()).not.toContain('No operations yet.');
+    expect(wrapper.find('[data-testid="onboarding-tip"]').exists()).toBe(false);
+
+    resolveOperations({
+      data: { items: [], total: 0, page: 1, pageSize: 20 },
+      error: undefined,
+      response: new Response(),
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('No operations yet.');
+    expect(wrapper.find('[data-testid="onboarding-tip"]').exists()).toBe(true);
+  });
+
   it('lists operations with reconciled/scheduler icons and signed, formatted amounts', async () => {
     mockGet({
       operations: {

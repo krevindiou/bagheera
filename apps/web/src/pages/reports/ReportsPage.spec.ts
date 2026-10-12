@@ -122,6 +122,24 @@ describe('ReportsPage', () => {
     expect(wrapper.text()).not.toContain('No reports yet.');
   });
 
+  it('shows a loading status instead of the empty state while reports are still loading', async () => {
+    let resolveReports!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/reports') return new Promise((resolve) => (resolveReports = resolve));
+      return { data: accounts, error: undefined, response: new Response() };
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.get('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.text()).not.toContain('No reports yet.');
+
+    resolveReports({ data: [], error: undefined, response: new Response() });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('No reports yet.');
+  });
+
   it('lists reports with a type badge and a homepage badge when applicable', async () => {
     mockGet([
       report({ id: 'r1', type: 'sum', title: 'Rent' }),

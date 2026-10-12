@@ -27,6 +27,7 @@ const queryClient = useQueryClient();
 
 const { banks, banksQuery } = useBanksQuery();
 const { accounts } = useAccountsQuery();
+const banksPending = computed(() => banksQuery.isPending.value);
 
 async function reload() {
   await Promise.all([
@@ -182,7 +183,8 @@ function onAccountCreated(accountId: string) {
       </button>
     </div>
 
-    <p v-if="banks.length === 0" class="text-muted">{{ $t('accounts.empty') }}</p>
+    <p v-if="banksPending" role="status" class="text-muted">{{ $t('common.loading') }}</p>
+    <p v-else-if="banks.length === 0" class="text-muted">{{ $t('accounts.empty') }}</p>
 
     <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
       <div class="d-flex align-items-center gap-2 mb-2">

@@ -12,6 +12,7 @@ export default {
     close: 'Close',
     or: 'or',
     loadError: "Couldn't load this. Please try again.",
+    loading: 'Loading…',
     pager: {
       label: 'Pagination',
       previous: 'Previous',

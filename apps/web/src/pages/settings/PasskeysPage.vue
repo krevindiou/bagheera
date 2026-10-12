@@ -28,6 +28,7 @@ const credentialsQuery = useQuery({
 });
 const credentials = computed(() => credentialsQuery.data.value ?? []);
 const credentialsError = computed(() => credentialsQuery.isError.value);
+const credentialsPending = computed(() => credentialsQuery.isPending.value);
 
 async function reload() {
   await queryClient.invalidateQueries({ queryKey: queryKeys.webauthnCredentials });
@@ -123,6 +124,7 @@ async function removePasskey(id: string) {
 
       <ListState
         :error="credentialsError"
+        :loading="credentialsPending"
         :empty="credentials.length === 0"
         :empty-text="$t('settings.passkeys.empty')"
         error-testid="passkeys-error"
