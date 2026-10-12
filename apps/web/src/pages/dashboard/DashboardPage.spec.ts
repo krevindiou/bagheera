@@ -68,7 +68,7 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="total-balance"]').exists()).toBe(false);
   });
 
-  it('shows the no-account onboarding tip without hiding the rest', async () => {
+  it('shows the no-account onboarding tip and hides everything else', async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
         onboarding: 'no-account',
@@ -78,7 +78,8 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="onboarding-tip"]').text()).toContain(
       'Now, create an account.',
     );
-    expect(wrapper.find('[data-testid="total-balance"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="total-balance"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('No accounts yet.');
   });
 
   it('shows the total balance per currency, white when positive and red when negative', async () => {

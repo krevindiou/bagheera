@@ -76,7 +76,7 @@ const accountTiles = computed(() =>
       }}</router-link>
     </div>
 
-    <template v-if="dashboard.onboarding !== 'no-bank'">
+    <template v-if="!dashboard.onboarding">
       <section class="mb-4">
         <p v-if="dashboard.totalBalances.length === 0" class="text-muted">
           {{ $t('dashboard.noBalances') }}
