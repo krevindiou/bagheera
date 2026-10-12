@@ -131,6 +131,15 @@ function selectRowLabel(operation: Operation): string {
   return t('common.selectRow', { name });
 }
 
+// Names the row's Edit button for its own operation, so a screen reader
+// doesn't hear a run of identical "Edit" buttons.
+function operationActionLabel(action: string, operation: Operation): string {
+  return t('common.actionOn', {
+    action,
+    name: thirdPartyLabel(operation.thirdParty, operation.paymentMethodId),
+  });
+}
+
 function startCreate() {
   editingOperation.value = null;
   showForm.value = true;
@@ -331,6 +340,7 @@ function isEditable(operation: Operation): boolean {
                     v-if="isEditable(operation)"
                     icon="edit"
                     :label="$t('operations.edit')"
+                    :aria-label="operationActionLabel($t('operations.edit'), operation)"
                     @click="startEdit(operation)"
                   />
                 </td>

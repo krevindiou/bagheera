@@ -35,9 +35,10 @@ test('create a bank and an account, then edit the bank and close the account', a
   const bankRow = page.getByTestId('bank-row').filter({ hasText: bankName });
   await expect(bankRow.getByText(accountName)).toBeVisible();
 
-  // .first() is the bank's "Edit" (it precedes its accounts in the DOM);
-  // editing opens a drawer.
-  await bankRow.getByRole('button', { name: en.accounts.edit, exact: true }).first().click();
+  // .first() is the bank's "Edit <bank name>" (it precedes its accounts in
+  // the DOM, and its contextual name differs from the account's own Edit
+  // button); editing opens a drawer.
+  await bankRow.getByRole('button', { name: en.accounts.edit, exact: false }).first().click();
   const editBankDrawer = page.locator('.drawer-backdrop');
   await editBankDrawer.getByLabel(en.accounts.bankNameLabel, { exact: true }).fill(renamedBankName);
   await editBankDrawer.getByRole('button', { name: en.accounts.submit, exact: true }).click();
@@ -45,7 +46,7 @@ test('create a bank and an account, then edit the bank and close the account', a
   await expect(page.getByTestId('bank-row').filter({ hasText: renamedBankName })).toBeVisible();
 
   const accountRow = page.getByTestId('account-row').filter({ hasText: accountName });
-  await accountRow.getByRole('button', { name: en.accounts.close, exact: true }).click();
+  await accountRow.getByRole('button', { name: en.accounts.close, exact: false }).click();
   await confirmDialog(page).getByRole('button', { name: en.accounts.close, exact: true }).click();
   await expect(alertWithText(page, en.accounts.accountClosed)).toBeVisible();
 

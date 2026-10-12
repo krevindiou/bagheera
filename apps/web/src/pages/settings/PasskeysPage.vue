@@ -95,6 +95,15 @@ async function removePasskey(credential: Credential) {
   toast(t('settings.passkeys.removed'), 'success');
   await reload();
 }
+
+// Names the row's Remove button for its own passkey, so a screen reader
+// doesn't hear a run of identical "Remove" buttons.
+function passkeyActionLabel(action: string, credential: Credential): string {
+  return t('common.actionOn', {
+    action,
+    name: credential.deviceName || t('settings.passkeys.unnamed'),
+  });
+}
 </script>
 
 <template>
@@ -165,6 +174,7 @@ async function removePasskey(credential: Credential) {
                     danger
                     :disabled="onlyPasskeyLeft"
                     :label="$t('settings.passkeys.remove')"
+                    :aria-label="passkeyActionLabel($t('settings.passkeys.remove'), credential)"
                     @click="removePasskey(credential)"
                   />
                 </td>

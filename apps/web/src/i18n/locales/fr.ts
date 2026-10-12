@@ -13,6 +13,7 @@ export default {
     loadError: 'Impossible de charger ces données. Veuillez réessayer.',
     loading: 'Chargement…',
     selectRow: 'Sélectionner {name}',
+    actionOn: '{action} {name}',
     pager: {
       label: 'Pagination',
       previous: 'Précédent',

@@ -29,9 +29,11 @@ test('register a second passkey, sign in with it, then remove it', async ({ sign
   await expect(page.getByText(email, { exact: true })).toBeVisible();
 
   await page.goto('/en/settings/passkeys');
+  // The row's Remove button now carries a contextual accessible name (e.g.
+  // "Remove E2E test device"), so match on the action, not the full name.
   await page
     .getByRole('row', { name: 'E2E test device' })
-    .getByRole('button', { name: en.settings.passkeys.remove, exact: true })
+    .getByRole('button', { name: en.settings.passkeys.remove, exact: false })
     .click();
   await confirmDialog(page)
     .getByRole('button', { name: en.settings.passkeys.remove, exact: true })
@@ -46,7 +48,9 @@ test('blocks removing the last remaining passkey', async ({ signedInMember }) =>
   const { page } = signedInMember;
 
   await page.goto('/en/settings/passkeys');
-  const remove = page.getByRole('button', { name: en.settings.passkeys.remove, exact: true });
+  // Contextual accessible name (e.g. "Remove Unnamed passkey"); match on the
+  // action, not the full name.
+  const remove = page.getByRole('button', { name: en.settings.passkeys.remove, exact: false });
   await expect(remove).toHaveCount(1);
   await expect(remove).toBeDisabled();
   await expect(page.getByText(en.settings.passkeys.onlyPasskeyHint)).toBeVisible();

@@ -14,8 +14,10 @@ test('create a sum report, view its chart, then batch-delete it', async ({ accou
   const row = page.getByTestId('report-row').filter({ hasText: title });
   await expect(row.getByText(en.reports.sum)).toBeVisible();
 
-  await row.getByRole('button', { name: en.reports.viewChart, exact: true }).click();
-  await expect(row.getByRole('button', { name: en.reports.hideChart, exact: true })).toBeVisible();
+  // The row's buttons now carry contextual accessible names (e.g. "View
+  // chart E2E test report"), so match on the action, not the full name.
+  await row.getByRole('button', { name: en.reports.viewChart, exact: false }).click();
+  await expect(row.getByRole('button', { name: en.reports.hideChart, exact: false })).toBeVisible();
 
   await row.getByTestId('report-checkbox').check();
   await page.getByRole('button', { name: en.reports.batch.delete, exact: true }).click();
@@ -35,7 +37,7 @@ test('deletes a single report via its own row action', async ({ accountWithBank 
   await expect(alertWithText(page, en.reports.saved)).toBeVisible();
 
   const row = page.getByTestId('report-row').filter({ hasText: title });
-  await row.getByRole('button', { name: en.accounts.delete, exact: true }).click();
+  await row.getByRole('button', { name: en.accounts.delete, exact: false }).click();
   await confirmDialog(page).getByRole('button', { name: en.common.delete, exact: true }).click();
   await expect(alertWithText(page, en.reports.deleted)).toBeVisible();
   await expect(page.getByTestId('report-row').filter({ hasText: title })).toHaveCount(0);

@@ -2,11 +2,14 @@
 import AppIcon from './AppIcon.vue';
 import type { IconName } from './appIcons';
 
-// Icon-only row action button; `label` is its aria-label and title.
+// Icon-only row action button; `label` is its title (and aria-label by
+// default). Pass `ariaLabel` to name the row it acts on, so a screen reader
+// user tabbing through a list of rows hears which one each button targets.
 
 defineProps<{
   icon: IconName;
   label: string;
+  ariaLabel?: string;
   danger?: boolean;
   disabled?: boolean;
 }>();
@@ -19,7 +22,7 @@ defineProps<{
     :class="danger ? 'btn-outline-danger' : 'btn-outline-secondary'"
     :disabled="disabled"
     :title="label"
-    :aria-label="label"
+    :aria-label="ariaLabel ?? label"
   >
     <AppIcon :name="icon" />
   </button>

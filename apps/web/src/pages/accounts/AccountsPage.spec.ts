@@ -150,6 +150,29 @@ describe('AccountsPage', () => {
     expect(rows[1].text()).toContain('No account');
   });
 
+  it('names each row action button for its own bank/account, not just the action', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking')]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    // Scoped to the bank's own header row: "bank-row" also wraps its
+    // nested "account-row", which carries its own 3 buttons.
+    const bankButtons = wrapper.findAll('[data-testid="bank-row"] .ms-auto button');
+    expect(bankButtons.map((b) => b.attributes('aria-label'))).toEqual([
+      'Edit Chase',
+      'Close Chase',
+      'Delete Chase',
+    ]);
+
+    const accountButtons = wrapper.findAll('[data-testid="account-row"] button');
+    expect(accountButtons.map((b) => b.attributes('aria-label'))).toEqual([
+      'Edit Checking',
+      'Close Checking',
+      'Delete Checking',
+    ]);
+  });
+
   it("shows each account's balance", async () => {
     mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking', 'USD', false, false, 1200.4)]);
     await router.push({ name: 'accounts' });

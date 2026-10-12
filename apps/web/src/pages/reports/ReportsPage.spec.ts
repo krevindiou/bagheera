@@ -156,6 +156,19 @@ describe('ReportsPage', () => {
     expect(rows[1].find('.pill-violet').exists()).toBe(true);
   });
 
+  it('names each row action button for its own report, not just the action', async () => {
+    mockGet([report({ id: 'r1', title: 'Rent' })]);
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const buttons = wrapper.findAll('[data-testid="report-row"] button');
+    expect(buttons.map((b) => b.attributes('aria-label'))).toEqual([
+      'View chart Rent',
+      'Edit Rent',
+      'Delete Rent',
+    ]);
+  });
+
   it('toggles the chart when View chart is clicked, showing debit and credit as separate series', async () => {
     mockGet([report()], {
       hidden: false,
@@ -178,7 +191,7 @@ describe('ReportsPage', () => {
       wrapper!.find('[data-testid="report-row"] button.btn-outline-secondary');
     await rowButton().trigger('click');
     await flushPromises();
-    expect(rowButton().attributes('aria-label')).toBe('Hide chart');
+    expect(rowButton().attributes('aria-label')).toBe('Hide chart Rent');
     expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
     const usdColor = colorForCurrency('USD');
     expect(wrapper.findComponent(SynthesisChart).props('series')).toEqual([
@@ -192,7 +205,7 @@ describe('ReportsPage', () => {
     ]);
 
     await rowButton().trigger('click');
-    expect(rowButton().attributes('aria-label')).toBe('View chart');
+    expect(rowButton().attributes('aria-label')).toBe('View chart Rent');
   });
 
   it('toggles the chart by clicking the row itself', async () => {
@@ -202,7 +215,7 @@ describe('ReportsPage', () => {
 
     await wrapper.find('[data-testid="report-row"]').trigger('click');
     const rowButton = wrapper.find('[data-testid="report-row"] button.btn-outline-secondary');
-    expect(rowButton.attributes('aria-label')).toBe('Hide chart');
+    expect(rowButton.attributes('aria-label')).toBe('Hide chart Rent');
   });
 
   it('shows a no-data message when the viewed report matches no operations', async () => {

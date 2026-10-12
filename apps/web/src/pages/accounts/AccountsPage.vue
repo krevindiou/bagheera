@@ -89,6 +89,15 @@ function accountsForBank(bankId: string) {
 
 const activeBanks = computed(() => banks.value.filter((bank) => !bank.closed && !bank.deleted));
 
+// Names each row action button for its own bank/account, so a screen reader
+// doesn't hear a run of identical "Edit"/"Close"/"Delete" buttons.
+function bankActionLabel(action: string, bank: Bank): string {
+  return t('common.actionOn', { action, name: bank.name });
+}
+function accountActionLabel(action: string, account: Account): string {
+  return t('common.actionOn', { action, name: account.name });
+}
+
 // -- Edit bank name --
 function startEditBank(bank: Bank) {
   editingBankId.value = bank.id;
@@ -223,12 +232,14 @@ function onAccountCreated(accountId: string) {
               v-if="!bank.closed && !bank.deleted"
               icon="edit"
               :label="$t('accounts.edit')"
+              :aria-label="bankActionLabel($t('accounts.edit'), bank)"
               @click="startEditBank(bank)"
             />
             <IconButton
               v-if="!bank.closed && !bank.deleted"
               icon="archive"
               :label="$t('accounts.close')"
+              :aria-label="bankActionLabel($t('accounts.close'), bank)"
               @click="closeBank(bank)"
             />
             <IconButton
@@ -236,6 +247,7 @@ function onAccountCreated(accountId: string) {
               icon="trash"
               danger
               :label="$t('accounts.delete')"
+              :aria-label="bankActionLabel($t('accounts.delete'), bank)"
               @click="deleteBank(bank)"
             />
           </div>
@@ -294,12 +306,14 @@ function onAccountCreated(accountId: string) {
                       v-if="!account.closed && !account.deleted"
                       icon="edit"
                       :label="$t('accounts.edit')"
+                      :aria-label="accountActionLabel($t('accounts.edit'), account)"
                       @click="startEditAccount(account)"
                     />
                     <IconButton
                       v-if="!account.closed && !account.deleted"
                       icon="archive"
                       :label="$t('accounts.close')"
+                      :aria-label="accountActionLabel($t('accounts.close'), account)"
                       @click="closeAccount(account)"
                     />
                     <IconButton
@@ -307,6 +321,7 @@ function onAccountCreated(accountId: string) {
                       icon="trash"
                       danger
                       :label="$t('accounts.delete')"
+                      :aria-label="accountActionLabel($t('accounts.delete'), account)"
                       @click="deleteAccount(account)"
                     />
                   </div>

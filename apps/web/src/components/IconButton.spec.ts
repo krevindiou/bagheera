@@ -37,4 +37,13 @@ describe('IconButton', () => {
     expect(wrapper.attributes('disabled')).toBeDefined();
     expect(wrapper.attributes('aria-label')).toBe('Delete');
   });
+
+  it('uses ariaLabel as the accessible name while keeping label as the tooltip', () => {
+    const wrapper = mount(IconButton, {
+      props: { icon: 'trash', label: 'Delete', ariaLabel: 'Delete Chase' },
+    });
+
+    expect(wrapper.attributes('aria-label')).toBe('Delete Chase');
+    expect(wrapper.attributes('title')).toBe('Delete');
+  });
 });

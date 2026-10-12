@@ -48,7 +48,9 @@ test.describe('operations CRUD', () => {
     const row = page.getByTestId('operation-row').filter({ hasText: 'Grocery Store' });
     await expect(row).toContainText(`-${formatMoney(425_000, currency)}`);
 
-    await row.getByRole('button', { name: en.operations.edit, exact: true }).click();
+    // The row's Edit button now carries a contextual accessible name (e.g.
+    // "Edit Grocery Store"), so match on the action, not the full name.
+    await row.getByRole('button', { name: en.operations.edit, exact: false }).click();
     await page.getByLabel(en.operations.amount, { exact: true }).fill('55');
     await page.getByRole('button', { name: en.operations.submit, exact: true }).click();
     await expect(alertWithText(page, en.operations.saved)).toBeVisible();

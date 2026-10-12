@@ -142,6 +142,12 @@ function toggleView(report: Report) {
 function selectRowLabel(report: Report): string {
   return t('common.selectRow', { name: report.title });
 }
+
+// Names each row action button for its own report, so a screen reader
+// doesn't hear a run of identical "Edit"/"Delete" buttons.
+function reportActionLabel(action: string, report: Report): string {
+  return t('common.actionOn', { action, name: report.title });
+}
 </script>
 
 <template>
@@ -230,17 +236,27 @@ function selectRowLabel(report: Report): string {
                           ? $t('reports.hideChart')
                           : $t('reports.viewChart')
                       "
+                      :aria-label="
+                        reportActionLabel(
+                          viewingReportId === report.id
+                            ? $t('reports.hideChart')
+                            : $t('reports.viewChart'),
+                          report,
+                        )
+                      "
                       @click="toggleView(report)"
                     />
                     <IconButton
                       icon="edit"
                       :label="$t('operations.edit')"
+                      :aria-label="reportActionLabel($t('operations.edit'), report)"
                       @click="startEdit(report)"
                     />
                     <IconButton
                       icon="trash"
                       danger
                       :label="$t('accounts.delete')"
+                      :aria-label="reportActionLabel($t('accounts.delete'), report)"
                       @click="deleteReport(report)"
                     />
                   </div>

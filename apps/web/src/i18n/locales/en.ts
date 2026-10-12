@@ -14,6 +14,7 @@ export default {
     loadError: "Couldn't load this. Please try again.",
     loading: 'Loading…',
     selectRow: 'Select {name}',
+    actionOn: '{action} {name}',
     pager: {
       label: 'Pagination',
       previous: 'Previous',

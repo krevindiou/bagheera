@@ -95,6 +95,12 @@ function selectRowLabel(scheduler: Scheduler): string {
   return t('common.selectRow', { name: scheduler.thirdParty });
 }
 
+// Names the row's Edit button for its own scheduled operation, so a screen
+// reader doesn't hear a run of identical "Edit" buttons.
+function schedulerActionLabel(action: string, scheduler: Scheduler): string {
+  return t('common.actionOn', { action, name: scheduler.thirdParty });
+}
+
 function startCreate() {
   editingScheduler.value = null;
   showForm.value = true;
@@ -202,6 +208,7 @@ async function onSaved() {
                 <IconButton
                   icon="edit"
                   :label="$t('operations.edit')"
+                  :aria-label="schedulerActionLabel($t('operations.edit'), scheduler)"
                   @click="startEdit(scheduler)"
                 />
               </td>
