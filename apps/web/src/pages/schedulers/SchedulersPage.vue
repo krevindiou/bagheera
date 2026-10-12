@@ -160,9 +160,9 @@ async function onSaved() {
               <th></th>
               <th>{{ $t('operations.thirdParty') }}</th>
               <th class="text-end">{{ $t('operations.amount') }}</th>
-              <th>{{ $t('operations.paymentMethod') }}</th>
-              <th>{{ $t('operations.category') }}</th>
-              <th>{{ $t('schedulers.firstOccurrence') }}</th>
+              <th class="d-none d-md-table-cell">{{ $t('operations.paymentMethod') }}</th>
+              <th class="d-none d-md-table-cell">{{ $t('operations.category') }}</th>
+              <th class="d-none d-md-table-cell">{{ $t('schedulers.firstOccurrence') }}</th>
               <th>{{ $t('schedulers.frequencyUnit') }}</th>
               <th></th>
             </tr>
@@ -194,17 +194,24 @@ async function onSaved() {
                 ></span>
               </td>
               <td>{{ scheduler.thirdParty }}</td>
-              <td class="text-end amount" :class="scheduler.debit ? 'text-danger' : 'text-success'">
+              <td
+                class="text-end amount text-nowrap"
+                :class="scheduler.debit ? 'text-danger' : 'text-success'"
+              >
                 {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
               </td>
-              <td>
+              <td class="d-none d-md-table-cell">
                 <PaymentMethodIcon
                   :id="scheduler.paymentMethodId"
                   :payment-methods="paymentMethods"
                 />
               </td>
-              <td>{{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}</td>
-              <td>{{ formatDate(scheduler.valueDate) }}</td>
+              <td class="d-none d-md-table-cell">
+                {{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}
+              </td>
+              <td class="d-none d-md-table-cell text-nowrap">
+                {{ formatDate(scheduler.valueDate) }}
+              </td>
               <td>
                 {{
                   $t('schedulers.everyN', {

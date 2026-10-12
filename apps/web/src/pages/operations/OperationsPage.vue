@@ -301,9 +301,9 @@ function isEditable(operation: Operation): boolean {
                 <th></th>
                 <th>{{ $t('operations.thirdParty') }}</th>
                 <th class="text-end">{{ $t('operations.amount') }}</th>
-                <th>{{ $t('operations.paymentMethod') }}</th>
-                <th>{{ $t('operations.category') }}</th>
-                <th>{{ $t('operations.valueDate') }}</th>
+                <th class="d-none d-md-table-cell">{{ $t('operations.paymentMethod') }}</th>
+                <th class="d-none d-md-table-cell">{{ $t('operations.category') }}</th>
+                <th class="text-nowrap">{{ $t('operations.valueDate') }}</th>
                 <th></th>
               </tr>
             </thead>
@@ -354,19 +354,21 @@ function isEditable(operation: Operation): boolean {
                   </div>
                 </td>
                 <td
-                  class="text-end amount"
+                  class="text-end amount text-nowrap"
                   :class="operation.debit ? 'text-danger' : 'text-success'"
                 >
                   {{ operation.debit ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
-                <td>
+                <td class="d-none d-md-table-cell">
                   <PaymentMethodIcon
                     :id="operation.paymentMethodId"
                     :payment-methods="paymentMethods"
                   />
                 </td>
-                <td>{{ operation.categoryId ? categoryNames.get(operation.categoryId) : '' }}</td>
-                <td>{{ formatDate(operation.valueDate) }}</td>
+                <td class="d-none d-md-table-cell">
+                  {{ operation.categoryId ? categoryNames.get(operation.categoryId) : '' }}
+                </td>
+                <td class="text-nowrap">{{ formatDate(operation.valueDate) }}</td>
                 <td @click.stop>
                   <IconButton
                     v-if="isEditable(operation)"
