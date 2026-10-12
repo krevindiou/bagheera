@@ -48,6 +48,21 @@ describe('SearchPanel', () => {
     expect(options).toEqual(['p1', 'p2']);
   });
 
+  it('groups payment methods under their type when "Any" is picked', async () => {
+    const wrapper = mountPanel();
+    const headings = () =>
+      wrapper.findAll('#search-payment-methods .checkbox-list-group-label').map((h) => h.text());
+    expect(headings()).toEqual(['Debit', 'Credit']);
+    expect(
+      wrapper
+        .findAll('#search-payment-methods [role="group"]')
+        .map((g) => g.attributes('aria-label')),
+    ).toEqual(['Debit', 'Credit']);
+
+    await wrapper.find('#search-type-debit').setValue(true);
+    expect(headings()).toEqual([]);
+  });
+
   it('keeps a selection made under "Any" when switching to its matching type', async () => {
     const wrapper = mountPanel();
     await wrapper.find('#search-categories-c1').setValue(true);

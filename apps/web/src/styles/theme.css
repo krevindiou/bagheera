@@ -282,6 +282,9 @@ input[type='radio'] {
 .checkbox-list-group-label:first-child {
   margin-top: 0;
 }
+.checkbox-list > [role='group'] + [role='group'] {
+  margin-top: 10px;
+}
 
 /* ---------- Pills (Closed/Deleted/Homepage tags) ---------- */
 .pill {

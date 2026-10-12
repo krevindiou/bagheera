@@ -29,6 +29,22 @@ describe('CheckboxList', () => {
     expect(wrapper.find('#accounts-a2').exists()).toBe(true);
   });
 
+  it('puts items under their group heading, each group named for assistive tech', () => {
+    const wrapper = mount(CheckboxList, {
+      props: {
+        items: [
+          { id: 'p1', label: 'Check', group: 'Debit' },
+          { id: 'p2', label: 'Check', group: 'Credit' },
+        ],
+      },
+      attrs: { id: 'methods' },
+    });
+
+    const groups = wrapper.findAll('[role="group"] [role="group"]');
+    expect(groups.map((g) => g.attributes('aria-label'))).toEqual(['Debit', 'Credit']);
+    expect(groups.map((g) => g.find('label').text())).toEqual(['Check', 'Check']);
+  });
+
   it('checks the boxes matching the model value', () => {
     const wrapper = mountList({ props: { modelValue: ['a2'] }, attrs: { id: 'accounts' } });
 

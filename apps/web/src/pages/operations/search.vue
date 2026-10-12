@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  ENTRY_TYPES,
   FIELD_LIMITS,
   MAX_VALUE_DATE,
   MIN_VALUE_DATE,
@@ -29,7 +30,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ submit: [SearchCriteria]; clear: []; cancel: [] }>();
 
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 
 // Default "Any" (no type filter) — matches both debit and credit.
 const type = ref<EntryType | undefined>(undefined);
@@ -75,12 +76,21 @@ const { filteredCategories, groupedCategories, filteredPaymentMethods } = useTyp
   () => props.categories,
   () => props.paymentMethods,
 );
-const paymentMethodItems = computed(() =>
-  filteredPaymentMethods.value.map((pm) => ({
+// With no type picked, debit and credit methods share names ("Check",
+// "Transfer"), so each sits under its type's heading.
+const paymentMethodItems = computed(() => {
+  const items = filteredPaymentMethods.value.map((pm) => ({
     id: pm.id,
     label: paymentMethodName(pm.id, props.paymentMethods),
-  })),
-);
+    type: pm.type,
+  }));
+  if (type.value !== undefined) return items.map(({ id, label }) => ({ id, label }));
+  return ENTRY_TYPES.flatMap((entryType) =>
+    items
+      .filter((item) => item.type === entryType)
+      .map(({ id, label }) => ({ id, label, group: t(`operations.${entryType}`) })),
+  );
+});
 
 function isAmount(value: number | '' | undefined): value is number {
   return typeof value === 'number' && !isNaN(value);
