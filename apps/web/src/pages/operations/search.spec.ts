@@ -196,4 +196,17 @@ describe('SearchPanel', () => {
     expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe('');
     expect(wrapper.emitted('clear')).toHaveLength(1);
   });
+
+  it('gives the four amount controls distinct accessible names', () => {
+    const wrapper = mountPanel();
+    // First input has aria-label "Amount value"
+    const firstInput = wrapper.findAll('input[type="number"]')[0].element as HTMLInputElement;
+    expect(firstInput.getAttribute('aria-label')).toBe('Amount value');
+    // Second select has aria-label "Second amount condition"
+    const secondSelect = wrapper.find('#search-amount-operator-2').element as HTMLSelectElement;
+    expect(secondSelect.getAttribute('aria-label')).toBe('Second amount condition');
+    // Second input has aria-label "Second amount value"
+    const secondInput = wrapper.findAll('input[type="number"]')[1].element as HTMLInputElement;
+    expect(secondInput.getAttribute('aria-label')).toBe('Second amount value');
+  });
 });

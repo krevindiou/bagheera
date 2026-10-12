@@ -204,14 +204,19 @@ function onClear() {
           step="0.01"
           :max="AMOUNT_CEILING"
           class="form-control"
-          :aria-label="$t('operations.search.amount')"
+          :aria-label="$t('operations.search.amountValue')"
         />
       </div>
     </div>
 
     <div class="row mb-3">
       <div class="col">
-        <select id="search-amount-operator-2" v-model="amountOperator2" class="form-select">
+        <select
+          id="search-amount-operator-2"
+          v-model="amountOperator2"
+          class="form-select"
+          :aria-label="$t('operations.search.amountCondition2')"
+        >
           <option value="">{{ $t('operations.search.any') }}</option>
           <option v-for="op in AMOUNT_OPERATORS" :key="op" :value="op">
             {{ $t(`operations.search.operators.${op}`) }}
@@ -226,7 +231,7 @@ function onClear() {
           step="0.01"
           :max="AMOUNT_CEILING"
           class="form-control"
-          :aria-label="$t('operations.search.amount')"
+          :aria-label="$t('operations.search.amountValue2')"
         />
       </div>
     </div>
