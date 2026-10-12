@@ -12,6 +12,7 @@ export default {
     or: 'ou',
     loadError: 'Impossible de charger ces données. Veuillez réessayer.',
     loading: 'Chargement…',
+    selectRow: 'Sélectionner {name}',
     pager: {
       label: 'Pagination',
       previous: 'Précédent',

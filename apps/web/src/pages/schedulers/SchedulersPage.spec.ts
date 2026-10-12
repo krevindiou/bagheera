@@ -401,4 +401,13 @@ describe('SchedulersPage', () => {
     await checkbox.setValue(false);
     expect(wrapper.find('[data-testid="scheduler-batch-actions"]').exists()).toBe(false);
   });
+
+  it('names the row checkbox after its third party', async () => {
+    mockGet({ schedulers: { items: [scheduler()], total: 1, page: 1, pageSize: 20 } });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const checkbox = wrapper.find('[data-testid="scheduler-row"] input[type="checkbox"]');
+    expect(checkbox.attributes('aria-label')).toBe('Select Landlord');
+  });
 });

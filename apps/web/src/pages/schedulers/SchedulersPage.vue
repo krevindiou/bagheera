@@ -91,6 +91,10 @@ function amountLabel(scheduler: Scheduler): string {
   return formatMoney(minorUnits, currency.value);
 }
 
+function selectRowLabel(scheduler: Scheduler): string {
+  return t('common.selectRow', { name: scheduler.thirdParty });
+}
+
 function startCreate() {
   editingScheduler.value = null;
   showForm.value = true;
@@ -169,6 +173,7 @@ async function onSaved() {
               <td @click.stop>
                 <input
                   type="checkbox"
+                  :aria-label="selectRowLabel(scheduler)"
                   :checked="selectedIds.has(scheduler.id)"
                   @change="toggleSelected(scheduler.id)"
                 />

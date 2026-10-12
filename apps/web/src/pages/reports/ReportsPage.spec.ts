@@ -311,6 +311,15 @@ describe('ReportsPage', () => {
     expect(wrapper.find('[data-testid="report-batch-actions"]').exists()).toBe(false);
   });
 
+  it('names the row checkbox after its title', async () => {
+    mockGet([report()]);
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const checkbox = wrapper.find('[data-testid="report-checkbox"]');
+    expect(checkbox.attributes('aria-label')).toBe('Select Rent');
+  });
+
   it('opens a new sum report form, and cancel returns to the buttons', async () => {
     wrapper = mount(ReportsPage, withGlobalPlugins(router));
     await flushPromises();

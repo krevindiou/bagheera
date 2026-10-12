@@ -18,6 +18,7 @@ import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import OperationForm from './OperationForm.vue';
 import OperationsPage from './OperationsPage.vue';
+import { formatDate } from '../../domain/money';
 import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import type {
   Category,
@@ -503,6 +504,15 @@ describe('OperationsPage', () => {
 
     await checkbox.setValue(false);
     expect(wrapper.find('[data-testid="batch-actions"]').exists()).toBe(false);
+  });
+
+  it('names the row checkbox after its third party and date', async () => {
+    mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const checkbox = wrapper.find('[data-testid="operation-row"] input[type="checkbox"]');
+    expect(checkbox.attributes('aria-label')).toBe(`Select Landlord – ${formatDate('2026-01-15')}`);
   });
 
   it("shows the account's chart once it has data, colored by the account's currency", async () => {

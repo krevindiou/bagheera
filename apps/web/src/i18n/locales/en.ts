@@ -13,6 +13,7 @@ export default {
     or: 'or',
     loadError: "Couldn't load this. Please try again.",
     loading: 'Loading…',
+    selectRow: 'Select {name}',
     pager: {
       label: 'Pagination',
       previous: 'Previous',

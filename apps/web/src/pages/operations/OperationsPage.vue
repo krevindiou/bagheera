@@ -125,6 +125,12 @@ function amountLabel(operation: Operation): string {
   return formatMoney(minorUnits, currency.value);
 }
 
+// The date disambiguates rows sharing the same third party.
+function selectRowLabel(operation: Operation): string {
+  const name = `${thirdPartyLabel(operation.thirdParty, operation.paymentMethodId)} – ${formatDate(operation.valueDate)}`;
+  return t('common.selectRow', { name });
+}
+
 function startCreate() {
   editingOperation.value = null;
   showForm.value = true;
@@ -288,6 +294,7 @@ function isEditable(operation: Operation): boolean {
                   <input
                     v-if="isEditable(operation)"
                     type="checkbox"
+                    :aria-label="selectRowLabel(operation)"
                     :checked="selectedIds.has(operation.id)"
                     @change="toggleSelected(operation.id)"
                   />

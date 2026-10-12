@@ -138,6 +138,10 @@ const viewedChartError = computed(
 function toggleView(report: Report) {
   viewingReportId.value = viewingReportId.value === report.id ? null : report.id;
 }
+
+function selectRowLabel(report: Report): string {
+  return t('common.selectRow', { name: report.title });
+}
 </script>
 
 <template>
@@ -203,6 +207,7 @@ function toggleView(report: Report) {
                   <input
                     type="checkbox"
                     data-testid="report-checkbox"
+                    :aria-label="selectRowLabel(report)"
                     :checked="selectedIds.has(report.id)"
                     @change="toggleSelected(report.id)"
                   />
