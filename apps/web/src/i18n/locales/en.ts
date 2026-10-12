@@ -3,6 +3,7 @@ import type { BusinessErrorCode } from '@bagheera/reference-data';
 export default {
   app: {
     brand: 'Bagheera',
+    skipToContent: 'Skip to content',
   },
   common: {
     confirmTitle: 'Confirmation',

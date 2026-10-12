@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import AccountMenu from '../components/AccountMenu.vue';
@@ -12,6 +12,16 @@ const route = useRoute();
 const { t } = useI18n();
 
 const isAuthenticated = computed(() => session.isAuthenticated);
+
+const mainContent = ref<HTMLElement | null>(null);
+
+// Plain <a href="#...">, not <router-link>: history mode wouldn't intercept
+// it, but a hash jump doesn't reliably move focus across browsers — so do it
+// ourselves and keep the URL untouched.
+function focusMainContent(event: MouseEvent): void {
+  event.preventDefault();
+  mainContent.value?.focus();
+}
 
 // Operations and schedulers are reached through Accounts, so they light up
 // "Accounts"; every settings route lights up "Settings".
@@ -33,6 +43,9 @@ const navItems = computed(() => [
 
 <template>
   <div v-if="isAuthenticated" class="app-shell">
+    <a href="#main-content" class="skip-link visually-hidden-focusable" @click="focusMainContent">
+      {{ $t('app.skipToContent') }}
+    </a>
     <div class="app-glow"></div>
     <aside class="sidebar">
       <router-link :to="{ name: 'home' }" class="side-brand">
@@ -58,11 +71,11 @@ const navItems = computed(() => [
       </div>
     </aside>
 
-    <div class="main">
+    <main id="main-content" ref="mainContent" tabindex="-1" class="main">
       <div class="main-inner">
         <router-view />
       </div>
-    </div>
+    </main>
   </div>
 
   <router-view v-else />
@@ -91,6 +104,17 @@ const navItems = computed(() => [
   pointer-events: none;
   top: -120px;
   left: -120px;
+}
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  padding: 8px 14px;
+  border-radius: 6px;
+  background: var(--violet);
+  color: var(--paper);
+  text-decoration: none;
 }
 .sidebar {
   width: 236px;
@@ -162,6 +186,11 @@ const navItems = computed(() => [
   flex: 1;
   min-width: 0;
   position: relative;
+}
+.main:focus {
+  /* Receives focus only programmatically, from the skip link — no pointer
+     or keyboard user ever lands here directly, so no ring is needed. */
+  outline: none;
 }
 .main-inner {
   max-width: 1080px;

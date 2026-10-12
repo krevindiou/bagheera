@@ -2,6 +2,7 @@
 export default {
   app: {
     brand: 'Bagheera',
+    skipToContent: 'Aller au contenu',
   },
   common: {
     confirmTitle: 'Confirmation',

@@ -68,6 +68,19 @@ describe('BaseLayout', () => {
     expect(wrapper.find('.account-email').text()).toBe('member@example.com');
   });
 
+  it('exposes a main landmark led by a skip link targeting it', async () => {
+    wrapper = mount(BaseLayout, withGlobalPlugins(router));
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('main#main-content').exists()).toBe(true);
+    // First focusable element of the shell, ahead of the sidebar's 6 stops.
+    const shell = wrapper.find('.app-shell');
+    const firstLink = shell.find('a');
+    expect(firstLink.classes()).toContain('skip-link');
+    expect(firstLink.attributes('href')).toBe('#main-content');
+  });
+
   it('renders the one toast stack for every route, signed out or in', async () => {
     useToast().push('Saved', 'success');
     wrapper = mount(BaseLayout, withGlobalPlugins(router));
