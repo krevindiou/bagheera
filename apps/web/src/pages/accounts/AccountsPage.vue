@@ -131,7 +131,7 @@ async function closeBank(bank: Bank) {
   await confirmAndRun(
     {
       body: t('accounts.confirmCloseBank', { name: bank.name }),
-      confirmLabel: t('accounts.close'),
+      confirmLabel: t('accounts.closeBank'),
     },
     () => apiClient.POST('/banks/{id}/close', { params: { path: { id: bank.id } } }),
     'accounts.bankClosed',
@@ -168,7 +168,7 @@ async function closeAccount(account: Account) {
   await confirmAndRun(
     {
       body: t('accounts.confirmCloseAccount', { name: account.name }),
-      confirmLabel: t('accounts.close'),
+      confirmLabel: t('accounts.closeAccount'),
     },
     () => apiClient.POST('/accounts/{id}/close', { params: { path: { id: account.id } } }),
     'accounts.accountClosed',
@@ -238,8 +238,8 @@ function onAccountCreated(accountId: string) {
             <IconButton
               v-if="!bank.closed && !bank.deleted"
               icon="archive"
-              :label="$t('accounts.close')"
-              :aria-label="bankActionLabel($t('accounts.close'), bank)"
+              :label="$t('accounts.closeBank')"
+              :aria-label="bankActionLabel($t('accounts.closeBank'), bank)"
               @click="closeBank(bank)"
             />
             <IconButton
@@ -312,8 +312,8 @@ function onAccountCreated(accountId: string) {
                     <IconButton
                       v-if="!account.closed && !account.deleted"
                       icon="archive"
-                      :label="$t('accounts.close')"
-                      :aria-label="accountActionLabel($t('accounts.close'), account)"
+                      :label="$t('accounts.closeAccount')"
+                      :aria-label="accountActionLabel($t('accounts.closeAccount'), account)"
                       @click="closeAccount(account)"
                     />
                     <IconButton

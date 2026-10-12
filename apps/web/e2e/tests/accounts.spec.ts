@@ -46,8 +46,10 @@ test('create a bank and an account, then edit the bank and close the account', a
   await expect(page.getByTestId('bank-row').filter({ hasText: renamedBankName })).toBeVisible();
 
   const accountRow = page.getByTestId('account-row').filter({ hasText: accountName });
-  await accountRow.getByRole('button', { name: en.accounts.close, exact: false }).click();
-  await confirmDialog(page).getByRole('button', { name: en.accounts.close, exact: true }).click();
+  await accountRow.getByRole('button', { name: en.accounts.closeAccount, exact: false }).click();
+  await confirmDialog(page)
+    .getByRole('button', { name: en.accounts.closeAccount, exact: true })
+    .click();
   await expect(alertWithText(page, en.accounts.accountClosed)).toBeVisible();
 
   // Closed stays listed.

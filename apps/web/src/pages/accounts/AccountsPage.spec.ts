@@ -161,14 +161,14 @@ describe('AccountsPage', () => {
     const bankButtons = wrapper.findAll('[data-testid="bank-row"] .ms-auto button');
     expect(bankButtons.map((b) => b.attributes('aria-label'))).toEqual([
       'Edit Chase',
-      'Close Chase',
+      'Close bank Chase',
       'Delete Chase',
     ]);
 
     const accountButtons = wrapper.findAll('[data-testid="account-row"] button');
     expect(accountButtons.map((b) => b.attributes('aria-label'))).toEqual([
       'Edit Checking',
-      'Close Checking',
+      'Close account Checking',
       'Delete Checking',
     ]);
   });
@@ -294,7 +294,7 @@ describe('AccountsPage', () => {
     await chaseRow.findAll('button')[1].trigger('click'); // Edit, Close, Delete
     expect(useConfirm().state.options).toEqual({
       body: "Close bank “Chase”? Its accounts stay visible, but their operations can no longer be added, edited or reconciled, and their scheduled operations stop. This can't be undone.",
-      confirmLabel: 'Close',
+      confirmLabel: 'Close bank',
     });
     useConfirm().settle(true);
     await flushPromises();
@@ -540,7 +540,7 @@ describe('AccountsPage', () => {
     await buttons[1].trigger('click'); // Edit, Close, Delete
     expect(useConfirm().state.options).toEqual({
       body: "Close account “Checking”? It stays visible, but its operations can no longer be added, edited or reconciled, and its scheduled operations stop. This can't be undone.",
-      confirmLabel: 'Close',
+      confirmLabel: 'Close account',
     });
     useConfirm().settle(true);
     await flushPromises();
