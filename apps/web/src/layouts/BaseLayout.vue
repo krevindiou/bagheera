@@ -238,4 +238,25 @@ const navItems = computed(() => [
     padding: 24px 18px 40px;
   }
 }
+
+@media (max-width: 480px) {
+  /* Narrow phones: the 4 labels no longer fit the 820px breakpoint's
+     spacing (longer locales like French still might) — tighten the item
+     chrome, and fade the trailing edge as a scroll hint for whatever still
+     overflows. */
+  .side-nav {
+    gap: 3px;
+    mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent);
+  }
+  .side-nav-item {
+    padding: 14px 6px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .side-nav-item .dot {
+    width: 5px;
+    height: 5px;
+  }
+}
 </style>
