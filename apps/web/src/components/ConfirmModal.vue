@@ -1,53 +1,21 @@
 <script setup lang="ts">
 import { useConfirm } from '../composables/useConfirm';
-import { useEscapeKey } from '../composables/useEscapeKey';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 const { state, settle } = useConfirm();
-
-// Unlike the drawers, this component is always mounted (see BaseLayout) —
-// its own visibility toggles via state.visible, so the callback guards on
-// that instead of relying on mount/unmount.
-useEscapeKey(() => {
-  if (state.visible) settle(false);
-});
 </script>
 
 <template>
-  <div v-if="state.visible" class="modal d-block" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">{{ state.options?.title ?? $t('common.confirmTitle') }}</h5>
-        </div>
-        <div class="modal-body">{{ state.options?.body }}</div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn"
-            :class="state.options?.danger ? 'btn-danger' : 'btn-primary'"
-            @click="settle(true)"
-          >
-            {{ state.options?.confirmLabel ?? $t('common.ok') }}
-          </button>
-          <button type="button" class="btn btn-secondary" @click="settle(false)">
-            {{ $t('common.cancel') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div v-if="state.visible" class="modal-backdrop show"></div>
+  <!-- Mounted in BaseLayout regardless of state.visible; ConfirmDialog itself
+       mounts/unmounts with it so its focus trap (capture on setup, restore on
+       unmount) runs correctly each time a confirmation opens and closes. -->
+  <ConfirmDialog
+    v-if="state.visible"
+    :title="state.options?.title"
+    :body="state.options?.body ?? ''"
+    :confirm-label="state.options?.confirmLabel"
+    :danger="state.options?.danger ?? false"
+    @confirm="settle(true)"
+    @cancel="settle(false)"
+  />
 </template>
-
-<style scoped>
-.modal-content {
-  --bs-modal-bg: var(--panel);
-  --bs-modal-color: var(--paper);
-  --bs-modal-border-color: var(--hair-strong);
-  box-shadow: var(--bs-box-shadow);
-}
-.modal-header,
-.modal-footer {
-  border-color: var(--hair);
-}
-</style>
