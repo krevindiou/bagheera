@@ -110,6 +110,28 @@ describe('AccountsPage', () => {
     expect(wrapper.text()).toContain("You don't have any bank yet.");
   });
 
+  it('shows an error message instead of the empty state when banks fail to load', async () => {
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/banks') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      if (path === '/accounts') return { data: [], error: undefined, response: new Response() };
+      return { data: undefined, error: undefined, response: new Response() };
+    });
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="accounts-error"]').text()).toContain(
+      "Couldn't load this. Please try again.",
+    );
+    expect(wrapper.text()).not.toContain("You don't have any bank yet.");
+  });
+
   it('lists banks and accounts, with closed badges and a no-accounts message', async () => {
     mockData(
       [bank('b1', 'Chase'), bank('b2', 'Old Bank', true)],

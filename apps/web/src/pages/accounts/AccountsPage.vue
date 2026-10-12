@@ -16,6 +16,7 @@ import CreateAccountForm from './CreateAccountForm.vue';
 import EditBankForm from './EditBankForm.vue';
 import IconButton from '../../components/IconButton.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import ListState from '../../components/ListState.vue';
 
 const { push: toast } = useToast();
 const { confirm } = useConfirm();
@@ -26,8 +27,11 @@ const route = useRoute();
 const queryClient = useQueryClient();
 
 const { banks, banksQuery } = useBanksQuery();
-const { accounts } = useAccountsQuery();
+const { accounts, accountsQuery } = useAccountsQuery();
 const banksPending = computed(() => banksQuery.isPending.value);
+// Rows pair a bank with its accounts, so either query failing leaves the
+// list unusable.
+const listError = computed(() => banksQuery.isError.value || accountsQuery.isError.value);
 
 async function reload() {
   await Promise.all([
@@ -183,112 +187,117 @@ function onAccountCreated(accountId: string) {
       </button>
     </div>
 
-    <p v-if="banksPending" role="status" class="text-muted">{{ $t('common.loading') }}</p>
-    <p v-else-if="banks.length === 0" class="text-muted">{{ $t('accounts.empty') }}</p>
-
-    <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <h2 class="h6 mb-0" style="font-size: 15px">{{ bank.name }}</h2>
-        <span v-if="bank.closed" class="pill pill-amber">{{ $t('accounts.closed') }}</span>
-        <span v-if="bank.deleted" class="pill pill-danger">{{ $t('accounts.deleted') }}</span>
-        <div class="ms-auto d-flex gap-2">
-          <IconButton
-            v-if="!bank.closed && !bank.deleted"
-            icon="edit"
-            :label="$t('accounts.edit')"
-            @click="startEditBank(bank)"
-          />
-          <IconButton
-            v-if="!bank.closed && !bank.deleted"
-            icon="archive"
-            :label="$t('accounts.close')"
-            @click="closeBank(bank)"
-          />
-          <IconButton
-            v-if="!bank.deleted"
-            icon="trash"
-            danger
-            :label="$t('accounts.delete')"
-            @click="deleteBank(bank)"
-          />
+    <ListState
+      :error="listError"
+      :loading="banksPending"
+      :empty="banks.length === 0"
+      :empty-text="$t('accounts.empty')"
+      error-testid="accounts-error"
+    >
+      <section v-for="bank in banks" :key="bank.id" class="mb-4" data-testid="bank-row">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <h2 class="h6 mb-0" style="font-size: 15px">{{ bank.name }}</h2>
+          <span v-if="bank.closed" class="pill pill-amber">{{ $t('accounts.closed') }}</span>
+          <span v-if="bank.deleted" class="pill pill-danger">{{ $t('accounts.deleted') }}</span>
+          <div class="ms-auto d-flex gap-2">
+            <IconButton
+              v-if="!bank.closed && !bank.deleted"
+              icon="edit"
+              :label="$t('accounts.edit')"
+              @click="startEditBank(bank)"
+            />
+            <IconButton
+              v-if="!bank.closed && !bank.deleted"
+              icon="archive"
+              :label="$t('accounts.close')"
+              @click="closeBank(bank)"
+            />
+            <IconButton
+              v-if="!bank.deleted"
+              icon="trash"
+              danger
+              :label="$t('accounts.delete')"
+              @click="deleteBank(bank)"
+            />
+          </div>
         </div>
-      </div>
 
-      <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-1 mb-0">
-        {{ $t('accounts.noAccountsForBank') }}
-      </p>
-      <div v-else class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>{{ $t('accounts.account') }}</th>
-              <th class="text-end">{{ $t('accounts.balance') }}</th>
-              <th class="text-end">{{ $t('dashboard.totalReconciled') }}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="account in accountsForBank(bank.id)"
-              :key="account.id"
-              style="cursor: pointer"
-              data-testid="account-row"
-              @click="goToAccount(account)"
-            >
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  <router-link
-                    :to="{ name: 'operations', params: { accountId: account.id } }"
-                    @click.stop
-                  >
-                    {{ account.name }} ({{ account.currency }})
-                  </router-link>
-                  <span v-if="account.closed" class="pill pill-amber">{{
-                    $t('accounts.closed')
+        <p v-if="accountsForBank(bank.id).length === 0" class="text-muted ms-1 mb-0">
+          {{ $t('accounts.noAccountsForBank') }}
+        </p>
+        <div v-else class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>{{ $t('accounts.account') }}</th>
+                <th class="text-end">{{ $t('accounts.balance') }}</th>
+                <th class="text-end">{{ $t('dashboard.totalReconciled') }}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="account in accountsForBank(bank.id)"
+                :key="account.id"
+                style="cursor: pointer"
+                data-testid="account-row"
+                @click="goToAccount(account)"
+              >
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <router-link
+                      :to="{ name: 'operations', params: { accountId: account.id } }"
+                      @click.stop
+                    >
+                      {{ account.name }} ({{ account.currency }})
+                    </router-link>
+                    <span v-if="account.closed" class="pill pill-amber">{{
+                      $t('accounts.closed')
+                    }}</span>
+                    <span v-if="account.deleted" class="pill pill-danger">{{
+                      $t('accounts.deleted')
+                    }}</span>
+                  </div>
+                </td>
+                <td class="text-end">
+                  <span class="amount" data-testid="account-balance">{{
+                    formatMoney(account.balance ?? 0, account.currency)
                   }}</span>
-                  <span v-if="account.deleted" class="pill pill-danger">{{
-                    $t('accounts.deleted')
-                  }}</span>
-                </div>
-              </td>
-              <td class="text-end">
-                <span class="amount" data-testid="account-balance">{{
-                  formatMoney(account.balance ?? 0, account.currency)
-                }}</span>
-              </td>
-              <td class="text-end">
-                <span class="amount" data-testid="account-reconciled-balance">
-                  {{ formatMoney(account.reconciledBalance ?? 0, account.currency) }}
-                </span>
-              </td>
-              <td @click.stop>
-                <div class="d-flex justify-content-end gap-2">
-                  <IconButton
-                    v-if="!account.closed && !account.deleted"
-                    icon="edit"
-                    :label="$t('accounts.edit')"
-                    @click="startEditAccount(account)"
-                  />
-                  <IconButton
-                    v-if="!account.closed && !account.deleted"
-                    icon="archive"
-                    :label="$t('accounts.close')"
-                    @click="closeAccount(account)"
-                  />
-                  <IconButton
-                    v-if="!account.deleted"
-                    icon="trash"
-                    danger
-                    :label="$t('accounts.delete')"
-                    @click="deleteAccount(account)"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+                </td>
+                <td class="text-end">
+                  <span class="amount" data-testid="account-reconciled-balance">
+                    {{ formatMoney(account.reconciledBalance ?? 0, account.currency) }}
+                  </span>
+                </td>
+                <td @click.stop>
+                  <div class="d-flex justify-content-end gap-2">
+                    <IconButton
+                      v-if="!account.closed && !account.deleted"
+                      icon="edit"
+                      :label="$t('accounts.edit')"
+                      @click="startEditAccount(account)"
+                    />
+                    <IconButton
+                      v-if="!account.closed && !account.deleted"
+                      icon="archive"
+                      :label="$t('accounts.close')"
+                      @click="closeAccount(account)"
+                    />
+                    <IconButton
+                      v-if="!account.deleted"
+                      icon="trash"
+                      danger
+                      :label="$t('accounts.delete')"
+                      @click="deleteAccount(account)"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </ListState>
 
     <BankChoiceForm
       v-if="creationStep === 'bank-choice'"
