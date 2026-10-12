@@ -213,6 +213,7 @@ describe('OperationsPage', () => {
       "Couldn't load this. Please try again.",
     );
     expect(wrapper.find('table').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="onboarding-tip"]').exists()).toBe(false);
   });
 
   it('shows a loading status instead of the empty state and onboarding tip while operations are still loading', async () => {

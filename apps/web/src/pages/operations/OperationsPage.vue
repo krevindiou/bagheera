@@ -227,7 +227,13 @@ function isEditable(operation: Operation): boolean {
     </div>
 
     <p
-      v-if="isFullyActive && !operationsPending && list.items.length === 0 && !hasActiveSearch"
+      v-if="
+        isFullyActive &&
+        !operationsPending &&
+        list.items.length === 0 &&
+        !hasActiveSearch &&
+        !operationsError
+      "
       class="text-muted mb-3"
       data-testid="onboarding-tip"
     >
