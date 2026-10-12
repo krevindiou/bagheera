@@ -30,6 +30,7 @@ import type {
 const apiClient = asMockedApiClient(realApiClient);
 
 const ACCOUNT_ID = '00000000-0000-7000-8000-000000000201';
+const ACCOUNT_SAVINGS = '00000000-0000-7000-8000-000000000202';
 const CATEGORY_FOOD = '00000000-0000-7000-8000-000000000101';
 
 // A stub router: the real one's auth guard would redirect to sign-in.
@@ -264,6 +265,60 @@ describe('OperationsPage', () => {
     expect(rows[0].text()).toContain('-$50.00');
     expect(rows[1].find('[data-testid="scheduler-icon"]').exists()).toBe(true);
     expect(rows[1].text()).toContain('+$25.00');
+  });
+
+  it('names the counterpart account for an internal transfer, with direction matching debit/credit', async () => {
+    mockGet({
+      accounts: [account, { ...account, id: ACCOUNT_SAVINGS, name: 'Savings' }],
+      operations: {
+        items: [
+          operation({ id: 'o1', transferAccountId: ACCOUNT_SAVINGS, debit: 500000 }),
+          operation({
+            id: 'o2',
+            transferAccountId: ACCOUNT_SAVINGS,
+            debit: null,
+            credit: 500000,
+          }),
+        ],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const rows = wrapper.findAll('[data-testid="operation-row"]');
+    expect(rows[0].find('[data-testid="transfer-counterpart"]').text()).toBe('→ Savings');
+    expect(rows[1].find('[data-testid="transfer-counterpart"]').text()).toBe('← Savings');
+  });
+
+  it('shows nothing extra for a transfer whose counterpart account is not in the loaded list', async () => {
+    mockGet({
+      accounts: [account],
+      operations: {
+        items: [operation({ id: 'o1', transferAccountId: ACCOUNT_SAVINGS, debit: 500000 })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const rows = wrapper.findAll('[data-testid="operation-row"]');
+    expect(rows[0].find('[data-testid="transfer-counterpart"]').exists()).toBe(false);
+  });
+
+  it('shows nothing extra for a non-transfer operation', async () => {
+    mockGet({
+      operations: { items: [operation({ id: 'o1' })], total: 1, page: 1, pageSize: 20 },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const rows = wrapper.findAll('[data-testid="operation-row"]');
+    expect(rows[0].find('[data-testid="transfer-counterpart"]').exists()).toBe(false);
   });
 
   it('opens the edit form when a row is clicked, but not for the initial-balance row', async () => {

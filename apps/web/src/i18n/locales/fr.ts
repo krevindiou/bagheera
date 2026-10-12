@@ -155,6 +155,8 @@ export default {
     choosePaymentMethod: 'Choisir un moyen de paiement…',
     transferAccount: 'Virement vers le compte',
     externalAccount: 'Compte externe',
+    transferTo: '→ {name}',
+    transferFrom: '← {name}',
     balance: 'Solde',
     generatedByScheduler: 'Générée par une opération planifiée',
     firstOperationTip: 'Vous y êtes ! Ajoutez simplement votre première opération.',

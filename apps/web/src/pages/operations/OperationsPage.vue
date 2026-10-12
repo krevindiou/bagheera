@@ -125,6 +125,13 @@ function amountLabel(operation: Operation): string {
   return formatMoney(minorUnits, currency.value);
 }
 
+// null both for a non-transfer and for a transfer whose counterpart account
+// is gone (e.g. deleted) — either way, nothing extra is shown.
+function transferCounterpartName(operation: Operation): string | null {
+  if (!operation.transferAccountId) return null;
+  return accounts.value.find((a) => a.id === operation.transferAccountId)?.name ?? null;
+}
+
 // The date disambiguates rows sharing the same third party.
 function selectRowLabel(operation: Operation): string {
   const name = `${thirdPartyLabel(operation.thirdParty, operation.paymentMethodId)} – ${formatDate(operation.valueDate)}`;
@@ -320,7 +327,22 @@ function isEditable(operation: Operation): boolean {
                     :label="$t('operations.generatedByScheduler')"
                   />
                 </td>
-                <td>{{ thirdPartyLabel(operation.thirdParty, operation.paymentMethodId) }}</td>
+                <td>
+                  {{ thirdPartyLabel(operation.thirdParty, operation.paymentMethodId) }}
+                  <div
+                    v-if="transferCounterpartName(operation)"
+                    class="text-muted small"
+                    data-testid="transfer-counterpart"
+                  >
+                    {{
+                      operation.debit
+                        ? $t('operations.transferTo', { name: transferCounterpartName(operation) })
+                        : $t('operations.transferFrom', {
+                            name: transferCounterpartName(operation),
+                          })
+                    }}
+                  </div>
+                </td>
                 <td
                   class="text-end amount"
                   :class="operation.debit ? 'text-danger' : 'text-success'"
