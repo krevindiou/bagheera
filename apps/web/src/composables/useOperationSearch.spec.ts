@@ -62,16 +62,15 @@ describe('useOperationSearch', () => {
     expect(search.panelOpen.value).toBe(false);
   });
 
-  it('restores a remembered search once: opened and hydrated on load, not reopened by a later refetch', async () => {
+  it('restores a remembered search once: hydrated but closed on load, never reopened by a later refetch', async () => {
     apiClient.GET.mockResolvedValue(ok(ACTIVE));
     const { search, queryClient } = run();
     await flushPromises();
 
     expect(search.isActive.value).toBe(true);
-    expect(search.panelOpen.value).toBe(true);
+    expect(search.panelOpen.value).toBe(false);
     expect(search.criteria.value).toEqual({ thirdParty: 'Foo' });
 
-    search.closePanel();
     await queryClient.invalidateQueries({ queryKey: queryKeys.operations.all('acc-1') });
     await flushPromises();
     expect(search.panelOpen.value).toBe(false);
@@ -184,7 +183,7 @@ describe('useOperationSearch', () => {
     expect(apiClient.GET).toHaveBeenLastCalledWith('/operations', {
       params: { query: { accountId: 'acc-2', page: 1 } },
     });
-    expect(search.panelOpen.value).toBe(true);
+    expect(search.panelOpen.value).toBe(false);
     expect(search.criteria.value).toEqual({ thirdParty: 'Bar' });
   });
 });

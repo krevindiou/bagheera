@@ -16,8 +16,9 @@ const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: PAGE_SIZE };
  * clear it), and the search panel's state.
  *
  * "Active" is read from the cached page, not mirrored into a flag a watcher
- * could undo. The panel is restored from the remembered search once per
- * account, on its first load only: paging or a refetch never reopens it.
+ * could undo. The remembered criteria are restored once per account, on its
+ * first load only, but the panel stays closed: the active-search banner
+ * already says so, and an open panel would cover the list.
  */
 export function useOperationSearch(accountId: Ref<string>) {
   const { t } = useI18n();
@@ -61,7 +62,6 @@ export function useOperationSearch(accountId: Ref<string>) {
       restoredFor.value = accountId.value;
       if (result.active) {
         criteria.value = result.criteria;
-        panelOpen.value = true;
       }
     },
     { immediate: true },

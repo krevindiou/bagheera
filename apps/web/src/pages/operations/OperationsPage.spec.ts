@@ -481,7 +481,7 @@ describe('OperationsPage', () => {
     });
   });
 
-  it('auto-opens the search panel, hydrated, when the server reports an active recalled search', async () => {
+  it('restores a recalled search hydrated but closed, leaving the list visible with the active banner', async () => {
     mockGet({
       operations: {
         items: [],
@@ -495,7 +495,10 @@ describe('OperationsPage', () => {
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="search-form"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="search-active-banner"]').exists()).toBe(true);
+
+    await wrapper.find('[data-testid="toggle-search"]').trigger('click');
     expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe('Foo');
   });
 
