@@ -109,6 +109,9 @@ const chartSeries = computed<SynthesisChartSeries[]>(() => {
 });
 const chartAxisBounds = computed(() => toDisplayBounds(chartQuery.data.value?.axisBounds));
 
+// No heading repeats the account name near the chart, so it names itself.
+const chartAriaLabel = computed(() => `${t('operations.balance')}, ${account.value?.name ?? ''}`);
+
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
@@ -256,6 +259,7 @@ function isEditable(operation: Operation): boolean {
       v-model:range="chartRange"
       :series="chartSeries"
       :axis-bounds="chartAxisBounds"
+      :label="chartAriaLabel"
       range-testid="account-chart-range"
     />
 

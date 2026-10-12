@@ -264,7 +264,11 @@ function reportActionLabel(action: string, report: Report): string {
               </tr>
               <tr v-if="viewingReportId === report.id">
                 <td colspan="4">
-                  <ReportChart :report="viewedChart" :error="viewedChartError" />
+                  <ReportChart
+                    :report="viewedChart"
+                    :error="viewedChartError"
+                    :title="viewingReport?.title"
+                  />
                 </td>
               </tr>
             </template>

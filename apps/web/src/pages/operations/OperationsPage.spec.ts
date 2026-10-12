@@ -591,6 +591,8 @@ describe('OperationsPage', () => {
       { label: 'USD', color: colorForCurrency('USD'), points: [{ period: '2026-01', value: 500 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
+    // Named for assistive tech with the account it belongs to.
+    expect(chart.props('label')).toBe('Balance, Checking');
   });
 
   it("colors a EUR account's chart differently than a USD one", async () => {

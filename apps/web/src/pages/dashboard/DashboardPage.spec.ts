@@ -225,6 +225,24 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(false);
   });
 
+  it('names the synthesis chart for assistive tech with its title and selected range', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        synthesisChart: {
+          hidden: false,
+          axisBounds: { min: 0, max: m(1000) },
+          series: [{ currency: 'USD', points: [{ period: '2026-01', value: m(100) }] }],
+        },
+      }),
+    );
+    expect(wrapper.findComponent(SynthesisChart).props('label')).toBe('Balance trend, 12 months');
+
+    await wrapper.find('[data-testid="synthesis-chart-range"]').setValue('24');
+    await flushPromises();
+
+    expect(wrapper.findComponent(SynthesisChart).props('label')).toBe('Balance trend, 24 months');
+  });
+
   it('defaults the chart range to 12 months and refetches with the chosen range on change', async () => {
     const wrapper = await mountWithDashboard(
       baseDashboard({
@@ -379,6 +397,8 @@ describe('DashboardPage', () => {
     );
     expect(wrapper.find('[data-testid="homepage-report"]').text()).toContain('Monthly spend');
     const chart = wrapper.findComponent(SynthesisChart);
+    // Named for assistive tech with the report's own title.
+    expect(chart.props('label')).toBe('Monthly spend (USD)');
     const usdColor = colorForCurrency('USD');
     expect(chart.props('series')).toEqual([
       {
@@ -460,6 +480,8 @@ describe('DashboardPage', () => {
         ],
       },
     ]);
+    // Passed through for its per-facet aria-label.
+    expect(wrapper.findComponent(RankedChart).props('reportTitle')).toBe('Spending by category');
   });
 
   it('shows a no-data message instead of an empty chart for a homepage report matching no operations', async () => {

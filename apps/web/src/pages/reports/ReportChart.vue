@@ -14,8 +14,22 @@ import type { ReportChartData } from './reports.types';
 // resolved yet (the dashboard never passes null — it only renders once its
 // own data has loaded). A `hidden` payload means the report matched no
 // operations, which gets its own message rather than an empty chart.
-const props = defineProps<{ report: ReportChartData | null; error?: boolean }>();
+// `title` isn't on ReportChartData itself, so callers that have it pass it in.
+const props = defineProps<{
+  report: ReportChartData | null;
+  error?: boolean;
+  title?: string;
+}>();
 const { t } = useI18n();
+
+// A debit/credit report can combine more than one currency on one canvas.
+const seriesAriaLabel = computed(() => {
+  const report = props.report;
+  if (report?.kind !== 'series') return '';
+  const currencies = [...new Set(report.series.series.map((s) => s.currency))];
+  if (currencies.length === 0) return props.title ?? '';
+  return props.title ? `${props.title} (${currencies.join(', ')})` : currencies.join(', ');
+});
 
 const isHidden = computed(() => {
   const report = props.report;
@@ -45,10 +59,11 @@ const seriesChart = computed(() => {
   <p v-else-if="isHidden" class="text-muted" data-testid="report-chart-empty">
     {{ t('reports.noData') }}
   </p>
-  <RankedChart v-else-if="distributionFacets" :facets="distributionFacets" />
+  <RankedChart v-else-if="distributionFacets" :facets="distributionFacets" :report-title="title" />
   <SynthesisChart
     v-else-if="seriesChart"
     :series="seriesChart.series"
     :axis-bounds="seriesChart.axisBounds"
+    :label="seriesAriaLabel"
   />
 </template>

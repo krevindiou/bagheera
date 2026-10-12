@@ -9,7 +9,7 @@ const series: SynthesisChartSeries[] = [
   { label: 'USD', color: '#123456', points: [{ period: '2026-01', value: 10 }] },
 ];
 
-function mountPanel(props: { title?: string; range?: SynthesisChartRange } = {}) {
+function mountPanel(props: { title?: string; label?: string; range?: SynthesisChartRange } = {}) {
   return mount(SynthesisChartPanel, {
     ...withGlobalPlugins(),
     props: {
@@ -17,6 +17,7 @@ function mountPanel(props: { title?: string; range?: SynthesisChartRange } = {})
       axisBounds: { min: 0, max: 10 },
       rangeTestid: 'range',
       range: '12',
+      label: 'Balance chart',
       ...props,
     },
     attrs: { 'data-testid': 'panel' },
@@ -34,6 +35,14 @@ describe('SynthesisChartPanel', () => {
   it('shows the title when given, and none otherwise', () => {
     expect(mountPanel({ title: 'Synthesis' }).get('h2').text()).toBe('Synthesis');
     expect(mountPanel().find('h2').exists()).toBe(false);
+  });
+
+  it('passes its aria-label through to the chart, independently of the visible title', () => {
+    const chart = mountPanel({
+      title: 'Synthesis',
+      label: 'Synthesis, 12 months',
+    }).getComponent(SynthesisChart);
+    expect(chart.props('label')).toBe('Synthesis, 12 months');
   });
 
   it('offers every range under the given test id, with the current one selected', () => {

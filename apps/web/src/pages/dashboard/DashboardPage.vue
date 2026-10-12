@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useQuery } from '@tanstack/vue-query';
 import { apiClient } from '../../api/client';
 import { queryKeys } from '../../api/queryKeys';
@@ -10,6 +11,7 @@ import AccountSparkline from '../../components/AccountSparkline.vue';
 import { colorForCurrency } from '../../components/chartColors';
 import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
+  SYNTHESIS_CHART_RANGE_LABEL_KEYS,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
 import { formatDate, toDisplayBounds, toDisplayPoints } from '../../domain/money';
@@ -18,7 +20,15 @@ import LoadError from '../../components/LoadError.vue';
 import ReportChart from '../reports/ReportChart.vue';
 import type { DashboardSynthesisChart } from './dashboard.types';
 
+const { t } = useI18n();
+
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
+
+// Includes the selected range, so the label stays accurate when it changes.
+const synthesisChartAriaLabel = computed(
+  () =>
+    `${t('dashboard.synthesisChart')}, ${t(SYNTHESIS_CHART_RANGE_LABEL_KEYS[chartRange.value])}`,
+);
 
 const { data: dashboard, isError } = useQuery({
   queryKey: computed(() => queryKeys.dashboard.range(chartRange.value)),
@@ -138,6 +148,7 @@ const accountTiles = computed(() =>
         v-if="!dashboard.synthesisChart.hidden"
         v-model:range="chartRange"
         :title="$t('dashboard.synthesisChart')"
+        :label="synthesisChartAriaLabel"
         :series="toSynthesisSeries(dashboard.synthesisChart)"
         :axis-bounds="toDisplayBounds(dashboard.synthesisChart.axisBounds)"
         range-testid="synthesis-chart-range"
@@ -180,7 +191,7 @@ const accountTiles = computed(() =>
           data-testid="homepage-report"
         >
           <h3 class="h6 mb-3">{{ entry.title }}</h3>
-          <ReportChart :report="entry" />
+          <ReportChart :report="entry" :title="entry.title" />
         </div>
       </section>
     </template>

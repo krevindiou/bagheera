@@ -57,7 +57,9 @@ export type RankedChartFacet =
   | { kind: 'snapshot'; title: string; currency: string; bars: RankedChartBar[] }
   | { kind: 'temporal'; title: string; currency: string; series: RankedChartStackedSeries[] };
 
-const props = defineProps<{ facets: RankedChartFacet[] }>();
+// `reportTitle`: this component only sees per-currency facets, not the
+// report itself, so the caller passes its title in for the aria-label.
+const props = defineProps<{ facets: RankedChartFacet[]; reportTitle?: string }>();
 
 const { locale } = useI18n();
 
@@ -71,6 +73,11 @@ const hasData = computed(() =>
 // Height per row, unlike the stacked chart.
 function snapshotHeight(bars: RankedChartBar[]): number {
   return Math.max(bars.length * 32, 80);
+}
+
+// facet.title is just the currency — the visible heading, not a duplicate.
+function facetAriaLabel(facet: RankedChartFacet): string {
+  return props.reportTitle ? `${props.reportTitle} (${facet.currency})` : facet.currency;
 }
 
 function snapshotChartData(facet: RankedChartFacet & { kind: 'snapshot' }): ChartData<'bar'> {
@@ -163,12 +170,20 @@ function stackedChartOptions(currency: string): ChartOptions<'bar'> {
         v-if="facet.kind === 'snapshot'"
         class="ranked-chart-canvas"
         :style="{ height: `${snapshotHeight(facet.bars)}px` }"
+        role="img"
+        :aria-label="facetAriaLabel(facet)"
         data-testid="ranked-snapshot-chart"
       >
         <Bar :data="snapshotChartData(facet)" :options="snapshotChartOptions(facet.currency)" />
       </div>
 
-      <div v-else class="ranked-chart-canvas" data-testid="ranked-stacked-chart">
+      <div
+        v-else
+        class="ranked-chart-canvas"
+        role="img"
+        :aria-label="facetAriaLabel(facet)"
+        data-testid="ranked-stacked-chart"
+      >
         <Bar :data="stackedChartData(facet)" :options="stackedChartOptions(facet.currency)" />
       </div>
     </div>

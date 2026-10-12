@@ -8,7 +8,10 @@ describe('SynthesisChart', () => {
   it('renders nothing when every series is empty', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
-      props: { series: [{ label: 'Balance', color: '#000', points: [] }] },
+      props: {
+        label: 'Balance chart',
+        series: [{ label: 'Balance', color: '#000', points: [] }],
+      },
     });
     expect(wrapper.find('.synthesis-chart').exists()).toBe(false);
   });
@@ -17,6 +20,7 @@ describe('SynthesisChart', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
       props: {
+        label: 'Balance chart',
         series: [
           {
             label: 'Balance',
@@ -42,6 +46,7 @@ describe('SynthesisChart', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
       props: {
+        label: 'Balance chart',
         series: [
           {
             label: 'Debit',
@@ -68,6 +73,7 @@ describe('SynthesisChart', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
       props: {
+        label: 'Balance chart',
         series: [{ label: 'Balance', color: '#000', points: [{ period: '2026-01', value: 1 }] }],
         axisBounds: { min: 0, max: 500 },
       },
@@ -82,6 +88,7 @@ describe('SynthesisChart', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
       props: {
+        label: 'Balance chart',
         series: [
           {
             label: 'Balance',
@@ -104,7 +111,7 @@ describe('SynthesisChart', () => {
     const points = Array.from({ length: 12 }, (_, i) => ({ period: `2026-${i + 1}`, value: i }));
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
-      props: { series: [{ label: 'Balance', color: '#000', points }] },
+      props: { label: 'Balance chart', series: [{ label: 'Balance', color: '#000', points }] },
     });
     const chart = wrapper.findComponent(Line);
     expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 3 });
@@ -114,7 +121,7 @@ describe('SynthesisChart', () => {
     const points = Array.from({ length: 24 }, (_, i) => ({ period: `2024-${i + 1}`, value: i }));
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
-      props: { series: [{ label: 'Balance', color: '#000', points }] },
+      props: { label: 'Balance chart', series: [{ label: 'Balance', color: '#000', points }] },
     });
     const chart = wrapper.findComponent(Line);
     expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 3, pointHoverRadius: 4 });
@@ -124,6 +131,7 @@ describe('SynthesisChart', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),
       props: {
+        label: 'Balance chart',
         series: [
           { label: 'Empty', color: '#000', points: [] },
           { label: 'Balance', color: '#000', points: [{ period: '2026-03', value: 5 }] },
@@ -132,5 +140,18 @@ describe('SynthesisChart', () => {
     });
     const chart = wrapper.findComponent(Line);
     expect(chart.props('data')).toMatchObject({ labels: ['Mar 2026'] });
+  });
+
+  it('names the chart for assistive tech with the given aria-label', () => {
+    const wrapper = mount(SynthesisChart, {
+      ...withGlobalPlugins(),
+      props: {
+        label: 'Balance trend, 12 months',
+        series: [{ label: 'Balance', color: '#000', points: [{ period: '2026-01', value: 1 }] }],
+      },
+    });
+    const chartContainer = wrapper.get('.synthesis-chart');
+    expect(chartContainer.attributes('role')).toBe('img');
+    expect(chartContainer.attributes('aria-label')).toBe('Balance trend, 12 months');
   });
 });

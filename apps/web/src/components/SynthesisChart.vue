@@ -52,6 +52,9 @@ export interface SynthesisAxisBounds {
 const props = defineProps<{
   series: SynthesisChartSeries[];
   axisBounds?: SynthesisAxisBounds | null;
+  // Names the chart for assistive tech; called `label` because a bound
+  // `aria-label` always falls through to the DOM, never a component prop.
+  label: string;
 }>();
 
 const { locale } = useI18n();
@@ -121,7 +124,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
 </script>
 
 <template>
-  <div v-if="hasData" class="synthesis-chart">
+  <div v-if="hasData" class="synthesis-chart" role="img" :aria-label="label">
     <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>

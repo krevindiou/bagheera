@@ -37,8 +37,8 @@ const distribution: ReportChartData = {
   },
 };
 
-function mountChart(report: ReportChartData | null, error = false) {
-  return mount(ReportChart, { ...withGlobalPlugins(), props: { report, error } });
+function mountChart(report: ReportChartData | null, error = false, title?: string) {
+  return mount(ReportChart, { ...withGlobalPlugins(), props: { report, error, title } });
 }
 
 describe('ReportChart', () => {
@@ -54,6 +54,14 @@ describe('ReportChart', () => {
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 10 });
   });
 
+  it("names the series chart for assistive tech with the report's title and its currencies", () => {
+    const withoutTitle = mountChart(series).getComponent(SynthesisChart);
+    expect(withoutTitle.props('label')).toBe('USD');
+
+    const withTitle = mountChart(series, false, 'Monthly spend').getComponent(SynthesisChart);
+    expect(withTitle.props('label')).toBe('Monthly spend (USD)');
+  });
+
   it('draws a distribution report as a ranked chart', () => {
     const wrapper = mountChart(distribution);
 
@@ -61,6 +69,11 @@ describe('ReportChart', () => {
     expect(wrapper.getComponent(RankedChart).props('facets')).toMatchObject([
       { kind: 'snapshot', bars: [{ label: 'Food', value: -100 }] },
     ]);
+  });
+
+  it('passes its title down to the ranked chart, for its per-facet aria-label', () => {
+    const wrapper = mountChart(distribution, false, 'Spending by category');
+    expect(wrapper.getComponent(RankedChart).props('reportTitle')).toBe('Spending by category');
   });
 
   it('shows a loading status while the query behind the report has not resolved yet', () => {

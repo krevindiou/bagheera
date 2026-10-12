@@ -264,6 +264,8 @@ describe('ReportsPage', () => {
 
     expect(wrapper.find('[role="status"]').exists()).toBe(false);
     expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
+    // Named for assistive tech with the viewed report's own title.
+    expect(wrapper.findComponent(SynthesisChart).props('label')).toBe('Rent (USD)');
   });
 
   it('shows a load error when the viewed report chart fails to load', async () => {
@@ -506,6 +508,8 @@ describe('ReportsPage', () => {
         ],
       },
     ]);
+    // Passed through for its per-facet aria-label.
+    expect(wrapper.findComponent(RankedChart).props('reportTitle')).toBe('Rent');
   });
 
   it('opens the edit form for a report and reloads once saved', async () => {

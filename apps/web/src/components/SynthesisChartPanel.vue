@@ -10,11 +10,13 @@ import {
 // months / all time) in its header, optionally under a title. `range` is
 // what the page sends to the API; `rangeTestid` names the select for the
 // page's own tests. Attributes (a `data-testid`) land on the root.
+// `label` is the chart's aria-label, independent of the visible `title`.
 defineProps<{
   series: SynthesisChartSeries[];
   axisBounds: { min: number; max: number } | null;
   rangeTestid: string;
   title?: string;
+  label: string;
 }>();
 const range = defineModel<SynthesisChartRange>('range', { required: true });
 </script>
@@ -34,6 +36,6 @@ const range = defineModel<SynthesisChartRange>('range', { required: true });
         </option>
       </select>
     </div>
-    <SynthesisChart :series="series" :axis-bounds="axisBounds" />
+    <SynthesisChart :series="series" :axis-bounds="axisBounds" :label="label" />
   </section>
 </template>

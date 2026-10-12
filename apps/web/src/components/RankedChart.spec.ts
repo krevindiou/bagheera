@@ -40,6 +40,21 @@ describe('RankedChart', () => {
       expect(chart.props('options')).toMatchObject({ indexAxis: 'y' });
     });
 
+    it('names the chart for assistive tech with the currency, or the report title plus currency when given', () => {
+      const withoutTitle = mount(RankedChart, { ...withGlobalPlugins(), props: { facets } });
+      const canvas = withoutTitle.get('[data-testid="ranked-snapshot-chart"]');
+      expect(canvas.attributes('role')).toBe('img');
+      expect(canvas.attributes('aria-label')).toBe('USD');
+
+      const withTitle = mount(RankedChart, {
+        ...withGlobalPlugins(),
+        props: { facets, reportTitle: 'Monthly spend' },
+      });
+      expect(withTitle.get('[data-testid="ranked-snapshot-chart"]').attributes('aria-label')).toBe(
+        'Monthly spend (USD)',
+      );
+    });
+
     it('sizes the chart taller for more bars', () => {
       const short = mount(RankedChart, {
         ...withGlobalPlugins(),
@@ -124,6 +139,9 @@ describe('RankedChart', () => {
       const wrapper = mount(RankedChart, { ...withGlobalPlugins(), props: { facets } });
       expect(wrapper.find('[data-testid="ranked-stacked-chart"]').exists()).toBe(true);
       expect(wrapper.find('[data-testid="ranked-snapshot-chart"]').exists()).toBe(false);
+      const canvas = wrapper.get('[data-testid="ranked-stacked-chart"]');
+      expect(canvas.attributes('role')).toBe('img');
+      expect(canvas.attributes('aria-label')).toBe('USD');
 
       const chart = wrapper.findComponent(Bar);
       expect(chart.props('data')).toMatchObject({
