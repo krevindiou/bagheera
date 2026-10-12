@@ -276,6 +276,7 @@ export default {
     deleted: 'Report deleted',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No reports yet.',
+    noData: 'No operations match this report yet.',
     batch: {
       delete: 'Delete selected',
       deleted: 'Reports deleted',

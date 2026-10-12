@@ -404,4 +404,23 @@ describe('DashboardPage', () => {
       },
     ]);
   });
+
+  it('shows a no-data message instead of an empty chart for a homepage report matching no operations', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        homepageReports: [
+          {
+            kind: 'series',
+            id: 'r1',
+            title: 'Monthly spend',
+            series: { hidden: true, axisBounds: null, series: [] },
+          },
+        ],
+      }),
+    );
+    expect(wrapper.find('[data-testid="report-chart-empty"]').text()).toBe(
+      'No operations match this report yet.',
+    );
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
+  });
 });

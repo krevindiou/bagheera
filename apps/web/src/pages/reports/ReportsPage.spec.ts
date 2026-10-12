@@ -205,6 +205,78 @@ describe('ReportsPage', () => {
     expect(rowButton.attributes('aria-label')).toBe('Hide chart');
   });
 
+  it('shows a no-data message when the viewed report matches no operations', async () => {
+    mockGet([report()], { hidden: true, axisBounds: null, series: [] });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="report-chart-empty"]').text()).toBe(
+      'No operations match this report yet.',
+    );
+  });
+
+  it('shows a loading status while the viewed report chart is still loading', async () => {
+    let resolveSeries!: (value: unknown) => void;
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/reports')
+        return { data: [report()], error: undefined, response: new Response() };
+      if (path === '/accounts')
+        return { data: accounts, error: undefined, response: new Response() };
+      if (path === '/reports/{id}/series') {
+        return new Promise((resolve) => (resolveSeries = resolve));
+      }
+      return { data: undefined, error: undefined, response: new Response() };
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[role="status"]').text()).toBe('Loading…');
+
+    resolveSeries({
+      data: {
+        hidden: false,
+        axisBounds: null,
+        series: [{ currency: 'USD', debit: [{ period: '2026-01', value: m(10) }], credit: [] }],
+      },
+      error: undefined,
+      response: new Response(),
+    });
+    await flushPromises();
+
+    expect(wrapper.find('[role="status"]').exists()).toBe(false);
+    expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
+  });
+
+  it('shows a load error when the viewed report chart fails to load', async () => {
+    apiClient.GET.mockImplementation(async (path: string) => {
+      if (path === '/reports')
+        return { data: [report()], error: undefined, response: new Response() };
+      if (path === '/accounts')
+        return { data: accounts, error: undefined, response: new Response() };
+      if (path === '/reports/{id}/series') {
+        return {
+          data: undefined,
+          error: { message: 'Internal error' },
+          response: new Response(null, { status: 500 }),
+        };
+      }
+      return { data: undefined, error: undefined, response: new Response() };
+    });
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="report-row"]').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="report-chart-error"]').exists()).toBe(true);
+  });
+
   it('shows batch actions once a report is selected, and reloads after a batch delete', async () => {
     mockGet([report()]);
     apiClient.POST.mockResolvedValueOnce({

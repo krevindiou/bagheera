@@ -124,6 +124,11 @@ const viewedChart = computed<ReportChartData | null>(() => {
   const series = seriesQuery.data.value;
   return series ? { kind: 'series', series } : null;
 });
+// Only the active query (series vs distribution) can ever be in error —
+// the other one is disabled and stays in its initial, non-error state.
+const viewedChartError = computed(
+  () => seriesQuery.isError.value || distributionQuery.isError.value,
+);
 
 function toggleView(report: Report) {
   viewingReportId.value = viewingReportId.value === report.id ? null : report.id;
@@ -233,7 +238,7 @@ function toggleView(report: Report) {
               </tr>
               <tr v-if="viewingReportId === report.id">
                 <td colspan="4">
-                  <ReportChart :report="viewedChart" />
+                  <ReportChart :report="viewedChart" :error="viewedChartError" />
                 </td>
               </tr>
             </template>

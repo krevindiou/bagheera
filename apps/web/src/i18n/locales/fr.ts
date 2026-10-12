@@ -280,6 +280,7 @@ export default {
     deleted: 'Rapport supprimé',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucun rapport pour l'instant.",
+    noData: 'Aucune opération ne correspond encore à ce rapport.',
     batch: {
       delete: 'Supprimer la sélection',
       deleted: 'Rapports supprimés',

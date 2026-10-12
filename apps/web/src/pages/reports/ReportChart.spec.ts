@@ -37,8 +37,8 @@ const distribution: ReportChartData = {
   },
 };
 
-function mountChart(report: ReportChartData | null) {
-  return mount(ReportChart, { ...withGlobalPlugins(), props: { report } });
+function mountChart(report: ReportChartData | null, error = false) {
+  return mount(ReportChart, { ...withGlobalPlugins(), props: { report, error } });
 }
 
 describe('ReportChart', () => {
@@ -63,32 +63,43 @@ describe('ReportChart', () => {
     ]);
   });
 
-  it('draws nothing while there is no report yet', () => {
+  it('shows a loading status while the query behind the report has not resolved yet', () => {
     const wrapper = mountChart(null);
 
+    expect(wrapper.find('[role="status"]').text()).toBe('Loading…');
     expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
     expect(wrapper.findComponent(RankedChart).exists()).toBe(false);
   });
 
-  it('gives a hidden series report an empty chart with no axis bounds', () => {
+  it('shows a load error instead of a chart when the query failed', () => {
+    const wrapper = mountChart(null, true);
+
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true);
+    expect(wrapper.find('[role="status"]').exists()).toBe(false);
+  });
+
+  it('shows a no-data message for a hidden series report instead of an empty chart', () => {
     const wrapper = mountChart({
       kind: 'series',
       series: { hidden: true, axisBounds: null, series: [] },
     });
-    const chart = wrapper.getComponent(SynthesisChart);
 
-    expect(chart.props('series')).toEqual([]);
-    expect(chart.props('axisBounds')).toBeNull();
-    expect(wrapper.find('.synthesis-chart').exists()).toBe(false);
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
+    expect(wrapper.find('[data-testid="report-chart-empty"]').text()).toBe(
+      'No operations match this report yet.',
+    );
   });
 
-  it('gives a hidden distribution report an empty ranked chart', () => {
+  it('shows a no-data message for a hidden distribution report instead of an empty chart', () => {
     const wrapper = mountChart({
       kind: 'distribution',
       distribution: { hidden: true, dataGrouping: 'category', series: [] },
     });
 
-    expect(wrapper.getComponent(RankedChart).props('facets')).toEqual([]);
+    expect(wrapper.findComponent(RankedChart).exists()).toBe(false);
+    expect(wrapper.find('[data-testid="report-chart-empty"]').text()).toBe(
+      'No operations match this report yet.',
+    );
   });
 
   it('switches chart when the report kind changes', async () => {
