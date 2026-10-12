@@ -92,6 +92,7 @@ const navItems = computed(() => [
   min-height: 100vh;
   position: relative;
   background: var(--ink);
+  overflow-x: clip; /* Clip decorative .app-glow without making this a scroll container. */
 }
 /* Decorative violet halo from the top-left corner. */
 .app-glow {
