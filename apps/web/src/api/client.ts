@@ -18,12 +18,29 @@ export const apiClient = createClient<paths>({
 const CSRF_HEADER = 'x-csrf-token';
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
+// fetch rejects when the network is down, which callers checking only
+// `response.ok` would let escape as an unhandled error. A 503 instead sends
+// them down their usual failure path (error toast, `unwrap` throwing). An
+// abort the caller asked for still rejects.
+function networkFailure(error: unknown, signal: AbortSignal): Response {
+  if (signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
+    throw error;
+  }
+  return new Response(null, { status: 503, statusText: 'Service Unavailable' });
+}
+
 // The minted token, or the mint's own failed response (e.g. a 429 once its
 // rate limit is hit), which the caller should see instead of its request.
-async function fetchCsrfToken(): Promise<string | Response> {
-  const res = await fetch(new URL(`${baseUrl}/auth/csrf-token`, window.location.origin), {
-    credentials: 'include',
-  });
+async function fetchCsrfToken(signal: AbortSignal): Promise<string | Response> {
+  let res: Response;
+  try {
+    res = await fetch(new URL(`${baseUrl}/auth/csrf-token`, window.location.origin), {
+      credentials: 'include',
+      signal,
+    });
+  } catch (error) {
+    return networkFailure(error, signal);
+  }
   if (!res.ok) return res;
   const body = (await res.json()) as { csrfToken: string };
   return body.csrfToken;
@@ -35,7 +52,7 @@ async function fetchCsrfToken(): Promise<string | Response> {
 apiClient.use({
   async onRequest({ request }) {
     if (SAFE_METHODS.has(request.method)) return request;
-    const token = await fetchCsrfToken();
+    const token = await fetchCsrfToken(request.signal);
     // A failed mint answers for the request, so the caller sees its real
     // status rather than a CSRF 403. openapi-fetch then skips the fetch and
     // onResponse below.
@@ -43,6 +60,12 @@ apiClient.use({
     const withCsrf = new Request(request);
     withCsrf.headers.set(CSRF_HEADER, token);
     return withCsrf;
+  },
+});
+
+apiClient.use({
+  onError({ error, request }) {
+    return networkFailure(error, request.signal);
   },
 });
 

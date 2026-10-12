@@ -5,6 +5,7 @@ import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
 // The real client and middlewares, with only the network mocked.
 import { apiClient } from './client';
+import { unwrap } from './unwrap';
 
 // Node can't resolve a relative URL, so each call passes an absolute
 // `baseUrl` override.
@@ -83,6 +84,61 @@ describe('apiClient', () => {
       expect(fetchMock.mock.calls.every(([input]) => urlOf(input).includes('csrf-token'))).toBe(
         true,
       );
+    });
+  });
+
+  describe('network failures', () => {
+    it('answers a request whose fetch rejects with a non-ok 503', async () => {
+      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      const result = await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+
+      expect(result.response.ok).toBe(false);
+      expect(result.response.status).toBe(503);
+    });
+
+    it('answers a mutating request with a non-ok 503 when the CSRF mint rejects', async () => {
+      fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
+        if (urlOf(input).includes('csrf-token')) throw new TypeError('Failed to fetch');
+        return jsonResponse(200, {});
+      });
+
+      const result = await apiClient.POST('/auth/sign-out', {
+        baseUrl: TEST_BASE_URL,
+        fetch: fetchMock,
+      });
+
+      expect(result.response.ok).toBe(false);
+      expect(result.response.status).toBe(503);
+      expect(fetchMock.mock.calls.every(([input]) => urlOf(input).includes('csrf-token'))).toBe(
+        true,
+      );
+    });
+
+    it('still rejects on an abort the caller asked for', async () => {
+      const controller = new AbortController();
+      fetchMock.mockImplementation(async () => {
+        controller.abort();
+        throw new DOMException('The operation was aborted.', 'AbortError');
+      });
+
+      await expect(
+        apiClient.GET('/banks', {
+          baseUrl: TEST_BASE_URL,
+          fetch: fetchMock,
+          signal: controller.signal,
+        }),
+      ).rejects.toMatchObject({ name: 'AbortError' });
+    });
+
+    it('lets a query see the failure', async () => {
+      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+      await expect(
+        apiClient
+          .GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock })
+          .then((result) => unwrap(result)),
+      ).rejects.toThrow('Request failed with status 503');
     });
   });
 
