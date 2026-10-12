@@ -291,12 +291,19 @@ function onAccountCreated(accountId: string) {
                   </div>
                 </td>
                 <td class="text-end">
-                  <span class="amount" data-testid="account-balance">{{
-                    formatMoney(account.balance ?? 0, account.currency)
-                  }}</span>
+                  <span
+                    class="amount"
+                    :class="{ 'text-danger': (account.balance ?? 0) < 0 }"
+                    data-testid="account-balance"
+                    >{{ formatMoney(account.balance ?? 0, account.currency) }}</span
+                  >
                 </td>
                 <td class="text-end">
-                  <span class="amount" data-testid="account-reconciled-balance">
+                  <span
+                    class="amount"
+                    :class="{ 'text-danger': (account.reconciledBalance ?? 0) < 0 }"
+                    data-testid="account-reconciled-balance"
+                  >
                     {{ formatMoney(account.reconciledBalance ?? 0, account.currency) }}
                   </span>
                 </td>

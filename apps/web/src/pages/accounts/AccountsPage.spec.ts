@@ -195,6 +195,38 @@ describe('AccountsPage', () => {
     expect(wrapper.find('[data-testid="account-reconciled-balance"]').text()).toBe('$1,000.00');
   });
 
+  it('shows negative balance in red', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking', 'USD', false, false, -500)]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="account-balance"]').classes()).toContain('text-danger');
+  });
+
+  it('shows positive balance without the red class', async () => {
+    mockData([bank('b1', 'Chase')], [account('a1', 'b1', 'Checking', 'USD', false, false, 500)]);
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="account-balance"]').classes()).not.toContain('text-danger');
+  });
+
+  it('shows negative reconciled balance in red', async () => {
+    mockData(
+      [bank('b1', 'Chase')],
+      [account('a1', 'b1', 'Checking', 'USD', false, false, 1000, -200)],
+    );
+    await router.push({ name: 'accounts' });
+    const wrapper = mount(AccountsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="account-reconciled-balance"]').classes()).toContain(
+      'text-danger',
+    );
+  });
+
   it('shows the bank-choice step, then account creation scoped to the chosen bank; cancel returns to the button', async () => {
     mockData([bank('b1', 'Chase')], []);
     await router.push({ name: 'accounts' });
