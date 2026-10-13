@@ -21,7 +21,8 @@ test('create, pause, then batch-delete a recurring scheduler', async ({ accountW
   // The row's Edit button now carries a contextual accessible name (e.g.
   // "Edit Rent"), so match on the action, not the full name.
   await row.getByRole('button', { name: en.operations.edit, exact: false }).click();
-  await page.getByLabel(en.schedulers.active, { exact: true }).uncheck();
+  // By role: the row's status dot is labelled "Active" too.
+  await page.getByRole('checkbox', { name: en.schedulers.active, exact: true }).uncheck();
   await page.getByRole('button', { name: en.operations.submit, exact: true }).click();
   await expect(alertWithText(page, en.schedulers.updated)).toBeVisible();
   await expect(row.getByTitle(en.schedulers.paused)).toBeVisible();

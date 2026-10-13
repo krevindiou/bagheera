@@ -37,7 +37,9 @@ test('deletes a single report via its own row action', async ({ accountWithBank 
   await expect(alertWithText(page, en.reports.saved)).toBeVisible();
 
   const row = page.getByTestId('report-row').filter({ hasText: title });
-  await row.getByRole('button', { name: en.accounts.delete, exact: false }).click();
+  // Full name: every row action's name ends with the title, which itself
+  // contains "delete".
+  await row.getByRole('button', { name: `${en.accounts.delete} ${title}`, exact: true }).click();
   await confirmDialog(page).getByRole('button', { name: en.common.delete, exact: true }).click();
   await expect(alertWithText(page, en.reports.deleted)).toBeVisible();
   await expect(page.getByTestId('report-row').filter({ hasText: title })).toHaveCount(0);
