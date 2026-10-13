@@ -69,6 +69,7 @@ function mockGet(
     const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
     if (path === '/reports') return ok(reports);
     if (path === '/accounts') return ok(accounts);
+    if (path === '/reference-data/categories') return ok([]);
     if (path === '/reports/{id}/series') return ok(series);
     if (path === '/reports/{id}/distribution') return ok(distribution);
     return ok(undefined);
@@ -238,6 +239,8 @@ describe('ReportsPage', () => {
         return { data: [report()], error: undefined, response: new Response() };
       if (path === '/accounts')
         return { data: accounts, error: undefined, response: new Response() };
+      if (path === '/reference-data/categories')
+        return { data: [], error: undefined, response: new Response() };
       if (path === '/reports/{id}/series') {
         return new Promise((resolve) => (resolveSeries = resolve));
       }
@@ -274,6 +277,8 @@ describe('ReportsPage', () => {
         return { data: [report()], error: undefined, response: new Response() };
       if (path === '/accounts')
         return { data: accounts, error: undefined, response: new Response() };
+      if (path === '/reference-data/categories')
+        return { data: [], error: undefined, response: new Response() };
       if (path === '/reports/{id}/series') {
         return {
           data: undefined,

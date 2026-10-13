@@ -61,7 +61,11 @@ describe('useReferenceQueries', () => {
   });
 
   it('treats a failed response as an empty list', async () => {
-    apiClient.GET.mockResolvedValueOnce(ok(undefined));
+    apiClient.GET.mockResolvedValueOnce({
+      data: undefined,
+      error: { message: 'Internal error' },
+      response: new Response(null, { status: 500 }),
+    });
 
     const { banks } = run(useBanksQuery);
     await flushPromises();

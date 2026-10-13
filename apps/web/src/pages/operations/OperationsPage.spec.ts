@@ -205,6 +205,9 @@ describe('OperationsPage', () => {
       if (path === '/banks') return ok([bank]);
       if (path === '/reference-data/categories') return ok([category]);
       if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+      if (path === '/accounts/{id}/balance')
+        return ok({ balance: m(1000), reconciledBalance: m(900) });
+      if (path === '/accounts/{id}/chart') return ok(null);
       return ok(undefined);
     });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
@@ -225,6 +228,9 @@ describe('OperationsPage', () => {
       if (path === '/banks') return ok([bank]);
       if (path === '/reference-data/categories') return ok([category]);
       if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+      if (path === '/accounts/{id}/balance')
+        return ok({ balance: m(1000), reconciledBalance: m(900) });
+      if (path === '/accounts/{id}/chart') return ok(null);
       return ok(undefined);
     });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
