@@ -209,6 +209,17 @@ describe('apiClient', () => {
       expect(useToast().toasts).toHaveLength(0);
     });
 
+    it('leaves navigation to a sign-out in progress', async () => {
+      await router.push('/en/settings/passkeys');
+      useSessionStore().signingOut = true;
+      fetchMock.mockImplementation(async () => jsonResponse(401));
+      const pushSpy = vi.spyOn(router, 'push').mockResolvedValue(undefined);
+
+      await apiClient.GET('/banks', { baseUrl: TEST_BASE_URL, fetch: fetchMock });
+
+      expect(pushSpy).not.toHaveBeenCalled();
+    });
+
     it("doesn't redirect again when already on sign-in", async () => {
       await router.push({ name: 'sign-in' });
       fetchMock.mockImplementation(async () => jsonResponse(401));

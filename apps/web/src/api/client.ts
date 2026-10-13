@@ -82,6 +82,8 @@ apiClient.use({
     let sessionExpired = false;
     try {
       const session = useSessionStore();
+      // Sign-out is already on its way to sign-in.
+      if (session.signingOut) return response;
       sessionExpired = session.isAuthenticated;
       session.clear();
     } catch {

@@ -17,6 +17,9 @@ export const useSessionStore = defineStore('session', {
     // survives a reload unlike this store, is still valid.
     restored: false,
     restorePromise: null as Promise<void> | null,
+    // Set while an explicit sign-out navigates to sign-in, so a page's
+    // refetch failing with 401 meanwhile doesn't add a redirect back to it.
+    signingOut: false,
   }),
   getters: {
     isAuthenticated: (state) => state.member !== null,

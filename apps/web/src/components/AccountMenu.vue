@@ -28,8 +28,13 @@ async function pickLocale(locale: Locale): Promise<void> {
 async function signOut(): Promise<void> {
   open.value = false;
   await apiClient.POST('/auth/sign-out');
-  session.clear();
-  void router.push({ name: 'sign-in' });
+  session.signingOut = true;
+  try {
+    session.clear();
+    await router.push({ name: 'sign-in' });
+  } finally {
+    session.signingOut = false;
+  }
 }
 </script>
 

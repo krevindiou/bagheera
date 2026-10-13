@@ -96,13 +96,32 @@ describe('AccountMenu', () => {
     await wrapper.get('.account-trigger').trigger('click');
     await wrapper.get('.account-logout').trigger('click');
 
-    // Polls: signOut() doesn't await its navigation.
+    // Polls: the click handler doesn't await signOut().
     await vi.waitFor(() => {
       if (router.currentRoute.value.name !== 'sign-in') throw new Error('not navigated yet');
     });
 
     expect(apiClient.POST).toHaveBeenCalledWith('/auth/sign-out');
     expect(useSessionStore().isAuthenticated).toBe(false);
+  });
+
+  it('flags the sign-out while it navigates, then lowers the flag', async () => {
+    const wrapper = mount(AccountMenu, withGlobalPlugins());
+    const session = useSessionStore();
+    session.setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
+    await wrapper.vm.$nextTick();
+    let flaggedDuringNavigation = false;
+    const pushSpy = vi.spyOn(router, 'push').mockImplementation(async () => {
+      flaggedDuringNavigation = session.signingOut;
+    });
+
+    await wrapper.get('.account-trigger').trigger('click');
+    await wrapper.get('.account-logout').trigger('click');
+    await vi.waitFor(() => expect(pushSpy).toHaveBeenCalled());
+    await vi.waitFor(() => expect(session.signingOut).toBe(false));
+
+    expect(flaggedDuringNavigation).toBe(true);
+    pushSpy.mockRestore();
   });
 
   it('closes on Escape', async () => {
