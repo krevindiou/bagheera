@@ -359,10 +359,11 @@ function isEditable(operation: Operation): boolean {
                 >
                   {{ operation.debit ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
-                <td class="d-none d-md-table-cell">
+                <td class="d-none d-md-table-cell text-nowrap">
                   <PaymentMethodIcon
                     :id="operation.paymentMethodId"
                     :payment-methods="paymentMethods"
+                    show-name
                   />
                 </td>
                 <td class="d-none d-md-table-cell">

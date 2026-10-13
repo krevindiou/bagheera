@@ -224,6 +224,7 @@ describe('SchedulersPage', () => {
     expect(rows[0].find('.dot').classes()).toContain('dot-active');
     expect(rows[0].find('.dot').attributes('aria-label')).toBe('Active');
     expect(rows[0].text()).toContain('-$50.00');
+    expect(rows[0].text()).toContain('Check');
     expect(rows[0].text()).toContain(formatDate('2026-01-15'));
     expect(rows[1].find('.dot').classes()).not.toContain('dot-active');
     expect(rows[1].find('.dot').attributes('aria-label')).toBe('Paused');

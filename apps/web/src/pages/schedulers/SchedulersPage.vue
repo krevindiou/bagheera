@@ -200,10 +200,11 @@ async function onSaved() {
               >
                 {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
               </td>
-              <td class="d-none d-md-table-cell">
+              <td class="d-none d-md-table-cell text-nowrap">
                 <PaymentMethodIcon
                   :id="scheduler.paymentMethodId"
                   :payment-methods="paymentMethods"
+                  show-name
                 />
               </td>
               <td class="d-none d-md-table-cell">

@@ -29,4 +29,15 @@ describe('PaymentMethodIcon', () => {
 
     expect(wrapper.find('[role="img"]').exists()).toBe(false);
   });
+
+  it('shows the name as text, with the icon decorative, when showName is set', () => {
+    const wrapper = mount(PaymentMethodIcon, {
+      ...withGlobalPlugins(),
+      props: { id: PAYMENT_METHOD_ID.CREDIT_CARD, paymentMethods, showName: true },
+    });
+
+    expect(wrapper.find('[role="img"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Credit card');
+    expect(wrapper.find('svg').attributes('aria-hidden')).toBe('true');
+  });
 });

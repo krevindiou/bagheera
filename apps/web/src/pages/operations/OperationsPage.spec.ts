@@ -264,6 +264,7 @@ describe('OperationsPage', () => {
     expect(rows).toHaveLength(2);
     expect(rows[0].find('[data-testid="reconciled-icon"]').exists()).toBe(true);
     expect(rows[0].text()).toContain('-$50.00');
+    expect(rows[0].text()).toContain('Check');
     expect(rows[1].find('[data-testid="scheduler-icon"]').exists()).toBe(true);
     expect(rows[1].text()).toContain('+$25.00');
   });
