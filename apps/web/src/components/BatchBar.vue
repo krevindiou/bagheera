@@ -61,6 +61,9 @@ async function perform(action: BatchAction) {
 
 <template>
   <div v-if="selectedIds.length > 0" class="batch-bar">
+    <span role="status" class="text-muted small">{{
+      $t('common.selectedCount', selectedIds.length)
+    }}</span>
     <button
       v-for="action in actions"
       :key="action.testid"

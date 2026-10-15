@@ -44,7 +44,7 @@ const queryClient = useQueryClient();
 
 const showForm = ref(false);
 const editingOperation = ref<Operation | null>(null);
-const { selectedIds, selectedIdList, toggleSelected } = useSelection();
+const { selectedIds, selectedIdList, toggleSelected, toggleAll, allSelectState } = useSelection();
 const {
   page,
   list,
@@ -174,6 +174,11 @@ async function onSavedAndClose() {
 function isEditable(operation: Operation): boolean {
   return operation.paymentMethodId !== PAYMENT_METHOD_ID.INITIAL_BALANCE;
 }
+
+// Rows the header checkbox can act on — the initial-balance row has no
+// checkbox of its own, so it's excluded here too.
+const selectableIds = computed(() => list.value.items.filter(isEditable).map((o) => o.id));
+const headerSelectState = computed(() => allSelectState(selectableIds.value));
 </script>
 
 <template>
@@ -297,7 +302,16 @@ function isEditable(operation: Operation): boolean {
           <table class="table" data-testid="operations-table">
             <thead>
               <tr>
-                <th v-if="isFullyActive"></th>
+                <th v-if="isFullyActive">
+                  <input
+                    type="checkbox"
+                    :aria-label="$t('common.selectAllOnPage')"
+                    :checked="headerSelectState.checked"
+                    :indeterminate="headerSelectState.indeterminate"
+                    :disabled="selectableIds.length === 0"
+                    @change="toggleAll(selectableIds)"
+                  />
+                </th>
                 <th></th>
                 <th>{{ $t('operations.thirdParty') }}</th>
                 <th class="text-end">{{ $t('operations.amount') }}</th>

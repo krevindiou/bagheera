@@ -29,4 +29,44 @@ describe('useSelection', () => {
     toggleSelected('a');
     expect(selectedIdList.value).toEqual(['b']);
   });
+
+  describe('toggleAll', () => {
+    it('selects every given id from an empty or partial selection', () => {
+      const { selectedIdList, toggleSelected, toggleAll } = useSelection();
+      toggleSelected('a');
+      toggleAll(['a', 'b']);
+      expect(selectedIdList.value).toEqual(['a', 'b']);
+    });
+
+    it('clears the selection once every given id is already selected', () => {
+      const { selectedIdList, toggleAll } = useSelection();
+      toggleAll(['a', 'b']);
+      toggleAll(['a', 'b']);
+      expect(selectedIdList.value).toEqual([]);
+    });
+  });
+
+  describe('allSelectState', () => {
+    it('is neither checked nor indeterminate when nothing is selected', () => {
+      const { allSelectState } = useSelection();
+      expect(allSelectState(['a', 'b'])).toEqual({ checked: false, indeterminate: false });
+    });
+
+    it('is indeterminate once some, but not all, of the given ids are selected', () => {
+      const { toggleSelected, allSelectState } = useSelection();
+      toggleSelected('a');
+      expect(allSelectState(['a', 'b'])).toEqual({ checked: false, indeterminate: true });
+    });
+
+    it('is checked once every given id is selected', () => {
+      const { toggleAll, allSelectState } = useSelection();
+      toggleAll(['a', 'b']);
+      expect(allSelectState(['a', 'b'])).toEqual({ checked: true, indeterminate: false });
+    });
+
+    it('is neither checked nor indeterminate for an empty id list', () => {
+      const { allSelectState } = useSelection();
+      expect(allSelectState([])).toEqual({ checked: false, indeterminate: false });
+    });
+  });
 });

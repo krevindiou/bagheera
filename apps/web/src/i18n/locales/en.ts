@@ -15,6 +15,8 @@ export default {
     loadError: "Couldn't load this. Please try again.",
     loading: 'Loading…',
     selectRow: 'Select {name}',
+    selectAllOnPage: 'Select all on this page',
+    selectedCount: '{count} selected | {count} selected',
     actionOn: '{action} {name}',
     pager: {
       label: 'Pagination',

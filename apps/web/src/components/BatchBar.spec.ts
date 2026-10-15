@@ -51,6 +51,15 @@ describe('BatchBar', () => {
     expect(wrapper.find('[data-testid="bar"]').exists()).toBe(false);
   });
 
+  it('announces the selection count as a polite live region, pluralized on the count', () => {
+    const wrapper = mountBar([deleteAction()], ['s1']);
+    const status = wrapper.find('[role="status"]');
+    expect(status.text()).toBe('1 selected');
+
+    const two = mountBar([deleteAction()], ['s1', 's2']);
+    expect(two.find('[role="status"]').text()).toBe('2 selected');
+  });
+
   it('renders one button per action on the bar, danger actions in red', () => {
     const reconcile = deleteAction({
       labelKey: 'operations.batch.reconcile',

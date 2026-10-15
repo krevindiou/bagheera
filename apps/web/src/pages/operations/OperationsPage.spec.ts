@@ -605,6 +605,88 @@ describe('OperationsPage', () => {
     expect(checkbox.attributes('aria-label')).toBe(`Select Landlord – ${formatDate('2026-01-15')}`);
   });
 
+  it('selects every selectable row via the header checkbox, skipping the initial-balance row', async () => {
+    mockGet({
+      operations: {
+        items: [
+          operation({ id: 'o1' }),
+          operation({ id: 'o2', paymentMethodId: PAYMENT_METHOD_ID.INITIAL_BALANCE }),
+        ],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const headerCheckbox = wrapper.find('thead input[type="checkbox"]');
+    expect(headerCheckbox.attributes('aria-label')).toBe('Select all on this page');
+
+    await headerCheckbox.setValue(true);
+
+    const rows = wrapper.findAll('[data-testid="operation-row"]');
+    expect((rows[0].find('input[type="checkbox"]').element as HTMLInputElement).checked).toBe(true);
+    // The initial-balance row has no checkbox at all, so it can't be caught up either.
+    expect(rows[1].find('input[type="checkbox"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="batch-actions"]').exists()).toBe(true);
+  });
+
+  it('checks the header checkbox once every row is selected, marks it indeterminate when only some are, and clears all on uncheck', async () => {
+    mockGet({
+      operations: {
+        items: [operation({ id: 'o1' }), operation({ id: 'o2' })],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const headerCheckbox = () => wrapper!.find('thead input[type="checkbox"]');
+    const rowCheckboxes = () =>
+      wrapper!.findAll('[data-testid="operation-row"] input[type="checkbox"]');
+
+    await rowCheckboxes()[0].setValue(true);
+    expect((headerCheckbox().element as HTMLInputElement).indeterminate).toBe(true);
+    expect((headerCheckbox().element as HTMLInputElement).checked).toBe(false);
+
+    await rowCheckboxes()[1].setValue(true);
+    expect((headerCheckbox().element as HTMLInputElement).indeterminate).toBe(false);
+    expect((headerCheckbox().element as HTMLInputElement).checked).toBe(true);
+
+    await headerCheckbox().setValue(false);
+    expect(rowCheckboxes().every((c) => !(c.element as HTMLInputElement).checked)).toBe(true);
+    expect(wrapper.find('[data-testid="batch-actions"]').exists()).toBe(false);
+  });
+
+  it('disables the header checkbox when no row on the page is selectable', async () => {
+    mockGet({
+      operations: {
+        items: [operation({ id: 'o1', paymentMethodId: PAYMENT_METHOD_ID.INITIAL_BALANCE })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('thead input[type="checkbox"]').attributes('disabled')).toBeDefined();
+  });
+
+  it('hides the header checkbox for a closed account, like the row checkboxes', async () => {
+    mockGet({
+      accounts: [{ ...account, closed: true }],
+      operations: { items: [operation()], total: 1, page: 1, pageSize: 20 },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('thead input[type="checkbox"]').exists()).toBe(false);
+  });
+
   it("shows the account's chart once it has data, colored by the account's currency", async () => {
     mockGet({
       chart: {

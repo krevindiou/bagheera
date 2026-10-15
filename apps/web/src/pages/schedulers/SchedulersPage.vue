@@ -39,7 +39,7 @@ watch(accountId, () => {
 
 const showForm = ref(false);
 const editingScheduler = ref<Scheduler | null>(null);
-const { selectedIds, selectedIdList, toggleSelected } = useSelection();
+const { selectedIds, selectedIdList, toggleSelected, toggleAll, allSelectState } = useSelection();
 
 const { accounts } = useAccountsQuery();
 const { banks } = useBanksQuery();
@@ -76,6 +76,10 @@ watch(
 const categoryNames = computed(
   () => new Map(categories.value.map((c) => [c.id, categoryLabel(c, categories.value)])),
 );
+
+// Every row on this page has a checkbox, so the header one covers all of them.
+const selectableIds = computed(() => list.value.items.map((s) => s.id));
+const headerSelectState = computed(() => allSelectState(selectableIds.value));
 
 // A saved/deleted scheduler also queues background generation of operations
 // on this account, so its data needs refreshing too, not just the list.
@@ -156,7 +160,16 @@ async function onSaved() {
         <table class="table" data-testid="schedulers-table">
           <thead>
             <tr>
-              <th></th>
+              <th>
+                <input
+                  type="checkbox"
+                  :aria-label="$t('common.selectAllOnPage')"
+                  :checked="headerSelectState.checked"
+                  :indeterminate="headerSelectState.indeterminate"
+                  :disabled="selectableIds.length === 0"
+                  @change="toggleAll(selectableIds)"
+                />
+              </th>
               <th></th>
               <th>{{ $t('operations.thirdParty') }}</th>
               <th class="text-end">{{ $t('operations.amount') }}</th>

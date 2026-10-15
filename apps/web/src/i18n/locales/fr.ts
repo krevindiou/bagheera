@@ -14,6 +14,8 @@ export default {
     loadError: 'Impossible de charger ces données. Veuillez réessayer.',
     loading: 'Chargement…',
     selectRow: 'Sélectionner {name}',
+    selectAllOnPage: 'Sélectionner tout sur cette page',
+    selectedCount: '{count} sélectionné | {count} sélectionnés',
     actionOn: '{action} {name}',
     pager: {
       label: 'Pagination',

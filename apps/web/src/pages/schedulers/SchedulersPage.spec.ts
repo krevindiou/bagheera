@@ -461,4 +461,47 @@ describe('SchedulersPage', () => {
     const checkbox = wrapper.find('[data-testid="scheduler-row"] input[type="checkbox"]');
     expect(checkbox.attributes('aria-label')).toBe('Select Landlord');
   });
+
+  it('selects every scheduler via the header checkbox, and clears them again when toggled off', async () => {
+    mockGet({
+      schedulers: {
+        items: [scheduler({ id: 's1' }), scheduler({ id: 's2' })],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const headerCheckbox = () => wrapper!.find('thead input[type="checkbox"]');
+    expect(headerCheckbox().attributes('aria-label')).toBe('Select all on this page');
+
+    await headerCheckbox().setValue(true);
+    const rowCheckboxes = wrapper.findAll('[data-testid="scheduler-row"] input[type="checkbox"]');
+    expect(rowCheckboxes.every((c) => (c.element as HTMLInputElement).checked)).toBe(true);
+    expect(wrapper.find('[data-testid="scheduler-batch-actions"]').exists()).toBe(true);
+
+    await headerCheckbox().setValue(false);
+    expect(wrapper.find('[data-testid="scheduler-batch-actions"]').exists()).toBe(false);
+  });
+
+  it('marks the header checkbox indeterminate when only some schedulers are selected', async () => {
+    mockGet({
+      schedulers: {
+        items: [scheduler({ id: 's1' }), scheduler({ id: 's2' })],
+        total: 2,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.findAll('[data-testid="scheduler-row"] input[type="checkbox"]')[0].setValue(true);
+
+    const headerCheckbox = wrapper.find('thead input[type="checkbox"]').element as HTMLInputElement;
+    expect(headerCheckbox.indeterminate).toBe(true);
+    expect(headerCheckbox.checked).toBe(false);
+  });
 });

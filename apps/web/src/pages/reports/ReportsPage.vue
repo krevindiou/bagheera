@@ -43,7 +43,7 @@ const showForm = ref(false);
 const createType = ref<'sum' | 'average' | 'distribution'>('sum');
 const editingReport = ref<Report | null>(null);
 const viewingReportId = ref<string | null>(null);
-const { selectedIds, selectedIdList, toggleSelected } = useSelection();
+const { selectedIds, selectedIdList, toggleSelected, toggleAll, allSelectState } = useSelection();
 
 const viewingReport = computed(
   () => reports.value.find((r) => r.id === viewingReportId.value) ?? null,
@@ -148,6 +148,10 @@ function selectRowLabel(report: Report): string {
 function reportActionLabel(action: string, report: Report): string {
   return t('common.actionOn', { action, name: report.title });
 }
+
+// Every row has a checkbox, so the header one covers all of them.
+const selectableIds = computed(() => reports.value.map((r) => r.id));
+const headerSelectState = computed(() => allSelectState(selectableIds.value));
 </script>
 
 <template>
@@ -195,7 +199,16 @@ function reportActionLabel(action: string, report: Report): string {
         <table class="table" data-testid="reports-table">
           <thead>
             <tr>
-              <th></th>
+              <th>
+                <input
+                  type="checkbox"
+                  :aria-label="$t('common.selectAllOnPage')"
+                  :checked="headerSelectState.checked"
+                  :indeterminate="headerSelectState.indeterminate"
+                  :disabled="selectableIds.length === 0"
+                  @change="toggleAll(selectableIds)"
+                />
+              </th>
               <th>{{ $t('reports.type') }}</th>
               <th>{{ $t('reports.reportTitle') }}</th>
               <th></th>

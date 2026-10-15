@@ -18,5 +18,21 @@ export function useSelection() {
     selectedIds.value = next;
   }
 
-  return { selectedIds, selectedIdList, toggleSelected };
+  // The header checkbox's own click: selects every id passed (the current
+  // page's selectable rows), or clears the selection once they all already are.
+  function toggleAll(ids: string[]) {
+    const allSelected = ids.length > 0 && ids.every((id) => selectedIds.value.has(id));
+    selectedIds.value = allSelected ? new Set() : new Set(ids);
+  }
+
+  // The header checkbox's own checked/indeterminate state for those same ids.
+  function allSelectState(ids: string[]): { checked: boolean; indeterminate: boolean } {
+    const selectedCount = ids.filter((id) => selectedIds.value.has(id)).length;
+    return {
+      checked: ids.length > 0 && selectedCount === ids.length,
+      indeterminate: selectedCount > 0 && selectedCount < ids.length,
+    };
+  }
+
+  return { selectedIds, selectedIdList, toggleSelected, toggleAll, allSelectState };
 }

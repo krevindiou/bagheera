@@ -340,6 +340,35 @@ describe('ReportsPage', () => {
     expect(checkbox.attributes('aria-label')).toBe('Select Rent');
   });
 
+  it('selects every report via the header checkbox, and clears them again when toggled off', async () => {
+    mockGet([report({ id: 'r1' }), report({ id: 'r2', title: 'Groceries' })]);
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const headerCheckbox = () => wrapper!.find('thead input[type="checkbox"]');
+    expect(headerCheckbox().attributes('aria-label')).toBe('Select all on this page');
+
+    await headerCheckbox().setValue(true);
+    const rowCheckboxes = wrapper.findAll('[data-testid="report-checkbox"]');
+    expect(rowCheckboxes.every((c) => (c.element as HTMLInputElement).checked)).toBe(true);
+    expect(wrapper.find('[data-testid="report-batch-actions"]').exists()).toBe(true);
+
+    await headerCheckbox().setValue(false);
+    expect(wrapper.find('[data-testid="report-batch-actions"]').exists()).toBe(false);
+  });
+
+  it('marks the header checkbox indeterminate when only some reports are selected', async () => {
+    mockGet([report({ id: 'r1' }), report({ id: 'r2', title: 'Groceries' })]);
+    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.findAll('[data-testid="report-checkbox"]')[0].setValue(true);
+
+    const headerCheckbox = wrapper.find('thead input[type="checkbox"]').element as HTMLInputElement;
+    expect(headerCheckbox.indeterminate).toBe(true);
+    expect(headerCheckbox.checked).toBe(false);
+  });
+
   it('opens a new sum report form, and cancel returns to the buttons', async () => {
     wrapper = mount(ReportsPage, withGlobalPlugins(router));
     await flushPromises();
