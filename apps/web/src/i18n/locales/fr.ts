@@ -61,7 +61,7 @@ export default {
         'Cliquez ci-dessous pour créer une clé d’accès et finaliser la création de votre compte.',
       submit: 'Continuer',
       success: 'Compte créé. Vous êtes maintenant connecté.',
-      error: 'Ce lien est invalide ou a expiré.',
+      error: 'Ce lien est invalide ou a expiré. Saisissez votre email pour en recevoir un nouveau.',
       cancelled:
         'La création de la clé d’accès a été annulée. Cliquez sur Continuer pour réessayer.',
       signInLink: 'Aller à la connexion',

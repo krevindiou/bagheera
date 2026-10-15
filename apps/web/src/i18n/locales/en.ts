@@ -59,7 +59,7 @@ export default {
       intro: 'Click below to create a passkey and finish setting up your account.',
       submit: 'Continue',
       success: 'Account created. You are now signed in.',
-      error: 'This link is invalid or has expired.',
+      error: 'This link is invalid or has expired. Enter your email to get a new one.',
       cancelled: 'Passkey creation was cancelled. Click Continue to try again.',
       signInLink: 'Go to sign in',
     },

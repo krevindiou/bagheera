@@ -33,13 +33,15 @@ describe('ActivatePage', () => {
     useToast().toasts.splice(0);
   });
 
-  it('redirects to sign-in with an error toast when the link has no key', async () => {
+  it('redirects to register with an error toast when the link has no key', async () => {
     await router.push({ name: 'activate' });
     mount(ActivatePage, withGlobalPlugins());
-    await waitForRouteName(router, 'sign-in');
+    await waitForRouteName(router, 'register');
 
     expect(apiClient.POST).not.toHaveBeenCalled();
-    expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');
+    expect(useToast().toasts[0]?.text).toBe(
+      'This link is invalid or has expired. Enter your email to get a new one.',
+    );
   });
 
   it('neither toasts an error nor redirects to sign-in when remounted signed in without a key', async () => {
@@ -125,15 +127,17 @@ describe('ActivatePage', () => {
     expect(useToast().toasts[0]?.text).toBe('Account created. You are now signed in.');
   });
 
-  it('shows an error toast and redirects to sign-in when the key is rejected', async () => {
+  it('shows an error toast and redirects to register when the key is rejected', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(400));
     await router.push({ name: 'activate', query: { key: 'expired' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
     await wrapper.vm.$nextTick();
     await wrapper.find('button.btn-primary').trigger('click');
-    await waitForRouteName(router, 'sign-in');
+    await waitForRouteName(router, 'register');
 
-    expect(useToast().toasts[0]?.text).toBe('This link is invalid or has expired.');
+    expect(useToast().toasts[0]?.text).toBe(
+      'This link is invalid or has expired. Enter your email to get a new one.',
+    );
   });
 
   it('stays on the page with the key kept for a retry when the passkey prompt is cancelled', async () => {

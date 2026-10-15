@@ -39,8 +39,10 @@ onMounted(() => {
 });
 
 function fail() {
+  // No passkey exists yet to sign in with, so sign-in would be a dead end;
+  // register sends a fresh link instead.
   toast(t('auth.activate.error'), 'error');
-  void router.replace({ name: 'sign-in' });
+  void router.replace({ name: 'register' });
 }
 
 async function createAccount() {
