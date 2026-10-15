@@ -169,6 +169,34 @@ describe('SearchPanel', () => {
     expect(criteria.amountComparators).toBeUndefined();
   });
 
+  it('defaults the operator to "=" when a value is typed while it is still "Any"', async () => {
+    const wrapper = mountPanel();
+    await wrapper.findAll('input[type="number"]')[0].setValue(1000);
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.amountComparators).toEqual([{ operator: 'eq', value: 1000 }]);
+  });
+
+  it('does not override an operator the member already chose', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-amount-operator-1').setValue('lt');
+    await wrapper.findAll('input[type="number"]')[0].setValue(1000);
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.amountComparators).toEqual([{ operator: 'lt', value: 1000 }]);
+  });
+
+  it('still ignores the second row when only its value is typed and the first stays empty', async () => {
+    const wrapper = mountPanel();
+    await wrapper.findAll('input[type="number"]')[1].setValue(20);
+    await wrapper.find('form').trigger('submit');
+
+    const [criteria] = wrapper.emitted('submit')![0] as [SearchCriteria];
+    expect(criteria.amountComparators).toBeUndefined();
+  });
+
   it('includes the second amount row once the first is set too', async () => {
     const wrapper = mountPanel();
     await wrapper.find('#search-amount-operator-1').setValue('gte');

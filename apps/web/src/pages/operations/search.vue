@@ -96,6 +96,15 @@ function isAmount(value: number | '' | undefined): value is number {
   return typeof value === 'number' && !isNaN(value);
 }
 
+// buildCriteria drops an amount with no operator, so a typed one defaults
+// to "=" rather than vanish; a chosen operator is left alone.
+watch(amountValue1, (value) => {
+  if (amountOperator1.value === '' && isAmount(value)) amountOperator1.value = 'eq';
+});
+watch(amountValue2, (value) => {
+  if (amountOperator2.value === '' && isAmount(value)) amountOperator2.value = 'eq';
+});
+
 function buildCriteria(): SearchCriteria {
   const amountComparators: SearchCriteria['amountComparators'] = [];
   // The second row is ignored unless the first has a value.
