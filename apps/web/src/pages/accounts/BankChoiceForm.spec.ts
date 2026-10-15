@@ -87,11 +87,19 @@ describe('BankChoiceForm', () => {
     expect((wrapper.find('#account-bank-id').element as HTMLSelectElement).value).toBe('');
   });
 
-  it("shows a validation error and doesn't submit when neither field is filled", async () => {
+  it("shows a validation error and doesn't submit when neither field is filled, with a bank to choose from", async () => {
     const wrapper = mount(BankChoiceForm, { ...withGlobalPlugins(), props: { banks } });
     await submitAndSettle(wrapper);
 
-    expect(wrapper.text()).toContain('You must select a bank.');
+    expect(wrapper.text()).toContain('Choose a bank or enter a new one.');
+    expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
+  it("shows a validation error and doesn't submit when the name is empty and there are no banks to choose from", async () => {
+    const wrapper = mount(BankChoiceForm, { ...withGlobalPlugins(), props: { banks: [] } });
+    await submitAndSettle(wrapper);
+
+    expect(wrapper.text()).toContain('Enter a bank name.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 
@@ -103,7 +111,7 @@ describe('BankChoiceForm', () => {
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('At most 32 characters.');
-    expect(wrapper.text()).not.toContain('You must select a bank.');
+    expect(wrapper.text()).not.toContain('Choose a bank or enter a new one.');
     expect(apiClient.POST).not.toHaveBeenCalled();
   });
 

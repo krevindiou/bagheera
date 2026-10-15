@@ -135,7 +135,8 @@ export default {
       "Delete account “{name}”? Its operations and scheduled operations will be deleted too, and transfers with it in your other accounts will show as external. This can't be undone.",
     genericError: 'Something went wrong. Please try again.',
     validation: {
-      bankChoiceRequired: 'You must select a bank.',
+      bankChoiceRequired: 'Choose a bank or enter a new one.',
+      bankNameRequired: 'Enter a bank name.',
       currency: 'Enter a 3-letter currency code.',
       initialBalance: 'Enter a balance under one billion, positive or negative.',
     },

@@ -138,7 +138,8 @@ export default {
       'Supprimer le compte « {name} » ? Ses opérations et opérations planifiées seront aussi supprimées, et les virements avec ce compte dans vos autres comptes apparaîtront comme externes. Cette action est irréversible.',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     validation: {
-      bankChoiceRequired: 'Vous devez sélectionner une banque.',
+      bankChoiceRequired: 'Choisissez une banque ou saisissez-en une nouvelle.',
+      bankNameRequired: 'Saisissez un nom de banque.',
       currency: 'Saisissez un code devise à 3 lettres.',
       initialBalance: 'Saisissez un solde inférieur à un milliard, positif ou négatif.',
     },

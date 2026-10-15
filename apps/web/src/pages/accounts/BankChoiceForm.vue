@@ -86,7 +86,10 @@ const onSubmit = handleSubmit(async (values) => {
       :error="
         errors.bankName === 'tooLong'
           ? $t('auth.validation.maxLength', { max: FIELD_LIMITS.BANK_NAME })
-          : errors.bankName && $t('accounts.validation.bankChoiceRequired')
+          : errors.bankName &&
+            (props.banks.length > 0
+              ? $t('accounts.validation.bankChoiceRequired')
+              : $t('accounts.validation.bankNameRequired'))
       "
     >
       <input
