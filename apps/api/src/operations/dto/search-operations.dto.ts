@@ -15,7 +15,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { ThirdPartyField, ValueDateField } from '../../common/dto-fields';
+import { IsOnOrAfter, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 import { ENTRY_TYPES, FIELD_LIMITS, type EntryType } from '@bagheera/reference-data';
 
 export class AmountComparatorDto {
@@ -72,8 +72,10 @@ export class SearchOperationsDto {
   @ValueDateField()
   dateFrom?: string;
 
+  // An inverted pair would otherwise silently match nothing.
   @IsOptional()
   @ValueDateField()
+  @IsOnOrAfter('dateFrom')
   dateTo?: string;
 
   // A search filter, not stored text — deliberately narrower than

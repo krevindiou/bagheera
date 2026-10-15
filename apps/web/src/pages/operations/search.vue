@@ -96,6 +96,12 @@ function isAmount(value: number | '' | undefined): value is number {
   return typeof value === 'number' && !isNaN(value);
 }
 
+// Mirrors the report form's superRefine/API's IsOnOrAfter — an inverted
+// range would otherwise silently match nothing.
+const dateRangeInvalid = computed(
+  () => !!dateFrom.value && !!dateTo.value && dateTo.value < dateFrom.value,
+);
+
 // buildCriteria drops an amount with no operator, so a typed one defaults
 // to "=" rather than vanish; a chosen operator is left alone.
 watch(amountValue1, (value) => {
@@ -137,6 +143,7 @@ watch(type, () => {
 });
 
 function onSubmit() {
+  if (dateRangeInvalid.value) return;
   emit('submit', buildCriteria());
 }
 
@@ -267,7 +274,12 @@ function onClear() {
           class="form-control"
         />
       </FormField>
-      <FormField class="col" :label="$t('operations.search.dateTo')" for="search-date-to">
+      <FormField
+        class="col"
+        :label="$t('operations.search.dateTo')"
+        for="search-date-to"
+        :error="dateRangeInvalid ? $t('common.dateRangeInvalid') : undefined"
+      >
         <input
           id="search-date-to"
           v-model="dateTo"
@@ -276,6 +288,7 @@ function onClear() {
           :max="MAX_VALUE_DATE"
           :lang="locale"
           class="form-control"
+          :class="{ 'is-invalid': dateRangeInvalid }"
         />
       </FormField>
     </div>

@@ -17,6 +17,7 @@ export default {
     selectAllOnPage: 'Sélectionner tout sur cette page',
     selectedCount: '{count} sélectionné | {count} sélectionnés',
     actionOn: '{action} {name}',
+    dateRangeInvalid: 'La date de fin doit être égale ou postérieure à la date de début.',
     pager: {
       label: 'Pagination',
       previous: 'Précédent',
@@ -285,7 +286,6 @@ export default {
     accounts: 'Comptes',
     accountsHint: 'Laissez vide pour inclure tous les comptes.',
     categoriesHint: 'Laissez vide pour inclure toutes les catégories.',
-    dateRangeInvalid: 'La date de fin doit être égale ou postérieure à la date de début.',
     significantResultsNumberInvalid: 'Saisissez un nombre entier entre 1 et {max}.',
     periodGrouping: 'Répartir sur',
     periodGroupingHint:

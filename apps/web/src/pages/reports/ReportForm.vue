@@ -168,7 +168,7 @@ const onSubmit = handleSubmit(async (submitted) => {
         class="col"
         :label="$t('reports.dateTo')"
         for="report-value-date-end"
-        :error="errors.valueDateEnd && $t('reports.dateRangeInvalid')"
+        :error="errors.valueDateEnd && $t('common.dateRangeInvalid')"
       >
         <input
           id="report-value-date-end"

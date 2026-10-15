@@ -47,6 +47,25 @@ describe('SearchOperationsDto', () => {
     expect(errors.some((e) => e.property === 'dateFrom')).toBe(true);
   });
 
+  it('rejects a dateTo before dateFrom', async () => {
+    const dto = plainToInstance(SearchOperationsDto, {
+      accountId: UUID_V7,
+      dateFrom: '2026-12-01',
+      dateTo: '2026-01-01',
+    });
+    const errors = await validate(dto);
+    expect(errors.some((e) => e.property === 'dateTo')).toBe(true);
+  });
+
+  it('accepts a dateTo equal to dateFrom', async () => {
+    const dto = plainToInstance(SearchOperationsDto, {
+      accountId: UUID_V7,
+      dateFrom: '2026-01-01',
+      dateTo: '2026-01-01',
+    });
+    expect(await validate(dto)).toEqual([]);
+  });
+
   it('rejects a non-boolean reconciled', async () => {
     const dto = plainToInstance(SearchOperationsDto, {
       accountId: UUID_V7,

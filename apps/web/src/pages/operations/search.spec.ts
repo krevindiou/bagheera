@@ -240,6 +240,41 @@ describe('SearchPanel', () => {
     expect(wrapper.emitted('clear')).toHaveLength(1);
   });
 
+  it('blocks submit and shows an error when "To" is before "From"', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-date-from').setValue('2026-12-01');
+    await wrapper.find('#search-date-to').setValue('2026-01-01');
+    await wrapper.find('form').trigger('submit');
+
+    expect(wrapper.emitted('submit')).toBeUndefined();
+    const dateToInput = wrapper.find('#search-date-to').element as HTMLInputElement;
+    expect(wrapper.text()).toContain('End date must be on or after the start date.');
+    expect(dateToInput.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('clears the date-range error once the dates are fixed', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-date-from').setValue('2026-12-01');
+    await wrapper.find('#search-date-to').setValue('2026-01-01');
+    await wrapper.find('form').trigger('submit');
+    expect(wrapper.emitted('submit')).toBeUndefined();
+
+    await wrapper.find('#search-date-to').setValue('2026-12-31');
+    expect(wrapper.text()).not.toContain('End date must be on or after the start date.');
+
+    await wrapper.find('form').trigger('submit');
+    expect(wrapper.emitted('submit')).toHaveLength(1);
+  });
+
+  it('allows an equal "From"/"To" pair', async () => {
+    const wrapper = mountPanel();
+    await wrapper.find('#search-date-from').setValue('2026-01-01');
+    await wrapper.find('#search-date-to').setValue('2026-01-01');
+    await wrapper.find('form').trigger('submit');
+
+    expect(wrapper.emitted('submit')).toHaveLength(1);
+  });
+
   it('gives the four amount controls distinct accessible names', () => {
     const wrapper = mountPanel();
     // First input has aria-label "Amount value"
