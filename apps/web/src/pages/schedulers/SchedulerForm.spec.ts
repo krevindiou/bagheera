@@ -287,6 +287,38 @@ describe('SchedulerForm', () => {
     expect(wrapper.text()).not.toContain('Salary');
   });
 
+  it('shows a past-occurrences hint when creating with a first occurrence in the past', async () => {
+    const wrapper = mountForm();
+    expect(wrapper.text()).not.toContain(
+      'Past occurrences will be added to the account when you save.',
+    );
+
+    await wrapper.find('#scheduler-value-date').setValue('2020-01-01');
+    expect(wrapper.text()).toContain(
+      'Past occurrences will be added to the account when you save.',
+    );
+  });
+
+  it('hides the past-occurrences hint once the first occurrence is no longer in the past', async () => {
+    const wrapper = mountForm();
+    await wrapper.find('#scheduler-value-date').setValue('2020-01-01');
+    expect(wrapper.text()).toContain(
+      'Past occurrences will be added to the account when you save.',
+    );
+
+    await wrapper.find('#scheduler-value-date').setValue('2099-01-01');
+    expect(wrapper.text()).not.toContain(
+      'Past occurrences will be added to the account when you save.',
+    );
+  });
+
+  it('never shows the past-occurrences hint when editing, even with a past first occurrence', () => {
+    const wrapper = mountForm({ scheduler });
+    expect(wrapper.text()).not.toContain(
+      'Past occurrences will be added to the account when you save.',
+    );
+  });
+
   it("groups categories with children under their parent's name", () => {
     const CATEGORY_GROCERIES = '00000000-0000-7000-8000-000000000303';
     const wrapper = mount(SchedulerForm, {

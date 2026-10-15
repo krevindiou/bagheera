@@ -221,6 +221,7 @@ export default {
     editTitle: 'Edit scheduled operation',
     addScheduler: 'New scheduled operation',
     firstOccurrence: 'First occurrence',
+    pastOccurrencesHint: 'Past occurrences will be added to the account when you save.',
     every: 'Every',
     everyN: 'Every {count} {unit}',
     until: 'until {date}',

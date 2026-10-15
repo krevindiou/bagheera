@@ -224,6 +224,8 @@ export default {
     editTitle: "Modifier l'opération planifiée",
     addScheduler: 'Nouvelle opération planifiée',
     firstOccurrence: 'Première occurrence',
+    pastOccurrencesHint:
+      "Les occurrences passées seront ajoutées au compte lors de l'enregistrement.",
     every: 'Tous les',
     everyN: 'Tous les {count} {unit}',
     until: "jusqu'au {date}",

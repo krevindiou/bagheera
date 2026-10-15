@@ -39,6 +39,9 @@ const props = defineProps<{
   // if it has since gone inactive.
   storedTransferAccountId?: string | null;
   valueDateLabel: string;
+  // Scheduler-only: text to show under the value date field (e.g. a
+  // past-occurrences warning); the caller decides when it applies.
+  valueDateHint?: string;
 }>();
 
 const { locale } = useI18n();
@@ -209,6 +212,7 @@ function onThirdPartyChange() {
     :label="valueDateLabel"
     :for="`${idPrefix}-value-date`"
     :error="valueDateError && $t('operations.validation.valueDate', valueDateRange())"
+    :hint="valueDateHint"
   >
     <input
       :id="`${idPrefix}-value-date`"

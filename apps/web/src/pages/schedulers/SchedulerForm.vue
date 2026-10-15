@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useForm } from 'vee-validate';
+import { useFieldValue, useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { FIELD_LIMITS, MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
@@ -14,7 +14,7 @@ import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { entryFormValues, entryRequestFields } from '../operations/entryForm';
 import OperationFields from '../operations/OperationFields.vue';
-import { valueDateRange } from '../../domain/money';
+import { today, valueDateRange } from '../../domain/money';
 import type { Category, PaymentMethod } from '../../domain/referenceData';
 import {
   schedulerSchema,
@@ -66,6 +66,15 @@ const [limitDate, limitDateAttrs] = defineField('limitDate');
 const [frequencyUnit, frequencyUnitAttrs] = defineField('frequencyUnit');
 const [frequencyValue, frequencyValueAttrs] = defineField('frequencyValue');
 const [active, activeAttrs] = defineField('active');
+
+// Read, not redefined: the field itself lives in OperationFields.
+const valueDate = useFieldValue<string>('valueDate');
+// Editing an existing scheduler: whether a past date would add occurrences
+// depends on its generation cursor, which the client never sees, so the
+// hint only shows on creation.
+const showPastOccurrencesHint = computed(
+  () => !props.scheduler && !!valueDate.value && valueDate.value < today(session.member?.timeZone),
+);
 
 const onSubmit = handleSubmit(async (submitted) => {
   const body = {
@@ -134,6 +143,7 @@ async function onDelete() {
       :banks="banks"
       :stored-transfer-account-id="scheduler?.transferAccountId"
       :value-date-label="$t('schedulers.firstOccurrence')"
+      :value-date-hint="showPastOccurrencesHint ? $t('schedulers.pastOccurrencesHint') : undefined"
     >
       <template #after-value-date>
         <div class="row">
