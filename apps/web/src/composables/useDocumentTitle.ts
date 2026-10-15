@@ -6,6 +6,10 @@ import { i18n } from '../i18n';
 // route's title (e.g. an account name); cleared on every navigation so a
 // stale override never leaks into the next page.
 const override: Ref<string | null> = ref(null);
+// Identifies which usePageTitle call last set `override`. A page navigated
+// away from unmounts after the next page's setup runs, so without this its
+// unconditional cleanup would wipe the new page's override right after it's set.
+let owner: symbol | null = null;
 
 function render(base: string | null): string {
   const brand = i18n.global.t('app.brand');
@@ -26,6 +30,7 @@ export function setupDocumentTitle(router: Router): void {
 
   router.afterEach(() => {
     override.value = null;
+    owner = null;
     apply();
   });
   watch(i18n.global.locale, apply);
@@ -38,14 +43,19 @@ export function setupDocumentTitle(router: Router): void {
  * (still loading, or nothing more specific) leaves the route's title alone.
  */
 export function usePageTitle(title: ComputedRef<string | null>): void {
+  const token = Symbol();
   watch(
     title,
     (value) => {
       override.value = value;
+      owner = token;
     },
     { immediate: true },
   );
   onUnmounted(() => {
-    override.value = null;
+    if (owner === token) {
+      override.value = null;
+      owner = null;
+    }
   });
 }

@@ -100,4 +100,21 @@ describe('usePageTitle', () => {
 
     expect(document.title).toBe('Reports · Bagheera');
   });
+
+  it('keeps the next page title when the previous page unmounts afterwards', async () => {
+    await router.push({ name: 'operations' });
+    const previous = mountOverride(() => 'Checking · Operations');
+    expect(document.title).toBe('Checking · Operations · Bagheera');
+
+    // Simulates navigating between two pages that both call usePageTitle: the
+    // new page's watcher (immediate) runs during setup, before the old one unmounts.
+    const next = mountOverride(() => 'Savings · Operations');
+    expect(document.title).toBe('Savings · Operations · Bagheera');
+
+    previous.unmount();
+    await nextTick();
+
+    expect(document.title).toBe('Savings · Operations · Bagheera');
+    next.unmount();
+  });
 });
