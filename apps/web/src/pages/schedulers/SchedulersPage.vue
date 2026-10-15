@@ -254,6 +254,7 @@ async function onSaved() {
       :banks="banks"
       :scheduler="editingScheduler"
       @saved="onSaved"
+      @deleted="onSaved"
       @cancel="showForm = false"
     />
   </div>

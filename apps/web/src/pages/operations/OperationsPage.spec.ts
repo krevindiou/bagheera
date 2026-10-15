@@ -355,6 +355,30 @@ describe('OperationsPage', () => {
     expect(wrapper.find('#operation-third-party').exists()).toBe(true);
   });
 
+  it('deletes the operation being edited, closes the drawer and refreshes the list', async () => {
+    mockGet({ operations: { items: [operation({ id: 'o1' })], total: 1, page: 1, pageSize: 20 } });
+    apiClient.POST.mockResolvedValueOnce({
+      data: { deletedCount: 1 },
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="operation-row"]').trigger('click');
+    const getCallsBefore = apiClient.GET.mock.calls.length;
+
+    await wrapper.findComponent(OperationForm).find('button.btn-outline-danger').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(apiClient.POST).toHaveBeenCalledWith('/operations/batch/delete', {
+      body: { ids: ['o1'] },
+    });
+    expect(wrapper.find('#operation-third-party').exists()).toBe(false);
+    expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
+  });
+
   it('paginates: Previous/Next are bounded, and Next re-queries the next page', async () => {
     mockGet({ operations: { items: [operation()], total: 45, page: 1, pageSize: 20 } });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));

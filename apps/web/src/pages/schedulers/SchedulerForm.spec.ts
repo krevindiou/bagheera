@@ -10,6 +10,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
+import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
@@ -97,9 +98,13 @@ describe('SchedulerForm', () => {
   beforeEach(() => {
     apiClient.POST.mockReset();
     apiClient.PATCH.mockReset();
+    apiClient.DELETE.mockReset();
     apiClient.GET.mockReset();
     apiClient.GET.mockResolvedValue(jsonResult(200, []));
     useToast().toasts.splice(0);
+    const { state, settle } = useConfirm();
+    settle(false);
+    state.visible = false;
   });
 
   it('creates a scheduler and emits saved', async () => {
@@ -150,6 +155,11 @@ describe('SchedulerForm', () => {
     expect(wrapper.text()).not.toContain('Enter an amount greater than zero.');
 
     expect(apiClient.POST).not.toHaveBeenCalled();
+  });
+
+  it("doesn't offer Delete when creating", () => {
+    const wrapper = mountForm();
+    expect(wrapper.find('button.btn-outline-danger').exists()).toBe(false);
   });
 
   it('prefills from the scheduler being edited, converting the stored amount', () => {
@@ -420,5 +430,48 @@ describe('SchedulerForm', () => {
 
     expect(document.activeElement).toBe(wrapper.find('#scheduler-amount').element);
     wrapper.unmount();
+  });
+
+  describe('delete', () => {
+    it('deletes the scheduler once confirmed and emits deleted', async () => {
+      apiClient.DELETE.mockResolvedValueOnce(jsonResult(200));
+      const wrapper = mountForm({ scheduler });
+
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      expect(useConfirm().state.options).toEqual({
+        body: 'Delete 1 scheduled operation? The operations it already created are kept.',
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(apiClient.DELETE).toHaveBeenCalledWith('/schedulers/{id}', {
+        params: { path: { id: 's1' } },
+      });
+      expect(useToast().toasts[0]?.text).toBe('Scheduled operation deleted');
+      expect(wrapper.emitted('deleted')).toHaveLength(1);
+    });
+
+    it('does nothing when the confirmation is cancelled', async () => {
+      const wrapper = mountForm({ scheduler });
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      useConfirm().settle(false);
+      await flushPromises();
+
+      expect(apiClient.DELETE).not.toHaveBeenCalled();
+      expect(wrapper.emitted('deleted')).toBeUndefined();
+    });
+
+    it("shows an error toast and doesn't emit deleted when the request fails", async () => {
+      apiClient.DELETE.mockResolvedValueOnce(jsonResult(500));
+      const wrapper = mountForm({ scheduler });
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
+      expect(wrapper.emitted('deleted')).toBeUndefined();
+    });
   });
 });

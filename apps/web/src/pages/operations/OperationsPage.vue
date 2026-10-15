@@ -402,6 +402,7 @@ function isEditable(operation: Operation): boolean {
         :operation="editingOperation"
         @saved="onSavedAndClose"
         @saved-and-new="onSaved"
+        @deleted="onSavedAndClose"
         @cancel="showForm = false"
       />
 

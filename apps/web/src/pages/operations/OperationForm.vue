@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormDrawer from '../../components/FormDrawer.vue';
+import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
@@ -29,13 +30,15 @@ const props = withDefaults(
   }>(),
   { banks: () => [], operation: null },
 );
-const emit = defineEmits<{ saved: []; savedAndNew: []; cancel: [] }>();
+const emit = defineEmits<{ saved: []; savedAndNew: []; deleted: []; cancel: [] }>();
 
 const { push: toast } = useToast();
+const { confirm } = useConfirm();
 const { t } = useI18n();
 const session = useSessionStore();
 
 const fields = ref<InstanceType<typeof OperationFields> | null>(null);
+const isDeleting = ref(false);
 
 const { handleSubmit, isSubmitting, resetForm } = useForm<OperationFormValues, OperationForm>({
   validationSchema: toTypedSchema(operationSchema),
@@ -77,6 +80,34 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
     fields.value?.focus();
   }
 });
+
+// There's no single-operation delete route; the batch one with a single id
+// does the same job (ownership-scoped, same business rules) without a
+// second server endpoint to maintain.
+async function onDelete() {
+  if (!props.operation) return;
+
+  const confirmed = await confirm({
+    body: t('operations.batch.confirmDelete', 1),
+    confirmLabel: t('common.delete'),
+    danger: true,
+  });
+  if (!confirmed) return;
+
+  isDeleting.value = true;
+  const { data, error, response } = await apiClient.POST('/operations/batch/delete', {
+    body: { ids: [props.operation.id] },
+  });
+  isDeleting.value = false;
+
+  if (!response.ok || !data?.deletedCount) {
+    toast(errorMessage(error) ?? t('operations.genericError'), 'error');
+    return;
+  }
+
+  toast(t('operations.deleted'), 'success');
+  emit('deleted');
+}
 </script>
 
 <template>
@@ -110,6 +141,15 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
         @click="onSubmitAndNew"
       >
         {{ $t('operations.submitAndNew') }}
+      </button>
+      <button
+        v-if="props.operation"
+        type="button"
+        class="btn btn-outline-danger"
+        :disabled="isSubmitting || isDeleting"
+        @click="onDelete"
+      >
+        {{ $t('common.delete') }}
       </button>
     </template>
   </FormDrawer>

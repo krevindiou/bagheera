@@ -14,6 +14,7 @@ import { formatDate } from '../../domain/money';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import type { Category, PaymentMethod } from '../../domain/referenceData';
+import SchedulerForm from './SchedulerForm.vue';
 import SchedulersPage from './SchedulersPage.vue';
 import type { Scheduler } from './schedulers.types';
 
@@ -115,6 +116,7 @@ describe('SchedulersPage', () => {
     await router.push({ name: 'schedulers', params: { accountId: ACCOUNT_ID } });
     apiClient.GET.mockReset();
     apiClient.POST.mockReset();
+    apiClient.DELETE.mockReset();
     mockGet();
     const { state, settle } = useConfirm();
     settle(false);
@@ -259,6 +261,30 @@ describe('SchedulersPage', () => {
 
     await wrapper.find('[data-testid="scheduler-row"]').trigger('click');
     expect(wrapper.find('#scheduler-third-party').exists()).toBe(true);
+  });
+
+  it('deletes the scheduler being edited, closes the drawer and reloads the list', async () => {
+    mockGet({ schedulers: { items: [scheduler({ id: 's1' })], total: 1, page: 1, pageSize: 20 } });
+    apiClient.DELETE.mockResolvedValueOnce({
+      data: undefined,
+      error: undefined,
+      response: new Response(null, { status: 200 }),
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    await wrapper.find('[data-testid="scheduler-row"]').trigger('click');
+    const getCallsBefore = apiClient.GET.mock.calls.length;
+
+    await wrapper.findComponent(SchedulerForm).find('button.btn-outline-danger').trigger('click');
+    useConfirm().settle(true);
+    await flushPromises();
+
+    expect(apiClient.DELETE).toHaveBeenCalledWith('/schedulers/{id}', {
+      params: { path: { id: 's1' } },
+    });
+    expect(wrapper.find('#scheduler-third-party').exists()).toBe(false);
+    expect(apiClient.GET.mock.calls.length).toBeGreaterThan(getCallsBefore);
   });
 
   it('paginates: Previous/Next are bounded, and Next re-queries the next page', async () => {

@@ -166,6 +166,7 @@ export default {
     submit: 'Enregistrer',
     submitAndNew: 'Enregistrer et ajouter une autre',
     saved: 'Opération enregistrée',
+    deleted: 'Opération supprimée',
     edit: 'Modifier',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération pour l'instant.",
@@ -236,6 +237,7 @@ export default {
     paused: 'En pause',
     created: 'Opération planifiée enregistrée',
     updated: 'Opération planifiée enregistrée',
+    deleted: 'Opération planifiée supprimée',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération planifiée pour l'instant.",
     validation: {

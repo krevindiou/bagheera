@@ -163,6 +163,7 @@ export default {
     submit: 'Save',
     submitAndNew: 'Save & add another',
     saved: 'Operation saved',
+    deleted: 'Operation deleted',
     edit: 'Edit',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No operations yet.',
@@ -233,6 +234,7 @@ export default {
     paused: 'Paused',
     created: 'Scheduled operation saved',
     updated: 'Scheduled operation saved',
+    deleted: 'Scheduled operation deleted',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No scheduled operations yet.',
     validation: {

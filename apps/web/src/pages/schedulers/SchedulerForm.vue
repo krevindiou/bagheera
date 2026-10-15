@@ -2,11 +2,13 @@
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { FIELD_LIMITS, MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormDrawer from '../../components/FormDrawer.vue';
 import FormField from '../../components/FormField.vue';
+import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
@@ -32,11 +34,13 @@ const props = withDefaults(
   }>(),
   { banks: () => [], scheduler: null },
 );
-const emit = defineEmits<{ saved: []; cancel: [] }>();
+const emit = defineEmits<{ saved: []; deleted: []; cancel: [] }>();
 
 const { push: toast } = useToast();
+const { confirm } = useConfirm();
 const { t, locale } = useI18n();
 const session = useSessionStore();
+const isDeleting = ref(false);
 
 function initialValues(): SchedulerFormValues {
   const s = props.scheduler;
@@ -87,6 +91,31 @@ const onSubmit = handleSubmit(async (submitted) => {
   toast(t(props.scheduler ? 'schedulers.updated' : 'schedulers.created'), 'success');
   emit('saved');
 });
+
+async function onDelete() {
+  if (!props.scheduler) return;
+
+  const confirmed = await confirm({
+    body: t('schedulers.batch.confirmDelete', 1),
+    confirmLabel: t('common.delete'),
+    danger: true,
+  });
+  if (!confirmed) return;
+
+  isDeleting.value = true;
+  const { error, response } = await apiClient.DELETE('/schedulers/{id}', {
+    params: { path: { id: props.scheduler.id } },
+  });
+  isDeleting.value = false;
+
+  if (!response.ok) {
+    toast(errorMessage(error) ?? t('schedulers.genericError'), 'error');
+    return;
+  }
+
+  toast(t('schedulers.deleted'), 'success');
+  emit('deleted');
+}
 </script>
 
 <template>
@@ -186,6 +215,15 @@ const onSubmit = handleSubmit(async (submitted) => {
     <template #actions>
       <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
         {{ $t('operations.submit') }}
+      </button>
+      <button
+        v-if="props.scheduler"
+        type="button"
+        class="btn btn-outline-danger"
+        :disabled="isSubmitting || isDeleting"
+        @click="onDelete"
+      >
+        {{ $t('common.delete') }}
       </button>
     </template>
   </FormDrawer>

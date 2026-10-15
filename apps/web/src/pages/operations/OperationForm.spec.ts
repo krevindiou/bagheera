@@ -9,6 +9,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
+import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import OperationForm from './OperationForm.vue';
@@ -96,6 +97,9 @@ describe('OperationForm', () => {
     apiClient.GET.mockReset();
     apiClient.GET.mockResolvedValue(jsonResult(200, []));
     useToast().toasts.splice(0);
+    const { state, settle } = useConfirm();
+    settle(false);
+    state.visible = false;
   });
 
   it('creates an operation and emits saved', async () => {
@@ -183,6 +187,11 @@ describe('OperationForm', () => {
   it("doesn't offer 'Save & add another' when editing", () => {
     const wrapper = mountForm({ operation });
     expect(wrapper.find('button.btn-outline-primary').exists()).toBe(false);
+  });
+
+  it("doesn't offer Delete when creating", () => {
+    const wrapper = mountForm();
+    expect(wrapper.find('button.btn-outline-danger').exists()).toBe(false);
   });
 
   it('prefills from the operation being edited, converting the stored amount', () => {
@@ -371,5 +380,59 @@ describe('OperationForm', () => {
 
     expect(document.activeElement).toBe(wrapper.find('#operation-amount').element);
     wrapper.unmount();
+  });
+
+  describe('delete', () => {
+    it('deletes the operation once confirmed and emits deleted', async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 1 }));
+      const wrapper = mountForm({ operation });
+
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      expect(useConfirm().state.options).toEqual({
+        body: "Delete 1 operation? This can't be undone.",
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(apiClient.POST).toHaveBeenCalledWith('/operations/batch/delete', {
+        body: { ids: ['o1'] },
+      });
+      expect(useToast().toasts[0]?.text).toBe('Operation deleted');
+      expect(wrapper.emitted('deleted')).toHaveLength(1);
+    });
+
+    it('does nothing when the confirmation is cancelled', async () => {
+      const wrapper = mountForm({ operation });
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      useConfirm().settle(false);
+      await flushPromises();
+
+      expect(apiClient.POST).not.toHaveBeenCalled();
+      expect(wrapper.emitted('deleted')).toBeUndefined();
+    });
+
+    it("shows an error toast and doesn't emit deleted when the request fails", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(500));
+      const wrapper = mountForm({ operation });
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
+      expect(wrapper.emitted('deleted')).toBeUndefined();
+    });
+
+    it("shows an error toast and doesn't emit deleted when the server drops the id (zero deleted)", async () => {
+      apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 0 }));
+      const wrapper = mountForm({ operation });
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      useConfirm().settle(true);
+      await flushPromises();
+
+      expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
+      expect(wrapper.emitted('deleted')).toBeUndefined();
+    });
   });
 });
