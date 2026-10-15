@@ -1,5 +1,11 @@
 import { IsBoolean, IsIn, IsInt, IsOptional, IsPositive, IsUUID, Max } from 'class-validator';
-import { AmountField, NotesField, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
+import {
+  AmountField,
+  IsOnOrAfter,
+  NotesField,
+  ThirdPartyField,
+  ValueDateField,
+} from '../../common/dto-fields';
 import {
   ENTRY_TYPES,
   FIELD_LIMITS,
@@ -46,8 +52,10 @@ export class CreateSchedulerDto {
   @IsBoolean()
   reconciled?: boolean;
 
+  // An inverted pair would stop the scheduler before it ever runs.
   @IsOptional()
   @ValueDateField()
+  @IsOnOrAfter('valueDate')
   limitDate?: string;
 
   @IsOptional()

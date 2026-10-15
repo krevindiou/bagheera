@@ -248,6 +248,8 @@ export default {
     empty: "Aucune opération planifiée pour l'instant.",
     validation: {
       frequencyValue: 'Saisissez un nombre entier entre 1 et {max}.',
+      limitDateBeforeValueDate:
+        "La date d'arrêt doit être postérieure ou égale à la première occurrence.",
     },
     batch: {
       delete: 'Supprimer la sélection',

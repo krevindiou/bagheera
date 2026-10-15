@@ -12,7 +12,10 @@ import {
   MaxLength,
   Min,
   MinLength,
+  registerDecorator,
   ValidateBy,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 import { isValidTimeZone } from './local-date';
 import { SUPPORTED_LOCALES } from './locale';
@@ -143,4 +146,34 @@ export function ValueDateField(): PropertyDecorator {
         `$property must be a YYYY-MM-DD date between ${MIN_VALUE_DATE} and ${MAX_VALUE_DATE}`,
     },
   });
+}
+
+/**
+ * One ValueDateField must be on or after another on the same DTO (a
+ * report's end date, a scheduler's stop date) — an inverted pair would
+ * otherwise silently match/generate nothing. Both are 'YYYY-MM-DD', so
+ * string order is chronological.
+ */
+export function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string): void {
+    registerDecorator({
+      name: 'isOnOrAfter',
+      target: object.constructor,
+      propertyName,
+      constraints: [property],
+      options: validationOptions,
+      validator: {
+        validate(value: unknown, args: ValidationArguments) {
+          const [relatedPropertyName] = args.constraints as [string];
+          const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
+          if (typeof value !== 'string' || typeof relatedValue !== 'string') return true;
+          return value >= relatedValue;
+        },
+        defaultMessage(args: ValidationArguments) {
+          const [relatedPropertyName] = args.constraints as [string];
+          return `${args.property} must be on or after ${relatedPropertyName}`;
+        },
+      },
+    });
+  };
 }

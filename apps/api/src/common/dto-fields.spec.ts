@@ -7,6 +7,7 @@ import {
   AmountField,
   BankNameField,
   EmailField,
+  IsOnOrAfter,
   NotesField,
   ReportTitleField,
   SecretField,
@@ -44,6 +45,10 @@ class SignedAmountFieldHost {
 }
 class ValueDateFieldHost {
   @ValueDateField() valueDate!: string;
+}
+class IsOnOrAfterHost {
+  start!: string;
+  @IsOnOrAfter('start') end!: string;
 }
 
 describe('EmailField', () => {
@@ -222,6 +227,28 @@ describe('ValueDateField', () => {
     const dto = plainToInstance(ValueDateFieldHost, {});
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('isValueDate');
+  });
+});
+
+describe('IsOnOrAfter', () => {
+  it('accepts an end on or after the related start', async () => {
+    expect(
+      await validate(plainToInstance(IsOnOrAfterHost, { start: '2026-01-01', end: '2026-02-01' })),
+    ).toEqual([]);
+    expect(
+      await validate(plainToInstance(IsOnOrAfterHost, { start: '2026-01-01', end: '2026-01-01' })),
+    ).toEqual([]);
+  });
+
+  it('rejects an end before the related start, naming both fields', async () => {
+    const dto = plainToInstance(IsOnOrAfterHost, { start: '2026-02-01', end: '2026-01-31' });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toEqual({ isOnOrAfter: 'end must be on or after start' });
+  });
+
+  it('leaves a non-string pair alone — unrelated fields may validate it separately', async () => {
+    const dto = plainToInstance(IsOnOrAfterHost, { end: '2026-01-01' });
+    expect(await validate(dto)).toEqual([]);
   });
 });
 

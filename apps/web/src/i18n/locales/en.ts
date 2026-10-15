@@ -244,6 +244,7 @@ export default {
     empty: 'No scheduled operations yet.',
     validation: {
       frequencyValue: 'Enter a whole number between 1 and {max}.',
+      limitDateBeforeValueDate: 'Stop date must be on or after the first occurrence.',
     },
     batch: {
       delete: 'Delete selected',

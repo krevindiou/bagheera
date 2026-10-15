@@ -190,7 +190,11 @@ async function onDelete() {
         <FormField
           :label="$t('schedulers.limitDate')"
           for="scheduler-limit-date"
-          :error="errors.limitDate && $t('operations.validation.valueDate', valueDateRange())"
+          :error="
+            errors.limitDate === 'beforeValueDate'
+              ? $t('schedulers.validation.limitDateBeforeValueDate')
+              : errors.limitDate && $t('operations.validation.valueDate', valueDateRange())
+          "
         >
           <input
             id="scheduler-limit-date"

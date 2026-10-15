@@ -11,10 +11,7 @@ import {
   Max,
   MaxLength,
   Min,
-  registerDecorator,
   ValidateIf,
-  ValidationArguments,
-  ValidationOptions,
 } from 'class-validator';
 import {
   DATA_GROUPINGS,
@@ -26,33 +23,7 @@ import {
   type PeriodGrouping,
   type ReportType,
 } from '@bagheera/reference-data';
-import { ReportTitleField, ValueDateField } from '../../common/dto-fields';
-
-// An inverted range would silently match nothing. Both are ValueDateField
-// ('YYYY-MM-DD'), so string order is chronological.
-function IsOnOrAfter(property: string, validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string): void {
-    registerDecorator({
-      name: 'isOnOrAfter',
-      target: object.constructor,
-      propertyName,
-      constraints: [property],
-      options: validationOptions,
-      validator: {
-        validate(value: unknown, args: ValidationArguments) {
-          const [relatedPropertyName] = args.constraints as [string];
-          const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
-          if (typeof value !== 'string' || typeof relatedValue !== 'string') return true;
-          return value >= relatedValue;
-        },
-        defaultMessage(args: ValidationArguments) {
-          const [relatedPropertyName] = args.constraints as [string];
-          return `${args.property} must be on or after ${relatedPropertyName}`;
-        },
-      },
-    });
-  };
-}
+import { IsOnOrAfter, ReportTitleField, ValueDateField } from '../../common/dto-fields';
 
 export class CreateReportDto {
   @IsIn(REPORT_TYPES)

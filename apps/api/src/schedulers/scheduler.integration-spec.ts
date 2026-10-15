@@ -122,6 +122,26 @@ describe('schedulers', () => {
       },
     );
 
+    // A limit date before the first occurrence would stop the scheduler
+    // before it ever runs.
+    it('rejects a limitDate before valueDate, storing nothing', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      const res = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { valueDate: '2026-07-05', limitDate: '2026-06-01' }),
+      );
+      expect(res.status).toBe(400);
+      const rows = await getDb(app)
+        .select()
+        .from(scheduler)
+        .where(eq(scheduler.accountId, accountId));
+      expect(rows).toEqual([]);
+    });
+
     it('rejects a mismatched payment method type', async () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
@@ -232,6 +252,30 @@ describe('schedulers', () => {
 
       const res = await mutate('patch', `/schedulers/${id}`, schedulerPayload(otherAccountId));
       expect(res.status).toBe(400);
+    });
+
+    // The update DTO carries the full payload (accountId is read-only but
+    // still submitted), so this is the same IsOnOrAfter check as on create.
+    it('rejects an edit that moves limitDate before valueDate, leaving the stored row untouched', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { valueDate: '2026-07-05', limitDate: '2026-08-01' }),
+      );
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+
+      const res = await mutate(
+        'patch',
+        `/schedulers/${id}`,
+        schedulerPayload(accountId, { valueDate: '2026-07-05', limitDate: '2026-06-01' }),
+      );
+      expect(res.status).toBe(400);
+
+      const [row] = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
+      expect(row.limitDate).toBe('2026-08-01');
     });
   });
 

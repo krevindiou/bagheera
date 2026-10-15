@@ -384,6 +384,24 @@ describe('SchedulerForm', () => {
     expect(limitDate.classes()).toContain('is-invalid');
   });
 
+  it('refuses a limit date before the first occurrence, with a dedicated message', async () => {
+    const wrapper = mountForm();
+    await wrapper.find('#scheduler-third-party').setValue('Landlord');
+    await wrapper.find('#scheduler-amount').setValue('50');
+    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+    await wrapper.find('#scheduler-value-date').setValue('2026-07-05');
+    await wrapper.find('#scheduler-limit-date').setValue('2026-06-01');
+    await submitAndSettle(wrapper);
+
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    const limitDate = wrapper.get('#scheduler-limit-date');
+    expect(limitDate.element.closest('.mb-3')!.textContent).toContain(
+      'Stop date must be on or after the first occurrence.',
+    );
+    expect(limitDate.element.closest('.mb-3')!.textContent).not.toContain('Enter a date between');
+    expect(limitDate.classes()).toContain('is-invalid');
+  });
+
   it('submits active: false once unchecked', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mountForm();
