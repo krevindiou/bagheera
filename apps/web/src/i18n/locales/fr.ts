@@ -224,6 +224,7 @@ export default {
     editTitle: "Modifier l'opération planifiée",
     addScheduler: 'Nouvelle opération planifiée',
     firstOccurrence: 'Première occurrence',
+    nextOccurrence: 'Prochaine occurrence',
     pastOccurrencesHint:
       "Les occurrences passées seront ajoutées au compte lors de l'enregistrement.",
     every: 'Tous les',
@@ -239,6 +240,7 @@ export default {
     limitDate: 'Arrêter après (facultatif)',
     active: 'Actif',
     paused: 'En pause',
+    ended: 'Terminé',
     created: 'Opération planifiée enregistrée',
     updated: 'Opération planifiée enregistrée',
     deleted: 'Opération planifiée supprimée',

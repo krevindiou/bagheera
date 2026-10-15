@@ -95,6 +95,11 @@ function amountLabel(scheduler: Scheduler): string {
   return formatMoney(minorUnits, currency.value);
 }
 
+// No next date means paused, or the limit date has passed.
+function nextOccurrenceGap(scheduler: Scheduler): string {
+  return scheduler.active ? t('schedulers.ended') : t('schedulers.paused');
+}
+
 function selectRowLabel(scheduler: Scheduler): string {
   return t('common.selectRow', { name: scheduler.thirdParty });
 }
@@ -175,7 +180,7 @@ async function onSaved() {
               <th class="text-end">{{ $t('operations.amount') }}</th>
               <th class="d-none d-md-table-cell">{{ $t('operations.paymentMethod') }}</th>
               <th class="d-none d-md-table-cell">{{ $t('operations.category') }}</th>
-              <th class="d-none d-md-table-cell">{{ $t('schedulers.firstOccurrence') }}</th>
+              <th class="d-none d-md-table-cell">{{ $t('schedulers.nextOccurrence') }}</th>
               <th>{{ $t('schedulers.frequencyUnit') }}</th>
               <th></th>
             </tr>
@@ -223,8 +228,14 @@ async function onSaved() {
               <td class="d-none d-md-table-cell">
                 {{ scheduler.categoryId ? categoryNames.get(scheduler.categoryId) : '' }}
               </td>
-              <td class="d-none d-md-table-cell text-nowrap">
-                {{ formatDate(scheduler.valueDate) }}
+              <td
+                class="d-none d-md-table-cell text-nowrap"
+                data-testid="scheduler-next-occurrence"
+              >
+                <template v-if="scheduler.nextOccurrence">
+                  {{ formatDate(scheduler.nextOccurrence) }}
+                </template>
+                <span v-else class="text-muted">{{ nextOccurrenceGap(scheduler) }}</span>
               </td>
               <td>
                 {{

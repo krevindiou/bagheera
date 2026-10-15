@@ -109,3 +109,35 @@ export function dueOccurrences(params: DueOccurrencesParams): string[] {
   }
   return dates;
 }
+
+export interface NextOccurrenceParams {
+  valueDate: string;
+  frequencyUnit: FrequencyUnit;
+  frequencyValue: number;
+  // The generation cursor, as for dueOccurrences' `after`.
+  after: string | null;
+  limitDate: string | null;
+  active: boolean;
+}
+
+// Past any occurrence: the cursor never runs ahead of "today", and an
+// interval is capped well short of reaching this from there.
+const NO_LIMIT_HORIZON = '9999-12-31';
+
+// The next occurrence generation will produce, through the same stepping as
+// dueOccurrences so the two can't disagree; null once paused or past the
+// limit date. May be in the past when generation is behind.
+export function nextOccurrence(params: NextOccurrenceParams): string | null {
+  if (!params.active) {
+    return null;
+  }
+  const [next] = dueOccurrences({
+    valueDate: params.valueDate,
+    frequencyUnit: params.frequencyUnit,
+    frequencyValue: params.frequencyValue,
+    after: params.after,
+    horizon: params.limitDate ?? NO_LIMIT_HORIZON,
+    limit: 1,
+  });
+  return next ?? null;
+}

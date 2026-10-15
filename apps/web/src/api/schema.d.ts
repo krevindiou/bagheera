@@ -782,6 +782,7 @@ export interface components {
             limitDate: string | null;
             frequencyValue: number;
             active: boolean;
+            nextOccurrence: string | null;
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */

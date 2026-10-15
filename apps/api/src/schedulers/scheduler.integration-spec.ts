@@ -256,6 +256,51 @@ describe('schedulers', () => {
     expect(item).not.toHaveProperty('lastGeneratedDate');
   });
 
+  describe('nextOccurrence', () => {
+    async function listedNextOccurrence(overrides: Record<string, unknown>) {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const accountId = await createAccount(mutate, await createBank(mutate));
+      const created = await mutate('post', '/schedulers', schedulerPayload(accountId, overrides));
+      await waitForSchedulerGeneration(app);
+      const res = await agent.get(`/schedulers?accountId=${accountId}&page=1`).expect(200);
+      const [item] = (res.body as { items: { nextOccurrence: string | null }[] }).items;
+      return {
+        created: (created.body as { scheduler: { nextOccurrence: string | null } }).scheduler,
+        listed: item.nextOccurrence,
+      };
+    }
+
+    it('is the first occurrence while nothing has been generated yet', async () => {
+      const { created, listed } = await listedNextOccurrence({});
+      expect(created.nextOccurrence).toBe('2099-01-01');
+      expect(listed).toBe('2099-01-01');
+    });
+
+    it('moves past the occurrences already generated', async () => {
+      const { listed } = await listedNextOccurrence({ valueDate: '2020-01-01' });
+      // Monthly on the 1st, generated through today (UTC, as in the test app).
+      const today = new Date();
+      const firstOfNextMonth = new Date(
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1),
+      );
+      expect(listed).toBe(firstOfNextMonth.toISOString().slice(0, 10));
+    });
+
+    it('is null while paused', async () => {
+      const { created, listed } = await listedNextOccurrence({ active: false });
+      expect(created.nextOccurrence).toBeNull();
+      expect(listed).toBeNull();
+    });
+
+    it('is null once past the limit date', async () => {
+      const { listed } = await listedNextOccurrence({
+        valueDate: '2020-01-01',
+        limitDate: '2020-03-15',
+      });
+      expect(listed).toBeNull();
+    });
+  });
+
   describe('DELETE /schedulers/:id', () => {
     it('deletes the scheduler but leaves generated operations, unlinked', async () => {
       const { mutate } = await seedSignedInMember(app);

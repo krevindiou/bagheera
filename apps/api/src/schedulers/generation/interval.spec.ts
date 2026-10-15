@@ -1,4 +1,9 @@
-import { dueOccurrences, MAX_OCCURRENCES_PER_RUN, occurrenceDate } from './interval';
+import {
+  dueOccurrences,
+  MAX_OCCURRENCES_PER_RUN,
+  nextOccurrence,
+  occurrenceDate,
+} from './interval';
 
 describe('occurrenceDate', () => {
   it('occurrence 0 is the value date itself, for any unit', () => {
@@ -139,5 +144,57 @@ describe('dueOccurrences', () => {
         MAX_OCCURRENCES_PER_RUN,
       );
     });
+  });
+});
+
+describe('nextOccurrence', () => {
+  const monthly = {
+    valueDate: '2026-07-05',
+    frequencyUnit: 'month' as const,
+    frequencyValue: 1,
+    after: null,
+    limitDate: null,
+    active: true,
+  };
+
+  it('is the first occurrence while nothing has been generated', () => {
+    expect(nextOccurrence(monthly)).toBe('2026-07-05');
+  });
+
+  it('is the occurrence right after the generation cursor', () => {
+    expect(nextOccurrence({ ...monthly, after: '2026-10-05' })).toBe('2026-11-05');
+  });
+
+  it('follows the same month-end clamping as generation', () => {
+    expect(nextOccurrence({ ...monthly, valueDate: '2025-01-31', after: '2025-01-31' })).toBe(
+      '2025-02-28',
+    );
+    expect(nextOccurrence({ ...monthly, valueDate: '2025-01-31', after: '2025-02-28' })).toBe(
+      '2025-03-31',
+    );
+  });
+
+  it('agrees with dueOccurrences on what the next run generates', () => {
+    const after = '2026-08-05';
+    const [due] = dueOccurrences({ ...monthly, after, horizon: '2030-01-01', limit: 1 });
+    expect(nextOccurrence({ ...monthly, after })).toBe(due);
+  });
+
+  it('is null while paused', () => {
+    expect(nextOccurrence({ ...monthly, active: false })).toBeNull();
+  });
+
+  it('includes an occurrence exactly on the limit date', () => {
+    expect(nextOccurrence({ ...monthly, after: '2026-09-05', limitDate: '2026-10-05' })).toBe(
+      '2026-10-05',
+    );
+  });
+
+  it('is null once the next occurrence would fall after the limit date', () => {
+    expect(nextOccurrence({ ...monthly, after: '2026-10-05', limitDate: '2026-11-01' })).toBeNull();
+  });
+
+  it('is null when the limit date precedes the first occurrence', () => {
+    expect(nextOccurrence({ ...monthly, limitDate: '2026-07-01' })).toBeNull();
   });
 });

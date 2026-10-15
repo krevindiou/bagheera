@@ -72,6 +72,7 @@ const scheduler: Scheduler = {
   frequencyUnit: 'month',
   frequencyValue: 1,
   active: true,
+  nextOccurrence: '2026-02-15',
 };
 
 function mountForm(overrides: { scheduler?: Scheduler | null; attachTo?: Element } = {}) {

@@ -18,11 +18,25 @@ import { OwnershipService } from '../security/ownership.service';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { GenerationQueueService } from './generation-queue.service';
-import { columnsExcept } from '../db/columns';
+import { nextOccurrence } from './generation/interval';
+import type { SchedulerDto } from './dto/scheduler-response.dto';
 
-// Every scheduler column but the internal generation cursor
-// (lastGeneratedDate), which no client reads — what list/create respond with.
-const schedulerResponseColumns = columnsExcept(scheduler, 'lastGeneratedDate');
+// The internal generation cursor never reaches a client; only the next
+// occurrence derived from it does.
+function toSchedulerResponse(row: typeof scheduler.$inferSelect): SchedulerDto {
+  const { lastGeneratedDate, ...rest } = row;
+  return {
+    ...rest,
+    nextOccurrence: nextOccurrence({
+      valueDate: row.valueDate,
+      frequencyUnit: row.frequencyUnit,
+      frequencyValue: row.frequencyValue,
+      after: lastGeneratedDate,
+      limitDate: row.limitDate,
+      active: row.active,
+    }),
+  };
+}
 
 @Injectable()
 export class SchedulerService {
@@ -37,7 +51,7 @@ export class SchedulerService {
     await this.ownership.requireOwnedAccount(accountId as AccountId, memberId);
 
     const rows = await this.db
-      .select(schedulerResponseColumns)
+      .select()
       .from(scheduler)
       .where(eq(scheduler.accountId, accountId))
       .orderBy(desc(scheduler.createdAt), desc(scheduler.id))
@@ -49,7 +63,7 @@ export class SchedulerService {
       .from(scheduler)
       .where(eq(scheduler.accountId, accountId));
 
-    return { items: rows, total, page, pageSize: PAGE_SIZE };
+    return { items: rows.map(toSchedulerResponse), total, page, pageSize: PAGE_SIZE };
   }
 
   async create(memberId: MemberId, dto: CreateSchedulerDto) {
@@ -93,7 +107,7 @@ export class SchedulerService {
           frequencyValue: dto.frequencyValue,
           active: dto.active ?? true,
         })
-        .returning(schedulerResponseColumns);
+        .returning();
 
       return created;
     });
@@ -101,7 +115,7 @@ export class SchedulerService {
     // May already be due (a value date today or in the past).
     await this.generation.enqueueScheduler(created.id);
 
-    return created;
+    return toSchedulerResponse(created);
   }
 
   async update(memberId: MemberId, id: string, dto: UpdateSchedulerDto): Promise<void> {

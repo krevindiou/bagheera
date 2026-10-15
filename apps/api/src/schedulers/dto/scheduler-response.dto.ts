@@ -21,6 +21,10 @@ export class SchedulerDto {
   frequencyUnit!: FrequencyUnit;
   frequencyValue!: number;
   active!: boolean;
+  // The next date generation will create an operation on (from the first
+  // occurrence and what has been generated so far); null while paused or
+  // once past the limit date.
+  nextOccurrence!: string | null;
   createdAt!: Date;
   updatedAt!: Date;
 }
@@ -43,8 +47,11 @@ export class SchedulerBatchDeleteResponseDto {
   deletedCount!: number;
 }
 
-// See common/dto/same-keys.ts. lastGeneratedDate is selected out of every
-// response.
+// See common/dto/same-keys.ts. lastGeneratedDate is kept out of every
+// response; nextOccurrence is derived from it.
 export type SchedulerDtoMatchesRow = Assert<
-  SameKeys<SchedulerDto, Omit<typeof scheduler.$inferSelect, 'lastGeneratedDate'>>
+  SameKeys<
+    Omit<SchedulerDto, 'nextOccurrence'>,
+    Omit<typeof scheduler.$inferSelect, 'lastGeneratedDate'>
+  >
 >;

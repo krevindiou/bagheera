@@ -69,6 +69,7 @@ function scheduler(overrides: Partial<Scheduler> = {}): Scheduler {
     frequencyUnit: 'month',
     frequencyValue: 1,
     active: true,
+    nextOccurrence: '2026-11-15',
     ...overrides,
   };
 }
@@ -207,6 +208,7 @@ describe('SchedulersPage', () => {
           scheduler({
             id: 's2',
             active: false,
+            nextOccurrence: null,
             debit: null,
             credit: 250000,
             frequencyValue: 2,
@@ -227,11 +229,36 @@ describe('SchedulersPage', () => {
     expect(rows[0].find('.dot').attributes('aria-label')).toBe('Active');
     expect(rows[0].text()).toContain('-$50.00');
     expect(rows[0].text()).toContain('Check');
-    expect(rows[0].text()).toContain(formatDate('2026-01-15'));
+    expect(rows[0].text()).toContain(formatDate('2026-11-15'));
     expect(rows[1].find('.dot').classes()).not.toContain('dot-active');
     expect(rows[1].find('.dot').attributes('aria-label')).toBe('Paused');
     expect(rows[1].text()).toContain('+$25.00');
     expect(rows[1].text()).toContain('Every 2 week(s)');
+  });
+
+  it('shows the next occurrence rather than the first, and why there is none when paused or ended', async () => {
+    mockGet({
+      schedulers: {
+        items: [
+          scheduler({ id: 's1', valueDate: '2026-07-05', nextOccurrence: '2026-11-05' }),
+          scheduler({ id: 's2', active: false, nextOccurrence: null }),
+          scheduler({ id: 's3', limitDate: '2026-03-01', nextOccurrence: null }),
+        ],
+        total: 3,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('thead').text()).toContain('Next occurrence');
+    expect(wrapper.find('thead').text()).not.toContain('First occurrence');
+    const cells = wrapper.findAll('[data-testid="scheduler-next-occurrence"]');
+    expect(cells[0].text()).toBe(formatDate('2026-11-05'));
+    expect(cells[0].text()).not.toContain(formatDate('2026-07-05'));
+    expect(cells[1].text()).toBe('Paused');
+    expect(cells[2].text()).toBe('Ended');
   });
 
   it('shows the limit date compactly under the frequency when one is set, and nothing when not', async () => {
