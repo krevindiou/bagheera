@@ -6,6 +6,7 @@ import { apiClient } from '../api/client';
 import { queryKeys } from '../api/queryKeys';
 import { unwrap } from '../api/unwrap';
 import type { SearchCriteria } from '../domain/referenceData';
+import { usePageQuery } from './usePageQuery';
 import { useToast } from './useToast';
 
 const EMPTY_PAGE = { items: [], total: 0, page: 1, pageSize: PAGE_SIZE };
@@ -25,7 +26,7 @@ export function useOperationSearch(accountId: Ref<string>) {
   const { push: toast } = useToast();
   const queryClient = useQueryClient();
 
-  const page = ref(1);
+  const page = usePageQuery();
   const panelOpen = ref(false);
   // What the panel's fields are hydrated with when it opens: the recalled
   // criteria on restore, or the last submitted ones after a search.

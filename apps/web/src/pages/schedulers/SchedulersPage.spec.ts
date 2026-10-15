@@ -339,6 +339,78 @@ describe('SchedulersPage', () => {
     });
   });
 
+  it('starts from the ?page= query param', async () => {
+    mockGet({ schedulers: { items: [scheduler()], total: 45, page: 3, pageSize: 20 } });
+    await router.push({
+      name: 'schedulers',
+      params: { accountId: ACCOUNT_ID },
+      query: { page: '3' },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(apiClient.GET).toHaveBeenCalledWith('/schedulers', {
+      params: { query: { accountId: ACCOUNT_ID, page: 3 } },
+    });
+  });
+
+  it.each([['0'], ['-1'], ['abc'], [undefined]])(
+    'normalizes an invalid ?page=%s to page 1',
+    async (raw) => {
+      mockGet({ schedulers: { items: [scheduler()], total: 1, page: 1, pageSize: 20 } });
+      await router.push({
+        name: 'schedulers',
+        params: { accountId: ACCOUNT_ID },
+        query: raw === undefined ? {} : { page: raw },
+      });
+      wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+      await flushPromises();
+
+      expect(apiClient.GET).toHaveBeenCalledWith('/schedulers', {
+        params: { query: { accountId: ACCOUNT_ID, page: 1 } },
+      });
+    },
+  );
+
+  it('keeps the current page in the ?page= query param via router.replace, not push', async () => {
+    // Echoes the requested page back, like the real API, so the pager's
+    // Previous/Next bounds (driven by the loaded page) track every click.
+    apiClient.GET.mockImplementation(
+      async (path: string, options?: { params?: { query?: { page?: number } } }) => {
+        const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+        if (path === '/accounts') return ok([account]);
+        if (path === '/banks') return ok([bank]);
+        if (path === '/reference-data/categories') return ok([category]);
+        if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+        if (path === '/schedulers') {
+          return ok({
+            items: [scheduler()],
+            total: 45,
+            page: options?.params?.query?.page ?? 1,
+            pageSize: 20,
+          });
+        }
+        return ok(undefined);
+      },
+    );
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+    const replaceSpy = vi.spyOn(router, 'replace');
+    const pushSpy = vi.spyOn(router, 'push');
+
+    // Re-found after each click: the brief isPending loading state while
+    // fetching a never-before-seen page tears down and rebuilds the pager.
+    await wrapper.findAll('nav button')[1].trigger('click');
+    await flushPromises();
+    expect(router.currentRoute.value.query.page).toBe('2');
+    expect(replaceSpy).toHaveBeenCalled();
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    await wrapper.findAll('nav button')[0].trigger('click');
+    await flushPromises();
+    expect(router.currentRoute.value.query.page).toBeUndefined();
+  });
+
   it('resets to page 1 when navigating to a different account', async () => {
     const ACCOUNT_ID_2 = '00000000-0000-7000-8000-000000000402';
     mockGet({ schedulers: { items: [scheduler()], total: 45, page: 1, pageSize: 20 } });

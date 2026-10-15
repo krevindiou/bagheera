@@ -404,6 +404,81 @@ describe('OperationsPage', () => {
     });
   });
 
+  it('starts from the ?page= query param', async () => {
+    mockGet({ operations: { items: [operation()], total: 45, page: 3, pageSize: 20 } });
+    await router.push({
+      name: 'operations',
+      params: { accountId: ACCOUNT_ID },
+      query: { page: '3' },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
+      params: { query: { accountId: ACCOUNT_ID, page: 3 } },
+    });
+  });
+
+  it.each([['0'], ['-1'], ['abc'], [undefined]])(
+    'normalizes an invalid ?page=%s to page 1',
+    async (raw) => {
+      mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
+      await router.push({
+        name: 'operations',
+        params: { accountId: ACCOUNT_ID },
+        query: raw === undefined ? {} : { page: raw },
+      });
+      wrapper = mount(OperationsPage, withGlobalPlugins(router));
+      await flushPromises();
+
+      expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
+        params: { query: { accountId: ACCOUNT_ID, page: 1 } },
+      });
+    },
+  );
+
+  it('keeps the current page in the ?page= query param via router.replace, not push', async () => {
+    // Echoes the requested page back, like the real API, so the pager's
+    // Previous/Next bounds (driven by the loaded page) track every click.
+    apiClient.GET.mockImplementation(
+      async (path: string, options?: { params?: { query?: { page?: number } } }) => {
+        const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
+        if (path === '/accounts') return ok([account]);
+        if (path === '/banks') return ok([bank]);
+        if (path === '/reference-data/categories') return ok([category]);
+        if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
+        if (path === '/accounts/{id}/balance')
+          return ok({ balance: m(1000), reconciledBalance: m(900) });
+        if (path === '/accounts/{id}/chart') return ok(null);
+        if (path === '/operations') {
+          return ok({
+            items: [operation()],
+            total: 45,
+            page: options?.params?.query?.page ?? 1,
+            pageSize: 20,
+          });
+        }
+        return ok(undefined);
+      },
+    );
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+    const replaceSpy = vi.spyOn(router, 'replace');
+    const pushSpy = vi.spyOn(router, 'push');
+
+    // Re-found after each click: the brief isPending loading state while
+    // fetching a never-before-seen page tears down and rebuilds the pager.
+    await wrapper.findAll('nav button')[1].trigger('click');
+    await flushPromises();
+    expect(router.currentRoute.value.query.page).toBe('2');
+    expect(replaceSpy).toHaveBeenCalled();
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    await wrapper.findAll('nav button')[0].trigger('click');
+    await flushPromises();
+    expect(router.currentRoute.value.query.page).toBeUndefined();
+  });
+
   it('toggles the search panel and runs a search through the mutation', async () => {
     apiClient.POST.mockResolvedValueOnce({
       data: { items: [operation()], total: 1, page: 1, pageSize: 20 },

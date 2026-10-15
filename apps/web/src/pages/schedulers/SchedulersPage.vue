@@ -9,6 +9,7 @@ import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useAccountContext } from '../../composables/useAccountContext';
 import { usePageTitle } from '../../composables/useDocumentTitle';
+import { usePageQuery } from '../../composables/usePageQuery';
 import {
   useAccountsQuery,
   useBanksQuery,
@@ -32,7 +33,7 @@ const accountId = computed(() => route.params.accountId as string);
 
 const queryClient = useQueryClient();
 
-const page = ref(1);
+const page = usePageQuery();
 watch(accountId, () => {
   page.value = 1;
 });

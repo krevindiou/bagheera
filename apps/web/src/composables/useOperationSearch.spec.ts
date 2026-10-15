@@ -1,6 +1,7 @@
 import { defineComponent, h, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
+import { createMemoryHistory, createRouter, type Router } from 'vue-router';
 import { queryKeys } from '../api/queryKeys';
 import { asMockedApiClient, mockApiClient } from '../test-support/mockApiClient';
 import { queuedToastText } from '../test-support/queuedToastText';
@@ -12,6 +13,14 @@ import { apiClient as realApiClient } from '../api/client';
 import { useOperationSearch } from './useOperationSearch';
 
 const apiClient = asMockedApiClient(realApiClient);
+
+function createTestRouter(): Router {
+  const stub = { template: '<div />' };
+  return createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/operations', name: 'operations', component: stub }],
+  });
+}
 
 const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
 const page = (overrides: Record<string, unknown> = {}) => ({
@@ -26,10 +35,14 @@ const page = (overrides: Record<string, unknown> = {}) => ({
 const ACTIVE = page({ active: true, criteria: { thirdParty: 'Foo' } });
 
 // Runs the composable inside a mounted component, since useQuery needs the
-// app's QueryClient (returned too, for cache-level assertions).
-function run(accountId = ref('acc-1')) {
+// app's QueryClient (returned too, for cache-level assertions) and the
+// page/query sync needs a real route.
+async function run(accountId = ref('acc-1'), router: Router = createTestRouter()) {
+  if (router.currentRoute.value.name === undefined) {
+    await router.push({ name: 'operations' });
+  }
   let result!: ReturnType<typeof useOperationSearch>;
-  const { global, queryClient } = withGlobalPlugins();
+  const { global, queryClient } = withGlobalPlugins(router);
   mount(
     defineComponent({
       setup() {
@@ -39,7 +52,7 @@ function run(accountId = ref('acc-1')) {
     }),
     { global },
   );
-  return { search: result, accountId, queryClient };
+  return { search: result, accountId, queryClient, router };
 }
 
 describe('useOperationSearch', () => {
@@ -51,7 +64,7 @@ describe('useOperationSearch', () => {
 
   it("lists the account's page through GET /operations, closed and inactive with no remembered search", async () => {
     apiClient.GET.mockResolvedValue(ok(page({ total: 3 })));
-    const { search } = run();
+    const { search } = await run();
     await flushPromises();
 
     expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
@@ -64,7 +77,7 @@ describe('useOperationSearch', () => {
 
   it('restores a remembered search once: hydrated but closed on load, never reopened by a later refetch', async () => {
     apiClient.GET.mockResolvedValue(ok(ACTIVE));
-    const { search, queryClient } = run();
+    const { search, queryClient } = await run();
     await flushPromises();
 
     expect(search.isActive.value).toBe(true);
@@ -92,7 +105,7 @@ describe('useOperationSearch', () => {
       delete remembered.accountId;
       return ok(page({ total: 1 }));
     });
-    const { search } = run();
+    const { search } = await run();
     await flushPromises();
     search.page.value = 2;
     await flushPromises();
@@ -119,7 +132,7 @@ describe('useOperationSearch', () => {
       error: { message: 'boom' },
       response: new Response(null, { status: 500 }),
     });
-    const { search } = run();
+    const { search } = await run();
     await flushPromises();
     search.openPanel();
 
@@ -133,7 +146,7 @@ describe('useOperationSearch', () => {
   it('clears the remembered search: DELETE, panel closed, back to page 1 and refetched unfiltered', async () => {
     apiClient.GET.mockResolvedValueOnce(ok(ACTIVE)).mockResolvedValue(ok(page()));
     apiClient.DELETE.mockResolvedValueOnce(ok(undefined));
-    const { search } = run();
+    const { search } = await run();
     await flushPromises();
     expect(search.isActive.value).toBe(true);
 
@@ -155,7 +168,7 @@ describe('useOperationSearch', () => {
       error: { message: 'boom' },
       response: new Response(null, { status: 500 }),
     });
-    const { search } = run();
+    const { search } = await run();
     await flushPromises();
     search.closePanel();
 
@@ -169,7 +182,7 @@ describe('useOperationSearch', () => {
 
   it("switching account resets the page and panel, then restores the new account's own search", async () => {
     apiClient.GET.mockResolvedValue(ok(page()));
-    const { search, accountId } = run();
+    const { search, accountId } = await run();
     await flushPromises();
     search.page.value = 3;
     search.openPanel();
@@ -185,5 +198,48 @@ describe('useOperationSearch', () => {
     });
     expect(search.panelOpen.value).toBe(false);
     expect(search.criteria.value).toEqual({ thirdParty: 'Bar' });
+  });
+
+  it('starts from the ?page= query param', async () => {
+    apiClient.GET.mockResolvedValue(ok(page()));
+    const router = createTestRouter();
+    await router.push({ name: 'operations', query: { page: '3' } });
+    const { search } = await run(ref('acc-1'), router);
+    await flushPromises();
+
+    expect(search.page.value).toBe(3);
+    expect(apiClient.GET).toHaveBeenCalledWith('/operations', {
+      params: { query: { accountId: 'acc-1', page: 3 } },
+    });
+  });
+
+  it.each([['0'], ['-1'], ['abc'], [''], [undefined]])(
+    'normalizes an invalid ?page=%s to page 1',
+    async (raw) => {
+      apiClient.GET.mockResolvedValue(ok(page()));
+      const router = createTestRouter();
+      await router.push({ name: 'operations', query: raw === undefined ? {} : { page: raw } });
+      const { search } = await run(ref('acc-1'), router);
+      await flushPromises();
+
+      expect(search.page.value).toBe(1);
+    },
+  );
+
+  it('writes the page to the URL via router.replace, omitting the param for page 1', async () => {
+    apiClient.GET.mockResolvedValue(ok(page()));
+    const router = createTestRouter();
+    const replaceSpy = vi.spyOn(router, 'replace');
+    const { search } = await run(ref('acc-1'), router);
+    await flushPromises();
+
+    search.page.value = 2;
+    await flushPromises();
+    expect(router.currentRoute.value.query.page).toBe('2');
+    expect(replaceSpy).toHaveBeenCalled();
+
+    search.page.value = 1;
+    await flushPromises();
+    expect(router.currentRoute.value.query.page).toBeUndefined();
   });
 });
