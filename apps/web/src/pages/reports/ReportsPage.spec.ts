@@ -15,7 +15,7 @@ import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
-import type { Account } from '../accounts/accounts.types';
+import type { Account, Bank } from '../accounts/accounts.types';
 import ReportsPage from './ReportsPage.vue';
 import type { Report, ReportDistribution, ReportSeries } from './reports.types';
 
@@ -32,6 +32,7 @@ function createTestRouter(): Router {
 const accounts: Account[] = [
   { id: 'a1', bankId: 'b1', name: 'Checking', currency: 'USD', closed: false, deleted: false },
 ];
+const banks: Bank[] = [{ id: 'b1', name: 'Chase', closed: false, deleted: false }];
 
 function report(overrides: Partial<Report> = {}): Report {
   return {
@@ -69,6 +70,7 @@ function mockGet(
     const ok = (data: unknown) => ({ data, error: undefined, response: new Response() });
     if (path === '/reports') return ok(reports);
     if (path === '/accounts') return ok(accounts);
+    if (path === '/banks') return ok(banks);
     if (path === '/reference-data/categories') return ok([]);
     if (path === '/reports/{id}/series') return ok(series);
     if (path === '/reports/{id}/distribution') return ok(distribution);
@@ -239,6 +241,7 @@ describe('ReportsPage', () => {
         return { data: [report()], error: undefined, response: new Response() };
       if (path === '/accounts')
         return { data: accounts, error: undefined, response: new Response() };
+      if (path === '/banks') return { data: banks, error: undefined, response: new Response() };
       if (path === '/reference-data/categories')
         return { data: [], error: undefined, response: new Response() };
       if (path === '/reports/{id}/series') {
@@ -277,6 +280,7 @@ describe('ReportsPage', () => {
         return { data: [report()], error: undefined, response: new Response() };
       if (path === '/accounts')
         return { data: accounts, error: undefined, response: new Response() };
+      if (path === '/banks') return { data: banks, error: undefined, response: new Response() };
       if (path === '/reference-data/categories')
         return { data: [], error: undefined, response: new Response() };
       if (path === '/reports/{id}/series') {

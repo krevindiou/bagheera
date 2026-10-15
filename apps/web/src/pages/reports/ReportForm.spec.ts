@@ -8,7 +8,7 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
 import { useToast } from '../../composables/useToast';
-import type { Account } from '../accounts/accounts.types';
+import type { Account, Bank } from '../accounts/accounts.types';
 import type { Category } from '../../domain/referenceData';
 import ReportForm from './ReportForm.vue';
 import type { Report } from './reports.types';
@@ -19,6 +19,7 @@ const accounts: Account[] = [
   { id: 'a1', bankId: 'b1', name: 'Checking', currency: 'USD', closed: false, deleted: false },
   { id: 'a2', bankId: 'b1', name: 'Savings', currency: 'USD', closed: false, deleted: false },
 ];
+const banks: Bank[] = [{ id: 'b1', name: 'Chase', closed: false, deleted: false }];
 
 const categories: Category[] = [
   { id: 'c1', parentId: null, type: 'credit', name: 'Salary' },
@@ -59,7 +60,7 @@ describe('ReportForm', () => {
     // verified via the submitted body in the next test).
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, defaultType: 'average' },
+      props: { accounts, banks, categories, defaultType: 'average' },
     });
     expect(wrapper.find('h2').text()).toBe('New report');
     expect((wrapper.find('#report-period-grouping').element as HTMLSelectElement).value).toBe(
@@ -71,7 +72,7 @@ describe('ReportForm', () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, defaultType: 'sum' },
+      props: { accounts, banks, categories, defaultType: 'sum' },
     });
     await wrapper.find('#report-title').setValue('Rent');
     await submitAndSettle(wrapper);
@@ -96,7 +97,10 @@ describe('ReportForm', () => {
 
   it('sends reconciledOnly as undefined rather than false when left unchecked', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     await wrapper.find('#report-title').setValue('Rent');
     await submitAndSettle(wrapper);
 
@@ -107,7 +111,7 @@ describe('ReportForm', () => {
   it('prefills every field from the report being edited', () => {
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, report },
+      props: { accounts, banks, categories, report },
     });
     expect(wrapper.find('h2').text()).toBe('Edit report');
     expect((wrapper.find('#report-title').element as HTMLInputElement).value).toBe('Monthly spend');
@@ -125,7 +129,7 @@ describe('ReportForm', () => {
     apiClient.PATCH.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, report },
+      props: { accounts, banks, categories, report },
     });
     await wrapper.find('#report-title').setValue('Quarterly spend');
     await submitAndSettle(wrapper);
@@ -138,7 +142,10 @@ describe('ReportForm', () => {
   });
 
   it("shows a validation error and doesn't submit for an empty title", async () => {
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     await submitAndSettle(wrapper);
 
     expect(wrapper.text()).toContain('This field is required.');
@@ -146,7 +153,10 @@ describe('ReportForm', () => {
   });
 
   it('caps the title input and explains a too-long value distinctly from a required one', async () => {
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     expect(wrapper.find('#report-title').attributes('maxlength')).toBe('64');
 
     await wrapper.find('#report-title').setValue('a'.repeat(65));
@@ -157,7 +167,10 @@ describe('ReportForm', () => {
   });
 
   it("shows a validation error and doesn't submit for a backwards date range", async () => {
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     await wrapper.find('#report-title').setValue('Rent');
     await wrapper.find('#report-value-date-start').setValue('2026-02-01');
     await wrapper.find('#report-value-date-end').setValue('2026-01-01');
@@ -169,7 +182,10 @@ describe('ReportForm', () => {
 
   it("shows an error toast and doesn't emit saved when submission fails", async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(400, { message: 'Bad request' }));
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     await wrapper.find('#report-title').setValue('Rent');
     await submitAndSettle(wrapper);
 
@@ -181,7 +197,7 @@ describe('ReportForm', () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, defaultType: 'sum' },
+      props: { accounts, banks, categories, defaultType: 'sum' },
     });
     await wrapper.find('#report-title').setValue('Rent');
     await wrapper.find('#report-homepage').setValue(true);
@@ -214,7 +230,10 @@ describe('ReportForm', () => {
 
   it('falls back to a generic error toast when submission fails without a message', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(500));
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     await wrapper.find('#report-title').setValue('Rent');
     await submitAndSettle(wrapper);
 
@@ -224,7 +243,7 @@ describe('ReportForm', () => {
   it('shows dataGrouping/significantResultsNumber alongside periodGrouping for a distribution report, defaulting period grouping to year', () => {
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, defaultType: 'distribution' },
+      props: { accounts, banks, categories, defaultType: 'distribution' },
     });
     expect((wrapper.find('#report-period-grouping').element as HTMLSelectElement).value).toBe(
       'year',
@@ -240,7 +259,7 @@ describe('ReportForm', () => {
   it('explains an out-of-range number of results instead of just turning the field red', async () => {
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, defaultType: 'distribution' },
+      props: { accounts, banks, categories, defaultType: 'distribution' },
     });
     await wrapper.find('#report-title').setValue('Spending');
     await wrapper.find('#report-significant-results-number').setValue('99');
@@ -255,7 +274,7 @@ describe('ReportForm', () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, defaultType: 'distribution' },
+      props: { accounts, banks, categories, defaultType: 'distribution' },
     });
     await wrapper.find('#report-title').setValue('Spending by third party');
     await wrapper.find('#report-data-grouping').setValue('third_party');
@@ -286,7 +305,7 @@ describe('ReportForm', () => {
     };
     const wrapper = mount(ReportForm, {
       ...withGlobalPlugins(),
-      props: { accounts, categories, report: distributionReport },
+      props: { accounts, banks, categories, report: distributionReport },
     });
     expect((wrapper.find('#report-data-grouping').element as HTMLSelectElement).value).toBe(
       'payment_method',
@@ -300,7 +319,10 @@ describe('ReportForm', () => {
   });
 
   it('offers categories and accounts as checkbox lists rather than Ctrl/Cmd multi-selects', () => {
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
 
     expect(wrapper.find('#report-accounts select').exists()).toBe(false);
     expect(wrapper.find('#report-accounts').attributes('role')).toBe('group');
@@ -311,8 +333,34 @@ describe('ReportForm', () => {
   });
 
   it('emits cancel when the cancel button is clicked', async () => {
-    const wrapper = mount(ReportForm, { ...withGlobalPlugins(), props: { accounts, categories } });
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: { accounts, banks, categories },
+    });
     await wrapper.find('button.btn-outline-secondary').trigger('click');
     expect(wrapper.emitted('cancel')).toHaveLength(1);
+  });
+
+  it('labels each account checkbox with its bank, so same-named accounts at different banks stay distinguishable', () => {
+    const otherBank: Bank = { id: 'b2', name: 'Second Bank', closed: false, deleted: false };
+    const sameNameAccount: Account = {
+      id: 'a3',
+      bankId: 'b2',
+      name: 'Checking',
+      currency: 'USD',
+      closed: false,
+      deleted: false,
+    };
+    const wrapper = mount(ReportForm, {
+      ...withGlobalPlugins(),
+      props: {
+        accounts: [...accounts, sameNameAccount],
+        banks: [...banks, otherBank],
+        categories,
+      },
+    });
+
+    const labels = wrapper.findAll('#report-accounts label').map((l) => l.text());
+    expect(labels).toEqual(['Chase — Checking', 'Chase — Savings', 'Second Bank — Checking']);
   });
 });

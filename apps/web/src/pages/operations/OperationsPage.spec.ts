@@ -297,8 +297,29 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     const rows = wrapper.findAll('[data-testid="operation-row"]');
-    expect(rows[0].find('[data-testid="transfer-counterpart"]').text()).toBe('→ Savings');
-    expect(rows[1].find('[data-testid="transfer-counterpart"]').text()).toBe('← Savings');
+    expect(rows[0].find('[data-testid="transfer-counterpart"]').text()).toBe('→ Chase — Savings');
+    expect(rows[1].find('[data-testid="transfer-counterpart"]').text()).toBe('← Chase — Savings');
+  });
+
+  it('labels the counterpart with its own bank, distinguishing it from a same-named account at the source bank', async () => {
+    const otherBank: Bank = { id: 'b2', name: 'Second Bank', closed: false, deleted: false };
+    mockGet({
+      banks: [bank, otherBank],
+      accounts: [account, { ...account, id: ACCOUNT_SAVINGS, bankId: 'b2', name: 'Checking' }],
+      operations: {
+        items: [operation({ id: 'o1', transferAccountId: ACCOUNT_SAVINGS, debit: 500000 })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const rows = wrapper.findAll('[data-testid="operation-row"]');
+    expect(rows[0].find('[data-testid="transfer-counterpart"]').text()).toBe(
+      '→ Second Bank — Checking',
+    );
   });
 
   it('shows nothing extra for a transfer whose counterpart account is not in the loaded list', async () => {

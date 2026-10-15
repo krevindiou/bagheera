@@ -7,7 +7,11 @@ import { errorMessage } from '../../api/errorMessage';
 import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { useConfirm } from '../../composables/useConfirm';
-import { useAccountsQuery, useCategoriesQuery } from '../../composables/useReferenceQueries';
+import {
+  useAccountsQuery,
+  useBanksQuery,
+  useCategoriesQuery,
+} from '../../composables/useReferenceQueries';
 import { useSelection } from '../../composables/useSelection';
 import { useToast } from '../../composables/useToast';
 import BatchActions from './batch.vue';
@@ -33,6 +37,7 @@ const reportsError = computed(() => reportsQuery.isError.value);
 const reportsPending = computed(() => reportsQuery.isPending.value);
 
 const { accounts } = useAccountsQuery();
+const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 
 async function reloadReports() {
@@ -293,6 +298,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
     <ReportForm
       v-if="showForm"
       :accounts="accounts"
+      :banks="banks"
       :categories="categories"
       :report="editingReport"
       :default-type="createType"

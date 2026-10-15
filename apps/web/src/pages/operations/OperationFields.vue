@@ -18,6 +18,7 @@ import { useTransferTargets } from '../../composables/useTransferTargets';
 import { useTypedReferenceData } from '../../composables/useTypedReferenceData';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { referenceName } from '../../i18n/referenceNames';
+import { accountLabel } from '../../domain/accounts';
 import { valueDateRange } from '../../domain/money';
 import {
   TRANSFER_PAYMENT_METHOD_IDS,
@@ -204,7 +205,9 @@ function onThirdPartyChange() {
   >
     <select :id="`${idPrefix}-transfer-account`" v-model="transferAccountModel" class="form-select">
       <option value="">{{ $t('operations.externalAccount') }}</option>
-      <option v-for="a in transferTargets" :key="a.id" :value="a.id">{{ a.name }}</option>
+      <option v-for="a in transferTargets" :key="a.id" :value="a.id">
+        {{ accountLabel(a, banks) }}
+      </option>
     </select>
   </FormField>
 

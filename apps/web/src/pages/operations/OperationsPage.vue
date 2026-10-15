@@ -23,6 +23,7 @@ import {
 } from '../../composables/useReferenceQueries';
 import { useOperationSearch } from '../../composables/useOperationSearch';
 import { useSelection } from '../../composables/useSelection';
+import { accountLabel } from '../../domain/accounts';
 import { formatDate, formatMoney, toDisplayBounds, toDisplayPoints } from '../../domain/money';
 import { categoryLabel, PAYMENT_METHOD_ID, thirdPartyLabel } from '../../domain/referenceData';
 import type { Operation } from '../../domain/referenceData';
@@ -132,7 +133,8 @@ function amountLabel(operation: Operation): string {
 // is gone (e.g. deleted) — either way, nothing extra is shown.
 function transferCounterpartName(operation: Operation): string | null {
   if (!operation.transferAccountId) return null;
-  return accounts.value.find((a) => a.id === operation.transferAccountId)?.name ?? null;
+  const target = accounts.value.find((a) => a.id === operation.transferAccountId);
+  return target ? accountLabel(target, banks.value) : null;
 }
 
 // The date disambiguates rows sharing the same third party.

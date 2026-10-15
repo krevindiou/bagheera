@@ -54,7 +54,10 @@ const banks: Bank[] = [{ id: 'b1', name: 'Chase', closed: false, deleted: false 
 
 // OperationFields binds to its parent's vee-validate form by injection, so
 // it needs a host that owns the `useForm`.
-function mountFields(initial: Partial<OperationForm> = {}) {
+function mountFields(
+  initial: Partial<OperationForm> = {},
+  accountOverrides: { accounts?: Account[]; banks?: Bank[] } = {},
+) {
   let form!: ReturnType<typeof useForm<OperationForm>>;
   const Host = defineComponent({
     setup(_, { slots }) {
@@ -70,8 +73,8 @@ function mountFields(initial: Partial<OperationForm> = {}) {
             accountId: ACCOUNT_CHECKING,
             categories,
             paymentMethods,
-            accounts,
-            banks,
+            accounts: accountOverrides.accounts ?? accounts,
+            banks: accountOverrides.banks ?? banks,
             valueDateLabel: 'Value date',
           },
           slots,
@@ -219,8 +222,33 @@ describe('OperationFields', () => {
     await wrapper.get('#x-payment-method').setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
 
     const transfer = wrapper.get('#x-transfer-account');
-    expect(optionLabels(transfer)).toEqual(['External account', 'Savings']);
+    expect(optionLabels(transfer)).toEqual(['External account', 'Chase — Savings']);
     expect(selectedLabel(transfer)).toBe('External account');
+    wrapper.unmount();
+  });
+
+  it('labels the transfer target with its bank, so same-named accounts at different banks stay distinguishable', async () => {
+    const otherBank: Bank = { id: 'b2', name: 'Second Bank', closed: false, deleted: false };
+    const sameNameAccount: Account = {
+      id: '00000000-0000-7000-8000-000000000203',
+      bankId: 'b2',
+      name: 'Checking',
+      currency: 'USD',
+      closed: false,
+      deleted: false,
+    };
+    const { wrapper } = mountFields(
+      {},
+      { accounts: [...accounts, sameNameAccount], banks: [...banks, otherBank] },
+    );
+
+    await wrapper.get('#x-payment-method').setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
+
+    expect(optionLabels(wrapper.get('#x-transfer-account'))).toEqual([
+      'External account',
+      'Chase — Savings',
+      'Second Bank — Checking',
+    ]);
     wrapper.unmount();
   });
 

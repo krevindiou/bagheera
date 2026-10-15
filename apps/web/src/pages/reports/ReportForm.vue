@@ -11,7 +11,8 @@ import CategorySelect from '../../components/CategorySelect.vue';
 import CheckboxList from '../../components/CheckboxList.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
 import { useToast } from '../../composables/useToast';
-import type { Account } from '../accounts/accounts.types';
+import type { Account, Bank } from '../accounts/accounts.types';
+import { accountLabel } from '../../domain/accounts';
 import {
   groupCategories,
   MAX_SIGNIFICANT_RESULTS_NUMBER,
@@ -22,6 +23,7 @@ import type { Report } from './reports.types';
 
 const props = defineProps<{
   accounts: Account[];
+  banks: Bank[];
   categories: Category[];
   report?: Report | null;
   defaultType?: 'sum' | 'average' | 'distribution';
@@ -29,7 +31,9 @@ const props = defineProps<{
 
 // A report spans debit and credit, so every category is offered.
 const groupedCategories = computed(() => groupCategories(props.categories));
-const accountItems = computed(() => props.accounts.map((a) => ({ id: a.id, label: a.name })));
+const accountItems = computed(() =>
+  props.accounts.map((a) => ({ id: a.id, label: accountLabel(a, props.banks) })),
+);
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { push: toast } = useToast();
