@@ -166,36 +166,33 @@ function onThirdPartyChange() {
     />
   </FormField>
 
-  <div class="d-flex gap-3">
-    <FormField class="flex-grow-1" :label="$t('operations.category')" :for="`${idPrefix}-category`">
-      <CategorySelect
-        :id="`${idPrefix}-category`"
-        v-model="categoryModel"
-        :groups="groupedCategories"
-        :all-categories="categories"
-        :empty-label="$t('operations.noCategory')"
-      />
-    </FormField>
+  <FormField :label="$t('operations.category')" :for="`${idPrefix}-category`">
+    <CategorySelect
+      :id="`${idPrefix}-category`"
+      v-model="categoryModel"
+      :groups="groupedCategories"
+      :all-categories="categories"
+      :empty-label="$t('operations.noCategory')"
+    />
+  </FormField>
 
-    <FormField
-      class="flex-grow-1"
-      :label="$t('operations.paymentMethod')"
-      :for="`${idPrefix}-payment-method`"
-      :error="paymentMethodError && $t('auth.validation.required')"
+  <FormField
+    :label="$t('operations.paymentMethod')"
+    :for="`${idPrefix}-payment-method`"
+    :error="paymentMethodError && $t('auth.validation.required')"
+  >
+    <select
+      :id="`${idPrefix}-payment-method`"
+      v-model="paymentMethodModel"
+      class="form-select"
+      :class="{ 'is-invalid': paymentMethodError }"
     >
-      <select
-        :id="`${idPrefix}-payment-method`"
-        v-model="paymentMethodModel"
-        class="form-select"
-        :class="{ 'is-invalid': paymentMethodError }"
-      >
-        <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
-        <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-          {{ referenceName(pm.name) }}
-        </option>
-      </select>
-    </FormField>
-  </div>
+      <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
+      <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
+        {{ referenceName(pm.name) }}
+      </option>
+    </select>
+  </FormField>
 
   <FormField
     v-if="showTransferAccount"
