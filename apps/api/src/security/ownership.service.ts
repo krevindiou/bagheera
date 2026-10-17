@@ -20,6 +20,22 @@ async function total(query: PromiseLike<{ total: number }[]>): Promise<number> {
   return row.total;
 }
 
+// 404 unless the joined row exists, is the member's, and neither its bank
+// nor its account is deleted. Closed passes: callers decide on that.
+function requireReachableChain<
+  T extends { account: { deleted: boolean }; bank: { memberId: string; deleted: boolean } },
+>(row: T | undefined, memberId: MemberId): T {
+  if (
+    !row ||
+    row.bank.memberId !== (memberId as string) ||
+    row.bank.deleted ||
+    row.account.deleted
+  ) {
+    throw new NotFoundException();
+  }
+  return row;
+}
+
 /**
  * The bank→account(→operation/scheduler) ownership chain, and the flat
  * report.memberId check, in one place. `requireOwned*` answers "does this
@@ -115,15 +131,7 @@ export class OwnershipService {
       .from(account)
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(account.id, id));
-    if (
-      !row ||
-      row.bank.memberId !== (memberId as string) ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
+    return requireReachableChain(row, memberId);
   }
 
   // requireOwnedAccount plus a 422 when the account or its bank is closed.
@@ -148,15 +156,7 @@ export class OwnershipService {
       .innerJoin(account, eq(operation.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(operation.id, id));
-    if (
-      !row ||
-      row.bank.memberId !== (memberId as string) ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
+    return requireReachableChain(row, memberId);
   }
 
   async requireOwnedScheduler(id: SchedulerId, memberId: MemberId) {
@@ -166,15 +166,7 @@ export class OwnershipService {
       .innerJoin(account, eq(scheduler.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
       .where(eq(scheduler.id, id));
-    if (
-      !row ||
-      row.bank.memberId !== (memberId as string) ||
-      row.bank.deleted ||
-      row.account.deleted
-    ) {
-      throw new NotFoundException();
-    }
-    return row;
+    return requireReachableChain(row, memberId);
   }
 
   async requireOwnedReport(id: ReportId, memberId: MemberId) {
@@ -188,61 +180,35 @@ export class OwnershipService {
   // Silently drops ids belonging to another member, unknown ids, and ids
   // reachable only through a closed/deleted bank or account — the caller
   // never learns which of its ids were foreign vs. simply weren't usable.
-  async filterOwnedOperationIds(ids: string[], memberId: MemberId): Promise<string[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-    const rows = await this.db
-      .select({
-        id: operation.id,
-        memberId: bank.memberId,
-        bankDeleted: bank.deleted,
-        accountDeleted: account.deleted,
-        bankClosed: bank.closed,
-        accountClosed: account.closed,
-      })
-      .from(operation)
-      .innerJoin(account, eq(operation.accountId, account.id))
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(inArray(operation.id, ids));
-    return rows
-      .filter(
-        (row) =>
-          row.memberId === memberId &&
-          !row.bankDeleted &&
-          !row.accountDeleted &&
-          !row.bankClosed &&
-          !row.accountClosed,
-      )
-      .map((row) => row.id);
+  filterOwnedOperationIds(ids: string[], memberId: MemberId): Promise<string[]> {
+    return this.filterOwnedFullyActiveIds(operation, ids, memberId);
   }
 
-  async filterOwnedSchedulerIds(ids: string[], memberId: MemberId): Promise<string[]> {
+  filterOwnedSchedulerIds(ids: string[], memberId: MemberId): Promise<string[]> {
+    return this.filterOwnedFullyActiveIds(scheduler, ids, memberId);
+  }
+
+  private async filterOwnedFullyActiveIds(
+    table: typeof operation | typeof scheduler,
+    ids: string[],
+    memberId: MemberId,
+  ): Promise<string[]> {
     if (ids.length === 0) {
       return [];
     }
     const rows = await this.db
       .select({
-        id: scheduler.id,
+        id: table.id,
         memberId: bank.memberId,
-        bankDeleted: bank.deleted,
-        accountDeleted: account.deleted,
-        bankClosed: bank.closed,
-        accountClosed: account.closed,
+        account: { closed: account.closed, deleted: account.deleted },
+        bank: { closed: bank.closed, deleted: bank.deleted },
       })
-      .from(scheduler)
-      .innerJoin(account, eq(scheduler.accountId, account.id))
+      .from(table)
+      .innerJoin(account, eq(table.accountId, account.id))
       .innerJoin(bank, eq(account.bankId, bank.id))
-      .where(inArray(scheduler.id, ids));
+      .where(inArray(table.id, ids));
     return rows
-      .filter(
-        (row) =>
-          row.memberId === memberId &&
-          !row.bankDeleted &&
-          !row.accountDeleted &&
-          !row.bankClosed &&
-          !row.accountClosed,
-      )
+      .filter((row) => row.memberId === memberId && isFullyActive(row.account, row.bank))
       .map((row) => row.id);
   }
 
