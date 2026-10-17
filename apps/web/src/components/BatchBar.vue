@@ -9,8 +9,9 @@ export interface BatchAction {
   successKey: string;
   // Toasted when the request fails, or succeeds without changing anything.
   errorKey: string;
-  // Confirmation body, pluralized on the selection size ({count}).
-  confirmKey: string;
+  // Confirmation body, pluralized on the selection size ({count}). A function
+  // picks the key from the selected ids, for a body that depends on them.
+  confirmKey: string | ((ids: string[]) => string);
   // The confirm button's label; also red when `danger` is set.
   confirmLabelKey: string;
   testid: string;
@@ -34,8 +35,12 @@ const { t } = useI18n();
 
 async function perform(action: BatchAction) {
   const selected = props.selectedIds.length;
+  const confirmKey =
+    typeof action.confirmKey === 'function'
+      ? action.confirmKey(props.selectedIds)
+      : action.confirmKey;
   const confirmed = await confirm({
-    body: t(action.confirmKey, selected),
+    body: t(confirmKey, selected),
     confirmLabel: t(action.confirmLabelKey),
     danger: action.danger,
   });

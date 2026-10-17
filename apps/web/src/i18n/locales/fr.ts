@@ -189,6 +189,8 @@ export default {
       reconciled: 'Opérations rapprochées',
       confirmDelete:
         'Supprimer {count} opération ? Cette action est irréversible. | Supprimer {count} opérations ? Cette action est irréversible.',
+      confirmDeleteTransfers:
+        "Supprimer {count} opération ? Sa contrepartie de virement reste dans l'autre compte, en opération externe. Cette action est irréversible. | Supprimer {count} opérations ? Les contreparties de leurs virements restent dans les autres comptes, en opérations externes. Cette action est irréversible.",
       confirmReconcile:
         'Marquer {count} opération comme rapprochée ? | Marquer {count} opérations comme rapprochées ?',
       reconcileConfirmLabel: 'Rapprocher',

@@ -90,6 +90,16 @@ describe('BatchBar', () => {
     });
   });
 
+  it('picks the confirmation key from the selected ids when given a function', async () => {
+    const confirmKey = vi.fn().mockReturnValue('operations.batch.confirmReconcile');
+    const wrapper = mountBar([deleteAction({ confirmKey })], ['o1']);
+
+    await wrapper.find('[data-testid="delete"]').trigger('click');
+
+    expect(confirmKey).toHaveBeenCalledWith(['o1']);
+    expect(useConfirm().state.options?.body).toBe('Mark 1 operation as reconciled?');
+  });
+
   it('confirms a single selected row in the singular, without danger for a non-danger action', async () => {
     const reconcile = deleteAction({
       confirmKey: 'operations.batch.confirmReconcile',

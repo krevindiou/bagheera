@@ -8,9 +8,34 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 import { apiClient as realApiClient } from '../../api/client';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
+import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
+import type { Operation } from '../../domain/referenceData';
 import BatchActions from './batch.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
+
+function operation(id: string, overrides: Partial<Operation> = {}): Operation {
+  return {
+    id,
+    accountId: 'a1',
+    schedulerId: null,
+    transferOperationId: null,
+    transferAccountId: null,
+    categoryId: null,
+    paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
+    thirdParty: 'Landlord',
+    debit: 100,
+    credit: null,
+    valueDate: '2026-01-15',
+    reconciled: false,
+    notes: '',
+    ...overrides,
+  };
+}
+
+function operations(ids: string[]): Operation[] {
+  return ids.map((id) => operation(id));
+}
 
 function jsonResult(status: number, data?: unknown) {
   return { data, error: undefined, response: new Response(null, { status }) };
@@ -26,7 +51,10 @@ describe('BatchActions', () => {
   });
 
   it('renders nothing when nothing is selected', () => {
-    const wrapper = mount(BatchActions, { ...withGlobalPlugins(), props: { selectedIds: [] } });
+    const wrapper = mount(BatchActions, {
+      ...withGlobalPlugins(),
+      props: { selectedIds: [], operations: [] },
+    });
     expect(wrapper.find('[data-testid="batch-actions"]').exists()).toBe(false);
   });
 
@@ -35,7 +63,7 @@ describe('BatchActions', () => {
       apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 2 }));
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1', 'o2'] },
+        props: { selectedIds: ['o1', 'o2'], operations: operations(['o1', 'o2']) },
       });
 
       await wrapper.find('[data-testid="batch-delete"]').trigger('click');
@@ -54,10 +82,47 @@ describe('BatchActions', () => {
       expect(wrapper.emitted('done')).toHaveLength(1);
     });
 
+    it('says transfer counterparts stay as external operations when the selection has a transfer', async () => {
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: {
+          selectedIds: ['o1', 'o2'],
+          operations: [
+            operation('o1'),
+            operation('o2', { transferOperationId: 'o9', transferAccountId: 'a2' }),
+            operation('o3', { transferOperationId: 'o8', transferAccountId: 'a2' }),
+          ],
+        },
+      });
+
+      await wrapper.find('[data-testid="batch-delete"]').trigger('click');
+      expect(useConfirm().state.options).toEqual({
+        body: "Delete 2 operations? The counterparts of their transfers stay in the other accounts, as external operations. This can't be undone.",
+        confirmLabel: 'Delete',
+        danger: true,
+      });
+    });
+
+    it('keeps the plain wording when the selected rows are no transfers', async () => {
+      const wrapper = mount(BatchActions, {
+        ...withGlobalPlugins(),
+        props: {
+          selectedIds: ['o1'],
+          operations: [
+            operation('o1'),
+            operation('o2', { transferOperationId: 'o9', transferAccountId: 'a2' }),
+          ],
+        },
+      });
+
+      await wrapper.find('[data-testid="batch-delete"]').trigger('click');
+      expect(useConfirm().state.options?.body).toBe("Delete 1 operation? This can't be undone.");
+    });
+
     it('does nothing when the confirmation is cancelled', async () => {
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1'] },
+        props: { selectedIds: ['o1'], operations: operations(['o1']) },
       });
       await wrapper.find('[data-testid="batch-delete"]').trigger('click');
       useConfirm().settle(false);
@@ -70,7 +135,7 @@ describe('BatchActions', () => {
       apiClient.POST.mockResolvedValueOnce(jsonResult(200, { deletedCount: 0 }));
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1'] },
+        props: { selectedIds: ['o1'], operations: operations(['o1']) },
       });
       await wrapper.find('[data-testid="batch-delete"]').trigger('click');
       useConfirm().settle(true);
@@ -84,7 +149,7 @@ describe('BatchActions', () => {
       apiClient.POST.mockResolvedValueOnce(jsonResult(400));
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1'] },
+        props: { selectedIds: ['o1'], operations: operations(['o1']) },
       });
       await wrapper.find('[data-testid="batch-delete"]').trigger('click');
       useConfirm().settle(true);
@@ -100,7 +165,7 @@ describe('BatchActions', () => {
       apiClient.POST.mockResolvedValueOnce(jsonResult(200, { reconciledCount: 1 }));
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1'] },
+        props: { selectedIds: ['o1'], operations: operations(['o1']) },
       });
       await wrapper.find('[data-testid="batch-reconcile"]').trigger('click');
       expect(useConfirm().state.options).toEqual({
@@ -122,7 +187,7 @@ describe('BatchActions', () => {
       apiClient.POST.mockResolvedValueOnce(jsonResult(200, { reconciledCount: 0 }));
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1'] },
+        props: { selectedIds: ['o1'], operations: operations(['o1']) },
       });
       await wrapper.find('[data-testid="batch-reconcile"]').trigger('click');
       useConfirm().settle(true);
@@ -136,7 +201,7 @@ describe('BatchActions', () => {
       apiClient.POST.mockResolvedValueOnce(jsonResult(400));
       const wrapper = mount(BatchActions, {
         ...withGlobalPlugins(),
-        props: { selectedIds: ['o1'] },
+        props: { selectedIds: ['o1'], operations: operations(['o1']) },
       });
       await wrapper.find('[data-testid="batch-reconcile"]').trigger('click');
       useConfirm().settle(true);

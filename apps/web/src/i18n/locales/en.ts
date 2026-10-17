@@ -186,6 +186,8 @@ export default {
       reconciled: 'Operations reconciled',
       confirmDelete:
         "Delete {count} operation? This can't be undone. | Delete {count} operations? This can't be undone.",
+      confirmDeleteTransfers:
+        "Delete {count} operation? Its transfer counterpart stays in the other account, as an external operation. This can't be undone. | Delete {count} operations? The counterparts of their transfers stay in the other accounts, as external operations. This can't be undone.",
       confirmReconcile:
         'Mark {count} operation as reconciled? | Mark {count} operations as reconciled?',
       reconcileConfirmLabel: 'Reconcile',

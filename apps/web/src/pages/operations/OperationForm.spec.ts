@@ -414,6 +414,22 @@ describe('OperationForm', () => {
       expect(wrapper.emitted('deleted')).toHaveLength(1);
     });
 
+    it('says the counterpart stays as an external operation when deleting a transfer', async () => {
+      const wrapper = mountForm({
+        operation: {
+          ...operation,
+          paymentMethodId: PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+          transferOperationId: 'o2',
+          transferAccountId: ACCOUNT_SAVINGS,
+        },
+      });
+
+      await wrapper.find('button.btn-outline-danger').trigger('click');
+      expect(useConfirm().state.options?.body).toBe(
+        "Delete 1 operation? Its transfer counterpart stays in the other account, as an external operation. This can't be undone.",
+      );
+    });
+
     it('does nothing when the confirmation is cancelled', async () => {
       const wrapper = mountForm({ operation });
       await wrapper.find('button.btn-outline-danger').trigger('click');

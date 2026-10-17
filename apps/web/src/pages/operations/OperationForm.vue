@@ -11,6 +11,7 @@ import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
 import type { Account, Bank } from '../accounts/accounts.types';
+import { deleteConfirmKey } from './deleteConfirm';
 import { entryFormValues, entryRequestFields } from './entryForm';
 import OperationFields from './OperationFields.vue';
 import {
@@ -89,7 +90,7 @@ async function onDelete() {
   if (!props.operation) return;
 
   const confirmed = await confirm({
-    body: t('operations.batch.confirmDelete', 1),
+    body: t(deleteConfirmKey([props.operation]), 1),
     confirmLabel: t('common.delete'),
     danger: true,
   });

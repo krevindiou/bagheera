@@ -274,6 +274,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
       <BatchActions
         v-if="isFullyActive"
         :selected-ids="selectedIdList"
+        :operations="list.items"
         @done="refreshAccountData"
       />
 

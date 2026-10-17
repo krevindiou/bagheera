@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { apiClient } from '../../api/client';
 import BatchBar, { type BatchAction } from '../../components/BatchBar.vue';
+import type { Operation } from '../../domain/referenceData';
+import { deleteConfirmKey } from './deleteConfirm';
 
-defineProps<{ selectedIds: string[] }>();
+// `operations` are the rows the ids are picked from, to tell transfers apart.
+const props = defineProps<{ selectedIds: string[]; operations: Operation[] }>();
 const emit = defineEmits<{ done: [] }>();
 
 const actions: BatchAction[] = [
@@ -10,7 +13,10 @@ const actions: BatchAction[] = [
     labelKey: 'operations.batch.delete',
     successKey: 'operations.batch.deleted',
     errorKey: 'operations.genericError',
-    confirmKey: 'operations.batch.confirmDelete',
+    confirmKey: (ids) => {
+      const selected = new Set(ids);
+      return deleteConfirmKey(props.operations.filter(({ id }) => selected.has(id)));
+    },
     confirmLabelKey: 'common.delete',
     testid: 'batch-delete',
     danger: true,
