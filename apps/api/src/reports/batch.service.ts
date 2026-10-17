@@ -28,8 +28,8 @@ export class ReportBatchService {
         await tx.delete(reportCategory).where(inArray(reportCategory.reportId, owned));
         await tx.delete(report).where(inArray(report.id, owned));
       });
+      await this.audit.record('report_batch_deleted', memberId, ip);
     }
-    await this.audit.record('report_batch_deleted', memberId, ip);
     return { deletedCount: owned.length };
   }
 }

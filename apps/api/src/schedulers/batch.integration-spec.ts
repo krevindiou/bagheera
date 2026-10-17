@@ -3,6 +3,7 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { operation, scheduler, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { SecurityEventType } from '../security/audit.service';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { waitForSchedulerGeneration } from '../test-support/wait-for-scheduler-generation';
@@ -37,6 +38,18 @@ async function createScheduler(
     frequencyUnit: 'month',
   });
   return (res.body as { scheduler: { id: string } }).scheduler.id;
+}
+
+async function countEvents(
+  app: INestApplication<Server>,
+  eventType: SecurityEventType,
+  memberId: string,
+): Promise<number> {
+  const rows = await getDb(app)
+    .select()
+    .from(securityEvent)
+    .where(and(eq(securityEvent.eventType, eventType), eq(securityEvent.memberId, memberId)));
+  return rows.length;
 }
 
 describe('POST /schedulers/batch/delete', () => {
@@ -101,8 +114,8 @@ describe('POST /schedulers/batch/delete', () => {
     expect(event).toBeDefined();
   });
 
-  it('drops ids on a closed account rather than deleting them', async () => {
-    const { mutate } = await seedSignedInMember(app);
+  it('drops ids on a closed account rather than deleting them, without auditing', async () => {
+    const { mutate, memberId } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
     const accountId = await createAccount(mutate, bankId);
     const id = await createScheduler(mutate, accountId);
@@ -115,5 +128,19 @@ describe('POST /schedulers/batch/delete', () => {
 
     const rows = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
     expect(rows).toHaveLength(1);
+    expect(await countEvents(app, 'scheduler_batch_deleted', memberId)).toBe(0);
+  });
+
+  it('records no event when every id is foreign', async () => {
+    const { mutate, memberId } = await seedSignedInMember(app);
+    const { mutate: otherMutate } = await seedSignedInMember(app);
+    const otherBankId = await createBank(otherMutate);
+    const otherAccountId = await createAccount(otherMutate, otherBankId);
+    const foreignId = await createScheduler(otherMutate, otherAccountId);
+
+    const res = await mutate('post', '/schedulers/batch/delete', { ids: [foreignId] });
+    expect(res.status).toBe(200);
+    expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
+    expect(await countEvents(app, 'scheduler_batch_deleted', memberId)).toBe(0);
   });
 });

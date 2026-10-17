@@ -13,6 +13,7 @@ import { TransferService } from './transfer.service';
  * Batch delete/reconcile. Ids that are foreign, unknown, on a closed or
  * deleted chain (see filterOwnedOperationIds), or the opening-balance
  * operation (not editable individually either) are silently dropped.
+ * Nothing is audited when every id is dropped.
  */
 @Injectable()
 export class OperationBatchService {
@@ -50,8 +51,8 @@ export class OperationBatchService {
         await this.transfers.convertSurvivorsOfDeleted(tx, owned);
         await tx.delete(operation).where(inArray(operation.id, owned));
       });
+      await this.audit.record('operation_batch_deleted', memberId, ip);
     }
-    await this.audit.record('operation_batch_deleted', memberId, ip);
     return { deletedCount: owned.length };
   }
 
@@ -65,8 +66,8 @@ export class OperationBatchService {
     );
     if (owned.length > 0) {
       await this.db.update(operation).set({ reconciled: true }).where(inArray(operation.id, owned));
+      await this.audit.record('operation_batch_reconciled', memberId, ip);
     }
-    await this.audit.record('operation_batch_reconciled', memberId, ip);
     return { reconciledCount: owned.length };
   }
 }

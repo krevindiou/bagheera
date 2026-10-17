@@ -35,8 +35,8 @@ export class SchedulerBatchService {
           .where(inArray(operation.schedulerId, owned));
         await tx.delete(scheduler).where(inArray(scheduler.id, owned));
       });
+      await this.audit.record('scheduler_batch_deleted', memberId, ip);
     }
-    await this.audit.record('scheduler_batch_deleted', memberId, ip);
     return { deletedCount: owned.length };
   }
 }

@@ -3,6 +3,7 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import { operation, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { SecurityEventType } from '../security/audit.service';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 
@@ -42,6 +43,18 @@ async function createOperation(
     valueDate: '2026-01-01',
   });
   return (res.body as { operation: { id: string } }).operation.id;
+}
+
+async function countEvents(
+  app: INestApplication<Server>,
+  eventType: SecurityEventType,
+  memberId: string,
+): Promise<number> {
+  const rows = await getDb(app)
+    .select()
+    .from(securityEvent)
+    .where(and(eq(securityEvent.eventType, eventType), eq(securityEvent.memberId, memberId)));
+  return rows.length;
 }
 
 describe('operations batch actions', () => {
@@ -114,8 +127,8 @@ describe('operations batch actions', () => {
       expect(mirror.transferOperationId).toBeNull();
     });
 
-    it('drops ids on a closed account rather than deleting them', async () => {
-      const { mutate } = await seedSignedInMember(app);
+    it('drops ids on a closed account rather than deleting them, without auditing', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
       const opId = await createOperation(mutate, accountId);
@@ -128,10 +141,26 @@ describe('operations batch actions', () => {
 
       const stillThere = await getDb(app).select().from(operation).where(eq(operation.id, opId));
       expect(stillThere).toHaveLength(1);
+      expect(await countEvents(app, 'operation_batch_deleted', memberId)).toBe(0);
+    });
+
+    it('records no event when every id is foreign or unknown', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
+      const { mutate: otherMutate } = await seedSignedInMember(app);
+      const otherBankId = await createBank(otherMutate);
+      const otherAccountId = await createAccount(otherMutate, otherBankId);
+      const foreignId = await createOperation(otherMutate, otherAccountId);
+
+      const res = await mutate('post', '/operations/batch/delete', {
+        ids: [foreignId, '01900000-0000-7000-8000-000000000000'],
+      });
+      expect(res.status).toBe(200);
+      expect((res.body as { deletedCount: number }).deletedCount).toBe(0);
+      expect(await countEvents(app, 'operation_batch_deleted', memberId)).toBe(0);
     });
 
     it('drops the system-generated opening-balance operation rather than deleting it', async () => {
-      const { mutate } = await seedSignedInMember(app);
+      const { mutate, memberId } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId, 100);
       const [opening] = await getDb(app)
@@ -154,6 +183,7 @@ describe('operations batch actions', () => {
         .from(operation)
         .where(eq(operation.id, opening.id));
       expect(stillThere).toHaveLength(1);
+      expect(await countEvents(app, 'operation_batch_deleted', memberId)).toBe(0);
     });
   });
 
@@ -188,7 +218,7 @@ describe('operations batch actions', () => {
     });
 
     it('drops the system-generated opening-balance operation rather than reconciling it', async () => {
-      const { mutate } = await seedSignedInMember(app);
+      const { mutate, memberId } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId, 100);
       const [opening] = await getDb(app)
@@ -205,6 +235,23 @@ describe('operations batch actions', () => {
         ids: [opening.id],
       });
       expect((res.body as { reconciledCount: number }).reconciledCount).toBe(0);
+      expect(await countEvents(app, 'operation_batch_reconciled', memberId)).toBe(0);
+    });
+
+    it('records no event when every id is foreign', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
+      const { mutate: otherMutate } = await seedSignedInMember(app);
+      const otherBankId = await createBank(otherMutate);
+      const otherAccountId = await createAccount(otherMutate, otherBankId);
+      const foreignId = await createOperation(otherMutate, otherAccountId);
+
+      const res = await mutate('post', '/operations/batch/reconcile', { ids: [foreignId] });
+      expect(res.status).toBe(200);
+      expect((res.body as { reconciledCount: number }).reconciledCount).toBe(0);
+      expect(await countEvents(app, 'operation_batch_reconciled', memberId)).toBe(0);
+
+      const [row] = await getDb(app).select().from(operation).where(eq(operation.id, foreignId));
+      expect(row.reconciled).toBe(false);
     });
   });
 });
