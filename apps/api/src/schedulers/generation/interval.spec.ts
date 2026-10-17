@@ -1,4 +1,5 @@
 import {
+  countDueOccurrences,
   dueOccurrences,
   MAX_OCCURRENCES_PER_RUN,
   nextOccurrence,
@@ -144,6 +145,28 @@ describe('dueOccurrences', () => {
         MAX_OCCURRENCES_PER_RUN,
       );
     });
+  });
+});
+
+describe('countDueOccurrences', () => {
+  const daily = { valueDate: '2020-01-01', frequencyUnit: 'day', frequencyValue: 1 } as const;
+
+  it('counts a whole backlog, past the per-run ceiling', () => {
+    // 2020-01-01 through 2030-01-01 inclusive, three leap years included.
+    expect(countDueOccurrences({ ...daily, after: null, horizon: '2030-01-01' })).toBe(3654);
+  });
+
+  it('counts only what comes after the generation cursor', () => {
+    expect(countDueOccurrences({ ...daily, after: '2020-01-29', horizon: '2020-01-31' })).toBe(2);
+  });
+
+  it('is 0 when the first occurrence is past the horizon', () => {
+    expect(countDueOccurrences({ ...daily, after: null, horizon: '2019-12-31' })).toBe(0);
+  });
+
+  it('agrees with dueOccurrences under the ceiling', () => {
+    const params = { ...daily, after: null, horizon: '2020-03-15' };
+    expect(countDueOccurrences(params)).toBe(dueOccurrences(params).length);
   });
 });
 

@@ -8,26 +8,29 @@ import type { Executor } from '../db/executor';
 import { account, bank, member, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
 import { isFullyActive } from '../security/reachable';
-import { dueOccurrences, MAX_OCCURRENCES_PER_RUN } from './generation/interval';
+import {
+  countDueOccurrences,
+  dueOccurrences,
+  MAX_OCCURRENCES_PER_RUN,
+} from './generation/interval';
+
+type SchedulerRow = typeof scheduler.$inferSelect;
 
 // Occurrences after the generation cursor, up to the member's own "today"
-// (or the limit date if earlier), at most `limit`.
-function dueDates(
-  row: typeof scheduler.$inferSelect,
-  timeZone: string | null,
-  now: Date,
-  limit: number,
-): string[] {
+// (or the limit date if earlier).
+function dueParams(row: SchedulerRow, timeZone: string | null, now: Date) {
   const today = localIsoDate(now, effectiveTimeZone(timeZone));
-  const horizon = row.limitDate !== null && row.limitDate < today ? row.limitDate : today;
-  return dueOccurrences({
+  return {
     valueDate: row.valueDate,
     frequencyUnit: row.frequencyUnit,
     frequencyValue: row.frequencyValue,
     after: row.lastGeneratedDate,
-    horizon,
-    limit,
-  });
+    horizon: row.limitDate !== null && row.limitDate < today ? row.limitDate : today,
+  };
+}
+
+function dueDates(row: SchedulerRow, timeZone: string | null, now: Date, limit: number): string[] {
+  return dueOccurrences({ ...dueParams(row, timeZone, now), limit });
 }
 
 @Injectable()
@@ -44,6 +47,46 @@ export class SchedulerGenerationService {
     return this.db.transaction((tx) => this.generateForScheduler(tx, schedulerId, budget));
   }
 
+  // How many occurrences generation will add for this scheduler, however
+  // many runs that takes: what a save reports before queueing them.
+  async countDue(schedulerId: string, now = new Date()): Promise<number> {
+    const chain = await this.loadGeneratable(this.db, schedulerId);
+    return chain ? countDueOccurrences(dueParams(chain.row, chain.timeZone, now)) : 0;
+  }
+
+  // The scheduler with what generating it needs, or null when it generates
+  // nothing: paused, or its account or transfer target not fully active.
+  private async loadGeneratable(db: NodePgDatabase | Executor, schedulerId: string) {
+    const [chain] = await db
+      .select({ scheduler, account, bank, timeZone: member.timeZone })
+      .from(scheduler)
+      .innerJoin(account, eq(scheduler.accountId, account.id))
+      .innerJoin(bank, eq(account.bankId, bank.id))
+      .innerJoin(member, eq(bank.memberId, member.id))
+      .where(eq(scheduler.id, schedulerId));
+    if (!chain || !chain.scheduler.active || !isFullyActive(chain.account, chain.bank)) {
+      return null;
+    }
+
+    if (chain.scheduler.transferAccountId !== null) {
+      const [target] = await db
+        .select({ account, bank })
+        .from(account)
+        .innerJoin(bank, eq(account.bankId, bank.id))
+        .where(eq(account.id, chain.scheduler.transferAccountId));
+      if (!target || !isFullyActive(target.account, target.bank)) {
+        return null;
+      }
+    }
+
+    return {
+      row: chain.scheduler,
+      currency: chain.account.currency,
+      memberId: chain.bank.memberId,
+      timeZone: chain.timeZone,
+    };
+  }
+
   // Generates up to `budget` due occurrences. Idempotent: progress is the
   // `lastGeneratedDate` cursor, not the (editable, deletable) operation
   // rows, so a re-run resumes where the last one stopped. Resolves to how
@@ -58,29 +101,11 @@ export class SchedulerGenerationService {
     // and insert it twice: this waits for the other to commit first. Taken
     // before reading anything, so the scheduler row below is current too.
     await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${schedulerId}, 0))`);
-    const [chain] = await db
-      .select({ scheduler, account, bank, timeZone: member.timeZone })
-      .from(scheduler)
-      .innerJoin(account, eq(scheduler.accountId, account.id))
-      .innerJoin(bank, eq(account.bankId, bank.id))
-      .innerJoin(member, eq(bank.memberId, member.id))
-      .where(eq(scheduler.id, schedulerId));
-    if (!chain || !chain.scheduler.active || !isFullyActive(chain.account, chain.bank)) {
+    const chain = await this.loadGeneratable(db, schedulerId);
+    if (!chain) {
       return 0;
     }
-    const { scheduler: row, account: acc, bank: bnk } = chain;
-    const memberId = bnk.memberId;
-
-    if (row.transferAccountId !== null) {
-      const [target] = await db
-        .select({ account, bank })
-        .from(account)
-        .innerJoin(bank, eq(account.bankId, bank.id))
-        .where(eq(account.id, row.transferAccountId));
-      if (!target || !isFullyActive(target.account, target.bank)) {
-        return 0;
-      }
-    }
+    const { row, currency, memberId } = chain;
 
     const dates = dueDates(row, chain.timeZone, new Date(), budget);
 
@@ -101,7 +126,7 @@ export class SchedulerGenerationService {
           reconciled: row.reconciled,
         },
         {
-          sourceCurrency: acc.currency,
+          sourceCurrency: currency,
           memberId,
         },
       );

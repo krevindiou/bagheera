@@ -86,7 +86,7 @@ const onSubmit = handleSubmit(async (submitted) => {
     active: submitted.active,
   };
 
-  const { error, response } = props.scheduler
+  const { data, error, response } = props.scheduler
     ? await apiClient.PATCH('/schedulers/{id}', {
         params: { path: { id: props.scheduler.id } },
         body,
@@ -98,7 +98,11 @@ const onSubmit = handleSubmit(async (submitted) => {
     return;
   }
 
-  toast(t(props.scheduler ? 'schedulers.updated' : 'schedulers.created'), 'success');
+  // Past or today's occurrences are added right after the save; say how
+  // many, so a backfill isn't a surprise in the operations list.
+  const added = data?.occurrencesDue ?? 0;
+  const saved = props.scheduler ? 'schedulers.updated' : 'schedulers.created';
+  toast(added > 0 ? t('schedulers.savedWithOccurrences', added) : t(saved), 'success');
   emit('saved');
 }, focusFirstInvalid);
 

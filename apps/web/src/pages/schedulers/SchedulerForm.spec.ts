@@ -140,6 +140,20 @@ describe('SchedulerForm', () => {
     expect(wrapper.emitted('saved')).toHaveLength(1);
   });
 
+  it.each([
+    [1, 'Scheduled operation saved, 1 operation added'],
+    [4, 'Scheduled operation saved, 4 operations added'],
+  ])('says how many operations a save adds (%i)', async (occurrencesDue, text) => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, { occurrencesDue }));
+    const wrapper = mountForm();
+    await wrapper.find('#scheduler-third-party').setValue('Landlord');
+    await wrapper.find('#scheduler-amount').setValue('50');
+    await wrapper.find('#scheduler-payment-method').setValue(PAYMENT_METHOD_ID.CHECK_DEBIT);
+    await submitAndSettle(wrapper);
+
+    expect(useToast().toasts[0]?.text).toBe(text);
+  });
+
   it('shows a distinct message for a zero amount vs. one over the ceiling', async () => {
     const wrapper = mountForm();
     await wrapper.find('#scheduler-third-party').setValue('Landlord');
@@ -202,6 +216,14 @@ describe('SchedulerForm', () => {
       body: expect.objectContaining({ amount: 75 }),
     });
     expect(wrapper.emitted('saved')).toHaveLength(1);
+  });
+
+  it('says how many operations an edit adds', async () => {
+    apiClient.PATCH.mockResolvedValueOnce(jsonResult(200, { occurrencesDue: 3 }));
+    const wrapper = mountForm({ scheduler });
+    await submitAndSettle(wrapper);
+
+    expect(useToast().toasts[0]?.text).toBe('Scheduled operation saved, 3 operations added');
   });
 
   it('shows the transfer-account field only for a transfer payment method, and includes it in the body', async () => {

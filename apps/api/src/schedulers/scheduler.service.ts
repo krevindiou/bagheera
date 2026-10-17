@@ -18,6 +18,7 @@ import { OwnershipService } from '../security/ownership.service';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
 import { GenerationQueueService } from './generation-queue.service';
+import { SchedulerGenerationService } from './generation.service';
 import { nextOccurrence } from './generation/interval';
 import type { SchedulerDto } from './dto/scheduler-response.dto';
 
@@ -43,6 +44,7 @@ export class SchedulerService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly generation: GenerationQueueService,
+    private readonly generator: SchedulerGenerationService,
     private readonly transfers: TransferService,
     private readonly ownership: OwnershipService,
   ) {}
@@ -112,13 +114,16 @@ export class SchedulerService {
       return created;
     });
 
-    // May already be due (a value date today or in the past).
+    // May already be due (a value date today or in the past). Counted
+    // before queueing, while the job can't have added any yet.
+    const occurrencesDue = await this.generator.countDue(created.id);
     await this.generation.enqueueScheduler(created.id);
 
-    return toSchedulerResponse(created);
+    return { scheduler: toSchedulerResponse(created), occurrencesDue };
   }
 
-  async update(memberId: MemberId, id: string, dto: UpdateSchedulerDto): Promise<void> {
+  // Resolves to how many occurrences the edit brings due, as for create.
+  async update(memberId: MemberId, id: string, dto: UpdateSchedulerDto): Promise<number> {
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     requireFullyActive(owned);
     if (dto.accountId !== owned.scheduler.accountId) {
@@ -163,7 +168,9 @@ export class SchedulerService {
     });
 
     // An edit can bring new occurrences into range.
+    const occurrencesDue = await this.generator.countDue(id);
     await this.generation.enqueueScheduler(id);
+    return occurrencesDue;
   }
 
   async remove(memberId: MemberId, id: string): Promise<void> {

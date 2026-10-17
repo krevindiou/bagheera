@@ -87,27 +87,45 @@ export interface DueOccurrencesParams {
 // inserts. The rest isn't lost: the next run resumes from the cursor.
 export const MAX_OCCURRENCES_PER_RUN = 1000;
 
+// Occurrences in (`after`, `horizon`], chronological, with no ceiling.
+function* occurrencesBetween(params: DueOccurrencesParams): Generator<string> {
+  const { valueDate, frequencyUnit, frequencyValue, after, horizon } = params;
+  for (let n = 0; ; n++) {
+    const date = occurrenceDate(valueDate, frequencyUnit, frequencyValue, n);
+    if (date > horizon) {
+      return;
+    }
+    if (after === null || date > after) {
+      yield date;
+    }
+  }
+}
+
 // Occurrences in (`after`, `horizon`], chronological, at most `limit`.
 export function dueOccurrences(params: DueOccurrencesParams): string[] {
-  const { valueDate, frequencyUnit, frequencyValue, after, horizon } = params;
   const limit = Math.min(params.limit ?? MAX_OCCURRENCES_PER_RUN, MAX_OCCURRENCES_PER_RUN);
   const dates: string[] = [];
   if (limit <= 0) {
     return dates;
   }
-  for (let n = 0; ; n++) {
-    const date = occurrenceDate(valueDate, frequencyUnit, frequencyValue, n);
-    if (date > horizon) {
+  for (const date of occurrencesBetween(params)) {
+    dates.push(date);
+    if (dates.length >= limit) {
       break;
-    }
-    if (after === null || date > after) {
-      dates.push(date);
-      if (dates.length >= limit) {
-        break;
-      }
     }
   }
   return dates;
+}
+
+// How many dueOccurrences would yield over as many runs as the backlog
+// takes, with no per-run ceiling.
+export function countDueOccurrences(params: Omit<DueOccurrencesParams, 'limit'>): number {
+  const occurrences = occurrencesBetween(params);
+  let count = 0;
+  while (!occurrences.next().done) {
+    count++;
+  }
+  return count;
 }
 
 export interface NextOccurrenceParams {

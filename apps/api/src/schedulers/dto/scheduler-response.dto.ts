@@ -37,9 +37,17 @@ export class SchedulerListDto {
   pageSize!: number;
 }
 
+// `occurrencesDue`: operations generation is about to add for the saved
+// scheduler (past or today's occurrences), so the client can say so.
 export class SchedulerSavedResponseDto {
   message!: string;
   scheduler!: SchedulerDto;
+  occurrencesDue!: number;
+}
+
+export class SchedulerUpdatedResponseDto {
+  message!: string;
+  occurrencesDue!: number;
 }
 
 export class SchedulerBatchDeleteResponseDto {

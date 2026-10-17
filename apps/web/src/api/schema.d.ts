@@ -819,6 +819,7 @@ export interface components {
         SchedulerSavedResponseDto: {
             message: string;
             scheduler: components["schemas"]["SchedulerDto"];
+            occurrencesDue: number;
         };
         UpdateSchedulerDto: {
             /** Format: uuid */
@@ -841,6 +842,10 @@ export interface components {
             frequencyUnit?: "day" | "week" | "month" | "year";
             frequencyValue: number;
             active?: boolean;
+        };
+        SchedulerUpdatedResponseDto: {
+            message: string;
+            occurrencesDue: number;
         };
         BatchIdsDto: {
             ids: string[];
@@ -1518,7 +1523,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MessageResponseDto"];
+                    "application/json": components["schemas"]["SchedulerUpdatedResponseDto"];
                 };
             };
         };

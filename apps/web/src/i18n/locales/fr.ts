@@ -254,6 +254,8 @@ export default {
     ended: 'Terminé',
     created: 'Opération planifiée enregistrée',
     updated: 'Opération planifiée enregistrée',
+    savedWithOccurrences:
+      'Opération planifiée enregistrée, 1 opération ajoutée | Opération planifiée enregistrée, {count} opérations ajoutées',
     deleted: 'Opération planifiée supprimée',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération planifiée pour l'instant.",

@@ -250,6 +250,8 @@ export default {
     ended: 'Ended',
     created: 'Scheduled operation saved',
     updated: 'Scheduled operation saved',
+    savedWithOccurrences:
+      'Scheduled operation saved, 1 operation added | Scheduled operation saved, {count} operations added',
     deleted: 'Scheduled operation deleted',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No scheduled operations yet.',

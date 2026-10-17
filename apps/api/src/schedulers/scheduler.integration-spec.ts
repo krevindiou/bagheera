@@ -54,9 +54,11 @@ describe('schedulers', () => {
 
       const res = await mutate('post', '/schedulers', schedulerPayload(accountId));
       expect(res.status).toBe(200);
-      const { scheduler: created } = res.body as {
+      const { scheduler: created, occurrencesDue } = res.body as {
         scheduler: { id: string };
+        occurrencesDue: number;
       };
+      expect(occurrencesDue).toBe(0);
       await waitForSchedulerGeneration(app);
 
       const generated = await getDb(app)
@@ -77,8 +79,9 @@ describe('schedulers', () => {
         '/schedulers',
         schedulerPayload(accountId, { valueDate: '2020-01-01' }),
       );
-      const { scheduler: created } = res.body as {
+      const { scheduler: created, occurrencesDue } = res.body as {
         scheduler: { id: string };
+        occurrencesDue: number;
       };
       await waitForSchedulerGeneration(app);
 
@@ -87,6 +90,22 @@ describe('schedulers', () => {
         .from(operation)
         .where(eq(operation.schedulerId, created.id));
       expect(generated.length).toBeGreaterThan(0);
+      // Announced in the response, before the job ran.
+      expect(occurrencesDue).toBe(generated.length);
+    });
+
+    it('announces no occurrence for a paused scheduler, however far back it starts', async () => {
+      const { mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      const res = await mutate(
+        'post',
+        '/schedulers',
+        schedulerPayload(accountId, { valueDate: '2020-01-01', active: false }),
+      );
+
+      expect((res.body as { occurrencesDue: number }).occurrencesDue).toBe(0);
     });
 
     it('rejects a frequencyValue beyond the DTO cap (726f0aed regression)', async () => {
@@ -207,6 +226,7 @@ describe('schedulers', () => {
 
       const after = await getDb(app).select().from(operation).where(eq(operation.schedulerId, id));
       expect(after.length).toBeGreaterThan(0);
+      expect((res.body as { occurrencesDue: number }).occurrencesDue).toBe(after.length);
     });
 
     it('checks a new transfer target, rejecting a closed one and accepting an active one', async () => {

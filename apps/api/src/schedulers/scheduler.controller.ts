@@ -9,7 +9,11 @@ import { SchedulerService } from './scheduler.service';
 import { CurrentMember } from '../session/current-member.decorator';
 import type { MemberId } from '../security/ids';
 import { MessageResponseDto } from '../common/dto/message-response.dto';
-import { SchedulerListDto, SchedulerSavedResponseDto } from './dto/scheduler-response.dto';
+import {
+  SchedulerListDto,
+  SchedulerSavedResponseDto,
+  SchedulerUpdatedResponseDto,
+} from './dto/scheduler-response.dto';
 
 // Every write here draws on the member's shared write budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
@@ -32,8 +36,8 @@ export class SchedulerController {
     @CurrentMember() memberId: MemberId,
     @Body() dto: CreateSchedulerDto,
   ): Promise<SchedulerSavedResponseDto> {
-    const created = await this.schedulers.create(memberId, dto);
-    return { message: 'Scheduler saved', scheduler: created };
+    const { scheduler, occurrencesDue } = await this.schedulers.create(memberId, dto);
+    return { message: 'Scheduler saved', scheduler, occurrencesDue };
   }
 
   @Patch(':id')
@@ -42,9 +46,9 @@ export class SchedulerController {
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
     @Body() dto: UpdateSchedulerDto,
-  ): Promise<MessageResponseDto> {
-    await this.schedulers.update(memberId, id, dto);
-    return { message: 'Scheduler saved' };
+  ): Promise<SchedulerUpdatedResponseDto> {
+    const occurrencesDue = await this.schedulers.update(memberId, id, dto);
+    return { message: 'Scheduler saved', occurrencesDue };
   }
 
   @Delete(':id')

@@ -252,7 +252,11 @@ describe('scheduler occurrence generation', () => {
       const { memberId, accountId } = await memberWithAccount();
       await getDb(app).update(member).set({ timeZone }).where(eq(member.id, memberId));
       const id = await insertScheduler(accountId, { valueDate: aheadToday });
-      return generation.runForScheduler(id);
+      // A save's announced count follows the same "today".
+      const announced = await generation.countDue(id);
+      const generated = await generation.runForScheduler(id);
+      expect(announced).toBe(generated);
+      return generated;
     }
 
     expect(await generatedIn('Pacific/Kiritimati')).toBe(1);
