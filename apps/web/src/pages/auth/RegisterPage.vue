@@ -8,6 +8,7 @@ import { getCountryOptions, getDefaultCountry } from '../../composables/useCount
 import { DEFAULT_LOCALE, isSupportedLocale } from '../../i18n/locales';
 import { registerSchema, type RegisterBody, type RegisterForm } from './auth.schemas';
 import AuthLayout from '../../layouts/AuthLayout.vue';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import FormField from '../../components/FormField.vue';
 
 const route = useRoute();
@@ -53,7 +54,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   submittedEmail.value = values.email;
   resetForm();
-});
+}, focusFirstInvalid);
 
 function useDifferentEmail() {
   submittedEmail.value = null;

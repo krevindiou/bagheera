@@ -10,6 +10,7 @@ import FormField from '../../components/FormField.vue';
 import CategorySelect from '../../components/CategorySelect.vue';
 import CheckboxList from '../../components/CheckboxList.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
 import { accountLabel } from '../../domain/accounts';
@@ -123,7 +124,7 @@ const onSubmit = handleSubmit(async (submitted) => {
 
   toast(t('reports.saved'), 'success');
   emit('saved');
-});
+}, focusFirstInvalid);
 </script>
 
 <template>

@@ -166,6 +166,17 @@ describe('OperationForm', () => {
     expect((wrapper.find('#operation-third-party').element as HTMLInputElement).value).toBe('');
   });
 
+  it('focuses the first invalid field after an invalid submit', async () => {
+    const wrapper = mountForm({ attachTo: document.body });
+    await submitAndSettle(wrapper);
+
+    const firstInvalid = document.querySelector('[aria-invalid="true"]');
+    expect(firstInvalid).not.toBeNull();
+    expect(document.activeElement).toBe(firstInvalid);
+    expect(apiClient.POST).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
   it("'Save & add another' refocuses the third-party field instead of leaving focus on body", async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mountForm({ attachTo: document.body });

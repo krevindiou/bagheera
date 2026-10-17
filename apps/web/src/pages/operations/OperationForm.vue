@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormDrawer from '../../components/FormDrawer.vue';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
@@ -68,7 +69,7 @@ const onSubmit = handleSubmit(async (submitted) => {
   if (await submitForm(submitted)) {
     emit('saved');
   }
-});
+}, focusFirstInvalid);
 
 // Creation form only: saves and immediately returns to a fresh creation
 // form for the same account, instead of closing, focused on its first field.
@@ -79,7 +80,7 @@ const onSubmitAndNew = handleSubmit(async (submitted) => {
     await nextTick();
     fields.value?.focus();
   }
-});
+}, focusFirstInvalid);
 
 // There's no single-operation delete route; the batch one with a single id
 // does the same job (ownership-scoped, same business rules) without a

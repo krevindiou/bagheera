@@ -8,6 +8,7 @@ import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormField from '../../components/FormField.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import { useToast } from '../../composables/useToast';
 import { bankChoiceSchema, type BankChoiceForm } from './accounts.schemas';
 import type { Bank } from './accounts.types';
@@ -50,7 +51,7 @@ const onSubmit = handleSubmit(async (values) => {
   }
   toast(t('accounts.bankSaved'), 'success');
   emit('chosen', data!.id);
-});
+}, focusFirstInvalid);
 </script>
 
 <template>

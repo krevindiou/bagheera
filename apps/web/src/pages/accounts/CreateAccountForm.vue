@@ -10,6 +10,7 @@ import type { components } from '../../api/schema';
 import FormField from '../../components/FormField.vue';
 import MoneyInput from '../../components/MoneyInput.vue';
 import FormDrawer from '../../components/FormDrawer.vue';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import { useToast } from '../../composables/useToast';
 import { getCurrencyOptions, getGuessedCurrency } from '../../composables/useCurrencyOptions';
 import { currencySymbol } from '../../domain/money';
@@ -96,7 +97,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   toast(t('accounts.accountSaved'), 'success');
   emit('created', data!.account.id);
-});
+}, focusFirstInvalid);
 </script>
 
 <template>

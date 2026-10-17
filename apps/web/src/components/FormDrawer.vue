@@ -9,8 +9,9 @@ import AppIcon from './AppIcon.vue';
 // close button, Cancel and Escape all emit `close`.
 //
 // Attributes land on the <form>. The native submit is prevented before
-// `submit` is emitted, so a vee-validate `handleSubmit(...)` or a plain
-// handler both work.
+// `submit` is emitted with its event, so a vee-validate `handleSubmit(...)`
+// (which reads the event to scope its invalid-submit callback to this form)
+// or a plain handler both work.
 defineOptions({ inheritAttrs: false });
 
 defineProps<{
@@ -18,7 +19,7 @@ defineProps<{
   // Secondary line under the title (e.g. the report form's per-type hint).
   subtitle?: string;
 }>();
-const emit = defineEmits<{ submit: []; close: [] }>();
+const emit = defineEmits<{ submit: [event: Event]; close: [] }>();
 
 const titleId = useId();
 const subtitleId = `${titleId}-subtitle`;
@@ -54,7 +55,7 @@ useFocusTrap(panel);
         </button>
       </div>
 
-      <form v-bind="$attrs" @submit.prevent="emit('submit')">
+      <form v-bind="$attrs" @submit.prevent="emit('submit', $event)">
         <slot />
         <div class="drawer-actions d-flex gap-2">
           <slot name="actions" />

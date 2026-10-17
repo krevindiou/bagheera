@@ -8,6 +8,7 @@ import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import FormDrawer from '../../components/FormDrawer.vue';
 import FormField from '../../components/FormField.vue';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import { useSessionStore } from '../../stores/session.store';
@@ -99,7 +100,7 @@ const onSubmit = handleSubmit(async (submitted) => {
 
   toast(t(props.scheduler ? 'schedulers.updated' : 'schedulers.created'), 'success');
   emit('saved');
-});
+}, focusFirstInvalid);
 
 async function onDelete() {
   if (!props.scheduler) return;

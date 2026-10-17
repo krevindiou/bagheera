@@ -73,14 +73,14 @@ describe('FormDrawer', () => {
     expect(form.findAll('button').map((button) => button.text())).toEqual(['Save', 'Cancel']);
   });
 
-  it('emits submit with the native submit default-prevented', () => {
+  it('emits submit with the native event, default-prevented', () => {
     const wrapper = mountDrawer();
     const event = new Event('submit', { cancelable: true });
 
     wrapper.find('form').element.dispatchEvent(event);
 
     expect(event.defaultPrevented).toBe(true);
-    expect(wrapper.emitted('submit')).toHaveLength(1);
+    expect(wrapper.emitted('submit')).toEqual([[event]]);
   });
 
   it('emits close from the backdrop, the close button and the Cancel button', async () => {

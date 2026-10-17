@@ -7,6 +7,7 @@ import { apiClient } from '../../api/client';
 import { errorMessage } from '../../api/errorMessage';
 import { completeStepUp } from '../../api/stepUp';
 import { useSessionStore } from '../../stores/session.store';
+import { focusFirstInvalid } from '../../composables/focusFirstInvalid';
 import { useToast } from '../../composables/useToast';
 import { profileSchema, type ProfileForm } from './settings.schemas';
 import SettingsTabs from './SettingsTabs.vue';
@@ -53,7 +54,7 @@ const onSubmit = handleSubmit(async (values) => {
 
   // The email only changes once the emailed link is clicked.
   toast(t('settings.profile.success'), 'success');
-});
+}, focusFirstInvalid);
 </script>
 
 <template>
