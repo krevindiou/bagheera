@@ -1,6 +1,6 @@
 import { toMinorUnits as m } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
-import { colorForLabel } from '../../components/chartColors';
+import { SYNTHESIS_COLORS } from '../../components/chartColors';
 import { toDistributionFacets } from './distributionSeries';
 import type { ReportDistribution } from './reports.types';
 
@@ -26,8 +26,8 @@ describe('toDistributionFacets', () => {
         title: 'USD',
         currency: 'USD',
         bars: [
-          { label: 'Salary', value: 500, color: colorForLabel('Salary') },
-          { label: 'Food', value: -100, color: colorForLabel('Food') },
+          { label: 'Salary', value: 500, color: SYNTHESIS_COLORS[0] },
+          { label: 'Food', value: -100, color: SYNTHESIS_COLORS[1] },
         ],
       },
     ]);
@@ -55,7 +55,7 @@ describe('toDistributionFacets', () => {
     expect(facet.bars.map((b) => b.value)).toEqual([-1000, 500, -5]);
   });
 
-  it('translates a null label into "Other" with a muted, palette-independent color', () => {
+  it('labels a null debit bucket "Other expenses" with a muted, palette-independent color', () => {
     const distribution: ReportDistribution = {
       hidden: false,
       dataGrouping: 'category',
@@ -76,8 +76,8 @@ describe('toDistributionFacets', () => {
         title: 'USD',
         currency: 'USD',
         bars: [
-          { label: 'Food', value: -100, color: colorForLabel('Food') },
-          { label: 'reports.other', value: -10, color: OTHER_COLOR },
+          { label: 'Food', value: -100, color: SYNTHESIS_COLORS[0] },
+          { label: 'reports.otherExpenses', value: -10, color: OTHER_COLOR },
         ],
       },
     ]);
@@ -120,7 +120,7 @@ describe('toDistributionFacets', () => {
         series: [
           {
             label: 'Salary',
-            color: colorForLabel('Salary'),
+            color: SYNTHESIS_COLORS[0],
             points: [
               { period: '2026-01-01', value: 500 },
               { period: '2026-02-01', value: 500 },
@@ -128,7 +128,7 @@ describe('toDistributionFacets', () => {
           },
           {
             label: 'Food',
-            color: colorForLabel('Food'),
+            color: SYNTHESIS_COLORS[1],
             points: [
               { period: '2026-01-01', value: -100 },
               { period: '2026-02-01', value: 0 },
@@ -182,9 +182,89 @@ describe('toDistributionFacets', () => {
     ).toEqual([]);
   });
 
-  it('gives each label its own color, so two categories stay distinguishable', () => {
-    const foodColor = colorForLabel('Food');
-    const transportColor = colorForLabel('Transport');
-    expect(foodColor).not.toBe(transportColor);
+  it('labels the null credit and debit buckets apart, "Other income" and "Other expenses"', () => {
+    const distribution: ReportDistribution = {
+      hidden: false,
+      dataGrouping: 'category',
+      series: [
+        {
+          currency: 'USD',
+          debit: [{ label: null, points: [{ period: '2026-01-01', value: m(10) }] }],
+          credit: [{ label: null, points: [{ period: '2026-01-01', value: m(20) }] }],
+        },
+      ],
+    };
+    const facet = toDistributionFacets(distribution, t, 'month')[0];
+    if (facet.kind !== 'snapshot') throw new Error('expected snapshot');
+    expect(facet.bars.map((b) => [b.label, b.value, b.color])).toEqual([
+      ['reports.otherIncome', 20, OTHER_COLOR],
+      ['reports.otherExpenses', -10, OTHER_COLOR],
+    ]);
+  });
+
+  it('labels both Other buckets apart in a temporal facet too', () => {
+    const points = [
+      { period: '2025-01-01', value: m(10) },
+      { period: '2026-01-01', value: m(10) },
+    ];
+    const distribution: ReportDistribution = {
+      hidden: false,
+      dataGrouping: 'category',
+      series: [
+        {
+          currency: 'USD',
+          debit: [{ label: null, points }],
+          credit: [{ label: null, points }],
+        },
+      ],
+    };
+    const facet = toDistributionFacets(distribution, t, 'year')[0];
+    if (facet.kind !== 'temporal') throw new Error('expected temporal');
+    expect(facet.series.map((s) => s.label)).toEqual([
+      'reports.otherIncome',
+      'reports.otherExpenses',
+    ]);
+  });
+
+  it('gives each label in a chart its own color while the palette has room', () => {
+    const labels = ['Leisure', 'Rent', 'Food', 'Transport', 'Health'];
+    const distribution: ReportDistribution = {
+      hidden: false,
+      dataGrouping: 'category',
+      series: [
+        {
+          currency: 'USD',
+          debit: labels.map((label) => ({
+            label,
+            points: [{ period: '2026-01-01', value: m(10) }],
+          })),
+          credit: [{ label: 'Salary', points: [{ period: '2026-01-01', value: m(500) }] }],
+        },
+      ],
+    };
+    const facet = toDistributionFacets(distribution, t, 'month')[0];
+    if (facet.kind !== 'snapshot') throw new Error('expected snapshot');
+    const colors = facet.bars.map((b) => b.color);
+    expect(colors).toHaveLength(labels.length + 1);
+    expect(new Set(colors).size).toBe(colors.length);
+    expect(colors.every((c) => SYNTHESIS_COLORS.includes(c))).toBe(true);
+  });
+
+  it('shares one color between the same label on both sides', () => {
+    const point = [{ period: '2026-01-01', value: m(10) }];
+    const distribution: ReportDistribution = {
+      hidden: false,
+      dataGrouping: 'third_party',
+      series: [
+        {
+          currency: 'USD',
+          debit: [{ label: 'Acme', points: point }],
+          credit: [{ label: 'Acme', points: point }],
+        },
+      ],
+    };
+    const facet = toDistributionFacets(distribution, t, 'month')[0];
+    if (facet.kind !== 'snapshot') throw new Error('expected snapshot');
+    expect(facet.bars.map((b) => b.color)).toEqual([SYNTHESIS_COLORS[0], SYNTHESIS_COLORS[0]]);
   });
 });

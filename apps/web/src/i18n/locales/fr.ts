@@ -318,8 +318,9 @@ export default {
     },
     significantResultsNumber: 'Nombre de résultats affichés',
     significantResultsNumberHint:
-      'Le reste est regroupé dans un seul groupe « Autre », avec les opérations non catégorisées.',
-    other: 'Autre',
+      'Le reste est regroupé dans les groupes « Autres dépenses » et « Autres revenus », avec les opérations non catégorisées.',
+    otherExpenses: 'Autres dépenses',
+    otherIncome: 'Autres revenus',
     viewChart: 'Voir le graphique',
     hideChart: 'Masquer le graphique',
     saved: 'Rapport enregistré',

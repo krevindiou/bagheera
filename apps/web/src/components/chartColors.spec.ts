@@ -1,6 +1,7 @@
 import type { ScriptableContext } from 'chart.js';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  assignLabelColors,
   colorForCurrency,
   colorForLabel,
   SYNTHESIS_COLORS,
@@ -33,6 +34,26 @@ describe('colorForLabel', () => {
 
   it('agrees with colorForCurrency for the same string, since it is the same hash', () => {
     expect(colorForLabel('EUR')).toBe(colorForCurrency('EUR'));
+  });
+});
+
+describe('assignLabelColors', () => {
+  it('deals palette colors in order, so labels never share one', () => {
+    const labels = SYNTHESIS_COLORS.map((_, i) => `label-${i}`);
+    const colors = assignLabelColors(labels);
+    expect(labels.map((l) => colors.get(l))).toEqual(SYNTHESIS_COLORS);
+  });
+
+  it('gives a repeated label the color it already has', () => {
+    const colors = assignLabelColors(['Leisure', 'Rent', 'Leisure']);
+    expect(colors.size).toBe(2);
+    expect(colors.get('Leisure')).toBe(SYNTHESIS_COLORS[0]);
+    expect(colors.get('Rent')).toBe(SYNTHESIS_COLORS[1]);
+  });
+
+  it('falls back to the label hash once the palette is used up', () => {
+    const labels = [...SYNTHESIS_COLORS.map((_, i) => `label-${i}`), 'Extra'];
+    expect(assignLabelColors(labels).get('Extra')).toBe(colorForLabel('Extra'));
   });
 });
 

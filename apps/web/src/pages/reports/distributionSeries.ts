@@ -1,5 +1,5 @@
 import type { PeriodGrouping } from '@bagheera/reference-data';
-import { colorForLabel } from '../../components/chartColors';
+import { assignLabelColors } from '../../components/chartColors';
 import { referenceName } from '../../i18n/referenceNames';
 import { toDisplayAmount } from '../../domain/money';
 import type {
@@ -12,12 +12,13 @@ import type { ReportDistribution, ReportDistributionLabelSeries } from './report
 // Muted and outside the palette: "Other" isn't a real label.
 const OTHER_COLOR = 'rgba(242, 239, 233, 0.35)';
 
-function labelText(label: string | null, t: (key: string) => string): string {
-  return label === null ? t('reports.other') : label;
-}
+type Side = 'debit' | 'credit';
 
-function labelColor(label: string | null): string {
-  return label === null ? OTHER_COLOR : colorForLabel(label);
+// The API sends one null-labelled "Other" bucket per side, so the side
+// decides which of the two it is.
+function labelText(label: string | null, side: Side, t: (key: string) => string): string {
+  if (label !== null) return label;
+  return t(side === 'debit' ? 'reports.otherExpenses' : 'reports.otherIncome');
 }
 
 // A single period has nothing to stack: render ranked bars instead.
@@ -39,11 +40,12 @@ function toBars(
   currency: string,
   sign: 1 | -1,
   labelOf: (label: string | null) => string,
+  colorOf: (label: string | null) => string,
 ): RankedChartBar[] {
   return labelSeriesList.map((series) => ({
     label: labelOf(series.label),
     value: negate(series.points[0]?.value ?? 0, sign, currency),
-    color: labelColor(series.label),
+    color: colorOf(series.label),
   }));
 }
 
@@ -52,10 +54,11 @@ function toStackedSeries(
   currency: string,
   sign: 1 | -1,
   labelOf: (label: string | null) => string,
+  colorOf: (label: string | null) => string,
 ): RankedChartStackedSeries[] {
   return labelSeriesList.map((series) => ({
     label: labelOf(series.label),
-    color: labelColor(series.label),
+    color: colorOf(series.label),
     points: series.points.map((point) => ({
       period: point.period,
       value: negate(point.value, sign, currency),
@@ -67,20 +70,27 @@ function toRankedFacet(
   currency: string,
   debit: ReportDistributionLabelSeries[],
   credit: ReportDistributionLabelSeries[],
-  labelOf: (label: string | null) => string,
+  labelOf: (label: string | null, side: Side) => string,
   periodGrouping: PeriodGrouping,
 ): RankedChartFacet {
+  // Colors are dealt per chart, so same-named labels on both sides share one.
+  const palette = assignLabelColors(
+    [...credit, ...debit].map((s) => s.label).filter((label): label is string => label !== null),
+  );
+  const colorOf = (label: string | null) => (label === null ? OTHER_COLOR : palette.get(label)!);
+  const creditLabel = (label: string | null) => labelOf(label, 'credit');
+  const debitLabel = (label: string | null) => labelOf(label, 'debit');
   if (isSnapshot(debit, credit)) {
     // One ranking by magnitude across both sides.
     const bars = [
-      ...toBars(credit, currency, 1, labelOf),
-      ...toBars(debit, currency, -1, labelOf),
+      ...toBars(credit, currency, 1, creditLabel, colorOf),
+      ...toBars(debit, currency, -1, debitLabel, colorOf),
     ].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
     return { kind: 'snapshot', title: currency, currency, bars };
   }
   const series = [
-    ...toStackedSeries(credit, currency, 1, labelOf),
-    ...toStackedSeries(debit, currency, -1, labelOf),
+    ...toStackedSeries(credit, currency, 1, creditLabel, colorOf),
+    ...toStackedSeries(debit, currency, -1, debitLabel, colorOf),
   ];
   return { kind: 'temporal', title: currency, currency, periodGrouping, series };
 }
@@ -98,8 +108,8 @@ export function toDistributionFacets(
   // Category and payment-method labels are seeded reference data, shown
   // translated; third-party labels are the member's own text.
   const translateLabels = distribution.dataGrouping !== 'third_party';
-  const labelOf = (label: string | null) =>
-    label !== null && translateLabels ? referenceName(label) : labelText(label, t);
+  const labelOf = (label: string | null, side: Side) =>
+    label !== null && translateLabels ? referenceName(label) : labelText(label, side, t);
   return distribution.series
     .filter((s) => s.debit.length > 0 || s.credit.length > 0)
     .map((s) => toRankedFacet(s.currency, s.debit, s.credit, labelOf, periodGrouping));

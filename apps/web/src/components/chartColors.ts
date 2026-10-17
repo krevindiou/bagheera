@@ -1,7 +1,8 @@
 import type { ScriptableContext } from 'chart.js';
 
-// Colors are assigned by hashing the label (currency, category, …), so a
-// currency reads the same on every page, whatever else shares it.
+// A currency's color is a hash of its code, so it reads the same on every
+// page, whatever else shares it. Labels within one chart are instead dealt
+// palette colors in order (see assignLabelColors), so none collide.
 //
 // Gold, indigo, wine, violet, forest, mauve: validated against the dark
 // panel surface (#171220) for lightness, chroma, 3:1 contrast and
@@ -27,6 +28,20 @@ export function colorForCurrency(currency: string): string {
 
 export function colorForLabel(label: string): string {
   return SYNTHESIS_COLORS[hashCode(label) % SYNTHESIS_COLORS.length];
+}
+
+// Distinct labels take the palette in order, so no two share a color until
+// the palette runs out; the rest fall back to the label hash.
+export function assignLabelColors(labels: string[]): Map<string, string> {
+  const colors = new Map<string, string>();
+  for (const label of labels) {
+    if (colors.has(label)) continue;
+    colors.set(
+      label,
+      colors.size < SYNTHESIS_COLORS.length ? SYNTHESIS_COLORS[colors.size] : colorForLabel(label),
+    );
+  }
+  return colors;
 }
 
 function withAlpha(hex: string, alpha: number): string {

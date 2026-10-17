@@ -542,7 +542,7 @@ describe('ReportsPage', () => {
         kind: 'snapshot',
         bars: [
           { label: 'Food', value: -100 },
-          { label: 'Other', value: -10 },
+          { label: 'Other expenses', value: -10 },
         ],
       },
     ]);

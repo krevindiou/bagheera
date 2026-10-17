@@ -312,8 +312,9 @@ export default {
     },
     significantResultsNumber: 'Number of results shown',
     significantResultsNumberHint:
-      'The rest is combined into a single "Other" bucket, along with any uncategorized operations.',
-    other: 'Other',
+      'The rest is combined into "Other expenses" and "Other income" buckets, along with any uncategorized operations.',
+    otherExpenses: 'Other expenses',
+    otherIncome: 'Other income',
     viewChart: 'View chart',
     hideChart: 'Hide chart',
     saved: 'Report saved',
