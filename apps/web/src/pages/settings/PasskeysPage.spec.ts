@@ -210,7 +210,9 @@ describe('PasskeysPage', () => {
 
   it('shows the step-up error and never starts a registration when step-up fails', async () => {
     mockPost();
-    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 
@@ -236,7 +238,9 @@ describe('PasskeysPage', () => {
 
   it('silently abandons a cancelled passkey prompt', async () => {
     mockPost();
-    vi.mocked(startRegistration).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 
@@ -245,6 +249,36 @@ describe('PasskeysPage', () => {
 
     expect(postedPaths()).not.toContain('/webauthn/registration/verify');
     expect(useToast().toasts).toHaveLength(0);
+  });
+
+  it('says so when the authenticator already holds one of the passkeys', async () => {
+    mockPost();
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('previously registered', 'InvalidStateError'),
+    );
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find('button.btn-primary').trigger('click');
+    await flushPromises();
+
+    expect(postedPaths()).not.toContain('/webauthn/registration/verify');
+    expect(useToast().toasts[0]?.text).toBe(
+      'This authenticator already holds one of your passkeys. Choose another one.',
+    );
+  });
+
+  it('shows an error when the passkey prompt fails unexpectedly', async () => {
+    mockPost();
+    vi.mocked(startRegistration).mockRejectedValueOnce(new DOMException('bad rp', 'SecurityError'));
+    const wrapper = mount(PasskeysPage, withGlobalPlugins());
+    await flushPromises();
+
+    await wrapper.find('button.btn-primary').trigger('click');
+    await flushPromises();
+
+    expect(postedPaths()).not.toContain('/webauthn/registration/verify');
+    expect(useToast().toasts[0]?.text).toBe('Something went wrong. Please try again.');
   });
 
   it('shows an error when verification fails', async () => {
@@ -306,7 +340,9 @@ describe('PasskeysPage', () => {
   it('shows the step-up error and never deletes when step-up fails', async () => {
     mockCredentials(TWO_PASSKEYS);
     mockPost();
-    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
 

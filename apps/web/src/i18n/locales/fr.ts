@@ -67,6 +67,9 @@ export default {
       error: 'Ce lien est invalide ou a expiré. Saisissez votre email pour en recevoir un nouveau.',
       cancelled:
         'La création de la clé d’accès a été annulée. Cliquez sur Continuer pour réessayer.',
+      promptFailed: 'Votre appareil n’a pas pu créer la clé d’accès. Veuillez réessayer.',
+      alreadyRegistered:
+        'Cet authentificateur contient déjà une clé d’accès pour ce compte. Cliquez sur Continuer et choisissez-en un autre.',
       signInLink: 'Aller à la connexion',
     },
     confirmEmailChange: {
@@ -399,6 +402,8 @@ export default {
       lastPasskeyError:
         'Il s’agit de votre dernière clé d’accès — vous ne pouvez pas la supprimer, cela vous bloquerait définitivement hors de votre compte.',
       onlyPasskeyHint: 'Ajoutez une autre clé d’accès avant de supprimer celle-ci.',
+      alreadyRegistered:
+        'Cet authentificateur contient déjà l’une de vos clés d’accès. Choisissez-en un autre.',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
   },

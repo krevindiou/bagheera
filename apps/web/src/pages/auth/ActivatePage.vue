@@ -19,7 +19,7 @@ const { t } = useI18n();
 // and browsers silently block it otherwise (unit tests don't enforce this).
 const key = ref<string | null>(null);
 const submitting = ref(false);
-type Banner = 'cancelled' | 'rate-limited' | null;
+type Banner = 'cancelled' | 'already-registered' | 'prompt-failed' | 'rate-limited' | null;
 const banner = ref<Banner>(null);
 // Without it every attempt reports 'cancelled', so a retry would never help.
 const passkeysSupported = browserSupportsWebAuthn();
@@ -81,6 +81,12 @@ async function createAccount() {
       <p class="text-muted">{{ $t('auth.activate.intro') }}</p>
       <div v-if="banner === 'cancelled'" class="alert alert-warning" role="alert">
         {{ $t('auth.activate.cancelled') }}
+      </div>
+      <div v-else-if="banner === 'already-registered'" class="alert alert-warning" role="alert">
+        {{ $t('auth.activate.alreadyRegistered') }}
+      </div>
+      <div v-else-if="banner === 'prompt-failed'" class="alert alert-warning" role="alert">
+        {{ $t('auth.activate.promptFailed') }}
       </div>
       <div v-else-if="banner === 'rate-limited'" class="alert alert-warning" role="alert">
         {{ $t('auth.signIn.tooManyAttempts') }}

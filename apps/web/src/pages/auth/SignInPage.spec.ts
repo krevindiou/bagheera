@@ -158,9 +158,25 @@ describe('SignInPage', () => {
     expect(useSessionStore().isAuthenticated).toBe(false);
   });
 
+  it('shows the sign-in error when the passkey prompt fails on the device', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('bad rp', 'SecurityError'),
+    );
+
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+    await submitAndSettle(wrapper);
+    await flushPromises();
+
+    expect(wrapper.text()).toContain('Sign-in failed');
+    expect(useSessionStore().isAuthenticated).toBe(false);
+  });
+
   it('silently abandons a cancelled passkey prompt, re-enabling the button', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
-    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
 
     const wrapper = mount(SignInPage, withGlobalPlugins());
     await submitAndSettle(wrapper);

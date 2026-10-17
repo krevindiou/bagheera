@@ -47,7 +47,9 @@ describe('completeStepUp', () => {
 
   it('resolves false without verifying when the prompt is cancelled', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200, OPTIONS));
-    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
 
     await expect(completeStepUp()).resolves.toBe(false);
     expect(apiClient.POST).toHaveBeenCalledTimes(1);

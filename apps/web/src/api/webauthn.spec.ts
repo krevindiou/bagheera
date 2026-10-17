@@ -63,12 +63,40 @@ describe('runAuthentication', () => {
 
   it('reports cancelled without verifying when the prompt throws', async () => {
     optionsThen(200);
-    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
     await expect(runAuthentication('/webauthn/step-up')).resolves.toEqual({
       ok: false,
       reason: 'cancelled',
     });
     expect(apiClient.POST).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats a timed-out or superseded prompt as cancelled too', async () => {
+    optionsThen(200);
+    vi.mocked(startAuthentication).mockRejectedValueOnce(new DOMException('aborted', 'AbortError'));
+    await expect(runAuthentication('/webauthn/step-up')).resolves.toEqual({
+      ok: false,
+      reason: 'cancelled',
+    });
+  });
+
+  it('reports prompt-failed without verifying when the prompt fails for another reason', async () => {
+    optionsThen(200);
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('bad rp', 'SecurityError'),
+    );
+    await expect(runAuthentication('/webauthn/step-up')).resolves.toEqual({
+      ok: false,
+      reason: 'prompt-failed',
+    });
+    vi.mocked(startAuthentication).mockRejectedValueOnce('not an error');
+    await expect(runAuthentication('/webauthn/step-up')).resolves.toEqual({
+      ok: false,
+      reason: 'prompt-failed',
+    });
+    expect(apiClient.POST).toHaveBeenCalledTimes(2);
   });
 
   it('reports rejected / rate-limited from verify', async () => {
@@ -125,7 +153,9 @@ describe('runRegistration', () => {
       reason: 'rejected',
     });
     optionsThen(200);
-    vi.mocked(startRegistration).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
     await expect(runRegistration('/webauthn/registration')).resolves.toEqual({
       ok: false,
       reason: 'cancelled',
@@ -136,5 +166,27 @@ describe('runRegistration', () => {
       ok: false,
       reason: 'rejected',
     });
+  });
+
+  it('reports already-registered without verifying when the authenticator holds a passkey', async () => {
+    optionsThen(200);
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('previously registered', 'InvalidStateError'),
+    );
+    await expect(runRegistration('/webauthn/registration')).resolves.toEqual({
+      ok: false,
+      reason: 'already-registered',
+    });
+    expect(apiClient.POST).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports prompt-failed when the prompt fails for another reason', async () => {
+    optionsThen(200);
+    vi.mocked(startRegistration).mockRejectedValueOnce(new Error('WebAuthn is not supported'));
+    await expect(runRegistration('/webauthn/registration')).resolves.toEqual({
+      ok: false,
+      reason: 'prompt-failed',
+    });
+    expect(apiClient.POST).toHaveBeenCalledTimes(1);
   });
 });

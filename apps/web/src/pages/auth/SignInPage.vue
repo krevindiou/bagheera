@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import { runAuthentication } from '../../api/webauthn';
+import type { CeremonyFailure } from '../../api/webauthn';
 import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
 import { safeRedirect } from '../../router/safeRedirect';
@@ -17,6 +18,14 @@ const { t } = useI18n();
 
 type Banner = 'invalid-credentials' | 'rate-limited' | null;
 const banner = ref<Banner>(null);
+// A cancelled prompt isn't an error. A Record, so a new failure reason
+// can't be left unhandled.
+const failureBanner: Record<CeremonyFailure, Banner> = {
+  cancelled: null,
+  'prompt-failed': 'invalid-credentials',
+  'rate-limited': 'rate-limited',
+  rejected: 'invalid-credentials',
+};
 const submitting = ref(false);
 const passkeysSupported = browserSupportsWebAuthn();
 
@@ -28,9 +37,7 @@ async function onSubmit() {
   try {
     const result = await runAuthentication('/webauthn/authentication');
     if (!result.ok) {
-      // A cancelled prompt isn't an error.
-      if (result.reason === 'rate-limited') banner.value = 'rate-limited';
-      else if (result.reason === 'rejected') banner.value = 'invalid-credentials';
+      banner.value = failureBanner[result.reason];
       return;
     }
 

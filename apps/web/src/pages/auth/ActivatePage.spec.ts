@@ -142,7 +142,9 @@ describe('ActivatePage', () => {
 
   it('stays on the page with the key kept for a retry when the passkey prompt is cancelled', async () => {
     apiClient.POST.mockResolvedValue(jsonResult(200, {}));
-    vi.mocked(startRegistration).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
 
     await router.push({ name: 'activate', query: { key: 'abc123' } });
     const wrapper = mount(ActivatePage, withGlobalPlugins());
@@ -158,13 +160,53 @@ describe('ActivatePage', () => {
     expect(wrapper.find('button.btn-primary').attributes('disabled')).toBeUndefined();
 
     apiClient.POST.mockClear();
-    vi.mocked(startRegistration).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
     await wrapper.find('button.btn-primary').trigger('click');
     await vi.waitFor(() =>
       expect(apiClient.POST).toHaveBeenCalledWith('/webauthn/signup/options', {
         body: { key: 'abc123' },
       }),
     );
+  });
+
+  it('stays on the page with a message when the authenticator already holds a passkey', async () => {
+    apiClient.POST.mockResolvedValue(jsonResult(200, {}));
+    vi.mocked(startRegistration).mockRejectedValueOnce(
+      new DOMException('previously registered', 'InvalidStateError'),
+    );
+
+    await router.push({ name: 'activate', query: { key: 'abc123' } });
+    const wrapper = mount(ActivatePage, withGlobalPlugins());
+    await wrapper.vm.$nextTick();
+    await wrapper.find('button.btn-primary').trigger('click');
+    await vi.waitFor(() => expect(wrapper.find('[role="alert"]').exists()).toBe(true));
+
+    expect(wrapper.find('[role="alert"]').text()).toBe(
+      'This authenticator already holds a passkey for this account. Click Continue and choose another one.',
+    );
+    expect(router.currentRoute.value.name).toBe('activate');
+    expect(useToast().toasts).toHaveLength(0);
+  });
+
+  it('keeps the link and stays on the page when the device fails to create the passkey', async () => {
+    apiClient.POST.mockResolvedValue(jsonResult(200, {}));
+    vi.mocked(startRegistration).mockRejectedValueOnce(new DOMException('bad rp', 'SecurityError'));
+
+    await router.push({ name: 'activate', query: { key: 'abc123' } });
+    const wrapper = mount(ActivatePage, withGlobalPlugins());
+    await wrapper.vm.$nextTick();
+    await wrapper.find('button.btn-primary').trigger('click');
+    await vi.waitFor(() => expect(wrapper.find('[role="alert"]').exists()).toBe(true));
+
+    expect(wrapper.find('[role="alert"]').text()).toBe(
+      "Your device couldn't create the passkey. Please try again.",
+    );
+    expect(router.currentRoute.value.name).toBe('activate');
+    expect(useToast().toasts).toHaveLength(0);
+    expect(apiClient.POST).not.toHaveBeenCalledWith('/webauthn/signup/verify', expect.anything());
+    expect(wrapper.find('button.btn-primary').attributes('disabled')).toBeUndefined();
   });
 
   it('stays on the page with a too-many-attempts message when rate-limited', async () => {

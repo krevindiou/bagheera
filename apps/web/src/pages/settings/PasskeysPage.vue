@@ -9,6 +9,7 @@ import { queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import { completeStepUp } from '../../api/stepUp';
 import { runRegistration } from '../../api/webauthn';
+import type { RegistrationFailure } from '../../api/webauthn';
 import { useToast } from '../../composables/useToast';
 import { useConfirm } from '../../composables/useConfirm';
 import IconButton from '../../components/IconButton.vue';
@@ -36,6 +37,16 @@ async function reload() {
   await queryClient.invalidateQueries({ queryKey: queryKeys.webauthnCredentials });
 }
 
+// A cancelled prompt isn't an error. A Record, so a new failure reason
+// can't be left unhandled.
+const failureMessage: Record<RegistrationFailure, string | null> = {
+  cancelled: null,
+  'already-registered': 'settings.passkeys.alreadyRegistered',
+  'prompt-failed': 'settings.passkeys.genericError',
+  'rate-limited': 'settings.passkeys.genericError',
+  rejected: 'settings.passkeys.genericError',
+};
+
 const deviceName = ref('');
 const adding = ref(false);
 
@@ -52,8 +63,8 @@ async function addPasskey() {
       verifyBody: { deviceName: deviceName.value.trim() || undefined },
     });
     if (!result.ok) {
-      // A cancelled prompt isn't an error.
-      if (result.reason !== 'cancelled') toast(t('settings.passkeys.genericError'), 'error');
+      const message = failureMessage[result.reason];
+      if (message) toast(t(message), 'error');
       return;
     }
 

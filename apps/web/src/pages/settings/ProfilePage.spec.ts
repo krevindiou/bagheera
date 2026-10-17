@@ -94,7 +94,9 @@ describe('ProfilePage', () => {
 
   it('shows an error toast and never calls /members/profile when the step-up prompt is cancelled', async () => {
     apiClient.POST.mockResolvedValueOnce(jsonResult(200, {}));
-    vi.mocked(startAuthentication).mockRejectedValueOnce(new Error('cancelled'));
+    vi.mocked(startAuthentication).mockRejectedValueOnce(
+      new DOMException('cancelled', 'NotAllowedError'),
+    );
 
     const wrapper = mountWithSession('member@example.com');
     await wrapper.find('#profile-email').setValue('new@example.com');

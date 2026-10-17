@@ -64,6 +64,9 @@ export default {
       success: 'Account created. You are now signed in.',
       error: 'This link is invalid or has expired. Enter your email to get a new one.',
       cancelled: 'Passkey creation was cancelled. Click Continue to try again.',
+      promptFailed: "Your device couldn't create the passkey. Please try again.",
+      alreadyRegistered:
+        'This authenticator already holds a passkey for this account. Click Continue and choose another one.',
       signInLink: 'Go to sign in',
     },
     confirmEmailChange: {
@@ -392,6 +395,8 @@ export default {
       lastPasskeyError:
         "This is your last passkey — you can't remove it, or you'd be permanently locked out.",
       onlyPasskeyHint: 'Add another passkey before removing this one.',
+      alreadyRegistered:
+        'This authenticator already holds one of your passkeys. Choose another one.',
       genericError: 'Something went wrong. Please try again.',
     },
   },
