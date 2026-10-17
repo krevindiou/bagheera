@@ -1,7 +1,8 @@
 // Vertical-axis bounds for every time-series chart (reports, synthesis
 // chart): data min/max padded by 5% of the spread, the padding rounded up
 // to two significant digits. Flat data pads by 5% of its absolute value;
-// all-zero data gets [-1, +1] currency units. Minor-unit values.
+// all-zero data gets [0, +1] currency units. Padding never pushes the axis
+// across zero when the data stays on one side of it. Minor-unit values.
 
 import { MONEY_SCALE } from './money';
 import { AxisBoundsDto } from './dto/chart-response.dto';
@@ -21,13 +22,14 @@ function roundOutwardMagnitude(magnitude: number): number {
 
 export function computeAxisBounds(min: number, max: number): AxisBounds {
   const spread = max - min;
-  if (spread === 0) {
-    if (min === 0) {
-      return { min: -MONEY_SCALE, max: MONEY_SCALE };
-    }
-    const padding = roundOutwardMagnitude(Math.abs(min) * 0.05);
-    return { min: min - padding, max: max + padding };
+  if (spread === 0 && min === 0) {
+    return { min: 0, max: MONEY_SCALE };
   }
-  const padding = roundOutwardMagnitude(spread * 0.05);
-  return { min: min - padding, max: max + padding };
+  const padding = roundOutwardMagnitude(spread === 0 ? Math.abs(min) * 0.05 : spread * 0.05);
+  // A negative band on data that never goes below zero (or the reverse) is
+  // just padding noise.
+  return {
+    min: min >= 0 ? 0 : min - padding,
+    max: max <= 0 ? 0 : max + padding,
+  };
 }

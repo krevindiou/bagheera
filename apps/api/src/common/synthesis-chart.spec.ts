@@ -134,8 +134,9 @@ describe('computeSynthesisChart', () => {
       },
     ];
     const chart = computeSynthesisChart(rows, TODAY);
-    // dataMin=0, dataMax=10000 -> spread=10000 -> 5% padding of 500.
-    expect(chart.axisBounds?.min).toBeCloseTo(-500, 6);
+    // dataMin=0, dataMax=10000 -> spread=10000 -> 5% padding of 500, and the
+    // axis doesn't dip below zero.
+    expect(chart.axisBounds?.min).toBe(0);
     expect(chart.axisBounds?.max).toBeCloseTo(10500, 6);
   });
 
