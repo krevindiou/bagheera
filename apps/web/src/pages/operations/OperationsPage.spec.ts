@@ -275,6 +275,48 @@ describe('OperationsPage', () => {
     expect(rows[1].text()).toContain('+$25.00');
   });
 
+  it('folds the status icons and the date into the third-party cell below md, keeping their own columns from md up', async () => {
+    mockGet({
+      operations: {
+        items: [operation({ id: 'o1', reconciled: true, valueDate: '2026-01-15' })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const cells = wrapper.get('[data-testid="operation-row"]').findAll('td');
+    const columns = cells.filter((cell) => cell.classes('d-none'));
+    const thirdParty = cells.find((cell) => cell.find('.d-md-none').exists());
+    expect(thirdParty).toBeDefined();
+    expect(thirdParty!.classes()).not.toContain('d-none');
+    expect(thirdParty!.find('.d-md-none [data-testid="reconciled-icon"]').exists()).toBe(true);
+    expect(thirdParty!.find('div.d-md-none').text()).toBe(formatDate('2026-01-15'));
+
+    const statusColumn = columns.find((cell) =>
+      cell.find('[data-testid="reconciled-icon"]').exists(),
+    );
+    const dateColumn = columns.find((cell) => cell.text() === formatDate('2026-01-15'));
+    expect(statusColumn?.classes()).toContain('d-md-table-cell');
+    expect(dateColumn?.classes()).toContain('d-md-table-cell');
+  });
+
+  it('hides the status and value date headers in step with their columns', async () => {
+    mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const headers = wrapper.findAll('[data-testid="operations-table"] thead th');
+    const rowCells = wrapper.get('[data-testid="operation-row"]').findAll('td');
+    expect(headers).toHaveLength(rowCells.length);
+    const hiddenBelowMd = (cell: { classes: (name: string) => boolean }) =>
+      cell.classes('d-none') && cell.classes('d-md-table-cell');
+    expect(headers.map(hiddenBelowMd)).toEqual(rowCells.map(hiddenBelowMd));
+    expect(headers.find((th) => th.text() === 'Value date')).toSatisfy(hiddenBelowMd);
+  });
+
   it('names the counterpart account for an internal transfer, with direction matching debit/credit', async () => {
     mockGet({
       accounts: [account, { ...account, id: ACCOUNT_SAVINGS, name: 'Savings' }],

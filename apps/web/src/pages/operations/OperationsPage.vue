@@ -36,7 +36,7 @@ import ListState from '../../components/ListState.vue';
 import StatCard from '../../components/StatCard.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
-import StatusIcon from '../../components/StatusIcon.vue';
+import OperationStatusIcons from './OperationStatusIcons.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -315,12 +315,12 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                     @change="toggleAll(selectableIds)"
                   />
                 </th>
-                <th></th>
+                <th class="d-none d-md-table-cell"></th>
                 <th>{{ $t('operations.thirdParty') }}</th>
                 <th class="text-end">{{ $t('operations.amount') }}</th>
                 <th class="d-none d-md-table-cell">{{ $t('operations.paymentMethod') }}</th>
                 <th class="d-none d-md-table-cell">{{ $t('operations.category') }}</th>
-                <th class="text-nowrap">{{ $t('operations.valueDate') }}</th>
+                <th class="d-none d-md-table-cell text-nowrap">{{ $t('operations.valueDate') }}</th>
                 <th></th>
               </tr>
             </thead>
@@ -342,20 +342,23 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                     @change="toggleSelected(operation.id)"
                   />
                 </td>
-                <td>
-                  <StatusIcon
-                    v-if="operation.reconciled"
-                    kind="reconciled"
-                    :label="$t('operations.reconciled')"
-                  />
-                  <StatusIcon
-                    v-if="operation.schedulerId"
-                    kind="scheduler"
-                    :label="$t('operations.generatedByScheduler')"
+                <td class="d-none d-md-table-cell">
+                  <OperationStatusIcons
+                    :reconciled="operation.reconciled"
+                    :generated="!!operation.schedulerId"
                   />
                 </td>
                 <td>
                   {{ thirdPartyLabel(operation.thirdParty, operation.paymentMethodId) }}
+                  <span class="d-md-none">
+                    <OperationStatusIcons
+                      :reconciled="operation.reconciled"
+                      :generated="!!operation.schedulerId"
+                    />
+                  </span>
+                  <div class="d-md-none text-muted small text-nowrap">
+                    {{ formatDate(operation.valueDate) }}
+                  </div>
                   <div
                     v-if="transferCounterpartName(operation)"
                     class="text-muted small"
@@ -386,7 +389,9 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                 <td class="d-none d-md-table-cell">
                   {{ operation.categoryId ? categoryNames.get(operation.categoryId) : '' }}
                 </td>
-                <td class="text-nowrap">{{ formatDate(operation.valueDate) }}</td>
+                <td class="d-none d-md-table-cell text-nowrap">
+                  {{ formatDate(operation.valueDate) }}
+                </td>
                 <td @click.stop>
                   <IconButton
                     v-if="isEditable(operation)"

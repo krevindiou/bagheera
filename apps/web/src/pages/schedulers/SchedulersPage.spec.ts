@@ -281,6 +281,34 @@ describe('SchedulersPage', () => {
     expect(rows[1].text()).not.toContain('until');
   });
 
+  it('shows the frequency under the third party below md and in its own column from md up', async () => {
+    mockGet({
+      schedulers: {
+        items: [scheduler({ id: 's1', thirdParty: 'Landlord', limitDate: '2026-12-31' })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const row = wrapper.get('[data-testid="scheduler-row"]');
+    const mobile = row.get('div.d-md-none');
+    expect(mobile.text()).toContain('Every 1 month(s)');
+    expect(mobile.text()).toContain(`until ${formatDate('2026-12-31')}`);
+
+    const column = row
+      .findAll('td.d-none.d-md-table-cell')
+      .find((cell) => cell.text().includes('Every 1 month(s)'));
+    expect(column).toBeDefined();
+    expect(column!.text()).toContain(`until ${formatDate('2026-12-31')}`);
+
+    const header = wrapper.findAll('thead th').find((th) => th.text() === 'Frequency');
+    expect(header?.classes()).toEqual(expect.arrayContaining(['d-none', 'd-md-table-cell']));
+    expect(row.find('button').exists()).toBe(true);
+  });
+
   it('opens the edit form when a row is clicked', async () => {
     mockGet({ schedulers: { items: [scheduler()], total: 1, page: 1, pageSize: 20 } });
     wrapper = mount(SchedulersPage, withGlobalPlugins(router));

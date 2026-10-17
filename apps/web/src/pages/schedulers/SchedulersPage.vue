@@ -20,6 +20,7 @@ import { useSelection } from '../../composables/useSelection';
 import { formatDate, formatMoney } from '../../domain/money';
 import { categoryLabel } from '../../domain/referenceData';
 import SchedulerForm from './SchedulerForm.vue';
+import SchedulerFrequency from './SchedulerFrequency.vue';
 import BatchActions from './batch.vue';
 import type { Scheduler } from './schedulers.types';
 import IconButton from '../../components/IconButton.vue';
@@ -182,7 +183,7 @@ async function onSaved() {
               <th class="d-none d-md-table-cell">{{ $t('operations.paymentMethod') }}</th>
               <th class="d-none d-md-table-cell">{{ $t('operations.category') }}</th>
               <th class="d-none d-md-table-cell">{{ $t('schedulers.nextOccurrence') }}</th>
-              <th>{{ $t('schedulers.frequencyUnit') }}</th>
+              <th class="d-none d-md-table-cell">{{ $t('schedulers.frequencyUnit') }}</th>
               <th></th>
             </tr>
           </thead>
@@ -212,7 +213,12 @@ async function onSaved() {
                   :title="scheduler.active ? $t('schedulers.active') : $t('schedulers.paused')"
                 ></span>
               </td>
-              <td>{{ scheduler.thirdParty }}</td>
+              <td>
+                {{ scheduler.thirdParty }}
+                <div class="d-md-none text-muted small">
+                  <SchedulerFrequency :scheduler="scheduler" />
+                </div>
+              </td>
               <td
                 class="text-end amount text-nowrap"
                 :class="scheduler.debit ? 'text-danger' : 'text-success'"
@@ -238,16 +244,8 @@ async function onSaved() {
                 </template>
                 <span v-else class="text-muted">{{ nextOccurrenceGap(scheduler) }}</span>
               </td>
-              <td>
-                {{
-                  $t('schedulers.everyN', {
-                    count: scheduler.frequencyValue,
-                    unit: $t(`schedulers.units.${scheduler.frequencyUnit}`),
-                  })
-                }}
-                <div v-if="scheduler.limitDate" class="text-muted small">
-                  {{ $t('schedulers.until', { date: formatDate(scheduler.limitDate) }) }}
-                </div>
+              <td class="d-none d-md-table-cell">
+                <SchedulerFrequency :scheduler="scheduler" />
               </td>
               <td @click.stop>
                 <IconButton
