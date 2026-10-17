@@ -285,6 +285,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                   <ReportChart
                     :report="viewedChart"
                     :error="viewedChartError"
+                    :period-grouping="report.periodGrouping"
                     :title="viewingReport?.title"
                   />
                 </td>

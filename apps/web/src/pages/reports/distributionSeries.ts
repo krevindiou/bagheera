@@ -1,3 +1,4 @@
+import type { PeriodGrouping } from '@bagheera/reference-data';
 import { colorForLabel } from '../../components/chartColors';
 import { referenceName } from '../../i18n/referenceNames';
 import { toDisplayAmount } from '../../domain/money';
@@ -67,6 +68,7 @@ function toRankedFacet(
   debit: ReportDistributionLabelSeries[],
   credit: ReportDistributionLabelSeries[],
   labelOf: (label: string | null) => string,
+  periodGrouping: PeriodGrouping,
 ): RankedChartFacet {
   if (isSnapshot(debit, credit)) {
     // One ranking by magnitude across both sides.
@@ -80,16 +82,18 @@ function toRankedFacet(
     ...toStackedSeries(credit, currency, 1, labelOf),
     ...toStackedSeries(debit, currency, -1, labelOf),
   ];
-  return { kind: 'temporal', title: currency, currency, series };
+  return { kind: 'temporal', title: currency, currency, periodGrouping, series };
 }
 
 /**
  * One diverging facet per currency from its debit and credit rankings. `t`
- * is passed in, as in toChartSeries.
+ * is passed in, as in toChartSeries; `periodGrouping` is the report's, which
+ * the distribution payload doesn't carry.
  */
 export function toDistributionFacets(
   distribution: ReportDistribution,
   t: (key: string) => string,
+  periodGrouping: PeriodGrouping,
 ): RankedChartFacet[] {
   // Category and payment-method labels are seeded reference data, shown
   // translated; third-party labels are the member's own text.
@@ -98,5 +102,5 @@ export function toDistributionFacets(
     label !== null && translateLabels ? referenceName(label) : labelText(label, t);
   return distribution.series
     .filter((s) => s.debit.length > 0 || s.credit.length > 0)
-    .map((s) => toRankedFacet(s.currency, s.debit, s.credit, labelOf));
+    .map((s) => toRankedFacet(s.currency, s.debit, s.credit, labelOf, periodGrouping));
 }

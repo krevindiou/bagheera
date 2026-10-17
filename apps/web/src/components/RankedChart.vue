@@ -13,6 +13,7 @@ import {
   type ChartOptions,
   type TooltipItem,
 } from 'chart.js';
+import type { PeriodGrouping } from '@bagheera/reference-data';
 import { formatDisplayMoney } from '../domain/money';
 import { formatPeriodLabel } from './periodLabel';
 import type { Locale } from '../i18n/locales';
@@ -55,7 +56,13 @@ export interface RankedChartStackedSeries {
 // with the ranking as fixed segments. toDistributionFacets picks the kind.
 export type RankedChartFacet =
   | { kind: 'snapshot'; title: string; currency: string; bars: RankedChartBar[] }
-  | { kind: 'temporal'; title: string; currency: string; series: RankedChartStackedSeries[] };
+  | {
+      kind: 'temporal';
+      title: string;
+      currency: string;
+      periodGrouping: PeriodGrouping;
+      series: RankedChartStackedSeries[];
+    };
 
 // `reportTitle`: this component only sees per-currency facets, not the
 // report itself, so the caller passes its title in for the aria-label.
@@ -122,7 +129,9 @@ function stackedChartData(facet: RankedChartFacet & { kind: 'temporal' }): Chart
   const reference = facet.series[0];
   return {
     labels: reference
-      ? reference.points.map((point) => formatPeriodLabel(point.period, locale.value as Locale))
+      ? reference.points.map((point) =>
+          formatPeriodLabel(point.period, locale.value as Locale, facet.periodGrouping),
+        )
       : [],
     datasets: facet.series.map((series) => ({
       label: series.label,

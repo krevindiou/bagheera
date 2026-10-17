@@ -297,6 +297,7 @@ export default {
       year: 'Year',
       all: 'Whole period',
     },
+    quarterLabel: 'Q{quarter} {year}',
     dataGrouping: 'Break down by',
     dataGroupingHint: 'Which dimension operations are ranked and grouped by.',
     dataGroupingOptions: {

@@ -1,3 +1,4 @@
+import { PERIOD_GROUPINGS, type PeriodGrouping } from '@bagheera/reference-data';
 import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { SynthesisChartDto } from '../../common/dto/chart-response.dto';
 import { ReportDistributionDto, ReportSeriesDto } from '../../reports/dto/report-response.dto';
@@ -40,6 +41,9 @@ export class SeriesHomepageReportDto {
   kind!: 'series';
   id!: string;
   title!: string;
+  // The chart's bucket size, which its period keys alone can't tell.
+  @ApiProperty({ enum: PERIOD_GROUPINGS })
+  periodGrouping!: PeriodGrouping;
   series!: ReportSeriesDto;
 }
 
@@ -48,6 +52,8 @@ export class DistributionHomepageReportDto {
   kind!: 'distribution';
   id!: string;
   title!: string;
+  @ApiProperty({ enum: PERIOD_GROUPINGS })
+  periodGrouping!: PeriodGrouping;
   distribution!: ReportDistributionDto;
 }
 

@@ -303,6 +303,7 @@ export default {
       year: 'Année',
       all: 'Toute la période',
     },
+    quarterLabel: 'T{quarter} {year}',
     dataGrouping: 'Répartir par',
     dataGroupingHint: 'La dimension selon laquelle les opérations sont classées et regroupées.',
     dataGroupingOptions: {

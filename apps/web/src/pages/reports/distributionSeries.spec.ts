@@ -20,7 +20,7 @@ describe('toDistributionFacets', () => {
         },
       ],
     };
-    expect(toDistributionFacets(distribution, t)).toEqual([
+    expect(toDistributionFacets(distribution, t, 'month')).toEqual([
       {
         kind: 'snapshot',
         title: 'USD',
@@ -48,7 +48,7 @@ describe('toDistributionFacets', () => {
         },
       ],
     };
-    const facet = toDistributionFacets(distribution, t)[0];
+    const facet = toDistributionFacets(distribution, t, 'month')[0];
     expect(facet).toMatchObject({ kind: 'snapshot' });
     if (facet.kind !== 'snapshot') throw new Error('expected snapshot');
     expect(facet.bars.map((b) => b.label)).toEqual(['Rent', 'Salary', 'Coffee']);
@@ -70,7 +70,7 @@ describe('toDistributionFacets', () => {
         },
       ],
     };
-    expect(toDistributionFacets(distribution, t)).toEqual([
+    expect(toDistributionFacets(distribution, t, 'month')).toEqual([
       {
         kind: 'snapshot',
         title: 'USD',
@@ -111,11 +111,12 @@ describe('toDistributionFacets', () => {
         },
       ],
     };
-    expect(toDistributionFacets(distribution, t)).toEqual([
+    expect(toDistributionFacets(distribution, t, 'month')).toEqual([
       {
         kind: 'temporal',
         title: 'USD',
         currency: 'USD',
+        periodGrouping: 'month',
         series: [
           {
             label: 'Salary',
@@ -138,18 +139,46 @@ describe('toDistributionFacets', () => {
     ]);
   });
 
+  it('carries the report period grouping on temporal facets', () => {
+    const distribution: ReportDistribution = {
+      hidden: false,
+      dataGrouping: 'category',
+      series: [
+        {
+          currency: 'USD',
+          debit: [
+            {
+              label: 'Food',
+              points: [
+                { period: '2025-01-01', value: m(100) },
+                { period: '2026-01-01', value: m(50) },
+              ],
+            },
+          ],
+          credit: [],
+        },
+      ],
+    };
+    expect(toDistributionFacets(distribution, t, 'year')).toMatchObject([
+      { kind: 'temporal', periodGrouping: 'year' },
+    ]);
+    expect(toDistributionFacets(distribution, t, 'quarter')).toMatchObject([
+      { kind: 'temporal', periodGrouping: 'quarter' },
+    ]);
+  });
+
   it('omits a currency with neither debit nor credit data', () => {
     const distribution: ReportDistribution = {
       hidden: false,
       dataGrouping: 'category',
       series: [{ currency: 'USD', debit: [], credit: [] }],
     };
-    expect(toDistributionFacets(distribution, t)).toEqual([]);
+    expect(toDistributionFacets(distribution, t, 'month')).toEqual([]);
   });
 
   it('returns an empty list for a distribution with no series', () => {
     expect(
-      toDistributionFacets({ hidden: false, dataGrouping: 'category', series: [] }, t),
+      toDistributionFacets({ hidden: false, dataGrouping: 'category', series: [] }, t, 'month'),
     ).toEqual([]);
   });
 

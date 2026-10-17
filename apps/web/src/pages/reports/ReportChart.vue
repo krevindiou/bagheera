@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { PeriodGrouping } from '@bagheera/reference-data';
 import LoadError from '../../components/LoadError.vue';
 import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
@@ -14,9 +15,11 @@ import type { ReportChartData } from './reports.types';
 // resolved yet (the dashboard never passes null — it only renders once its
 // own data has loaded). A `hidden` payload means the report matched no
 // operations, which gets its own message rather than an empty chart.
-// `title` isn't on ReportChartData itself, so callers that have it pass it in.
+// `title` and `periodGrouping` aren't on ReportChartData itself, so callers
+// that have them pass them in.
 const props = defineProps<{
   report: ReportChartData | null;
+  periodGrouping: PeriodGrouping;
   error?: boolean;
   title?: string;
 }>();
@@ -40,7 +43,7 @@ const isHidden = computed(() => {
 const distributionFacets = computed(() => {
   const report = props.report;
   if (report?.kind !== 'distribution' || report.distribution.hidden) return null;
-  return toDistributionFacets(report.distribution, t);
+  return toDistributionFacets(report.distribution, t, props.periodGrouping);
 });
 
 const seriesChart = computed(() => {
@@ -65,5 +68,6 @@ const seriesChart = computed(() => {
     :series="seriesChart.series"
     :axis-bounds="seriesChart.axisBounds"
     :label="seriesAriaLabel"
+    :period-grouping="periodGrouping"
   />
 </template>

@@ -16,6 +16,7 @@ import {
   type ScriptableContext,
   type TooltipItem,
 } from 'chart.js';
+import type { PeriodGrouping } from '@bagheera/reference-data';
 import { verticalFillGradient } from './chartColors';
 import { formatPeriodLabel } from './periodLabel';
 import type { Locale } from '../i18n/locales';
@@ -55,6 +56,8 @@ const props = defineProps<{
   // Names the chart for assistive tech; called `label` because a bound
   // `aria-label` always falls through to the DOM, never a component prop.
   label: string;
+  // Bucket size of the points' periods; monthly unless a report says otherwise.
+  periodGrouping?: PeriodGrouping;
 }>();
 
 const { locale } = useI18n();
@@ -68,7 +71,9 @@ const hasData = computed(() => props.series.some((series) => series.points.lengt
 const labels = computed(() => {
   const reference = props.series.find((series) => series.points.length > 0);
   return reference
-    ? reference.points.map((point) => formatPeriodLabel(point.period, locale.value as Locale))
+    ? reference.points.map((point) =>
+        formatPeriodLabel(point.period, locale.value as Locale, props.periodGrouping),
+      )
     : [];
 });
 

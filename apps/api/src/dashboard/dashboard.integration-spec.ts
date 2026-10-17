@@ -56,7 +56,7 @@ interface DashboardBody {
     id: string;
     accounts: { id: string; balance: number; reconciledBalance: number; history: number[] }[];
   }[];
-  homepageReports: { id: string; title: string; kind: string }[];
+  homepageReports: { id: string; title: string; kind: string; periodGrouping: string }[];
 }
 
 describe('GET /dashboard', () => {
@@ -373,6 +373,7 @@ describe('GET /dashboard', () => {
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
     expect(body.homepageReports.map((r) => r.title)).toEqual(['On homepage']);
+    expect(body.homepageReports[0].periodGrouping).toBe('month');
   });
 
   it('includes a non-empty homepage distribution report as its own kind', async () => {
@@ -399,8 +400,12 @@ describe('GET /dashboard', () => {
 
     const res = await agent.get('/dashboard').expect(200);
     const body = res.body as DashboardBody;
-    expect(body.homepageReports.map((r) => ({ title: r.title, kind: r.kind }))).toEqual([
-      { title: 'By third party', kind: 'distribution' },
-    ]);
+    expect(
+      body.homepageReports.map((r) => ({
+        title: r.title,
+        kind: r.kind,
+        periodGrouping: r.periodGrouping,
+      })),
+    ).toEqual([{ title: 'By third party', kind: 'distribution', periodGrouping: 'all' }]);
   });
 });

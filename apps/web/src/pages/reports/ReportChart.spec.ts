@@ -1,4 +1,5 @@
 import { toMinorUnits as m } from '@bagheera/money';
+import type { PeriodGrouping } from '@bagheera/reference-data';
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 import RankedChart from '../../components/RankedChart.vue';
@@ -37,8 +38,16 @@ const distribution: ReportChartData = {
   },
 };
 
-function mountChart(report: ReportChartData | null, error = false, title?: string) {
-  return mount(ReportChart, { ...withGlobalPlugins(), props: { report, error, title } });
+function mountChart(
+  report: ReportChartData | null,
+  error = false,
+  title?: string,
+  periodGrouping: PeriodGrouping = 'month',
+) {
+  return mount(ReportChart, {
+    ...withGlobalPlugins(),
+    props: { report, error, title, periodGrouping },
+  });
 }
 
 describe('ReportChart', () => {
@@ -52,6 +61,40 @@ describe('ReportChart', () => {
       { label: 'USD Credit', points: [{ period: '2026-01', value: 5 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 10 });
+  });
+
+  it('hands the report period grouping to the series chart', () => {
+    const chart = mountChart(series, false, undefined, 'quarter').getComponent(SynthesisChart);
+    expect(chart.props('periodGrouping')).toBe('quarter');
+  });
+
+  it('hands the report period grouping to the distribution facets', () => {
+    const multiPeriod: ReportChartData = {
+      kind: 'distribution',
+      distribution: {
+        hidden: false,
+        dataGrouping: 'category',
+        series: [
+          {
+            currency: 'USD',
+            debit: [
+              {
+                label: 'Food',
+                points: [
+                  { period: '2025-01-01', value: m(100) },
+                  { period: '2026-01-01', value: m(50) },
+                ],
+              },
+            ],
+            credit: [],
+          },
+        ],
+      },
+    };
+    const wrapper = mountChart(multiPeriod, false, undefined, 'year');
+    expect(wrapper.getComponent(RankedChart).props('facets')).toMatchObject([
+      { kind: 'temporal', periodGrouping: 'year' },
+    ]);
   });
 
   it("names the series chart for assistive tech with the report's title and its currencies", () => {

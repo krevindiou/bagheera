@@ -1173,6 +1173,8 @@ export interface components {
         SeriesHomepageReportDto: {
             /** @enum {string} */
             kind: "series";
+            /** @enum {string} */
+            periodGrouping: "month" | "quarter" | "year" | "all";
             id: string;
             title: string;
             series: components["schemas"]["ReportSeriesDto"];
@@ -1180,6 +1182,8 @@ export interface components {
         DistributionHomepageReportDto: {
             /** @enum {string} */
             kind: "distribution";
+            /** @enum {string} */
+            periodGrouping: "month" | "quarter" | "year" | "all";
             id: string;
             title: string;
             distribution: components["schemas"]["ReportDistributionDto"];

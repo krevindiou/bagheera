@@ -16,6 +16,30 @@ describe('SynthesisChart', () => {
     expect(wrapper.find('.synthesis-chart').exists()).toBe(false);
   });
 
+  it.each([
+    ['year', ['2025-01-01', '2026-01-01'], ['2025', '2026']],
+    ['quarter', ['2026-01-01', '2026-04-01'], ['Q1 2026', 'Q2 2026']],
+  ] as const)(
+    'labels %s buckets by the given period grouping',
+    (periodGrouping, periods, labels) => {
+      const wrapper = mount(SynthesisChart, {
+        ...withGlobalPlugins(),
+        props: {
+          label: 'Report chart',
+          periodGrouping,
+          series: [
+            {
+              label: 'Debit',
+              color: '#0d6efd',
+              points: periods.map((period) => ({ period, value: 10 })),
+            },
+          ],
+        },
+      });
+      expect(wrapper.findComponent(Line).props('data')).toMatchObject({ labels });
+    },
+  );
+
   it('renders the chart once at least one series has data', () => {
     const wrapper = mount(SynthesisChart, {
       ...withGlobalPlugins(),

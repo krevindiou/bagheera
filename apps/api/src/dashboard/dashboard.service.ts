@@ -298,6 +298,7 @@ export class DashboardService {
             kind: 'distribution',
             id: rpt.id,
             title: rpt.title,
+            periodGrouping: rpt.periodGrouping,
             distribution: await this.reportDistributions.computeDistribution(rpt, memberId),
           };
         }
@@ -305,6 +306,7 @@ export class DashboardService {
           kind: 'series',
           id: rpt.id,
           title: rpt.title,
+          periodGrouping: rpt.periodGrouping,
           series: await this.reportSeries.computeSeries(rpt, memberId),
         };
       }),

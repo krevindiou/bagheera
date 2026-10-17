@@ -194,7 +194,11 @@ const accountTiles = computed(() =>
             data-testid="homepage-report"
           >
             <h3 class="h6 mb-3">{{ entry.title }}</h3>
-            <ReportChart :report="entry" :title="entry.title" />
+            <ReportChart
+              :report="entry"
+              :period-grouping="entry.periodGrouping"
+              :title="entry.title"
+            />
           </div>
         </section>
       </template>

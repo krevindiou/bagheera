@@ -387,6 +387,7 @@ describe('DashboardPage', () => {
           {
             kind: 'series',
             id: 'r1',
+            periodGrouping: 'month',
             title: 'Monthly spend',
             series: {
               hidden: false,
@@ -426,6 +427,7 @@ describe('DashboardPage', () => {
           {
             kind: 'series',
             id: 'r1',
+            periodGrouping: 'month',
             title: 'Monthly spend',
             series: {
               hidden: false,
@@ -456,6 +458,7 @@ describe('DashboardPage', () => {
           {
             kind: 'distribution',
             id: 'r1',
+            periodGrouping: 'month',
             title: 'Spending by category',
             distribution: {
               hidden: false,
@@ -499,6 +502,7 @@ describe('DashboardPage', () => {
           {
             kind: 'series',
             id: 'r1',
+            periodGrouping: 'month',
             title: 'Monthly spend',
             series: { hidden: true, axisBounds: null, series: [] },
           },

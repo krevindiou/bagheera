@@ -114,6 +114,7 @@ describe('RankedChart', () => {
         kind: 'temporal',
         title: 'USD Debit',
         currency: 'USD',
+        periodGrouping: 'month',
         series: [
           {
             label: 'Food',
@@ -134,6 +135,29 @@ describe('RankedChart', () => {
         ],
       },
     ];
+
+    it.each([
+      ['year', ['2025-01-01', '2026-01-01'], ['2025', '2026']],
+      ['quarter', ['2026-01-01', '2026-04-01'], ['Q1 2026', 'Q2 2026']],
+    ] as const)('labels %s buckets by their period grouping', (periodGrouping, periods, labels) => {
+      const grouped: RankedChartFacet[] = [
+        {
+          kind: 'temporal',
+          title: 'USD',
+          currency: 'USD',
+          periodGrouping,
+          series: [
+            {
+              label: 'Food',
+              color: '#b17834',
+              points: periods.map((period) => ({ period, value: 10 })),
+            },
+          ],
+        },
+      ];
+      const wrapper = mount(RankedChart, { ...withGlobalPlugins(), props: { facets: grouped } });
+      expect(wrapper.findComponent(Bar).props('data')).toMatchObject({ labels });
+    });
 
     it('renders a stacked bar chart with one dataset per label, sharing one stack', () => {
       const wrapper = mount(RankedChart, { ...withGlobalPlugins(), props: { facets } });
