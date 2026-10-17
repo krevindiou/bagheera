@@ -85,7 +85,7 @@ const { groupedCategories, filteredPaymentMethods } = useTypedReferenceData(
   () => props.paymentMethods,
   { categoryId, setCategoryId, paymentMethodId, setPaymentMethodId },
 );
-const { transferTargets, amountCurrencySymbol } = useTransferTargets(
+const { sourceCurrency, transferTargets, amountCurrencySymbol } = useTransferTargets(
   () => props.accountId,
   () => props.accounts,
   () => props.banks,
@@ -199,6 +199,7 @@ function onThirdPartyChange() {
     class="transfer-accent"
     :label="$t('operations.transferAccount')"
     :for="`${idPrefix}-transfer-account`"
+    :hint="sourceCurrency && $t('operations.transferCurrencyHint', { currency: sourceCurrency })"
   >
     <select :id="`${idPrefix}-transfer-account`" v-model="transferAccountModel" class="form-select">
       <option value="">{{ $t('operations.externalAccount') }}</option>

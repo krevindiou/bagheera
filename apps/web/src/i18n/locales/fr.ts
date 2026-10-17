@@ -159,6 +159,7 @@ export default {
     choosePaymentMethod: 'Choisir un moyen de paiement…',
     transferAccount: 'Virement vers le compte',
     externalAccount: 'Compte externe',
+    transferCurrencyHint: 'Seuls les autres comptes en {currency} peuvent être choisis.',
     transferTo: '→ {name}',
     transferFrom: '← {name}',
     balance: 'Solde',

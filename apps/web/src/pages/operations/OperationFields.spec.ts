@@ -227,6 +227,22 @@ describe('OperationFields', () => {
     wrapper.unmount();
   });
 
+  it('explains under the transfer target that only same-currency accounts are offered', async () => {
+    const eurChecking: Account = { ...accounts[0], currency: 'EUR' };
+    const { wrapper } = mountFields({}, { accounts: [eurChecking, accounts[1]] });
+    expect(wrapper.find('#x-transfer-account-hint').exists()).toBe(false);
+
+    await wrapper.get('#x-payment-method').setValue(PAYMENT_METHOD_ID.TRANSFER_DEBIT);
+
+    expect(wrapper.get('#x-transfer-account-hint').text()).toBe(
+      'Only other EUR accounts can be picked.',
+    );
+    expect(wrapper.get('#x-transfer-account').attributes('aria-describedby')).toBe(
+      'x-transfer-account-hint',
+    );
+    wrapper.unmount();
+  });
+
   it('labels the transfer target with its bank, so same-named accounts at different banks stay distinguishable', async () => {
     const otherBank: Bank = { id: 'b2', name: 'Second Bank', closed: false, deleted: false };
     const sameNameAccount: Account = {
