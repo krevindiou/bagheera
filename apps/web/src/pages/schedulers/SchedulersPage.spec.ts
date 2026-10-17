@@ -233,7 +233,7 @@ describe('SchedulersPage', () => {
     expect(rows[1].find('.dot').classes()).not.toContain('dot-active');
     expect(rows[1].find('.dot').attributes('aria-label')).toBe('Paused');
     expect(rows[1].text()).toContain('+$25.00');
-    expect(rows[1].text()).toContain('Every 2 week(s)');
+    expect(rows[1].text()).toContain('Every 2 weeks');
   });
 
   it('shows the next occurrence rather than the first, and why there is none when paused or ended', async () => {
@@ -295,12 +295,12 @@ describe('SchedulersPage', () => {
 
     const row = wrapper.get('[data-testid="scheduler-row"]');
     const mobile = row.get('div.d-md-none');
-    expect(mobile.text()).toContain('Every 1 month(s)');
+    expect(mobile.text()).toContain('Every month');
     expect(mobile.text()).toContain(`until ${formatDate('2026-12-31')}`);
 
     const column = row
       .findAll('td.d-none.d-md-table-cell')
-      .find((cell) => cell.text().includes('Every 1 month(s)'));
+      .find((cell) => cell.text().includes('Every month'));
     expect(column).toBeDefined();
     expect(column!.text()).toContain(`until ${formatDate('2026-12-31')}`);
 

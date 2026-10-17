@@ -8,12 +8,7 @@ defineProps<{ scheduler: Pick<Scheduler, 'frequencyValue' | 'frequencyUnit' | 'l
 </script>
 
 <template>
-  {{
-    $t('schedulers.everyN', {
-      count: scheduler.frequencyValue,
-      unit: $t(`schedulers.units.${scheduler.frequencyUnit}`),
-    })
-  }}
+  {{ $t(`schedulers.frequency.${scheduler.frequencyUnit}`, { count: scheduler.frequencyValue }) }}
   <div v-if="scheduler.limitDate" class="text-muted small">
     {{ $t('schedulers.until', { date: formatDate(scheduler.limitDate) }) }}
   </div>
