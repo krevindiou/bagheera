@@ -29,6 +29,18 @@ describe('ToastContainer', () => {
     expect(toasts[1].classes()).toContain('toast-error');
   });
 
+  it('drops a shown error toast once a success toast arrives', async () => {
+    useToast().push('Too many requests', 'error');
+    const wrapper = mount(ToastContainer, withGlobalPlugins());
+
+    useToast().push('Account saved', 'success');
+    await wrapper.vm.$nextTick();
+
+    const toasts = wrapper.findAll('.toast-item');
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].text()).toContain('Account saved');
+  });
+
   it('dismisses a toast when its close button is clicked', async () => {
     useToast().push('Bye');
     const wrapper = mount(ToastContainer, withGlobalPlugins());

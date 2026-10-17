@@ -47,7 +47,14 @@ function armTimer(id: number, ms: number) {
   timers.set(id, { handle, remainingMs: ms, startedAt: Date.now() });
 }
 
+// A success means the retry worked, so an earlier error is stale and, never
+// auto-dismissing, would otherwise sit next to it indefinitely.
+function dismissErrors() {
+  for (const toast of toasts.filter((t) => t.variant === 'error')) dismiss(toast.id);
+}
+
 function push(text: string, variant: ToastVariant = 'info', durationMs = DEFAULT_DURATION_MS) {
+  if (variant === 'success') dismissErrors();
   const id = nextId++;
   toasts.push({ id, text, variant });
   while (toasts.length > MAX_VISIBLE_TOASTS) {

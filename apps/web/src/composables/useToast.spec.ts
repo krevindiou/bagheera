@@ -56,6 +56,50 @@ describe('useToast', () => {
     expect(toasts).toHaveLength(1);
   });
 
+  it('removes shown error toasts when a success toast is pushed', () => {
+    const { toasts, push } = useToast();
+    push('Too many requests', 'error');
+    push('Another failure', 'error');
+    push('Account saved', 'success');
+
+    expect(toasts.map((t) => t.text)).toEqual(['Account saved']);
+  });
+
+  it('keeps info toasts when a success toast is pushed', () => {
+    const { toasts, push } = useToast();
+    push('Heads up', 'info');
+    push('Oops', 'error');
+    push('Saved', 'success');
+
+    expect(toasts.map((t) => t.text)).toEqual(['Heads up', 'Saved']);
+  });
+
+  it('keeps earlier success toasts and still auto-dismisses the new one when no error is shown', () => {
+    const { toasts, push } = useToast();
+    push('First saved', 'success');
+    push('Second saved', 'success');
+
+    expect(toasts.map((t) => t.text)).toEqual(['First saved', 'Second saved']);
+    vi.advanceTimersByTime(5000);
+    expect(toasts).toHaveLength(0);
+  });
+
+  it('keeps an earlier error when another error is pushed', () => {
+    const { toasts, push } = useToast();
+    push('First failure', 'error');
+    push('Second failure', 'error');
+
+    expect(toasts.map((t) => t.text)).toEqual(['First failure', 'Second failure']);
+  });
+
+  it('keeps a success toast when an error is pushed after it', () => {
+    const { toasts, push } = useToast();
+    push('Saved', 'success');
+    push('Oops', 'error');
+
+    expect(toasts.map((t) => t.text)).toEqual(['Saved', 'Oops']);
+  });
+
   it('dismiss() removes a toast immediately', () => {
     const { toasts, push, dismiss } = useToast();
     const id = push('Removed');
