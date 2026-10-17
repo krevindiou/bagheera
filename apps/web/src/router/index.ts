@@ -157,7 +157,10 @@ router.beforeEach(async (to) => {
     return requiresAuth ? toSignIn : true;
   }
   // After a reload, wait to learn whether the session cookie is still valid.
-  // A failed restore() leaves the member signed out, so sign-in still renders.
+  // If the API doesn't answer, the member stays unknown (signed out) and
+  // `restored` stays false: a guarded page still falls back to sign-in, but
+  // that hop probes again, so a passing hiccup sends a signed-in member
+  // straight back. Sign-in itself renders either way, so this can't loop.
   if (!store.restored) {
     await store.restore();
   }

@@ -119,12 +119,81 @@ describe('useSessionStore', () => {
       expect(store.restored).toBe(true);
     });
 
-    it('clears the member when the request itself rejects', async () => {
-      apiClient.GET.mockRejectedValueOnce(new Error('network down'));
+    it('counts a bodiless success as signed out', async () => {
+      apiClient.GET.mockResolvedValueOnce({
+        data: undefined,
+        error: undefined,
+        response: new Response(null, { status: 200 }),
+      });
       const store = useSessionStore();
       await store.restore();
       expect(store.member).toBeNull();
       expect(store.restored).toBe(true);
+    });
+
+    // 503 is also what api/client.ts answers for a network failure.
+    it.each([500, 503])(
+      'stays signed out but unrestored when GET /auth/me answers %i',
+      async (status) => {
+        apiClient.GET.mockResolvedValueOnce({
+          data: undefined,
+          error: {},
+          response: new Response(null, { status }),
+        });
+        const store = useSessionStore();
+        await store.restore();
+        expect(store.member).toBeNull();
+        expect(store.restored).toBe(false);
+      },
+    );
+
+    it('stays unrestored when the request itself rejects', async () => {
+      apiClient.GET.mockRejectedValueOnce(new Error('network down'));
+      const store = useSessionStore();
+      await store.restore();
+      expect(store.member).toBeNull();
+      expect(store.restored).toBe(false);
+    });
+
+    it('keeps an already-known member when the probe gets no answer', async () => {
+      apiClient.GET.mockResolvedValueOnce({
+        data: undefined,
+        error: {},
+        response: new Response(null, { status: 503 }),
+      });
+      const store = useSessionStore();
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      await store.restore();
+      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      expect(store.restored).toBe(false);
+    });
+
+    it('asks again on the next call after a probe got no answer', async () => {
+      apiClient.GET.mockRejectedValueOnce(new Error('network down')).mockResolvedValueOnce({
+        data: { email: 'member@example.com', locale: 'en', timeZone: 'UTC' },
+        error: undefined,
+        response: new Response(null, { status: 200 }),
+      });
+      const store = useSessionStore();
+      await store.restore();
+      expect(store.restored).toBe(false);
+
+      await store.restore();
+      expect(apiClient.GET).toHaveBeenCalledTimes(2);
+      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      expect(store.restored).toBe(true);
+    });
+
+    it('keeps an answered probe, without asking again', async () => {
+      apiClient.GET.mockResolvedValueOnce({
+        data: undefined,
+        error: undefined,
+        response: new Response(null, { status: 401 }),
+      });
+      const store = useSessionStore();
+      await store.restore();
+      await store.restore();
+      expect(apiClient.GET).toHaveBeenCalledTimes(1);
     });
 
     it('performs the round trip only once for concurrent callers', async () => {
@@ -158,9 +227,36 @@ describe('useSessionStore', () => {
         error: undefined,
         response: new Response(null, { status: 200 }),
       });
-      await store.fetchMember();
+      await expect(store.fetchMember()).resolves.toBe(true);
       expect(store.member).toEqual({ email: 'fresh@example.com', locale: 'fr' });
       expect(apiClient.GET).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps the member and the restored flag when a refresh gets no answer', async () => {
+      apiClient.GET.mockResolvedValueOnce({
+        data: undefined,
+        error: {},
+        response: new Response(null, { status: 500 }),
+      });
+      const store = useSessionStore();
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      store.restored = true;
+      await expect(store.fetchMember()).resolves.toBe(false);
+      expect(store.member).toEqual({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      expect(store.restored).toBe(true);
+    });
+
+    it('signs the member out when a refresh answers 401', async () => {
+      apiClient.GET.mockResolvedValueOnce({
+        data: undefined,
+        error: undefined,
+        response: new Response(null, { status: 401 }),
+      });
+      const store = useSessionStore();
+      store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+      await expect(store.fetchMember()).resolves.toBe(true);
+      expect(store.member).toBeNull();
+      expect(store.restored).toBe(true);
     });
   });
 });

@@ -44,8 +44,8 @@ onMounted(async () => {
     confirmed ? 'success' : 'error',
   );
   await leave();
-  // Picks up the new address. Only once off this page: a refresh failing
-  // here would sign the member out and remount the page, keyless.
+  // Picks up the new address. Only once off this page: a refresh answering
+  // 401 here would sign the member out and remount the page, keyless.
   if (confirmed && session.isAuthenticated) await session.fetchMember();
 });
 </script>

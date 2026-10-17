@@ -21,6 +21,11 @@ const signedIn = () => ({
   error: undefined,
   response: new Response(null, { status: 200 }),
 });
+const unavailable = () => ({
+  data: undefined,
+  error: {},
+  response: new Response(null, { status: 503 }),
+});
 
 // Starts each test signed out on sign-in, with a fresh, unrestored session.
 async function resetToSignIn(): Promise<void> {
@@ -82,6 +87,22 @@ describe('router auth guard', () => {
     expect(router.currentRoute.value.name).toBe('home');
   });
 
+  it('sends a signed-in member back to their page when only the first probe fails', async () => {
+    apiClient.GET.mockResolvedValueOnce(unavailable()).mockResolvedValueOnce(signedIn());
+    await router.push('/en/accounts/42/schedulers?page=2');
+    expect(router.currentRoute.value.fullPath).toBe('/en/accounts/42/schedulers?page=2');
+    expect(apiClient.GET).toHaveBeenCalledTimes(2);
+  });
+
+  it('settles on sign-in, keeping the deep link, while the API stays unreachable', async () => {
+    apiClient.GET.mockRejectedValue(new Error('network failure'));
+    await router.push('/en/reports');
+    expect(router.currentRoute.value.name).toBe('sign-in');
+    expect(router.currentRoute.value.query.redirect).toBe('/en/reports');
+    expect(apiClient.GET).toHaveBeenCalledTimes(2);
+    expect(useSessionStore().restored).toBe(false);
+  });
+
   it('skips the restore round trip once the session is already restored', async () => {
     const store = useSessionStore();
     store.setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
@@ -126,6 +147,16 @@ describe('router guest-only pages', () => {
     await router.push({ name: 'sign-in' });
     expect(router.currentRoute.value.name).toBe('sign-in');
     expect(apiClient.GET).toHaveBeenCalledTimes(1);
+  });
+
+  it('probes again on the next navigation after the probe failed', async () => {
+    apiClient.GET.mockResolvedValueOnce(unavailable()).mockResolvedValueOnce(signedIn());
+    await router.push({ name: 'register' });
+    expect(router.currentRoute.value.name).toBe('register');
+
+    await router.push({ name: 'sign-in' });
+    expect(router.currentRoute.value.name).toBe('home');
+    expect(apiClient.GET).toHaveBeenCalledTimes(2);
   });
 
   it('keeps the target locale on the redirect home', async () => {
