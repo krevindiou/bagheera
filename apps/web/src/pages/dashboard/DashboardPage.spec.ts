@@ -38,11 +38,19 @@ async function mountWithDashboard(dashboard: DashboardResponse) {
 }
 
 describe('DashboardPage', () => {
-  it('renders nothing before the dashboard data has loaded', () => {
+  it('shows the heading and a loading status while the dashboard data is pending', () => {
     apiClient.GET.mockReset();
     apiClient.GET.mockImplementation(() => new Promise(() => {}));
     const wrapper = mount(DashboardPage, withGlobalPlugins());
-    expect(wrapper.find('h1').exists()).toBe(false);
+    expect(wrapper.find('h1').text()).toBe('Dashboard');
+    expect(wrapper.find('[role="status"]').text()).toBe('Loading…');
+    expect(wrapper.find('[data-testid="total-balance"]').exists()).toBe(false);
+  });
+
+  it('drops the loading status once the dashboard data has loaded', async () => {
+    const wrapper = await mountWithDashboard(baseDashboard());
+    expect(wrapper.find('h1').exists()).toBe(true);
+    expect(wrapper.find('[role="status"]').exists()).toBe(false);
   });
 
   it('shows an error message instead of hiding a failed load as empty data', async () => {

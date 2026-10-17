@@ -59,141 +59,145 @@ const accountTiles = computed(() =>
 
 <template>
   <LoadError v-if="isError" data-testid="dashboard-error" />
-  <div v-else-if="dashboard">
+  <div v-else>
     <h1 class="mb-1" style="font-size: 28px">{{ $t('dashboard.title') }}</h1>
     <p class="mb-4" style="color: var(--paper-dim); font-size: 15px">
       {{ $t('dashboard.subtitle') }}
     </p>
 
-    <div
-      v-if="dashboard.onboarding === 'no-bank'"
-      class="alert alert-info"
-      data-testid="onboarding-tip"
-    >
-      {{ $t('dashboard.onboardingNoBank') }}
-      <router-link :to="{ name: 'accounts', query: { start: 'bank-choice' } }">{{
-        $t('dashboard.onboardingCta')
-      }}</router-link>
-    </div>
-    <div
-      v-else-if="dashboard.onboarding === 'no-account'"
-      class="alert alert-info"
-      data-testid="onboarding-tip"
-    >
-      {{ $t('dashboard.onboardingNoAccount') }}
-      <router-link :to="{ name: 'accounts', query: { start: 'new-account' } }">{{
-        $t('dashboard.onboardingCta')
-      }}</router-link>
-    </div>
+    <p v-if="!dashboard" role="status" class="text-muted">{{ $t('common.loading') }}</p>
 
-    <template v-if="!dashboard.onboarding">
-      <section class="mb-4">
-        <p v-if="dashboard.totalBalances.length === 0" class="text-muted">
-          {{ $t('dashboard.noBalances') }}
-        </p>
-        <div class="stat-grid">
-          <StatCard
-            v-for="balance in dashboard.totalBalances"
-            :key="balance.currency"
-            :label="`${$t('dashboard.totalBalances')} (${balance.currency})`"
-            :amount="balance.amount"
-            :currency="balance.currency"
-            :reconciled="balance.reconciledAmount"
-            value-testid="total-balance"
-            reconciled-testid="total-reconciled"
-          >
-            <!-- Closed accounts have no tile below, so say why the tiles don't add up. -->
-            <div
-              v-if="balance.includesClosedAccounts"
-              class="stat-footnote"
-              data-testid="total-includes-closed"
+    <template v-else>
+      <div
+        v-if="dashboard.onboarding === 'no-bank'"
+        class="alert alert-info"
+        data-testid="onboarding-tip"
+      >
+        {{ $t('dashboard.onboardingNoBank') }}
+        <router-link :to="{ name: 'accounts', query: { start: 'bank-choice' } }">{{
+          $t('dashboard.onboardingCta')
+        }}</router-link>
+      </div>
+      <div
+        v-else-if="dashboard.onboarding === 'no-account'"
+        class="alert alert-info"
+        data-testid="onboarding-tip"
+      >
+        {{ $t('dashboard.onboardingNoAccount') }}
+        <router-link :to="{ name: 'accounts', query: { start: 'new-account' } }">{{
+          $t('dashboard.onboardingCta')
+        }}</router-link>
+      </div>
+
+      <template v-if="!dashboard.onboarding">
+        <section class="mb-4">
+          <p v-if="dashboard.totalBalances.length === 0" class="text-muted">
+            {{ $t('dashboard.noBalances') }}
+          </p>
+          <div class="stat-grid">
+            <StatCard
+              v-for="balance in dashboard.totalBalances"
+              :key="balance.currency"
+              :label="`${$t('dashboard.totalBalances')} (${balance.currency})`"
+              :amount="balance.amount"
+              :currency="balance.currency"
+              :reconciled="balance.reconciledAmount"
+              value-testid="total-balance"
+              reconciled-testid="total-reconciled"
             >
-              <span class="stat-footnote-label">{{ $t('dashboard.totalIncludesClosed') }}</span>
-            </div>
-          </StatCard>
-          <StatCard
-            v-if="dashboard.lastBiggestIncome"
-            :label="$t('dashboard.lastBiggestIncome')"
-            :amount="dashboard.lastBiggestIncome.amount"
-            :currency="dashboard.lastBiggestIncome.currency"
-            trend="up"
-            data-testid="last-biggest-income"
-          >
-            <template #footnote>
-              <span class="stat-footnote-label"
-                >{{ dashboard.lastBiggestIncome.thirdParty }} ·
-                {{ formatDate(dashboard.lastBiggestIncome.valueDate) }}</span
+              <!-- Closed accounts have no tile below, so say why the tiles don't add up. -->
+              <div
+                v-if="balance.includesClosedAccounts"
+                class="stat-footnote"
+                data-testid="total-includes-closed"
               >
-            </template>
-          </StatCard>
-          <StatCard
-            v-if="dashboard.lastBiggestExpense"
-            :label="$t('dashboard.lastBiggestExpense')"
-            :amount="dashboard.lastBiggestExpense.amount"
-            :currency="dashboard.lastBiggestExpense.currency"
-            trend="down"
-            data-testid="last-biggest-expense"
+                <span class="stat-footnote-label">{{ $t('dashboard.totalIncludesClosed') }}</span>
+              </div>
+            </StatCard>
+            <StatCard
+              v-if="dashboard.lastBiggestIncome"
+              :label="$t('dashboard.lastBiggestIncome')"
+              :amount="dashboard.lastBiggestIncome.amount"
+              :currency="dashboard.lastBiggestIncome.currency"
+              trend="up"
+              data-testid="last-biggest-income"
+            >
+              <template #footnote>
+                <span class="stat-footnote-label"
+                  >{{ dashboard.lastBiggestIncome.thirdParty }} ·
+                  {{ formatDate(dashboard.lastBiggestIncome.valueDate) }}</span
+                >
+              </template>
+            </StatCard>
+            <StatCard
+              v-if="dashboard.lastBiggestExpense"
+              :label="$t('dashboard.lastBiggestExpense')"
+              :amount="dashboard.lastBiggestExpense.amount"
+              :currency="dashboard.lastBiggestExpense.currency"
+              trend="down"
+              data-testid="last-biggest-expense"
+            >
+              <template #footnote>
+                <span class="stat-footnote-label"
+                  >{{ dashboard.lastBiggestExpense.thirdParty }} ·
+                  {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}</span
+                >
+              </template>
+            </StatCard>
+          </div>
+        </section>
+
+        <SynthesisChartPanel
+          v-if="!dashboard.synthesisChart.hidden"
+          v-model:range="chartRange"
+          :title="$t('dashboard.synthesisChart')"
+          :label="synthesisChartAriaLabel"
+          :series="toSynthesisSeries(dashboard.synthesisChart)"
+          :axis-bounds="toDisplayBounds(dashboard.synthesisChart.axisBounds)"
+          range-testid="synthesis-chart-range"
+          data-testid="synthesis-chart"
+        />
+
+        <section class="mb-4">
+          <h2 class="h6 mb-3">{{ $t('dashboard.accountsOverview') }}</h2>
+          <p v-if="accountTiles.length === 0" class="text-muted">
+            {{ $t('dashboard.noAccounts') }}
+          </p>
+          <div v-else class="tile-grid">
+            <StatCard
+              v-for="account in accountTiles"
+              :key="account.id"
+              :to="{ name: 'operations', params: { accountId: account.id } }"
+              :label="`${account.bankName} — ${account.name}`"
+              :amount="account.balance"
+              :currency="account.currency"
+              :reconciled="account.reconciledBalance"
+              primary
+              class="acct-tile"
+              data-testid="overview-account"
+            >
+              <AccountSparkline
+                :values="account.history"
+                :color="colorForCurrency(account.currency)"
+                class="mt-2"
+              />
+            </StatCard>
+          </div>
+        </section>
+
+        <section v-if="dashboard.homepageReports.length > 0">
+          <h2 class="h6 mb-3">{{ $t('dashboard.reportCharts') }}</h2>
+          <div
+            v-for="entry in dashboard.homepageReports"
+            :key="entry.id"
+            class="panel panel-lg mb-4 p-4"
+            data-testid="homepage-report"
           >
-            <template #footnote>
-              <span class="stat-footnote-label"
-                >{{ dashboard.lastBiggestExpense.thirdParty }} ·
-                {{ formatDate(dashboard.lastBiggestExpense.valueDate) }}</span
-              >
-            </template>
-          </StatCard>
-        </div>
-      </section>
-
-      <SynthesisChartPanel
-        v-if="!dashboard.synthesisChart.hidden"
-        v-model:range="chartRange"
-        :title="$t('dashboard.synthesisChart')"
-        :label="synthesisChartAriaLabel"
-        :series="toSynthesisSeries(dashboard.synthesisChart)"
-        :axis-bounds="toDisplayBounds(dashboard.synthesisChart.axisBounds)"
-        range-testid="synthesis-chart-range"
-        data-testid="synthesis-chart"
-      />
-
-      <section class="mb-4">
-        <h2 class="h6 mb-3">{{ $t('dashboard.accountsOverview') }}</h2>
-        <p v-if="accountTiles.length === 0" class="text-muted">
-          {{ $t('dashboard.noAccounts') }}
-        </p>
-        <div v-else class="tile-grid">
-          <StatCard
-            v-for="account in accountTiles"
-            :key="account.id"
-            :to="{ name: 'operations', params: { accountId: account.id } }"
-            :label="`${account.bankName} — ${account.name}`"
-            :amount="account.balance"
-            :currency="account.currency"
-            :reconciled="account.reconciledBalance"
-            primary
-            class="acct-tile"
-            data-testid="overview-account"
-          >
-            <AccountSparkline
-              :values="account.history"
-              :color="colorForCurrency(account.currency)"
-              class="mt-2"
-            />
-          </StatCard>
-        </div>
-      </section>
-
-      <section v-if="dashboard.homepageReports.length > 0">
-        <h2 class="h6 mb-3">{{ $t('dashboard.reportCharts') }}</h2>
-        <div
-          v-for="entry in dashboard.homepageReports"
-          :key="entry.id"
-          class="panel panel-lg mb-4 p-4"
-          data-testid="homepage-report"
-        >
-          <h3 class="h6 mb-3">{{ entry.title }}</h3>
-          <ReportChart :report="entry" :title="entry.title" />
-        </div>
-      </section>
+            <h3 class="h6 mb-3">{{ entry.title }}</h3>
+            <ReportChart :report="entry" :title="entry.title" />
+          </div>
+        </section>
+      </template>
     </template>
   </div>
 </template>
