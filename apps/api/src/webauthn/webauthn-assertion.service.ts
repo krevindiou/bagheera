@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {
   AuthenticationResponseJSON,
@@ -9,6 +9,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '../db/db.constants';
 import { webauthnCredential } from '../db/schema';
 import { rpConfig } from './rp-config';
+import { verificationFailureReason } from './verification-failure';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 export type WebauthnCredentialRow = typeof webauthnCredential.$inferSelect;
@@ -22,6 +23,8 @@ export type AssertionVerification = { verified: true; newCounter: number } | { v
  */
 @Injectable()
 export class WebauthnAssertionService {
+  private readonly logger = new Logger(WebauthnAssertionService.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
@@ -37,7 +40,8 @@ export class WebauthnAssertionService {
   }
 
   // A throw from the library (malformed response, wrong challenge/origin)
-  // counts as a failed verification, same as `verified: false`.
+  // counts as a failed verification, same as `verified: false`; it is logged
+  // so a misconfigured RP_ID/RP_ORIGIN can be told apart from a bad client.
   async verify(
     credential: WebauthnCredentialRow,
     response: AuthenticationResponseJSON,
@@ -58,7 +62,8 @@ export class WebauthnAssertionService {
           transports: credential.transports ?? undefined,
         },
       });
-    } catch {
+    } catch (err) {
+      this.logger.warn(`Passkey assertion rejected: ${verificationFailureReason(err)}`);
       return { verified: false };
     }
     return verification.verified

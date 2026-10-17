@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/server';
@@ -20,6 +20,7 @@ import { buildRegistrationOptions } from './build-registration-options';
 import { credentialInsertValues } from './credential-insert-values';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { rpConfig } from './rp-config';
+import { verificationFailureReason } from './verification-failure';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 import { clientIp } from '../common/client-ip.decorator';
 
@@ -40,6 +41,8 @@ function registrationFailed(): BusinessError {
  */
 @Injectable()
 export class WebauthnRegistrationService {
+  private readonly logger = new Logger(WebauthnRegistrationService.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
@@ -92,7 +95,8 @@ export class WebauthnRegistrationService {
         expectedOrigin: origin,
         expectedRPID: rpID,
       });
-    } catch {
+    } catch (err) {
+      this.logger.warn(`Passkey attestation rejected: ${verificationFailureReason(err)}`);
       throw registrationFailed();
     }
 

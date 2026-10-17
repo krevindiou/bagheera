@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -26,9 +27,8 @@ const DTO = { response: {} } as unknown as VerifyRegistrationDto;
 
 // A verify() call that reaches the credential insert, which rejects with `insertError`.
 function setup(insertError: unknown) {
-  const db = {
-    insert: vi.fn().mockReturnValue({ values: vi.fn().mockRejectedValue(insertError) }),
-  } as unknown as NodePgDatabase;
+  const insert = vi.fn().mockReturnValue({ values: vi.fn().mockRejectedValue(insertError) });
+  const db = { insert } as unknown as NodePgDatabase;
   const config = { getOrThrow: () => 'value' } as unknown as ConfigService;
   const crypto = { verifyRegistrationResponse: vi.fn().mockResolvedValue(VERIFIED) };
   const emailQueue = { enqueue: vi.fn() };
@@ -43,7 +43,7 @@ function setup(insertError: unknown) {
   const session = { memberId: 'member-1' } as unknown as Request['session'];
   storeChallenge(session, 'registrationChallenge', 'challenge');
   const req = { session, ip: '203.0.113.7' } as unknown as Request;
-  return { service, req, emailQueue, audit };
+  return { service, req, insert, crypto, emailQueue, audit };
 }
 
 describe('WebauthnRegistrationService.verify', () => {
@@ -67,5 +67,23 @@ describe('WebauthnRegistrationService.verify', () => {
     await expect(service.verify(req, DTO)).rejects.toBe(outage);
     expect(emailQueue.enqueue).not.toHaveBeenCalled();
     expect(audit.record).not.toHaveBeenCalled();
+  });
+
+  it('logs why the library rejected the attestation, still answering the generic 400', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    const { service, req, insert, crypto } = setup(undefined);
+    crypto.verifyRegistrationResponse.mockRejectedValue(
+      new Error('Unexpected registration response challenge "received", expected "challenge"'),
+    );
+
+    await expect(service.verify(req, DTO)).rejects.toMatchObject({
+      status: 400,
+      response: { code: 'passkey_registration_failed', message: 'Passkey registration failed.' },
+    });
+    expect(warn).toHaveBeenCalledWith(
+      'Passkey attestation rejected: Unexpected registration response challenge "[redacted]", expected "[redacted]"',
+    );
+    expect(insert).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });

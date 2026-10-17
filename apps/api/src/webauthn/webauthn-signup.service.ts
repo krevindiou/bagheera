@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {
   PublicKeyCredentialCreationOptionsJSON,
@@ -23,6 +23,7 @@ import { credentialInsertValues } from './credential-insert-values';
 import { SignupOptionsDto } from './dto/signup-options.dto';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import { rpConfig } from './rp-config';
+import { verificationFailureReason } from './verification-failure';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 import { clientIp } from '../common/client-ip.decorator';
 
@@ -41,6 +42,8 @@ function signupFailed(): BusinessError {
  */
 @Injectable()
 export class WebauthnSignupService {
+  private readonly logger = new Logger(WebauthnSignupService.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly config: ConfigService,
@@ -100,7 +103,8 @@ export class WebauthnSignupService {
         expectedOrigin: origin,
         expectedRPID: rpID,
       });
-    } catch {
+    } catch (err) {
+      this.logger.warn(`Sign-up attestation rejected: ${verificationFailureReason(err)}`);
       throw signupFailed();
     }
 

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AuthenticationResponseJSON } from '@simplewebauthn/server';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -111,13 +112,50 @@ describe('WebauthnAssertionService', () => {
       });
     });
 
-    it('reports a rejected assertion as not verified', async () => {
+    it('reports a rejected assertion as not verified, logging why', async () => {
+      const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
       const { service, crypto } = setup();
-      crypto.verifyAuthenticationResponse.mockRejectedValue(new Error('bad signature'));
+      crypto.verifyAuthenticationResponse.mockRejectedValue(
+        new Error(
+          'Unexpected authentication response origin "https://evil.test", expected "https://example.test"',
+        ),
+      );
 
       await expect(service.verify(CREDENTIAL, RESPONSE, 'challenge')).resolves.toEqual({
         verified: false,
       });
+      expect(warn).toHaveBeenCalledWith(
+        'Passkey assertion rejected: Unexpected authentication response origin "https://evil.test", expected "https://example.test"',
+      );
+      warn.mockRestore();
+    });
+
+    it('keeps the challenges out of the log on a challenge mismatch', async () => {
+      const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+      const { service, crypto } = setup();
+      crypto.verifyAuthenticationResponse.mockRejectedValue(
+        new Error('Unexpected authentication response challenge "received", expected "challenge"'),
+      );
+
+      await service.verify(CREDENTIAL, RESPONSE, 'challenge');
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      const [logged] = warn.mock.calls[0] as [string];
+      expect(logged).not.toContain('received');
+      expect(logged).not.toContain('"challenge"');
+      expect(logged).not.toContain(CREDENTIAL.publicKey);
+      warn.mockRestore();
+    });
+
+    it('does not log a plain unverified assertion', async () => {
+      const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+      const { service, crypto } = setup();
+      crypto.verifyAuthenticationResponse.mockResolvedValue({ verified: false });
+
+      await service.verify(CREDENTIAL, RESPONSE, 'challenge');
+
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
     });
 
     it('never writes to the database', async () => {
