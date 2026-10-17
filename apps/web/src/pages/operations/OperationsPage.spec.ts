@@ -630,6 +630,26 @@ describe('OperationsPage', () => {
     expect((wrapper.find('#search-third-party').element as HTMLInputElement).value).toBe('Foo');
   });
 
+  it('says no operations match, not that none exist, when an active search returns nothing', async () => {
+    mockGet({
+      operations: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        active: true,
+        criteria: { thirdParty: 'Nobody' },
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    expect(wrapper.find('[data-testid="search-active-banner"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('No operations match this search.');
+    expect(wrapper.text()).not.toContain('No operations yet.');
+    expect(wrapper.find('[data-testid="onboarding-tip"]').exists()).toBe(false);
+  });
+
   it('shows batch actions once rows are selected, and refreshes after a batch action completes', async () => {
     mockGet({ operations: { items: [operation()], total: 1, page: 1, pageSize: 20 } });
     apiClient.POST.mockResolvedValueOnce({

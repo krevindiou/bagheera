@@ -297,7 +297,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
         :error="operationsError"
         :loading="operationsPending"
         :empty="list.items.length === 0"
-        :empty-text="$t('operations.empty')"
+        :empty-text="hasActiveSearch ? $t('operations.emptySearch') : $t('operations.empty')"
         error-testid="operations-error"
       >
         <div class="table-responsive">

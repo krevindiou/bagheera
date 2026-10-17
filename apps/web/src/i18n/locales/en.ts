@@ -172,6 +172,7 @@ export default {
     edit: 'Edit',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No operations yet.',
+    emptySearch: 'No operations match this search.',
     schedulersLink: 'Scheduled operations',
     validation: {
       amount: 'Enter an amount greater than zero.',

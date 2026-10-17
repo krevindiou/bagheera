@@ -175,6 +175,7 @@ export default {
     edit: 'Modifier',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération pour l'instant.",
+    emptySearch: 'Aucune opération ne correspond à cette recherche.',
     schedulersLink: 'Opérations planifiées',
     validation: {
       amount: 'Saisissez un montant supérieur à zéro.',
