@@ -275,6 +275,23 @@ describe('OperationsPage', () => {
     expect(rows[1].text()).toContain('+$25.00');
   });
 
+  it('signs and colors a zero debit as a debit, not by its falsy amount', async () => {
+    mockGet({
+      operations: {
+        items: [operation({ id: 'o1', debit: 0, credit: null })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const amount = wrapper.get('[data-testid="operation-row"] td.amount');
+    expect(amount.text()).toBe('-$0.00');
+    expect(amount.classes()).toContain('text-danger');
+  });
+
   it('folds the status icons and the date into the third-party cell below md, keeping their own columns from md up', async () => {
     mockGet({
       operations: {

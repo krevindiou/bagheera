@@ -1,4 +1,4 @@
-import { AMOUNT_CEILING } from '@bagheera/money';
+import { AMOUNT_CEILING, MONEY_SCALE } from '@bagheera/money';
 import { z } from 'zod';
 import { ENTRY_TYPES, FIELD_LIMITS, isValueDate } from '@bagheera/reference-data';
 
@@ -11,13 +11,17 @@ const optionalId = z.preprocess(
 export const valueDateSchema = z.string().refine(isValueDate);
 
 // Field rules mirror the API DTOs. An empty transfer account means
-// "External account" (no mirror).
+// "External account" (no mirror). The amount must be at least one minor
+// unit, as anything smaller would be stored as 0.
 export const operationSchema = z.object({
   type: z.enum(ENTRY_TYPES),
   thirdParty: z.string().trim().min(1).max(FIELD_LIMITS.THIRD_PARTY, 'tooLong'),
   amount: z.preprocess(
     (value) => (value === '' || value === undefined || value === null ? undefined : Number(value)),
-    z.number().positive().max(AMOUNT_CEILING),
+    z
+      .number()
+      .min(1 / MONEY_SCALE)
+      .max(AMOUNT_CEILING),
   ),
   categoryId: optionalId,
   paymentMethodId: z.string().uuid(),

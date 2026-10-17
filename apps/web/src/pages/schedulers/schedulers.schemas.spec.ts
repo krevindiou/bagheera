@@ -23,6 +23,11 @@ describe('schedulerSchema', () => {
     expect(schedulerSchema.safeParse(base).success).toBe(true);
   });
 
+  it('rejects an amount below one minor unit, which would be stored as 0', () => {
+    expect(schedulerSchema.safeParse({ ...base, amount: 0.00001 }).success).toBe(false);
+    expect(schedulerSchema.safeParse({ ...base, amount: 0.0001 }).success).toBe(true);
+  });
+
   it('rejects an amount over the sanity ceiling', () => {
     expect(schedulerSchema.safeParse({ ...base, amount: AMOUNT_CEILING + 1 }).success).toBe(false);
   });

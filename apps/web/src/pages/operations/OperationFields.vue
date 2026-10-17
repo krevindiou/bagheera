@@ -5,7 +5,7 @@ import {
   MIN_VALUE_DATE,
   type EntryType,
 } from '@bagheera/reference-data';
-import { AMOUNT_CEILING } from '@bagheera/money';
+import { AMOUNT_CEILING, MONEY_SCALE } from '@bagheera/money';
 import { computed, nextTick, ref, type Ref } from 'vue';
 import { useField } from 'vee-validate';
 import { useI18n } from 'vue-i18n';
@@ -97,12 +97,14 @@ const showTransferAccount = computed(
     TRANSFER_PAYMENT_METHOD_IDS.includes(paymentMethodId.value),
 );
 
-// Different copy for an amount over AMOUNT_CEILING vs zero/negative.
-const amountErrorKey = computed(() =>
-  Number(amount.value) > AMOUNT_CEILING
-    ? 'operations.validation.amountTooHigh'
-    : 'operations.validation.amount',
-);
+// Different copy for an amount over AMOUNT_CEILING, one too precise to
+// store (positive but under one minor unit), and zero/negative.
+const amountErrorKey = computed(() => {
+  const value = Number(amount.value);
+  if (value > AMOUNT_CEILING) return 'operations.validation.amountTooHigh';
+  if (value > 0 && value < 1 / MONEY_SCALE) return 'operations.validation.amountTooSmall';
+  return 'operations.validation.amount';
+});
 
 const amountInput = ref<InstanceType<typeof MoneyInput> | null>(null);
 const thirdPartyInput = ref<HTMLInputElement | null>(null);

@@ -1,4 +1,4 @@
-import { AMOUNT_CEILING } from '@bagheera/money';
+import { AMOUNT_CEILING, MONEY_SCALE } from '@bagheera/money';
 import { FIELD_LIMITS } from '@bagheera/reference-data';
 import {
   IsEmail,
@@ -6,7 +6,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsPositive,
   IsString,
   Max,
   MaxLength,
@@ -108,14 +107,15 @@ export function NotesField(): PropertyDecorator {
 
 /**
  * A monetary amount, always positive: the sign comes from the
- * operation/scheduler's `type`. AMOUNT_CEILING is a sanity ceiling keeping
- * `toMinorUnits()` well clear of float precision loss
- * (Number.MAX_SAFE_INTEGER / MONEY_SCALE ≈ 900 billion).
+ * operation/scheduler's `type`. At least one minor unit, since anything
+ * smaller rounds to a stored 0 in `toMinorUnits()`. AMOUNT_CEILING is a
+ * sanity ceiling keeping `toMinorUnits()` well clear of float precision
+ * loss (Number.MAX_SAFE_INTEGER / MONEY_SCALE ≈ 900 billion).
  */
 export function AmountField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsNumber()(target, propertyKey);
-    IsPositive()(target, propertyKey);
+    Min(1 / MONEY_SCALE)(target, propertyKey);
     Max(AMOUNT_CEILING)(target, propertyKey);
   };
 }

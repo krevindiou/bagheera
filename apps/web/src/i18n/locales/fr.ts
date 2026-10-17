@@ -183,6 +183,7 @@ export default {
     validation: {
       amount: 'Saisissez un montant supérieur à zéro.',
       amountTooHigh: 'Saisissez un montant plus petit.',
+      amountTooSmall: "Saisissez un montant d'au moins 0,0001.",
       valueDate: 'Saisissez une date entre le {min} et le {max}.',
     },
     batch: {

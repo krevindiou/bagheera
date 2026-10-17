@@ -236,6 +236,23 @@ describe('SchedulersPage', () => {
     expect(rows[1].text()).toContain('Every 2 weeks');
   });
 
+  it('signs and colors a zero debit as a debit, not by its falsy amount', async () => {
+    mockGet({
+      schedulers: {
+        items: [scheduler({ id: 's1', debit: 0, credit: null })],
+        total: 1,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(SchedulersPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const amount = wrapper.get('[data-testid="scheduler-row"] td.amount');
+    expect(amount.text()).toBe('-$0.00');
+    expect(amount.classes()).toContain('text-danger');
+  });
+
   it('shows the next occurrence rather than the first, and why there is none when paused or ended', async () => {
     mockGet({
       schedulers: {

@@ -221,9 +221,9 @@ async function onSaved() {
               </td>
               <td
                 class="text-end amount text-nowrap"
-                :class="scheduler.debit ? 'text-danger' : 'text-success'"
+                :class="scheduler.debit !== null ? 'text-danger' : 'text-success'"
               >
-                {{ scheduler.debit ? '-' : '+' }}{{ amountLabel(scheduler) }}
+                {{ scheduler.debit !== null ? '-' : '+' }}{{ amountLabel(scheduler) }}
               </td>
               <td class="d-none d-md-table-cell text-nowrap">
                 <PaymentMethodIcon

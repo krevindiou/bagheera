@@ -365,7 +365,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                     data-testid="transfer-counterpart"
                   >
                     {{
-                      operation.debit
+                      operation.debit !== null
                         ? $t('operations.transferTo', { name: transferCounterpartName(operation) })
                         : $t('operations.transferFrom', {
                             name: transferCounterpartName(operation),
@@ -375,9 +375,9 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                 </td>
                 <td
                   class="text-end amount text-nowrap"
-                  :class="operation.debit ? 'text-danger' : 'text-success'"
+                  :class="operation.debit !== null ? 'text-danger' : 'text-success'"
                 >
-                  {{ operation.debit ? '-' : '+' }}{{ amountLabel(operation) }}
+                  {{ operation.debit !== null ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
                 <td class="d-none d-md-table-cell text-nowrap">
                   <PaymentMethodIcon

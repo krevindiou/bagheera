@@ -170,16 +170,27 @@ describe('AmountField', () => {
     expect(errors[0]?.constraints).toHaveProperty('max');
   });
 
+  it('accepts the smallest storable amount, one minor unit', async () => {
+    const dto = plainToInstance(AmountFieldHost, { value: 0.0001 });
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('rejects an amount below one minor unit, which would be stored as 0', async () => {
+    const dto = plainToInstance(AmountFieldHost, { value: 0.00001 });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toEqual({ min: 'value must not be less than 0.0001' });
+  });
+
   it('rejects zero — the sign/magnitude comes from the amount, so it must be strictly positive', async () => {
     const dto = plainToInstance(AmountFieldHost, { value: 0 });
     const errors = await validate(dto);
-    expect(errors[0]?.constraints).toHaveProperty('isPositive');
+    expect(errors[0]?.constraints).toHaveProperty('min');
   });
 
   it('rejects a negative amount', async () => {
     const dto = plainToInstance(AmountFieldHost, { value: -5 });
     const errors = await validate(dto);
-    expect(errors[0]?.constraints).toHaveProperty('isPositive');
+    expect(errors[0]?.constraints).toHaveProperty('min');
   });
 });
 

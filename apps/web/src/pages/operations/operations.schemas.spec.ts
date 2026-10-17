@@ -24,6 +24,14 @@ describe('operationSchema', () => {
     expect(operationSchema.safeParse({ ...base, amount: AMOUNT_CEILING + 1 }).success).toBe(false);
   });
 
+  it('accepts an amount of one minor unit', () => {
+    expect(operationSchema.safeParse({ ...base, amount: 0.0001 }).success).toBe(true);
+  });
+
+  it('rejects an amount below one minor unit, which would be stored as 0', () => {
+    expect(operationSchema.safeParse({ ...base, amount: 0.00001 }).success).toBe(false);
+  });
+
   it('rejects a zero or negative amount', () => {
     expect(operationSchema.safeParse({ ...base, amount: 0 }).success).toBe(false);
     expect(operationSchema.safeParse({ ...base, amount: -5 }).success).toBe(false);
