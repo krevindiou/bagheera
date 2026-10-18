@@ -13,7 +13,6 @@ export const queryKeys = {
     all: ['dashboard'] as const,
     range: (range: string) => ['dashboard', range] as const,
   },
-  balance: (accountId: string) => ['balance', accountId] as const,
   chart: {
     all: (accountId: string) => ['chart', accountId] as const,
     range: (accountId: string, range: string) => ['chart', accountId, range] as const,
@@ -42,7 +41,6 @@ export function invalidateAccountData(queryClient: QueryClient, accountId: strin
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: queryKeys.operations.all(accountId) }),
     queryClient.invalidateQueries({ queryKey: queryKeys.chart.all(accountId) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.balance(accountId) }),
     queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all }),
     queryClient.invalidateQueries({ queryKey: queryKeys.accounts }),
   ]);

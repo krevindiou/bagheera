@@ -23,8 +23,12 @@ function useListQuery<T>(
   return { query, list };
 }
 
-export function useAccountsQuery() {
-  const { query, list } = useListQuery(queryKeys.accounts, () => apiClient.GET('/accounts'));
+export function useAccountsQuery(options: { staleTime?: number } = {}) {
+  const { query, list } = useListQuery(
+    queryKeys.accounts,
+    () => apiClient.GET('/accounts'),
+    options,
+  );
   return { accountsQuery: query, accounts: list };
 }
 

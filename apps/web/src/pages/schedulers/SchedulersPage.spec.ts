@@ -520,10 +520,10 @@ describe('SchedulersPage', () => {
     );
     expect(invalidatedKeys).toContainEqual(queryKeys.schedulers.all(ACCOUNT_ID));
     // A scheduler save/delete queues background generation of operations on
-    // this account, so its operations/chart/balance need invalidating too.
+    // this account, so its operations/chart/balances need invalidating too.
     expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
     expect(invalidatedKeys).toContainEqual(queryKeys.chart.all(ACCOUNT_ID));
-    expect(invalidatedKeys).toContainEqual(queryKeys.balance(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });
 
   it('creates a scheduler and closes the form on save', async () => {
@@ -569,7 +569,7 @@ describe('SchedulersPage', () => {
     expect(invalidatedKeys).toContainEqual(queryKeys.schedulers.all(ACCOUNT_ID));
     expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
     expect(invalidatedKeys).toContainEqual(queryKeys.chart.all(ACCOUNT_ID));
-    expect(invalidatedKeys).toContainEqual(queryKeys.balance(ACCOUNT_ID));
+    expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });
 
   it('cancels the create form without saving', async () => {

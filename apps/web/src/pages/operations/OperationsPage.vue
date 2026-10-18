@@ -64,7 +64,9 @@ watch(list, () => {
   selectedIds.value = new Set();
 });
 
-const { accounts } = useAccountsQuery();
+// The account's balances come from this list. Transfers from other accounts
+// and the scheduler sweep change them server-side, like the operations list.
+const { accounts } = useAccountsQuery({ staleTime: 0 });
 const { banks } = useBanksQuery();
 const { categories } = useCategoriesQuery();
 const { paymentMethods } = usePaymentMethodsQuery();
@@ -74,20 +76,6 @@ const { t } = useI18n();
 usePageTitle(
   computed(() => (account.value ? `${account.value.name} · ${t('operations.title')}` : null)),
 );
-
-const balanceQuery = useQuery({
-  queryKey: computed(() => queryKeys.balance(accountId.value)),
-  queryFn: async () =>
-    unwrap(
-      await apiClient.GET('/accounts/{id}/balance', {
-        params: { path: { id: accountId.value } },
-      }),
-    ),
-  // Changed server-side by transfers and the scheduler sweep, like the
-  // operations list.
-  staleTime: 0,
-});
-const balance = computed(() => balanceQuery.data.value ?? null);
 
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
@@ -254,13 +242,17 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
       {{ $t('operations.firstOperationTip') }}
     </p>
 
-    <div v-if="balance" class="mb-4" data-testid="account-balances">
+    <div
+      v-if="account?.balance != null && account.reconciledBalance != null"
+      class="mb-4"
+      data-testid="account-balances"
+    >
       <StatCard
         variant="chip"
         :label="$t('operations.balance')"
-        :amount="balance.balance"
+        :amount="account.balance"
         :currency="currency"
-        :reconciled="balance.reconciledBalance"
+        :reconciled="account.reconciledBalance"
         primary
       />
     </div>

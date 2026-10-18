@@ -60,6 +60,22 @@ describe('useReferenceQueries', () => {
     expect(list.value).toEqual(rows);
   });
 
+  it('refetches accounts on mount despite a fresh cache when asked for stale time 0', async () => {
+    apiClient.GET.mockResolvedValue(ok([{ id: 'a1' }]));
+    const { global, queryClient } = withGlobalPlugins();
+    queryClient.setDefaultOptions({ queries: { retry: false, gcTime: 0, staleTime: 30_000 } });
+
+    run(() => useAccountsQuery(), global);
+    await flushPromises();
+    run(() => useAccountsQuery(), global);
+    await flushPromises();
+    expect(apiClient.GET).toHaveBeenCalledTimes(1);
+
+    run(() => useAccountsQuery({ staleTime: 0 }), global);
+    await flushPromises();
+    expect(apiClient.GET).toHaveBeenCalledTimes(2);
+  });
+
   it('treats a failed response as an empty list', async () => {
     apiClient.GET.mockResolvedValueOnce({
       data: undefined,

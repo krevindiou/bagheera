@@ -54,6 +54,8 @@ const account: Account = {
   currency: 'USD',
   closed: false,
   deleted: false,
+  balance: m(1000),
+  reconciledBalance: m(900),
 };
 const bank: Bank = { id: 'b1', name: 'Chase', closed: false, deleted: false };
 const category: Category = { id: CATEGORY_FOOD, parentId: null, type: 'debit', name: 'Food' };
@@ -96,7 +98,6 @@ interface MockState {
   banks?: Bank[];
   categories?: Category[];
   paymentMethods?: PaymentMethod[];
-  balance?: { balance: number; reconciledBalance: number } | null;
   chart?: {
     currency: string;
     axisBounds: { min: number; max: number } | null;
@@ -111,7 +112,6 @@ function mockGet(state: MockState = {}) {
     banks = [bank],
     categories = [category],
     paymentMethods = [paymentMethod],
-    balance = { balance: m(1000), reconciledBalance: m(900) },
     chart = null,
     operations = { items: [], total: 0, page: 1, pageSize: 20 },
   } = state;
@@ -121,7 +121,6 @@ function mockGet(state: MockState = {}) {
     if (path === '/banks') return ok(banks);
     if (path === '/reference-data/categories') return ok(categories);
     if (path === '/reference-data/payment-methods') return ok(paymentMethods);
-    if (path === '/accounts/{id}/balance') return ok(balance);
     if (path === '/accounts/{id}/chart') return ok(chart);
     if (path === '/operations') return ok(operations);
     return ok(undefined);
@@ -165,7 +164,7 @@ describe('OperationsPage', () => {
   });
 
   it('shows the balance as the primary figure (colored by sign) and reconciled balance as a muted footnote', async () => {
-    mockGet({ balance: { balance: m(-500), reconciledBalance: m(100) } });
+    mockGet({ accounts: [{ ...account, balance: m(-500), reconciledBalance: m(100) }] });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
     const balances = wrapper.find('[data-testid="account-balances"]');
@@ -175,6 +174,26 @@ describe('OperationsPage', () => {
     // The footnote stays muted even though the account is overdrawn — only
     // the primary balance above it gets the red treatment.
     expect(balances.find('.stat-footnote-value.text-danger').exists()).toBe(false);
+  });
+
+  it("takes the balances from the accounts list instead of requesting the account's balance", async () => {
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('[data-testid="account-balances"]').text()).toContain('$1,000.00');
+    expect(wrapper.find('[data-testid="account-balances"]').text()).toContain('$900.00');
+    expect(apiClient.GET.mock.calls.map((call) => call[0])).not.toContain('/accounts/{id}/balance');
+  });
+
+  it('refetches the accounts list on mount even when it was loaded moments ago', async () => {
+    const { global, queryClient } = withGlobalPlugins(router);
+    queryClient.setDefaultOptions({ queries: { retry: false, gcTime: 0, staleTime: 30_000 } });
+    queryClient.setQueryData(queryKeys.accounts, [
+      { ...account, balance: m(1), reconciledBalance: m(1) },
+    ]);
+    wrapper = mount(OperationsPage, { global });
+    await flushPromises();
+    expect(apiClient.GET).toHaveBeenCalledWith('/accounts');
+    expect(wrapper.find('[data-testid="account-balances"]').text()).toContain('$1,000.00');
   });
 
   it('shows the onboarding tip only for a fully active account with no operations and no active search', async () => {
@@ -205,8 +224,6 @@ describe('OperationsPage', () => {
       if (path === '/banks') return ok([bank]);
       if (path === '/reference-data/categories') return ok([category]);
       if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
-      if (path === '/accounts/{id}/balance')
-        return ok({ balance: m(1000), reconciledBalance: m(900) });
       if (path === '/accounts/{id}/chart') return ok(null);
       return ok(undefined);
     });
@@ -228,8 +245,6 @@ describe('OperationsPage', () => {
       if (path === '/banks') return ok([bank]);
       if (path === '/reference-data/categories') return ok([category]);
       if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
-      if (path === '/accounts/{id}/balance')
-        return ok({ balance: m(1000), reconciledBalance: m(900) });
       if (path === '/accounts/{id}/chart') return ok(null);
       return ok(undefined);
     });
@@ -527,8 +542,6 @@ describe('OperationsPage', () => {
         if (path === '/banks') return ok([bank]);
         if (path === '/reference-data/categories') return ok([category]);
         if (path === '/reference-data/payment-methods') return ok([paymentMethod]);
-        if (path === '/accounts/{id}/balance')
-          return ok({ balance: m(1000), reconciledBalance: m(900) });
         if (path === '/accounts/{id}/chart') return ok(null);
         if (path === '/operations') {
           return ok({
@@ -753,7 +766,6 @@ describe('OperationsPage', () => {
     expect(invalidatedKeys).toContainEqual(queryKeys.operations.all(ACCOUNT_ID));
     // The chart shows the same deleted operations, so it needs invalidating too.
     expect(invalidatedKeys).toContainEqual(queryKeys.chart.all(ACCOUNT_ID));
-    expect(invalidatedKeys).toContainEqual(queryKeys.balance(ACCOUNT_ID));
     expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
     expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });

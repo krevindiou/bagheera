@@ -29,7 +29,7 @@ describe('queryKeys', () => {
 });
 
 describe('invalidateAccountData', () => {
-  it("invalidates the account's operations, chart, and balance, plus the dashboard and accounts list", async () => {
+  it("invalidates the account's operations, and chart, plus the dashboard and accounts list (which carries the balances)", async () => {
     const invalidateQueries = vi.fn().mockResolvedValue(undefined);
     const queryClient = { invalidateQueries } as unknown as Parameters<
       typeof invalidateAccountData
@@ -40,7 +40,6 @@ describe('invalidateAccountData', () => {
     const invalidatedKeys = invalidateQueries.mock.calls.map((call) => call[0]?.queryKey);
     expect(invalidatedKeys).toContainEqual(queryKeys.operations.all('a1'));
     expect(invalidatedKeys).toContainEqual(queryKeys.chart.all('a1'));
-    expect(invalidatedKeys).toContainEqual(queryKeys.balance('a1'));
     expect(invalidatedKeys).toContainEqual(queryKeys.dashboard.all);
     expect(invalidatedKeys).toContainEqual(queryKeys.accounts);
   });
