@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { initSentry } from './logging/sentry';
@@ -39,6 +40,9 @@ async function bootstrap() {
       },
     }),
   );
+  // BREACH: the only secret in a body is the CSRF token, which is random per
+  // mint and sits beside no reflected input, so its length leaks nothing.
+  app.use(compression());
   app.use(apiResponseHeaders);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

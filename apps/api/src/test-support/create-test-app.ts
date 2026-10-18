@@ -50,8 +50,8 @@ export interface TestApp {
 
 /**
  * Boots the real app (Testcontainers Postgres/Valkey) wired like main.ts,
- * minus helmet, `trust proxy`, apiResponseHeaders, the /api prefix and
- * Swagger, with
+ * minus helmet, compression, `trust proxy`, apiResponseHeaders, the /api
+ * prefix and Swagger, with
  * EmailQueueService replaced by a recording fake.
  */
 export async function createTestApp(): Promise<TestApp> {
