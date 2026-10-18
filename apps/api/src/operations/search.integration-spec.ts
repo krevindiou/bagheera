@@ -160,6 +160,18 @@ describe('operations search', () => {
     expect(body.total).toBe(1);
   });
 
+  it('orders by value date, then most recently created first', async () => {
+    const { mutate } = await seedSignedInMember(app);
+    const { accountId } = await createAccount(mutate);
+    await createOperation(mutate, accountId, { thirdParty: 'old', valueDate: '2026-01-01' });
+    await createOperation(mutate, accountId, { thirdParty: 'new A', valueDate: '2026-03-01' });
+    await createOperation(mutate, accountId, { thirdParty: 'new B', valueDate: '2026-03-01' });
+
+    const res = await mutate('post', '/operations/search?page=1', { accountId });
+    const thirdParties = (res.body as SearchResult).items.map((item) => item.thirdParty);
+    expect(thirdParties).toEqual(['new B', 'new A', 'old']);
+  });
+
   describe('each criterion on its own', () => {
     let mutate: SignedInFixture['mutate'];
     let accountId: string;

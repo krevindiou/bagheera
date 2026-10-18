@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, isNotNull, lte, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type IORedis from 'ioredis';
 import { ilikeContains } from '../common/like-pattern';
@@ -125,7 +125,13 @@ export class OperationSearchService {
       .select()
       .from(operation)
       .where(where)
-      .orderBy(desc(operation.valueDate), desc(operation.createdAt), desc(operation.id))
+      // Spelled out to match the index's NULLS LAST ordering, which plain desc() doesn't, so
+      // operation_account_id_value_date_idx serves the sort instead of a top-N over the account.
+      .orderBy(
+        sql`${operation.valueDate} desc nulls last`,
+        sql`${operation.createdAt} desc nulls last`,
+        sql`${operation.id} desc nulls last`,
+      )
       .limit(PAGE_SIZE)
       .offset((page - 1) * PAGE_SIZE);
 
