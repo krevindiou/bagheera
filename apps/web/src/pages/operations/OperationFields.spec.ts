@@ -299,7 +299,7 @@ describe('OperationFields', () => {
     wrapper.unmount();
   });
 
-  it('gives a zero, a below-one-minor-unit and an over-ceiling amount different messages', async () => {
+  it('explains an over-ceiling amount distinctly from a zero or below-one-minor-unit one', async () => {
     const { wrapper, form } = mountFields();
     const amountField = () => wrapper.get('#x-amount').element.closest('.mb-3')!.textContent;
 
@@ -311,7 +311,7 @@ describe('OperationFields', () => {
     await wrapper.get('#x-amount').setValue('0.00001');
     await form().validate();
     await flushPromises();
-    expect(amountField()).toContain('Enter an amount of at least 0.0001.');
+    expect(amountField()).toContain('Enter an amount greater than zero.');
 
     await wrapper.get('#x-amount').setValue(String(AMOUNT_CEILING + 1));
     await form().validate();

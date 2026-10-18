@@ -180,7 +180,6 @@ export default {
     validation: {
       amount: 'Enter an amount greater than zero.',
       amountTooHigh: 'Enter a smaller amount.',
-      amountTooSmall: 'Enter an amount of at least 0.0001.',
       valueDate: 'Enter a date between {min} and {max}.',
     },
     batch: {
