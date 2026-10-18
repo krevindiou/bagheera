@@ -18,7 +18,7 @@ const apiClient = asMockedApiClient(realApiClient);
 
 // Runs a composable inside a mounted component, since useQuery needs the
 // app's QueryClient.
-function run<T>(composable: () => T): T {
+function run<T>(composable: () => T, global = withGlobalPlugins().global): T {
   let result!: T;
   mount(
     defineComponent({
@@ -27,7 +27,7 @@ function run<T>(composable: () => T): T {
         return () => h('div');
       },
     }),
-    withGlobalPlugins(),
+    { global },
   );
   return result;
 }
@@ -82,4 +82,25 @@ describe('useReferenceQueries', () => {
 
     expect(banksQuery.data.value).toEqual([{ id: 'b1' }]);
   });
+
+  it.each([
+    ['categories', () => useCategoriesQuery().categories, 1],
+    ['payment methods', () => usePaymentMethodsQuery().paymentMethods, 1],
+    ['accounts', () => useAccountsQuery().accounts, 2],
+    ['banks', () => useBanksQuery().banks, 2],
+  ])(
+    'fetches the %s list %i time(s) across two mounts (stale time 0 apart from reference data)',
+    async (_name, pick: () => ComputedRef<unknown[]>, expectedCalls) => {
+      apiClient.GET.mockResolvedValue(ok([{ id: 'r1' }]));
+      const { global } = withGlobalPlugins();
+
+      run(pick, global);
+      await flushPromises();
+      const second = run(pick, global);
+      await flushPromises();
+
+      expect(apiClient.GET).toHaveBeenCalledTimes(expectedCalls);
+      expect(second.value).toEqual([{ id: 'r1' }]);
+    },
+  );
 });

@@ -10,10 +10,14 @@ import { unwrap } from '../api/unwrap';
 function useListQuery<T>(
   queryKey: readonly string[],
   fetchList: () => Promise<{ data?: T[]; error?: unknown; response: Response }>,
+  // Left out (not passed as undefined) so the client's default stale time
+  // applies.
+  options: { staleTime?: number } = {},
 ) {
   const query = useQuery({
     queryKey,
     queryFn: async () => unwrap<T[]>(await fetchList()),
+    ...options,
   });
   const list = computed(() => query.data.value ?? []);
   return { query, list };
@@ -29,16 +33,23 @@ export function useBanksQuery() {
   return { banksQuery: query, banks: list };
 }
 
+// Seeded and not user-editable, so one fetch per session is enough.
+const REFERENCE_DATA_OPTIONS = { staleTime: Infinity };
+
 export function useCategoriesQuery() {
-  const { query, list } = useListQuery(queryKeys.categories, () =>
-    apiClient.GET('/reference-data/categories'),
+  const { query, list } = useListQuery(
+    queryKeys.categories,
+    () => apiClient.GET('/reference-data/categories'),
+    REFERENCE_DATA_OPTIONS,
   );
   return { categoriesQuery: query, categories: list };
 }
 
 export function usePaymentMethodsQuery() {
-  const { query, list } = useListQuery(queryKeys.paymentMethods, () =>
-    apiClient.GET('/reference-data/payment-methods'),
+  const { query, list } = useListQuery(
+    queryKeys.paymentMethods,
+    () => apiClient.GET('/reference-data/payment-methods'),
+    REFERENCE_DATA_OPTIONS,
   );
   return { paymentMethodsQuery: query, paymentMethods: list };
 }

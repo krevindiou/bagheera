@@ -49,6 +49,9 @@ export function useOperationSearch(accountId: Ref<string>) {
           params: { query: { accountId: accountId.value, page: page.value } },
         }),
       ),
+    // Transfers from other accounts and the scheduler sweep add operations
+    // here with no client-side event to invalidate on.
+    staleTime: 0,
   });
 
   const list = computed(() => query.data.value ?? EMPTY_PAGE);

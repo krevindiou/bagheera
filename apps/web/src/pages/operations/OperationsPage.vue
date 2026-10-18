@@ -83,6 +83,9 @@ const balanceQuery = useQuery({
         params: { path: { id: accountId.value } },
       }),
     ),
+  // Changed server-side by transfers and the scheduler sweep, like the
+  // operations list.
+  staleTime: 0,
 });
 const balance = computed(() => balanceQuery.data.value ?? null);
 
@@ -96,6 +99,7 @@ const chartQuery = useQuery({
         params: { path: { id: accountId.value }, query: { range: chartRange.value } },
       }),
     ),
+  staleTime: 0,
 });
 const chartSeries = computed<SynthesisChartSeries[]>(() => {
   const chart = chartQuery.data.value;

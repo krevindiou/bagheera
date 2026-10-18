@@ -38,6 +38,9 @@ const { data: dashboard, isError } = useQuery({
         params: { query: { range: chartRange.value } },
       }),
     ),
+  // Aggregates every account, which transfers and the scheduler sweep
+  // change without a client-side event.
+  staleTime: 0,
 });
 
 // One line per currency, colored like every other per-currency chart.

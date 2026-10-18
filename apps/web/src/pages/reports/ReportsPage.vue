@@ -113,6 +113,9 @@ const seriesQuery = useQuery({
   enabled: computed(
     () => viewingReportId.value !== null && viewingReport.value?.type !== 'distribution',
   ),
+  // Computed from operations and the report's own settings, neither of which
+  // invalidates this key.
+  staleTime: 0,
 });
 const distributionQuery = useQuery({
   queryKey: computed(() => queryKeys.reportDistribution(viewingReportId.value)),
@@ -125,6 +128,7 @@ const distributionQuery = useQuery({
   enabled: computed(
     () => viewingReportId.value !== null && viewingReport.value?.type === 'distribution',
   ),
+  staleTime: 0,
 });
 const viewedChart = computed<ReportChartData | null>(() => {
   if (viewingReport.value?.type === 'distribution') {

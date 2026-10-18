@@ -62,6 +62,8 @@ const schedulersQuery = useQuery({
         params: { query: { accountId: accountId.value, page: page.value } },
       }),
     ),
+  // The scheduler sweep advances each next date with no client-side event.
+  staleTime: 0,
 });
 const list = computed(
   () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: PAGE_SIZE },
