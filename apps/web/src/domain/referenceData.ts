@@ -21,8 +21,8 @@ export function categoryLabel(category: Category, allCategories: Category[]): st
     ? allCategories.find((c) => c.id === category.parentId)
     : undefined;
   return parent
-    ? `${referenceName(parent.name)} > ${referenceName(category.name)}`
-    : referenceName(category.name);
+    ? `${referenceName('categories', parent.name)} > ${referenceName('categories', category.name)}`
+    : referenceName('categories', category.name);
 }
 
 export interface CategoryGroup {
@@ -41,7 +41,7 @@ export function groupCategories(categories: Category[]): CategoryGroup[] {
   for (const top of topLevel) {
     const children = categories.filter((c) => c.parentId === top.id);
     if (children.length > 0) {
-      groups.push({ label: referenceName(top.name), categories: [top, ...children] });
+      groups.push({ label: referenceName('categories', top.name), categories: [top, ...children] });
     } else {
       standalone.push(top);
     }
@@ -57,7 +57,7 @@ export { PAYMENT_METHOD_ID };
 
 export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): string {
   const name = paymentMethods.find((pm) => pm.id === id)?.name;
-  return name === undefined ? id : referenceName(name);
+  return name === undefined ? id : referenceName('paymentMethods', name);
 }
 
 // The third party as displayed: the system-generated opening operation is
@@ -65,7 +65,7 @@ export function paymentMethodName(id: string, paymentMethods: PaymentMethod[]): 
 // method instead.
 export function thirdPartyLabel(thirdParty: string, paymentMethodId: string): string {
   return paymentMethodId === PAYMENT_METHOD_ID.INITIAL_BALANCE
-    ? referenceName('Initial balance')
+    ? referenceName('paymentMethods', 'Initial balance')
     : thirdParty;
 }
 

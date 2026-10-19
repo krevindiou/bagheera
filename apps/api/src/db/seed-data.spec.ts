@@ -1,3 +1,4 @@
+import { FIELD_LIMITS } from '@bagheera/reference-data';
 import {
   categorySeeds,
   CategorySeed,
@@ -64,5 +65,65 @@ describe('categorySeeds', () => {
     for (const category of flattenCategories(categorySeeds)) {
       expect(['debit', 'credit']).toContain(category.type);
     }
+  });
+
+  it('fits the category.name column and never repeats a name under the same parent', () => {
+    const seen = new Set<string>();
+    const walk = (seeds: CategorySeed[], parent: string) => {
+      for (const seed of seeds) {
+        expect(seed.name.length).toBeLessThanOrEqual(32);
+        const key = `${parent}/${seed.name}`;
+        expect(seen.has(key)).toBe(false);
+        seen.add(key);
+        walk(seed.children ?? [], key);
+      }
+    };
+    walk(categorySeeds, '');
+  });
+
+  it('keeps sub-categories one level deep and of their parent type', () => {
+    for (const parent of categorySeeds) {
+      for (const child of parent.children ?? []) {
+        expect(child.type).toBe(parent.type);
+        expect(child.children).toBeUndefined();
+      }
+    }
+  });
+
+  describe('granularity', () => {
+    const topLevel = (type: 'debit' | 'credit') => categorySeeds.filter((c) => c.type === type);
+    const names = flattenCategories(categorySeeds).map((c) => c.name);
+    const childCount = (name: string) =>
+      categorySeeds.find((c) => c.name === name)?.children?.length ?? 0;
+
+    it('has at least 18 top-level debit and 8 top-level credit categories', () => {
+      expect(topLevel('debit').length).toBeGreaterThanOrEqual(18);
+      expect(topLevel('credit').length).toBeGreaterThanOrEqual(8);
+    });
+
+    it.each(['Housing', 'Food', 'Transport'])(
+      'splits %s into at least 3 sub-categories',
+      (name) => {
+        expect(childCount(name)).toBeGreaterThanOrEqual(3);
+      },
+    );
+
+    it.each([
+      'Groceries',
+      'Restaurants',
+      'Insurance',
+      'Taxes',
+      'Subscriptions',
+      'Savings',
+      'Children',
+    ])('has a category named %s or starting with it', (word) => {
+      expect(names.some((n) => n === word || n.startsWith(word))).toBe(true);
+    });
+
+    it('stays within the report and search category selection cap', () => {
+      expect(flattenCategories(categorySeeds).length).toBeLessThanOrEqual(
+        FIELD_LIMITS.CATEGORY_SELECTION,
+      );
+    });
   });
 });

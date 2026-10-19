@@ -69,7 +69,7 @@ export class CreateReportDto {
   @IsOptional()
   @IsArray()
   @ArrayUnique()
-  @ArrayMaxSize(100)
+  @ArrayMaxSize(FIELD_LIMITS.CATEGORY_SELECTION)
   @IsUUID('7', { each: true })
   categoryIds?: string[];
 

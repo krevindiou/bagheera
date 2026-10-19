@@ -48,7 +48,7 @@ export class SearchOperationsDto {
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
-  @ArrayMaxSize(50)
+  @ArrayMaxSize(FIELD_LIMITS.CATEGORY_SELECTION)
   @IsUUID('7', { each: true })
   categoryIds?: string[];
 

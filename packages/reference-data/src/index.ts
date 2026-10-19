@@ -72,6 +72,9 @@ export const FIELD_LIMITS = {
   // The operation search panel's notes filter — request-only, narrower
   // than NOTES (what's actually saved).
   SEARCH_NOTES: 128,
+  // Categories a report or an operation search can select; above the
+  // seeded set's size so "select all" stays possible.
+  CATEGORY_SELECTION: 150,
 } as const;
 
 // The synthesis chart's window choices (the trailing 12 or 24 months, or the

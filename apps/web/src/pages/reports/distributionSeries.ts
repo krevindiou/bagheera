@@ -109,7 +109,12 @@ export function toDistributionFacets(
   // translated; third-party labels are the member's own text.
   const translateLabels = distribution.dataGrouping !== 'third_party';
   const labelOf = (label: string | null, side: Side) =>
-    label !== null && translateLabels ? referenceName(label) : labelText(label, side, t);
+    label !== null && translateLabels
+      ? referenceName(
+          distribution.dataGrouping === 'category' ? 'categories' : 'paymentMethods',
+          label,
+        )
+      : labelText(label, side, t);
   return distribution.series
     .filter((s) => s.debit.length > 0 || s.credit.length > 0)
     .map((s) => toRankedFacet(s.currency, s.debit, s.credit, labelOf, periodGrouping));

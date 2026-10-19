@@ -29,12 +29,14 @@ describe('SearchOperationsDto', () => {
     expect(errors.some((e) => e.property === 'type')).toBe(true);
   });
 
-  it('rejects more than 50 categoryIds', async () => {
-    const dto = plainToInstance(SearchOperationsDto, {
-      accountId: UUID_V7,
-      categoryIds: Array.from({ length: 51 }, () => UUID_V7),
-    });
-    const errors = await validate(dto);
+  it('accepts up to 150 categoryIds and rejects more', async () => {
+    const withCategories = (count: number) =>
+      plainToInstance(SearchOperationsDto, {
+        accountId: UUID_V7,
+        categoryIds: Array.from({ length: count }, () => UUID_V7),
+      });
+    expect(await validate(withCategories(150))).toEqual([]);
+    const errors = await validate(withCategories(151));
     expect(errors.some((e) => e.property === 'categoryIds')).toBe(true);
   });
 

@@ -190,7 +190,7 @@ function onThirdPartyChange() {
     >
       <option value="">{{ $t('operations.choosePaymentMethod') }}</option>
       <option v-for="pm in filteredPaymentMethods" :key="pm.id" :value="pm.id">
-        {{ referenceName(pm.name) }}
+        {{ referenceName('paymentMethods', pm.name) }}
       </option>
     </select>
   </FormField>
