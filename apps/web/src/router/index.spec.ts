@@ -280,3 +280,15 @@ describe('router document title', () => {
     expect(document.title).toBe('Créer votre compte · Bagheera');
   });
 });
+
+describe('router wide pages', () => {
+  it('asks for the wide layout on the pages built around a table, and on no other', () => {
+    const wide = router
+      .getRoutes()
+      .filter((route) => route.meta.wide)
+      .map((route) => route.name)
+      .sort();
+
+    expect(wide).toEqual(['operations', 'operations-import']);
+  });
+});

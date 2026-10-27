@@ -177,6 +177,118 @@ export default {
     empty: 'No operations yet.',
     emptySearch: 'No operations match this search.',
     schedulersLink: 'Scheduled operations',
+    importLink: 'Import',
+    import: {
+      title: 'Import operations',
+      intro: 'Load the operations of an OFX file exported from your bank.',
+      notSaved: 'Nothing is saved until you confirm.',
+      file: 'Bank file (OFX)',
+      fileHint: 'Up to {size} MB and {rows} rows, one account at a time.',
+      dropHint: 'Choose a file, or drop it here.',
+      fileChosen: 'File: {name}',
+      replaceFile: 'Replace file',
+      uploading: 'Reading the file…',
+      preview: {
+        filter: {
+          all: 'All rows',
+          import: 'To import',
+          skipped: 'Already recorded',
+          invalid: 'Invalid',
+          attention: 'Needs attention',
+        },
+        filters: 'Show rows by status',
+        noRows: 'No rows to show.',
+        line: 'Row {line}',
+        status: 'Status',
+        willImport: 'Will be imported',
+        includeAnyway: 'Import anyway',
+        reconcileRecorded: 'Reconcile existing',
+        reconcileRecordedTitle:
+          'Reconcile the recorded operation this row matches, instead of importing it',
+        recordedReconciled: 'It is reconciled already.',
+        fileLabel: 'In the file: {label}',
+        origin: {
+          correction: 'Remembered correction',
+          change: 'Changed',
+        },
+        changeLabel: 'Change third party of row {line}',
+        changePaymentMethod: 'Payment method of row {line}',
+        changeCategory: 'Category of row {line}',
+        categorySuggested: 'Suggested from your earlier operations',
+        transfers: 'Transfers',
+        transferTo: 'Transfer to {account}',
+        transferFrom: 'Transfer from {account}',
+        transferOutsideTo: 'Transfer to outside',
+        transferOutsideFrom: 'Transfer from outside',
+        transferSuggested: 'Suggested from your earlier transfers',
+        thirdPartyInput: 'Third party of row {line}',
+        remember: 'Remember for next imports',
+        applyChange: 'Apply',
+        cancelChange: 'Cancel',
+        manageCorrections: 'Manage remembered corrections',
+        paymentMethodSuggested: 'Suggested from your earlier operations',
+        transferMirror: 'A matching operation will also be recorded in {account}.',
+        recordedBy: {
+          reference: 'Already recorded on {date} as {thirdParty} (same bank reference).',
+          details:
+            'Already recorded on {date} as {thirdParty} (same amount and label, within 2 days).',
+          transfer:
+            'Already recorded on {date} as {thirdParty} (the other side of this transfer: same amount, within 3 days).',
+        },
+        applyFailed:
+          '{count} label change could not be applied. | {count} label changes could not be applied.',
+        retry: 'Try again',
+        busy: 'Updating the preview…',
+        announceRead: '{count} row read from the file. | {count} rows read from the file.',
+        announceUpdated:
+          'Preview updated: {imported} to import, {skipped} already recorded, {invalid} invalid.',
+      },
+      statement: {
+        title: 'In the file',
+        period: 'Period',
+        debits: 'Debits',
+        credits: 'Credits',
+        net: 'Net movement',
+        netNote: 'Credits − debits',
+        closing: 'Closing balance',
+        asOf: 'On {date}',
+        expected: 'Account balance after the import',
+        matches: 'Matches',
+        differs: 'Differs by {amount}: rows may be missing or extra.',
+        different:
+          'This file seems to come from another account than the one earlier files of this account came from. Check that you chose the right account before importing.',
+        elsewhere:
+          'This file seems to come from your account {account}, which it was imported into before. Check that you chose the right account before importing.',
+        elsewhereUnnamed:
+          'This file seems to come from another of your accounts. Check that you chose the right account before importing.',
+        acceptMismatch: 'Import it into this account anyway',
+      },
+      reasons: {
+        cell_missing: 'This row has no date or no amount.',
+        date_invalid: 'The date is not a valid day.',
+        date_out_of_range: 'The date is outside the accepted years.',
+        amount_invalid: 'The amount is not a valid number.',
+        amount_zero: 'The amount is zero.',
+        amount_too_large: 'The amount is too large.',
+        third_party_missing: 'The third party is empty.',
+        third_party_too_long: 'The third party is too long.',
+      },
+      nothingToImport: 'Nothing would be imported.',
+      confirm: 'Import {count} operation | Import {count} operations',
+      confirmReconcile:
+        'Reconcile {count} recorded operation | Reconcile {count} recorded operations',
+      reconcileImported: 'Reconcile the operations imported and the recorded operations they match',
+      reconcileRecordedNote:
+        '{count} recorded operation will be reconciled instead of imported. | {count} recorded operations will be reconciled instead of imported.',
+      reconciledDone:
+        '{count} recorded operation reconciled. | {count} recorded operations reconciled.',
+      done: '{imported} operation imported, {skipped} already recorded, {invalid} invalid. | {imported} operations imported, {skipped} already recorded, {invalid} invalid.',
+      doneJoin: ' ',
+      rememberedDone:
+        '{count} label correction remembered. | {count} label corrections remembered.',
+      notRememberedDone:
+        '{count} label correction was not remembered: the limit of {limit} is reached. Delete some in Settings. | {count} label corrections were not remembered: the limit of {limit} is reached. Delete some in Settings.',
+    },
     validation: {
       amount: 'Enter an amount greater than zero.',
       amountTooHigh: 'Enter a smaller amount.',
@@ -399,6 +511,20 @@ export default {
         'This authenticator already holds one of your passkeys. Choose another one.',
       genericError: 'Something went wrong. Please try again.',
     },
+    labelCorrections: {
+      title: 'Label corrections',
+      intro:
+        'Corrections you chose to remember while importing a bank file. A later import replaces a matching label of the file with your corrected one. Deleting a correction never changes operations already imported.',
+      empty: "You haven't remembered any label correction yet.",
+      count: '{count} of {limit} label corrections remembered',
+      sourceLabel: 'Label in the bank file',
+      thirdParty: 'Replaced by',
+      delete: 'Delete selected',
+      deleted: 'Label corrections deleted',
+      confirmDelete:
+        'Delete {count} label correction? Operations already imported are kept. | Delete {count} label corrections? Operations already imported are kept.',
+      genericError: 'Something went wrong. Please try again.',
+    },
   },
   referenceData: {
     paymentMethods: {
@@ -541,6 +667,22 @@ export default {
     passkey_sign_in_failed: 'Passkey sign-in failed.',
     signup_link_invalid: 'This sign-up link is invalid or has expired.',
     email_change_link_invalid: 'This email change link has expired or was already used.',
+    import_file_invalid:
+      'This file cannot be imported: it must be an OFX file, version 1 or 2, readable in its character set and holding at least one row.',
+    import_statement_several:
+      'This file holds more than one account statement. Export one account at a time.',
+    import_statement_unsupported:
+      'This file holds a statement that is neither of a bank account nor of a credit card.',
+    import_statement_currency:
+      'This statement is in {found}, but this account is in {expected}. Amounts are never converted.',
+    import_file_too_large: 'This file is larger than 5 MB.',
+    import_too_many_rows: 'This file has more than {limit} rows.',
+    import_account_mismatch:
+      'This file seems to come from another account. Tick “Import it into this account anyway” to import it here.',
+    import_in_progress: 'This import is already being confirmed.',
+    import_not_found: 'This import is no longer available. Upload the file again.',
+    import_preview_stale:
+      'Your operations changed since this preview was shown, so nothing was imported. The preview has been updated: check it, then confirm again.',
     last_passkey:
       "This is your last passkey — you can't remove it, or you'd be permanently locked out.",
     quota_exceeded: 'You can have at most {limit} {kind}.',

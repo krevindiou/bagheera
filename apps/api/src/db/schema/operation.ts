@@ -15,6 +15,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { FIELD_LIMITS } from '@bagheera/reference-data';
 import { MinorUnits } from '../../common/money';
+import { thirdPartyKeyOf } from '../../common/third-party-key';
 import { account } from './account';
 import { category } from './category';
 import { uuidPk } from './id';
@@ -40,6 +41,12 @@ export const operation = pgTable(
       .notNull()
       .references(() => paymentMethod.id),
     thirdParty: varchar('third_party', { length: FIELD_LIMITS.THIRD_PARTY }).notNull(),
+    // The label of the bank file the operation was imported from, so a later
+    // import of the same row is recognised whatever the third party became.
+    sourceLabel: varchar('source_label', { length: FIELD_LIMITS.SOURCE_LABEL }),
+    // The identifier the bank gave the imported row, to recognise it in a
+    // later import; not unique, since banks do reuse them.
+    bankReference: varchar('bank_reference', { length: FIELD_LIMITS.BANK_REFERENCE }),
     debit: bigint('debit', { mode: 'number' }).$type<MinorUnits>(),
     credit: bigint('credit', { mode: 'number' }).$type<MinorUnits>(),
     valueDate: date('value_date').notNull().defaultNow(),
@@ -59,9 +66,18 @@ export const operation = pgTable(
       table.createdAt.desc(),
       table.id.desc(),
     ),
+    // What the import looks a third party up by (see import.history.ts); the
+    // account id leads, as every lookup is scoped to accounts.
+    index('operation_account_id_third_party_key_idx').on(
+      table.accountId,
+      thirdPartyKeyOf(table.thirdParty),
+    ),
     index('operation_scheduler_id_value_date_idx')
       .on(table.schedulerId, table.valueDate)
       .where(sql`${table.schedulerId} is not null`),
+    index('operation_account_id_bank_reference_idx')
+      .on(table.accountId, table.bankReference)
+      .where(sql`${table.bankReference} is not null`),
     index('operation_transfer_account_id_idx')
       .on(table.transferAccountId)
       .where(sql`${table.transferAccountId} is not null`),

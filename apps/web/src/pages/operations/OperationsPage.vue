@@ -220,6 +220,14 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
           ></span>
         </button>
         <router-link
+          v-if="isFullyActive"
+          :to="{ name: 'operations-import', params: { accountId } }"
+          class="btn btn-outline-secondary"
+          data-testid="import-link"
+        >
+          {{ $t('operations.importLink') }}
+        </router-link>
+        <router-link
           :to="{ name: 'schedulers', params: { accountId } }"
           class="btn btn-outline-secondary"
         >

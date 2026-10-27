@@ -42,6 +42,7 @@ function createTestRouter(): Router {
     routes: [
       { path: '/accounts/:accountId/operations', name: 'operations', component: stub },
       { path: '/accounts/:accountId/schedulers', name: 'schedulers', component: stub },
+      { path: '/accounts/:accountId/import', name: 'operations-import', component: stub },
       { path: '/accounts', name: 'accounts', component: stub },
     ],
   });
@@ -75,6 +76,8 @@ function operation(overrides: Partial<Operation> = {}): Operation {
     categoryId: CATEGORY_FOOD,
     paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
     thirdParty: 'Landlord',
+    sourceLabel: null,
+    bankReference: null,
     debit: 500000,
     credit: null,
     valueDate: '2026-01-15',

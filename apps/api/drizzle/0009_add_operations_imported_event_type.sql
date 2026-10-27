@@ -1,0 +1,1 @@
+ALTER TYPE "public"."security_event_type" ADD VALUE 'operations_imported' BEFORE 'scheduler_batch_deleted';

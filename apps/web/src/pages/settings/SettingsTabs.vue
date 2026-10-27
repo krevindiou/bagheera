@@ -7,6 +7,7 @@ const route = useRoute();
 const tabs = [
   { name: 'settings-profile', label: 'settings.profile.title' },
   { name: 'settings-passkeys', label: 'settings.passkeys.title' },
+  { name: 'settings-label-corrections', label: 'settings.labelCorrections.title' },
 ] as const;
 </script>
 

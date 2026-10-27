@@ -84,6 +84,26 @@ describe('security audit log', () => {
     expect(event).toBeDefined();
   });
 
+  it('keeps the details an event gives, and none for an event that gives none', async () => {
+    const { memberId } = await insertMemberWithCredential(app);
+    const audit = app.get(AuditService);
+    await audit.record('operations_imported', memberId, '127.0.0.1', {
+      accountId: 'an-account',
+      imported: 3,
+    });
+    await audit.record('operation_batch_deleted', memberId, '127.0.0.1');
+
+    const rows = await getDb(app)
+      .select()
+      .from(securityEvent)
+      .where(eq(securityEvent.memberId, memberId));
+    expect(rows.find((row) => row.eventType === 'operations_imported')?.details).toEqual({
+      accountId: 'an-account',
+      imported: 3,
+    });
+    expect(rows.find((row) => row.eventType === 'operation_batch_deleted')?.details).toBeNull();
+  });
+
   it('is best-effort: a write that violates the schema is swallowed, not thrown', async () => {
     const audit = app.get(AuditService);
     await expect(

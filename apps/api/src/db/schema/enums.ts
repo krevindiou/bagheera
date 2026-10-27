@@ -32,6 +32,8 @@ export const securityEventTypeEnum = pgEnum('security_event_type', [
   'email_changed',
   'operation_batch_deleted',
   'operation_batch_reconciled',
+  'operations_imported',
+  'label_corrections_deleted',
   'scheduler_batch_deleted',
   'report_batch_deleted',
   'bank_closed',

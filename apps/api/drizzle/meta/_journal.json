@@ -64,6 +64,48 @@
       "when": 1790625599519,
       "tag": "0008_add_scheduler_last_generated_date",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792443500345,
+      "tag": "0009_add_operations_imported_event_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792529710488,
+      "tag": "0010_add_label_corrections",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792836953406,
+      "tag": "0011_add_operation_bank_reference",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792910577622,
+      "tag": "0012_add_account_statement",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792963285051,
+      "tag": "0013_add_security_event_details",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793103972348,
+      "tag": "0014_add_operation_third_party_key_index",
+      "breakpoints": true
     }
   ]
 }

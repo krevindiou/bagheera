@@ -180,6 +180,120 @@ export default {
     empty: "Aucune opération pour l'instant.",
     emptySearch: 'Aucune opération ne correspond à cette recherche.',
     schedulersLink: 'Opérations planifiées',
+    importLink: 'Importer',
+    import: {
+      title: 'Importer des opérations',
+      intro: "Chargez les opérations d'un fichier OFX exporté par votre banque.",
+      notSaved: "Rien n'est enregistré avant votre confirmation.",
+      file: 'Fichier bancaire (OFX)',
+      fileHint: "Jusqu'à {size} Mo et {rows} lignes, un compte à la fois.",
+      dropHint: 'Choisissez un fichier ou déposez-le ici.',
+      fileChosen: 'Fichier : {name}',
+      replaceFile: 'Remplacer le fichier',
+      uploading: 'Lecture du fichier…',
+      preview: {
+        filter: {
+          all: 'Toutes les lignes',
+          import: 'À importer',
+          skipped: 'Déjà enregistrées',
+          invalid: 'Invalides',
+          attention: 'À vérifier',
+        },
+        filters: 'Afficher les lignes par statut',
+        noRows: 'Aucune ligne à afficher.',
+        line: 'Ligne {line}',
+        status: 'Statut',
+        willImport: 'Sera importée',
+        includeAnyway: 'Importer quand même',
+        reconcileRecorded: "Rapprocher l'existante",
+        reconcileRecordedTitle:
+          "Rapprocher l'opération enregistrée correspondant à cette ligne, au lieu de l'importer",
+        recordedReconciled: 'Elle est déjà rapprochée.',
+        fileLabel: 'Dans le fichier : {label}',
+        origin: {
+          correction: 'Correction mémorisée',
+          change: 'Modifié',
+        },
+        changeLabel: 'Modifier le tiers de la ligne {line}',
+        changePaymentMethod: 'Moyen de paiement de la ligne {line}',
+        changeCategory: 'Catégorie de la ligne {line}',
+        categorySuggested: "Proposée d'après vos opérations précédentes",
+        transfers: 'Virements',
+        transferTo: 'Virement vers {account}',
+        transferFrom: 'Virement depuis {account}',
+        transferOutsideTo: "Virement vers l'extérieur",
+        transferOutsideFrom: "Virement depuis l'extérieur",
+        transferSuggested: "Proposé d'après vos virements précédents",
+        thirdPartyInput: 'Tiers de la ligne {line}',
+        remember: 'Mémoriser pour les prochains imports',
+        applyChange: 'Appliquer',
+        cancelChange: 'Annuler',
+        manageCorrections: 'Gérer les corrections mémorisées',
+        paymentMethodSuggested: "Proposé d'après vos opérations précédentes",
+        transferMirror: 'Une opération correspondante sera aussi enregistrée dans {account}.',
+        recordedBy: {
+          reference:
+            'Déjà enregistrée le {date} sous le tiers {thirdParty} (même référence bancaire).',
+          details:
+            'Déjà enregistrée le {date} sous le tiers {thirdParty} (même montant et même libellé, à 2 jours près).',
+          transfer:
+            "Déjà enregistrée le {date} sous le tiers {thirdParty} (l'autre côté de ce virement : même montant, à 3 jours près).",
+        },
+        applyFailed:
+          "{count} modification de libellé n'a pas pu être appliquée. | {count} modifications de libellé n'ont pas pu être appliquées.",
+        retry: 'Réessayer',
+        busy: "Mise à jour de l'aperçu…",
+        announceRead: '{count} ligne lue dans le fichier. | {count} lignes lues dans le fichier.',
+        announceUpdated:
+          'Aperçu mis à jour : {imported} à importer, {skipped} déjà enregistrées, {invalid} invalides.',
+      },
+      statement: {
+        title: 'Dans le fichier',
+        period: 'Période',
+        debits: 'Débits',
+        credits: 'Crédits',
+        net: 'Variation sur la période',
+        netNote: 'Crédits − débits',
+        closing: 'Solde de clôture',
+        asOf: 'Au {date}',
+        expected: 'Solde du compte après import',
+        matches: 'Concordant',
+        differs: 'Écart de {amount} : des lignes manquent ou sont en trop.',
+        different:
+          "Ce fichier semble provenir d'un autre compte que celui des fichiers précédents de ce compte. Vérifiez que vous avez choisi le bon compte avant d'importer.",
+        elsewhere:
+          "Ce fichier semble provenir de votre compte {account}, dans lequel il a déjà été importé. Vérifiez que vous avez choisi le bon compte avant d'importer.",
+        elsewhereUnnamed:
+          "Ce fichier semble provenir d'un autre de vos comptes. Vérifiez que vous avez choisi le bon compte avant d'importer.",
+        acceptMismatch: "L'importer quand même dans ce compte",
+      },
+      reasons: {
+        cell_missing: 'Cette ligne n’a pas de date ou pas de montant.',
+        date_invalid: 'La date n’est pas un jour valide.',
+        date_out_of_range: 'La date est hors des années acceptées.',
+        amount_invalid: "Le montant n'est pas un nombre valide.",
+        amount_zero: 'Le montant est nul.',
+        amount_too_large: 'Le montant est trop élevé.',
+        third_party_missing: 'Le tiers est vide.',
+        third_party_too_long: 'Le tiers est trop long.',
+      },
+      nothingToImport: 'Rien ne serait importé.',
+      confirm: 'Importer {count} opération | Importer {count} opérations',
+      confirmReconcile:
+        'Rapprocher {count} opération enregistrée | Rapprocher {count} opérations enregistrées',
+      reconcileImported:
+        'Rapprocher les opérations importées et les opérations enregistrées correspondantes',
+      reconcileRecordedNote:
+        "{count} opération enregistrée sera rapprochée au lieu d'être importée. | {count} opérations enregistrées seront rapprochées au lieu d'être importées.",
+      reconciledDone:
+        '{count} opération enregistrée rapprochée. | {count} opérations enregistrées rapprochées.',
+      done: '{imported} opération importée (déjà enregistrées : {skipped}, invalides : {invalid}). | {imported} opérations importées (déjà enregistrées : {skipped}, invalides : {invalid}).',
+      doneJoin: ' ',
+      rememberedDone:
+        '{count} correction de libellé mémorisée. | {count} corrections de libellés mémorisées.',
+      notRememberedDone:
+        "{count} correction de libellé n'a pas été mémorisée : la limite de {limit} est atteinte. Supprimez-en dans les réglages. | {count} corrections de libellés n'ont pas été mémorisées : la limite de {limit} est atteinte. Supprimez-en dans les réglages.",
+    },
     validation: {
       amount: 'Saisissez un montant supérieur à zéro.',
       amountTooHigh: 'Saisissez un montant plus petit.',
@@ -406,6 +520,20 @@ export default {
         'Cet authentificateur contient déjà l’une de vos clés d’accès. Choisissez-en un autre.',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
     },
+    labelCorrections: {
+      title: 'Corrections de libellés',
+      intro:
+        'Les corrections que vous avez choisi de mémoriser lors d’un import de fichier bancaire. Un import ultérieur remplace un libellé du fichier identique par votre libellé corrigé. Supprimer une correction ne modifie jamais les opérations déjà importées.',
+      empty: "Vous n'avez encore mémorisé aucune correction de libellé.",
+      count: '{count} corrections de libellés mémorisées sur {limit}',
+      sourceLabel: 'Libellé du fichier bancaire',
+      thirdParty: 'Remplacé par',
+      delete: 'Supprimer la sélection',
+      deleted: 'Corrections de libellés supprimées',
+      confirmDelete:
+        'Supprimer {count} correction de libellé ? Les opérations déjà importées sont conservées. | Supprimer {count} corrections de libellés ? Les opérations déjà importées sont conservées.',
+      genericError: "Une erreur s'est produite. Veuillez réessayer.",
+    },
   },
   referenceData: {
     paymentMethods: {
@@ -548,6 +676,22 @@ export default {
     passkey_sign_in_failed: 'La connexion par passkey a échoué.',
     signup_link_invalid: "Ce lien d'inscription est invalide ou a expiré.",
     email_change_link_invalid: "Ce lien de changement d'e-mail a expiré ou a déjà été utilisé.",
+    import_file_invalid:
+      'Ce fichier ne peut pas être importé : il doit être un fichier OFX, version 1 ou 2, lisible dans son jeu de caractères et contenant au moins une ligne.',
+    import_statement_several:
+      'Ce fichier contient plusieurs relevés de compte. Exportez un compte à la fois.',
+    import_statement_unsupported:
+      "Ce fichier contient un relevé qui n'est ni d'un compte bancaire ni d'une carte de crédit.",
+    import_statement_currency:
+      'Ce relevé est en {found}, mais ce compte est en {expected}. Les montants ne sont jamais convertis.',
+    import_file_too_large: 'Ce fichier dépasse 5 Mo.',
+    import_too_many_rows: 'Ce fichier compte plus de {limit} lignes.',
+    import_account_mismatch:
+      "Ce fichier semble provenir d'un autre compte. Cochez « L'importer quand même dans ce compte » pour l'importer ici.",
+    import_in_progress: 'Cet import est déjà en cours de confirmation.',
+    import_not_found: "Cet import n'est plus disponible. Chargez de nouveau le fichier.",
+    import_preview_stale:
+      "Vos opérations ont changé depuis l'affichage de cet aperçu : rien n'a été importé. L'aperçu a été mis à jour, vérifiez-le puis confirmez de nouveau.",
     last_passkey:
       "C'est votre dernière passkey — vous ne pouvez pas la supprimer, sinon vous seriez définitivement verrouillé(e) hors de votre compte.",
     quota_exceeded: 'Vous pouvez avoir au maximum {limit} {kind}.',

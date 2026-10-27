@@ -1,0 +1,2 @@
+ALTER TABLE "operation" ADD COLUMN "bank_reference" varchar(255);--> statement-breakpoint
+CREATE INDEX "operation_account_id_bank_reference_idx" ON "operation" USING btree ("account_id","bank_reference") WHERE "operation"."bank_reference" is not null;

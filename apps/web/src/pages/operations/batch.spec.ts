@@ -24,6 +24,8 @@ function operation(id: string, overrides: Partial<Operation> = {}): Operation {
     categoryId: null,
     paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
     thirdParty: 'Landlord',
+    sourceLabel: null,
+    bankReference: null,
     debit: 100,
     credit: null,
     valueDate: '2026-01-15',

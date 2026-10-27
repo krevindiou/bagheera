@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { and, eq, inArray, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { and, eq, inArray, sql, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { BusinessError } from '../common/filters/business-error';
 import { MinorUnits } from '../common/money';
@@ -74,6 +74,9 @@ export function classifyPairingEdit(
     : { action: 'attach', targetAccountId: desiredTargetAccountId };
 }
 
+// Rows per statement when many operations are inserted at once.
+const INSERT_CHUNK = 500;
+
 @Injectable()
 export class TransferService {
   mirrorContentOf(row: InferSelectModel<typeof operation>): MirrorContent {
@@ -117,6 +120,77 @@ export class TransferService {
     return created;
   }
 
+  // Inserts operations in order, each transfer with its mirror, in a few
+  // statements per chunk instead of several per row. A row without a
+  // transferAccountId is a plain operation. Ids are drawn up front, a row's
+  // mirror right after it, so that the operations sort as they would inserted
+  // one by one.
+  async insertManyWithMirrors(
+    db: Db,
+    rows: (InferInsertModel<typeof operation> & { valueDate: string })[],
+    source: PairingEligibility,
+  ): Promise<void> {
+    const targets = new Set(
+      rows.flatMap((row) => (row.transferAccountId ? [row.transferAccountId] : [])),
+    );
+    for (const targetAccountId of targets) {
+      await this.requireEligibleTarget(db, targetAccountId, source);
+    }
+
+    for (let start = 0; start < rows.length; start += INSERT_CHUNK) {
+      const chunk = rows.slice(start, start + INSERT_CHUNK);
+      const ids = await this.newIds(
+        db,
+        chunk.reduce((count, row) => count + (row.transferAccountId ? 2 : 1), 0),
+      );
+      let next = 0;
+      const drawn = chunk.map((values) => ({
+        values: { ...values, id: ids[next++] },
+        mirrorId: values.transferAccountId ? ids[next++] : null,
+      }));
+      await db.insert(operation).values(drawn.map(({ values }) => values));
+
+      const transfers = drawn.flatMap(({ values, mirrorId }) =>
+        mirrorId === null ? [] : [{ values, mirrorId }],
+      );
+      if (transfers.length === 0) continue;
+      await db.insert(operation).values(
+        transfers.map(({ values, mirrorId }) => ({
+          id: mirrorId,
+          accountId: values.transferAccountId as string,
+          transferAccountId: values.accountId,
+          transferOperationId: values.id,
+          reconciled: false,
+          ...this.mirrorFieldsFrom({
+            paymentMethodId: values.paymentMethodId,
+            debit: values.debit ?? null,
+            credit: values.credit ?? null,
+            thirdParty: values.thirdParty,
+            valueDate: values.valueDate,
+            notes: values.notes ?? '',
+            schedulerId: values.schedulerId ?? null,
+          }),
+        })),
+      );
+      await db.execute(sql`
+        update ${operation}
+        set transfer_operation_id = pair.mirror_id
+        from (values ${sql.join(
+          transfers.map(({ values, mirrorId }) => sql`(${values.id}::uuid, ${mirrorId}::uuid)`),
+          sql`, `,
+        )}) as pair(id, mirror_id)
+        where ${operation.id} = pair.id`);
+    }
+  }
+
+  // New primary keys, in the order the database draws them.
+  private async newIds(db: Db, count: number): Promise<string[]> {
+    const drawn = await db.execute(
+      sql`select uuidv7() as id from generate_series(1, ${count}::int)`,
+    );
+    return drawn.rows.map((row) => row.id as string);
+  }
+
   // A mirror carries the opposite transfer method.
   private flip(paymentMethodId: string): string {
     return paymentMethodId === PAYMENT_METHOD_ID.TRANSFER_DEBIT
@@ -130,7 +204,7 @@ export class TransferService {
   //
   // Runs on the caller's `db` (often a transaction), not OwnershipService,
   // and throws 400s, which callers surface as form-field errors.
-  private async requireEligibleTarget(
+  async requireEligibleTarget(
     db: Db,
     targetAccountId: string,
     source: PairingEligibility,

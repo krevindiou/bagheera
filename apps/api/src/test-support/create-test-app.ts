@@ -1,4 +1,5 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { NextFunction, Request, Response } from 'express';
@@ -7,6 +8,7 @@ import { Logger } from 'nestjs-pino';
 import { vi, type Mock } from 'vitest';
 import { AppModule } from '../app.module';
 import { GlobalExceptionFilter } from '../common/filters/global-exception.filter';
+import { useJsonBodyLimit } from '../common/json-body-limit';
 import { DRIZZLE } from '../db/db.constants';
 import * as schema from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
@@ -67,11 +69,12 @@ export async function createTestApp(): Promise<TestApp> {
     .useValue(fakeEmailQueue)
     .compile();
 
-  const app = moduleRef.createNestApplication<INestApplication<Server>>();
+  const app = moduleRef.createNestApplication<NestExpressApplication<Server>>();
   // So Nest's Logger goes through pino and LOG_LEVEL can quiet it.
   app.useLogger(app.get(Logger));
   // Before app.init(), so it runs ahead of SessionModule's middleware.
   app.use(fixSecureCookiesForPlainHttp);
+  useJsonBodyLimit(app);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.init();

@@ -12,6 +12,10 @@ export class OperationDto {
   categoryId!: string | null;
   paymentMethodId!: string;
   thirdParty!: string;
+  // The label of the bank file an imported operation came from; null otherwise.
+  sourceLabel!: string | null;
+  // The identifier the bank gave an imported operation's row; null otherwise.
+  bankReference!: string | null;
   // Minor units (real value × 10,000); exactly one of debit/credit is set.
   debit!: number | null;
   credit!: number | null;

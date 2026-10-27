@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { CryptoService } from './crypto.service';
 import { TEST_CRYPTO_KEYS, testCryptoService } from '../test-support/test-crypto-service';
 
@@ -11,6 +12,19 @@ describe('CryptoService', () => {
     const crypto = testCryptoService();
     const ciphertext = crypto.encrypt('hello world');
     expect(crypto.decrypt(ciphertext)).toBe('hello world');
+  });
+
+  it('round-trips bytes that are not valid text', () => {
+    const crypto = testCryptoService();
+    const bytes = Buffer.from([0x00, 0xff, 0xc9, 0x80, 0x41, 0xe9]);
+    const sealed = crypto.encryptBytes(bytes);
+    expect(crypto.decryptBytes(sealed).equals(bytes)).toBe(true);
+  });
+
+  it('reads text sealed as bytes, and bytes sealed as text', () => {
+    const crypto = testCryptoService();
+    expect(crypto.decrypt(crypto.encryptBytes(Buffer.from('café', 'utf8')))).toBe('café');
+    expect(crypto.decryptBytes(crypto.encrypt('café')).toString('utf8')).toBe('café');
   });
 
   it('prefixes the ciphertext with the active key id, as keyId:iv:authTag:ciphertext', () => {
@@ -27,6 +41,39 @@ describe('CryptoService', () => {
     // A second instance, now active on key '2', still has key '1' loaded.
     const afterRotation = testCryptoService('2');
     expect(afterRotation.decrypt(ciphertext)).toBe('rotated secret');
+  });
+
+  describe('digests', () => {
+    it('throws before any keys are loaded', () => {
+      expect(() => new CryptoService({} as never).digests('p', 'v')).toThrow(
+        'Crypto keys not loaded',
+      );
+    });
+
+    it('gives one 64-character hex digest per key, the active key first', () => {
+      const [first, second, ...rest] = testCryptoService('2').digests('p', 'v');
+      expect(rest).toHaveLength(0);
+      expect(first).toMatch(/^[0-9a-f]{64}$/);
+      expect(second).toMatch(/^[0-9a-f]{64}$/);
+      expect(first).not.toBe(second);
+      // The same value under the other active key finds the same two digests.
+      expect(testCryptoService('1').digests('p', 'v')).toEqual([second, first]);
+    });
+
+    it('is stable, and differs by value and by purpose', () => {
+      const crypto = testCryptoService();
+      expect(crypto.digests('p', 'v')).toEqual(crypto.digests('p', 'v'));
+      expect(crypto.digests('p', 'v')[0]).not.toBe(crypto.digests('p', 'w')[0]);
+      expect(crypto.digests('p', 'v')[0]).not.toBe(crypto.digests('q', 'v')[0]);
+    });
+
+    it('does not contain the value, nor a plain hash of it', () => {
+      const [digest] = testCryptoService().digests('p', 'FR7630006000011234567890189');
+      expect(digest).not.toContain('1234567890189');
+      expect(digest).not.toBe(
+        createHash('sha256').update('FR7630006000011234567890189').digest('hex'),
+      );
+    });
   });
 
   it('throws for ciphertext with the wrong number of parts', () => {

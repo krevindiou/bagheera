@@ -49,6 +49,20 @@ export type DataGrouping = (typeof DATA_GROUPINGS)[number];
 // "Other"; the API's CreateReportDto and the web report form both cap at it.
 export const MAX_SIGNIFICANT_RESULTS_NUMBER = 50;
 
+// Bank file import: the largest file and the most data rows (header
+// excluded) accepted; shared so the web can refuse a file before uploading it.
+export const IMPORT_LIMITS = {
+  MAX_FILE_BYTES: 5 * 1024 * 1024,
+  MAX_ROWS: 5000,
+  // Label corrections a Member may remember.
+  MAX_LABEL_CORRECTIONS: 1000,
+  // The longest label of a file a correction is kept for: its unique index
+  // must fit a btree entry, which the column's own width does not guarantee.
+  MAX_CORRECTION_LABEL_CHARACTERS: 512,
+  // How much of a row's label a preview shows; the full one stays server-side.
+  PREVIEW_LABEL_CHARACTERS: 256,
+} as const;
+
 // Page size of the paginated lists, shared so the web's placeholder matches.
 export const PAGE_SIZE = 20;
 
@@ -72,6 +86,11 @@ export const FIELD_LIMITS = {
   // The operation search panel's notes filter — request-only, narrower
   // than NOTES (what's actually saved).
   SEARCH_NOTES: 128,
+  // The label of the bank file an imported operation or a label correction
+  // keeps; a `varchar` column width.
+  SOURCE_LABEL: 4096,
+  // The identifier a bank gives an imported row; a `varchar` column width.
+  BANK_REFERENCE: 255,
   // Categories a report or an operation search can select; above the
   // seeded set's size so "select all" stays possible.
   CATEGORY_SELECTION: 150,
@@ -131,6 +150,16 @@ export const BUSINESS_ERROR_CODES = [
   'bank_required',
   'category_invalid',
   'email_change_link_invalid',
+  'import_account_mismatch',
+  'import_file_invalid',
+  'import_file_too_large',
+  'import_in_progress',
+  'import_not_found',
+  'import_preview_stale',
+  'import_statement_currency',
+  'import_statement_several',
+  'import_statement_unsupported',
+  'import_too_many_rows',
   'last_passkey',
   'opening_operation_locked',
   'operation_not_found',

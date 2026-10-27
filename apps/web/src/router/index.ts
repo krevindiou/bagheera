@@ -15,6 +15,9 @@ declare module 'vue-router' {
     // i18n key for this route's document title; a page may override it
     // (see `usePageTitle`) with something more specific, e.g. an account name.
     titleKey?: string;
+    // A page built around a wide table: the layout gives it more room than the
+    // default column (see `main-inner--wide` in BaseLayout).
+    wide?: boolean;
   }
 }
 
@@ -72,7 +75,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../pages/operations/OperationsPage.vue'),
         // The page overrides this with the account name once it's known
         // (see `usePageTitle` in OperationsPage.vue).
-        meta: { requiresAuth: true, titleKey: 'operations.title' },
+        meta: { requiresAuth: true, titleKey: 'operations.title', wide: true },
+      },
+      {
+        path: 'accounts/:accountId/import',
+        name: 'operations-import',
+        component: () => import('../pages/operations/ImportPage.vue'),
+        meta: { requiresAuth: true, titleKey: 'operations.import.title', wide: true },
       },
       {
         path: 'accounts/:accountId/schedulers',
@@ -98,6 +107,12 @@ const routes: RouteRecordRaw[] = [
         name: 'settings-passkeys',
         component: () => import('../pages/settings/PasskeysPage.vue'),
         meta: { requiresAuth: true, titleKey: 'settings.passkeys.title' },
+      },
+      {
+        path: 'settings/label-corrections',
+        name: 'settings-label-corrections',
+        component: () => import('../pages/settings/LabelCorrectionsPage.vue'),
+        meta: { requiresAuth: true, titleKey: 'settings.labelCorrections.title' },
       },
     ],
   },

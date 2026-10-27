@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHmac, randomBytes } from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
@@ -51,13 +51,18 @@ export class CryptoService implements OnModuleInit {
   }
 
   encrypt(plain: string): string {
+    return this.encryptBytes(Buffer.from(plain, 'utf8'));
+  }
+
+  /** For content that is not text, such as an uploaded file. */
+  encryptBytes(plain: Buffer): string {
     const key = this.keys.get(this.activeKeyId);
     if (!key) {
       throw new Error('Crypto keys not loaded');
     }
     const iv = randomBytes(IV_LENGTH);
     const cipher = createCipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
-    const ciphertext = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
+    const ciphertext = Buffer.concat([cipher.update(plain), cipher.final()]);
     const authTag = cipher.getAuthTag();
     return [
       this.activeKeyId,
@@ -67,7 +72,34 @@ export class CryptoService implements OnModuleInit {
     ].join(':');
   }
 
+  /**
+   * Keyed digests of a value that must not be recoverable from what is stored
+   * (an account number, which is short enough to guess without a key): one per
+   * key in `CRYPTO_KEYS`, the active key's first. New values are stored under
+   * the first; one stored before a rotation is still found among the others
+   * for as long as its key is kept. `purpose` keeps digests made for one use
+   * from standing for another.
+   */
+  digests(purpose: string, value: string): string[] {
+    if (!this.activeKeyId) {
+      throw new Error('Crypto keys not loaded');
+    }
+    const ids = [
+      this.activeKeyId,
+      ...[...this.keys.keys()].filter((id) => id !== this.activeKeyId),
+    ];
+    return ids.map((id) => {
+      const key = this.keys.get(id) as Buffer;
+      const purposeKey = createHmac('sha256', key).update(`digest:${purpose}`).digest();
+      return createHmac('sha256', purposeKey).update(value).digest('hex');
+    });
+  }
+
   decrypt(token: string): string {
+    return this.decryptBytes(token).toString('utf8');
+  }
+
+  decryptBytes(token: string): Buffer {
     const parts = token.split(':');
     if (parts.length !== 4) {
       throw new Error('Malformed ciphertext');
@@ -85,6 +117,6 @@ export class CryptoService implements OnModuleInit {
     const ciphertext = Buffer.from(ciphertextB64, 'base64');
     const decipher = createDecipheriv(ALGORITHM, key, iv, { authTagLength: AUTH_TAG_LENGTH });
     decipher.setAuthTag(authTag);
-    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   }
 }

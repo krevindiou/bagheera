@@ -78,3 +78,15 @@ export const MEMBER_SEARCH_LIMIT: RateLimitOptions = {
   perMember: true,
   scope: 'member-searches',
 };
+
+/**
+ * An import preview records nothing, and a Member changing the rows of a file
+ * asks for one after each change: it must not draw on the write budget, or
+ * reviewing a file would leave nothing for confirming it.
+ */
+export const MEMBER_IMPORT_PREVIEW_LIMIT: RateLimitOptions = {
+  points: 60,
+  durationSeconds: 60,
+  perMember: true,
+  scope: 'member-import-previews',
+};

@@ -27,6 +27,7 @@ export const queryKeys = {
   },
 
   webauthnCredentials: ['webauthn-credentials'] as const,
+  labelCorrections: ['label-corrections'] as const,
 
   reports: ['reports'] as const,
   // `null` until a report is expanded (the query is disabled meanwhile).

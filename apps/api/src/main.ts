@@ -12,6 +12,7 @@ initSentry();
 import { AppModule } from './app.module';
 import { apiResponseHeaders } from './common/api-response-headers';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { useJsonBodyLimit } from './common/json-body-limit';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -43,6 +44,7 @@ async function bootstrap() {
   // BREACH: the only secret in a body is the CSRF token, which is random per
   // mint and sits beside no reflected input, so its length leaks nothing.
   app.use(compression());
+  useJsonBodyLimit(app);
   app.use(apiResponseHeaders);
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

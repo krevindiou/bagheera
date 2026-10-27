@@ -63,6 +63,8 @@ const operation: Operation = {
   categoryId: CATEGORY_FOOD,
   paymentMethodId: PAYMENT_METHOD_ID.CHECK_DEBIT,
   thirdParty: 'Landlord',
+  sourceLabel: null,
+  bankReference: null,
   debit: 500000,
   credit: null,
   valueDate: '2026-01-15',

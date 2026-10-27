@@ -6,6 +6,9 @@ import { securityEventTypeEnum } from '../db/schema/enums';
 
 export type SecurityEventType = (typeof securityEventTypeEnum.enumValues)[number];
 
+// Identifiers and counts only: never a secret or the content of a file.
+export type SecurityEventDetails = Record<string, string | number>;
+
 /**
  * Writes to the security event log — the audit trail behind incident
  * investigation and abuse detection. Additive by design: callers record
@@ -22,12 +25,14 @@ export class AuditService {
     eventType: SecurityEventType,
     memberId: string | null,
     sourceAddress: string,
+    details?: SecurityEventDetails,
   ): Promise<void> {
     try {
       await this.db.insert(securityEvent).values({
         eventType,
         memberId: memberId ?? undefined,
         sourceAddress,
+        details,
       });
     } catch (err) {
       this.logger.error(

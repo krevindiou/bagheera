@@ -293,6 +293,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/operations/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ImportController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operations/import/{importId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ImportController_preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operations/import/{importId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ImportController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/operations/import/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["ImportController_discard"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/label-corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["LabelCorrectionController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/label-corrections/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LabelCorrectionController_delete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/webauthn/registration/options": {
         parameters: {
             query?: never;
@@ -863,6 +959,8 @@ export interface components {
             categoryId: string | null;
             paymentMethodId: string;
             thirdParty: string;
+            sourceLabel: string | null;
+            bankReference: string | null;
             debit: number | null;
             credit: number | null;
             valueDate: string;
@@ -967,6 +1065,124 @@ export interface components {
         ThirdPartySuggestionDto: {
             thirdParty: string;
             categoryId: string | null;
+        };
+        ImportUploadDto: {
+            importId: string;
+            rowCount: number;
+        };
+        LabelChangeDto: {
+            line: number;
+            thirdParty: string;
+            remember: boolean;
+        };
+        PaymentMethodChangeDto: {
+            line: number;
+            /** Format: uuid */
+            paymentMethodId: string;
+        };
+        CategoryChangeDto: {
+            line: number;
+            /** Format: uuid */
+            categoryId: string | null;
+        };
+        TransferAccountChangeDto: {
+            line: number;
+            /** Format: uuid */
+            accountId: string | null;
+        };
+        PreviewImportDto: {
+            labelChanges?: components["schemas"]["LabelChangeDto"][];
+            paymentMethodChanges?: components["schemas"]["PaymentMethodChangeDto"][];
+            categoryChanges?: components["schemas"]["CategoryChangeDto"][];
+            transferAccountChanges?: components["schemas"]["TransferAccountChangeDto"][];
+        };
+        ClosingBalanceDto: {
+            date: string;
+            amount: number;
+            expected: number | null;
+        };
+        StatementSummaryDto: {
+            periodStart: string | null;
+            periodEnd: string | null;
+            debitTotal: number;
+            creditTotal: number;
+            closing: components["schemas"]["ClosingBalanceDto"] | null;
+            /** @enum {string} */
+            accountCheck: "unknown" | "same" | "different" | "elsewhere";
+            otherAccountId: string | null;
+        };
+        RecordedMatchDto: {
+            valueDate: string;
+            thirdParty: string;
+            reconciled: boolean;
+            /** @enum {string} */
+            matchedBy: "details" | "reference" | "transfer";
+        };
+        ImportPreviewRowDto: {
+            line: number;
+            /** @enum {string} */
+            status: "import" | "skipped" | "invalid";
+            valueDate: string | null;
+            /** @enum {string|null} */
+            type: "debit" | "credit" | null;
+            amount: number | null;
+            thirdParty: string | null;
+            sourceLabel: string | null;
+            /** @enum {string|null} */
+            labelOrigin: "file" | "correction" | "change" | null;
+            paymentMethodId: string | null;
+            /** @enum {string|null} */
+            paymentMethodOrigin: "history" | "picked" | null;
+            categoryId: string | null;
+            /** @enum {string|null} */
+            categoryOrigin: "history" | "picked" | null;
+            transferAccountId: string | null;
+            /** @enum {string|null} */
+            transferAccountOrigin: "history" | "picked" | null;
+            /** @enum {string|null} */
+            reason: "cell_missing" | "date_invalid" | "date_out_of_range" | "amount_invalid" | "amount_zero" | "amount_too_large" | "third_party_missing" | "third_party_too_long" | null;
+            recorded: components["schemas"]["RecordedMatchDto"] | null;
+        };
+        ImportPreviewDto: {
+            importCount: number;
+            skippedCount: number;
+            invalidCount: number;
+            statement: components["schemas"]["StatementSummaryDto"];
+            rows: components["schemas"]["ImportPreviewRowDto"][];
+            revision: string;
+        };
+        ConfirmImportDto: {
+            labelChanges?: components["schemas"]["LabelChangeDto"][];
+            paymentMethodChanges?: components["schemas"]["PaymentMethodChangeDto"][];
+            categoryChanges?: components["schemas"]["CategoryChangeDto"][];
+            transferAccountChanges?: components["schemas"]["TransferAccountChangeDto"][];
+            revision: string;
+            reconcile?: boolean;
+            acceptAccountMismatch?: boolean;
+            reconcileLines?: number[];
+            includedLines?: number[];
+        };
+        ImportResultDto: {
+            importedCount: number;
+            skippedCount: number;
+            invalidCount: number;
+            rememberedCount: number;
+            notRememberedCount: number;
+            reconciledCount: number;
+            alreadyImported: boolean;
+        };
+        LabelCorrectionDto: {
+            id: string;
+            sourceLabel: string;
+            thirdParty: string;
+        };
+        LabelCorrectionListDto: {
+            items: components["schemas"]["LabelCorrectionDto"][];
+            limit: number;
+        };
+        LabelCorrectionsDeletedDto: {
+            message: string;
+            deletedCount: number;
         };
         VerifyRegistrationDto: {
             response: Record<string, never>;
@@ -1731,6 +1947,147 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ThirdPartySuggestionDto"][];
+                };
+            };
+        };
+    };
+    ImportController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: uuid */
+                    accountId: string;
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportUploadDto"];
+                };
+            };
+        };
+    };
+    ImportController_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewDto"];
+                };
+            };
+        };
+    };
+    ImportController_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportResultDto"];
+                };
+            };
+        };
+    };
+    ImportController_discard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponseDto"];
+                };
+            };
+        };
+    };
+    LabelCorrectionController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabelCorrectionListDto"];
+                };
+            };
+        };
+    };
+    LabelCorrectionController_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BatchIdsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabelCorrectionsDeletedDto"];
                 };
             };
         };

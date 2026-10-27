@@ -22,7 +22,12 @@ function createTestRouter(): Router {
       { path: '/sign-in', name: 'sign-in', component: stub },
       { path: '/home', name: 'home', component: stub },
       { path: '/accounts', name: 'accounts', component: stub },
-      { path: '/accounts/:accountId/operations', name: 'operations', component: stub },
+      {
+        path: '/accounts/:accountId/operations',
+        name: 'operations',
+        component: stub,
+        meta: { wide: true },
+      },
       { path: '/accounts/:accountId/schedulers', name: 'schedulers', component: stub },
       { path: '/reports', name: 'reports', component: stub },
       { path: '/settings/profile', name: 'settings-profile', component: stub },
@@ -66,6 +71,21 @@ describe('BaseLayout', () => {
     const labels = wrapper.findAll('.side-nav-item').map((el) => el.text());
     expect(labels).toEqual(['Dashboard', 'Accounts', 'Reports', 'Settings']);
     expect(wrapper.find('.account-email').text()).toBe('member@example.com');
+  });
+
+  it('gives a page built around a wide table more room than the default column', async () => {
+    wrapper = mount(BaseLayout, withGlobalPlugins(router));
+    useSessionStore().setMember({ email: 'member@example.com', locale: 'en', timeZone: 'UTC' });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.main-inner').classes()).not.toContain('main-inner--wide');
+
+    await router.push({ name: 'operations', params: { accountId: 'a1' } });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.main-inner').classes()).toContain('main-inner--wide');
+
+    await router.push({ name: 'reports' });
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('.main-inner').classes()).not.toContain('main-inner--wide');
   });
 
   it('exposes a main landmark led by a skip link targeting it', async () => {

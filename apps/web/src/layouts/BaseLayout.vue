@@ -72,7 +72,7 @@ const navItems = computed(() => [
     </aside>
 
     <main id="main-content" ref="mainContent" tabindex="-1" class="main">
-      <div class="main-inner">
+      <div class="main-inner" :class="{ 'main-inner--wide': route.meta.wide }">
         <router-view />
       </div>
     </main>
@@ -197,6 +197,10 @@ const navItems = computed(() => [
   max-width: 1080px;
   margin: 0 auto;
   padding: 36px 40px 60px;
+}
+/* Pages built around a wide table (operations, import). */
+.main-inner--wide {
+  max-width: 1440px;
 }
 
 @media (max-width: 820px) {
