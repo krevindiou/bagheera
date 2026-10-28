@@ -2,9 +2,9 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq, inArray } from 'drizzle-orm';
 import { category, report, reportAccount, reportCategory } from '../db/schema';
-import { SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { categoryIdOfType } from '../test-support/db-fixtures';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -31,9 +31,11 @@ function reportPayload(overrides: Record<string, unknown> = {}) {
 
 describe('reports', () => {
   let app: INestApplication<Server>;
+  let creditCategoryId: string;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    creditCategoryId = await categoryIdOfType(getDb(app), 'credit');
   });
 
   afterAll(async () => {
@@ -88,12 +90,12 @@ describe('reports', () => {
       const res = await mutate(
         'post',
         '/reports',
-        reportPayload({ categoryIds: [SALARY_CATEGORY_SEED_ID, unknownCategoryId] }),
+        reportPayload({ categoryIds: [creditCategoryId, unknownCategoryId] }),
       );
       const { report: created } = res.body as {
         report: { id: string; categoryIds: string[] };
       };
-      expect(created.categoryIds).toEqual([SALARY_CATEGORY_SEED_ID]);
+      expect(created.categoryIds).toEqual([creditCategoryId]);
 
       const links = await getDb(app)
         .select()
@@ -133,7 +135,7 @@ describe('reports', () => {
       await mutate(
         'post',
         '/reports',
-        reportPayload({ accountIds: [accountId], categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+        reportPayload({ accountIds: [accountId], categoryIds: [creditCategoryId] }),
       );
 
       const { mutate: otherMutate } = await seedSignedInMember(app);
@@ -143,7 +145,7 @@ describe('reports', () => {
       const body = res.body as { title: string; accountIds: string[]; categoryIds: string[] }[];
       expect(body).toHaveLength(1);
       expect(body[0].accountIds).toEqual([accountId]);
-      expect(body[0].categoryIds).toEqual([SALARY_CATEGORY_SEED_ID]);
+      expect(body[0].categoryIds).toEqual([creditCategoryId]);
     });
   });
 
@@ -269,7 +271,7 @@ describe('reports', () => {
       const created = await mutate(
         'post',
         '/reports',
-        reportPayload({ categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+        reportPayload({ categoryIds: [creditCategoryId] }),
       );
       const { id } = (created.body as { report: { id: string } }).report;
 
@@ -288,7 +290,7 @@ describe('reports', () => {
       const created = await mutate(
         'post',
         '/reports',
-        reportPayload({ categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+        reportPayload({ categoryIds: [creditCategoryId] }),
       );
       const { id } = (created.body as { report: { id: string } }).report;
       const replacements = await getDb(app)
@@ -335,7 +337,7 @@ describe('reports', () => {
       const created = await mutate(
         'post',
         '/reports',
-        reportPayload({ accountIds: [accountId], categoryIds: [SALARY_CATEGORY_SEED_ID] }),
+        reportPayload({ accountIds: [accountId], categoryIds: [creditCategoryId] }),
       );
       const { id } = (created.body as { report: { id: string } }).report;
 

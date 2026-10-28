@@ -38,7 +38,6 @@ async function insertCategories(
         await db
           .insert(category)
           .values({
-            id: seed.id,
             name: seed.name,
             type: seed.type,
             parentId,

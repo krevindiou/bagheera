@@ -1,7 +1,7 @@
 import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
@@ -198,7 +198,7 @@ describe('GET /reports/:id/distribution', () => {
       amount: 500,
       type: 'credit',
       thirdParty: 'X',
-      categoryId: SALARY_CATEGORY_SEED_ID,
+      categoryId: await findCategoryId(agent, 'Salary'),
       paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
     });
 

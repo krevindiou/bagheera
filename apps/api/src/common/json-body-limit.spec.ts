@@ -32,9 +32,7 @@ describe('useJsonBodyLimit', () => {
   const parsers = () => {
     const useBodyParser = vi.fn();
     useJsonBodyLimit({ useBodyParser } as unknown as NestExpressApplication);
-    const [larger, standard] = useBodyParser.mock.calls.map(
-      ([, options]: [string, Options]) => options,
-    );
+    const [larger, standard] = useBodyParser.mock.calls.map((call) => call[1] as Options);
     return { larger, standard };
   };
   const request = (url: string | undefined, contentType?: string) =>

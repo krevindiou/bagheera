@@ -1,11 +1,5 @@
 import { FIELD_LIMITS } from '@bagheera/reference-data';
-import {
-  categorySeeds,
-  CategorySeed,
-  PAYMENT_METHOD_ID,
-  paymentMethodSeeds,
-  SALARY_CATEGORY_SEED_ID,
-} from './seed-data';
+import { categorySeeds, CategorySeed, PAYMENT_METHOD_ID, paymentMethodSeeds } from './seed-data';
 
 // The version/variant nibbles IsUUID('7') checks.
 const UUID_V7_SHAPE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -45,22 +39,6 @@ describe('paymentMethodSeeds', () => {
 });
 
 describe('categorySeeds', () => {
-  it('SALARY_CATEGORY_SEED_ID matches the seeded Salary category', () => {
-    const salary = categorySeeds.find((c) => c.id === SALARY_CATEGORY_SEED_ID);
-    expect(salary?.name).toBe('Salary');
-    expect(salary?.type).toBe('credit');
-  });
-
-  it('every explicitly-set id (including nested children) is unique and a valid UUIDv7', () => {
-    const explicitIds = flattenCategories(categorySeeds)
-      .map((c) => c.id)
-      .filter((id): id is string => id !== undefined);
-    expect(new Set(explicitIds).size).toBe(explicitIds.length);
-    for (const id of explicitIds) {
-      expect(id).toMatch(UUID_V7_SHAPE);
-    }
-  });
-
   it('every category, top-level or nested, has a debit or credit type', () => {
     for (const category of flattenCategories(categorySeeds)) {
       expect(['debit', 'credit']).toContain(category.type);

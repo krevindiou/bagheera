@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
-import { category, operation } from '../db/schema';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { operation } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { categoryIdOfType } from '../test-support/db-fixtures';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -21,19 +21,13 @@ async function createAccount(mutate: SignedInFixture['mutate'], bankId: string):
   return (res.body as { account: { id: string } }).account.id;
 }
 
-async function debitCategoryId(app: INestApplication<Server>): Promise<string> {
-  const [row] = await getDb(app)
-    .select({ id: category.id })
-    .from(category)
-    .where(eq(category.type, 'debit'));
-  return row.id;
-}
-
 describe('GET /operations/autocomplete', () => {
   let app: INestApplication<Server>;
+  let creditCategoryId: string;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    creditCategoryId = await categoryIdOfType(getDb(app), 'credit');
   });
 
   afterAll(async () => {
@@ -44,7 +38,7 @@ describe('GET /operations/autocomplete', () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
     const accountId = await createAccount(mutate, bankId);
-    const debitCatId = await debitCategoryId(app);
+    const debitCatId = await categoryIdOfType(getDb(app), 'debit');
 
     await mutate('post', '/operations', {
       accountId,
@@ -60,7 +54,7 @@ describe('GET /operations/autocomplete', () => {
       type: 'credit',
       thirdParty: 'Amazon',
       amount: 5,
-      categoryId: SALARY_CATEGORY_SEED_ID,
+      categoryId: creditCategoryId,
       paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
       valueDate: '2026-01-02',
     });
@@ -72,7 +66,7 @@ describe('GET /operations/autocomplete', () => {
     }[];
     expect(body).toHaveLength(1);
     // Latest by valueDate is the second (credit) operation.
-    expect(body[0].categoryId).toBe(SALARY_CATEGORY_SEED_ID);
+    expect(body[0].categoryId).toBe(creditCategoryId);
   });
 
   it('returns at most 20 suggestions, exact then prefix matches first', async () => {
@@ -105,7 +99,7 @@ describe('GET /operations/autocomplete', () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
     const accountId = await createAccount(mutate, bankId);
-    const debitCatId = await debitCategoryId(app);
+    const debitCatId = await categoryIdOfType(getDb(app), 'debit');
 
     await mutate('post', '/operations', {
       accountId,

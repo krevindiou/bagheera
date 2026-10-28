@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import request from 'supertest';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 
@@ -19,8 +19,8 @@ describe('reference-data', () => {
   it('lists the seeded categories, including Salary', async () => {
     const { agent } = await seedSignedInMember(app);
     const res = await agent.get('/reference-data/categories').expect(200);
-    const body = res.body as { id: string }[];
-    expect(body.some((c) => c.id === SALARY_CATEGORY_SEED_ID)).toBe(true);
+    const body = res.body as { name: string }[];
+    expect(body.some((c) => c.name === 'Salary')).toBe(true);
   });
 
   it('lists every seeded payment method', async () => {

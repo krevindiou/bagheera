@@ -1,9 +1,10 @@
 import type { EntryType } from '@bagheera/reference-data';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
-import { createTestApp } from '../test-support/create-test-app';
+import { createTestApp, getDb } from '../test-support/create-test-app';
+import { categoryIdOfType } from '../test-support/db-fixtures';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -63,9 +64,11 @@ interface SearchResult {
 
 describe('operations search', () => {
   let app: INestApplication<Server>;
+  let creditCategoryId: string;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    creditCategoryId = await categoryIdOfType(getDb(app), 'credit');
   });
 
   afterAll(async () => {
@@ -195,7 +198,7 @@ describe('operations search', () => {
       await createOperation(mutate, accountId, {
         thirdParty: 'Employer',
         type: 'credit',
-        categoryId: SALARY_CATEGORY_SEED_ID,
+        categoryId: creditCategoryId,
         valueDate: '2026-03-01',
         reconciled: false,
       });
@@ -203,7 +206,6 @@ describe('operations search', () => {
 
     it.each([
       ['type', { type: 'credit' }, ['Employer']],
-      ['categoryIds', { categoryIds: [SALARY_CATEGORY_SEED_ID] }, ['Employer']],
       ['paymentMethodIds', { paymentMethodIds: [PAYMENT_METHOD_ID.CHECK_DEBIT] }, ['Landlord']],
       ['dateTo', { dateTo: '2026-02-01' }, ['Cafe']],
       ['notes, case-insensitively', { notes: 'LUNCH' }, ['Cafe']],
@@ -214,6 +216,15 @@ describe('operations search', () => {
       expect(res.status).toBe(200);
       const thirdParties = (res.body as SearchResult).items.map((item) => item.thirdParty);
       expect(thirdParties.sort()).toEqual(expected);
+    });
+
+    it('filters by categoryIds', async () => {
+      const res = await mutate('post', '/operations/search?page=1', {
+        accountId,
+        categoryIds: [creditCategoryId],
+      });
+      expect(res.status).toBe(200);
+      expect((res.body as SearchResult).items.map((item) => item.thirdParty)).toEqual(['Employer']);
     });
   });
 

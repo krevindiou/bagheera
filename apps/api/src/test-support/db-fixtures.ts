@@ -1,5 +1,7 @@
+import { asc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { account, bank, member } from '../db/schema';
+import { EntryType } from '@bagheera/reference-data';
+import { account, bank, category, member } from '../db/schema';
 import * as schema from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { uniqueEmail } from './auth-fixture';
@@ -12,6 +14,22 @@ type Db = NodePgDatabase<typeof schema>;
 // one tied to a debit/credit direction — INITIAL_BALANCE has no fixed
 // pairing (type: null in seed-data.ts).
 export const ANY_PAYMENT_METHOD_ID = PAYMENT_METHOD_ID.INITIAL_BALANCE;
+
+// Category ids are DB-generated, so specs that only need real categories of a
+// given type look them up instead of pinning a seeded row.
+export async function categoryIdsOfType(db: Db, type: EntryType, count = 1): Promise<string[]> {
+  const rows = await db
+    .select({ id: category.id })
+    .from(category)
+    .where(eq(category.type, type))
+    .orderBy(asc(category.name))
+    .limit(count);
+  return rows.map((row) => row.id);
+}
+
+export async function categoryIdOfType(db: Db, type: EntryType): Promise<string> {
+  return (await categoryIdsOfType(db, type))[0];
+}
 
 export async function insertMember(db: Db, overrides: Partial<typeof member.$inferInsert> = {}) {
   const [row] = await db

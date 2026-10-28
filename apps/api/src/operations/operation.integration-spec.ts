@@ -2,18 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { toMinorUnits } from '../common/money';
-import { category, operation } from '../db/schema';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { operation } from '../db/schema';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
-
-async function debitCategoryId(app: INestApplication<Server>): Promise<string> {
-  const [row] = await getDb(app)
-    .select({ id: category.id })
-    .from(category)
-    .where(eq(category.type, 'debit'));
-  return row.id;
-}
+import { categoryIdOfType } from '../test-support/db-fixtures';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -36,9 +29,11 @@ async function createAccount(
 
 describe('operations', () => {
   let app: INestApplication<Server>;
+  let creditCategoryId: string;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    creditCategoryId = await categoryIdOfType(getDb(app), 'credit');
   });
 
   afterAll(async () => {
@@ -50,7 +45,7 @@ describe('operations', () => {
       const { mutate } = await seedSignedInMember(app);
       const bankId = await createBank(mutate);
       const accountId = await createAccount(mutate, bankId);
-      const categoryId = await debitCategoryId(app);
+      const categoryId = await categoryIdOfType(getDb(app), 'debit');
 
       const res = await mutate('post', '/operations', {
         accountId,
@@ -80,7 +75,7 @@ describe('operations', () => {
         type: 'credit',
         thirdParty: 'Employer',
         amount: 1500,
-        categoryId: SALARY_CATEGORY_SEED_ID,
+        categoryId: creditCategoryId,
         paymentMethodId: PAYMENT_METHOD_ID.DEPOSIT,
       });
       expect(res.status).toBe(200);
@@ -118,7 +113,7 @@ describe('operations', () => {
         type: 'debit',
         thirdParty: 'Mismatch',
         amount: 10,
-        categoryId: SALARY_CATEGORY_SEED_ID,
+        categoryId: creditCategoryId,
         paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
       });
       expect(res.status).toBe(400);

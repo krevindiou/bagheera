@@ -2,9 +2,10 @@ import type { EntryType } from '@bagheera/reference-data';
 import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../db/seed-data';
+import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
-import { createTestApp } from '../test-support/create-test-app';
+import { createTestApp, getDb } from '../test-support/create-test-app';
+import { categoryIdOfType } from '../test-support/db-fixtures';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -51,9 +52,11 @@ interface SeriesBody {
 
 describe('GET /reports/:id/series', () => {
   let app: INestApplication<Server>;
+  let creditCategoryId: string;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    creditCategoryId = await categoryIdOfType(getDb(app), 'credit');
   });
 
   afterAll(async () => {
@@ -131,7 +134,7 @@ describe('GET /reports/:id/series', () => {
     const { agent, mutate } = await seedSignedInMember(app);
     const bankId = await createBank(mutate);
     const accountId = await createAccount(mutate, bankId);
-    await createOperation(mutate, accountId, 'credit', 1000, '2026-01-15', SALARY_CATEGORY_SEED_ID);
+    await createOperation(mutate, accountId, 'credit', 1000, '2026-01-15', creditCategoryId);
     await createOperation(mutate, accountId, 'credit', 100, '2026-01-20');
 
     const created = await mutate('post', '/reports', {
@@ -139,7 +142,7 @@ describe('GET /reports/:id/series', () => {
       title: 'Salary only',
       periodGrouping: 'month',
       accountIds: [accountId],
-      categoryIds: [SALARY_CATEGORY_SEED_ID],
+      categoryIds: [creditCategoryId],
     });
     const { id } = (created.body as { report: { id: string } }).report;
 

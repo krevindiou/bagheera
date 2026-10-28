@@ -34,15 +34,10 @@ export const paymentMethodSeeds: PaymentMethodSeed[] = [
 ];
 
 export interface CategorySeed {
-  // Only for categories needing a fixed id (Salary); others get a
-  // DB-generated one.
-  id?: string;
   name: string;
   type: EntryType;
   children?: CategorySeed[];
 }
-
-export const SALARY_CATEGORY_SEED_ID = '00000000-0001-7000-8000-000000000001';
 
 // Names are the stored English labels; the web translates them by slug
 // (apps/web/src/i18n/locales/*.ts, `referenceData`). A rename orphans the
@@ -56,7 +51,7 @@ const group = (name: string, type: EntryType, children: string[] = []): Category
 });
 
 export const categorySeeds: CategorySeed[] = [
-  { id: SALARY_CATEGORY_SEED_ID, name: 'Salary', type: 'credit' },
+  group('Salary', 'credit'),
   group('Bonus', 'credit'),
   group('Self-employment income', 'credit'),
   group('Benefits', 'credit', ['Family', 'Unemployment', 'Pension']),

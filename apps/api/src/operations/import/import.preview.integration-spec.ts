@@ -1,10 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { asc, eq } from 'drizzle-orm';
-import { category, operation } from '../../db/schema';
-import { PAYMENT_METHOD_ID, SALARY_CATEGORY_SEED_ID } from '../../db/seed-data';
+import { operation } from '../../db/schema';
+import { PAYMENT_METHOD_ID } from '../../db/seed-data';
 import { seedSignedInMember, type SignedInFixture } from '../../test-support/auth-fixture';
 import { createTestApp, getDb } from '../../test-support/create-test-app';
+import { categoryIdsOfType } from '../../test-support/db-fixtures';
 import {
   FILE,
   NO_CHANGES,
@@ -16,9 +17,11 @@ import {
 
 describe('bank file import: preview', () => {
   let app: INestApplication<Server>;
+  let creditCategoryId: string;
 
   beforeAll(async () => {
     ({ app } = await createTestApp());
+    [creditCategoryId] = await categoryIdsOfType(getDb(app), 'credit');
   });
 
   afterAll(async () => {
@@ -161,14 +164,7 @@ describe('bank file import: preview', () => {
     });
 
     describe('categories from history and picked for single rows', () => {
-      const debitCategories = async () =>
-        (
-          await getDb(app)
-            .select({ id: category.id })
-            .from(category)
-            .where(eq(category.type, 'debit'))
-            .limit(2)
-        ).map((row) => row.id);
+      const debitCategories = () => categoryIdsOfType(getDb(app), 'debit', 2);
 
       const record = (
         fixture: SignedInFixture,
@@ -205,20 +201,13 @@ describe('bank file import: preview', () => {
         const fixture = await seedSignedInMember(app);
         const accountId = await createAccount(fixture);
         await record(fixture, accountId, ' BAKERY ', food);
-        await record(
-          fixture,
-          accountId,
-          'Employer',
-          SALARY_CATEGORY_SEED_ID,
-          '2026-01-11',
-          'credit',
-        );
+        await record(fixture, accountId, 'Employer', creditCategoryId, '2026-01-11', 'credit');
 
         const { preview } = await previewOf(fixture, accountId);
 
         expect(preview.rows.map((row) => [row.categoryId, row.categoryOrigin])).toEqual([
           [food, 'history'],
-          [SALARY_CATEGORY_SEED_ID, 'history'],
+          [creditCategoryId, 'history'],
           [null, null],
         ]);
       });
@@ -237,7 +226,7 @@ describe('bank file import: preview', () => {
       it('does not mix debits and credits of one third party', async () => {
         const fixture = await seedSignedInMember(app);
         const accountId = await createAccount(fixture);
-        await record(fixture, accountId, 'Bakery', SALARY_CATEGORY_SEED_ID, '2026-01-10', 'credit');
+        await record(fixture, accountId, 'Bakery', creditCategoryId, '2026-01-10', 'credit');
         const { preview } = await previewOf(fixture, accountId);
         expect(preview.rows[0].categoryId).toBeNull();
       });
@@ -312,14 +301,7 @@ describe('bank file import: preview', () => {
         const accountId = await createAccount(fixture);
         await record(fixture, accountId, 'Bakery', food);
         await record(fixture, accountId, 'Coffee', food);
-        await record(
-          fixture,
-          accountId,
-          'Employer',
-          SALARY_CATEGORY_SEED_ID,
-          '2026-01-11',
-          'credit',
-        );
+        await record(fixture, accountId, 'Employer', creditCategoryId, '2026-01-11', 'credit');
         const { importId } = await startImport(fixture, accountId, FILE);
 
         const res = await confirmImport(fixture, importId, {
@@ -334,12 +316,12 @@ describe('bank file import: preview', () => {
         const categoryOf = (thirdParty: string) =>
           stored.find((op) => op.thirdParty === thirdParty)?.categoryId;
         expect(categoryOf('Bakery')).toBe(gift);
-        expect(categoryOf('Employer')).toBe(SALARY_CATEGORY_SEED_ID);
+        expect(categoryOf('Employer')).toBe(creditCategoryId);
         expect(categoryOf('Coffee')).toBeNull();
       });
 
       it.each([
-        ['a category of the other type', () => Promise.resolve(SALARY_CATEGORY_SEED_ID)],
+        ['a category of the other type', () => Promise.resolve(creditCategoryId)],
         ['an unknown category', () => Promise.resolve('01990000-0000-7000-8000-00000000ffff')],
       ])('refuses %s', async (_name, pick) => {
         const fixture = await seedSignedInMember(app);
