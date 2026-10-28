@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFieldValue, useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
+import { toTypedSchema } from '../../composables/toTypedSchema';
 import { FIELD_LIMITS, MAX_VALUE_DATE, MIN_VALUE_DATE } from '@bagheera/reference-data';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';

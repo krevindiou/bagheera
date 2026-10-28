@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
+import { toTypedSchema } from '../../composables/toTypedSchema';
 import { useRoute } from 'vue-router';
 import { apiClient } from '../../api/client';
 import { getCountryOptions, getDefaultCountry } from '../../composables/useCountryOptions';

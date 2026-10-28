@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate';
-import { toTypedSchema } from '@vee-validate/zod';
+import { toTypedSchema } from '../../composables/toTypedSchema';
 import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { apiClient } from '../../api/client';
