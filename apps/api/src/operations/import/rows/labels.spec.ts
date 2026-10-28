@@ -1,6 +1,12 @@
 import type { OfxRow } from '../ofx';
 import { readRows } from './read-rows';
-import { cleanLabel, labelKey, rememberedLabels, type LabelRules } from './labels';
+import {
+  cleanLabel,
+  labelKey,
+  planLabelIntents,
+  rememberedLabels,
+  type LabelRules,
+} from './labels';
 
 function ofxRow(overrides: Partial<OfxRow> = {}): OfxRow {
   return {
@@ -270,5 +276,132 @@ describe('rememberedLabels', () => {
     expect(rememberedLabels(shared, [change(2, 'Power'), change(1, 'EDF')])).toEqual([
       { sourceLabel: 'edf energie', thirdParty: 'Power' },
     ]);
+  });
+});
+
+describe('planLabelIntents', () => {
+  const remembered = (id: string, sourceLabel: string, thirdParty: string) => ({
+    id,
+    sourceLabel,
+    thirdParty,
+  });
+
+  it('does nothing when there is nothing to remember or forget', () => {
+    expect(planLabelIntents([remembered('1', 'BAKERY', 'Bakery')], [], 10)).toEqual({
+      deletes: [],
+      updates: [],
+      inserts: [],
+      notRemembered: 0,
+    });
+  });
+
+  it('remembers a label that has no correction yet', () => {
+    const intent = { sourceLabel: 'BAKERY', thirdParty: 'Bakery' };
+
+    expect(planLabelIntents([], [intent], 10)).toMatchObject({ inserts: [intent], updates: [] });
+  });
+
+  it('replaces the third party of a correction that differs', () => {
+    expect(
+      planLabelIntents(
+        [remembered('1', 'BAKERY', 'Bakery')],
+        [{ sourceLabel: 'BAKERY', thirdParty: 'Boulangerie' }],
+        10,
+      ),
+    ).toMatchObject({ updates: [{ id: '1', thirdParty: 'Boulangerie' }], inserts: [] });
+  });
+
+  it('leaves a correction that already says the same', () => {
+    expect(
+      planLabelIntents(
+        [remembered('1', 'BAKERY', 'Bakery')],
+        [{ sourceLabel: 'BAKERY', thirdParty: 'Bakery' }],
+        10,
+      ),
+    ).toEqual({ deletes: [], updates: [], inserts: [], notRemembered: 0 });
+  });
+
+  it('matches labels the way corrections are looked up', () => {
+    expect(
+      planLabelIntents(
+        [remembered('1', 'Bakery', 'Bakery')],
+        [{ sourceLabel: '  BAKERY 12/03', thirdParty: 'Boulangerie' }],
+        10,
+      ),
+    ).toMatchObject({ updates: [{ id: '1', thirdParty: 'Boulangerie' }], inserts: [] });
+  });
+
+  it('forgets the correction of a label whose third party is null', () => {
+    expect(
+      planLabelIntents(
+        [remembered('1', 'BAKERY', 'Bakery')],
+        [{ sourceLabel: 'BAKERY', thirdParty: null }],
+        10,
+      ),
+    ).toMatchObject({ deletes: ['1'] });
+  });
+
+  it('has nothing to forget for a label with no correction', () => {
+    expect(planLabelIntents([], [{ sourceLabel: 'BAKERY', thirdParty: null }], 10)).toEqual({
+      deletes: [],
+      updates: [],
+      inserts: [],
+      notRemembered: 0,
+    });
+  });
+
+  it('leaves out the new corrections that do not fit under the quota', () => {
+    const plan = planLabelIntents(
+      [remembered('1', 'A', 'a')],
+      [
+        { sourceLabel: 'B', thirdParty: 'b' },
+        { sourceLabel: 'C', thirdParty: 'c' },
+        { sourceLabel: 'D', thirdParty: 'd' },
+      ],
+      3,
+    );
+
+    expect(plan.inserts).toEqual([
+      { sourceLabel: 'B', thirdParty: 'b' },
+      { sourceLabel: 'C', thirdParty: 'c' },
+    ]);
+    expect(plan.notRemembered).toBe(1);
+  });
+
+  it('leaves out every new correction when the Member is at the quota', () => {
+    const plan = planLabelIntents(
+      [remembered('1', 'A', 'a'), remembered('2', 'B', 'b')],
+      [{ sourceLabel: 'C', thirdParty: 'c' }],
+      2,
+    );
+
+    expect(plan).toMatchObject({ inserts: [], notRemembered: 1 });
+  });
+
+  it('counts the corrections forgotten in the same import as room', () => {
+    const plan = planLabelIntents(
+      [remembered('1', 'A', 'a'), remembered('2', 'B', 'b')],
+      [
+        { sourceLabel: 'A', thirdParty: null },
+        { sourceLabel: 'C', thirdParty: 'c' },
+      ],
+      2,
+    );
+
+    expect(plan).toMatchObject({
+      deletes: ['1'],
+      inserts: [{ sourceLabel: 'C', thirdParty: 'c' }],
+      notRemembered: 0,
+    });
+  });
+
+  it('never has negative room when the Member is already over the quota', () => {
+    const plan = planLabelIntents(
+      [remembered('1', 'A', 'a'), remembered('2', 'B', 'b')],
+      [{ sourceLabel: 'C', thirdParty: 'c' }],
+      1,
+    );
+
+    expect(plan).toMatchObject({ inserts: [], notRemembered: 1 });
   });
 });

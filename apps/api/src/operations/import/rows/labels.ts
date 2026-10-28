@@ -168,3 +168,44 @@ export function rememberedLabels(rows: OfxRow[], changes: LabelChange[]): LabelI
   }
   return [...intents.values()];
 }
+
+export interface RememberedLabel {
+  id: string;
+  sourceLabel: string;
+  thirdParty: string;
+}
+
+export interface LabelPlan {
+  deletes: string[];
+  updates: { id: string; thirdParty: string }[];
+  inserts: LabelIntent[];
+  // New corrections the quota left out.
+  notRemembered: number;
+}
+
+// What to do with the corrections the Member already has so that they match
+// the intents. Remembering is a convenience: what does not fit under `max` is
+// left out, not the import.
+export function planLabelIntents(
+  existing: RememberedLabel[],
+  intents: LabelIntent[],
+  max: number,
+): LabelPlan {
+  const byKey = new Map(existing.map((row) => [labelKey(row.sourceLabel), row]));
+  const deletes: string[] = [];
+  const toInsert: LabelIntent[] = [];
+  const updates: LabelPlan['updates'] = [];
+  for (const intent of intents) {
+    const current = byKey.get(labelKey(intent.sourceLabel));
+    if (intent.thirdParty === null) {
+      if (current) deletes.push(current.id);
+    } else if (!current) {
+      toInsert.push(intent);
+    } else if (current.thirdParty !== intent.thirdParty) {
+      updates.push({ id: current.id, thirdParty: intent.thirdParty });
+    }
+  }
+  const room = Math.max(0, max - (existing.length - deletes.length));
+  const inserts = toInsert.slice(0, room);
+  return { deletes, updates, inserts, notRemembered: toInsert.length - inserts.length };
+}

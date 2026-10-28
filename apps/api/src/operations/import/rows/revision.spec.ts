@@ -124,6 +124,25 @@ describe('revisionOf', () => {
     );
   });
 
+  it('does not depend on the order the corrections were remembered in', () => {
+    const corrections = [
+      ['b', 'B'],
+      ['a', 'A'],
+      ['c', 'C'],
+    ] as const;
+    expect(revisionOf(evidence({ corrections: new Map(corrections) }))).toBe(
+      revisionOf(evidence({ corrections: new Map([...corrections].reverse()) })),
+    );
+  });
+
+  it('tells a skipped row that matches no operation from one that does', () => {
+    const [row] = evidence().rows;
+    if (row.status === 'invalid') throw new Error('unexpected');
+    expect(revisionOf(evidence({ rows: [{ ...row, recorded: null }] }))).not.toBe(
+      revisionOf(evidence()),
+    );
+  });
+
   it('changes when a pick moves a row from skipped to imported', () => {
     const [row] = evidence().rows;
     if (row.status === 'invalid') throw new Error('unexpected');

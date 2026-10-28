@@ -77,6 +77,9 @@ export default defineConfig({
         'common/currency.ts',
         'common/value-date.ts',
         'common/parse-uuid-v7.pipe.ts',
+        // Queries and transactions, left to integration coverage like the services.
+        'operations/import/import.history.ts',
+        'operations/import/import.writer.ts',
       ],
       thresholds: { branches: 97 },
     },

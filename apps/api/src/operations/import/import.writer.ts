@@ -8,7 +8,7 @@ import { accountStatement, labelCorrection, operation } from '../../db/schema';
 import { AccountId, MemberId } from '../../security/ids';
 import { requireFullyActiveLocked } from '../entry-rules';
 import { TransferService } from '../transfer.service';
-import { labelKey, type LabelIntent } from './rows/labels';
+import { planLabelIntents, type LabelIntent } from './rows/labels';
 import type { ReadyRow } from './rows/types';
 
 // Operations adopting the identity of a row per statement.
@@ -158,33 +158,16 @@ export class ImportWriter {
       .select()
       .from(labelCorrection)
       .where(eq(labelCorrection.memberId, memberId));
-    const byKey = new Map(existing.map((row) => [labelKey(row.sourceLabel), row]));
-
-    const toDelete: string[] = [];
-    const toInsert: LabelIntent[] = [];
-    const toUpdate: { id: string; thirdParty: string }[] = [];
-    for (const intent of intents) {
-      const current = byKey.get(labelKey(intent.sourceLabel));
-      if (intent.thirdParty === null) {
-        if (current) toDelete.push(current.id);
-      } else if (!current) {
-        toInsert.push(intent);
-      } else if (current.thirdParty !== intent.thirdParty) {
-        toUpdate.push({ id: current.id, thirdParty: intent.thirdParty });
-      }
-    }
-
-    // Remembering is a convenience: what does not fit is left out, not the import.
-    const room = Math.max(
-      0,
-      IMPORT_LIMITS.MAX_LABEL_CORRECTIONS - (existing.length - toDelete.length),
+    const { deletes, updates, inserts, notRemembered } = planLabelIntents(
+      existing,
+      intents,
+      IMPORT_LIMITS.MAX_LABEL_CORRECTIONS,
     );
-    const inserts = toInsert.slice(0, room);
 
-    if (toDelete.length > 0) {
-      await tx.delete(labelCorrection).where(inArray(labelCorrection.id, toDelete));
+    if (deletes.length > 0) {
+      await tx.delete(labelCorrection).where(inArray(labelCorrection.id, deletes));
     }
-    for (const change of toUpdate) {
+    for (const change of updates) {
       await tx
         .update(labelCorrection)
         .set({ thirdParty: change.thirdParty })
@@ -199,9 +182,6 @@ export class ImportWriter {
         })),
       );
     }
-    return {
-      remembered: inserts.length + toUpdate.length,
-      notRemembered: toInsert.length - inserts.length,
-    };
+    return { remembered: inserts.length + updates.length, notRemembered };
   }
 }
