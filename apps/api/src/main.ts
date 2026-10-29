@@ -19,6 +19,10 @@ async function bootstrap() {
     bufferLogs: true,
   });
   app.useLogger(app.get(Logger));
+  // Without it SIGTERM (every Kamal deploy) kills the process before the
+  // Express adapter drains in-flight requests and the modules'
+  // OnModuleDestroy hooks close the pg pool, Valkey and BullMQ workers.
+  app.enableShutdownHooks();
   // One /api prefix for the proxies (Caddy, Vite dev) to match. /health
   // stays bare for the Dockerfile/compose healthchecks and kamal-proxy.
   app.setGlobalPrefix('api', { exclude: ['health'] });
