@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # Dev-only image for the web app's Vite dev server (HMR, proxying to the
 # api service). Production instead builds static assets via docker/Dockerfile.caddy,
 # served by Caddy — no runtime Node needed in prod.
