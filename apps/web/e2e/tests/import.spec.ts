@@ -165,7 +165,7 @@ test('suggest the category given to an earlier operation of the same third party
   const chosen = (await category.locator('option:checked').textContent()) ?? '';
   await page.getByTestId('import-confirm').click();
   await expect(
-    alertWithText(page, '1 operations imported, 0 already recorded, 0 invalid.'),
+    alertWithText(page, '1 operation imported, 0 already recorded, 0 invalid.'),
   ).toBeVisible();
 
   // Another day, same third party: the category comes back on its own.
@@ -177,7 +177,7 @@ test('suggest the category given to an earlier operation of the same third party
   await expect(page.getByTestId('import-category-suggested')).toHaveCount(0);
   await page.getByTestId('import-confirm').click();
   await expect(
-    alertWithText(page, '1 operations imported, 0 already recorded, 0 invalid.'),
+    alertWithText(page, '1 operation imported, 0 already recorded, 0 invalid.'),
   ).toBeVisible();
 });
 
@@ -208,7 +208,7 @@ test('record a transfer between two of my accounts from the preview', async ({
   await page.getByTestId('import-row-payment-method').selectOption(`transfer:${savingsId}`);
   await page.getByTestId('import-confirm').click();
   await expect(
-    alertWithText(page, '1 operations imported, 0 already recorded, 0 invalid.'),
+    alertWithText(page, '1 operation imported, 0 already recorded, 0 invalid.'),
   ).toBeVisible();
 
   await page.goto(`/en/accounts/${savingsId}/operations`);

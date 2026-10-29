@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { test as base, expect, type Locator, type Page } from '@playwright/test';
 import en from '../../src/i18n/locales/en';
 import { addVirtualAuthenticator } from './webauthn';
@@ -109,7 +109,20 @@ interface Fixtures {
   virtualAuthenticator: { authenticatorId: string };
 }
 
+// The API rate-limits sign-ups per source IP (20 a minute), which a fast run
+// of this suite exceeds. Each test gets its own address, which the API reads
+// from X-Forwarded-For (`trust proxy` is 1).
+function randomClientIp(): string {
+  return `10.${randomInt(256)}.${randomInt(256)}.${randomInt(1, 255)}`;
+}
+
 export const test = base.extend<Fixtures>({
+  // Playwright reads a fixture's dependencies from the destructured first argument.
+  // eslint-disable-next-line no-empty-pattern
+  extraHTTPHeaders: async ({}, use) => {
+    await use({ 'X-Forwarded-For': randomClientIp() });
+  },
+
   virtualAuthenticator: async ({ page }, use) => {
     const authenticator = await addVirtualAuthenticator(page);
     await use({ authenticatorId: authenticator.authenticatorId });
