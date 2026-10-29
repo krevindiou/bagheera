@@ -58,6 +58,7 @@ test-integration: ## Run api integration tests
 
 test-e2e: ## Run e2e tests; E2E_ARGS="auth.spec.ts" narrows to matching specs
 	$(COMPOSE_E2E) up -d --build
+	$(COMPOSE_E2E) --profile e2e build playwright
 	@echo "Waiting for api (db:migrate runs as part of its startup command)..."
 	@until [ "$$($(COMPOSE_E2E) ps api --format '{{.Health}}')" = "healthy" ]; do sleep 2; done
 	$(COMPOSE_E2E) exec --workdir /app/apps/api api pnpm db:seed
