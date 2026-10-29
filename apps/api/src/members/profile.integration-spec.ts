@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import request from 'supertest';
-import { member } from '../db/schema';
+import { member, securityEvent } from '../db/schema';
 import type { EmailMessage } from '../email/email-message';
 import fr from '../email/i18n/fr';
 import { CryptoService } from '../security/crypto.service';
@@ -286,6 +286,54 @@ describe('POST /members/profile', () => {
         .send({ key })
         .expect(400);
       expect(messageOf(replay)).toBe('Email change error (link expired or already used?)');
+    });
+
+    it('still completes the change and records it when the old-address notice cannot be queued', async () => {
+      const fixture = await seedSignedInMember(app);
+      const newEmail = uniqueEmail('queue-down');
+      await completeStepUp(app, fixture);
+      const startCsrfToken = await fixture.getCsrfToken();
+      await fixture.agent
+        .post('/members/profile')
+        .set('x-csrf-token', startCsrfToken)
+        .send({ email: newEmail })
+        .expect(200);
+
+      const [row] = await getDb(app)
+        .select({ version: member.emailChangeTokenVersion })
+        .from(member)
+        .where(eq(member.id, fixture.memberId));
+      const key = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        newEmail,
+        row.version,
+      );
+      fakeEmailQueue.enqueue.mockRejectedValueOnce(new Error('Connection is closed.'));
+
+      const confirmAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(confirmAgent);
+      await confirmAgent
+        .post('/members/profile/confirm-email-change')
+        .set('x-csrf-token', csrfToken)
+        .send({ key })
+        .expect(200);
+
+      const [updated] = await getDb(app)
+        .select()
+        .from(member)
+        .where(eq(member.id, fixture.memberId));
+      expect(updated.email).toBe(newEmail);
+      const events = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'email_changed'),
+            eq(securityEvent.memberId, fixture.memberId),
+          ),
+        );
+      expect(events).toHaveLength(1);
     });
 
     it('lets only one of two confirmations racing on the same link through', async () => {

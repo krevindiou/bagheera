@@ -121,6 +121,28 @@ describe('webauthn credentials', () => {
       expect(event).toBeDefined();
     });
 
+    it('still removes the credential and records it when the alert cannot be queued', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'To delete');
+      fakeEmailQueue.enqueue.mockRejectedValueOnce(new Error('Connection is closed.'));
+
+      await completeStepUp(app, fixture);
+      const res = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(res.status).toBe(200);
+
+      const [event] = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_credential_removed'),
+            eq(securityEvent.memberId, fixture.memberId),
+          ),
+        )
+        .limit(1);
+      expect(event).toBeDefined();
+    });
+
     it("signs out the member's other sessions but keeps the current one", async () => {
       const fixture = await seedSignedInMember(app);
       const credential = await insertCredential(app, fixture.memberId, 'Compromised');

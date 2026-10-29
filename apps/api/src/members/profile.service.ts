@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -7,6 +7,7 @@ import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
+import { enqueueAlert } from '../email/enqueue-alert';
 import { addressInUseEmail } from '../email/templates/address-in-use.template';
 import { confirmEmailChangeEmail } from '../email/templates/confirm-email-change.template';
 import { emailChangedEmail } from '../email/templates/email-changed.template';
@@ -36,6 +37,8 @@ function emailChangeError(): BusinessError {
 
 @Injectable()
 export class ProfileService {
+  private readonly logger = new Logger(ProfileService.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly crypto: CryptoService,
@@ -153,8 +156,12 @@ export class ProfileService {
     // to whoever prompted the change.
     await this.sessionRegistry.revokeOthers(row.id, currentSessionId);
 
-    await this.emailQueue.enqueue(emailChangedEmail(previousEmail, payload.newEmail, row.locale));
     await this.audit.record('email_changed', row.id, sourceAddress);
+    await enqueueAlert(
+      this.emailQueue,
+      this.logger,
+      emailChangedEmail(previousEmail, payload.newEmail, row.locale),
+    );
   }
 
   /** A display preference: no step-up, unlike updateEmail. */

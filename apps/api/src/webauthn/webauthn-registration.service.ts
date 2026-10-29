@@ -10,6 +10,7 @@ import { DRIZZLE } from '../db/db.constants';
 import { isUniqueViolation } from '../db/pg-errors';
 import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
+import { enqueueAlert } from '../email/enqueue-alert';
 import { passkeyRegisteredEmail } from '../email/templates/passkey-registered.template';
 import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
@@ -120,9 +121,13 @@ export class WebauthnRegistrationService {
       .select({ email: member.email, locale: member.locale })
       .from(member)
       .where(eq(member.id, memberId));
-    if (row) {
-      await this.emailQueue.enqueue(passkeyRegisteredEmail(row.email, row.locale));
-    }
     await this.audit.record('webauthn_credential_registered', memberId, clientIp(req));
+    if (row) {
+      await enqueueAlert(
+        this.emailQueue,
+        this.logger,
+        passkeyRegisteredEmail(row.email, row.locale),
+      );
+    }
   }
 }

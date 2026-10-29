@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
@@ -6,6 +6,7 @@ import { BusinessError } from '../common/filters/business-error';
 import { DRIZZLE } from '../db/db.constants';
 import { member, webauthnCredential } from '../db/schema';
 import { EmailQueueService } from '../email/email-queue.service';
+import { enqueueAlert } from '../email/enqueue-alert';
 import { passkeyRemovedEmail } from '../email/templates/passkey-removed.template';
 import { AuditService } from '../security/audit.service';
 import { consumeStepUp } from '../session/consume-step-up';
@@ -23,6 +24,8 @@ const LAST_PASSKEY_ERROR = 'Cannot remove your last passkey — it would lock yo
 /** Listing/removal for a member's own passkeys — never exposes the public key or counter. */
 @Injectable()
 export class WebauthnCredentialsService {
+  private readonly logger = new Logger(WebauthnCredentialsService.name);
+
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly emailQueue: EmailQueueService,
@@ -77,9 +80,9 @@ export class WebauthnCredentialsService {
       .select({ email: member.email, locale: member.locale })
       .from(member)
       .where(eq(member.id, memberId));
-    if (row) {
-      await this.emailQueue.enqueue(passkeyRemovedEmail(row.email, row.locale));
-    }
     await this.audit.record('webauthn_credential_removed', memberId, clientIp(req));
+    if (row) {
+      await enqueueAlert(this.emailQueue, this.logger, passkeyRemovedEmail(row.email, row.locale));
+    }
   }
 }
