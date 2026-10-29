@@ -14,5 +14,15 @@
       "matchUpdateTypes": ["major"],
       "groupName": null
     }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Kamal version installed by the deploy job",
+      "managerFilePatterns": ["/^\\.github/workflows/ci\\.yml$/"],
+      "matchStrings": ["gem install kamal .*--version (?<currentValue>\\S+)"],
+      "datasourceTemplate": "rubygems",
+      "depNameTemplate": "kamal"
+    }
   ]
 }
