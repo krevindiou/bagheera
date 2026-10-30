@@ -23,6 +23,7 @@ export default {
       label: 'Pagination',
       previous: 'Previous',
       next: 'Next',
+      goTo: 'Go to page {page}',
       status: 'Page {page} of {pageCount}',
     },
   },

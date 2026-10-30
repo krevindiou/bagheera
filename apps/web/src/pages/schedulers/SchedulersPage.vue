@@ -170,7 +170,7 @@ async function onSaved() {
       :empty-text="$t('schedulers.empty')"
       error-testid="schedulers-error"
     >
-      <div class="table-responsive paged-table">
+      <div class="table-responsive">
         <table class="table" data-testid="schedulers-table">
           <thead>
             <tr>

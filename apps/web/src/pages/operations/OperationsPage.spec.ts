@@ -487,7 +487,9 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     expect(wrapper.text()).toContain('Page 1 of 3');
-    const [prev, next] = wrapper.findAll('nav button');
+    const pagerButtons = wrapper.findAll('nav.pager button');
+    const prev = pagerButtons[0];
+    const next = pagerButtons[pagerButtons.length - 1];
     expect(prev.attributes('disabled')).toBeDefined();
     expect(next.attributes('disabled')).toBeUndefined();
 
@@ -568,13 +570,13 @@ describe('OperationsPage', () => {
 
     // Re-found after each click: the brief isPending loading state while
     // fetching a never-before-seen page tears down and rebuilds the pager.
-    await wrapper.findAll('nav button')[1].trigger('click');
+    await wrapper.findAll('nav.pager button').at(-1)!.trigger('click');
     await flushPromises();
     expect(router.currentRoute.value.query.page).toBe('2');
     expect(replaceSpy).toHaveBeenCalled();
     expect(pushSpy).not.toHaveBeenCalled();
 
-    await wrapper.findAll('nav button')[0].trigger('click');
+    await wrapper.findAll('nav.pager button').at(0)!.trigger('click');
     await flushPromises();
     expect(router.currentRoute.value.query.page).toBeUndefined();
   });
@@ -959,7 +961,7 @@ describe('OperationsPage', () => {
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    const [, next] = wrapper.findAll('nav button');
+    const next = wrapper.findAll('nav.pager button').at(-1)!;
     await next.trigger('click');
     await flushPromises();
     expect(apiClient.GET).toHaveBeenCalledWith('/operations', {

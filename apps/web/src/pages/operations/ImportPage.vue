@@ -202,7 +202,7 @@ const otherAccountName = computed(() => {
               {{ $t('operations.import.preview.busy') }}
             </div>
             <div
-              class="table-responsive paged-table"
+              class="table-responsive"
               :class="{ 'import-rows--busy': previewing }"
               :aria-busy="previewing"
             >
