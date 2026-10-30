@@ -23,13 +23,6 @@ describe('StatCard', () => {
     expect(wrapper.get('.stat-value').text()).toBe(formatMoney(1234.5, 'USD'));
   });
 
-  it('is a chip when asked to', () => {
-    const wrapper = mountCard({ variant: 'chip' });
-
-    expect(wrapper.classes()).toContain('stat-chip');
-    expect(wrapper.classes()).not.toContain('stat-card');
-  });
-
   it('tints a negative amount red and leaves others untinted', () => {
     expect(mountCard({ amount: -5 }).get('.stat-value').classes()).toContain('text-danger');
     expect(mountCard({ amount: 5 }).get('.stat-value').classes()).not.toContain('text-danger');

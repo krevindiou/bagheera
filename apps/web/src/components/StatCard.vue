@@ -5,7 +5,7 @@ import { formatMoney } from '../domain/money';
 import AppIcon from './AppIcon.vue';
 
 // A figure with its label and a footnote: the dashboard's balance, biggest
-// income/expense and account tiles, and the operations page's balance chip.
+// income/expense and account tiles, and the import statement's totals.
 // `trend` adds the corner badge and tints the figure (up = income, down =
 // expense); without it a negative amount is tinted red. `reconciled` renders
 // the standard "Reconciled" footnote; the `footnote` slot replaces it, and
@@ -17,7 +17,6 @@ const props = withDefaults(
     label: string;
     amount: number;
     currency: string;
-    variant?: 'card' | 'chip';
     primary?: boolean;
     trend?: 'up' | 'down';
     reconciled?: number;
@@ -26,7 +25,6 @@ const props = withDefaults(
     reconciledTestid?: string;
   }>(),
   {
-    variant: 'card',
     trend: undefined,
     reconciled: undefined,
     to: undefined,
@@ -45,11 +43,7 @@ const valueTone = computed(() => {
 </script>
 
 <template>
-  <component
-    :is="to ? RouterLink : 'div'"
-    v-bind="to ? { to } : {}"
-    :class="variant === 'chip' ? 'stat-chip' : 'stat-card'"
-  >
+  <component :is="to ? RouterLink : 'div'" v-bind="to ? { to } : {}" class="stat-card">
     <div
       v-if="trend"
       class="stat-trend-badge"
@@ -99,8 +93,7 @@ const valueTone = computed(() => {
 }
 /* Trend badge (income/expense stat cards) — a small circular chip pinned
    to the card's top-right corner, clear of both the label text and the
-   figure below it. Named "-trend-" (not "-stat-") to avoid colliding
-   with the unrelated .stat-chip variant below. */
+   figure below it. */
 .stat-trend-badge {
   position: absolute;
   top: 16px;
@@ -137,39 +130,5 @@ const valueTone = computed(() => {
    cascade instead of losing to it despite coming later in the file. */
 .stat-card .stat-value-primary {
   font-size: 30px;
-}
-.stat-chip {
-  /* A block div otherwise stretches to its parent's full width — fine for
-     .stat-card in a grid track, wrong for a "chip" meant to hug its
-     content (the mock sits it beside a sibling chip in a flex row).
-     OperationsPage.vue's lone balance chip has no such sibling to size
-     against, so without this it stretched edge-to-edge: 14px of real top/
-     bottom padding against several hundred px of dead space on the right. */
-  width: fit-content;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 20px;
-  min-width: 140px;
-}
-.stat-chip .stat-label {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-.stat-chip .stat-value {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-/* Same specificity as .stat-chip .stat-value above — placed after so it
-   wins the font-size tiebreak on source order (see .acct-tile's own
-   override of these same classes in DashboardPage.vue for the other half
-   of this pattern). */
-.stat-chip .stat-value-primary {
-  font-size: 24px;
-}
-.stat-chip .stat-footnote {
-  margin-top: 8px;
 }
 </style>

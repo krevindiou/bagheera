@@ -166,17 +166,42 @@ describe('OperationsPage', () => {
     expect(wrapper.find('h1').text()).toBe('Operations');
   });
 
-  it('shows the balance as the primary figure (colored by sign) and reconciled balance as a muted footnote', async () => {
+  it('shows the balance as the primary figure (red when overdrawn) beside the reconciled and unreconciled parts', async () => {
     mockGet({ accounts: [{ ...account, balance: m(-500), reconciledBalance: m(100) }] });
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
     const balances = wrapper.find('[data-testid="account-balances"]');
-    expect(balances.text()).toContain('-$500.00');
-    expect(balances.text()).toContain('$100.00');
-    expect(balances.find('.stat-value-primary.text-danger').exists()).toBe(true);
-    // The footnote stays muted even though the account is overdrawn — only
-    // the primary balance above it gets the red treatment.
-    expect(balances.find('.stat-footnote-value.text-danger').exists()).toBe(false);
+    expect(balances.find('[data-testid="account-balance"]').text()).toBe('-$500.00');
+    expect(balances.find('[data-testid="account-reconciled"]').text()).toBe('$100.00');
+    // Balance minus reconciled: what the account holds that isn't ticked off yet.
+    expect(balances.find('[data-testid="account-unreconciled"]').text()).toBe('-$600.00');
+    expect(balances.find('[data-testid="account-balance"]').classes()).toContain('text-danger');
+    // Only the balance gets the red treatment, the other two stay plain.
+    expect(balances.find('[data-testid="account-reconciled"].text-danger').exists()).toBe(false);
+    expect(balances.find('[data-testid="account-unreconciled"].text-danger').exists()).toBe(false);
+  });
+
+  it('puts the balances and the chart side by side, without a legend for the single series', async () => {
+    mockGet({
+      chart: {
+        currency: 'USD',
+        axisBounds: { min: 0, max: m(1000) },
+        points: [{ period: '2026-01', value: m(500) }],
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('.account-overview').classes()).toContain('account-overview-split');
+    expect(wrapper.findComponent(SynthesisChart).props('hideLegend')).toBe(true);
+  });
+
+  it('lets the balances take the whole row when there is no chart', async () => {
+    mockGet({ chart: null });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+    expect(wrapper.find('.account-overview').classes()).not.toContain('account-overview-split');
+    expect(wrapper.find('[data-testid="account-balances"]').exists()).toBe(true);
+    expect(wrapper.findComponent(SynthesisChart).exists()).toBe(false);
   });
 
   it("takes the balances from the accounts list instead of requesting the account's balance", async () => {

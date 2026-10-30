@@ -169,6 +169,7 @@ export default {
     transferTo: '→ {name}',
     transferFrom: '← {name}',
     balance: 'Solde',
+    unreconciled: 'Non rapproché',
     generatedByScheduler: 'Générée par une opération planifiée',
     firstOperationTip: 'Vous y êtes ! Ajoutez simplement votre première opération.',
     valueDate: 'Date de valeur',

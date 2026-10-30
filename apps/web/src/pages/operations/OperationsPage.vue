@@ -33,10 +33,10 @@ import SearchPanel from './search.vue';
 import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
 import ListState from '../../components/ListState.vue';
-import StatCard from '../../components/StatCard.vue';
 import AppIcon from '../../components/AppIcon.vue';
 import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
 import OperationStatusIcons from './OperationStatusIcons.vue';
+import AccountSummary from './AccountSummary.vue';
 
 const route = useRoute();
 const accountId = computed(() => route.params.accountId as string);
@@ -104,6 +104,11 @@ const chartSeries = computed<SynthesisChartSeries[]>(() => {
 const chartAxisBounds = computed(() => toDisplayBounds(chartQuery.data.value?.axisBounds));
 
 // No heading repeats the account name near the chart, so it names itself.
+// The accounts list carries the balances; they are missing until it loads.
+const hasBalances = computed(
+  () => account.value?.balance != null && account.value.reconciledBalance != null,
+);
+
 const chartAriaLabel = computed(() => `${t('operations.balance')}, ${account.value?.name ?? ''}`);
 
 const categoryNames = computed(
@@ -251,29 +256,30 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
       {{ $t('operations.firstOperationTip') }}
     </p>
 
+    <!-- Balances beside the chart, to share the page's width; either one
+         alone takes the full row. -->
     <div
-      v-if="account?.balance != null && account.reconciledBalance != null"
-      class="mb-4"
-      data-testid="account-balances"
+      v-if="hasBalances || chartSeries.length > 0"
+      class="account-overview mb-4"
+      :class="{ 'account-overview-split': hasBalances && chartSeries.length > 0 }"
     >
-      <StatCard
-        variant="chip"
-        :label="$t('operations.balance')"
-        :amount="account.balance"
+      <AccountSummary
+        v-if="hasBalances"
+        :balance="account!.balance!"
+        :reconciled="account!.reconciledBalance!"
         :currency="currency"
-        :reconciled="account.reconciledBalance"
-        primary
+      />
+      <SynthesisChartPanel
+        v-if="chartSeries.length > 0"
+        v-model:range="chartRange"
+        :series="chartSeries"
+        :axis-bounds="chartAxisBounds"
+        :label="chartAriaLabel"
+        :chart-height="240"
+        hide-legend
+        range-testid="account-chart-range"
       />
     </div>
-
-    <SynthesisChartPanel
-      v-if="chartSeries.length > 0"
-      v-model:range="chartRange"
-      :series="chartSeries"
-      :axis-bounds="chartAxisBounds"
-      :label="chartAriaLabel"
-      range-testid="account-chart-range"
-    />
 
     <div>
       <BatchActions
@@ -445,3 +451,20 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
     </div>
   </div>
 </template>
+
+<style scoped>
+.account-overview {
+  display: grid;
+  gap: 20px;
+}
+/* Balances in a column as wide as they need, the chart taking the rest. Under
+   900px the two stack, the balances turning into a row. */
+.account-overview-split {
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+}
+@media (max-width: 900px) {
+  .account-overview-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+</style>

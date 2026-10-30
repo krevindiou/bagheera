@@ -154,6 +154,7 @@ const accountTiles = computed(() =>
         <SynthesisChartPanel
           v-if="!dashboard.synthesisChart.hidden"
           v-model:range="chartRange"
+          class="mb-4"
           :title="$t('dashboard.synthesisChart')"
           :label="synthesisChartAriaLabel"
           :series="toSynthesisSeries(dashboard.synthesisChart)"

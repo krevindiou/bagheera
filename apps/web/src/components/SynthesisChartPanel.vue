@@ -11,18 +11,22 @@ import {
 // what the page sends to the API; `rangeTestid` names the select for the
 // page's own tests. Attributes (a `data-testid`) land on the root.
 // `label` is the chart's aria-label, independent of the visible `title`.
+// `hideLegend` and `chartHeight` go to the chart. The panel has no outer
+// margin of its own: the page spaces it.
 defineProps<{
   series: SynthesisChartSeries[];
   axisBounds: { min: number; max: number } | null;
   rangeTestid: string;
   title?: string;
   label: string;
+  hideLegend?: boolean;
+  chartHeight?: number;
 }>();
 const range = defineModel<SynthesisChartRange>('range', { required: true });
 </script>
 
 <template>
-  <section class="panel panel-lg mb-4 p-4">
+  <section class="panel panel-lg p-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 v-if="title" class="h6 mb-0">{{ title }}</h2>
       <select
@@ -36,6 +40,12 @@ const range = defineModel<SynthesisChartRange>('range', { required: true });
         </option>
       </select>
     </div>
-    <SynthesisChart :series="series" :axis-bounds="axisBounds" :label="label" />
+    <SynthesisChart
+      :series="series"
+      :axis-bounds="axisBounds"
+      :label="label"
+      :hide-legend="hideLegend"
+      :height="chartHeight"
+    />
   </section>
 </template>

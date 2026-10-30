@@ -59,6 +59,10 @@ const props = defineProps<{
   label: string;
   // Bucket size of the points' periods; monthly unless a report says otherwise.
   periodGrouping?: PeriodGrouping;
+  // For a chart whose single series the page already names.
+  hideLegend?: boolean;
+  // Canvas height in px; 300 unless the page needs it shorter.
+  height?: number;
 }>();
 
 const { locale } = useI18n();
@@ -122,7 +126,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
     },
   },
   plugins: {
-    legend: { display: true },
+    legend: { display: !props.hideLegend },
     tooltip: {
       callbacks: {
         label: (item: TooltipItem<'line'>) => `${item.formattedValue} (${item.label})`,
@@ -133,7 +137,13 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
 </script>
 
 <template>
-  <div v-if="hasData" class="synthesis-chart" role="img" :aria-label="label">
+  <div
+    v-if="hasData"
+    class="synthesis-chart"
+    role="img"
+    :aria-label="label"
+    :style="height ? { height: `${height}px` } : undefined"
+  >
     <Line :data="chartData" :options="chartOptions" />
   </div>
 </template>
