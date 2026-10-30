@@ -54,7 +54,8 @@ function onFocusOut(id: number, event: FocusEvent) {
    bottom, the column grows upward, newest nearest the corner. */
 .toast-container {
   position: fixed;
-  bottom: 20px;
+  /* Above BatchBar while a list selection shows it (see its HEIGHT_VAR). */
+  bottom: calc(20px + var(--batch-bar-height, 0px));
   right: 20px;
   z-index: 1100;
   display: flex;

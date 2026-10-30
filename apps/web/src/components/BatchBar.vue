@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useConfirm } from '../composables/useConfirm';
 import { useToast } from '../composables/useToast';
@@ -21,7 +22,7 @@ export interface BatchAction {
   run: (ids: string[]) => Promise<number | null>;
 }
 
-// The fixed bar a batch-selectable list (operations, schedulers, reports)
+// The bar pinned to the bottom that a batch-selectable list (operations, schedulers, reports)
 // shows while rows are checked: one button per action, each confirming,
 // running its request and toasting the outcome the same way. `done` means
 // the server may have changed rows and the list should reload. Attributes
@@ -32,6 +33,28 @@ const emit = defineEmits<{ done: [] }>();
 const { confirm } = useConfirm();
 const { push: toast } = useToast();
 const { t } = useI18n();
+
+// Toasts share the bottom edge; publishing the bar's live height (it wraps
+// to two rows on narrow screens) lets ToastContainer stack above it.
+const HEIGHT_VAR = '--batch-bar-height';
+const bar = ref<HTMLElement | null>(null);
+let observer: ResizeObserver | undefined;
+
+function stopPublishingHeight() {
+  observer?.disconnect();
+  observer = undefined;
+  document.documentElement.style.removeProperty(HEIGHT_VAR);
+}
+
+watch(bar, (element) => {
+  stopPublishingHeight();
+  if (!element) return;
+  observer = new ResizeObserver(() => {
+    document.documentElement.style.setProperty(HEIGHT_VAR, `${element.offsetHeight}px`);
+  });
+  observer.observe(element);
+});
+onBeforeUnmount(stopPublishingHeight);
 
 async function perform(action: BatchAction) {
   const selected = props.selectedIds.length;
@@ -65,42 +88,59 @@ async function perform(action: BatchAction) {
 </script>
 
 <template>
-  <div v-if="selectedIds.length > 0" class="batch-bar">
-    <span role="status" class="text-muted small">{{
-      $t('common.selectedCount', selectedIds.length)
-    }}</span>
-    <button
-      v-for="action in actions"
-      :key="action.testid"
-      type="button"
-      class="btn btn-sm"
-      :class="action.danger ? 'btn-outline-danger' : 'btn-outline-secondary'"
-      :data-testid="action.testid"
-      @click="perform(action)"
-    >
-      {{ $t(action.labelKey) }}
-    </button>
+  <div v-if="selectedIds.length > 0" ref="bar" class="batch-bar">
+    <div class="batch-bar-inner">
+      <span role="status" class="batch-bar-count">{{
+        $t('common.selectedCount', selectedIds.length)
+      }}</span>
+      <div class="d-flex flex-wrap gap-2">
+        <button
+          v-for="action in actions"
+          :key="action.testid"
+          type="button"
+          class="btn btn-sm"
+          :class="action.danger ? 'btn-outline-danger' : 'btn-outline-secondary'"
+          :data-testid="action.testid"
+          @click="perform(action)"
+        >
+          {{ $t(action.labelKey) }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-/* Fixed and centered rather than an in-flow row — an in-flow row toggling
-   in/out with the selection (mb-3 and all) pushed the table down by its own
-   height the moment a row got checked (same class of bug as the schedulers
-   "New scheduler" button hiding under showForm — see SchedulersPage.vue). */
+/* Fixed rather than an in-flow row — an in-flow row toggling in/out with
+   the selection pushed the table down by its own height the moment a row
+   got checked. Spans the content area only, so the sidebar's account menu
+   stays reachable; the inner row follows the page's content column (see
+   the variables on BaseLayout's .app-shell) so the count and actions line
+   up with the table edges. */
 .batch-bar {
   position: fixed;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
+  left: var(--sidebar-width, 0px);
+  right: 0;
+  bottom: 0;
   z-index: 1040;
-  display: flex;
-  align-items: center;
-  gap: 14px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--bs-box-shadow);
-  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px -12px rgba(28, 25, 23, 0.14);
+}
+.batch-bar-inner {
+  max-width: var(--content-max, none);
+  margin: 0 auto;
+  padding: 12px var(--content-gutter, 16px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.batch-bar-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 </style>

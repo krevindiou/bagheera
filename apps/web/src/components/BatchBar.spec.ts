@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { useConfirm } from '../composables/useConfirm';
 import { useToast } from '../composables/useToast';
@@ -58,6 +58,16 @@ describe('BatchBar', () => {
 
     const two = mountBar([deleteAction()], ['s1', 's2']);
     expect(two.find('[role="status"]').text()).toBe('2 selected');
+  });
+
+  it('leads with the selection count and groups the actions after it', () => {
+    const reconcile = deleteAction({ labelKey: 'operations.batch.reconcile', testid: 'reconcile' });
+    const row = mountBar([deleteAction(), reconcile]).get('.batch-bar-inner').element;
+
+    expect(row.firstElementChild?.getAttribute('role')).toBe('status');
+    expect(
+      [...row.lastElementChild!.querySelectorAll('button')].map((b) => b.textContent?.trim()),
+    ).toEqual(['Delete selected', 'Reconcile selected']);
   });
 
   it('renders one button per action on the bar, danger actions in red', () => {
@@ -156,5 +166,57 @@ describe('BatchBar', () => {
 
     expect(toasts()).toEqual([['Something went wrong. Please try again.', 'error']]);
     expect(wrapper.emitted('done')).toBeUndefined();
+  });
+
+  describe('height published for the toasts', () => {
+    const height = () => document.documentElement.style.getPropertyValue('--batch-bar-height');
+
+    // Fires its callback on observe, as a real ResizeObserver does once.
+    function stubResizeObserver() {
+      const disconnect = vi.fn();
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          callback: () => void;
+          constructor(callback: () => void) {
+            this.callback = callback;
+          }
+          observe() {
+            this.callback();
+          }
+          disconnect = disconnect;
+        },
+      );
+      return disconnect;
+    }
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+      document.documentElement.style.removeProperty('--batch-bar-height');
+    });
+
+    it("sets the bar's height while it shows, and clears it once the selection empties", async () => {
+      const disconnect = stubResizeObserver();
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(57);
+      const wrapper = mountBar([deleteAction()], ['s1']);
+      await flushPromises();
+
+      expect(height()).toBe('57px');
+
+      await wrapper.setProps({ selectedIds: [] });
+      expect(height()).toBe('');
+      expect(disconnect).toHaveBeenCalled();
+    });
+
+    it('clears the height when the list unmounts with rows still selected', async () => {
+      stubResizeObserver();
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(57);
+      const wrapper = mountBar([deleteAction()], ['s1']);
+      await flushPromises();
+
+      wrapper.unmount();
+      expect(height()).toBe('');
+    });
   });
 });

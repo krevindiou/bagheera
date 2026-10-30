@@ -30,3 +30,11 @@ HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement) {
     createLinearGradient: () => ({ addColorStop: () => {} }),
   };
 } as unknown as typeof HTMLCanvasElement.prototype.getContext;
+
+// jsdom has no ResizeObserver; nothing resizes there anyway. Specs that care
+// about a resize stub their own with vi.stubGlobal.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

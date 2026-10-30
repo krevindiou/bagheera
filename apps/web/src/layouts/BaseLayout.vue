@@ -87,6 +87,11 @@ const navItems = computed(() => [
 
 <style scoped>
 .app-shell {
+  /* Also read by fixed overlays inside pages (BatchBar), which can't sit in
+     the flex flow but must line up with the sidebar and content column. */
+  --sidebar-width: 232px;
+  --content-max: 1080px;
+  --content-gutter: 56px;
   display: flex;
   min-height: 100vh;
   position: relative;
@@ -104,7 +109,7 @@ const navItems = computed(() => [
   text-decoration: none;
 }
 .sidebar {
-  width: 232px;
+  width: var(--sidebar-width);
   flex: none;
   background: var(--surface);
   border-right: 1px solid var(--border);
@@ -184,17 +189,19 @@ const navItems = computed(() => [
   outline: none;
 }
 .main-inner {
-  max-width: 1080px;
+  max-width: var(--content-max);
   margin: 0 auto;
-  padding: 48px 56px 72px;
+  padding: 48px var(--content-gutter) 72px;
 }
 /* Pages built around a wide table (operations, import). */
 .main-inner--wide {
-  max-width: 1440px;
+  --content-max: 1440px;
 }
 
 @media (max-width: 820px) {
   .app-shell {
+    --sidebar-width: 0px;
+    --content-gutter: 18px;
     flex-direction: column;
   }
   /* Row 1: brand and account menu, always visible. Row 2: the nav, the one
@@ -231,7 +238,7 @@ const navItems = computed(() => [
     max-width: 220px;
   }
   .main-inner {
-    padding: 24px 18px 40px;
+    padding: 24px var(--content-gutter) 88px;
   }
 }
 
