@@ -13,6 +13,7 @@ import type { components } from '../../api/schema';
 import { useToast } from '../../composables/useToast';
 import { PAYMENT_METHOD_ID } from '../../domain/referenceData';
 import type { Account, Bank } from '../accounts/accounts.types';
+import { ICONS } from '../../components/appIcons';
 import ImportPage from './ImportPage.vue';
 
 const apiClient = asMockedApiClient(realApiClient);
@@ -349,6 +350,22 @@ describe('ImportPage', () => {
 
       await wrapper.find('[data-testid="import-include"]').setValue(true);
       expect(confirm.text()).toBe('Import 2 operations');
+    });
+
+    it('draws an import icon on the confirm button and a cross on cancel', async () => {
+      const { wrapper } = await mountPage();
+      await chooseFile(wrapper);
+
+      for (const testid of ['import-confirm', 'import-cancel']) {
+        const button = wrapper.get(`[data-testid="${testid}"]`);
+        expect(button.element.firstElementChild?.tagName.toLowerCase()).toBe('svg');
+      }
+      expect(wrapper.get('[data-testid="import-confirm"] svg').findAll('path')).toHaveLength(
+        ICONS.import.shapes.length,
+      );
+      expect(wrapper.get('[data-testid="import-cancel"] svg').findAll('path')).toHaveLength(
+        ICONS.close.shapes.length,
+      );
     });
 
     it('is disabled with a notice when nothing would be imported', async () => {
@@ -1753,6 +1770,7 @@ describe('ImportPage', () => {
 
         expect(confirmBar(wrapper).attributes('disabled')).toBeUndefined();
         expect(confirmBar(wrapper).text()).toBe('Reconcile 1 recorded operation');
+        expect(confirmBar(wrapper).findAll('path')).toHaveLength(ICONS.check.shapes.length);
         expect(wrapper.find('[data-testid="import-nothing"]').exists()).toBe(false);
 
         await wrapper.find('[data-testid="import-reconcile-recorded"]').setValue(false);
@@ -1885,12 +1903,10 @@ describe('ImportPage', () => {
         expect(bar.find('[data-testid="import-cancel"]').exists()).toBe(true);
       });
 
-      it('offers only the cancel before a file is read', async () => {
+      it('shows no bar before a file is read', async () => {
         const { wrapper } = await mountPage();
-        const bar = wrapper.find('[data-testid="import-actions"]');
 
-        expect(bar.find('[data-testid="import-confirm"]').exists()).toBe(false);
-        expect(bar.find('[data-testid="import-cancel"]').exists()).toBe(true);
+        expect(wrapper.find('[data-testid="import-actions"]').exists()).toBe(false);
       });
     });
   });
@@ -1946,12 +1962,11 @@ describe('ImportPage', () => {
       expect(apiClient.DELETE).not.toHaveBeenCalled();
     });
 
-    it('does not call the API when no file was uploaded', async () => {
+    it('does not call the API when the page is left before a file was uploaded', async () => {
       const { wrapper } = await mountPage();
-      await wrapper.find('[data-testid="import-cancel"]').trigger('click');
+      wrapper.unmount();
       await flushPromises();
       expect(apiClient.DELETE).not.toHaveBeenCalled();
-      expect(router.currentRoute.value.name).toBe('operations');
     });
   });
 });

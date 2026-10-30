@@ -18,6 +18,7 @@ const actions: BatchAction[] = [
       return deleteConfirmKey(props.operations.filter(({ id }) => selected.has(id)));
     },
     confirmLabelKey: 'common.delete',
+    icon: 'trash',
     testid: 'batch-delete',
     danger: true,
     async run(ids) {
@@ -34,6 +35,7 @@ const actions: BatchAction[] = [
     errorKey: 'operations.genericError',
     confirmKey: 'operations.batch.confirmReconcile',
     confirmLabelKey: 'operations.batch.reconcileConfirmLabel',
+    icon: 'check',
     testid: 'batch-reconcile',
     async run(ids) {
       const { data, response } = await apiClient.POST('/operations/batch/reconcile', {

@@ -136,6 +136,11 @@ export const ICONS = {
       path('M21 12v2.5'),
     ],
   },
+  import: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [path('M12 4v11'), path('M7.5 10.5L12 15l4.5-4.5'), path('M4 19h16')],
+  },
   arrowLeft: {
     viewBox: '0 0 24 24',
     strokeWidth: 1.75,

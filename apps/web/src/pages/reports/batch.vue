@@ -12,6 +12,7 @@ const actions: BatchAction[] = [
     errorKey: 'reports.genericError',
     confirmKey: 'reports.batch.confirmDelete',
     confirmLabelKey: 'common.delete',
+    icon: 'trash',
     testid: 'report-batch-delete',
     danger: true,
     async run(ids) {

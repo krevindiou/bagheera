@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { useConfirm } from '../composables/useConfirm';
 import { useToast } from '../composables/useToast';
@@ -13,6 +13,7 @@ function deleteAction(overrides: Partial<BatchAction> = {}): BatchAction {
     errorKey: 'schedulers.genericError',
     confirmKey: 'schedulers.batch.confirmDelete',
     confirmLabelKey: 'common.delete',
+    icon: 'trash',
     testid: 'delete',
     danger: true,
     run: vi.fn().mockResolvedValue(2),
@@ -60,9 +61,25 @@ describe('BatchBar', () => {
     expect(two.find('[role="status"]').text()).toBe('2 selected');
   });
 
+  it("draws each action's icon before its label, inside the button", () => {
+    const reconcile = deleteAction({
+      labelKey: 'operations.batch.reconcile',
+      icon: 'check',
+      testid: 'reconcile',
+    });
+    const wrapper = mountBar([deleteAction(), reconcile]);
+
+    for (const testid of ['delete', 'reconcile']) {
+      const button = wrapper.get(`[data-testid="${testid}"]`);
+      expect(button.element.firstElementChild?.tagName.toLowerCase()).toBe('svg');
+      expect(button.get('svg').attributes('aria-hidden')).toBe('true');
+    }
+    expect(wrapper.get('[data-testid="delete"]').text()).toBe('Delete selected');
+  });
+
   it('leads with the selection count and groups the actions after it', () => {
     const reconcile = deleteAction({ labelKey: 'operations.batch.reconcile', testid: 'reconcile' });
-    const row = mountBar([deleteAction(), reconcile]).get('.batch-bar-inner').element;
+    const row = mountBar([deleteAction(), reconcile]).get('.bottom-bar-inner').element;
 
     expect(row.firstElementChild?.getAttribute('role')).toBe('status');
     expect(
@@ -78,7 +95,7 @@ describe('BatchBar', () => {
     });
     const wrapper = mountBar([deleteAction(), reconcile]);
 
-    expect(wrapper.find('[data-testid="bar"]').classes()).toContain('batch-bar');
+    expect(wrapper.find('[data-testid="bar"]').classes()).toContain('bottom-bar');
     const buttons = wrapper.findAll('button');
     expect(buttons.map((button) => button.text())).toEqual([
       'Delete selected',
@@ -166,57 +183,5 @@ describe('BatchBar', () => {
 
     expect(toasts()).toEqual([['Something went wrong. Please try again.', 'error']]);
     expect(wrapper.emitted('done')).toBeUndefined();
-  });
-
-  describe('height published for the toasts', () => {
-    const height = () => document.documentElement.style.getPropertyValue('--batch-bar-height');
-
-    // Fires its callback on observe, as a real ResizeObserver does once.
-    function stubResizeObserver() {
-      const disconnect = vi.fn();
-      vi.stubGlobal(
-        'ResizeObserver',
-        class {
-          callback: () => void;
-          constructor(callback: () => void) {
-            this.callback = callback;
-          }
-          observe() {
-            this.callback();
-          }
-          disconnect = disconnect;
-        },
-      );
-      return disconnect;
-    }
-
-    afterEach(() => {
-      vi.restoreAllMocks();
-      vi.unstubAllGlobals();
-      document.documentElement.style.removeProperty('--batch-bar-height');
-    });
-
-    it("sets the bar's height while it shows, and clears it once the selection empties", async () => {
-      const disconnect = stubResizeObserver();
-      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(57);
-      const wrapper = mountBar([deleteAction()], ['s1']);
-      await flushPromises();
-
-      expect(height()).toBe('57px');
-
-      await wrapper.setProps({ selectedIds: [] });
-      expect(height()).toBe('');
-      expect(disconnect).toHaveBeenCalled();
-    });
-
-    it('clears the height when the list unmounts with rows still selected', async () => {
-      stubResizeObserver();
-      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(57);
-      const wrapper = mountBar([deleteAction()], ['s1']);
-      await flushPromises();
-
-      wrapper.unmount();
-      expect(height()).toBe('');
-    });
   });
 });

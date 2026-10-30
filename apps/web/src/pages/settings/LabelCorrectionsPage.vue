@@ -37,6 +37,7 @@ const actions: BatchAction[] = [
     errorKey: 'settings.labelCorrections.genericError',
     confirmKey: 'settings.labelCorrections.confirmDelete',
     confirmLabelKey: 'common.delete',
+    icon: 'trash',
     testid: 'label-correction-delete',
     danger: true,
     async run(ids) {

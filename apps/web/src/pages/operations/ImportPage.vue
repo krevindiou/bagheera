@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import AppIcon from '../../components/AppIcon.vue';
+import BottomBar from '../../components/BottomBar.vue';
 import PagerNav from '../../components/PagerNav.vue';
 import { useAccountContext } from '../../composables/useAccountContext';
 import { usePageTitle } from '../../composables/useDocumentTitle';
@@ -76,7 +77,7 @@ const otherAccountName = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="import-page">
     <div class="visually-hidden" role="status" aria-live="polite" data-testid="import-announce">
       {{ announcement }}
     </div>
@@ -248,61 +249,56 @@ const otherAccountName = computed(() => {
       </template>
     </template>
 
-    <div class="import-actions mt-4" data-testid="import-actions">
+    <BottomBar v-if="preview" data-testid="import-actions">
       <p
-        v-if="preview && toImportCount === 0 && reconcileCount === 0"
+        v-if="toImportCount === 0 && reconcileCount === 0"
         class="text-muted mb-0"
         data-testid="import-nothing"
       >
         {{ $t('operations.import.nothingToImport') }}
       </p>
-      <p v-else-if="preview" class="text-muted small mb-0" data-testid="import-not-saved">
+      <p v-else class="text-muted small mb-0" data-testid="import-not-saved">
         {{ $t('operations.import.notSaved') }}
       </p>
-      <button
-        v-if="preview"
-        type="button"
-        class="btn btn-primary"
-        :disabled="
-          (toImportCount === 0 && reconcileCount === 0) ||
-          confirming ||
-          choices.labelChangesPending.value ||
-          previewing ||
-          (accountMismatch && !acceptMismatch)
-        "
-        data-testid="import-confirm"
-        @click="confirmImport"
-      >
-        {{
-          toImportCount === 0 && reconcileCount > 0
-            ? $t('operations.import.confirmReconcile', { count: reconcileCount }, reconcileCount)
-            : $t('operations.import.confirm', { count: toImportCount }, toImportCount)
-        }}
-      </button>
-      <button
-        type="button"
-        class="btn btn-outline-secondary"
-        data-testid="import-cancel"
-        @click="cancel"
-      >
-        {{ $t('common.cancel') }}
-      </button>
-    </div>
+      <div class="d-flex flex-wrap gap-2 ms-auto">
+        <button
+          type="button"
+          class="btn btn-primary d-inline-flex align-items-center gap-2"
+          :disabled="
+            (toImportCount === 0 && reconcileCount === 0) ||
+            confirming ||
+            choices.labelChangesPending.value ||
+            previewing ||
+            (accountMismatch && !acceptMismatch)
+          "
+          data-testid="import-confirm"
+          @click="confirmImport"
+        >
+          <AppIcon :name="toImportCount === 0 ? 'check' : 'import'" :size="16" />
+          {{
+            toImportCount === 0 && reconcileCount > 0
+              ? $t('operations.import.confirmReconcile', { count: reconcileCount }, reconcileCount)
+              : $t('operations.import.confirm', { count: toImportCount }, toImportCount)
+          }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+          data-testid="import-cancel"
+          @click="cancel"
+        >
+          <AppIcon name="close" :size="16" />
+          {{ $t('common.cancel') }}
+        </button>
+      </div>
+    </BottomBar>
   </div>
 </template>
 
 <style scoped>
-.import-actions {
-  position: sticky;
-  bottom: 0;
-  z-index: 10;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0;
-  background: var(--bs-body-bg);
-  border-top: 1px solid var(--bs-border-color);
+/* The bar is fixed, so keep the end of the page clear of it. */
+.import-page {
+  padding-bottom: var(--bottom-bar-height, 0px);
 }
 
 .import-busy {
