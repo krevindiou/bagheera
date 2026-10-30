@@ -91,13 +91,16 @@ const chartData = computed<ChartData<'line'>>(() => ({
     tension: 0.2,
     cubicInterpolationMode: 'monotone',
     pointRadius: 3,
-    pointHoverRadius: 4,
+    pointHoverRadius: 5,
   })),
 }));
 
 const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
+  // Default is to hit the dot itself; snap to the closest one anywhere
+  // in the plot instead (2D, so overlapping series stay distinguishable).
+  interaction: { mode: 'nearest', intersect: false },
   scales: {
     x: {
       ticks: {

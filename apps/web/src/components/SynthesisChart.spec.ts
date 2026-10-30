@@ -148,7 +148,21 @@ describe('SynthesisChart', () => {
       props: { label: 'Balance chart', series: [{ label: 'Balance', color: '#000', points }] },
     });
     const chart = wrapper.findComponent(Line);
-    expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 3, pointHoverRadius: 4 });
+    expect(chart.props('data').datasets[0]).toMatchObject({ pointRadius: 3, pointHoverRadius: 5 });
+  });
+
+  it('shows the tooltip for the nearest point without needing to hit the dot', () => {
+    const wrapper = mount(SynthesisChart, {
+      ...withGlobalPlugins(),
+      props: {
+        label: 'Balance chart',
+        series: [{ label: 'Balance', color: '#000', points: [{ period: '2026-01', value: 1 }] }],
+      },
+    });
+    const chart = wrapper.findComponent(Line);
+    expect(chart.props('options')).toMatchObject({
+      interaction: { mode: 'nearest', intersect: false },
+    });
   });
 
   it('takes its labels from the first non-empty series', () => {
