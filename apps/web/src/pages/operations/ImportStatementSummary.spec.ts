@@ -32,7 +32,7 @@ describe('ImportStatementSummary', () => {
     const wrapper = mountSummary();
 
     expect(wrapper.find('[data-testid="import-period"]').text()).toBe(
-      'Period: 3/1/2026 – 3/31/2026',
+      'Period: Mar 1, 2026 – Mar 31, 2026',
     );
     const debits = wrapper.find('[data-testid="import-debits-value"]');
     expect(debits.text()).toBe('€200.50');
@@ -89,7 +89,7 @@ describe('ImportStatementSummary', () => {
     });
 
     expect(wrapper.find('[data-testid="import-closing"]').text()).toContain('€1,299.50');
-    expect(wrapper.find('[data-testid="import-closing"]').text()).toContain('On 3/31/2026');
+    expect(wrapper.find('[data-testid="import-closing"]').text()).toContain('On Mar 31, 2026');
     expect(wrapper.find('[data-testid="import-expected"]').text()).toContain('€1,299.50');
     expect(wrapper.find('[data-testid="import-balance-matches"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="import-balance-differs"]').exists()).toBe(false);

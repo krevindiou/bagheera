@@ -213,7 +213,7 @@ describe('DashboardPage', () => {
       }),
     );
     expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('$2,500.00');
-    expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('1/15/2026');
+    expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('Jan 15, 2026');
     expect(wrapper.find('[data-testid="last-biggest-income"]').text()).toContain('Acme Corp');
     expect(wrapper.find('[data-testid="last-biggest-expense"]').text()).toContain('$80.00');
     expect(wrapper.find('[data-testid="last-biggest-expense"]').text()).toContain('Grocery Store');

@@ -42,11 +42,16 @@ export function currencySymbol(currency: string): string {
   }
 }
 
+// Day, short month name and year, in the locale's own order ("Sep 15, 2026",
+// "15 sept. 2026"): a month spelled out can't be misread the way 9/10/2026
+// can (September or October?).
+const DATE_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+
 // A stored `YYYY-MM-DD` date, localized.
 export function formatDate(date: string): string {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return date;
-  return new Intl.DateTimeFormat(currentLocale()).format(parsed);
+  return new Intl.DateTimeFormat(currentLocale(), DATE_FORMAT).format(parsed);
 }
 
 // The accepted value-date range, localized, for validation messages.
@@ -59,7 +64,7 @@ export function valueDateRange(): { min: string; max: string } {
 export function formatTimestampDate(timestamp: string): string {
   const parsed = new Date(timestamp);
   if (Number.isNaN(parsed.getTime())) return timestamp;
-  return new Intl.DateTimeFormat(currentLocale()).format(parsed);
+  return new Intl.DateTimeFormat(currentLocale(), DATE_FORMAT).format(parsed);
 }
 
 // Chart helpers: charts plot decimal amounts, so series points (rounded to

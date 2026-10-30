@@ -346,7 +346,7 @@ describe('OperationFields', () => {
     await form().validate();
     await flushPromises();
     expect(input.element.closest('.mb-3')!.textContent).toContain(
-      'Enter a date between 1/1/1900 and 12/31/2100.',
+      'Enter a date between Jan 1, 1900 and Dec 31, 2100.',
     );
     expect(input.classes()).toContain('is-invalid');
     wrapper.unmount();

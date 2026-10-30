@@ -401,7 +401,7 @@ describe('SchedulerForm', () => {
     expect(apiClient.POST).not.toHaveBeenCalled();
     const limitDate = wrapper.get('#scheduler-limit-date');
     expect(limitDate.element.closest('.mb-3')!.textContent).toContain(
-      'Enter a date between 1/1/1900 and 12/31/2100.',
+      'Enter a date between Jan 1, 1900 and Dec 31, 2100.',
     );
     expect(limitDate.classes()).toContain('is-invalid');
   });

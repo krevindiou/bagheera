@@ -148,7 +148,7 @@ describe('PasskeysPage', () => {
     const rows = wrapper.findAll('tbody tr');
     expect(rows).toHaveLength(2);
     expect(rows[0].text()).toContain('MacBook');
-    expect(rows[0].text()).toContain('1/15/2026');
+    expect(rows[0].text()).toContain('Jan 15, 2026');
     expect(rows[1].text()).toContain('Unnamed passkey');
     expect(rows[1].text()).toContain('Never');
   });
@@ -164,14 +164,14 @@ describe('PasskeysPage', () => {
     ]);
     const wrapper = mount(PasskeysPage, withGlobalPlugins());
     await flushPromises();
-    expect(wrapper.get('tbody tr').text()).toContain('1/15/2026');
+    expect(wrapper.get('tbody tr').text()).toContain('Jan 15, 2026');
 
     await setLocale('fr');
     await flushPromises();
 
     const row = wrapper.get('tbody tr');
-    expect(row.text()).toContain('02/01/2026');
-    expect(row.text()).toContain('15/01/2026');
+    expect(row.text()).toContain('2 janv. 2026');
+    expect(row.text()).toContain('15 janv. 2026');
   });
 
   it('caps the device-name input length to match the API limit', async () => {

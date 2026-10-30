@@ -53,8 +53,19 @@ describe('currencySymbol', () => {
 });
 
 describe('formatDate', () => {
-  it('formats a stored YYYY-MM-DD date in the active locale', () => {
-    expect(formatDate('2026-01-15')).toBe('1/15/2026');
+  afterEach(async () => {
+    await setLocale('en');
+  });
+
+  it('formats a stored YYYY-MM-DD date in the active locale, with a short month name', () => {
+    expect(formatDate('2026-01-15')).toBe('Jan 15, 2026');
+    expect(formatDate('2026-09-05')).toBe('Sep 5, 2026');
+  });
+
+  it("puts the day, month and year in the locale's own order", async () => {
+    await setLocale('fr');
+    expect(formatDate('2026-01-15')).toBe('15 janv. 2026');
+    expect(formatDate('2026-09-05')).toBe('5 sept. 2026');
   });
 
   it("returns the raw string when it doesn't parse as a date", () => {
@@ -64,7 +75,7 @@ describe('formatDate', () => {
 
 describe('valueDateRange', () => {
   it('formats the accepted value-date bounds in the active locale', () => {
-    expect(valueDateRange()).toEqual({ min: '1/1/1900', max: '12/31/2100' });
+    expect(valueDateRange()).toEqual({ min: 'Jan 1, 1900', max: 'Dec 31, 2100' });
   });
 });
 
@@ -74,12 +85,12 @@ describe('formatTimestampDate', () => {
   });
 
   it('formats an ISO timestamp as its date in the active locale', () => {
-    expect(formatTimestampDate('2026-01-15T12:00:00.000Z')).toBe('1/15/2026');
+    expect(formatTimestampDate('2026-01-15T12:00:00.000Z')).toBe('Jan 15, 2026');
   });
 
   it('follows the in-app locale rather than the browser language', async () => {
     await setLocale('fr');
-    expect(formatTimestampDate('2026-01-15T12:00:00.000Z')).toBe('15/01/2026');
+    expect(formatTimestampDate('2026-01-15T12:00:00.000Z')).toBe('15 janv. 2026');
   });
 
   it("returns the raw string when it doesn't parse as a date", () => {

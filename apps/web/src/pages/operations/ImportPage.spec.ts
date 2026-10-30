@@ -1494,7 +1494,7 @@ describe('ImportPage', () => {
         });
 
         expect(wrapper.find('[data-testid="import-recorded"]').text()).toBe(
-          'Already recorded on 1/5/2026 as Old name (same bank reference).',
+          'Already recorded on Jan 5, 2026 as Old name (same bank reference).',
         );
       });
 
@@ -1517,7 +1517,7 @@ describe('ImportPage', () => {
         });
 
         expect(wrapper.find('[data-testid="import-recorded"]').text()).toBe(
-          'Already recorded on 3/24/2026 as Livret A (the other side of this transfer: same amount, within 3 days).',
+          'Already recorded on Mar 24, 2026 as Livret A (the other side of this transfer: same amount, within 3 days).',
         );
       });
 
