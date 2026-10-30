@@ -1,4 +1,3 @@
-import { colorForCurrency } from '../../components/chartColors';
 import { toDisplayPoints } from '../../domain/money';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import type { ReportSeries } from './reports.types';
@@ -15,10 +14,11 @@ const DEBIT_DASH = [8, 4];
 export function toChartSeries(
   reportSeries: ReportSeries,
   t: (key: string) => string,
+  colorFor: (currency: string) => string,
 ): SynthesisChartSeries[] {
   const series: SynthesisChartSeries[] = [];
   for (const s of reportSeries.series) {
-    const color = colorForCurrency(s.currency);
+    const color = colorFor(s.currency);
     if (s.debit.length > 0) {
       series.push({
         label: `${s.currency} ${t('operations.debit')}`,

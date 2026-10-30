@@ -12,7 +12,7 @@ vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 import { apiClient as realApiClient } from '../../api/client';
 import { queryKeys } from '../../api/queryKeys';
 import SynthesisChart from '../../components/SynthesisChart.vue';
-import { colorForCurrency } from '../../components/chartColors';
+import { ACCENT_COLOR, colorForCurrency } from '../../components/chartColors';
 import { useConfirm } from '../../composables/useConfirm';
 import { useToast } from '../../composables/useToast';
 import type { Account, Bank } from '../accounts/accounts.types';
@@ -895,17 +895,18 @@ describe('OperationsPage', () => {
     await flushPromises();
 
     const chart = wrapper.findComponent(SynthesisChart);
-    // The app-wide per-currency color.
+    // The mocked member holds a single currency, so the chart takes the accent.
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: colorForCurrency('USD'), points: [{ period: '2026-01', value: 500 }] },
+      { label: 'USD', color: ACCENT_COLOR, points: [{ period: '2026-01', value: 500 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
     // Named for assistive tech with the account it belongs to.
     expect(chart.props('label')).toBe('Balance, Checking');
   });
 
-  it("colors a EUR account's chart differently than a USD one", async () => {
+  it("draws the member's main currency in the accent and the other in its palette color", async () => {
     mockGet({
+      accounts: [account, { ...account, id: 'a2', currency: 'EUR' }],
       chart: {
         currency: 'EUR',
         axisBounds: { min: 0, max: m(1000) },
@@ -915,8 +916,9 @@ describe('OperationsPage', () => {
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
 
+    // One account each: the tie goes to EUR alphabetically.
     const chart = wrapper.findComponent(SynthesisChart);
-    expect(chart.props('series')[0].color).toBe(colorForCurrency('EUR'));
+    expect(chart.props('series')[0].color).toBe(ACCENT_COLOR);
     expect(chart.props('series')[0].color).not.toBe(colorForCurrency('USD'));
   });
 

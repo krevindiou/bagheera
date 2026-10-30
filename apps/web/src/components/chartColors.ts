@@ -1,18 +1,29 @@
 import type { ScriptableContext } from 'chart.js';
 
-// A currency's color is a hash of its code, so it reads the same on every
-// page, whatever else shares it. Labels within one chart are instead dealt
-// palette colors in order (see assignLabelColors), so none collide.
+// The theme's --accent (Chart.js can't read CSS variables). It leads the
+// charts: the member's main currency is drawn in it (see useCurrencyColors),
+// and a distribution chart gives it to its first, biggest label.
+export const ACCENT_COLOR = '#c2410c';
+
+// The other currencies' color is a hash of their code, so it reads the same
+// on every page, whatever else shares it. Labels within one chart are
+// instead dealt LABEL_COLORS in order (see assignLabelColors), so none
+// collide.
 //
-// Violet, cyan, teal, blue, magenta, gold: validated against the white
-// chart surface for 3:1 contrast (3.7:1 minimum) and CIEDE2000 separation —
-// every pair ≥17.6 under normal vision, adjacent pairs ≥12.0 under
-// protan/deutan/tritan simulation. The order matters: EUR hashes to slot 3
-// and USD to slot 5, kept far apart (49 ΔE under every simulation). Re-check
-// contrast on #ffffff, pair ΔE and the EUR/USD slots before changing a value
-// or the order. No orange, green or red: --accent, --success and --danger
-// already mean action, credit and danger.
-export const SYNTHESIS_COLORS = ['#7c3aed', '#0891b2', '#0f766e', '#1d6fe0', '#b8329e', '#9a7a00'];
+// Violet, cyan, teal, blue, magenta: validated against the white chart
+// surface for 3:1 contrast (3.7:1 minimum) and CIEDE2000 separation — every
+// pair ≥17.6 under normal vision, adjacent pairs ≥12.0 under
+// protan/deutan/tritan simulation. The accent clears the same bars (5.2:1
+// on white; ≥38 ΔE from each of them under normal vision, ≥12.0 under
+// simulation, the tightest being magenta under tritan). It replaces the gold
+// this palette used to end with, which deutan vision could not tell from it
+// (3.8 ΔE). Re-check contrast on #ffffff and pair ΔE before changing a value
+// or the order. No green or red: --success and --danger already mean credit
+// and danger.
+export const SYNTHESIS_COLORS = ['#7c3aed', '#0891b2', '#0f766e', '#1d6fe0', '#b8329e'];
+
+// What a chart dealing colors to its labels draws from, accent first.
+export const LABEL_COLORS = [ACCENT_COLOR, ...SYNTHESIS_COLORS];
 
 // FNV-1a, 32-bit: stable, not cryptographic.
 function hashCode(value: string): number {
@@ -32,15 +43,15 @@ export function colorForLabel(label: string): string {
   return SYNTHESIS_COLORS[hashCode(label) % SYNTHESIS_COLORS.length];
 }
 
-// Distinct labels take the palette in order, so no two share a color until
-// the palette runs out; the rest fall back to the label hash.
+// Distinct labels take LABEL_COLORS in order, so no two share a color until
+// they run out; the rest fall back to the label hash.
 export function assignLabelColors(labels: string[]): Map<string, string> {
   const colors = new Map<string, string>();
   for (const label of labels) {
     if (colors.has(label)) continue;
     colors.set(
       label,
-      colors.size < SYNTHESIS_COLORS.length ? SYNTHESIS_COLORS[colors.size] : colorForLabel(label),
+      colors.size < LABEL_COLORS.length ? LABEL_COLORS[colors.size] : colorForLabel(label),
     );
   }
   return colors;

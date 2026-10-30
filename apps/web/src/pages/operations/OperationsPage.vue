@@ -8,7 +8,6 @@ import { invalidateAccountData, queryKeys } from '../../api/queryKeys';
 import { unwrap } from '../../api/unwrap';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
-import { colorForCurrency } from '../../components/chartColors';
 import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
   type SynthesisChartRange,
@@ -21,6 +20,7 @@ import {
   useCategoriesQuery,
   usePaymentMethodsQuery,
 } from '../../composables/useReferenceQueries';
+import { useCurrencyColors } from '../../composables/useCurrencyColors';
 import { useOperationSearch } from '../../composables/useOperationSearch';
 import { useSelection } from '../../composables/useSelection';
 import { accountLabel } from '../../domain/accounts';
@@ -73,6 +73,7 @@ const { paymentMethods } = usePaymentMethodsQuery();
 const { account, bank, isFullyActive, currency } = useAccountContext(accountId);
 
 const { t } = useI18n();
+const colorFor = useCurrencyColors();
 usePageTitle(
   computed(() => (account.value ? `${account.value.name} · ${t('operations.title')}` : null)),
 );
@@ -95,7 +96,7 @@ const chartSeries = computed<SynthesisChartSeries[]>(() => {
   return [
     {
       label: chart.currency,
-      color: colorForCurrency(chart.currency),
+      color: colorFor(chart.currency),
       points: toDisplayPoints(chart.points, chart.currency),
     },
   ];

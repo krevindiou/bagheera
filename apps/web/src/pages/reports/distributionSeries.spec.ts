@@ -1,6 +1,6 @@
 import { toMinorUnits as m } from '@bagheera/money';
 import { describe, expect, it } from 'vitest';
-import { SYNTHESIS_COLORS } from '../../components/chartColors';
+import { LABEL_COLORS } from '../../components/chartColors';
 import { toDistributionFacets } from './distributionSeries';
 import type { ReportDistribution } from './reports.types';
 
@@ -26,8 +26,8 @@ describe('toDistributionFacets', () => {
         title: 'USD',
         currency: 'USD',
         bars: [
-          { label: 'Salary', value: 500, color: SYNTHESIS_COLORS[0] },
-          { label: 'Food', value: -100, color: SYNTHESIS_COLORS[1] },
+          { label: 'Salary', value: 500, color: LABEL_COLORS[0] },
+          { label: 'Food', value: -100, color: LABEL_COLORS[1] },
         ],
       },
     ]);
@@ -76,7 +76,7 @@ describe('toDistributionFacets', () => {
         title: 'USD',
         currency: 'USD',
         bars: [
-          { label: 'Food', value: -100, color: SYNTHESIS_COLORS[0] },
+          { label: 'Food', value: -100, color: LABEL_COLORS[0] },
           { label: 'reports.otherExpenses', value: -10, color: OTHER_COLOR },
         ],
       },
@@ -120,7 +120,7 @@ describe('toDistributionFacets', () => {
         series: [
           {
             label: 'Salary',
-            color: SYNTHESIS_COLORS[0],
+            color: LABEL_COLORS[0],
             points: [
               { period: '2026-01-01', value: 500 },
               { period: '2026-02-01', value: 500 },
@@ -128,7 +128,7 @@ describe('toDistributionFacets', () => {
           },
           {
             label: 'Food',
-            color: SYNTHESIS_COLORS[1],
+            color: LABEL_COLORS[1],
             points: [
               { period: '2026-01-01', value: -100 },
               { period: '2026-02-01', value: 0 },
@@ -247,7 +247,7 @@ describe('toDistributionFacets', () => {
     const colors = facet.bars.map((b) => b.color);
     expect(colors).toHaveLength(labels.length + 1);
     expect(new Set(colors).size).toBe(colors.length);
-    expect(colors.every((c) => SYNTHESIS_COLORS.includes(c))).toBe(true);
+    expect(colors.every((c) => LABEL_COLORS.includes(c))).toBe(true);
   });
 
   it('shares one color between the same label on both sides', () => {
@@ -265,6 +265,6 @@ describe('toDistributionFacets', () => {
     };
     const facet = toDistributionFacets(distribution, t, 'month')[0];
     if (facet.kind !== 'snapshot') throw new Error('expected snapshot');
-    expect(facet.bars.map((b) => b.color)).toEqual([SYNTHESIS_COLORS[0], SYNTHESIS_COLORS[0]]);
+    expect(facet.bars.map((b) => b.color)).toEqual([LABEL_COLORS[0], LABEL_COLORS[0]]);
   });
 });

@@ -10,7 +10,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
-import { colorForCurrency } from '../../components/chartColors';
+import { ACCENT_COLOR } from '../../components/chartColors';
 import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import { useConfirm } from '../../composables/useConfirm';
@@ -196,7 +196,8 @@ describe('ReportsPage', () => {
     await flushPromises();
     expect(rowButton().attributes('aria-label')).toBe('Hide chart Rent');
     expect(wrapper.find('.synthesis-chart').exists()).toBe(true);
-    const usdColor = colorForCurrency('USD');
+    // The mocked member holds a single currency, so the chart takes the accent.
+    const usdColor = ACCENT_COLOR;
     expect(wrapper.findComponent(SynthesisChart).props('series')).toEqual([
       {
         label: 'USD Debit',

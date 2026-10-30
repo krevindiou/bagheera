@@ -5,6 +5,7 @@ import type { PeriodGrouping } from '@bagheera/reference-data';
 import LoadError from '../../components/LoadError.vue';
 import RankedChart from '../../components/RankedChart.vue';
 import SynthesisChart from '../../components/SynthesisChart.vue';
+import { useCurrencyColors } from '../../composables/useCurrencyColors';
 import { toDisplayBounds } from '../../domain/money';
 import { toChartSeries } from './chartSeries';
 import { toDistributionFacets } from './distributionSeries';
@@ -24,6 +25,7 @@ const props = defineProps<{
   title?: string;
 }>();
 const { t } = useI18n();
+const colorFor = useCurrencyColors();
 
 // A debit/credit report can combine more than one currency on one canvas.
 const seriesAriaLabel = computed(() => {
@@ -50,7 +52,7 @@ const seriesChart = computed(() => {
   const report = props.report;
   if (report?.kind !== 'series' || report.series.hidden) return null;
   return {
-    series: toChartSeries(report.series, t),
+    series: toChartSeries(report.series, t, colorFor),
     axisBounds: toDisplayBounds(report.series.axisBounds),
   };
 });

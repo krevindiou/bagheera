@@ -7,7 +7,7 @@ import { withGlobalPlugins } from '../../test-support/withGlobalPlugins';
 vi.mock('../../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../../api/client';
-import { colorForCurrency } from '../../components/chartColors';
+import { colorForCurrency, ACCENT_COLOR } from '../../components/chartColors';
 import SynthesisChart from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
 import RankedChart from '../../components/RankedChart.vue';
@@ -29,9 +29,18 @@ function baseDashboard(overrides: Partial<DashboardResponse> = {}): DashboardRes
   };
 }
 
-async function mountWithDashboard(dashboard: DashboardResponse) {
+// `accounts` is the member's account list, which decides whether the charts
+// take the accent (one currency) or the per-currency palette.
+async function mountWithDashboard(
+  dashboard: DashboardResponse,
+  accounts: { id: string; currency: string }[] = [],
+) {
   apiClient.GET.mockReset();
-  apiClient.GET.mockResolvedValue({ data: dashboard, error: undefined, response: new Response() });
+  apiClient.GET.mockImplementation(async (path: string) => ({
+    data: path === '/accounts' ? accounts : dashboard,
+    error: undefined,
+    response: new Response(),
+  }));
   const wrapper = mount(DashboardPage, withGlobalPlugins());
   await flushPromises();
   return wrapper;
@@ -223,9 +232,46 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(true);
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: '#9a7a00', points: [{ period: '2026-01', value: 100 }] },
+      { label: 'USD', color: colorForCurrency('USD'), points: [{ period: '2026-01', value: 100 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
+  });
+
+  it('draws the synthesis chart and the tile sparklines in the accent when the member holds a single currency', async () => {
+    const wrapper = await mountWithDashboard(
+      baseDashboard({
+        synthesisChart: {
+          hidden: false,
+          axisBounds: { min: 0, max: m(1000) },
+          series: [{ currency: 'EUR', points: [{ period: '2026-01', value: m(100) }] }],
+        },
+        accountsOverview: [
+          {
+            id: 'b1',
+            name: 'Chase',
+            accounts: [
+              {
+                id: 'a1',
+                name: 'Checking',
+                currency: 'EUR',
+                balance: m(100),
+                reconciledBalance: m(100),
+                history: [m(100), m(100)],
+              },
+            ],
+          },
+        ],
+      }),
+      [{ id: 'a1', currency: 'EUR' }],
+    );
+
+    expect(wrapper.findComponent(SynthesisChart).props('series')[0].color).toBe(ACCENT_COLOR);
+    expect(
+      wrapper
+        .find('[data-testid="overview-account"]')
+        .findComponent(AccountSparkline)
+        .props('color'),
+    ).toBe(ACCENT_COLOR);
   });
 
   it('hides the synthesis chart section when marked hidden', async () => {
@@ -376,8 +422,8 @@ describe('DashboardPage', () => {
       colorsByCurrency.get('USD'),
     );
     // Pinned values so a change to the hash/palette doesn't silently pass.
-    expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe('#1d6fe0');
-    expect(tiles[1].findComponent(AccountSparkline).props('color')).toBe('#9a7a00');
+    expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe(colorForCurrency('EUR'));
+    expect(tiles[1].findComponent(AccountSparkline).props('color')).toBe(colorForCurrency('USD'));
   });
 
   it('shows homepage report charts when present, with debit and credit as separate series', async () => {

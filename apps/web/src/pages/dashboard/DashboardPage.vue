@@ -8,12 +8,12 @@ import { unwrap } from '../../api/unwrap';
 import SynthesisChartPanel from '../../components/SynthesisChartPanel.vue';
 import type { SynthesisChartSeries } from '../../components/SynthesisChart.vue';
 import AccountSparkline from '../../components/AccountSparkline.vue';
-import { colorForCurrency } from '../../components/chartColors';
 import {
   DEFAULT_SYNTHESIS_CHART_RANGE,
   SYNTHESIS_CHART_RANGE_LABEL_KEYS,
   type SynthesisChartRange,
 } from '../../components/synthesisChartRange';
+import { useCurrencyColors } from '../../composables/useCurrencyColors';
 import { formatDate, toDisplayBounds, toDisplayPoints } from '../../domain/money';
 import StatCard from '../../components/StatCard.vue';
 import LoadError from '../../components/LoadError.vue';
@@ -21,6 +21,7 @@ import ReportChart from '../reports/ReportChart.vue';
 import type { DashboardSynthesisChart } from './dashboard.types';
 
 const { t } = useI18n();
+const colorFor = useCurrencyColors();
 
 const chartRange = ref<SynthesisChartRange>(DEFAULT_SYNTHESIS_CHART_RANGE);
 
@@ -47,7 +48,7 @@ const { data: dashboard, isError } = useQuery({
 function toSynthesisSeries(chart: DashboardSynthesisChart): SynthesisChartSeries[] {
   return chart.series.map((s) => ({
     label: s.currency,
-    color: colorForCurrency(s.currency),
+    color: colorFor(s.currency),
     points: toDisplayPoints(s.points, s.currency),
   }));
 }
@@ -181,7 +182,7 @@ const accountTiles = computed(() =>
             >
               <AccountSparkline
                 :values="account.history"
-                :color="colorForCurrency(account.currency)"
+                :color="colorFor(account.currency)"
                 class="mt-2"
               />
             </StatCard>

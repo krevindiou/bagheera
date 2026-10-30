@@ -1,9 +1,11 @@
 import type { ScriptableContext } from 'chart.js';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  ACCENT_COLOR,
   assignLabelColors,
   colorForCurrency,
   colorForLabel,
+  LABEL_COLORS,
   SYNTHESIS_COLORS,
   verticalFillGradient,
 } from './chartColors';
@@ -20,6 +22,12 @@ describe('colorForCurrency', () => {
 
   it("doesn't collide for the two currencies this app's dev data actually uses", () => {
     expect(colorForCurrency('EUR')).not.toBe(colorForCurrency('USD'));
+  });
+
+  it('never returns the accent, which is kept for the main currency', () => {
+    for (const code of ['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD']) {
+      expect(colorForCurrency(code)).not.toBe(ACCENT_COLOR);
+    }
   });
 });
 
@@ -38,21 +46,22 @@ describe('colorForLabel', () => {
 });
 
 describe('assignLabelColors', () => {
-  it('deals palette colors in order, so labels never share one', () => {
-    const labels = SYNTHESIS_COLORS.map((_, i) => `label-${i}`);
+  it('deals the accent first, then the palette in order, so labels never share a color', () => {
+    const labels = LABEL_COLORS.map((_, i) => `label-${i}`);
     const colors = assignLabelColors(labels);
-    expect(labels.map((l) => colors.get(l))).toEqual(SYNTHESIS_COLORS);
+    expect(labels.map((l) => colors.get(l))).toEqual(LABEL_COLORS);
+    expect(LABEL_COLORS[0]).toBe(ACCENT_COLOR);
   });
 
   it('gives a repeated label the color it already has', () => {
     const colors = assignLabelColors(['Leisure', 'Rent', 'Leisure']);
     expect(colors.size).toBe(2);
-    expect(colors.get('Leisure')).toBe(SYNTHESIS_COLORS[0]);
-    expect(colors.get('Rent')).toBe(SYNTHESIS_COLORS[1]);
+    expect(colors.get('Leisure')).toBe(LABEL_COLORS[0]);
+    expect(colors.get('Rent')).toBe(LABEL_COLORS[1]);
   });
 
   it('falls back to the label hash once the palette is used up', () => {
-    const labels = [...SYNTHESIS_COLORS.map((_, i) => `label-${i}`), 'Extra'];
+    const labels = [...LABEL_COLORS.map((_, i) => `label-${i}`), 'Extra'];
     expect(assignLabelColors(labels).get('Extra')).toBe(colorForLabel('Extra'));
   });
 });

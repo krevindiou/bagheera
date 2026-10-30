@@ -20,7 +20,7 @@ describe('toChartSeries', () => {
       ],
     };
     const color = colorForCurrency('USD');
-    expect(toChartSeries(series, t)).toEqual([
+    expect(toChartSeries(series, t, colorForCurrency)).toEqual([
       {
         label: 'USD operations.debit',
         color,
@@ -41,7 +41,7 @@ describe('toChartSeries', () => {
       axisBounds: null,
       series: [{ currency: 'USD', debit: [], credit: [{ period: '2026-01', value: m(20) }] }],
     };
-    expect(toChartSeries(series, t)).toEqual([
+    expect(toChartSeries(series, t, colorForCurrency)).toEqual([
       {
         label: 'USD operations.credit',
         color: colorForCurrency('USD'),
@@ -56,7 +56,7 @@ describe('toChartSeries', () => {
       axisBounds: null,
       series: [{ currency: 'USD', debit: [{ period: '2026-01', value: m(50) }], credit: [] }],
     };
-    expect(toChartSeries(series, t)).toEqual([
+    expect(toChartSeries(series, t, colorForCurrency)).toEqual([
       {
         label: 'USD operations.debit',
         color: colorForCurrency('USD'),
@@ -67,7 +67,9 @@ describe('toChartSeries', () => {
   });
 
   it('returns an empty list for report series with no entries', () => {
-    expect(toChartSeries({ hidden: false, axisBounds: null, series: [] }, t)).toEqual([]);
+    expect(
+      toChartSeries({ hidden: false, axisBounds: null, series: [] }, t, colorForCurrency),
+    ).toEqual([]);
   });
 
   it('gives each currency its own color, so two currencies stay distinguishable', () => {
@@ -82,7 +84,7 @@ describe('toChartSeries', () => {
     const usdColor = colorForCurrency('USD');
     const eurColor = colorForCurrency('EUR');
     expect(usdColor).not.toBe(eurColor);
-    expect(toChartSeries(series, t)).toEqual([
+    expect(toChartSeries(series, t, colorForCurrency)).toEqual([
       {
         label: 'USD operations.debit',
         color: usdColor,
