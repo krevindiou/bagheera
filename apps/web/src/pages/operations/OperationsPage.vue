@@ -34,6 +34,7 @@ import IconButton from '../../components/IconButton.vue';
 import PagerNav from '../../components/PagerNav.vue';
 import ListState from '../../components/ListState.vue';
 import AppIcon from '../../components/AppIcon.vue';
+import HoverHint from '../../components/HoverHint.vue';
 import PaymentMethodIcon from '../../components/PaymentMethodIcon.vue';
 import OperationStatusIcons from './OperationStatusIcons.vue';
 import AccountSummary from './AccountSummary.vue';
@@ -133,6 +134,15 @@ function transferCounterpartName(operation: Operation): string | null {
   if (!operation.transferAccountId) return null;
   const target = accounts.value.find((a) => a.id === operation.transferAccountId);
   return target ? accountLabel(target, banks.value) : null;
+}
+
+// "→ Savings" for money leaving the account, "← Savings" for money coming in.
+function transferCounterpartText(operation: Operation): string | null {
+  const name = transferCounterpartName(operation);
+  if (name === null) return null;
+  return operation.debit !== null
+    ? t('operations.transferTo', { name })
+    : t('operations.transferFrom', { name });
 }
 
 // The date disambiguates rows sharing the same third party.
@@ -370,18 +380,14 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                   <div class="d-md-none text-muted small text-nowrap">
                     {{ formatDate(operation.valueDate) }}
                   </div>
+                  <!-- Under the label only where the Payment method column is
+                       hidden; from md up the counterpart is that column's hint. -->
                   <div
-                    v-if="transferCounterpartName(operation)"
-                    class="text-muted small"
+                    v-if="transferCounterpartText(operation)"
+                    class="d-md-none text-muted small"
                     data-testid="transfer-counterpart"
                   >
-                    {{
-                      operation.debit !== null
-                        ? $t('operations.transferTo', { name: transferCounterpartName(operation) })
-                        : $t('operations.transferFrom', {
-                            name: transferCounterpartName(operation),
-                          })
-                    }}
+                    {{ transferCounterpartText(operation) }}
                   </div>
                 </td>
                 <td
@@ -391,7 +397,19 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                   {{ operation.debit !== null ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>
                 <td class="d-none d-md-table-cell text-nowrap">
+                  <HoverHint
+                    v-if="transferCounterpartText(operation)"
+                    :text="transferCounterpartText(operation)!"
+                    data-testid="transfer-hint"
+                  >
+                    <PaymentMethodIcon
+                      :id="operation.paymentMethodId"
+                      :payment-methods="paymentMethods"
+                      show-name
+                    />
+                  </HoverHint>
                   <PaymentMethodIcon
+                    v-else
                     :id="operation.paymentMethodId"
                     :payment-methods="paymentMethods"
                     show-name

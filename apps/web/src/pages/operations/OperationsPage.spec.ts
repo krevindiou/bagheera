@@ -407,6 +407,33 @@ describe('OperationsPage', () => {
     expect(rows[1].find('[data-testid="transfer-counterpart"]').text()).toBe('← Chase — Savings');
   });
 
+  it("offers a transfer's counterpart as a hint on the payment method, and nothing on other rows", async () => {
+    mockGet({
+      accounts: [account, { ...account, id: ACCOUNT_SAVINGS, name: 'Savings' }],
+      operations: {
+        items: [
+          operation({ id: 'o1', transferAccountId: ACCOUNT_SAVINGS, debit: 500000 }),
+          operation({ id: 'o2', transferAccountId: ACCOUNT_SAVINGS, debit: null, credit: 500000 }),
+          operation({ id: 'o3' }),
+        ],
+        total: 3,
+        page: 1,
+        pageSize: 20,
+      },
+    });
+    wrapper = mount(OperationsPage, withGlobalPlugins(router));
+    await flushPromises();
+
+    const rows = wrapper.findAll('[data-testid="operation-row"]');
+    expect(rows[0].find('[data-testid="transfer-hint"] [role="tooltip"]').text()).toBe(
+      '→ Chase — Savings',
+    );
+    expect(rows[1].find('[data-testid="transfer-hint"] [role="tooltip"]').text()).toBe(
+      '← Chase — Savings',
+    );
+    expect(rows[2].find('[data-testid="transfer-hint"]').exists()).toBe(false);
+  });
+
   it('labels the counterpart with its own bank, distinguishing it from a same-named account at the source bank', async () => {
     const otherBank: Bank = { id: 'b2', name: 'Second Bank', closed: false, deleted: false };
     mockGet({
