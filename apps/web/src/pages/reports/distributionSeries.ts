@@ -9,8 +9,9 @@ import type {
 } from '../../components/RankedChart.vue';
 import type { ReportDistribution, ReportDistributionLabelSeries } from './reports.types';
 
-// Muted and outside the palette: "Other" isn't a real label.
-const OTHER_COLOR = 'rgba(242, 239, 233, 0.35)';
+// Neutral and outside the palette: "Other" isn't a real label. Still 3:1
+// on the white chart surface, like the palette (--border-control).
+const OTHER_COLOR = '#8a837c';
 
 type Side = 'debit' | 'credit';
 

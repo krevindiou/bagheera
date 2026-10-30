@@ -33,10 +33,10 @@ useDismissable(open, root);
    (and so its data-v scope) belongs to this component, not theirs. */
 .menu-panel {
   position: absolute;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-radius: 7px;
-  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-float);
   padding: 4px;
   z-index: 5;
 }

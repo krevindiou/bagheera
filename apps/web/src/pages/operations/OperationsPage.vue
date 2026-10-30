@@ -379,7 +379,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                 </td>
                 <td
                   class="text-end amount text-nowrap"
-                  :class="operation.debit !== null ? 'text-danger' : 'text-success'"
+                  :class="{ 'text-success': operation.debit === null }"
                 >
                   {{ operation.debit !== null ? '-' : '+' }}{{ amountLabel(operation) }}
                 </td>

@@ -72,7 +72,7 @@ useFocusTrap(panel);
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(28, 25, 23, 0.32);
   display: flex;
   justify-content: flex-end;
   z-index: 1050;
@@ -81,11 +81,11 @@ useFocusTrap(panel);
   width: 400px;
   max-width: 92vw;
   height: 100%;
-  background: var(--panel);
-  border-left: 1px solid var(--hair-strong);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
   padding: 32px 30px;
   overflow-y: auto;
-  box-shadow: -30px 0 60px -20px rgba(0, 0, 0, 0.6);
+  box-shadow: -12px 0 32px -12px rgba(28, 25, 23, 0.18);
 }
 .drawer-header {
   display: flex;
@@ -96,14 +96,14 @@ useFocusTrap(panel);
 .drawer-close {
   cursor: pointer;
   display: inline-flex;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   line-height: 1;
   background: none;
   border: none;
   padding: 0;
 }
 .drawer-close:hover {
-  color: var(--paper);
+  color: var(--text);
 }
 .drawer-title {
   font-size: 20px;

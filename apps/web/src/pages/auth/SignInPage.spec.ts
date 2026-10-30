@@ -44,6 +44,14 @@ describe('SignInPage', () => {
     expect(wrapper.find('button[type="submit"]').text()).toBe('Sign in with a passkey');
   });
 
+  it('marks the passkey button with a key and points newcomers to sign-up', () => {
+    const wrapper = mount(SignInPage, withGlobalPlugins());
+    expect(wrapper.find('button[type="submit"] svg').exists()).toBe(true);
+    const prompt = wrapper.get('[data-testid="register-prompt"]');
+    expect(prompt.text()).toBe('New here? Create an account');
+    expect(prompt.get('a').attributes('href')).toBe('/en/register');
+  });
+
   it("shows a warning and hides the form when the browser doesn't support WebAuthn", () => {
     vi.mocked(browserSupportsWebAuthn).mockReturnValue(false);
     const wrapper = mount(SignInPage, withGlobalPlugins());

@@ -20,7 +20,7 @@ describe('RankedChart', () => {
         title: 'USD Debit',
         currency: 'USD',
         bars: [
-          { label: 'Food', value: 100, color: '#b17834' },
+          { label: 'Food', value: 100, color: '#0f766e' },
           { label: 'Other', value: 10, color: 'rgba(0,0,0,0.35)' },
         ],
       },
@@ -35,7 +35,7 @@ describe('RankedChart', () => {
       const chart = wrapper.findComponent(Bar);
       expect(chart.props('data')).toMatchObject({
         labels: ['Food', 'Other'],
-        datasets: [{ data: [100, 10], backgroundColor: ['#b17834', 'rgba(0,0,0,0.35)'] }],
+        datasets: [{ data: [100, 10], backgroundColor: ['#0f766e', 'rgba(0,0,0,0.35)'] }],
       });
       expect(chart.props('options')).toMatchObject({ indexAxis: 'y' });
     });
@@ -68,7 +68,7 @@ describe('RankedChart', () => {
           bars: Array.from({ length: 10 }, (_, i) => ({
             label: `Label ${i}`,
             value: 10,
-            color: '#b17834',
+            color: '#0f766e',
           })),
         },
       ];
@@ -118,7 +118,7 @@ describe('RankedChart', () => {
         series: [
           {
             label: 'Food',
-            color: '#b17834',
+            color: '#0f766e',
             points: [
               { period: '2026-01-01', value: 100 },
               { period: '2026-02-01', value: 80 },
@@ -149,7 +149,7 @@ describe('RankedChart', () => {
           series: [
             {
               label: 'Food',
-              color: '#b17834',
+              color: '#0f766e',
               points: periods.map((period) => ({ period, value: 10 })),
             },
           ],
@@ -171,7 +171,7 @@ describe('RankedChart', () => {
       expect(chart.props('data')).toMatchObject({
         labels: ['Jan 2026', 'Feb 2026'],
         datasets: [
-          { label: 'Food', data: [100, 80], backgroundColor: '#b17834', stack: 'ranked' },
+          { label: 'Food', data: [100, 80], backgroundColor: '#0f766e', stack: 'ranked' },
           {
             label: 'Other',
             data: [10, 20],
@@ -213,13 +213,13 @@ describe('RankedChart', () => {
             kind: 'snapshot',
             title: 'USD Debit',
             currency: 'USD',
-            bars: [{ label: 'Food', value: 100, color: '#b17834' }],
+            bars: [{ label: 'Food', value: 100, color: '#0f766e' }],
           },
           {
             kind: 'snapshot',
             title: 'USD Credit',
             currency: 'USD',
-            bars: [{ label: 'Salary', value: 500, color: '#0077bd' }],
+            bars: [{ label: 'Salary', value: 500, color: '#2b6cb0' }],
           },
         ] satisfies RankedChartFacet[],
       },

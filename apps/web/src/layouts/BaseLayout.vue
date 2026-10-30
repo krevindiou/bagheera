@@ -46,7 +46,6 @@ const navItems = computed(() => [
     <a href="#main-content" class="skip-link visually-hidden-focusable" @click="focusMainContent">
       {{ $t('app.skipToContent') }}
     </a>
-    <div class="app-glow"></div>
     <aside class="sidebar">
       <router-link :to="{ name: 'home' }" class="side-brand">
         <span class="logo-mark">B</span>
@@ -91,20 +90,7 @@ const navItems = computed(() => [
   display: flex;
   min-height: 100vh;
   position: relative;
-  background: var(--ink);
-  overflow-x: clip; /* Clip decorative .app-glow without making this a scroll container. */
-}
-/* Decorative violet halo from the top-left corner. */
-.app-glow {
-  position: absolute;
-  width: 520px;
-  height: 520px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(154, 114, 232, 0.16), transparent 70%);
-  filter: blur(50px);
-  pointer-events: none;
-  top: -120px;
-  left: -120px;
+  background: var(--bg);
 }
 .skip-link {
   position: fixed;
@@ -113,20 +99,19 @@ const navItems = computed(() => [
   z-index: 10;
   padding: 8px 14px;
   border-radius: 6px;
-  background: var(--violet);
-  color: var(--paper);
+  background: var(--accent);
+  color: #fff;
   text-decoration: none;
 }
 .sidebar {
-  width: 236px;
+  width: 232px;
   flex: none;
-  background: var(--panel);
-  border-right: 1px solid var(--hair);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
-  /* Positioned so .app-glow (absolute) paints behind it; sticky also pins
-     it, logout included, to the viewport. */
+  padding: 28px 20px;
+  /* Sticky pins it, logout included, to the viewport. */
   position: sticky;
   top: 0;
   height: 100vh;
@@ -141,46 +126,51 @@ const navItems = computed(() => [
   gap: 10px;
   margin-bottom: 8px;
   text-decoration: none;
-  color: var(--paper);
+  color: var(--text);
 }
 .side-brand-name {
-  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
-  font-size: 17px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
 }
 .side-nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin-top: 28px;
+  margin-top: 32px;
 }
 .side-nav-item {
   cursor: pointer;
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14.5px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--paper-dim);
+  color: var(--text-muted);
   text-decoration: none;
 }
 .side-nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--paper);
+  background: var(--bg);
+  color: var(--text);
 }
 .side-nav-item.active {
-  color: var(--paper);
+  background: var(--surface-sunk);
+  color: var(--text);
 }
 .side-nav-item .dot {
   width: 6px;
   height: 6px;
 }
+/* The nav marks where you are with the accent, not the "on" green. */
+.side-nav-item .dot-active {
+  background: var(--accent);
+}
 .side-foot {
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid var(--hair);
+  border-top: 1px solid var(--border);
 }
 
 .main {
@@ -196,7 +186,7 @@ const navItems = computed(() => [
 .main-inner {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 36px 40px 60px;
+  padding: 48px 56px 72px;
 }
 /* Pages built around a wide table (operations, import). */
 .main-inner--wide {
@@ -217,6 +207,8 @@ const navItems = computed(() => [
     align-items: center;
     padding: 14px 16px;
     row-gap: 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
     height: auto;
     overflow-y: visible;
   }

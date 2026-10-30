@@ -39,9 +39,8 @@ async function pick(locale: Locale): Promise<void> {
 
 <style scoped>
 /* A themed replacement for a native <select>: a compact trigger (current
-   locale code) that opens a small listbox of full locale names — same
-   panel/hairline/violet language as the rest of the shell instead of OS
-   chrome. */
+   locale code) that opens a small listbox of full locale names — styled
+   like the rest of the shell instead of OS chrome. */
 .lang-picker {
   position: relative;
   flex: none;
@@ -50,9 +49,9 @@ async function pick(locale: Locale): Promise<void> {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  color: var(--paper-dim);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
   font-size: 11.5px;
   font-weight: 600;
   padding: 5px 7px 5px 9px;
@@ -60,20 +59,20 @@ async function pick(locale: Locale): Promise<void> {
   cursor: pointer;
 }
 .lang-trigger:hover {
-  color: var(--paper);
-  border-color: var(--paper-faint);
+  color: var(--text);
+  border-color: var(--text-faint);
 }
 .lang-trigger[aria-expanded='true'] {
-  color: var(--paper);
-  border-color: var(--violet);
+  color: var(--text);
+  border-color: var(--accent);
 }
 .lang-chevron {
   flex: none;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   transition: transform 0.15s ease;
 }
 .lang-trigger[aria-expanded='true'] .lang-chevron {
   transform: rotate(180deg);
-  color: var(--violet-soft);
+  color: var(--accent-strong);
 }
 </style>

@@ -21,9 +21,9 @@ import type { Locale } from '../i18n/locales';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Legend, Tooltip);
 
 // The app-wide gridline color (ChartJS.defaults.borderColor).
-const GRID_COLOR = 'rgba(242, 239, 233, 0.1)';
+const GRID_COLOR = '#efece8';
 // Credit and debit diverge from zero, so its gridline reads as an axis.
-const ZERO_LINE_COLOR = 'rgba(242, 239, 233, 0.45)';
+const ZERO_LINE_COLOR = '#6f6862'; // --text-faint
 
 function emphasizeZero(ctx: { tick: { value: number } }): string {
   return ctx.tick.value === 0 ? ZERO_LINE_COLOR : GRID_COLOR;
@@ -207,7 +207,7 @@ function stackedChartOptions(currency: string): ChartOptions<'bar'> {
 .ranked-chart-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--paper-dim, rgba(242, 239, 233, 0.62));
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 

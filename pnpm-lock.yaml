@@ -356,10 +356,7 @@ importers:
       '@bagheera/reference-data':
         specifier: workspace:*
         version: link:../../packages/reference-data
-      '@fontsource/archivo':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/space-grotesk':
+      '@fontsource/inter':
         specifier: ^5.3.0
         version: 5.3.0
       '@sentry/vue':
@@ -1023,11 +1020,8 @@ packages:
       '@noble/hashes':
         optional: true
 
-  '@fontsource/archivo@5.3.0':
-    resolution: {integrity: sha512-5DIMgPVJRi62OqdOVoogCFxP73EkNM/E0YVTSDIQlDEJfDbxqZduwM/YoNZwC9Sx1CDgpKinqf8ckRY1QNIecw==}
-
-  '@fontsource/space-grotesk@5.3.0':
-    resolution: {integrity: sha512-ksnGizDPXIDuvqcTYTSrmZ+evx9sDlS8rp7+42BQ7wU+spt3twEoXfbJz672C+5CLg6VeUQwRy5RXshWb67LcQ==}
+  '@fontsource/inter@5.3.0':
+    resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
 
   '@grpc/grpc-js@1.14.5':
     resolution: {integrity: sha512-7VZM+SVdEcUUqSQeNI3zM8Qs/BhQKZndPo2h5VkYkAM8Iz0wJIa8mKV5ekQGqG8UUsnkQ0NMxIxwkIHYvj0qOw==}
@@ -5391,9 +5385,7 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 1.8.0
 
-  '@fontsource/archivo@5.3.0': {}
-
-  '@fontsource/space-grotesk@5.3.0': {}
+  '@fontsource/inter@5.3.0': {}
 
   '@grpc/grpc-js@1.14.5':
     dependencies:

@@ -291,9 +291,13 @@ describe('OperationsPage', () => {
     expect(rows[0].text()).toContain('Check');
     expect(rows[1].find('[data-testid="scheduler-icon"]').exists()).toBe(true);
     expect(rows[1].text()).toContain('+$25.00');
+    // Only credits are tinted: a debit's minus sign already says what it is.
+    expect(rows[0].get('td.amount').classes()).not.toContain('text-danger');
+    expect(rows[0].get('td.amount').classes()).not.toContain('text-success');
+    expect(rows[1].get('td.amount').classes()).toContain('text-success');
   });
 
-  it('signs and colors a zero debit as a debit, not by its falsy amount', async () => {
+  it('signs and tints a zero debit as a debit, not by its falsy amount', async () => {
     mockGet({
       operations: {
         items: [operation({ id: 'o1', debit: 0, credit: null })],
@@ -307,7 +311,7 @@ describe('OperationsPage', () => {
 
     const amount = wrapper.get('[data-testid="operation-row"] td.amount');
     expect(amount.text()).toBe('-$0.00');
-    expect(amount.classes()).toContain('text-danger');
+    expect(amount.classes()).not.toContain('text-success');
   });
 
   it('folds the status icons and the date into the third-party cell below md, keeping their own columns from md up', async () => {

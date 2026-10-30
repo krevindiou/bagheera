@@ -69,23 +69,23 @@ function onFocusOut(id: number, event: FocusEvent) {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-left: 3px solid var(--paper-faint);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text-faint);
   border-radius: var(--bs-border-radius);
-  box-shadow: var(--bs-box-shadow-sm);
+  box-shadow: var(--shadow-float);
   padding: 12px 14px;
-  color: var(--paper);
+  color: var(--text);
   font-size: 14px;
 }
 .toast-success {
-  border-left-color: var(--green);
+  border-left-color: var(--success);
 }
 .toast-error {
-  border-left-color: var(--red);
+  border-left-color: var(--danger);
 }
 .toast-info {
-  border-left-color: var(--violet-bright);
+  border-left-color: var(--text-muted);
 }
 .toast-text {
   flex: 1;
@@ -96,12 +96,12 @@ function onFocusOut(id: number, event: FocusEvent) {
   background: transparent;
   border: none;
   display: inline-flex;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   line-height: 1;
   padding: 0;
   cursor: pointer;
 }
 .toast-close:hover {
-  color: var(--paper);
+  color: var(--text);
 }
 </style>

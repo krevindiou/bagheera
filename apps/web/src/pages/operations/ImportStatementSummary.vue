@@ -127,12 +127,12 @@ const difference = computed(() => {
           <template #footnote>
             <span
               v-if="difference === 0"
-              class="pill text-success"
+              class="pill pill-success"
               data-testid="import-balance-matches"
             >
               {{ $t('operations.import.statement.matches') }}
             </span>
-            <span v-else class="pill pill-amber" data-testid="import-balance-differs">
+            <span v-else class="pill pill-warning" data-testid="import-balance-differs">
               {{
                 $t('operations.import.statement.differs', {
                   amount: formatMoney(Math.abs(difference), currency),

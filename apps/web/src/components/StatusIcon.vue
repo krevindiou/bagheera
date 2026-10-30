@@ -31,10 +31,10 @@ defineProps<{ kind: 'reconciled' | 'scheduler'; label: string }>();
 }
 /* Same "status dot" weight as .dot-active: a tinted disc behind the glyph. */
 .status-icon-reconciled {
-  background: rgba(95, 217, 141, 0.18);
-  color: var(--green);
+  background: var(--success-soft);
+  color: var(--success);
 }
 .status-icon-scheduler {
-  color: var(--paper-faint);
+  color: var(--text-faint);
 }
 </style>

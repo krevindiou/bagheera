@@ -125,10 +125,9 @@ function useDifferentEmail() {
       </form>
     </template>
 
-    <p class="text-center mt-4 mb-0" style="font-size: 14px; color: var(--paper-dim)">
-      <router-link :to="{ name: 'sign-in' }" style="font-weight: 600">{{
-        $t('auth.register.signInLink')
-      }}</router-link>
+    <p class="auth-footer" data-testid="sign-in-prompt">
+      {{ $t('auth.register.haveAccount') }}
+      <router-link :to="{ name: 'sign-in' }">{{ $t('auth.register.signInLink') }}</router-link>
     </p>
   </AuthLayout>
 </template>

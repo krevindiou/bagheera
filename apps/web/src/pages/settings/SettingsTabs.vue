@@ -30,22 +30,22 @@ const tabs = [
 .tab-bar {
   display: flex;
   gap: 22px;
-  border-bottom: 1px solid var(--hair);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 26px;
 }
 .tab-item {
   padding-bottom: 12px;
   font-size: 14.5px;
   font-weight: 600;
-  color: var(--paper-dim);
+  color: var(--text-muted);
   border-bottom: 2px solid transparent;
   text-decoration: none;
 }
 .tab-item:hover {
-  color: var(--paper);
+  color: var(--text);
 }
 .tab-item.active {
-  color: var(--paper);
-  border-bottom-color: var(--violet-bright);
+  color: var(--text);
+  border-bottom-color: var(--accent);
 }
 </style>

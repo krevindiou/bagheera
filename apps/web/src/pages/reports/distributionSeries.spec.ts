@@ -5,7 +5,7 @@ import { toDistributionFacets } from './distributionSeries';
 import type { ReportDistribution } from './reports.types';
 
 const t = (key: string) => key;
-const OTHER_COLOR = 'rgba(242, 239, 233, 0.35)';
+const OTHER_COLOR = '#8a837c';
 
 describe('toDistributionFacets', () => {
   it('merges debit and credit into one snapshot facet per currency, debit negated', () => {

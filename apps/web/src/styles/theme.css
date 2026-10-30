@@ -1,105 +1,122 @@
 /**
- * "FinTech-Noir" theme, loaded after bootstrap.min.css (main.ts). Most
- * Bootstrap classes read color from CSS variables, so remapping those
- * re-skins them app-wide; the ones with literal hex (.btn-primary,
- * .btn-outline-*, checked inputs, focus rings, the <select> arrow,
- * .modal-*) are overridden below.
+ * Light theme, loaded after bootstrap.min.css (main.ts). Most Bootstrap
+ * classes read color from CSS variables, so remapping those re-skins them
+ * app-wide; the ones with literal hex (.btn-primary, .btn-outline-*,
+ * checked inputs, focus rings, the <select> arrow) are overridden below.
+ * Light only: there is deliberately no dark variant.
  *
  * Only tokens, Bootstrap remaps and selectors shared by several components
  * belong here; anything one component owns goes in its `<style scoped>`.
  */
 
 :root {
-  --ink: #0e0b13;
-  --panel: #171220;
-  --panel-2: #1c1628;
-  --hair: rgba(242, 239, 233, 0.1);
-  --hair-strong: rgba(242, 239, 233, 0.18);
-  --paper: #f2efe9;
-  --paper-dim: rgba(242, 239, 233, 0.62);
-  /* Lowest alpha with margin over AA's 4.5:1 for small text on --panel-2,
-     the lightest surface (~4.7:1); still a step below --paper-dim. */
-  --paper-faint: rgba(242, 239, 233, 0.5);
-  --violet: #7c4fd1;
-  --violet-dim: rgba(124, 79, 209, 0.5);
-  --violet-bright: #9a72e8;
-  --violet-soft: #c4a8f2;
-  --green: #5fd98d;
-  --red: #e8697a;
-  --amber: #e0a94c;
+  --bg: #f8f7f5;
+  --surface: #ffffff;
+  --surface-sunk: #f4f2ef;
+  --border: #e9e6e1;
+  --border-strong: #ddd9d3;
+  /* Unchecked checkbox/radio edge: 3:1 on --surface and --bg, so the
+     control itself stays identifiable (WCAG 1.4.11). */
+  --border-control: #8a837c;
+  --text: #1c1917;
+  --text-muted: #57534e;
+  /* Lowest-contrast text: still 4.5:1 on --surface-sunk, the darkest
+     surface it sits on. */
+  --text-faint: #6f6862;
+  /* Reserved for what can be acted on: primary actions, links, checked
+     controls, focus, the active nav item, selected rows. */
+  --accent: #c2410c;
+  --accent-strong: #9a3412;
+  --accent-soft: #fef3ec;
+  /* Credit amounts and success. Debits carry no color: their minus sign
+     says it. */
+  --success: #15803d;
+  --success-soft: #ecf7ef;
+  /* Destructive actions, errors and balances below zero. */
+  --danger: #be123c;
+  --danger-soft: #fff1f3;
+  /* Ochre, darker and browner than --accent so a warning never reads as
+     an action. */
+  --warning: #854d0e;
+  --warning-soft: #fbf5e1;
+  --shadow-float: 0 12px 32px -12px rgba(28, 25, 23, 0.18);
 
-  color-scheme: dark;
+  color-scheme: light;
 
   /* ---- Bootstrap variable remap ---- */
-  --bs-font-sans-serif: 'Archivo', system-ui, sans-serif;
-  --bs-body-font-family: 'Archivo', system-ui, sans-serif;
-  --bs-body-color: var(--paper);
-  --bs-body-color-rgb: 242, 239, 233;
-  --bs-body-bg: var(--ink);
-  --bs-body-bg-rgb: 14, 11, 19;
-  --bs-emphasis-color: var(--paper);
-  --bs-emphasis-color-rgb: 242, 239, 233;
-  --bs-secondary-color: var(--paper-dim);
-  --bs-secondary-color-rgb: 242, 239, 233;
-  --bs-secondary-bg: var(--panel);
-  --bs-secondary-bg-rgb: 23, 18, 32;
-  --bs-tertiary-color: var(--paper-faint);
-  --bs-tertiary-color-rgb: 242, 239, 233;
-  --bs-tertiary-bg: var(--panel-2);
-  --bs-tertiary-bg-rgb: 28, 22, 40;
-  --bs-heading-color: var(--paper);
-  --bs-link-color: var(--violet-soft);
-  --bs-link-color-rgb: 196, 168, 242;
-  --bs-link-hover-color: var(--violet-bright);
-  --bs-link-hover-color-rgb: 154, 114, 232;
+  --bs-font-sans-serif: 'Inter', system-ui, sans-serif;
+  --bs-body-font-family: 'Inter', system-ui, sans-serif;
+  --bs-body-color: var(--text);
+  --bs-body-color-rgb: 28, 25, 23;
+  --bs-body-bg: var(--bg);
+  --bs-body-bg-rgb: 248, 247, 245;
+  --bs-emphasis-color: var(--text);
+  --bs-emphasis-color-rgb: 28, 25, 23;
+  --bs-secondary-color: var(--text-muted);
+  --bs-secondary-color-rgb: 87, 83, 78;
+  --bs-secondary-bg: var(--surface-sunk);
+  --bs-secondary-bg-rgb: 244, 242, 239;
+  --bs-tertiary-color: var(--text-faint);
+  --bs-tertiary-color-rgb: 111, 104, 98;
+  --bs-tertiary-bg: var(--bg);
+  --bs-tertiary-bg-rgb: 248, 247, 245;
+  --bs-heading-color: var(--text);
+  --bs-link-color: var(--accent);
+  --bs-link-color-rgb: 194, 65, 12;
+  --bs-link-hover-color: var(--accent-strong);
+  --bs-link-hover-color-rgb: 154, 52, 18;
   --bs-border-width: 1px;
-  --bs-border-color: var(--hair-strong);
-  --bs-border-color-translucent: var(--hair);
-  --bs-border-radius: 6px;
-  --bs-border-radius-sm: 4px;
-  --bs-border-radius-lg: 8px;
-  --bs-border-radius-xl: 8px;
-  --bs-box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6);
-  --bs-box-shadow-sm: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
-  --bs-focus-ring-color: rgba(124, 79, 209, 0.35);
-  --bs-form-valid-color: var(--green);
-  --bs-form-valid-border-color: var(--green);
-  --bs-form-invalid-color: var(--red);
-  --bs-form-invalid-border-color: var(--red);
+  --bs-border-color: var(--border-strong);
+  --bs-border-color-translucent: var(--border);
+  --bs-border-radius: 8px;
+  --bs-border-radius-sm: 6px;
+  --bs-border-radius-lg: 12px;
+  --bs-border-radius-xl: 12px;
+  --bs-box-shadow: var(--shadow-float);
+  --bs-box-shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.08);
+  --bs-focus-ring-color: rgba(194, 65, 12, 0.18);
+  --bs-form-valid-color: var(--success);
+  --bs-form-valid-border-color: var(--success);
+  --bs-form-invalid-color: var(--danger);
+  --bs-form-invalid-border-color: var(--danger);
 
   /* Semantic rgb triples — drive the text-success/bg-success/text-bg-success
      (and danger/warning/info) utilities, and the alert "-subtle" colors,
-     everywhere in the app. */
-  --bs-primary: var(--violet);
-  --bs-primary-rgb: 124, 79, 209;
-  --bs-secondary: var(--panel-2);
-  --bs-secondary-rgb: 28, 22, 40;
-  --bs-success: var(--green);
-  --bs-success-rgb: 95, 217, 141;
-  --bs-danger: var(--red);
-  --bs-danger-rgb: 232, 105, 122;
-  --bs-warning: var(--amber);
-  --bs-warning-rgb: 224, 169, 76;
-  --bs-info: var(--violet-soft);
-  --bs-info-rgb: 196, 168, 242;
+     everywhere in the app. Info is neutral, not the accent: an onboarding
+     tip is not an action. */
+  --bs-primary: var(--accent);
+  --bs-primary-rgb: 194, 65, 12;
+  --bs-secondary: var(--text-muted);
+  --bs-secondary-rgb: 87, 83, 78;
+  --bs-success: var(--success);
+  --bs-success-rgb: 21, 128, 61;
+  --bs-danger: var(--danger);
+  --bs-danger-rgb: 190, 18, 60;
+  --bs-warning: var(--warning);
+  --bs-warning-rgb: 133, 77, 14;
+  --bs-info: var(--text-muted);
+  --bs-info-rgb: 87, 83, 78;
 
-  --bs-danger-text-emphasis: var(--red);
-  --bs-danger-bg-subtle: rgba(232, 105, 122, 0.12);
-  --bs-danger-border-subtle: rgba(232, 105, 122, 0.35);
-  --bs-warning-text-emphasis: var(--amber);
-  --bs-warning-bg-subtle: rgba(224, 169, 76, 0.12);
-  --bs-warning-border-subtle: rgba(224, 169, 76, 0.35);
-  --bs-info-text-emphasis: var(--violet-soft);
-  --bs-info-bg-subtle: rgba(124, 79, 209, 0.14);
-  --bs-info-border-subtle: rgba(124, 79, 209, 0.35);
-  --bs-success-text-emphasis: var(--green);
-  --bs-success-bg-subtle: rgba(95, 217, 141, 0.12);
-  --bs-success-border-subtle: rgba(95, 217, 141, 0.35);
+  --bs-danger-text-emphasis: var(--danger);
+  --bs-danger-bg-subtle: var(--danger-soft);
+  --bs-danger-border-subtle: rgba(190, 18, 60, 0.25);
+  --bs-warning-text-emphasis: var(--warning);
+  --bs-warning-bg-subtle: var(--warning-soft);
+  --bs-warning-border-subtle: rgba(133, 77, 14, 0.25);
+  --bs-info-text-emphasis: var(--text-muted);
+  --bs-info-bg-subtle: var(--surface-sunk);
+  --bs-info-border-subtle: var(--border);
+  --bs-success-text-emphasis: var(--success);
+  --bs-success-bg-subtle: var(--success-soft);
+  --bs-success-border-subtle: rgba(21, 128, 61, 0.25);
+  --bs-secondary-text-emphasis: var(--text-muted);
+  --bs-secondary-bg-subtle: var(--surface-sunk);
+  --bs-secondary-border-subtle: var(--border);
 }
 
 /* ---------- Base ---------- */
 body {
-  background: var(--ink);
+  background: var(--bg);
 }
 
 h1,
@@ -114,20 +131,30 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-/* Page titles: 26px instead of Bootstrap's 40px (some pages override it
+/* Page titles: 28px instead of Bootstrap's 40px (some pages override it
    inline). Margins are left to each page's spacing utilities. Global: it
    targets every routed page's <h1>. */
 .main-inner h1 {
-  font-size: 26px;
+  font-size: 28px;
 }
 
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--violet);
+  accent-color: var(--accent);
+}
+
+/* Keyboard focus: an accent outline, 3:1 against every surface. */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-check-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 /* ---------- Buttons (literal hex in Bootstrap, so fully custom) ---------- */
@@ -135,117 +162,118 @@ input[type='radio'] {
   border-radius: var(--bs-border-radius);
   /* 14px instead of Bootstrap's 16px (.btn-sm is 14px already). */
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease,
-    color 0.15s ease,
-    filter 0.15s ease;
+    color 0.15s ease;
 }
 
 .btn-primary {
+  font-weight: 600;
   --bs-btn-color: #fff;
-  --bs-btn-bg: var(--violet);
-  --bs-btn-border-color: var(--violet);
+  --bs-btn-bg: var(--accent);
+  --bs-btn-border-color: var(--accent);
   --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: var(--violet-bright);
-  --bs-btn-hover-border-color: var(--violet-bright);
+  --bs-btn-hover-bg: var(--accent-strong);
+  --bs-btn-hover-border-color: var(--accent-strong);
   --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: var(--violet-bright);
-  --bs-btn-active-border-color: var(--violet-bright);
+  --bs-btn-active-bg: var(--accent-strong);
+  --bs-btn-active-border-color: var(--accent-strong);
   --bs-btn-disabled-color: #fff;
-  --bs-btn-disabled-bg: var(--violet);
-  --bs-btn-disabled-border-color: var(--violet);
+  --bs-btn-disabled-bg: var(--accent);
+  --bs-btn-disabled-border-color: var(--accent);
   --bs-btn-box-shadow: none;
   --bs-btn-active-shadow: none;
 }
 
-.btn-secondary {
-  --bs-btn-color: var(--paper);
-  --bs-btn-bg: var(--panel-2);
-  --bs-btn-border-color: var(--hair-strong);
-  --bs-btn-hover-color: var(--paper);
-  --bs-btn-hover-bg: var(--panel-2);
-  --bs-btn-hover-border-color: var(--paper-faint);
-  --bs-btn-active-color: var(--paper);
-  --bs-btn-active-bg: var(--panel-2);
-  --bs-btn-active-border-color: var(--paper-faint);
-  --bs-btn-box-shadow: none;
-  --bs-btn-active-shadow: none;
-}
-
+.btn-secondary,
 .btn-outline-secondary,
 .btn-outline-primary {
-  --bs-btn-color: var(--paper);
-  --bs-btn-border-color: var(--hair-strong);
-  --bs-btn-hover-color: var(--violet-soft);
-  --bs-btn-hover-bg: transparent;
-  --bs-btn-hover-border-color: var(--violet-bright);
-  --bs-btn-active-color: var(--violet-soft);
-  --bs-btn-active-bg: transparent;
-  --bs-btn-active-border-color: var(--violet-bright);
-  --bs-btn-disabled-color: var(--paper-faint);
-  --bs-btn-disabled-border-color: var(--hair-strong);
+  --bs-btn-color: var(--text);
+  --bs-btn-bg: var(--surface);
+  --bs-btn-border-color: var(--border-strong);
+  --bs-btn-hover-color: var(--text);
+  --bs-btn-hover-bg: var(--surface-sunk);
+  --bs-btn-hover-border-color: var(--border-strong);
+  --bs-btn-active-color: var(--text);
+  --bs-btn-active-bg: var(--surface-sunk);
+  --bs-btn-active-border-color: var(--border-strong);
+  --bs-btn-disabled-color: var(--text-faint);
+  --bs-btn-disabled-bg: var(--surface);
+  --bs-btn-disabled-border-color: var(--border);
+  --bs-btn-box-shadow: none;
+  --bs-btn-active-shadow: none;
 }
 
 .btn-outline-danger {
-  --bs-btn-color: var(--red);
-  --bs-btn-border-color: var(--hair-strong);
+  --bs-btn-color: var(--danger);
+  --bs-btn-bg: var(--surface);
+  --bs-btn-border-color: var(--border-strong);
   --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: var(--red);
-  --bs-btn-hover-border-color: var(--red);
+  --bs-btn-hover-bg: var(--danger);
+  --bs-btn-hover-border-color: var(--danger);
   --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: var(--red);
-  --bs-btn-active-border-color: var(--red);
-  --bs-btn-disabled-color: var(--red);
-  --bs-btn-disabled-border-color: var(--hair-strong);
+  --bs-btn-active-bg: var(--danger);
+  --bs-btn-active-border-color: var(--danger);
+  --bs-btn-disabled-color: var(--danger);
+  --bs-btn-disabled-bg: var(--surface);
+  --bs-btn-disabled-border-color: var(--border);
 }
 
 .btn-link {
-  --bs-btn-color: var(--paper-dim);
-  --bs-btn-hover-color: var(--violet-soft);
+  --bs-btn-color: var(--text-muted);
+  --bs-btn-hover-color: var(--accent);
 }
 
 /* ---------- Forms ---------- */
 .form-label {
   font-size: 13px;
-  color: var(--paper-dim);
-  margin-bottom: 7px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
 
+/* White, not Bootstrap's --bs-body-bg: fields sit on white cards and
+   drawers, where the off-white page color would read as disabled. */
+.form-control,
+.form-select {
+  background-color: var(--surface);
+}
+.form-control:disabled,
+.form-select:disabled {
+  background-color: var(--surface-sunk);
+}
 .form-control,
 .form-select,
 .input-group-text {
-  background-color: rgba(255, 255, 255, 0.04);
   font-size: 15px;
-  padding: 11px 13px;
-  border-radius: 4px;
+  padding: 10px 12px;
+  border-radius: var(--bs-border-radius);
 }
 
+/* The accent border, not the soft ring, is what makes focus 3:1. */
 .form-control:focus,
 .form-select:focus {
-  background-color: rgba(255, 255, 255, 0.04);
-  color: var(--paper);
-  border-color: var(--violet-bright);
+  background-color: var(--surface);
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--bs-focus-ring-color);
 }
 
 .form-select {
   /* Bootstrap's room for the chevron, lost to the shared padding above */
   padding-right: 2.25rem;
-  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23c4a8f2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  --bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2357534e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
 .form-check-input {
-  background-color: transparent;
-  border-color: var(--hair-strong);
+  border-color: var(--border-control);
 }
 .form-check-input:checked {
-  background-color: var(--violet);
-  border-color: var(--violet-bright);
+  background-color: var(--accent);
+  border-color: var(--accent);
 }
 .form-check-input:focus {
-  border-color: var(--violet-bright);
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--bs-focus-ring-color);
 }
 .form-check-input[type='radio'] {
@@ -253,7 +281,7 @@ input[type='radio'] {
 }
 
 .form-text {
-  color: var(--paper-faint);
+  color: var(--text-faint);
 }
 
 /* A scrollable checkbox group standing in for a native <select multiple> —
@@ -261,10 +289,10 @@ input[type='radio'] {
 .checkbox-list {
   max-height: 220px;
   overflow-y: auto;
-  border: 1px solid var(--hair-strong);
-  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--bs-border-radius);
   padding: 9px 13px;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: var(--surface);
 }
 .checkbox-list .form-check {
   margin-bottom: 6px;
@@ -278,7 +306,7 @@ input[type='radio'] {
 .checkbox-list-group-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   margin: 10px 0 4px;
 }
 .checkbox-list-group-label:first-child {
@@ -291,72 +319,85 @@ input[type='radio'] {
 /* ---------- Pills (Closed/Deleted/Homepage tags) ---------- */
 .pill {
   display: inline-block;
-  font-size: 11.5px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.6;
-  border: 1px solid var(--hair-strong);
-  border-radius: 10px;
-  padding: 2px 9px;
-  color: var(--paper-faint);
+  border-radius: 999px;
+  padding: 2px 10px;
+  background: var(--surface-sunk);
+  color: var(--text-muted);
   white-space: nowrap;
 }
 .pill-danger {
-  border-color: rgba(232, 105, 122, 0.4);
-  color: var(--red);
+  background: var(--danger-soft);
+  color: var(--danger);
 }
-.pill-amber {
-  border-color: rgba(224, 169, 76, 0.4);
-  color: var(--amber);
+.pill-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
 }
-.pill-violet {
-  border-color: rgba(124, 79, 209, 0.5);
-  background: rgba(124, 79, 209, 0.14);
-  color: var(--violet-soft);
+.pill-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.pill-accent {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 /* ---------- Panels & tables ---------- */
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
-/* The one big padded panel (dashboard chart): 10px radius, not 8px. */
+/* The one big padded panel (dashboard chart). */
 .panel-lg {
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .table-responsive {
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   overflow: hidden;
 }
 .table {
-  /* Cells would otherwise paint --ink over the panel color. */
-  --bs-table-bg: var(--panel);
+  --bs-table-bg: var(--surface);
+  --bs-table-color: var(--text);
+  --bs-table-active-bg: var(--accent-soft);
+  --bs-table-active-color: var(--text);
   margin-bottom: 0;
   /* 14px rows (headers 12px, below). */
   font-size: 14px;
 }
 .table > :not(caption) > * > * {
-  border-bottom-color: var(--hair);
-  padding: 13px 18px;
+  border-bottom-color: var(--border);
+  padding: 16px;
+}
+.table > :not(caption) > * > :first-child {
+  padding-left: 20px;
+}
+.table > :not(caption) > * > :last-child {
+  padding-right: 20px;
 }
 .table > thead > tr > th {
   font-size: 12px;
   font-weight: 500;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   text-transform: none;
-  border-bottom-color: var(--hair);
+  border-bottom-color: var(--border);
+  padding-top: 14px;
+  padding-bottom: 14px;
 }
 .table > tbody > tr:last-child > * {
   border-bottom-width: 0;
 }
 
-/* Signed amounts in tables and rows. */
+/* Signed amounts in tables and rows: fixed-width digits so columns align. */
 .amount {
-  font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 /* "← back to X" link atop Operations/Schedulers. */
@@ -365,13 +406,13 @@ input[type='radio'] {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   cursor: pointer;
   margin-bottom: 6px;
   text-decoration: none;
 }
 .back-link:hover {
-  color: var(--paper-dim);
+  color: var(--text-muted);
 }
 
 /* Small status dot (active nav, scheduler state, active search). */
@@ -381,12 +422,10 @@ input[type='radio'] {
   height: 8px;
   border-radius: 50%;
   flex: none;
-  background: var(--paper-faint);
-  opacity: 0.4;
+  background: var(--border-strong);
 }
 .dot-active {
-  background: var(--green);
-  opacity: 1;
+  background: var(--success);
 }
 
 /* StatCard's footnote. Global: callers' `#footnote` slot content uses these
@@ -401,41 +440,53 @@ input[type='radio'] {
 .stat-footnote-value {
   font-size: 13px;
   font-weight: 400;
-  color: var(--paper-faint);
+  color: var(--text-faint);
 }
 .stat-footnote-value {
-  font-family: 'Space Grotesk', sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- Auth card typography ----------
    Each pre-auth page writes these as AuthLayout's slot content. */
 .auth-card h1 {
-  font-size: 30px;
+  font-size: 26px;
   margin: 0 0 8px;
-  letter-spacing: -0.015em;
 }
 .auth-card p.text-muted {
-  color: var(--paper-dim) !important;
+  color: var(--text-muted) !important;
 }
 /* 15px, a notch above the app-wide 14px. */
 .auth-card .btn {
   font-size: 15px;
 }
+/* "New here? Create an account" / "Already have an account? Sign in". */
+.auth-footer {
+  margin: 28px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.auth-footer a {
+  font-weight: 500;
+  text-decoration: none;
+}
+.auth-footer a:hover {
+  text-decoration: underline;
+}
 
-/* Brand mark — BaseLayout's sidebar (32px) and AuthLayout's card (44px via
+/* Brand mark — BaseLayout's sidebar (30px) and AuthLayout's card (40px via
    its own .auth-logo size override) both use this base square. */
 .logo-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background: var(--violet);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 14px;
   flex: none;
   color: #fff;
 }

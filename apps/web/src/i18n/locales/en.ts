@@ -41,6 +41,7 @@ export default {
       invalidCredentials: 'Sign-in failed. Please try again.',
       passkeysUnsupported: "This browser doesn't support passkeys, so sign-in isn't available.",
       registerLink: 'Create an account',
+      newHere: 'New here?',
       success: 'Signed in.',
       tooManyAttempts: 'Too many attempts. Please wait a minute and try again.',
       sessionExpired: 'Your session has expired. Please sign in again.',
@@ -55,7 +56,8 @@ export default {
         "If {email} isn't already registered, you'll receive a link there to create your account.",
       useDifferentEmail: 'Use a different email address',
       genericError: 'Something went wrong. Please try again.',
-      signInLink: 'Already have an account? Sign in',
+      haveAccount: 'Already have an account?',
+      signInLink: 'Sign in',
     },
     activate: {
       title: 'Create your account',

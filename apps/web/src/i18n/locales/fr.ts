@@ -42,6 +42,7 @@ export default {
       passkeysUnsupported:
         "Ce navigateur ne prend pas en charge les clés d'accès : la connexion n'est pas disponible.",
       registerLink: 'Créer un compte',
+      newHere: 'Pas encore de compte ?',
       success: 'Connecté.',
       tooManyAttempts: 'Trop de tentatives. Veuillez patienter une minute et réessayer.',
       sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
@@ -56,7 +57,8 @@ export default {
         "Si {email} n'est pas déjà enregistré, vous recevrez un lien à cette adresse pour créer votre compte.",
       useDifferentEmail: 'Utiliser une autre adresse email',
       genericError: "Une erreur s'est produite. Veuillez réessayer.",
-      signInLink: 'Vous avez déjà un compte ? Connectez-vous',
+      haveAccount: 'Vous avez déjà un compte ?',
+      signInLink: 'Se connecter',
     },
     activate: {
       title: 'Créer votre compte',

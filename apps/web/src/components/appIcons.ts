@@ -126,6 +126,16 @@ export const ICONS = {
     strokeWidth: 1.75,
     shapes: [path('M6 6l12 12'), path('M18 6L6 18')],
   },
+  key: {
+    viewBox: '0 0 24 24',
+    strokeWidth: 1.75,
+    shapes: [
+      { tag: 'circle', attrs: { cx: 8, cy: 12, r: 4 } },
+      path('M12 12h9'),
+      path('M18 12v3'),
+      path('M21 12v2.5'),
+    ],
+  },
   arrowLeft: {
     viewBox: '0 0 24 24',
     strokeWidth: 1.75,

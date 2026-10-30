@@ -305,6 +305,13 @@ describe('ImportPage', () => {
       expect(wrapper.find('[data-testid="import-row-invalid"]').text()).toContain(
         'The date is not a valid day.',
       );
+      // Only credits are tinted; the invalid row's reason stays red as an error.
+      const amountCell = (status: string) =>
+        wrapper.get(`[data-testid="import-row-${status}"] td.import-amount-cell`).classes();
+      expect(amountCell('import')).not.toContain('text-danger');
+      expect(amountCell('import')).not.toContain('text-success');
+      expect(amountCell('skipped')).toContain('text-success');
+      expect(wrapper.find('[data-testid="import-row-invalid"] .text-danger').exists()).toBe(true);
     });
 
     it('filters the rows by status', async () => {

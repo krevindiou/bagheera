@@ -59,13 +59,13 @@ useFocusTrap(dialog);
 
 <style scoped>
 .modal-content {
-  --bs-modal-bg: var(--panel);
-  --bs-modal-color: var(--paper);
-  --bs-modal-border-color: var(--hair-strong);
+  --bs-modal-bg: var(--surface);
+  --bs-modal-color: var(--text);
+  --bs-modal-border-color: var(--border);
   box-shadow: var(--bs-box-shadow);
 }
 .modal-header,
 .modal-footer {
-  border-color: var(--hair);
+  border-color: var(--border);
 }
 </style>

@@ -24,6 +24,12 @@ describe('RegisterPage', () => {
     await router.push({ name: 'register', params: { locale: 'en' } });
   });
 
+  it('points members who already have an account to sign-in', () => {
+    const prompt = mount(RegisterPage, withGlobalPlugins()).get('[data-testid="sign-in-prompt"]');
+    expect(prompt.text()).toBe('Already have an account? Sign in');
+    expect(prompt.get('a').attributes('href')).toBe('/en/sign-in');
+  });
+
   it('lists every ISO country as an option', () => {
     const wrapper = mount(RegisterPage, withGlobalPlugins());
     expect(wrapper.findAll('#register-country option').length).toBeGreaterThan(200);

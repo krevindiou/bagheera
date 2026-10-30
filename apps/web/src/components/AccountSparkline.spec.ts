@@ -51,8 +51,8 @@ describe('AccountSparkline', () => {
     expect(paths[1].attributes('stroke')).toBe('#5fd98d');
   });
 
-  it('defaults to the theme violet when no color is given', () => {
+  it('defaults to a neutral line when no color is given', () => {
     const wrapper = mount(AccountSparkline, { props: { values: [100, 200] } });
-    expect(wrapper.find('path[fill="none"]').attributes('stroke')).toBe('var(--violet-bright)');
+    expect(wrapper.find('path[fill="none"]').attributes('stroke')).toBe('var(--text-faint)');
   });
 });

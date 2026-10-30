@@ -20,6 +20,15 @@ describe('PagerNav', () => {
     expect(wrapper.find('nav').attributes('aria-label')).toBe('Pagination');
   });
 
+  it('leads with the status and groups Previous and Next after it', () => {
+    const nav = mountPager(2).get('nav').element;
+
+    expect(nav.firstElementChild?.textContent).toBe('Page 2 of 3');
+    expect(
+      [...nav.lastElementChild!.querySelectorAll('button')].map((b) => b.textContent?.trim()),
+    ).toEqual(['Previous', 'Next']);
+  });
+
   it('counts a single page when the list is empty', () => {
     expect(mountPager(1, 0).text()).toContain('Page 1 of 1');
   });

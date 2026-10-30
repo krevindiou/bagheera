@@ -234,9 +234,13 @@ describe('SchedulersPage', () => {
     expect(rows[1].find('.dot').attributes('aria-label')).toBe('Paused');
     expect(rows[1].text()).toContain('+$25.00');
     expect(rows[1].text()).toContain('Every 2 weeks');
+    // Only credits are tinted: a debit's minus sign already says what it is.
+    expect(rows[0].get('td.amount').classes()).not.toContain('text-danger');
+    expect(rows[0].get('td.amount').classes()).not.toContain('text-success');
+    expect(rows[1].get('td.amount').classes()).toContain('text-success');
   });
 
-  it('signs and colors a zero debit as a debit, not by its falsy amount', async () => {
+  it('signs and tints a zero debit as a debit, not by its falsy amount', async () => {
     mockGet({
       schedulers: {
         items: [scheduler({ id: 's1', debit: 0, credit: null })],
@@ -250,7 +254,7 @@ describe('SchedulersPage', () => {
 
     const amount = wrapper.get('[data-testid="scheduler-row"] td.amount');
     expect(amount.text()).toBe('-$0.00');
-    expect(amount.classes()).toContain('text-danger');
+    expect(amount.classes()).not.toContain('text-success');
   });
 
   it('shows the next occurrence rather than the first, and why there is none when paused or ended', async () => {

@@ -167,7 +167,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
   <div>
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <h1 class="mb-0">{{ $t('reports.title') }}</h1>
-      <div v-if="!showForm" class="d-flex gap-2">
+      <div class="d-flex gap-2">
         <button
           type="button"
           class="btn btn-primary d-inline-flex align-items-center gap-1"
@@ -245,7 +245,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
                 </td>
                 <td>
                   {{ report.title }}
-                  <span v-if="report.homepage" class="pill pill-violet ms-2">{{
+                  <span v-if="report.homepage" class="pill pill-accent ms-2">{{
                     $t('reports.homepage')
                   }}</span>
                 </td>

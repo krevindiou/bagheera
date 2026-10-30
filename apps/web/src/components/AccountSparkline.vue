@@ -10,7 +10,7 @@ const props = withDefaults(
     values?: number[];
     color?: string;
   }>(),
-  { values: () => [], color: 'var(--violet-bright)' },
+  { values: () => [], color: 'var(--text-faint)' },
 );
 
 const WIDTH = 100;

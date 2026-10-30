@@ -67,7 +67,7 @@ describe('verticalFillGradient', () => {
 
   it('falls back to a flat translucent fill before the chart is laid out', () => {
     const { ctx } = contextWith(undefined);
-    expect(verticalFillGradient('#b17834', ctx)).toBe('rgba(177, 120, 52, 0.18)');
+    expect(verticalFillGradient('#0f766e', ctx)).toBe('rgba(15, 118, 110, 0.18)');
   });
 
   it('passes a non-hex color through unchanged', () => {
@@ -77,11 +77,11 @@ describe('verticalFillGradient', () => {
 
   it('fades from the line color to transparent across the chart area', () => {
     const { ctx, gradient, createLinearGradient } = contextWith({ top: 10, bottom: 210 });
-    expect(verticalFillGradient('#0077bd', ctx)).toBe(gradient);
+    expect(verticalFillGradient('#2b6cb0', ctx)).toBe(gradient);
     expect(createLinearGradient).toHaveBeenCalledWith(0, 10, 0, 210);
     expect(gradient.addColorStop.mock.calls).toEqual([
-      [0, 'rgba(0, 119, 189, 0.28)'],
-      [1, 'rgba(0, 119, 189, 0)'],
+      [0, 'rgba(43, 108, 176, 0.28)'],
+      [1, 'rgba(43, 108, 176, 0)'],
     ]);
   });
 });

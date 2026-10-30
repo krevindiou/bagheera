@@ -175,7 +175,7 @@ const amountLabel = computed(() => {
       </td>
       <td
         class="import-amount-cell text-end text-nowrap"
-        :class="row.type === 'debit' ? 'text-danger' : 'text-success'"
+        :class="{ 'text-success': row.type !== 'debit' }"
         :data-label="$t('operations.amount')"
       >
         {{ amountLabel }}

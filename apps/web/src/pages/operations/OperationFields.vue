@@ -251,7 +251,7 @@ function onThirdPartyChange() {
 
 <style scoped>
 .transfer-accent {
-  border-left: 2px solid var(--violet-bright);
+  border-left: 2px solid var(--border-strong);
   padding-left: 12px;
 }
 </style>

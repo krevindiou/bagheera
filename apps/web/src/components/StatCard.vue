@@ -35,9 +35,11 @@ const props = withDefaults(
   },
 );
 
+// A falling figure isn't alarming in itself (an expense is expected), so
+// only income and a figure below zero are tinted.
 const valueTone = computed(() => {
   if (props.trend === 'up') return 'text-success';
-  if (props.trend === 'down' || props.amount < 0) return 'text-danger';
+  if (props.amount < 0) return 'text-danger';
   return undefined;
 });
 </script>
@@ -51,7 +53,7 @@ const valueTone = computed(() => {
     <div
       v-if="trend"
       class="stat-trend-badge"
-      :class="trend === 'up' ? 'stat-trend-badge-success' : 'stat-trend-badge-danger'"
+      :class="trend === 'up' ? 'stat-trend-badge-success' : 'stat-trend-badge-neutral'"
     >
       <AppIcon :name="trend === 'up' ? 'trendUp' : 'trendDown'" />
     </div>
@@ -78,22 +80,20 @@ const valueTone = computed(() => {
 <style scoped>
 .stat-card {
   position: relative;
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 8px;
-  /* Flat 18px (the mock's own value) reads heavier on top/bottom than left/right —
-     line-height leading on the label/value/footnote text already fills part of the
-     vertical padding, so the same number looks like more space horizontally than
-     vertically. 16px/18px optically balances it; deliberate deviation from the mock. */
-  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  /* Less on top/bottom than the sides: the text's own leading already fills
+     part of the vertical space. */
+  padding: 20px 24px;
 }
 /* padding-right reserves space for the trend badge below, on every
    stat-card's label (not just income/expense) — so income's shorter text
    and expense's longer one wrap the same way instead of one card staying
    single-line while its neighbor wraps. */
 .stat-card .stat-label {
-  font-size: 12.5px;
-  color: var(--paper-faint);
+  font-size: 13px;
+  color: var(--text-muted);
   margin-bottom: 8px;
   padding-right: 32px;
 }
@@ -103,8 +103,8 @@ const valueTone = computed(() => {
    with the unrelated .stat-chip variant below. */
 .stat-trend-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 16px;
+  right: 16px;
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -117,17 +117,18 @@ const valueTone = computed(() => {
   height: 18px;
 }
 .stat-trend-badge-success {
-  background: rgba(95, 217, 141, 0.14);
-  color: var(--green);
+  background: var(--success-soft);
+  color: var(--success);
 }
-.stat-trend-badge-danger {
-  background: rgba(232, 105, 122, 0.14);
-  color: var(--red);
+.stat-trend-badge-neutral {
+  background: var(--surface-sunk);
+  color: var(--text-muted);
 }
 .stat-card .stat-value {
-  font-family: 'Space Grotesk', sans-serif;
   font-size: 26px;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 /* Foreground boost for the one number on the card meant to read as "the"
    headline figure (`primary`) — everything else sharing .stat-value stays
@@ -136,7 +137,6 @@ const valueTone = computed(() => {
    cascade instead of losing to it despite coming later in the file. */
 .stat-card .stat-value-primary {
   font-size: 30px;
-  font-weight: 700;
 }
 .stat-chip {
   /* A block div otherwise stretches to its parent's full width — fine for
@@ -146,20 +146,21 @@ const valueTone = computed(() => {
      against, so without this it stretched edge-to-edge: 14px of real top/
      bottom padding against several hundred px of dead space on the right. */
   width: fit-content;
-  background: var(--panel);
-  border: 1px solid var(--hair);
-  border-radius: 8px;
-  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
   min-width: 140px;
 }
 .stat-chip .stat-label {
-  font-size: 12px;
-  color: var(--paper-faint);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 .stat-chip .stat-value {
-  font-family: 'Space Grotesk', sans-serif;
   font-size: 20px;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 /* Same specificity as .stat-chip .stat-value above — placed after so it
    wins the font-size tiebreak on source order (see .acct-tile's own
@@ -167,7 +168,6 @@ const valueTone = computed(() => {
    of this pattern). */
 .stat-chip .stat-value-primary {
   font-size: 24px;
-  font-weight: 700;
 }
 .stat-chip .stat-footnote {
   margin-top: 8px;

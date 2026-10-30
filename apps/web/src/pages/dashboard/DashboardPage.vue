@@ -64,7 +64,7 @@ const accountTiles = computed(() =>
   <LoadError v-if="isError" data-testid="dashboard-error" />
   <div v-else>
     <h1 class="mb-1" style="font-size: 28px">{{ $t('dashboard.title') }}</h1>
-    <p class="mb-4" style="color: var(--paper-dim); font-size: 15px">
+    <p class="mb-4" style="color: var(--text-muted); font-size: 15px">
       {{ $t('dashboard.subtitle') }}
     </p>
 
@@ -212,14 +212,14 @@ const accountTiles = computed(() =>
 <style scoped>
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
 }
-/* Own sizing, unlike .stat-grid (160px/14px). */
+/* Own sizing, unlike .stat-grid (200px). */
 .tile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 .acct-tile {
@@ -227,10 +227,10 @@ const accountTiles = computed(() =>
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  padding: 16px;
+  padding: 20px;
 }
 .acct-tile:hover {
-  border-color: var(--violet-dim);
+  border-color: var(--border-strong);
   color: inherit;
 }
 /* Two lines reserved for the label, so tiles in a row stay aligned whether

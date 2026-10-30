@@ -23,11 +23,12 @@ import type { Locale } from '../i18n/locales';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Legend, Tooltip);
 
-// Dark "FinTech-Noir" theme — Chart.js defaults to black-on-transparent,
-// which is unreadable against the app's near-black background.
-ChartJS.defaults.font.family = "'Archivo', sans-serif";
-ChartJS.defaults.color = 'rgba(242, 239, 233, 0.62)'; // --paper-dim: ticks/legend text
-ChartJS.defaults.borderColor = 'rgba(242, 239, 233, 0.1)'; // --hair: gridlines
+// Chart.js can't read CSS variables, so the theme's values are repeated
+// here: the app's font, muted ticks/legend and gridlines lighter than
+// --border so data stays in front.
+ChartJS.defaults.font.family = "'Inter', system-ui, sans-serif";
+ChartJS.defaults.color = '#6f6862'; // --text-faint: ticks/legend text
+ChartJS.defaults.borderColor = '#efece8'; // gridlines
 
 export interface SynthesisChartPoint {
   // Period start as an ISO date string ('YYYY-MM-DD') or any parseable

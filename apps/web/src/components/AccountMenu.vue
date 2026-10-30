@@ -86,15 +86,15 @@ async function signOut(): Promise<void> {
 }
 .account-trigger:hover,
 .account-trigger[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--hair-strong);
+  background: var(--bg);
+  border-color: var(--border-strong);
 }
 .account-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border-strong);
   flex: none;
   display: flex;
   align-items: center;
@@ -114,12 +114,12 @@ async function signOut(): Promise<void> {
 }
 .account-chevron {
   flex: none;
-  color: var(--paper-faint);
+  color: var(--text-faint);
   transition: transform 0.15s ease;
 }
 .account-trigger[aria-expanded='true'] .account-chevron {
   transform: rotate(180deg);
-  color: var(--paper);
+  color: var(--text);
 }
 .account-section-label {
   padding: 8px 9px 4px;
@@ -127,11 +127,11 @@ async function signOut(): Promise<void> {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--paper-faint);
+  color: var(--text-faint);
 }
 .account-divider {
   height: 1px;
-  background: var(--hair);
+  background: var(--border);
   margin: 4px 0;
 }
 .account-logout {
@@ -145,11 +145,11 @@ async function signOut(): Promise<void> {
   border-radius: 5px;
   font-size: 12.5px;
   font-weight: 500;
-  color: var(--red);
+  color: var(--danger);
   cursor: pointer;
   text-align: left;
 }
 .account-logout:hover {
-  background: rgba(232, 105, 122, 0.1);
+  background: var(--danger-soft);
 }
 </style>

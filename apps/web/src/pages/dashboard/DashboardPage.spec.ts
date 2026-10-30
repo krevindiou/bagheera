@@ -223,7 +223,7 @@ describe('DashboardPage', () => {
     expect(wrapper.find('[data-testid="synthesis-chart"]').exists()).toBe(true);
     const chart = wrapper.findComponent(SynthesisChart);
     expect(chart.props('series')).toEqual([
-      { label: 'USD', color: '#af578c', points: [{ period: '2026-01', value: 100 }] },
+      { label: 'USD', color: '#9a7a00', points: [{ period: '2026-01', value: 100 }] },
     ]);
     expect(chart.props('axisBounds')).toEqual({ min: 0, max: 1000 });
   });
@@ -376,8 +376,8 @@ describe('DashboardPage', () => {
       colorsByCurrency.get('USD'),
     );
     // Pinned values so a change to the hash/palette doesn't silently pass.
-    expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe('#916fd4');
-    expect(tiles[1].findComponent(AccountSparkline).props('color')).toBe('#af578c');
+    expect(tiles[0].findComponent(AccountSparkline).props('color')).toBe('#1d6fe0');
+    expect(tiles[1].findComponent(AccountSparkline).props('color')).toBe('#9a7a00');
   });
 
   it('shows homepage report charts when present, with debit and credit as separate series', async () => {

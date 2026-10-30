@@ -28,7 +28,7 @@ describe('ImportStatementSummary', () => {
     expect(mountSummary().find('h2').text()).toBe('In the file');
   });
 
-  it('shows the period and the totals of debits and credits, tinted like the dashboard figures', () => {
+  it('shows the period and the totals of debits and credits, only credits tinted like the dashboard figures', () => {
     const wrapper = mountSummary();
 
     expect(wrapper.find('[data-testid="import-period"]').text()).toBe(
@@ -36,7 +36,7 @@ describe('ImportStatementSummary', () => {
     );
     const debits = wrapper.find('[data-testid="import-debits-value"]');
     expect(debits.text()).toBe('€200.50');
-    expect(debits.classes()).toContain('text-danger');
+    expect(debits.classes()).not.toContain('text-danger');
     const credits = wrapper.find('[data-testid="import-credits-value"]');
     expect(credits.text()).toBe('€1,500.00');
     expect(credits.classes()).toContain('text-success');

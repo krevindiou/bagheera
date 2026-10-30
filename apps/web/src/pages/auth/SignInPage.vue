@@ -9,6 +9,7 @@ import { useSessionStore } from '../../stores/session.store';
 import { useToast } from '../../composables/useToast';
 import { safeRedirect } from '../../router/safeRedirect';
 import AuthLayout from '../../layouts/AuthLayout.vue';
+import AppIcon from '../../components/AppIcon.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -66,15 +67,19 @@ async function onSubmit() {
 
     <form v-else novalidate class="mt-4" @submit.prevent="onSubmit">
       <p class="text-muted" style="font-size: 13.5px">{{ $t('auth.signIn.passkeyHint') }}</p>
-      <button type="submit" class="btn btn-primary w-100" :disabled="submitting">
+      <button
+        type="submit"
+        class="btn btn-primary w-100 d-inline-flex align-items-center justify-content-center gap-2"
+        :disabled="submitting"
+      >
+        <AppIcon name="key" :size="18" />
         {{ $t('auth.signIn.passkeySubmit') }}
       </button>
     </form>
 
-    <p class="text-center mt-4 mb-0" style="font-size: 14px; color: var(--paper-dim)">
-      <router-link :to="{ name: 'register' }" style="font-weight: 600">{{
-        $t('auth.signIn.registerLink')
-      }}</router-link>
+    <p class="auth-footer" data-testid="register-prompt">
+      {{ $t('auth.signIn.newHere') }}
+      <router-link :to="{ name: 'register' }">{{ $t('auth.signIn.registerLink') }}</router-link>
     </p>
   </AuthLayout>
 </template>

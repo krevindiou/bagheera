@@ -1,12 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 // Self-hosted fonts: no request to a remote font host.
-import '@fontsource/space-grotesk/500.css';
-import '@fontsource/space-grotesk/600.css';
-import '@fontsource/space-grotesk/700.css';
-import '@fontsource/archivo/400.css';
-import '@fontsource/archivo/500.css';
-import '@fontsource/archivo/600.css';
-import '@fontsource/archivo/700.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { VueQueryPlugin } from '@tanstack/vue-query';

@@ -80,15 +80,27 @@ describe('StatCard', () => {
     expect(wrapper.find('.extra').exists()).toBe(true);
   });
 
-  it.each([
-    ['up', 'text-success', 'stat-trend-badge-success'],
-    ['down', 'text-danger', 'stat-trend-badge-danger'],
-  ] as const)('trend %s tints the figure and adds a badge', (trend, tone, badge) => {
-    const wrapper = mountCard({ trend });
+  it('trend up tints the figure green and adds a green badge', () => {
+    const wrapper = mountCard({ trend: 'up' });
 
-    expect(wrapper.get('.stat-value').classes()).toContain(tone);
-    expect(wrapper.get('.stat-trend-badge').classes()).toContain(badge);
+    expect(wrapper.get('.stat-value').classes()).toContain('text-success');
+    expect(wrapper.get('.stat-trend-badge').classes()).toContain('stat-trend-badge-success');
     expect(wrapper.find('.stat-trend-badge svg').exists()).toBe(true);
+  });
+
+  it('trend down leaves a positive figure untinted, with a neutral badge', () => {
+    const wrapper = mountCard({ trend: 'down', amount: 5 });
+
+    expect(wrapper.get('.stat-value').classes()).not.toContain('text-danger');
+    expect(wrapper.get('.stat-value').classes()).not.toContain('text-success');
+    expect(wrapper.get('.stat-trend-badge').classes()).toContain('stat-trend-badge-neutral');
+    expect(wrapper.find('.stat-trend-badge svg').exists()).toBe(true);
+  });
+
+  it('trend down still tints a figure below zero red', () => {
+    expect(mountCard({ trend: 'down', amount: -5 }).get('.stat-value').classes()).toContain(
+      'text-danger',
+    );
   });
 
   it('has no trend badge by default', () => {

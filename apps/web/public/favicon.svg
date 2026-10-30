@@ -1,23 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- App logo mark (see .logo-mark in src/styles/theme.css): violet
-       gradient rounded square, bold white "B", subtle inner top highlight. -->
-  <defs>
-    <linearGradient id="g" x1="14%" y1="4%" x2="86%" y2="96%">
-      <stop offset="0%" stop-color="#9a72e8" />
-      <stop offset="100%" stop-color="#7c4fd1" />
-    </linearGradient>
-    <clipPath id="shape">
-      <rect width="32" height="32" rx="4" />
-    </clipPath>
-  </defs>
-  <rect width="32" height="32" rx="4" fill="url(#g)" />
-  <rect width="32" height="1.5" fill="#fff" opacity="0.3" clip-path="url(#shape)" />
+  <!-- App logo mark (see .logo-mark in src/styles/theme.css): flat accent
+       rounded square, white "B". -->
+  <rect width="32" height="32" rx="7" fill="#c2410c" />
   <text
     x="16"
     y="22.5"
     text-anchor="middle"
-    font-family="'Space Grotesk', Arial, sans-serif"
-    font-weight="700"
+    font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+    font-weight="600"
     font-size="17"
     fill="#fff"
     >B</text>

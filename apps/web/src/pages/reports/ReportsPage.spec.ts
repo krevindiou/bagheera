@@ -156,7 +156,7 @@ describe('ReportsPage', () => {
     expect(rows[0].text()).toContain('Sum');
     expect(rows[0].text()).toContain('Rent');
     expect(rows[0].text()).not.toContain('Shown on the homepage');
-    expect(rows[1].find('.pill-violet').exists()).toBe(true);
+    expect(rows[1].find('.pill-accent').exists()).toBe(true);
   });
 
   it('names each row action button for its own report, not just the action', async () => {
@@ -373,18 +373,24 @@ describe('ReportsPage', () => {
     expect(headerCheckbox.checked).toBe(false);
   });
 
-  it('opens a new sum report form, and cancel returns to the buttons', async () => {
-    wrapper = mount(ReportsPage, withGlobalPlugins(router));
+  it('opens a new sum report form over the create buttons, and cancel closes it', async () => {
+    const page = mount(ReportsPage, withGlobalPlugins(router));
+    wrapper = page;
     await flushPromises();
+    const createButtons = () => page.findAll('h1 + div button').map((button) => button.text());
 
     await wrapper.find('button.btn-primary').trigger('click');
     expect(wrapper.find('h2').text()).toBe('New report');
     expect(wrapper.find('#report-title').exists()).toBe(true);
+    expect(createButtons()).toEqual([
+      'New sum report',
+      'New average report',
+      'New distribution report',
+    ]);
 
-    await wrapper.find('button.btn-outline-secondary').trigger('click');
+    await wrapper.find('.drawer button.btn-outline-secondary').trigger('click');
     expect(wrapper.find('#report-title').exists()).toBe(false);
-    expect(wrapper.find('button.btn-primary').exists()).toBe(true);
-    expect(wrapper.find('button.btn-outline-secondary').exists()).toBe(true);
+    expect(createButtons()).toHaveLength(3);
   });
 
   it("opens a new average report form, submitting with type 'average'", async () => {

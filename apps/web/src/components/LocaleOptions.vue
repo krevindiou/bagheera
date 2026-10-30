@@ -42,19 +42,19 @@ const { t } = useI18n();
   border-radius: 5px;
   font-size: 12.5px;
   font-weight: 500;
-  color: var(--paper-dim);
+  color: var(--text-muted);
   cursor: pointer;
   text-align: left;
 }
 .menu-option:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--paper);
+  background: var(--surface-sunk);
+  color: var(--text);
 }
 .menu-option.selected {
-  color: var(--paper);
+  color: var(--text);
 }
 .menu-check {
-  color: var(--violet-soft);
+  color: var(--accent-strong);
   flex: none;
 }
 </style>

@@ -97,9 +97,9 @@ async function perform(action: BatchAction) {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: var(--panel-2);
-  border: 1px solid var(--hair-strong);
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
   box-shadow: var(--bs-box-shadow);
   padding: 10px 16px;
 }
