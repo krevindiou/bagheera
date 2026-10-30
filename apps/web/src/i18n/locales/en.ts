@@ -24,7 +24,6 @@ export default {
       previous: 'Previous',
       next: 'Next',
       goTo: 'Go to page {page}',
-      status: 'Page {page} of {pageCount}',
     },
   },
   chartRange: {
@@ -179,6 +178,7 @@ export default {
     edit: 'Edit',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No operations yet.',
+    count: '{count} operation | {count} operations',
     emptySearch: 'No operations match this search.',
     schedulersLink: 'Scheduled operations',
     importLink: 'Import',
@@ -202,6 +202,7 @@ export default {
         },
         filters: 'Show rows by status',
         noRows: 'No rows to show.',
+        rowCount: '{count} row | {count} rows',
         line: 'Row {line}',
         status: 'Status',
         willImport: 'Will be imported',
@@ -374,6 +375,7 @@ export default {
     deleted: 'Scheduled operation deleted',
     genericError: 'Something went wrong. Please try again.',
     empty: 'No scheduled operations yet.',
+    count: '{count} scheduled operation | {count} scheduled operations',
     validation: {
       frequencyValue: 'Enter a whole number between 1 and {max}.',
       limitDateBeforeValueDate: 'Stop date must be on or after the first occurrence.',

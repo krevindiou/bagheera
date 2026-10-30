@@ -241,6 +241,7 @@ const otherAccountName = computed(() => {
             :page="page"
             :total="filteredRows.length"
             :page-size="PREVIEW_PAGE_SIZE"
+            :count-label="$t('operations.import.preview.rowCount', filteredRows.length)"
             @update:page="page = $event"
           />
         </section>

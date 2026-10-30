@@ -2,10 +2,11 @@
 import { computed, ref, watch } from 'vue';
 import { pagerItems } from './pagerItems';
 
-// "Page X of Y", then Previous, the page numbers (a window around the
-// current page, with gaps), Next, for a server-paginated list. `page` is the
-// page currently shown; `update:page` asks the parent to load another one.
-const props = defineProps<{ page: number; total: number; pageSize: number }>();
+// The item count (`countLabel`, already worded by the parent), then Previous,
+// the page numbers (a window around the current page, with gaps), Next, for a
+// server-paginated list. `page` is the page currently shown; `update:page`
+// asks the parent to load another one.
+const props = defineProps<{ page: number; total: number; pageSize: number; countLabel: string }>();
 const emit = defineEmits<{ 'update:page': [page: number] }>();
 
 const pageCount = computed(() => Math.max(1, Math.ceil(props.total / props.pageSize)));
@@ -45,7 +46,7 @@ watch(
     class="pager d-flex justify-content-between align-items-center gap-2 mt-3"
     :aria-label="$t('common.pager.label')"
   >
-    <span class="pager-status">{{ $t('common.pager.status', { page, pageCount }) }}</span>
+    <span class="pager-status">{{ countLabel }}</span>
     <div class="pager-buttons d-flex flex-wrap justify-content-end gap-2">
       <button
         type="button"

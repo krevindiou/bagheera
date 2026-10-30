@@ -439,6 +439,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
           :page="list.page"
           :total="list.total"
           :page-size="list.pageSize"
+          :count-label="$t('operations.count', list.total)"
           @update:page="page = $event"
         />
       </ListState>

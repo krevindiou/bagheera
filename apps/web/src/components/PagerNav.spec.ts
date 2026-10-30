@@ -4,7 +4,10 @@ import { withGlobalPlugins } from '../test-support/withGlobalPlugins';
 import PagerNav from './PagerNav.vue';
 
 function mountPager(page: number, total = 45, pageSize = 20) {
-  return mount(PagerNav, { ...withGlobalPlugins(), props: { page, total, pageSize } });
+  return mount(PagerNav, {
+    ...withGlobalPlugins(),
+    props: { page, total, pageSize, countLabel: `${total} items` },
+  });
 }
 
 function buttons(wrapper: ReturnType<typeof mountPager>) {
@@ -18,24 +21,24 @@ function pageButtons(wrapper: ReturnType<typeof mountPager>) {
 }
 
 describe('PagerNav', () => {
-  it('shows the current page out of the page count, in a labelled nav', () => {
+  it('shows the item count, in a labelled nav', () => {
     const wrapper = mountPager(2);
 
-    expect(wrapper.text()).toContain('Page 2 of 3');
+    expect(wrapper.text()).toContain('45 items');
     expect(wrapper.find('nav').attributes('aria-label')).toBe('Pagination');
   });
 
   it('leads with the status, then Previous, the page numbers and Next', () => {
     const nav = mountPager(2).get('nav').element;
 
-    expect(nav.firstElementChild?.textContent).toBe('Page 2 of 3');
+    expect(nav.firstElementChild?.textContent).toBe('45 items');
     expect(
       [...nav.lastElementChild!.querySelectorAll('button')].map((b) => b.textContent?.trim()),
     ).toEqual(['Previous', '1', '2', '3', 'Next']);
   });
 
-  it('counts a single page when the list is empty', () => {
-    expect(mountPager(1, 0).text()).toContain('Page 1 of 1');
+  it('keeps a single page when the list is empty', () => {
+    expect(pageButtons(mountPager(1, 0)).map((b) => b.number)).toEqual(['1']);
   });
 
   it('disables Previous on the first page and Next on the last', () => {
@@ -81,7 +84,6 @@ describe('PagerNav', () => {
   it('collapses far pages behind a gap and keeps two pages on each side of the current one', () => {
     const wrapper = mountPager(7, 260);
 
-    expect(wrapper.text()).toContain('Page 7 of 13');
     expect(pageButtons(wrapper).map((p) => p.number)).toEqual(['1', '5', '6', '7', '8', '9', '13']);
     expect(wrapper.findAll('.pager-gap')).toHaveLength(2);
   });
@@ -121,7 +123,7 @@ describe('PagerNav', () => {
     function mountAt(top: { value: number }) {
       const wrapper = mount(PagerNav, {
         ...withGlobalPlugins(),
-        props: { page: 1, total: 100, pageSize: 20 },
+        props: { page: 1, total: 100, pageSize: 20, countLabel: '100 items' },
         attachTo: document.body,
       });
       vi.spyOn(wrapper.get('nav').element, 'getBoundingClientRect').mockImplementation(

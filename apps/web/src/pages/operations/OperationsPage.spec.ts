@@ -538,7 +538,7 @@ describe('OperationsPage', () => {
     wrapper = mount(OperationsPage, withGlobalPlugins(router));
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Page 1 of 3');
+    expect(wrapper.text()).toContain('45 operations');
     const pagerButtons = wrapper.findAll('nav.pager button');
     const prev = pagerButtons[0];
     const next = pagerButtons[pagerButtons.length - 1];

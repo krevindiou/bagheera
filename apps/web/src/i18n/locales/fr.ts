@@ -23,7 +23,6 @@ export default {
       previous: 'Précédent',
       next: 'Suivant',
       goTo: 'Aller à la page {page}',
-      status: 'Page {page} sur {pageCount}',
     },
   },
   chartRange: {
@@ -182,6 +181,7 @@ export default {
     edit: 'Modifier',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération pour l'instant.",
+    count: '{count} opération | {count} opérations',
     emptySearch: 'Aucune opération ne correspond à cette recherche.',
     schedulersLink: 'Opérations planifiées',
     importLink: 'Importer',
@@ -205,6 +205,7 @@ export default {
         },
         filters: 'Afficher les lignes par statut',
         noRows: 'Aucune ligne à afficher.',
+        rowCount: '{count} ligne | {count} lignes',
         line: 'Ligne {line}',
         status: 'Statut',
         willImport: 'Sera importée',
@@ -380,6 +381,7 @@ export default {
     deleted: 'Opération planifiée supprimée',
     genericError: "Une erreur s'est produite. Veuillez réessayer.",
     empty: "Aucune opération planifiée pour l'instant.",
+    count: '{count} opération planifiée | {count} opérations planifiées',
     validation: {
       frequencyValue: 'Saisissez un nombre entier entre 1 et {max}.',
       limitDateBeforeValueDate:

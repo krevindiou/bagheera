@@ -368,7 +368,7 @@ describe('SchedulersPage', () => {
     wrapper = mount(SchedulersPage, withGlobalPlugins(router));
     await flushPromises();
 
-    expect(wrapper.text()).toContain('Page 1 of 3');
+    expect(wrapper.text()).toContain('45 scheduled operations');
     const pagerButtons = wrapper.findAll('nav.pager button');
     const prev = pagerButtons[0];
     const next = pagerButtons[pagerButtons.length - 1];
