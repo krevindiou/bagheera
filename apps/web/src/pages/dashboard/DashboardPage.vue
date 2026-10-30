@@ -215,6 +215,12 @@ const accountTiles = computed(() =>
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
+/* Two lines reserved for the label, so the figures line up across the row
+   whether a label wraps (the income/expense ones do on a narrow card) or not. */
+.stat-grid :deep(.stat-label) {
+  line-height: 1.3;
+  min-height: 2.6em;
+}
 /* Own sizing, unlike .stat-grid (200px). */
 .tile-grid {
   display: grid;
