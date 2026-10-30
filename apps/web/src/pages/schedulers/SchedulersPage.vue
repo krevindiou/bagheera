@@ -64,6 +64,11 @@ const schedulersQuery = useQuery({
     ),
   // The scheduler sweep advances each next date with no client-side event.
   staleTime: 0,
+  // Paging keeps the current rows up until the next page lands, so the
+  // list doesn't collapse into a loading line and scroll the page to the
+  // top. Another account's rows are never carried over.
+  placeholderData: (previous, previousQuery) =>
+    previousQuery?.queryKey[1] === accountId.value ? previous : undefined,
 });
 const list = computed(
   () => schedulersQuery.data.value ?? { items: [], total: 0, page: 1, pageSize: PAGE_SIZE },
@@ -165,7 +170,7 @@ async function onSaved() {
       :empty-text="$t('schedulers.empty')"
       error-testid="schedulers-error"
     >
-      <div class="table-responsive">
+      <div class="table-responsive paged-table">
         <table class="table" data-testid="schedulers-table">
           <thead>
             <tr>

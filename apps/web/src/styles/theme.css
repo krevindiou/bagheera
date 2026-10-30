@@ -362,6 +362,14 @@ button:focus-visible,
   border-radius: 12px;
   overflow: hidden;
 }
+
+/* A paginated table swaps all its rows at once, so the browser's scroll
+   anchoring latches onto a row that vanishes and the pager slides down or
+   up when the new page is taller or shorter. Opting the rows out lets it
+   anchor on the pager below instead. */
+.paged-table {
+  overflow-anchor: none;
+}
 .table {
   --bs-table-bg: var(--surface);
   --bs-table-color: var(--text);

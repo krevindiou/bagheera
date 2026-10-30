@@ -305,7 +305,7 @@ const headerSelectState = computed(() => allSelectState(selectableIds.value));
         :empty-text="hasActiveSearch ? $t('operations.emptySearch') : $t('operations.empty')"
         error-testid="operations-error"
       >
-        <div class="table-responsive">
+        <div class="table-responsive paged-table">
           <table class="table" data-testid="operations-table">
             <thead>
               <tr>

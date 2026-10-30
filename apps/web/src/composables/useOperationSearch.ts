@@ -52,6 +52,11 @@ export function useOperationSearch(accountId: Ref<string>) {
     // Transfers from other accounts and the scheduler sweep add operations
     // here with no client-side event to invalidate on.
     staleTime: 0,
+    // Paging keeps the current rows up until the next page lands, so the
+    // table doesn't collapse into a loading line and scroll the page to
+    // the top. Another account's rows are never carried over.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey[1] === accountId.value ? previous : undefined,
   });
 
   const list = computed(() => query.data.value ?? EMPTY_PAGE);

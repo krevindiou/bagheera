@@ -200,6 +200,37 @@ describe('useOperationSearch', () => {
     expect(search.criteria.value).toEqual({ thirdParty: 'Bar' });
   });
 
+  it('keeps the current rows, not pending, while the next page loads', async () => {
+    apiClient.GET.mockResolvedValueOnce(ok(page({ items: [{ id: 'op-1' }], total: 40 })));
+    const { search } = await run();
+    await flushPromises();
+
+    let release!: (value: unknown) => void;
+    apiClient.GET.mockReturnValueOnce(new Promise((resolve) => (release = resolve)));
+    search.page.value = 2;
+    await flushPromises();
+
+    expect(search.isPending.value).toBe(false);
+    expect(search.list.value.items).toEqual([{ id: 'op-1' }]);
+
+    release(ok(page({ items: [{ id: 'op-2' }], total: 40, page: 2 })));
+    await flushPromises();
+    expect(search.list.value.items).toEqual([{ id: 'op-2' }]);
+  });
+
+  it("never shows the previous account's rows while another account loads", async () => {
+    apiClient.GET.mockResolvedValueOnce(ok(page({ items: [{ id: 'op-1' }], total: 1 })));
+    const { search, accountId } = await run();
+    await flushPromises();
+
+    apiClient.GET.mockReturnValueOnce(new Promise(() => {}));
+    accountId.value = 'acc-2';
+    await flushPromises();
+
+    expect(search.isPending.value).toBe(true);
+    expect(search.list.value.items).toEqual([]);
+  });
+
   it('starts from the ?page= query param', async () => {
     apiClient.GET.mockResolvedValue(ok(page()));
     const router = createTestRouter();
