@@ -43,6 +43,12 @@ export interface RateLimitOptions {
   perMember?: boolean;
   /** Share one counter across every route naming the same scope, instead of one per route. */
   scope?: string;
+  /**
+   * A further budget for a plus-tagged `identifierField` email, keyed on the
+   * mailbox it delivers to, so tag variants share one count. Untagged
+   * addresses never draw on it.
+   */
+  taggedMailbox?: { points: number; durationSeconds: number };
 }
 
 export function ipPointsFor(options: RateLimitOptions): number {
@@ -55,6 +61,24 @@ export function ipPointsFor(options: RateLimitOptions): number {
 export const DEFAULT_RATE_LIMIT: RateLimitOptions = {
   points: 5,
   durationSeconds: 60,
+};
+
+/**
+ * Each tag variant of an address is its own identifier, so without this one
+ * inbox could be mailed once per variant. A person signing up rarely tries
+ * more than a couple of tags.
+ */
+export const TAGGED_MAILBOX_LIMIT = { points: 5, durationSeconds: 24 * 60 * 60 };
+
+/**
+ * Anonymous, and each accepted request mails the address: kept short per
+ * address and source, with tag variants pooled per mailbox.
+ */
+export const REGISTRATION_LIMIT: RateLimitOptions = {
+  points: 5,
+  durationSeconds: 60,
+  identifierField: 'email',
+  taggedMailbox: TAGGED_MAILBOX_LIMIT,
 };
 
 /**

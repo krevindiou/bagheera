@@ -9,11 +9,13 @@ import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import { findMemberByEmail } from './find-member-by-email';
 import { sendSignupEmail } from './send-signup-email';
+import { SignupMailThrottle } from './signup-mail-throttle';
 
 /**
  * The worker half of registration (see RegistrationService): turns a queued
  * request into one email. A new address gets a sign-up link; a registered
- * one an "account exists" notice in its member's language.
+ * one an "account exists" notice in its member's language — at most one
+ * per address per cooldown, within a daily cap (see SignupMailThrottle).
  */
 @Injectable()
 export class SignupRequestService {
@@ -23,9 +25,16 @@ export class SignupRequestService {
     private readonly emailQueue: EmailQueueService,
     private readonly config: ConfigService,
     private readonly audit: AuditService,
+    private readonly throttle: SignupMailThrottle,
   ) {}
 
   async handle(request: SignupRequest): Promise<void> {
+    // Throttled before the lookup, so a registered and a new address are
+    // held to the same cooldown.
+    await this.throttle.run(request.email, () => this.send(request));
+  }
+
+  private async send(request: SignupRequest): Promise<void> {
     const existing = await findMemberByEmail(this.db, request.email);
     if (existing) {
       const appUrl = this.config.getOrThrow<string>('APP_URL');

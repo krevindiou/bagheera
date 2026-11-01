@@ -58,6 +58,20 @@ describe('rate limiting', () => {
     expect(throttledOnLower).toBe(429);
   });
 
+  it('pools plus-tagged variants of one mailbox on a budget the untagged address never draws on', async () => {
+    const [local, domain] = uniqueEmail('tagged').split('@');
+    const agent = request.agent(app.getHttpServer());
+    const csrfToken = await csrfTokenFor(agent);
+
+    const statuses: number[] = [];
+    for (let tag = 1; tag <= 6; tag++) {
+      statuses.push(await attemptRegister(agent, csrfToken, `${local}+${tag}@${domain}`));
+    }
+    expect(statuses).toEqual([201, 201, 201, 201, 201, 429]);
+
+    expect(await attemptRegister(agent, csrfToken, `${local}@${domain}`)).toBe(201);
+  });
+
   it('applies an explicit @RateLimit override distinct from the default budget', async () => {
     // Step-up options: 10/min, IP dimension only (no ×4 multiplier without
     // identifierField).

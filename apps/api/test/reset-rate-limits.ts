@@ -1,8 +1,8 @@
 import IORedis from 'ioredis';
 
 // Every spec shares one Valkey and one loopback IP, so RateLimitGuard's
-// counters and lockouts (`rl:*`) would bleed across tests and throttle
-// unrelated ones. Flushed before every test.
+// counters and lockouts and SignupMailThrottle's claims (`rl:*`) would bleed
+// across tests and throttle unrelated ones. Flushed before every test.
 let redis: IORedis;
 
 beforeAll(() => {

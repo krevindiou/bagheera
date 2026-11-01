@@ -211,6 +211,89 @@ describe('RateLimitGuard', () => {
     expect(idKey!.split(':id:')[1]).toHaveLength(43); // base64url SHA-256
   });
 
+  describe('the tagged-mailbox dimension', () => {
+    const options: RateLimitOptions = {
+      points: 5,
+      durationSeconds: 60,
+      identifierField: 'email',
+      taggedMailbox: { points: 2, durationSeconds: 86400 },
+    };
+
+    async function keysFor(email: string): Promise<string[]> {
+      mockConsume.mockClear();
+      const guard = new RateLimitGuard(fakeValkeyClient(), fakeReflector({ options }));
+      await guard.canActivate(
+        fakeExecutionContext(fakeRequest({ method: 'POST', body: { email } })),
+      );
+      return mockConsume.mock.calls.map((call) => call[0]);
+    }
+
+    it('pools every tag variant of a mailbox under one key, on its own budget', async () => {
+      const first = (await keysFor('Inbox+1@example.test')).find((key) =>
+        key.includes(':mailbox:'),
+      );
+      const second = (await keysFor('inbox+2@example.test')).find((key) =>
+        key.includes(':mailbox:'),
+      );
+
+      expect(first).toBeDefined();
+      expect(first).toBe(second);
+      expect(first).not.toContain('inbox');
+      const limiterBudgets = (RateLimiterRedis as Mock).mock.calls.map(
+        (call) => call[0] as { points: number; duration: number },
+      );
+      expect(limiterBudgets).toContainEqual(
+        expect.objectContaining({ points: 2, duration: 86400 }),
+      );
+    });
+
+    it('leaves an untagged address off it, so spending it never denies the plain address', async () => {
+      const keys = await keysFor('inbox@example.test');
+
+      expect(keys.some((key) => key.includes(':mailbox:'))).toBe(false);
+      expect(keys.some((key) => key.includes(':id:'))).toBe(true);
+    });
+
+    it('is not checked on a route without taggedMailbox', async () => {
+      const guard = new RateLimitGuard(
+        fakeValkeyClient(),
+        fakeReflector({ options: { points: 5, durationSeconds: 60, identifierField: 'email' } }),
+      );
+      await guard.canActivate(
+        fakeExecutionContext(
+          fakeRequest({ method: 'POST', body: { email: 'inbox+1@example.test' } }),
+        ),
+      );
+
+      expect(mockConsume.mock.calls.some((call) => call[0].includes(':mailbox:'))).toBe(false);
+    });
+
+    it('locks out on its own budget window', async () => {
+      const valkey = fakeValkeyClient();
+      // Checked in order: address, identifier, mailbox.
+      mockConsume
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce({ msBeforeNext: 1000 });
+      const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+
+      await expect(
+        guard.canActivate(
+          fakeExecutionContext(
+            fakeRequest({ method: 'POST', body: { email: 'inbox+3@example.test' } }),
+          ),
+        ),
+      ).rejects.toThrow('Too many requests');
+      // min(MAX_BLOCK_SECONDS, 86400 * 2^0)
+      expect(valkey.set).toHaveBeenCalledWith(
+        expect.stringContaining(':mailbox:'),
+        '1',
+        'EX',
+        3600,
+      );
+    });
+  });
+
   it('short-circuits to 429 when an existing block key is present, without consuming the limiter', async () => {
     const valkey = fakeValkeyClient({ exists: vi.fn().mockResolvedValue(1) });
     const guard = new RateLimitGuard(valkey, fakeReflector());

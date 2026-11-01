@@ -22,6 +22,7 @@ import {
 import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 import { clientIp } from '../common/client-ip.decorator';
+import { normalizeEmail, plusTaggedMailbox } from '../common/email-address';
 
 // Strikes (lockout violations) decay after an hour of no further
 // violations on that dimension, so a stale block count doesn't keep
@@ -30,12 +31,25 @@ const STRIKE_RESET_SECONDS = 3600;
 // Cap on how long a single lockout can run, how ever many strikes accrue.
 const MAX_BLOCK_SECONDS = 3600;
 
+interface Dimension {
+  key: string;
+  points: number;
+  durationSeconds: number;
+}
+
+// Guards run before ValidationPipe, so identifiers are unbounded raw input,
+// and a raw key would store emails and tokens in Valkey.
+function hashed(identifier: string): string {
+  return createHash('sha256').update(identifier).digest('base64url');
+}
+
 /**
  * Valkey-backed request throttling with progressive lockout.
  *
- * Checks two independent dimensions per request: the source IP (or the
+ * Checks independent dimensions per request: the source IP (or the
  * member, for `perMember`), and the submitted identifier when the route
- * names an `identifierField` — so rotating one doesn't dodge the other.
+ * names an `identifierField` — so rotating one doesn't dodge the other —
+ * and, for `taggedMailbox`, the mailbox a plus-tagged address delivers to.
  * Exceeding a budget locks that dimension out; each further violation
  * before the strikes decay doubles the block, up to `MAX_BLOCK_SECONDS`.
  *
@@ -82,48 +96,45 @@ export class RateLimitGuard implements CanActivate {
     // One counter per route, unless the options name a shared scope.
     const routeKey = options.scope ?? `${context.getClass().name}#${context.getHandler().name}`;
     for (const dimension of this.dimensions(req, options, routeKey)) {
-      await this.checkDimension(dimension, options.durationSeconds);
+      await this.checkDimension(dimension);
     }
     return true;
   }
 
   /**
    * The source IP (or the member, for `perMember`), plus the submitted
-   * identifier when the route names one, each keyed under `routeKey`.
+   * identifier when the route names one, and its plus-tagged mailbox when
+   * the route sets `taggedMailbox`, each keyed under `routeKey`.
    */
-  private dimensions(
-    req: Request,
-    options: RateLimitOptions,
-    routeKey: string,
-  ): { key: string; points: number }[] {
+  private dimensions(req: Request, options: RateLimitOptions, routeKey: string): Dimension[] {
+    const { durationSeconds } = options;
     const memberId = options.perMember ? req.session?.memberId : undefined;
-    const dims = [
+    const dims: Dimension[] = [
       memberId
-        ? { key: `${routeKey}:member:${memberId}`, points: options.points }
-        : { key: `${routeKey}:ip:${clientIp(req)}`, points: ipPointsFor(options) },
+        ? { key: `${routeKey}:member:${memberId}`, points: options.points, durationSeconds }
+        : { key: `${routeKey}:ip:${clientIp(req)}`, points: ipPointsFor(options), durationSeconds },
     ];
     const rawIdentifier = options.identifierField
       ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]
       : undefined;
     if (typeof rawIdentifier === 'string' && rawIdentifier.length > 0) {
-      // Normalized like the email lookups (find-member-by-email.ts), or
-      // each case variant of one address would get its own budget.
-      const normalizedIdentifier = rawIdentifier.trim().toLowerCase();
-      // Hashed: guards run before ValidationPipe, so this is unbounded raw
-      // input, and a raw key would store emails and tokens in Valkey.
-      const identifierHash = createHash('sha256').update(normalizedIdentifier).digest('base64url');
+      // Normalized, or each case variant of one address would get its own budget.
       dims.push({
-        key: `${routeKey}:id:${identifierHash}`,
+        key: `${routeKey}:id:${hashed(normalizeEmail(rawIdentifier))}`,
         points: options.points,
+        durationSeconds,
       });
+      const tagged = options.taggedMailbox;
+      const mailbox = tagged && plusTaggedMailbox(rawIdentifier);
+      if (tagged && mailbox) {
+        dims.push({ key: `${routeKey}:mailbox:${hashed(mailbox)}`, ...tagged });
+      }
     }
     return dims;
   }
 
-  private async checkDimension(
-    dimension: { key: string; points: number },
-    durationSeconds: number,
-  ): Promise<void> {
+  private async checkDimension(dimension: Dimension): Promise<void> {
+    const { durationSeconds } = dimension;
     if (await this.valkeyClient.exists(`rl:block:${dimension.key}`)) {
       throw this.tooManyRequests();
     }

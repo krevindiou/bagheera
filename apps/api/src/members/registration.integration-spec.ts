@@ -2,15 +2,21 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { and, eq } from 'drizzle-orm';
 import request from 'supertest';
+import type IORedis from 'ioredis';
 import { member, securityEvent } from '../db/schema';
 import type { EmailMessage, SignupRequest } from '../email/email-message';
+import { RATE_LIMIT_VALKEY_CLIENT } from '../security/rate-limit-valkey-client.provider';
 import {
+  completeStepUp,
   csrfTokenFor,
   insertMemberWithCredential,
+  seedSignedInMember,
   uniqueEmail,
 } from '../test-support/auth-fixture';
 import { createTestApp, FakeEmailQueue, getDb } from '../test-support/create-test-app';
+import { SIGNUP_MAIL_DAILY_CAP } from './signup-mail-throttle';
 import { SignupRequestService } from './signup-request.service';
+import { SIGNUP_TOKEN_TTL_MS } from './signup-token';
 
 function messageOf(res: request.Response): string {
   return (res.body as { message: string }).message;
@@ -152,6 +158,52 @@ describe('registration', () => {
       expect(sentEmails()[0].to).toBe(email);
       expect(sentEmails()[0].html).toContain('/fr/sign-in');
       expect(sentEmails()[0].html).not.toContain('activate?key=');
+    });
+
+    it.each([
+      ['a new address', () => Promise.resolve(uniqueEmail())],
+      ['a registered address', async () => (await insertMemberWithCredential(app)).email],
+    ])('mails %s only once while its cooldown runs', async (_, emailFor) => {
+      const email = await emailFor();
+      const handler = app.get(SignupRequestService);
+
+      for (let i = 0; i < 3; i++) {
+        await handler.handle({ email, country: 'FR', locale: 'en', sourceAddress: '203.0.113.9' });
+      }
+
+      expect(sentEmails()).toHaveLength(1);
+      expect(sentEmails()[0].to).toBe(email);
+      const valkey = app.get<IORedis>(RATE_LIMIT_VALKEY_CLIENT);
+      const [cooldownKey] = await valkey.keys('rl:signup-mail:cooldown:*');
+      const ttl = await valkey.pttl(cooldownKey);
+      expect(ttl).toBeGreaterThan(0);
+      expect(ttl).toBeLessThanOrEqual(SIGNUP_TOKEN_TTL_MS);
+    });
+
+    it('stops sign-up mail once the daily cap is spent, but no other mail', async () => {
+      const valkey = app.get<IORedis>(RATE_LIMIT_VALKEY_CLIENT);
+      const dailyKey = `rl:signup-mail:day:${new Date().toISOString().slice(0, 10)}`;
+      await valkey.set(dailyKey, SIGNUP_MAIL_DAILY_CAP);
+      try {
+        await app.get(SignupRequestService).handle({
+          email: uniqueEmail(),
+          country: 'FR',
+          locale: 'en',
+          sourceAddress: '203.0.113.10',
+        });
+        expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+
+        const fixture = await seedSignedInMember(app);
+        const newEmail = uniqueEmail('new-address');
+        await completeStepUp(app, fixture);
+        const res = await fixture.mutate('post', '/members/profile', { email: newEmail });
+        expect(res.status).toBe(200);
+        expect(fakeEmailQueue.enqueue).toHaveBeenCalledWith(
+          expect.objectContaining({ to: newEmail }),
+        );
+      } finally {
+        await valkey.del(dailyKey);
+      }
     });
   });
 });
