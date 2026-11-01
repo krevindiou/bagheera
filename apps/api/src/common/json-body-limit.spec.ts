@@ -27,46 +27,43 @@ describe('isImportBodyUrl', () => {
 });
 
 describe('useJsonBodyLimit', () => {
-  type Options = { limit: string; type: (req: IncomingMessage) => boolean };
+  type Options = { limit: string; inflate: boolean; type: (req: IncomingMessage) => boolean };
 
-  const parsers = () => {
+  const parser = () => {
     const useBodyParser = vi.fn();
     useJsonBodyLimit({ useBodyParser } as unknown as NestExpressApplication);
-    const [larger, standard] = useBodyParser.mock.calls.map((call) => call[1] as Options);
-    return { larger, standard };
+    expect(useBodyParser).toHaveBeenCalledTimes(1);
+    return useBodyParser.mock.calls[0][1] as Options;
   };
   const request = (url: string | undefined, contentType?: string) =>
     ({ url, headers: { 'content-type': contentType } }) as unknown as IncomingMessage;
 
   const importUrl = '/api/operations/import/0190a1b2-0000-7000-8000-000000000000/preview';
 
-  it('gives the import bodies 2mb and every other body 100kb', () => {
-    const { larger, standard } = parsers();
+  it('gives every route except the import bodies 100kb, uncompressed', () => {
+    const { limit, inflate } = parser();
 
-    expect([larger.limit, standard.limit]).toEqual(['2mb', '100kb']);
+    expect([limit, inflate]).toEqual(['100kb', false]);
   });
 
-  it('hands a JSON import body to the larger parser only', () => {
-    const { larger, standard } = parsers();
-    const req = request(importUrl, 'application/json; charset=utf-8');
+  it('leaves JSON import bodies to the signed-in parser', () => {
+    const { type } = parser();
 
-    expect([larger.type(req), standard.type(req)]).toEqual([true, false]);
+    expect(type(request(importUrl, 'application/json'))).toBe(false);
   });
 
-  it('hands a JSON body of any other route to the default parser only', () => {
-    const { larger, standard } = parsers();
-    const req = request('/api/operations', 'application/json');
+  it('parses a JSON body of any other route', () => {
+    const { type } = parser();
 
-    expect([larger.type(req), standard.type(req)]).toEqual([false, true]);
+    expect(type(request('/api/operations', 'application/json'))).toBe(true);
   });
 
   it.each([undefined, 'multipart/form-data; boundary=x', 'text/plain'])(
-    'leaves a body of content type %s to both parsers alone',
+    'leaves a body of content type %s alone',
     (contentType) => {
-      const { larger, standard } = parsers();
-      const req = request(importUrl, contentType);
+      const { type } = parser();
 
-      expect([larger.type(req), standard.type(req)]).toEqual([false, false]);
+      expect(type(request('/api/operations', contentType))).toBe(false);
     },
   );
 });

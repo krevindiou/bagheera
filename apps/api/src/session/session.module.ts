@@ -10,6 +10,7 @@ import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
 import { buildCsrf } from './csrf';
 import { CsrfTokenController } from './csrf-token.controller';
 import { SessionAuthGuard } from './session-auth.guard';
+import { signedInImportBody } from './signed-in-import-body';
 import { SessionRegistryService } from './session-registry.service';
 import { SessionRotationService } from './session-rotation.service';
 import {
@@ -67,7 +68,13 @@ export class SessionModule implements NestModule, OnModuleDestroy {
     const { doubleCsrfProtection } = buildCsrf(this.config);
 
     consumer
-      .apply(cookieParser(), sessionMiddleware, absoluteSessionTtl, doubleCsrfProtection)
+      .apply(
+        cookieParser(),
+        sessionMiddleware,
+        absoluteSessionTtl,
+        doubleCsrfProtection,
+        signedInImportBody,
+      )
       // Kamal's proxy polls /health every few seconds, forever — it never
       // needs a session, so it shouldn't load, refresh or create one.
       .exclude('health')
