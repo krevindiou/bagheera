@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
-import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
+import { MEMBER_REPORT_READ_LIMIT, MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
@@ -17,7 +17,8 @@ import {
   ReportSeriesDto,
 } from './dto/report-response.dto';
 
-// Every write here draws on the member's shared write budget.
+// Every write here draws on the member's shared write budget, every read
+// on their report-read one.
 @RateLimit(MEMBER_WRITE_LIMIT)
 @Controller('reports')
 export class ReportController {
@@ -28,11 +29,13 @@ export class ReportController {
   ) {}
 
   @Get()
+  @RateLimit(MEMBER_REPORT_READ_LIMIT)
   list(@CurrentMember() memberId: MemberId): Promise<ReportDto[]> {
     return this.reports.list(memberId);
   }
 
   @Get(':id/series')
+  @RateLimit(MEMBER_REPORT_READ_LIMIT)
   series(
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,
@@ -41,6 +44,7 @@ export class ReportController {
   }
 
   @Get(':id/distribution')
+  @RateLimit(MEMBER_REPORT_READ_LIMIT)
   distribution(
     @CurrentMember() memberId: MemberId,
     @Param('id', ParseUuidV7Pipe) id: string,

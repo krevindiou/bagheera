@@ -695,6 +695,8 @@ export default {
     import_account_mismatch:
       "Ce fichier semble provenir d'un autre compte. Cochez « L'importer quand même dans ce compte » pour l'importer ici.",
     import_in_progress: 'Cet import est déjà en cours de confirmation.',
+    dashboard_in_progress:
+      'Votre tableau de bord est déjà en cours de chargement. Veuillez réessayer dans un instant.',
     import_not_found: "Cet import n'est plus disponible. Chargez de nouveau le fichier.",
     import_preview_stale:
       "Vos opérations ont changé depuis l'affichage de cet aperçu : rien n'a été importé. L'aperçu a été mis à jour, vérifiez-le puis confirmez de nouveau.",

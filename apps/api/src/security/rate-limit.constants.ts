@@ -114,3 +114,23 @@ export const MEMBER_IMPORT_PREVIEW_LIMIT: RateLimitOptions = {
   perMember: true,
   scope: 'member-import-previews',
 };
+
+/**
+ * The dashboard computes every homepage report at once, so a read here can
+ * cost the database dozens of queries. Covers a member flicking through the
+ * chart ranges, not a script polling it.
+ */
+export const MEMBER_DASHBOARD_LIMIT: RateLimitOptions = {
+  points: 30,
+  durationSeconds: 60,
+  perMember: true,
+  scope: 'member-dashboard',
+};
+
+/** Report reads: listing them, and computing one report's chart. */
+export const MEMBER_REPORT_READ_LIMIT: RateLimitOptions = {
+  points: 120,
+  durationSeconds: 60,
+  perMember: true,
+  scope: 'member-report-reads',
+};

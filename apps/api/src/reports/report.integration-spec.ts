@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { eq, inArray } from 'drizzle-orm';
 import { category, report, reportAccount, reportCategory } from '../db/schema';
+import { MEMBER_REPORT_READ_LIMIT } from '../security/rate-limit.constants';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { categoryIdOfType } from '../test-support/db-fixtures';
@@ -146,6 +147,21 @@ describe('reports', () => {
       expect(body).toHaveLength(1);
       expect(body[0].accountIds).toEqual([accountId]);
       expect(body[0].categoryIds).toEqual([creditCategoryId]);
+    });
+
+    it('shares one per-member read budget with the series and distribution reads', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const created = await mutate('post', '/reports', reportPayload());
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      for (let i = 0; i < MEMBER_REPORT_READ_LIMIT.points; i++) {
+        await agent.get('/reports').expect(200);
+      }
+      await agent.get(`/reports/${id}/series`).expect(429);
+      await agent.get(`/reports/${id}/distribution`).expect(429);
+
+      const other = await seedSignedInMember(app);
+      await other.agent.get('/reports').expect(200);
     });
   });
 

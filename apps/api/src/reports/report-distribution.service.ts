@@ -24,13 +24,22 @@ export type ReportDistributionSeries = ReportDistributionSeriesDto;
 
 export type ReportDistribution = ReportDistributionDto;
 
-interface GroupedRow {
+type Side = 'debit' | 'credit';
+
+// One row per currency/period/side and label, the ranked tail already folded
+// into Other (`label` and `rank` null), so at most `limit + 1` per bucket.
+type RankedRow = {
   currency: string;
   period: string | null;
+  side: Side;
   label: string | null;
-  debitSum: string | null;
-  creditSum: string | null;
-}
+  rank: number | null;
+  amount: string;
+};
+
+// Labels are ranked by whole-range total, desc, ties by label under ICU's
+// root collation — the order `localeCompare` gives, not the database's own.
+const LABEL_TIE_BREAK = sql.raw('collate "und-x-icu"');
 
 @Injectable()
 export class ReportDistributionService {
@@ -60,37 +69,26 @@ export class ReportDistributionService {
     // ones reaching this service.
     const limit = rpt.significantResultsNumber!;
     const grouping = rpt.periodGrouping;
-
-    // Pass 1: whole-range totals per (currency, label), only to rank labels
-    // and pick each side's top N.
-    const totals = await this.groupedRows(rpt, accountIds, categoryIds, 'all');
-    const topDebit = new Map<string, Set<string>>();
-    const topCredit = new Map<string, Set<string>>();
-    for (const currency of new Set(totals.map((row) => row.currency))) {
-      const rows = totals.filter((row) => row.currency === currency);
-      topDebit.set(currency, topLabels(rows, 'debitSum', limit));
-      topCredit.set(currency, topLabels(rows, 'creditSum', limit));
-    }
-
-    // Pass 2: per (currency, period, label), reusing pass 1 for 'all'.
-    const periodRows =
-      grouping === 'all' ? totals : await this.groupedRows(rpt, accountIds, categoryIds, grouping);
+    const rows = await this.rankedRows(rpt, accountIds, categoryIds, grouping, limit);
 
     // currency -> side -> label (null = Other) -> period -> minor-units sum
     const byCurrency = new Map<
       string,
-      {
-        debit: Map<string | null, Map<string, MinorUnits>>;
-        credit: Map<string | null, Map<string, MinorUnits>>;
-      }
+      Record<
+        Side,
+        { ranks: Map<string, number>; amounts: Map<string | null, Map<string, MinorUnits>> }
+      >
     >();
     const periodsByCurrency = new Map<string, Set<string>>();
 
-    for (const row of periodRows) {
+    for (const row of rows) {
       const periodKey = row.period ?? ALL_PERIOD_KEY;
       let entry = byCurrency.get(row.currency);
       if (!entry) {
-        entry = { debit: new Map(), credit: new Map() };
+        entry = {
+          debit: { ranks: new Map(), amounts: new Map() },
+          credit: { ranks: new Map(), amounts: new Map() },
+        };
         byCurrency.set(row.currency, entry);
       }
       let periods = periodsByCurrency.get(row.currency);
@@ -100,22 +98,11 @@ export class ReportDistributionService {
       }
       periods.add(periodKey);
 
-      if (row.debitSum !== null) {
-        addAmount(
-          entry.debit,
-          resolveLabel(row.label, topDebit.get(row.currency)!),
-          periodKey,
-          Number(row.debitSum) as MinorUnits,
-        );
+      const side = entry[row.side];
+      if (row.label !== null && row.rank !== null) {
+        side.ranks.set(row.label, row.rank);
       }
-      if (row.creditSum !== null) {
-        addAmount(
-          entry.credit,
-          resolveLabel(row.label, topCredit.get(row.currency)!),
-          periodKey,
-          Number(row.creditSum) as MinorUnits,
-        );
-      }
+      addAmount(side.amounts, row.label, periodKey, Number(row.amount) as MinorUnits);
     }
 
     const series: ReportDistributionSeries[] = [];
@@ -127,12 +114,13 @@ export class ReportDistributionService {
           ? [ALL_PERIOD_KEY]
           : fillPeriodGaps(presentPeriods[0], presentPeriods.at(-1)!, grouping);
 
-      const debit = assembleLabelSeries(entry.debit, periodKeys, grouping, topDebit.get(currency)!);
-      const credit = assembleLabelSeries(
-        entry.credit,
-        periodKeys,
-        grouping,
-        topCredit.get(currency)!,
+      const [debit, credit] = (['debit', 'credit'] as const).map((side) =>
+        assembleLabelSeries(
+          entry[side].amounts,
+          periodKeys,
+          grouping,
+          [...entry[side].ranks].sort((a, b) => a[1] - b[1]).map(([label]) => label),
+        ),
       );
       if (debit.length > 0 || credit.length > 0) {
         series.push({ currency, debit, credit });
@@ -142,30 +130,81 @@ export class ReportDistributionService {
     return { hidden: series.length === 0, dataGrouping: rpt.dataGrouping!, series };
   }
 
-  // Aggregated in Postgres: one row per currency/period/label. Three
-  // branches because the join differs per dataGrouping, which drizzle's
-  // types don't express as one conditional query.
-  private async groupedRows(
+  // Ranked and capped in Postgres, so the API never holds one row per label:
+  // each side's top `limit` non-null labels by whole-range total keep their
+  // own rows, and every other label — a null one (uncategorized) included,
+  // whatever its size — sums into Other. The top set is fixed over the whole
+  // range, not re-ranked per period.
+  private async rankedRows(
     rpt: typeof report.$inferSelect,
     accountIds: string[],
     categoryIds: string[],
     grouping: PeriodGrouping,
-  ): Promise<GroupedRow[]> {
+    limit: number,
+  ): Promise<RankedRow[]> {
+    const base = this.groupedRows(rpt, accountIds, categoryIds, grouping);
+    const result = await this.db.execute<RankedRow>(sql`
+      with base as (${base.getSQL()}),
+      ranked as (
+        select currency, label,
+          case when sum(debit_sum) is not null then row_number() over (
+            partition by currency
+            order by sum(debit_sum) desc nulls last, label ${LABEL_TIE_BREAK}
+          ) end as debit_rank,
+          case when sum(credit_sum) is not null then row_number() over (
+            partition by currency
+            order by sum(credit_sum) desc nulls last, label ${LABEL_TIE_BREAK}
+          ) end as credit_rank
+        from base
+        where label is not null
+        group by currency, label
+      )
+      select b.currency, to_char(b.period::date, 'YYYY-MM-DD') as period, 'debit' as side,
+        r.label, r.debit_rank::int as rank, sum(b.debit_sum)::text as amount
+      from base b
+      left join ranked r
+        on r.currency = b.currency and r.label = b.label and r.debit_rank <= ${limit}
+      where b.debit_sum is not null
+      group by b.currency, b.period, r.label, r.debit_rank
+      union all
+      select b.currency, to_char(b.period::date, 'YYYY-MM-DD'), 'credit',
+        r.label, r.credit_rank::int, sum(b.credit_sum)::text
+      from base b
+      left join ranked r
+        on r.currency = b.currency and r.label = b.label and r.credit_rank <= ${limit}
+      where b.credit_sum is not null
+      group by b.currency, b.period, r.label, r.credit_rank`);
+    return result.rows;
+  }
+
+  // Aggregated in Postgres: one row per currency/period/label, only ever
+  // read by `rankedRows`. Three branches because the join differs per
+  // dataGrouping, which drizzle's types don't express as one conditional
+  // query.
+  private groupedRows(
+    rpt: typeof report.$inferSelect,
+    accountIds: string[],
+    categoryIds: string[],
+    grouping: PeriodGrouping,
+  ) {
     const conditions = reportOperationConditions(rpt, accountIds, categoryIds);
-    const period = periodExpr(operation.valueDate, grouping).as('period');
-    const debitSum = sql<
-      string | null
-    >`sum(${operation.debit}) filter (where ${operation.debit} is not null)`;
-    const creditSum = sql<
-      string | null
-    >`sum(${operation.credit}) filter (where ${operation.credit} is not null)`;
+    const columns = {
+      currency: sql<string>`${account.currency}`.as('currency'),
+      period: periodExpr(operation.valueDate, grouping).as('period'),
+      debitSum: sql<
+        string | null
+      >`sum(${operation.debit}) filter (where ${operation.debit} is not null)`.as('debit_sum'),
+      creditSum: sql<
+        string | null
+      >`sum(${operation.credit}) filter (where ${operation.credit} is not null)`.as('credit_sum'),
+    };
     // GROUP BY position 2 (period), as in report-series.service.ts.
     const periodGroupBy = grouping === 'all' ? [] : [sql`2`];
 
     switch (rpt.dataGrouping) {
       case 'category':
         return this.db
-          .select({ currency: account.currency, period, label: category.name, debitSum, creditSum })
+          .select({ ...columns, label: sql<string | null>`${category.name}`.as('label') })
           .from(operation)
           .innerJoin(account, eq(operation.accountId, account.id))
           .leftJoin(category, eq(operation.categoryId, category.id))
@@ -174,13 +213,7 @@ export class ReportDistributionService {
 
       case 'payment_method':
         return this.db
-          .select({
-            currency: account.currency,
-            period,
-            label: paymentMethod.name,
-            debitSum,
-            creditSum,
-          })
+          .select({ ...columns, label: sql<string | null>`${paymentMethod.name}`.as('label') })
           .from(operation)
           .innerJoin(account, eq(operation.accountId, account.id))
           .innerJoin(paymentMethod, eq(operation.paymentMethodId, paymentMethod.id))
@@ -190,39 +223,13 @@ export class ReportDistributionService {
       case 'third_party':
       default:
         return this.db
-          .select({
-            currency: account.currency,
-            period,
-            label: operation.thirdParty,
-            debitSum,
-            creditSum,
-          })
+          .select({ ...columns, label: sql<string | null>`${operation.thirdParty}`.as('label') })
           .from(operation)
           .innerJoin(account, eq(operation.accountId, account.id))
           .where(and(...conditions))
           .groupBy(account.currency, ...periodGroupBy, operation.thirdParty);
     }
   }
-}
-
-// The top `limit` non-null labels by whole-range total, ranked desc (ties
-// broken by label for determinism) — a null label (uncategorized) never
-// makes the cut, so it always folds into "Other" regardless of its size,
-// same as the ranked tail.
-function topLabels(
-  rows: GroupedRow[],
-  sumKey: 'debitSum' | 'creditSum',
-  limit: number,
-): Set<string> {
-  const named = rows
-    .filter((row) => row.label !== null && row[sumKey] !== null)
-    .map((row) => ({ label: row.label as string, value: Number(row[sumKey]) }))
-    .sort((a, b) => (b.value !== a.value ? b.value - a.value : a.label.localeCompare(b.label)));
-  return new Set(named.slice(0, limit).map((entry) => entry.label));
-}
-
-function resolveLabel(label: string | null, topSet: Set<string>): string | null {
-  return label !== null && topSet.has(label) ? label : null;
 }
 
 function addAmount(
@@ -239,15 +246,15 @@ function addAmount(
   periods.set(period, ((periods.get(period) ?? 0) + value) as MinorUnits);
 }
 
-// One series per label, in rank order (topSet's insertion order), "Other"
-// last, each zero-filled over `periodKeys` so stacked series share an axis.
+// One series per label, in rank order, "Other" last, each zero-filled over
+// `periodKeys` so stacked series share an axis.
 function assembleLabelSeries(
   bySide: Map<string | null, Map<string, MinorUnits>>,
   periodKeys: string[],
   grouping: PeriodGrouping,
-  topSet: Set<string>,
+  ranked: string[],
 ): ReportDistributionLabelSeries[] {
-  const labelsInOrder: (string | null)[] = [...topSet, ...(bySide.has(null) ? [null] : [])];
+  const labelsInOrder: (string | null)[] = [...ranked, ...(bySide.has(null) ? [null] : [])];
   const series: ReportDistributionLabelSeries[] = [];
   for (const label of labelsInOrder) {
     const periods = bySide.get(label);

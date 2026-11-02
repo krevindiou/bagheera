@@ -1,7 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { balancesByAccount } from '../common/balances';
+import { BusinessError } from '../common/filters/business-error';
+import { mapWithConcurrency } from '../common/map-with-concurrency';
 import { memberToday } from '../common/member-today';
 import { MonthlyNet, monthlyNetByAccount, toSynthesisChartRow } from '../common/monthly-net';
 import {
@@ -11,6 +13,7 @@ import {
   SynthesisChart,
 } from '../common/synthesis-chart';
 import { MemberId } from '../security/ids';
+import { InFlightLimit, InFlightLimiter } from '../security/in-flight-limiter';
 import { isFullyActive, reachableAccountsOf } from '../security/reachable';
 import { OwnershipService } from '../security/ownership.service';
 import { DRIZZLE } from '../db/db.constants';
@@ -42,6 +45,16 @@ export type DashboardResponse = DashboardResponseDto;
 // Sparkline tiles have no axis or labels, so a short window reads best.
 const SPARKLINE_MONTHS = 6;
 
+// Homepage reports computed at once for one dashboard. Each runs several
+// queries, and the pool's few connections serve every member: without a cap
+// one member's dashboard queues everyone else's requests behind its own.
+export const HOMEPAGE_REPORT_CONCURRENCY = 2;
+
+// Dashboards one member can have computing at once, across API instances,
+// so opening many tabs (or a script) can't multiply the cap above. The slot
+// TTL only frees a slot whose holder died without releasing it.
+export const DASHBOARD_IN_FLIGHT: InFlightLimit = { max: 2, slotTtlMs: 60_000 };
+
 const EMPTY_SYNTHESIS_CHART: SynthesisChart = {
   hidden: true,
   axisBounds: null,
@@ -71,6 +84,7 @@ export class DashboardService {
     private readonly ownership: OwnershipService,
     private readonly reportSeries: ReportSeriesService,
     private readonly reportDistributions: ReportDistributionService,
+    private readonly inFlight: InFlightLimiter,
   ) {}
 
   // Per-account sparkline: AccountService.chart's synthesis chart (window
@@ -109,7 +123,21 @@ export class DashboardService {
     return histories;
   }
 
-  async getDashboard(memberId: MemberId, range?: string): Promise<DashboardResponse> {
+  getDashboard(memberId: MemberId, range?: string): Promise<DashboardResponse> {
+    return this.inFlight.run(
+      `dashboard:${memberId}`,
+      DASHBOARD_IN_FLIGHT,
+      () =>
+        new BusinessError(
+          HttpStatus.TOO_MANY_REQUESTS,
+          'dashboard_in_progress',
+          'Your dashboard is already loading.',
+        ),
+      () => this.buildDashboard(memberId, range),
+    );
+  }
+
+  private async buildDashboard(memberId: MemberId, range?: string): Promise<DashboardResponse> {
     const banks = await this.ownership.listOwnedBanks(memberId);
     if (banks.length === 0) {
       return {
@@ -291,8 +319,10 @@ export class DashboardService {
       .from(report)
       .where(and(eq(report.memberId, memberId), eq(report.homepage, true)));
 
-    const entries = await Promise.all(
-      homepageReports.map(async (rpt): Promise<HomepageReport> => {
+    const entries = await mapWithConcurrency(
+      homepageReports,
+      HOMEPAGE_REPORT_CONCURRENCY,
+      async (rpt): Promise<HomepageReport> => {
         if (rpt.type === 'distribution') {
           return {
             kind: 'distribution',
@@ -309,7 +339,7 @@ export class DashboardService {
           periodGrouping: rpt.periodGrouping,
           series: await this.reportSeries.computeSeries(rpt, memberId),
         };
-      }),
+      },
     );
     // Reports with no data points are omitted.
     return entries.filter((entry) =>

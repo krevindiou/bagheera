@@ -1,6 +1,9 @@
 import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { vi } from 'vitest';
 import type { Server } from 'http';
+import { DRIZZLE } from '../db/db.constants';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
@@ -348,6 +351,86 @@ describe('GET /reports/:id/distribution', () => {
       expect(debit.find((s) => s.label === null)!.points).toEqual([
         { period: '2026-01-01', value: 0 },
         { period: '2026-02-01', value: toMinorUnits(50) },
+      ]);
+    });
+  });
+
+  describe('ranking in the database', () => {
+    it('sends the API at most significantResultsNumber + 1 rows per currency, period and side', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      for (let i = 1; i <= 12; i++) {
+        await createOperation(mutate, accountId, {
+          amount: i,
+          thirdParty: `Payee ${String(i).padStart(2, '0')}`,
+          valueDate: i % 2 === 0 ? '2026-01-10' : '2026-02-10',
+        });
+      }
+      const created = await createDistributionReport(mutate, {
+        title: 'Many payees',
+        dataGrouping: 'third_party',
+        significantResultsNumber: 3,
+        periodGrouping: 'month',
+        accountIds: [accountId],
+      });
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      // The rows the database hands the API, read before restoring the spy
+      // clears them.
+      const execute = vi.spyOn(app.get<NodePgDatabase>(DRIZZLE), 'execute');
+      let res;
+      let results: unknown[];
+      try {
+        res = await agent.get(`/reports/${id}/distribution`).expect(200);
+        results = await Promise.all(execute.mock.results.map((result): unknown => result.value));
+      } finally {
+        execute.mockRestore();
+      }
+
+      expect(results).toHaveLength(1);
+      const { rows } = results[0] as { rows: { currency: string; period: string; side: string }[] };
+      const perBucket = new Map<string, number>();
+      for (const row of rows) {
+        const bucket = `${row.currency}/${row.period}/${row.side}`;
+        perBucket.set(bucket, (perBucket.get(bucket) ?? 0) + 1);
+      }
+      expect([...perBucket.values()].every((count) => count <= 4)).toBe(true);
+      expect(perBucket.size).toBe(2);
+
+      // Top three over the whole range: 12 and 10 (January), 11 (February).
+      const debit = (res.body as DistributionBody).series[0].debit;
+      expect(debit.map((s) => ({ label: s.label, values: s.points.map((p) => p.value) }))).toEqual([
+        { label: 'Payee 12', values: [toMinorUnits(12), 0] },
+        { label: 'Payee 11', values: [0, toMinorUnits(11)] },
+        { label: 'Payee 10', values: [toMinorUnits(10), 0] },
+        // January: 2+4+6+8; February: 1+3+5+7+9.
+        { label: null, values: [toMinorUnits(20), toMinorUnits(25)] },
+      ]);
+    });
+
+    it('breaks ties between equal totals by label, in the order localeCompare gives', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const labels = ['é', 'B', 'e', 'b', 'a'];
+      for (const thirdParty of labels) {
+        await createOperation(mutate, accountId, { amount: 10, thirdParty });
+      }
+      const created = await createDistributionReport(mutate, {
+        title: 'Ties',
+        dataGrouping: 'third_party',
+        significantResultsNumber: 4,
+        accountIds: [accountId],
+      });
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      const res = await agent.get(`/reports/${id}/distribution`).expect(200);
+      const debit = (res.body as DistributionBody).series[0].debit;
+      const expected = [...labels].sort((x, y) => x.localeCompare(y));
+      expect(snapshotValues(debit)).toEqual([
+        ...expected.slice(0, 4).map((label) => ({ label, value: toMinorUnits(10) })),
+        { label: null, value: toMinorUnits(10) },
       ]);
     });
   });

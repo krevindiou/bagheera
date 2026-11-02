@@ -2,8 +2,11 @@ import { toMinorUnits } from '../common/money';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { InFlightLimiter } from '../security/in-flight-limiter';
+import { MEMBER_DASHBOARD_LIMIT } from '../security/rate-limit.constants';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
+import { DASHBOARD_IN_FLIGHT } from './dashboard.service';
 
 async function createBank(mutate: SignedInFixture['mutate']): Promise<string> {
   const res = await mutate('post', '/banks/choice', { name: 'Test bank' });
@@ -407,5 +410,45 @@ describe('GET /dashboard', () => {
         periodGrouping: r.periodGrouping,
       })),
     ).toEqual([{ title: 'By third party', kind: 'distribution', periodGrouping: 'all' }]);
+  });
+
+  it("refuses a dashboard with dashboard_in_progress while the member's slots are all taken, and serves it once one frees", async () => {
+    const { agent, memberId } = await seedSignedInMember(app);
+    const limiter = app.get(InFlightLimiter);
+    const key = `dashboard:${memberId}`;
+    const tokens: string[] = [];
+    for (let i = 0; i < DASHBOARD_IN_FLIGHT.max; i++) {
+      tokens.push((await limiter.acquire(key, DASHBOARD_IN_FLIGHT))!);
+    }
+
+    const refused = await agent.get('/dashboard').expect(429);
+    expect((refused.body as { code: string }).code).toBe('dashboard_in_progress');
+
+    await limiter.release(key, tokens[0]);
+    await agent.get('/dashboard').expect(200);
+    // The served dashboard gave its slot back.
+    expect(await limiter.acquire(key, DASHBOARD_IN_FLIGHT)).not.toBeNull();
+  });
+
+  it("keeps one member's dashboard slots apart from another's", async () => {
+    const busy = await seedSignedInMember(app);
+    const limiter = app.get(InFlightLimiter);
+    for (let i = 0; i < DASHBOARD_IN_FLIGHT.max; i++) {
+      await limiter.acquire(`dashboard:${busy.memberId}`, DASHBOARD_IN_FLIGHT);
+    }
+
+    const { agent } = await seedSignedInMember(app);
+    await agent.get('/dashboard').expect(200);
+  });
+
+  it('rate-limits dashboard reads per member', async () => {
+    const { agent } = await seedSignedInMember(app);
+    for (let i = 0; i < MEMBER_DASHBOARD_LIMIT.points; i++) {
+      await agent.get('/dashboard').expect(200);
+    }
+    await agent.get('/dashboard').expect(429);
+
+    const other = await seedSignedInMember(app);
+    await other.agent.get('/dashboard').expect(200);
   });
 });

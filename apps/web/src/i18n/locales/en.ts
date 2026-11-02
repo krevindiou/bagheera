@@ -686,6 +686,7 @@ export default {
     import_account_mismatch:
       'This file seems to come from another account. Tick “Import it into this account anyway” to import it here.',
     import_in_progress: 'This import is already being confirmed.',
+    dashboard_in_progress: 'Your dashboard is already loading. Please try again in a moment.',
     import_not_found: 'This import is no longer available. Upload the file again.',
     import_preview_stale:
       'Your operations changed since this preview was shown, so nothing was imported. The preview has been updated: check it, then confirm again.',

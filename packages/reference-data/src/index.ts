@@ -149,6 +149,7 @@ export const BUSINESS_ERROR_CODES = [
   'bank_not_active',
   'bank_required',
   'category_invalid',
+  'dashboard_in_progress',
   'email_change_link_invalid',
   'import_account_mismatch',
   'import_file_invalid',

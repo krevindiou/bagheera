@@ -5,6 +5,7 @@ import { closeValkeyClient } from '../common/valkey-client';
 import { DbModule } from '../db/db.module';
 import { AuditService } from './audit.service';
 import { CryptoService } from './crypto.service';
+import { InFlightLimiter } from './in-flight-limiter';
 import { OwnershipService } from './ownership.service';
 import {
   RATE_LIMIT_VALKEY_CLIENT,
@@ -21,8 +22,15 @@ import { RateLimitGuard } from './rate-limit.guard';
     { provide: APP_GUARD, useClass: RateLimitGuard },
     AuditService,
     OwnershipService,
+    InFlightLimiter,
   ],
-  exports: [CryptoService, RATE_LIMIT_VALKEY_CLIENT, AuditService, OwnershipService],
+  exports: [
+    CryptoService,
+    RATE_LIMIT_VALKEY_CLIENT,
+    AuditService,
+    OwnershipService,
+    InFlightLimiter,
+  ],
 })
 export class SecurityModule implements OnModuleDestroy {
   constructor(

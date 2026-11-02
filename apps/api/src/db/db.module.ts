@@ -13,6 +13,10 @@ const logger = new Logger('DbModule');
 // their own, without it.
 export const STATEMENT_TIMEOUT_MS = 10_000;
 
+// How long a request waits for a free connection before failing, so a
+// saturated pool turns into quick errors instead of an ever-growing queue.
+export const POOL_CONNECTION_TIMEOUT_MS = 5_000;
+
 @Global()
 @Module({
   imports: [ConfigModule],
@@ -24,6 +28,7 @@ export const STATEMENT_TIMEOUT_MS = 10_000;
         const pool = new Pool({
           connectionString: config.getOrThrow<string>('DATABASE_URL'),
           statement_timeout: STATEMENT_TIMEOUT_MS,
+          connectionTimeoutMillis: POOL_CONNECTION_TIMEOUT_MS,
         });
         // Idle-client errors (e.g. DB restart) are otherwise unhandled and
         // crash the process; log and let the pool recycle the connection.
