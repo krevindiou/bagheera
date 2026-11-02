@@ -149,6 +149,33 @@ export function ValueDateField(): PropertyDecorator {
 }
 
 /**
+ * The elements of an array, or the `identifier` of each, are distinct. Unlike
+ * `@ArrayUnique`, which compares every pair even past `@ArrayMaxSize`, this
+ * refuses an array longer than `limit` outright and checks the rest in one pass.
+ */
+export function UniqueWithin<T>(
+  limit: number,
+  identifier?: (item: T) => unknown,
+): PropertyDecorator {
+  return ValidateBy({
+    name: 'uniqueWithin',
+    constraints: [limit],
+    validator: {
+      validate: (value: unknown) => {
+        if (!Array.isArray(value) || value.length > limit) return false;
+        const keys = identifier
+          ? (value as (T | null | undefined)[]).map((item) =>
+              item == null ? item : identifier(item),
+            )
+          : value;
+        return new Set(keys).size === keys.length;
+      },
+      defaultMessage: () => "All $property's elements must be unique",
+    },
+  });
+}
+
+/**
  * One ValueDateField must be on or after another on the same DTO (a
  * report's end date, a scheduler's stop date) — an inverted pair would
  * otherwise silently match/generate nothing. Both are 'YYYY-MM-DD', so

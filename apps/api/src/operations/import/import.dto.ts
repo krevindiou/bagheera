@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
-  ArrayUnique,
   IsArray,
   IsBoolean,
   IsInt,
@@ -16,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { FIELD_LIMITS, IMPORT_LIMITS, type EntryType } from '@bagheera/reference-data';
+import { UniqueWithin } from '../../common/dto-fields';
 import type { InvalidReason, LabelOrigin, SuggestionOrigin } from './rows/types';
 
 export class StartImportDto {
@@ -82,7 +82,7 @@ export class PreviewImportDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(IMPORT_LIMITS.MAX_ROWS)
-  @ArrayUnique((change: LabelChangeDto) => change.line)
+  @UniqueWithin(IMPORT_LIMITS.MAX_ROWS, (change: LabelChangeDto) => change.line)
   @ValidateNested({ each: true })
   @Type(() => LabelChangeDto)
   labelChanges?: LabelChangeDto[];
@@ -92,7 +92,7 @@ export class PreviewImportDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(IMPORT_LIMITS.MAX_ROWS)
-  @ArrayUnique((change: PaymentMethodChangeDto) => change.line)
+  @UniqueWithin(IMPORT_LIMITS.MAX_ROWS, (change: PaymentMethodChangeDto) => change.line)
   @ValidateNested({ each: true })
   @Type(() => PaymentMethodChangeDto)
   paymentMethodChanges?: PaymentMethodChangeDto[];
@@ -102,7 +102,7 @@ export class PreviewImportDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(IMPORT_LIMITS.MAX_ROWS)
-  @ArrayUnique((change: CategoryChangeDto) => change.line)
+  @UniqueWithin(IMPORT_LIMITS.MAX_ROWS, (change: CategoryChangeDto) => change.line)
   @ValidateNested({ each: true })
   @Type(() => CategoryChangeDto)
   categoryChanges?: CategoryChangeDto[];
@@ -112,7 +112,7 @@ export class PreviewImportDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(IMPORT_LIMITS.MAX_ROWS)
-  @ArrayUnique((change: TransferAccountChangeDto) => change.line)
+  @UniqueWithin(IMPORT_LIMITS.MAX_ROWS, (change: TransferAccountChangeDto) => change.line)
   @ValidateNested({ each: true })
   @Type(() => TransferAccountChangeDto)
   transferAccountChanges?: TransferAccountChangeDto[];
@@ -141,7 +141,7 @@ export class ConfirmImportDto extends PreviewImportDto {
   // are not such a row are ignored.
   @IsOptional()
   @IsArray()
-  @ArrayUnique()
+  @UniqueWithin(IMPORT_LIMITS.MAX_ROWS)
   @ArrayMaxSize(IMPORT_LIMITS.MAX_ROWS)
   @IsInt({ each: true })
   @Min(1, { each: true })
@@ -150,7 +150,7 @@ export class ConfirmImportDto extends PreviewImportDto {
   // Skipped rows the Member chose to import anyway; other lines are ignored.
   @IsOptional()
   @IsArray()
-  @ArrayUnique()
+  @UniqueWithin(IMPORT_LIMITS.MAX_ROWS)
   @ArrayMaxSize(IMPORT_LIMITS.MAX_ROWS)
   @IsInt({ each: true })
   @Min(1, { each: true })

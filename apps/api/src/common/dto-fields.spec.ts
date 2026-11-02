@@ -13,6 +13,7 @@ import {
   SecretField,
   SignedAmountField,
   ThirdPartyField,
+  UniqueWithin,
   ValueDateField,
 } from './dto-fields';
 
@@ -45,6 +46,12 @@ class SignedAmountFieldHost {
 }
 class ValueDateFieldHost {
   @ValueDateField() valueDate!: string;
+}
+class UniqueWithinHost {
+  @UniqueWithin(3) value!: unknown;
+}
+class UniqueWithinByLineHost {
+  @UniqueWithin(3, (item: { line: number }) => item.line) value!: unknown;
 }
 class IsOnOrAfterHost {
   start!: string;
@@ -275,5 +282,63 @@ describe('TimeZoneField', () => {
     expect(errors[0]?.constraints).toEqual({
       isTimeZone: 'timeZone must be a valid IANA time zone',
     });
+  });
+});
+
+describe('UniqueWithin', () => {
+  const errorsOf = async (host: new () => object, value: unknown) =>
+    (await validate(plainToInstance(host, { value })))[0]?.constraints;
+
+  it('accepts distinct elements up to the limit', async () => {
+    expect(await errorsOf(UniqueWithinHost, [])).toBeUndefined();
+    expect(await errorsOf(UniqueWithinHost, [1, 2, 3])).toBeUndefined();
+  });
+
+  it('rejects a repeated element with the message of ArrayUnique', async () => {
+    expect(await errorsOf(UniqueWithinHost, [1, 2, 1])).toEqual({
+      uniqueWithin: "All value's elements must be unique",
+    });
+  });
+
+  it('rejects an array longer than the limit, and anything but an array', async () => {
+    expect(await errorsOf(UniqueWithinHost, [1, 2, 3, 4])).toHaveProperty('uniqueWithin');
+    expect(await errorsOf(UniqueWithinHost, 'abc')).toHaveProperty('uniqueWithin');
+    expect(await errorsOf(UniqueWithinHost, { length: 1 })).toHaveProperty('uniqueWithin');
+  });
+
+  it('compares the identifier of each element', async () => {
+    expect(
+      await errorsOf(UniqueWithinByLineHost, [
+        { line: 1, other: 'a' },
+        { line: 2, other: 'a' },
+      ]),
+    ).toBeUndefined();
+    expect(
+      await errorsOf(UniqueWithinByLineHost, [
+        { line: 1, other: 'a' },
+        { line: 1, other: 'b' },
+      ]),
+    ).toHaveProperty('uniqueWithin');
+  });
+
+  it('tolerates null elements, which count as one value', async () => {
+    expect(await errorsOf(UniqueWithinByLineHost, [null, { line: 1 }])).toBeUndefined();
+    expect(await errorsOf(UniqueWithinByLineHost, [null, null])).toHaveProperty('uniqueWithin');
+  });
+
+  it('checks the most elements in one pass', async () => {
+    class LargeHost {
+      @UniqueWithin(100_000) value!: unknown;
+    }
+    const started = performance.now();
+
+    expect(
+      await errorsOf(
+        LargeHost,
+        Array.from({ length: 100_000 }, (_, i) => i),
+      ),
+    ).toBeUndefined();
+
+    expect(performance.now() - started).toBeLessThan(1000);
   });
 });

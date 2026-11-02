@@ -357,4 +357,29 @@ describe('bank file import: preview', () => {
       });
     });
   });
+
+  describe('bodies shaped to stall validation', () => {
+    const manyKeys = (count: number) =>
+      Object.fromEntries(Array.from({ length: count }, (_, i) => [`k${i}`, 0]));
+
+    it.each(['preview', 'confirm'])('refuses them on %s before validating', async (route) => {
+      const fixture = await seedSignedInMember(app);
+      const accountId = await createAccount(fixture);
+      const { importId } = await startImport(fixture, accountId, FILE);
+      const send = (body: object) =>
+        fixture.mutate('post', `/operations/import/${importId}/${route}`, body);
+
+      for (const body of [
+        manyKeys(100_000),
+        { labelChanges: [manyKeys(100_000)] },
+        { revision: manyKeys(100_000) },
+        { reconcileLines: Array.from({ length: 100_001 }, (_, i) => i + 1) },
+        { labelChanges: Array.from({ length: 100_000 }, () => ({})) },
+        { categoryChanges: [[[{ line: 1 }]]] },
+      ]) {
+        expect((await send(body)).status).toBe(400);
+      }
+      expect(await operationsOf(accountId)).toHaveLength(0);
+    });
+  });
 });

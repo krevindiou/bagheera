@@ -8,6 +8,7 @@ import {
   Post,
   UploadedFile,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -23,6 +24,7 @@ import {
 import { RateLimit } from '../../security/rate-limit.decorator';
 import { CurrentMember } from '../../session/current-member.decorator';
 import { PayloadTooLargeToBusinessError } from './file-too-large.filter';
+import { ImportListLimitGuard } from './import-list-limit.guard';
 import {
   ConfirmImportDto,
   ImportPreviewDto,
@@ -79,6 +81,7 @@ export class ImportController {
 
   @Post(':importId/preview')
   @RateLimit(MEMBER_IMPORT_PREVIEW_LIMIT)
+  @UseGuards(ImportListLimitGuard)
   @HttpCode(200)
   preview(
     @CurrentMember() memberId: MemberId,
@@ -89,6 +92,7 @@ export class ImportController {
   }
 
   @Post(':importId/confirm')
+  @UseGuards(ImportListLimitGuard)
   @HttpCode(200)
   confirm(
     @CurrentMember() memberId: MemberId,
