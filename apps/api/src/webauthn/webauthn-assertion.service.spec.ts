@@ -26,9 +26,10 @@ const CONFIG_VALUES: Record<string, string> = {
   RP_ORIGIN: 'https://example.test',
 };
 
-function setup(rows: WebauthnCredentialRow[] = []) {
+function setup(rows: WebauthnCredentialRow[] = [], updatedRows = [{ id: 'row-1' }]) {
   const where = vi.fn().mockResolvedValue(rows);
-  const updateWhere = vi.fn().mockResolvedValue(undefined);
+  const returning = vi.fn().mockResolvedValue(updatedRows);
+  const updateWhere = vi.fn().mockReturnValue({ returning });
   const set = vi.fn().mockReturnValue({ where: updateWhere });
   const db = {
     select: vi.fn().mockReturnValue({ from: vi.fn().mockReturnValue({ where }) }),
@@ -41,7 +42,7 @@ function setup(rows: WebauthnCredentialRow[] = []) {
     config as unknown as ConfigService,
     crypto as unknown as WebauthnCryptoService,
   );
-  return { service, db, set, updateWhere, crypto };
+  return { service, db, set, updateWhere, returning, crypto };
 }
 
 describe('WebauthnAssertionService', () => {
@@ -172,14 +173,21 @@ describe('WebauthnAssertionService', () => {
   });
 
   describe('recordUse', () => {
-    it('stores the new counter and a last-used time on that credential', async () => {
-      const { service, db, set, updateWhere } = setup();
+    it('stores the new counter and a last-used time on that credential, and reports it', async () => {
+      const { service, db, set, updateWhere, returning } = setup();
 
-      await service.recordUse(CREDENTIAL, 6);
+      await expect(service.recordUse(CREDENTIAL, 6)).resolves.toBe(true);
 
       expect(db.update).toHaveBeenCalledTimes(1);
       expect(set).toHaveBeenCalledWith({ counter: 6, lastUsedAt: expect.any(Date) as unknown });
       expect(updateWhere).toHaveBeenCalledTimes(1);
+      expect(returning).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports a credential removed since it was read', async () => {
+      const { service } = setup([], []);
+
+      await expect(service.recordUse(CREDENTIAL, 6)).resolves.toBe(false);
     });
   });
 });

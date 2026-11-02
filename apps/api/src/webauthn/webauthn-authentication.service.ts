@@ -29,6 +29,22 @@ function invalidPasskey(): BusinessError {
   return new BusinessError(HttpStatus.UNAUTHORIZED, 'passkey_sign_in_failed', INVALID_PASSKEY);
 }
 
+function saveSession(req: Request): Promise<void> {
+  return new Promise((resolve, reject) => {
+    req.session.save((err) => (err ? reject(toError(err)) : resolve()));
+  });
+}
+
+function destroySession(req: Request): Promise<void> {
+  return new Promise((resolve, reject) => {
+    req.session.destroy((err) => (err ? reject(toError(err)) : resolve()));
+  });
+}
+
+function toError(err: unknown): Error {
+  return err instanceof Error ? err : new Error(String(err));
+}
+
 /**
  * The sole, usernameless sign-in: options() names no credentials, so the
  * authenticator offers its discoverable passkeys for this site, and
@@ -91,11 +107,28 @@ export class WebauthnAuthenticationService {
       throw invalidPasskey();
     }
 
-    await this.assertion.recordUse(credentialRow, verification.newCounter);
+    if (!(await this.assertion.recordUse(credentialRow, verification.newCounter))) {
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
+      throw invalidPasskey();
+    }
 
+    // A step-up proof belongs to the session it was given in, not to the
+    // member: a sign-in starts a fresh authorization, so it is dropped here
+    // before rotation would carry it into the new session id.
+    delete req.session.stepUpVerifiedAt;
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
     await this.sessionRegistry.register(row.id, req.sessionID);
+    await saveSession(req);
+
+    // A removal of this passkey committed after recordUse() either shows up
+    // here, or its revocation runs after register() and so reaches this
+    // session.
+    if (!(await this.assertion.findCredential(dto.response.id))) {
+      await destroySession(req);
+      await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);
+      throw invalidPasskey();
+    }
 
     await this.db.update(member).set({ loggedAt: new Date() }).where(eq(member.id, row.id));
 

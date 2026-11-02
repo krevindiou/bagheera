@@ -4,11 +4,21 @@ import type { Server } from 'http';
 import { and, desc, eq } from 'drizzle-orm';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
+import type IORedis from 'ioredis';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
-import { csrfTokenFor, insertMemberWithCredential } from '../test-support/auth-fixture';
+import {
+  completeStepUp,
+  csrfTokenFor,
+  insertMemberWithCredential,
+  seedSignedInMember,
+  signInWithPasskey,
+} from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { withClockAhead } from '../test-support/with-clock-ahead';
 import { CHALLENGE_TTL_MS } from '../session/challenge';
+import { SchedulerCatchUpService } from '../auth/scheduler-catch-up.service';
+import { SessionRegistryService } from '../session/session-registry.service';
+import { SESSION_KEY_PREFIX, VALKEY_CLIENT } from '../session/session.constants';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
 function verifiedResult(newCounter: number): VerifiedAuthenticationResponse {
@@ -259,6 +269,99 @@ describe('webauthn authentication', () => {
         .expect(401);
       expect(messageOf(res)).toBe('Passkey sign-in failed.');
       await agent.get('/auth/me').expect(401);
+    });
+
+    it('rejects a passkey removed while it was being verified, and records webauthn_sign_in_failure', async () => {
+      const { memberId, credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockImplementationOnce(async () => {
+        await getDb(app)
+          .delete(webauthnCredential)
+          .where(eq(webauthnCredential.credentialId, credentialId));
+        return verifiedResult(1);
+      });
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      await agent.get('/auth/me').expect(401);
+
+      const failures = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_sign_in_failure'),
+            eq(securityEvent.memberId, memberId),
+          ),
+        );
+      expect(failures).toHaveLength(1);
+    });
+
+    // The removal's revokeOthers() ran before this session was registered,
+    // so only the re-read of the credential can catch it.
+    it('rejects and destroys the new session when the passkey is removed once it is registered', async () => {
+      const { memberId, credentialId } = await insertMemberWithCredential(app);
+      const { agent, csrfToken } = await startCeremony();
+      const registry = app.get(SessionRegistryService);
+      const register = registry.register.bind(registry);
+      let sessionId: string | undefined;
+      const registerSpy = vi
+        .spyOn(registry, 'register')
+        .mockImplementationOnce(async (id: string, sid: string) => {
+          await getDb(app)
+            .delete(webauthnCredential)
+            .where(eq(webauthnCredential.credentialId, credentialId));
+          await registry.revokeOthers(id);
+          sessionId = sid;
+          await register(id, sid);
+        });
+      const catchUp = vi.spyOn(app.get(SchedulerCatchUpService), 'catchUp');
+      catchUp.mockClear();
+
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockResolvedValueOnce(verifiedResult(1));
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(credentialId) })
+        .expect(401);
+      registerSpy.mockRestore();
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+      await agent.get('/auth/me').expect(401);
+
+      expect(sessionId).toBeDefined();
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      expect(await valkey.exists(`${SESSION_KEY_PREFIX}${sessionId}`)).toBe(0);
+      expect(catchUp).not.toHaveBeenCalled();
+
+      const [updatedMember] = await getDb(app)
+        .select({ loggedAt: member.loggedAt })
+        .from(member)
+        .where(eq(member.id, memberId));
+      expect(updatedMember.loggedAt).toBeNull();
+    });
+
+    // A step-up proof from before a sign-in must not authorize a sensitive
+    // action after it.
+    it('drops a step-up proof held by the session when it signs in again', async () => {
+      const fixture = await seedSignedInMember(app);
+      await completeStepUp(app, fixture);
+      await signInWithPasskey(app, fixture.agent, fixture.credentialId);
+
+      const res = await fixture.mutate('post', '/webauthn/registration/options');
+      expect(res.status).toBe(422);
+      expect((res.body as { message: string }).message).toBe(
+        'Step-up verification is required or has expired.',
+      );
     });
 
     it('consumes the challenge — a replayed verify() fails', async () => {

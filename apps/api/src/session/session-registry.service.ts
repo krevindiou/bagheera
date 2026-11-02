@@ -19,6 +19,9 @@ function memberSessionsKey(memberId: string): string {
  * are harmless, since deleting a missing session key is a no-op. The set's
  * TTL is the absolute session cap, refreshed on every sign-in: no session
  * it lists can outlive it.
+ *
+ * SessionAuthGuard also requires the session's id to be listed here, so a
+ * revoked session that an in-flight request writes back stays signed out.
  */
 @Injectable()
 export class SessionRegistryService {
@@ -31,6 +34,10 @@ export class SessionRegistryService {
 
   async unregister(memberId: string, sessionId: string): Promise<void> {
     await this.valkey.srem(memberSessionsKey(memberId), sessionId);
+  }
+
+  async isRegistered(memberId: string, sessionId: string): Promise<boolean> {
+    return (await this.valkey.sismember(memberSessionsKey(memberId), sessionId)) === 1;
   }
 
   /** Destroys every session of the member except `keepSessionId` (none, if omitted). */

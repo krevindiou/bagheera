@@ -4,7 +4,7 @@ import type { Server } from 'http';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import { and, desc, eq } from 'drizzle-orm';
 import request from 'supertest';
-import { securityEvent } from '../db/schema';
+import { securityEvent, webauthnCredential } from '../db/schema';
 import {
   csrfTokenFor,
   insertMemberWithCredential,
@@ -175,6 +175,42 @@ describe('webauthn step-up', () => {
         .expect(422);
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
       await fixture.agent.get('/auth/me').expect(200);
+    });
+
+    it('rejects a passkey removed while it was being verified, granting no step-up', async () => {
+      const fixture = await seedSignedInMember(app);
+      const csrfToken = await fixture.getCsrfToken();
+      await fixture.agent
+        .post('/webauthn/step-up/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
+
+      vi.spyOn(
+        app.get(WebauthnCryptoService),
+        'verifyAuthenticationResponse',
+      ).mockImplementationOnce(async () => {
+        await getDb(app)
+          .delete(webauthnCredential)
+          .where(eq(webauthnCredential.credentialId, fixture.credentialId));
+        return verifiedResult(1);
+      });
+      const res = await fixture.agent
+        .post('/webauthn/step-up/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor(fixture.credentialId) })
+        .expect(422);
+      expect(messageOf(res)).toBe(STEP_UP_FAILED);
+
+      const verified = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'step_up_verified'),
+            eq(securityEvent.memberId, fixture.memberId),
+          ),
+        );
+      expect(verified).toHaveLength(0);
     });
   });
 });

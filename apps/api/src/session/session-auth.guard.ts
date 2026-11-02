@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from './public.decorator';
+import { SessionRegistryService } from './session-registry.service';
 import './session-data';
 
 /**
@@ -12,9 +13,12 @@ import './session-data';
  */
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly sessionRegistry: SessionRegistryService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -24,7 +28,13 @@ export class SessionAuthGuard implements CanActivate {
     }
 
     const req = context.switchToHttp().getRequest<Request>();
-    if (!req.session?.memberId) {
+    const memberId = req.session?.memberId;
+    if (!memberId) {
+      throw new UnauthorizedException();
+    }
+    // Revocation drops the id from the registry, but a request still in
+    // flight can write the session back to the store when it ends.
+    if (!(await this.sessionRegistry.isRegistered(memberId, req.sessionID))) {
       throw new UnauthorizedException();
     }
     return true;

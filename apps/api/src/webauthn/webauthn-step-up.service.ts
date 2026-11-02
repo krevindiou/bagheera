@@ -89,7 +89,9 @@ export class WebauthnStepUpService {
       throw stepUpFailed();
     }
 
-    await this.assertion.recordUse(credentialRow, verification.newCounter);
+    if (!(await this.assertion.recordUse(credentialRow, verification.newCounter))) {
+      throw stepUpFailed();
+    }
 
     req.session.stepUpVerifiedAt = Date.now();
     await this.audit.record('step_up_verified', memberId, sourceAddress);

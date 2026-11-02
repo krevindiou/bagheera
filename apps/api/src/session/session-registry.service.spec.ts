@@ -14,6 +14,7 @@ function fakeValkey(members: string[] = []) {
     multi: vi.fn().mockReturnValue(chain),
     smembers: vi.fn().mockResolvedValue(members),
     srem: vi.fn().mockResolvedValue(1),
+    sismember: vi.fn().mockResolvedValue(0),
   };
   return { chain, client, service: new SessionRegistryService(client as unknown as IORedis) };
 }
@@ -31,6 +32,18 @@ describe('SessionRegistryService', () => {
     const { client, service } = fakeValkey();
     await service.unregister('m1', 's1');
     expect(client.srem).toHaveBeenCalledWith('member:m1:sessions', 's1');
+  });
+
+  it('reports a session listed in the member set as registered', async () => {
+    const { client, service } = fakeValkey();
+    client.sismember.mockResolvedValue(1);
+    await expect(service.isRegistered('m1', 's1')).resolves.toBe(true);
+    expect(client.sismember).toHaveBeenCalledWith('member:m1:sessions', 's1');
+  });
+
+  it('reports a session missing from the member set as not registered', async () => {
+    const { service } = fakeValkey();
+    await expect(service.isRegistered('m1', 's1')).resolves.toBe(false);
   });
 
   it('deletes every session but the kept one, and drops them from the set', async () => {

@@ -11,6 +11,7 @@ import {
 } from '../test-support/auth-fixture';
 import { createTestApp } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
+import { SessionRegistryService } from './session-registry.service';
 import {
   CSRF_COOKIE_NAME,
   SESSION_COOKIE_NAME,
@@ -174,6 +175,20 @@ describe('session lifecycle', () => {
     const data = JSON.parse(raw!) as StoredSession;
     data.createdAt = Date.now() - SESSION_MAX_AGE_MS - 1000;
     await valkey.set(key, JSON.stringify(data));
+
+    await agent.get('/auth/me').expect(401);
+  });
+
+  // A request in flight when its session is revoked writes the session back
+  // when it ends; dropped from the registry, it must stay signed out.
+  it('rejects a revoked session written back to the store', async () => {
+    const { agent, memberId } = await seedSignedInMember(app);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
+    const key = await findSessionKey(valkey, memberId);
+    const raw = await valkey.get(key);
+
+    await app.get(SessionRegistryService).revokeOthers(memberId);
+    await valkey.set(key, raw!);
 
     await agent.get('/auth/me').expect(401);
   });

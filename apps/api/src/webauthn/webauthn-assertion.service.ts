@@ -71,10 +71,14 @@ export class WebauthnAssertionService {
       : { verified: false };
   }
 
-  async recordUse(credential: WebauthnCredentialRow, newCounter: number): Promise<void> {
-    await this.db
+  // False when the credential was removed since findCredential(): the
+  // caller must then treat the assertion as failed.
+  async recordUse(credential: WebauthnCredentialRow, newCounter: number): Promise<boolean> {
+    const rows = await this.db
       .update(webauthnCredential)
       .set({ counter: newCounter, lastUsedAt: new Date() })
-      .where(eq(webauthnCredential.id, credential.id));
+      .where(eq(webauthnCredential.id, credential.id))
+      .returning({ id: webauthnCredential.id });
+    return rows.length > 0;
   }
 }
