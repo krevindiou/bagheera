@@ -1,3 +1,4 @@
+import type { FrequencyUnit } from '@bagheera/reference-data';
 import {
   countDueOccurrences,
   dueOccurrences,
@@ -144,6 +145,124 @@ describe('dueOccurrences', () => {
       expect(dueOccurrences({ ...daily, limit: MAX_OCCURRENCES_PER_RUN * 2 })).toHaveLength(
         MAX_OCCURRENCES_PER_RUN,
       );
+    });
+  });
+});
+
+// Every occurrence up to `horizon`, stepping from index 0.
+function naiveOccurrences(
+  valueDate: string,
+  frequencyUnit: FrequencyUnit,
+  frequencyValue: number,
+  horizon: string,
+): string[] {
+  const dates: string[] = [];
+  for (let n = 0; ; n++) {
+    const date = occurrenceDate(valueDate, frequencyUnit, frequencyValue, n);
+    if (date > horizon) {
+      return dates;
+    }
+    dates.push(date);
+  }
+}
+
+function addIsoDays(iso: string, days: number): string {
+  const date = new Date(`${iso}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+describe('starting near the cursor', () => {
+  it('serves a daily scheduler anchored far back with a recent cursor', () => {
+    const params = {
+      valueDate: '1900-01-01',
+      frequencyUnit: 'day' as const,
+      frequencyValue: 1,
+      after: '2026-10-30',
+      horizon: '2026-11-03',
+    };
+    expect(dueOccurrences(params)).toEqual([
+      '2026-10-31',
+      '2026-11-01',
+      '2026-11-02',
+      '2026-11-03',
+    ]);
+    expect(nextOccurrence({ ...params, limitDate: null, active: true })).toBe('2026-10-31');
+    expect(countDueOccurrences(params)).toBe(4);
+  });
+
+  it('does not walk from the value date to reach a far cursor', () => {
+    const params = {
+      valueDate: '1900-01-01',
+      frequencyUnit: 'day' as const,
+      frequencyValue: 1,
+      after: '2026-10-30',
+      limitDate: null,
+      active: true,
+    };
+    // ~46,000 steps each when walking from index 0.
+    const start = performance.now();
+    for (let i = 0; i < 2000; i++) {
+      nextOccurrence(params);
+    }
+    expect(performance.now() - start).toBeLessThan(2000);
+  });
+
+  it('yields from occurrence 0 when the value date is after the cursor', () => {
+    expect(
+      dueOccurrences({
+        valueDate: '2026-05-10',
+        frequencyUnit: 'month',
+        frequencyValue: 3,
+        after: '2020-01-01',
+        horizon: '2026-12-31',
+      }),
+    ).toEqual(['2026-05-10', '2026-08-10', '2026-11-10']);
+  });
+
+  const anchors = [
+    '1900-01-31',
+    '2023-12-31',
+    '2024-01-29',
+    '2024-01-30',
+    '2024-01-31',
+    '2024-02-29',
+    '2024-03-31',
+    '2024-04-30',
+    '2024-05-31',
+    '2024-08-31',
+    '2025-01-31',
+    '2026-11-30',
+  ];
+  const units = ['day', 'week', 'month', 'year'] as const;
+  const values = [1, 2, 3, 5, 7, 12, 13];
+
+  describe.each(anchors)('anchored on %s', (valueDate) => {
+    it.each(units)('matches stepping from 0 for every %s interval', (frequencyUnit) => {
+      for (const frequencyValue of values) {
+        const horizon = `${Number(valueDate.slice(0, 4)) + 6}-12-31`;
+        const all = naiveOccurrences(valueDate, frequencyUnit, frequencyValue, horizon);
+        // Cursors on, a day either side of, and between the occurrences, plus
+        // ones before the first and past the last.
+        const cursors = new Set<string | null>([null, addIsoDays(valueDate, -1), horizon]);
+        for (const date of all.slice(0, 30)) {
+          cursors.add(date);
+          cursors.add(addIsoDays(date, -1));
+          cursors.add(addIsoDays(date, 1));
+        }
+        for (const after of cursors) {
+          const expected = all.filter((date) => after === null || date > after);
+          const params = { valueDate, frequencyUnit, frequencyValue, after, horizon };
+          const label = `${frequencyUnit} x${frequencyValue} after ${after}`;
+          expect(dueOccurrences({ ...params, limit: MAX_OCCURRENCES_PER_RUN }), label).toEqual(
+            expected.slice(0, MAX_OCCURRENCES_PER_RUN),
+          );
+          expect(countDueOccurrences(params), label).toBe(expected.length);
+          expect(nextOccurrence({ ...params, limitDate: horizon, active: true }), label).toBe(
+            expected[0] ?? null,
+          );
+        }
+      }
     });
   });
 });

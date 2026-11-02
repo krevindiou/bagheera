@@ -134,3 +134,14 @@ export const MEMBER_REPORT_READ_LIMIT: RateLimitOptions = {
   perMember: true,
   scope: 'member-report-reads',
 };
+
+/**
+ * A scheduler listing works out each row's next occurrence, so a read here is
+ * not free. Covers paging through the lists, not a script polling them.
+ */
+export const MEMBER_SCHEDULER_READ_LIMIT: RateLimitOptions = {
+  points: 60,
+  durationSeconds: 60,
+  perMember: true,
+  scope: 'member-scheduler-reads',
+};

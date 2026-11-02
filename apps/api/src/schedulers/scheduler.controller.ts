@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { PageQueryDto } from '../common/dto/page-query.dto';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
-import { MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
+import { MEMBER_SCHEDULER_READ_LIMIT, MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
 import { UpdateSchedulerDto } from './dto/update-scheduler.dto';
@@ -15,13 +15,15 @@ import {
   SchedulerUpdatedResponseDto,
 } from './dto/scheduler-response.dto';
 
-// Every write here draws on the member's shared write budget.
+// Every write here draws on the member's shared write budget; the listing
+// has its own read budget.
 @RateLimit(MEMBER_WRITE_LIMIT)
 @Controller('schedulers')
 export class SchedulerController {
   constructor(private readonly schedulers: SchedulerService) {}
 
   @Get()
+  @RateLimit(MEMBER_SCHEDULER_READ_LIMIT)
   list(
     @CurrentMember() memberId: MemberId,
     @Query('accountId', ParseUuidV7Pipe) accountId: string,

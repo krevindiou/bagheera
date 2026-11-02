@@ -3,6 +3,7 @@ import type { Server } from 'http';
 import { eq } from 'drizzle-orm';
 import { operation, scheduler } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
+import { MEMBER_SCHEDULER_READ_LIMIT } from '../security/rate-limit.constants';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { waitForSchedulerGeneration } from '../test-support/wait-for-scheduler-generation';
@@ -201,6 +202,21 @@ describe('schedulers', () => {
 
       const { agent: attackerAgent } = await seedSignedInMember(app);
       await attackerAgent.get(`/schedulers?accountId=${accountId}&page=1`).expect(404);
+    });
+
+    it('limits reads per member without drawing on the write budget', async () => {
+      const { agent, mutate } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+
+      for (let i = 0; i < MEMBER_SCHEDULER_READ_LIMIT.points; i++) {
+        await agent.get(`/schedulers?accountId=${accountId}&page=1`).expect(200);
+      }
+      await agent.get(`/schedulers?accountId=${accountId}&page=1`).expect(429);
+      expect((await mutate('post', '/schedulers', schedulerPayload(accountId))).status).toBe(200);
+
+      const other = await seedSignedInMember(app);
+      await other.agent.get(`/schedulers?accountId=${accountId}&page=1`).expect(404);
     });
   });
 

@@ -87,10 +87,41 @@ export interface DueOccurrencesParams {
 // inserts. The rest isn't lost: the next run resumes from the cursor.
 export const MAX_OCCURRENCES_PER_RUN = 1000;
 
+const MS_PER_DAY = 86_400_000;
+
+// `Date.UTC` reads years 0-99 as 1900-1999, so set the year explicitly.
+function dayNumber(iso: string): number {
+  const { year, month, day } = parseIsoDate(iso);
+  const date = new Date(0);
+  date.setUTCFullYear(year, month - 1, day);
+  return date.getTime() / MS_PER_DAY;
+}
+
+// An index from which stepping yields what stepping from 0 would: every
+// occurrence before it is on or before `after`. Keeps the cost of a call
+// proportional to the occurrences wanted, not to how far back the value date
+// lies from the cursor.
+function firstIndexNear(params: DueOccurrencesParams): number {
+  const { valueDate, frequencyUnit, frequencyValue, after } = params;
+  if (after === null) {
+    return 0;
+  }
+  if (frequencyUnit === 'day' || frequencyUnit === 'week') {
+    const stepDays = frequencyValue * (frequencyUnit === 'week' ? 7 : 1);
+    return Math.max(0, Math.floor((dayNumber(after) - dayNumber(valueDate)) / stepDays));
+  }
+  const from = parseIsoDate(valueDate);
+  const to = parseIsoDate(after);
+  const months = (to.year - from.year) * 12 + to.month - from.month;
+  const stepMonths = frequencyValue * (frequencyUnit === 'year' ? 12 : 1);
+  // One step short: clamping moves a date within its month, never across one.
+  return Math.max(0, Math.floor(months / stepMonths) - 1);
+}
+
 // Occurrences in (`after`, `horizon`], chronological, with no ceiling.
 function* occurrencesBetween(params: DueOccurrencesParams): Generator<string> {
   const { valueDate, frequencyUnit, frequencyValue, after, horizon } = params;
-  for (let n = 0; ; n++) {
+  for (let n = firstIndexNear(params); ; n++) {
     const date = occurrenceDate(valueDate, frequencyUnit, frequencyValue, n);
     if (date > horizon) {
       return;
