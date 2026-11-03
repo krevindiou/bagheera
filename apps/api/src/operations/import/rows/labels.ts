@@ -44,6 +44,19 @@ const VARIABLE_PARTS = new RegExp(
   'giu',
 );
 
+const SEPARATORS = new Set([...' *,-/:;']);
+
+// A scan, not a regex: an anchored `[...]+$` rescans a long run of separators
+// from every start, which is quadratic.
+// Whitespace is already collapsed to single spaces here.
+function trimSeparators(text: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && SEPARATORS.has(text[start])) start += 1;
+  while (end > start && SEPARATORS.has(text[end - 1])) end -= 1;
+  return text.slice(start, end);
+}
+
 // The label without its dates, times and amounts and the payment-method
 // wording that starts it; the label itself, trimmed, when it holds none or
 // nothing else would be left.
@@ -51,9 +64,7 @@ export function cleanLabel(label: string): string {
   const trimmed = label.trim();
   const stripped = trimmed.replace(VARIABLE_PARTS, ' ');
   const base =
-    stripped === trimmed
-      ? trimmed
-      : stripped.replace(/\s+/g, ' ').replace(/^[\s*/,;:-]+|[\s*/,;:-]+$/g, '') || trimmed;
+    stripped === trimmed ? trimmed : trimSeparators(stripped.replace(/\s+/g, ' ')) || trimmed;
   return withoutLeadingMethod(base) || base;
 }
 

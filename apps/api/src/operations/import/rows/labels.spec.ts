@@ -84,6 +84,27 @@ describe('cleanLabel', () => {
     expect(cleanLabel('A05/03B')).toBe('A05/03B');
   });
 
+  it.each([
+    ['EDF - 05/03 -', 'EDF'],
+    ['- / 12:30 ; EDF , 05/03 : *', 'EDF'],
+    ['EDF - LYON 05/03', 'EDF - LYON'],
+    ['EDF 12:30 - LYON', 'EDF - LYON'],
+  ])('trims the separators around what is left of %s', (label, expected) => {
+    expect(cleanLabel(label)).toBe(expected);
+  });
+
+  it('keeps the label when only separators would be left', () => {
+    expect(cleanLabel(' - 05/03 - ')).toBe('- 05/03 -');
+    expect(cleanLabel('*/ 12:30 ;:')).toBe('*/ 12:30 ;:');
+  });
+
+  it('stays linear on a long run of separators that does not end the label', () => {
+    const started = Date.now();
+    const cleaned = cleanLabel(`12:30 a${'-'.repeat(200_000)}b`);
+    expect(cleaned).toBe(`a${'-'.repeat(200_000)}b`);
+    expect(Date.now() - started).toBeLessThan(1000);
+  });
+
   it('stays quick on long labels', () => {
     const started = Date.now();
     cleanLabel('1'.repeat(4096));
