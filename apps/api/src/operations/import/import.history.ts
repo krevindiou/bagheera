@@ -1,6 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { IMPORT_LIMITS } from '@bagheera/reference-data';
 import { and, eq, inArray, isNotNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { BusinessError } from '../../common/filters/business-error';
 import { thirdPartyKeyOf } from '../../common/third-party-key';
 import { DRIZZLE } from '../../db/db.constants';
 import {
@@ -258,7 +260,8 @@ export class ImportHistory {
   // The account's operations a row can match: those within a few days of a date
   // of the rows (not the days between them: a file spanning years must not
   // load the whole account), and those that kept a bank reference the file
-  // holds, whatever their date is now.
+  // holds, whatever their date is now. Past IMPORT_LIMITS.MAX_RECORDED_OPERATIONS
+  // the import is refused rather than matched against a part of them.
   // `executor` lets the check made while the account is held read inside that
   // transaction.
   async recordedAround(
@@ -272,36 +275,45 @@ export class ImportHistory {
     const references = [
       ...new Set(ready.flatMap((row) => (row.bankReference === null ? [] : [row.bankReference]))),
     ];
-    return (
-      executor
-        .select({
-          valueDate: operation.valueDate,
-          debit: operation.debit,
-          credit: operation.credit,
-          thirdParty: operation.thirdParty,
-          sourceLabel: operation.sourceLabel,
-          bankReference: operation.bankReference,
-          id: operation.id,
-          reconciled: operation.reconciled,
-          paymentMethodId: operation.paymentMethodId,
-        })
-        .from(operation)
-        .where(
-          and(
-            eq(operation.accountId, accountId),
-            or(
-              sql`exists (
-              select 1
-              from unnest(${dateArray(windows.map((w) => w.from))}, ${dateArray(windows.map((w) => w.to))})
-                as window_(window_from, window_to)
-              where ${operation.valueDate} between window_.window_from and window_.window_to)`,
-              references.length > 0 ? inArray(operation.bankReference, references) : undefined,
-            ),
+    const limit = IMPORT_LIMITS.MAX_RECORDED_OPERATIONS;
+    const found = await executor
+      .select({
+        valueDate: operation.valueDate,
+        debit: operation.debit,
+        credit: operation.credit,
+        thirdParty: operation.thirdParty,
+        sourceLabel: operation.sourceLabel,
+        bankReference: operation.bankReference,
+        id: operation.id,
+        reconciled: operation.reconciled,
+        paymentMethodId: operation.paymentMethodId,
+      })
+      .from(operation)
+      .where(
+        and(
+          eq(operation.accountId, accountId),
+          or(
+            sql`exists (
+            select 1
+            from unnest(${dateArray(windows.map((w) => w.from))}, ${dateArray(windows.map((w) => w.to))})
+              as window_(window_from, window_to)
+            where ${operation.valueDate} between window_.window_from and window_.window_to)`,
+            references.length > 0 ? inArray(operation.bankReference, references) : undefined,
           ),
-        )
-        // Among equal operations the first one in this order is the one a row
-        // takes: two reads of the same account must pick the same.
-        .orderBy(operation.id)
-    );
+        ),
+      )
+      // Among equal operations the first one in this order is the one a row
+      // takes: two reads of the same account must pick the same.
+      .orderBy(operation.id)
+      .limit(limit + 1);
+    if (found.length > limit) {
+      throw new BusinessError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'import_too_many_recorded',
+        'The dates of the file cover too many operations of the account.',
+        { limit },
+      );
+    }
+    return found;
   }
 }

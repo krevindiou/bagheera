@@ -683,6 +683,8 @@ export default {
       'This statement is in {found}, but this account is in {expected}. Amounts are never converted.',
     import_file_too_large: 'This file is larger than 5 MB.',
     import_too_many_rows: 'This file has more than {limit} rows.',
+    import_too_many_recorded:
+      'The dates of this file cover more than {limit} operations of this account. Import it in shorter periods.',
     import_account_mismatch:
       'This file seems to come from another account. Tick “Import it into this account anyway” to import it here.',
     import_in_progress: 'This import is already being confirmed.',

@@ -692,6 +692,8 @@ export default {
       'Ce relevé est en {found}, mais ce compte est en {expected}. Les montants ne sont jamais convertis.',
     import_file_too_large: 'Ce fichier dépasse 5 Mo.',
     import_too_many_rows: 'Ce fichier compte plus de {limit} lignes.',
+    import_too_many_recorded:
+      'Les dates de ce fichier couvrent plus de {limit} opérations de ce compte. Importez-le par périodes plus courtes.',
     import_account_mismatch:
       "Ce fichier semble provenir d'un autre compte. Cochez « L'importer quand même dans ce compte » pour l'importer ici.",
     import_in_progress: 'Cet import est déjà en cours de confirmation.',

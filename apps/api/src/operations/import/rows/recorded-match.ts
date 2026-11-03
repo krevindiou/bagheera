@@ -35,6 +35,8 @@ interface Candidate {
   type: EntryType;
   amount: number;
   date: number;
+  // Its place among the operations read: the first one wins a tie.
+  order: number;
   used: boolean;
   // Typed by the Member and not reconciled: only such an operation is matched
   // on a nearby date, since one a bank row was already matched to is more
@@ -42,7 +44,7 @@ interface Candidate {
   typed: boolean;
   // Set for an operation that could be the other side of a transfer: one of
   // the transfer payment methods that no bank file has described yet.
-  otherSide: { type: EntryType; amount: number; date: number } | null;
+  otherSide: boolean;
   recorded: Omit<RecordedMatch, 'matchedBy'>;
 }
 
@@ -73,6 +75,51 @@ function groupKey(valueDate: string, type: EntryType, amount: number): string {
   return `${valueDate}|${type}|${amount}`;
 }
 
+// The same side and amount on a calendar day; a label or a reference, of any
+// text, goes after it.
+function dayKey(type: EntryType, amount: number, date: number): string {
+  return `${type}|${amount}|${date}`;
+}
+
+function add<V>(map: Map<string, V[]>, key: string, item: V): void {
+  const list = map.get(key);
+  if (list) list.push(item);
+  else map.set(key, [item]);
+}
+
+// The first candidate of a list not taken yet. A taken candidate stays taken,
+// so each list's cursor only moves forward. It is kept by list, not by key:
+// two indexes may hold different lists under the same key.
+class Untaken {
+  private readonly cursors = new Map<Candidate[], number>();
+
+  first(list: Candidate[] | undefined): Candidate | undefined {
+    if (!list) return undefined;
+    let at = this.cursors.get(list) ?? 0;
+    while (at < list.length && list[at].used) at += 1;
+    this.cursors.set(list, at);
+    return list[at];
+  }
+
+  // The first one, by rank, among the lists' first candidates not taken.
+  earliest(
+    lists: (Candidate[] | undefined)[],
+    rank: (candidate: Candidate) => number,
+  ): Candidate | undefined {
+    let best: Candidate | undefined;
+    for (const list of lists) {
+      const candidate = this.first(list);
+      if (candidate && (!best || rank(candidate) < rank(best))) best = candidate;
+    }
+    return best;
+  }
+}
+
+// The days a gap away from a date, the closest first.
+function daysAround(date: number, gap: number): number[] {
+  return gap === 0 ? [date] : [date - gap, date + gap];
+}
+
 // Marks as skipped each row that an operation already in the account matches,
 // in two passes over the whole file so that a row matched by
 // its bank reference is never robbed of its operation by another row: first
@@ -81,11 +128,16 @@ function groupKey(valueDate: string, type: EntryType, amount: number): string {
 // the same without the date, for the operations the Member typed. Each
 // operation matches at most one row, so n equal rows against m equal
 // operations skip min(n, m) of them.
+// Every lookup goes through an index of the candidates, so that an account
+// holding many operations alike is read once, not once per row.
 export function markRecorded(rows: RowOutcome[], recorded: RecordedOperation[]): RowOutcome[] {
   const groups = new Map<string, Candidate[]>();
+  const byThirdParty = new Map<string, Candidate[]>();
+  const bySource = new Map<string, Candidate[]>();
+  const typedByThirdParty = new Map<string, Candidate[]>();
+  const typedBySource = new Map<string, Candidate[]>();
   const byReference = new Map<string, Candidate[]>();
-  const typedByAmount = new Map<string, Candidate[]>();
-  for (const operation of recorded) {
+  recorded.forEach((operation, order) => {
     const type: EntryType = operation.debit === null ? 'credit' : 'debit';
     const amount = (operation.debit ?? operation.credit) as number;
     const date = dayNumber(operation.valueDate);
@@ -95,14 +147,13 @@ export function markRecorded(rows: RowOutcome[], recorded: RecordedOperation[]):
       type,
       amount,
       date,
+      order,
       used: false,
       typed: !operation.reconciled && operation.bankReference === null,
       otherSide:
         TRANSFER_PAYMENT_METHOD_IDS.includes(operation.paymentMethodId) &&
         operation.bankReference === null &&
-        operation.sourceLabel === null
-          ? { type, amount, date }
-          : null,
+        operation.sourceLabel === null,
       recorded: {
         operationId: operation.id,
         valueDate: operation.valueDate,
@@ -111,19 +162,21 @@ export function markRecorded(rows: RowOutcome[], recorded: RecordedOperation[]):
       },
     };
     const key = groupKey(operation.valueDate, type, amount);
-    groups.set(key, [...(groups.get(key) ?? []), candidate]);
+    add(groups, key, candidate);
+    add(byThirdParty, `${key}|${candidate.thirdParty}`, candidate);
+    if (candidate.source !== null) add(bySource, `${key}|${candidate.source}`, candidate);
+    const day = dayKey(type, amount, date);
     if (candidate.typed) {
-      const sameAmount = `${type}|${amount}`;
-      typedByAmount.set(sameAmount, [...(typedByAmount.get(sameAmount) ?? []), candidate]);
+      add(typedByThirdParty, `${day}|${candidate.thirdParty}`, candidate);
+      if (candidate.source !== null) add(typedBySource, `${day}|${candidate.source}`, candidate);
     }
     if (operation.bankReference !== null) {
-      byReference.set(operation.bankReference, [
-        ...(byReference.get(operation.bankReference) ?? []),
-        candidate,
-      ]);
+      add(byReference, `${day}|${operation.bankReference}`, candidate);
     }
-  }
+  });
 
+  const untaken = new Untaken();
+  const byOrder = (candidate: Candidate) => candidate.order;
   const skipped = new Map<number, RecordedMatch>();
   const take = (
     candidate: Candidate | undefined,
@@ -140,29 +193,24 @@ export function markRecorded(rows: RowOutcome[], recorded: RecordedOperation[]):
     // A bank may reuse a reference for unrelated rows: the side, the amount and
     // the period must agree too.
     const date = dayNumber(row.valueDate);
-    take(
-      byReference
-        .get(row.bankReference)
-        ?.find(
-          (candidate) =>
-            !candidate.used &&
-            candidate.type === row.type &&
-            candidate.amount === row.amount &&
-            Math.abs(candidate.date - date) <= REFERENCE_DATE_TOLERANCE_DAYS,
-        ),
-      row.line,
-      'reference',
-    );
+    const lists: (Candidate[] | undefined)[] = [];
+    for (
+      let day = date - REFERENCE_DATE_TOLERANCE_DAYS;
+      day <= date + REFERENCE_DATE_TOLERANCE_DAYS;
+      day += 1
+    ) {
+      lists.push(byReference.get(`${dayKey(row.type, row.amount, day)}|${row.bankReference}`));
+    }
+    take(untaken.earliest(lists, byOrder), row.line, 'reference');
   }
   for (const row of rows) {
     if (row.status !== 'import' || skipped.has(row.line)) continue;
-    const group = groups.get(groupKey(row.valueDate, row.type, row.amount));
-    if (!group) continue;
+    const key = groupKey(row.valueDate, row.type, row.amount);
     const thirdParty = normalizeLabel(row.thirdParty);
     const source = normalizeLabel(row.sourceLabel);
     take(
-      group.find((candidate) => !candidate.used && candidate.thirdParty === thirdParty) ??
-        group.find((candidate) => !candidate.used && source !== '' && candidate.source === source),
+      untaken.first(byThirdParty.get(`${key}|${thirdParty}`)) ??
+        (source === '' ? undefined : untaken.first(bySource.get(`${key}|${source}`))),
       row.line,
       'details',
     );
@@ -174,24 +222,32 @@ export function markRecorded(rows: RowOutcome[], recorded: RecordedOperation[]):
     const date = dayNumber(row.valueDate);
     const thirdParty = normalizeLabel(row.thirdParty);
     const source = normalizeLabel(row.sourceLabel);
-    let closest: { candidate: Candidate; gap: number } | undefined;
-    for (const candidate of typedByAmount.get(`${row.type}|${row.amount}`) ?? []) {
-      const gap = Math.abs(candidate.date - date);
-      const sameLabel =
-        candidate.thirdParty === thirdParty || (source !== '' && candidate.source === source);
-      if (candidate.used || !sameLabel || gap > DETAILS_DATE_TOLERANCE_DAYS) continue;
-      if (!closest || gap < closest.gap) closest = { candidate, gap };
+    let closest: Candidate | undefined;
+    for (let gap = 0; gap <= DETAILS_DATE_TOLERANCE_DAYS && !closest; gap += 1) {
+      const lists = daysAround(date, gap).flatMap((day) => {
+        const key = dayKey(row.type, row.amount, day);
+        return [
+          typedByThirdParty.get(`${key}|${thirdParty}`),
+          source === '' ? undefined : typedBySource.get(`${key}|${source}`),
+        ];
+      });
+      closest = untaken.earliest(lists, byOrder);
     }
-    take(closest?.candidate, row.line, 'details');
+    take(closest, row.line, 'details');
   }
   // A transfer row not matched yet may be the other side of a transfer the
   // account holds already, whatever the third party and within a few days.
+  // Among those as close, the first one of the groups above wins.
   const otherSides = new Map<string, Candidate[]>();
-  for (const candidate of [...groups.values()].flat()) {
-    if (!candidate.otherSide) continue;
-    const key = `${candidate.otherSide.type}|${candidate.otherSide.amount}`;
-    otherSides.set(key, [...(otherSides.get(key) ?? []), candidate]);
+  const sideRank = new Map<Candidate, number>();
+  for (const group of groups.values()) {
+    for (const candidate of group) {
+      if (!candidate.otherSide) continue;
+      sideRank.set(candidate, sideRank.size);
+      add(otherSides, dayKey(candidate.type, candidate.amount, candidate.date), candidate);
+    }
   }
+  const bySideRank = (candidate: Candidate) => sideRank.get(candidate) as number;
   for (const row of rows) {
     if (
       row.status !== 'import' ||
@@ -201,16 +257,14 @@ export function markRecorded(rows: RowOutcome[], recorded: RecordedOperation[]):
       continue;
     }
     const date = dayNumber(row.valueDate);
-    let best: { candidate: Candidate; gap: number } | undefined;
-    for (const candidate of otherSides.get(`${row.type}|${row.amount}`) ?? []) {
-      const side = candidate.otherSide;
-      if (candidate.used || !side) continue;
-      const gap = Math.abs(side.date - date);
-      if (gap <= TRANSFER_DATE_TOLERANCE_DAYS && (!best || gap < best.gap)) {
-        best = { candidate, gap };
-      }
+    let best: Candidate | undefined;
+    for (let gap = 0; gap <= TRANSFER_DATE_TOLERANCE_DAYS && !best; gap += 1) {
+      const lists = daysAround(date, gap).map((day) =>
+        otherSides.get(dayKey(row.type, row.amount, day)),
+      );
+      best = untaken.earliest(lists, bySideRank);
     }
-    take(best?.candidate, row.line, 'transfer');
+    take(best, row.line, 'transfer');
   }
 
   return rows.map((row): RowOutcome => {

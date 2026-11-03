@@ -1,8 +1,22 @@
-import { PAYMENT_METHOD_ID } from '@bagheera/reference-data';
+import {
+  PAYMENT_METHOD_ID,
+  TRANSFER_PAYMENT_METHOD_IDS,
+  type EntryType,
+} from '@bagheera/reference-data';
 import type { OfxRow } from '../ofx';
+import { normalizeLabel } from './labels';
 import { readRows } from './read-rows';
-import { type ReadyRow, type RowOutcome } from './types';
-import { shiftDays, markRecorded, type RecordedOperation, recordedWindows } from './recorded-match';
+import { type ReadyRow, type RecordedMatch, type RowOutcome } from './types';
+import {
+  DETAILS_DATE_TOLERANCE_DAYS,
+  REFERENCE_DATE_TOLERANCE_DAYS,
+  TRANSFER_DATE_TOLERANCE_DAYS,
+  dayNumber,
+  shiftDays,
+  markRecorded,
+  type RecordedOperation,
+  recordedWindows,
+} from './recorded-match';
 
 function ofxRow(overrides: Partial<OfxRow> = {}): OfxRow {
   return {
@@ -497,6 +511,320 @@ describe('markRecorded recognises the other side of a transfer', () => {
     const other = mirror({ id: 'op-ref', bankReference: 'R-9', valueDate: '2026-03-20' });
     const row = matched(rows, [mirror(), other]);
     expect(row.recorded?.operationId).toBe('op-ref');
+  });
+});
+
+// The matching written the plain way, one scan of the candidates per row: what
+// the indexed one must answer exactly.
+function naiveMarkRecorded(rows: RowOutcome[], recorded: RecordedOperation[]): RowOutcome[] {
+  interface Naive {
+    thirdParty: string;
+    source: string | null;
+    type: EntryType;
+    amount: number;
+    date: number;
+    used: boolean;
+    typed: boolean;
+    otherSide: { type: EntryType; amount: number; date: number } | null;
+    recorded: Omit<RecordedMatch, 'matchedBy'>;
+  }
+  const push = (map: Map<string, Naive[]>, key: string, candidate: Naive) =>
+    map.set(key, [...(map.get(key) ?? []), candidate]);
+  const groupKey = (valueDate: string, type: EntryType, amount: number) =>
+    `${valueDate}|${type}|${amount}`;
+  const groups = new Map<string, Naive[]>();
+  const byReference = new Map<string, Naive[]>();
+  const typedByAmount = new Map<string, Naive[]>();
+  for (const operation of recorded) {
+    const type: EntryType = operation.debit === null ? 'credit' : 'debit';
+    const amount = (operation.debit ?? operation.credit) as number;
+    const date = dayNumber(operation.valueDate);
+    const candidate: Naive = {
+      thirdParty: normalizeLabel(operation.thirdParty),
+      source: operation.sourceLabel === null ? null : normalizeLabel(operation.sourceLabel),
+      type,
+      amount,
+      date,
+      used: false,
+      typed: !operation.reconciled && operation.bankReference === null,
+      otherSide:
+        TRANSFER_PAYMENT_METHOD_IDS.includes(operation.paymentMethodId) &&
+        operation.bankReference === null &&
+        operation.sourceLabel === null
+          ? { type, amount, date }
+          : null,
+      recorded: {
+        operationId: operation.id,
+        valueDate: operation.valueDate,
+        thirdParty: operation.thirdParty,
+        reconciled: operation.reconciled,
+      },
+    };
+    push(groups, groupKey(operation.valueDate, type, amount), candidate);
+    if (candidate.typed) push(typedByAmount, `${type}|${amount}`, candidate);
+    if (operation.bankReference !== null) push(byReference, operation.bankReference, candidate);
+  }
+  const skipped = new Map<number, RecordedMatch>();
+  const take = (
+    candidate: Naive | undefined,
+    line: number,
+    matchedBy: RecordedMatch['matchedBy'],
+  ) => {
+    if (!candidate) return;
+    candidate.used = true;
+    skipped.set(line, { ...candidate.recorded, matchedBy });
+  };
+  for (const row of rows) {
+    if (row.status !== 'import' || row.bankReference === null) continue;
+    const date = dayNumber(row.valueDate);
+    take(
+      byReference
+        .get(row.bankReference)
+        ?.find(
+          (candidate) =>
+            !candidate.used &&
+            candidate.type === row.type &&
+            candidate.amount === row.amount &&
+            Math.abs(candidate.date - date) <= REFERENCE_DATE_TOLERANCE_DAYS,
+        ),
+      row.line,
+      'reference',
+    );
+  }
+  for (const row of rows) {
+    if (row.status !== 'import' || skipped.has(row.line)) continue;
+    const group = groups.get(groupKey(row.valueDate, row.type, row.amount));
+    if (!group) continue;
+    const thirdParty = normalizeLabel(row.thirdParty);
+    const source = normalizeLabel(row.sourceLabel);
+    take(
+      group.find((candidate) => !candidate.used && candidate.thirdParty === thirdParty) ??
+        group.find((candidate) => !candidate.used && source !== '' && candidate.source === source),
+      row.line,
+      'details',
+    );
+  }
+  for (const row of rows) {
+    if (row.status !== 'import' || skipped.has(row.line)) continue;
+    const date = dayNumber(row.valueDate);
+    const thirdParty = normalizeLabel(row.thirdParty);
+    const source = normalizeLabel(row.sourceLabel);
+    let closest: { candidate: Naive; gap: number } | undefined;
+    for (const candidate of typedByAmount.get(`${row.type}|${row.amount}`) ?? []) {
+      const gap = Math.abs(candidate.date - date);
+      const sameLabel =
+        candidate.thirdParty === thirdParty || (source !== '' && candidate.source === source);
+      if (candidate.used || !sameLabel || gap > DETAILS_DATE_TOLERANCE_DAYS) continue;
+      if (!closest || gap < closest.gap) closest = { candidate, gap };
+    }
+    take(closest?.candidate, row.line, 'details');
+  }
+  const otherSides = new Map<string, Naive[]>();
+  for (const candidate of [...groups.values()].flat()) {
+    if (!candidate.otherSide) continue;
+    push(otherSides, `${candidate.otherSide.type}|${candidate.otherSide.amount}`, candidate);
+  }
+  for (const row of rows) {
+    if (
+      row.status !== 'import' ||
+      skipped.has(row.line) ||
+      !TRANSFER_PAYMENT_METHOD_IDS.includes(row.paymentMethodId)
+    ) {
+      continue;
+    }
+    const date = dayNumber(row.valueDate);
+    let best: { candidate: Naive; gap: number } | undefined;
+    for (const candidate of otherSides.get(`${row.type}|${row.amount}`) ?? []) {
+      const side = candidate.otherSide;
+      if (candidate.used || !side) continue;
+      const gap = Math.abs(side.date - date);
+      if (gap <= TRANSFER_DATE_TOLERANCE_DAYS && (!best || gap < best.gap)) {
+        best = { candidate, gap };
+      }
+    }
+    take(best?.candidate, row.line, 'transfer');
+  }
+  return rows.map((row): RowOutcome => {
+    const match = skipped.get(row.line);
+    return row.status === 'import' && match ? { ...row, status: 'skipped', recorded: match } : row;
+  });
+}
+
+describe('markRecorded against the plain matching', () => {
+  // A seeded generator, so that a failure can be replayed.
+  function generator(seed: number) {
+    let state = seed >>> 0;
+    const next = () => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const pick = <T>(items: readonly T[]): T => items[Math.floor(next() * items.length)];
+    return { next, pick };
+  }
+
+  const METHODS = [
+    PAYMENT_METHOD_ID.CREDIT_CARD,
+    PAYMENT_METHOD_ID.TRANSFER_DEBIT,
+    PAYMENT_METHOD_ID.TRANSFER_CREDIT,
+  ];
+  // Few values, the same texts as third parties and labels of files, so that
+  // keys, labels and references collide often.
+  const LABELS = ['a', 'b', ' A', 'c', ''];
+
+  function scenario(seed: number) {
+    const { next, pick } = generator(seed);
+    const day = () =>
+      shiftDays(
+        '2026-03-05',
+        next() < 0.1 ? pick([-40, -31, -20, 31, 32]) : pick([-6, -4, -3, -2, -1, 0, 1, 2, 3, 4, 6]),
+      );
+    const type = (): EntryType => (next() < 0.7 ? 'debit' : 'credit');
+    const amount = () => pick([100, 200]);
+    const reference = () => (next() < 0.6 ? null : pick(['R1', 'R2']));
+    const recorded: RecordedOperation[] = [];
+    for (let i = 0, count = Math.floor(next() * 16); i < count; i += 1) {
+      if (recorded.length > 0 && next() < 0.15) {
+        recorded.push({ ...pick(recorded), id: `op-${i}` });
+        continue;
+      }
+      const side = type();
+      recorded.push({
+        id: `op-${i}`,
+        reconciled: next() < 0.3,
+        paymentMethodId: pick(METHODS),
+        valueDate: day(),
+        debit: side === 'debit' ? amount() : null,
+        credit: side === 'credit' ? amount() : null,
+        thirdParty: pick(LABELS),
+        sourceLabel: next() < 0.4 ? null : pick(LABELS),
+        bankReference: reference(),
+      });
+    }
+    const rows: RowOutcome[] = [];
+    for (let line = 1, count = Math.floor(next() * 13); line <= count; line += 1) {
+      if (next() < 0.05) {
+        rows.push({ status: 'invalid', line, reason: 'date_invalid', sourceLabel: null });
+        continue;
+      }
+      rows.push({
+        status: next() < 0.05 ? 'skipped' : 'import',
+        line,
+        valueDate: day(),
+        type: type(),
+        amount: amount(),
+        thirdParty: pick(LABELS),
+        notes: '',
+        paymentMethodId: pick(METHODS),
+        paymentMethodOrigin: null,
+        categoryId: null,
+        categoryOrigin: null,
+        transferAccountId: null,
+        transferAccountOrigin: null,
+        sourceLabel: pick(LABELS),
+        labelOrigin: 'file',
+        bankReference: reference(),
+        recorded: null,
+      });
+    }
+    return { rows, recorded };
+  }
+
+  it('answers the same on thousands of drawn files and accounts', () => {
+    let skipped = 0;
+    for (let seed = 1; seed <= 5000; seed += 1) {
+      const { rows, recorded } = scenario(seed);
+      const expected = naiveMarkRecorded(rows, recorded);
+      expect(markRecorded(rows, recorded), `seed ${seed}`).toEqual(expected);
+      skipped += expected.filter((row) => row.status === 'skipped').length;
+    }
+    // The draws must exercise the matching, not only leave rows to import.
+    expect(skipped).toBeGreaterThan(5000);
+  });
+
+  it('keeps an operation found by its label of the file once others took the third party', () => {
+    const base = {
+      reconciled: false,
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2026-03-05',
+      debit: 100,
+      credit: null,
+      bankReference: null,
+    };
+    const recorded: RecordedOperation[] = [
+      { ...base, id: 'op-1', thirdParty: 'x', sourceLabel: null },
+      { ...base, id: 'op-2', thirdParty: 'x', sourceLabel: null },
+      { ...base, id: 'op-3', thirdParty: 'other', sourceLabel: 'x' },
+    ];
+    const row = (line: number, thirdParty: string, sourceLabel: string): RowOutcome => ({
+      status: 'import',
+      line,
+      valueDate: '2026-03-05',
+      type: 'debit',
+      amount: 100,
+      thirdParty,
+      notes: '',
+      paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+      paymentMethodOrigin: null,
+      categoryId: null,
+      categoryOrigin: null,
+      transferAccountId: null,
+      transferAccountOrigin: null,
+      sourceLabel,
+      labelOrigin: 'file',
+      bankReference: null,
+      recorded: null,
+    });
+    const rows = [row(1, 'x', 'x'), row(2, 'x', 'x'), row(3, 'q', 'x')];
+    const marked = markRecorded(rows, recorded);
+    expect(marked.map((r) => (r.status === 'skipped' ? r.recorded?.operationId : null))).toEqual([
+      'op-1',
+      'op-2',
+      'op-3',
+    ]);
+    expect(marked).toEqual(naiveMarkRecorded(rows, recorded));
+  });
+
+  it('stays quick on an account holding many operations alike', () => {
+    const recorded: RecordedOperation[] = Array.from({ length: 40_000 }, (_, i) => ({
+      id: `op-${String(i).padStart(5, '0')}`,
+      reconciled: i % 3 === 0,
+      paymentMethodId:
+        i % 5 === 0 ? PAYMENT_METHOD_ID.TRANSFER_DEBIT : PAYMENT_METHOD_ID.CREDIT_CARD,
+      valueDate: '2026-03-05',
+      debit: 100,
+      credit: null,
+      thirdParty: `Label ${i}`,
+      sourceLabel: i % 2 === 0 ? `SOURCE ${i}` : null,
+      bankReference: i % 7 === 0 ? `R${i % 50}` : null,
+    }));
+    const rows: RowOutcome[] = Array.from({ length: 5_000 }, (_, i) => ({
+      status: 'import',
+      line: i + 1,
+      valueDate: shiftDays('2026-03-05', (i % 5) - 2),
+      type: 'debit',
+      amount: 100,
+      thirdParty: i % 2 === 0 ? `Label ${i * 7}` : `Unknown ${i}`,
+      notes: '',
+      paymentMethodId:
+        i % 4 === 0 ? PAYMENT_METHOD_ID.TRANSFER_DEBIT : PAYMENT_METHOD_ID.CREDIT_CARD,
+      paymentMethodOrigin: null,
+      categoryId: null,
+      categoryOrigin: null,
+      transferAccountId: null,
+      transferAccountOrigin: null,
+      sourceLabel: i % 3 === 0 ? `SOURCE ${i * 4}` : `NOWHERE ${i}`,
+      labelOrigin: 'file',
+      bankReference: i % 6 === 0 ? `R${i % 50}` : null,
+      recorded: null,
+    }));
+    const started = performance.now();
+    const marked = markRecorded(rows, recorded);
+    const elapsed = performance.now() - started;
+    expect(marked.filter((row) => row.status === 'skipped').length).toBeGreaterThan(1000);
+    expect(elapsed).toBeLessThan(1500);
   });
 });
 

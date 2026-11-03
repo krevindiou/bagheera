@@ -61,6 +61,9 @@ export const IMPORT_LIMITS = {
   MAX_CORRECTION_LABEL_CHARACTERS: 512,
   // How much of a row's label a preview shows; the full one stays server-side.
   PREVIEW_LABEL_CHARACTERS: 256,
+  // The account's operations an import may read to find the rows it holds
+  // already: years of statements, yet a bound on the work of one preview.
+  MAX_RECORDED_OPERATIONS: 10_000,
 } as const;
 
 // Page size of the paginated lists, shared so the web's placeholder matches.
@@ -160,6 +163,7 @@ export const BUSINESS_ERROR_CODES = [
   'import_statement_currency',
   'import_statement_several',
   'import_statement_unsupported',
+  'import_too_many_recorded',
   'import_too_many_rows',
   'last_passkey',
   'opening_operation_locked',

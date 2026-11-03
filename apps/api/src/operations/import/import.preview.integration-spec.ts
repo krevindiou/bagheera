@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { asc, eq } from 'drizzle-orm';
+import { IMPORT_LIMITS } from '@bagheera/reference-data';
 import { operation } from '../../db/schema';
 import { PAYMENT_METHOD_ID } from '../../db/seed-data';
 import { seedSignedInMember, type SignedInFixture } from '../../test-support/auth-fixture';
@@ -355,6 +356,50 @@ describe('bank file import: preview', () => {
           expect((await send(changes)).status).toBe(400);
         }
       });
+    });
+  });
+
+  describe('an account holding more operations around the file than the cap', () => {
+    it('refuses the file on preview and on confirm, and records nothing', async () => {
+      const fixture = await seedSignedInMember(app);
+      const accountId = await createAccount(fixture);
+      const alike = (count: number, valueDate: string) =>
+        Array.from({ length: count }, (_, i) => ({
+          accountId,
+          paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
+          thirdParty: `Shop ${i}`,
+          debit: 125000,
+          valueDate,
+        }));
+      const cap = IMPORT_LIMITS.MAX_RECORDED_OPERATIONS;
+      const chunk = 2000;
+      for (let done = 0; done < cap; done += chunk) {
+        await getDb(app)
+          .insert(operation)
+          .values(alike(Math.min(chunk, cap - done), '2026-03-05'));
+      }
+      const before = (await operationsOf(accountId)).length;
+      const { importId } = await startImport(
+        fixture,
+        accountId,
+        'Date;Amount;Label\n05/03/2026;-12,50;Bakery',
+      );
+      const preview = () =>
+        fixture.mutate('post', `/operations/import/${importId}/preview`, NO_CHANGES);
+
+      expect((await preview()).status).toBe(200);
+
+      await getDb(app).insert(operation).values(alike(1, '2026-03-06'));
+      const refused = await preview();
+      expect(refused.status).toBe(422);
+      expect(refused.body).toMatchObject({
+        code: 'import_too_many_recorded',
+        params: { limit: cap },
+      });
+      const confirmed = await confirmImport(fixture, importId);
+      expect(confirmed.status).toBe(422);
+      expect(confirmed.body).toMatchObject({ code: 'import_too_many_recorded' });
+      expect(await operationsOf(accountId)).toHaveLength(before + 1);
     });
   });
 
