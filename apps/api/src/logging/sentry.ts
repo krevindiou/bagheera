@@ -13,6 +13,8 @@ export function initSentry(): void {
     dsn,
     environment: process.env.NODE_ENV ?? 'development',
     tracesSampleRate: 0,
+    // Request bodies carry one-time keys, notes and bank statement text.
+    dataCollection: { httpBodies: [] },
   });
 }
 
