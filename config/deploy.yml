@@ -98,11 +98,17 @@ accessories:
     # rate-limit counters) can take. noeviction makes Valkey refuse writes
     # past it instead of silently dropping keys: evicting would erase
     # rate-limit counters and lockouts, and BullMQ requires it anyway.
-    # `kamal deploy` doesn't restart accessories — apply a change here with
-    # `kamal accessory reboot valkey`.
+    # The append-only file keeps sessions, revocations and queued jobs across
+    # an unclean stop: with RDB snapshots alone, a crash reloads a snapshot up
+    # to ~30 minutes old, which resurrects signed-out sessions. everysec can
+    # still lose about a second on a host crash.
+    # `kamal deploy` doesn't restart accessories, and rebooting straight into
+    # appendonly over an existing dump.rdb starts empty: enable it on the live
+    # instance first, as README.md's "Valkey persistence" describes.
     cmd: >-
       sh -c 'exec valkey-server --requirepass "$VALKEY_PASSWORD"
-      --maxmemory 256mb --maxmemory-policy noeviction'
+      --maxmemory 256mb --maxmemory-policy noeviction
+      --appendonly yes --appendfsync everysec'
     env:
       secret:
         - VALKEY_PASSWORD

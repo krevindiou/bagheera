@@ -87,6 +87,20 @@ Migrations run from the new API image while the previous release is still servin
 
 Rolling back the API (`kamal rollback <version> -c config/deploy.api.yml`, e.g. after a failed health check) leaves the schema exactly as the last migration left it; it does not undo anything. Undoing a migration means a restore per `docs/backup-restore.md`.
 
+### Valkey persistence
+
+The Valkey accessory runs with the append-only file (`--appendonly yes --appendfsync everysec`), so sessions, revocations and queued jobs survive an unclean stop (SIGKILL, OOM, host crash). Without it, Valkey reloads its last RDB snapshot, which can be around 30 minutes old and would bring revoked or signed-out cookies back to life. `everysec` can still lose about a second of writes on a host crash; `--appendfsync always` narrows that further at a write-latency cost.
+
+Do not roll this out with `kamal accessory reboot valkey` alone: restarting straight into `appendonly yes` over an existing `dump.rdb` was observed to start with an empty dataset, discarding every session and queued job. Switch the live instance over first:
+
+```bash
+# on the deploy host
+docker exec bagheera-web-valkey sh -c 'valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" config set appendonly yes'
+docker exec bagheera-web-valkey sh -c 'valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" info persistence' | grep -E 'aof_rewrite_in_progress|aof_last_bgrewrite_status'
+```
+
+Repeat the second command until it shows `aof_rewrite_in_progress:0` and `aof_last_bgrewrite_status:ok`. Only then ship the `config/deploy.yml` change and run `kamal accessory reboot valkey`, and check `dbsize` afterwards.
+
 ## License
 
 MIT — see [`package.json`](package.json).
