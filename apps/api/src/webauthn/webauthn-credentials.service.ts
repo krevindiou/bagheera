@@ -10,6 +10,7 @@ import { enqueueAlert } from '../email/enqueue-alert';
 import { passkeyRemovedEmail } from '../email/templates/passkey-removed.template';
 import { AuditService } from '../security/audit.service';
 import { consumeStepUp } from '../session/consume-step-up';
+import { bumpedSessionEpoch, keepThroughBump } from '../session/session-epoch';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { requireMemberId } from '../session/require-member-id';
 import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response.dto';
@@ -53,7 +54,7 @@ export class WebauthnCredentialsService {
     const memberId = requireMemberId(req);
     consumeStepUp(req);
 
-    await this.db.transaction(async (tx) => {
+    const changed = await this.db.transaction(async (tx) => {
       // Locked, so concurrent removals can't both pass the last-passkey check.
       const owned = await tx
         .select({ id: webauthnCredential.id })
@@ -70,19 +71,28 @@ export class WebauthnCredentialsService {
       await tx
         .delete(webauthnCredential)
         .where(and(eq(webauthnCredential.id, id), eq(webauthnCredential.memberId, memberId)));
+      // The removed passkey may be the compromised one: any other session
+      // could belong to whoever holds it.
+      const [row] = await tx
+        .update(member)
+        .set({ sessionEpoch: bumpedSessionEpoch })
+        .where(eq(member.id, memberId))
+        .returning({
+          sessionEpoch: member.sessionEpoch,
+          email: member.email,
+          locale: member.locale,
+        });
+      await this.audit.recordIn(tx, 'webauthn_credential_removed', memberId, clientIp(req));
+      return row;
     });
 
-    // The removed passkey may be the compromised one: any other session
-    // could belong to whoever holds it.
-    await this.sessionRegistry.revokeOthers(memberId, req.sessionID);
-
-    const [row] = await this.db
-      .select({ email: member.email, locale: member.locale })
-      .from(member)
-      .where(eq(member.id, memberId));
-    await this.audit.record('webauthn_credential_removed', memberId, clientIp(req));
-    if (row) {
-      await enqueueAlert(this.emailQueue, this.logger, passkeyRemovedEmail(row.email, row.locale));
-    }
+    const kept = keepThroughBump(req.session, memberId, changed.sessionEpoch);
+    // Committed: neither may fail the request or hold it up on Valkey.
+    void this.sessionRegistry.tryRevokeOthers(memberId, kept ? req.sessionID : undefined);
+    void enqueueAlert(
+      this.emailQueue,
+      this.logger,
+      passkeyRemovedEmail(changed.email, changed.locale),
+    );
   }
 }

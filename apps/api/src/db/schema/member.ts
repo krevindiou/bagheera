@@ -28,6 +28,10 @@ export const member = pgTable(
     // written once that confirmation lands — see ProfileService.
     pendingEmail: varchar('pending_email', { length: FIELD_LIMITS.EMAIL }),
     emailChangeTokenVersion: integer('email_change_token_version').notNull().default(0),
+    // Bumped by a change that must sign out other devices; a session signed
+    // in under an earlier value is over (see SessionAuthGuard). Kept here
+    // rather than in Valkey so it holds through a Valkey outage.
+    sessionEpoch: integer('session_epoch').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()

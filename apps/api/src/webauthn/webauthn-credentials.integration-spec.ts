@@ -3,7 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import request from 'supertest';
-import { securityEvent, webauthnCredential } from '../db/schema';
+import { member, securityEvent, webauthnCredential } from '../db/schema';
+import { AuditService } from '../security/audit.service';
+import { SessionRegistryService } from '../session/session-registry.service';
 import {
   completeStepUp,
   seedSignedInMember,
@@ -156,6 +158,81 @@ describe('webauthn credentials', () => {
 
       await fixture.agent.get('/auth/me').expect(200);
       await otherDevice.get('/auth/me').expect(401);
+    });
+
+    // The registry lives in Valkey; the member's session epoch does not.
+    it('still signs out the other sessions and records the removal when Valkey cannot revoke them', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Compromised');
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      await completeStepUp(app, fixture);
+      const revoke = vi
+        .spyOn(app.get(SessionRegistryService), 'revokeOthers')
+        .mockRejectedValueOnce(new Error('Connection is closed.'));
+
+      try {
+        const res = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+        expect(res.status).toBe(200);
+        expect(revoke).toHaveBeenCalled();
+      } finally {
+        revoke.mockRestore();
+      }
+
+      const events = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'webauthn_credential_removed'),
+            eq(securityEvent.memberId, fixture.memberId),
+          ),
+        );
+      expect(events).toHaveLength(1);
+      await fixture.agent.get('/auth/me').expect(200);
+      await otherDevice.get('/auth/me').expect(401);
+    });
+
+    it('answers without waiting for the alert to be queued', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'To delete');
+      fakeEmailQueue.enqueue.mockReturnValueOnce(new Promise<void>(() => undefined));
+
+      await completeStepUp(app, fixture);
+      const res = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(res.status).toBe(200);
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the passkey when its removal cannot be recorded', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Still here');
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      await completeStepUp(app, fixture);
+      const recordIn = vi
+        .spyOn(app.get(AuditService), 'recordIn')
+        .mockRejectedValueOnce(new Error('insert failed'));
+
+      try {
+        const res = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+        expect(res.status).toBe(500);
+      } finally {
+        recordIn.mockRestore();
+      }
+
+      const rows = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.id, credential.id));
+      expect(rows).toHaveLength(1);
+      const [row] = await getDb(app)
+        .select({ sessionEpoch: member.sessionEpoch })
+        .from(member)
+        .where(eq(member.id, fixture.memberId));
+      expect(row.sessionEpoch).toBe(0);
+      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+      await otherDevice.get('/auth/me').expect(200);
     });
 
     // A hijacked session alone must not delete the owner's passkey.

@@ -4,12 +4,15 @@ import type { Server } from 'http';
 import type { VerifiedAuthenticationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import type IORedis from 'ioredis';
+import { eq, sql } from 'drizzle-orm';
+import { member } from '../db/schema';
 import {
   csrfTokenFor,
   insertMemberWithCredential,
   seedSignedInMember,
+  signInWithPasskey,
 } from '../test-support/auth-fixture';
-import { createTestApp } from '../test-support/create-test-app';
+import { createTestApp, getDb } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
 import { SessionRegistryService } from './session-registry.service';
 import {
@@ -21,6 +24,7 @@ import {
 
 interface StoredSession {
   memberId?: string;
+  sessionEpoch?: number;
   createdAt?: number;
   [key: string]: unknown;
 }
@@ -190,6 +194,54 @@ describe('session lifecycle', () => {
     await app.get(SessionRegistryService).revokeOthers(memberId);
     await valkey.set(key, raw!);
 
+    await agent.get('/auth/me').expect(401);
+  });
+
+  async function bumpSessionEpoch(memberId: string): Promise<number> {
+    const [row] = await getDb(app)
+      .update(member)
+      .set({ sessionEpoch: sql`${member.sessionEpoch} + 1` })
+      .where(eq(member.id, memberId))
+      .returning({ sessionEpoch: member.sessionEpoch });
+    return row.sessionEpoch;
+  }
+
+  // Revocation that never reached Valkey: still registered, but over.
+  it("rejects a registered session from before the member's session epoch", async () => {
+    const { agent, memberId } = await seedSignedInMember(app);
+    await agent.get('/auth/me').expect(200);
+
+    await bumpSessionEpoch(memberId);
+
+    await agent.get('/auth/me').expect(401);
+  });
+
+  it("signs in under the member's current session epoch", async () => {
+    const { memberId, credentialId } = await insertMemberWithCredential(app);
+    const epoch = await bumpSessionEpoch(memberId);
+    const agent = request.agent(app.getHttpServer());
+
+    await signInWithPasskey(app, agent, credentialId);
+
+    await agent.get('/auth/me').expect(200);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
+    const stored = JSON.parse(
+      (await valkey.get(await findSessionKey(valkey, memberId)))!,
+    ) as StoredSession;
+    expect(stored.sessionEpoch).toBe(epoch);
+  });
+
+  // Sessions stored before the epoch existed carry none.
+  it('keeps a session without an epoch while the member has never been bumped', async () => {
+    const { agent, memberId } = await seedSignedInMember(app);
+    const valkey = app.get<IORedis>(VALKEY_CLIENT);
+    const key = await findSessionKey(valkey, memberId);
+    const data = JSON.parse((await valkey.get(key))!) as StoredSession;
+    delete data.sessionEpoch;
+    await valkey.set(key, JSON.stringify(data));
+
+    await agent.get('/auth/me').expect(200);
+    await bumpSessionEpoch(memberId);
     await agent.get('/auth/me').expect(401);
   });
 

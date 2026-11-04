@@ -1,5 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import type IORedis from 'ioredis';
+import { errorMessage } from '../common/error-message';
 import { SESSION_KEY_PREFIX, SESSION_MAX_AGE_MS, VALKEY_CLIENT } from './session.constants';
 
 const MEMBER_SESSIONS_TTL_SECONDS = SESSION_MAX_AGE_MS / 1000;
@@ -22,9 +23,13 @@ function memberSessionsKey(memberId: string): string {
  *
  * SessionAuthGuard also requires the session's id to be listed here, so a
  * revoked session that an in-flight request writes back stays signed out.
+ * The member's session epoch (see session-epoch.ts) is what ends sessions
+ * for good; revoking here frees them from the store sooner.
  */
 @Injectable()
 export class SessionRegistryService {
+  private readonly logger = new Logger(SessionRegistryService.name);
+
   constructor(@Inject(VALKEY_CLIENT) private readonly valkey: IORedis) {}
 
   async register(memberId: string, sessionId: string): Promise<void> {
@@ -52,5 +57,17 @@ export class SessionRegistryService {
       .del(...others.map((id) => `${SESSION_KEY_PREFIX}${id}`))
       .srem(key, ...others)
       .exec();
+  }
+
+  /**
+   * `revokeOthers` after a committed session epoch bump, which already ended
+   * those sessions: a Valkey failure here is logged, never thrown.
+   */
+  async tryRevokeOthers(memberId: string, keepSessionId?: string): Promise<void> {
+    try {
+      await this.revokeOthers(memberId, keepSessionId);
+    } catch (err) {
+      this.logger.warn(`Other sessions not removed from the store: ${errorMessage(err)}`);
+    }
   }
 }

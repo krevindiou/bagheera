@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import type IORedis from 'ioredis';
 import { vi } from 'vitest';
 import { SessionRegistryService } from './session-registry.service';
@@ -63,5 +64,22 @@ describe('SessionRegistryService', () => {
     const { client, service } = fakeValkey(['s2']);
     await service.revokeOthers('m1', 's2');
     expect(client.multi).not.toHaveBeenCalled();
+  });
+
+  it('revokes like revokeOthers when trying', async () => {
+    const { chain, service } = fakeValkey(['s1', 's2']);
+    await service.tryRevokeOthers('m1', 's2');
+    expect(chain.del).toHaveBeenCalledWith('sess:s1');
+  });
+
+  it('logs instead of throwing when Valkey fails while trying', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    const { client, service } = fakeValkey();
+    client.smembers.mockRejectedValue(new Error('Connection is closed.'));
+    await expect(service.tryRevokeOthers('m1', 's2')).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      'Other sessions not removed from the store: Connection is closed.',
+    );
+    warn.mockRestore();
   });
 });

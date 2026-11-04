@@ -4,6 +4,9 @@ import 'express-session';
 declare module 'express-session' {
   interface SessionData {
     memberId?: string;
+    // The member's `sessionEpoch` this session signed in under. Missing on
+    // sessions that predate it, which counts as 0.
+    sessionEpoch?: number;
     // Forces session persistence (see CsrfTokenController).
     csrfIssued?: boolean;
   }

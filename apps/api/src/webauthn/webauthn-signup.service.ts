@@ -112,9 +112,9 @@ export class WebauthnSignupService {
       throw signupFailed();
     }
 
-    let memberId: string;
+    let signedUp: { id: string; sessionEpoch: number };
     try {
-      memberId = await this.db.transaction(async (tx) => {
+      signedUp = await this.db.transaction(async (tx) => {
         const [row] = await tx
           .insert(member)
           .values({
@@ -124,11 +124,11 @@ export class WebauthnSignupService {
             timeZone: payload.timeZone ?? null,
             loggedAt: new Date(),
           })
-          .returning({ id: member.id });
+          .returning({ id: member.id, sessionEpoch: member.sessionEpoch });
         await tx
           .insert(webauthnCredential)
           .values(credentialInsertValues(row.id, verification.registrationInfo, dto.deviceName));
-        return row.id;
+        return row;
       });
     } catch (err) {
       // member_email_unique: another link for the same address completed
@@ -140,9 +140,10 @@ export class WebauthnSignupService {
     }
 
     await this.sessionRotation.rotate(req);
-    req.session.memberId = memberId;
-    await this.sessionRegistry.register(memberId, req.sessionID);
-    await this.audit.record('passkey_signup_completed', memberId, sourceAddress);
+    req.session.memberId = signedUp.id;
+    req.session.sessionEpoch = signedUp.sessionEpoch;
+    await this.sessionRegistry.register(signedUp.id, req.sessionID);
+    await this.audit.record('passkey_signup_completed', signedUp.id, sourceAddress);
 
     return { message: 'ok' };
   }

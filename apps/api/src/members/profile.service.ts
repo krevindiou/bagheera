@@ -14,6 +14,7 @@ import { emailChangedEmail } from '../email/templates/email-changed.template';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import '../session/session-data';
+import { bumpedSessionEpoch, keepThroughBump } from '../session/session-epoch';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
@@ -99,12 +100,13 @@ export class ProfileService {
   /**
    * Completes an email change from the emailed token. Every bad, expired,
    * used or superseded key gets the same generic error. On success, signs
-   * out the member's other sessions, sparing `currentSessionId`.
+   * out the member's other sessions, sparing the confirming one if it is
+   * the member's own.
    */
   async confirmEmailChange(
     key: string,
     sourceAddress = CLIENT_IP_FALLBACK,
-    currentSessionId?: string,
+    req?: Request,
   ): Promise<void> {
     const payload = parseEmailChangeToken(this.crypto, key);
     if (!payload) {
@@ -127,37 +129,43 @@ export class ProfileService {
       this.db,
       payload.newEmail,
       () =>
-        this.db
-          .update(member)
-          .set({
-            email: payload.newEmail,
-            pendingEmail: null,
-            // Bumped again so this same link can't be replayed.
-            emailChangeTokenVersion: row.emailChangeTokenVersion + 1,
-          })
-          // Re-checked at write time: a concurrent confirmation of this link,
-          // or a newer change request, may have landed since the read.
-          .where(
-            and(
-              eq(member.id, row.id),
-              eq(member.emailChangeTokenVersion, payload.version),
-              eq(member.pendingEmail, payload.newEmail),
-            ),
-          )
-          .returning({ id: member.id }),
+        this.db.transaction(async (tx) => {
+          const [changed] = await tx
+            .update(member)
+            .set({
+              email: payload.newEmail,
+              pendingEmail: null,
+              // Bumped again so this same link can't be replayed.
+              emailChangeTokenVersion: row.emailChangeTokenVersion + 1,
+              // The mailbox just changed hands: sessions opened before this
+              // point may belong to whoever prompted the change.
+              sessionEpoch: bumpedSessionEpoch,
+            })
+            // Re-checked at write time: a concurrent confirmation of this link,
+            // or a newer change request, may have landed since the read.
+            .where(
+              and(
+                eq(member.id, row.id),
+                eq(member.emailChangeTokenVersion, payload.version),
+                eq(member.pendingEmail, payload.newEmail),
+              ),
+            )
+            .returning({ sessionEpoch: member.sessionEpoch });
+          if (changed) {
+            await this.audit.recordIn(tx, 'email_changed', row.id, sourceAddress);
+          }
+          return changed;
+        }),
       row.id,
     );
-    if (!result.ok || result.value.length === 0) {
+    if (!result.ok || !result.value) {
       throw emailChangeError();
     }
 
-    // The mailbox just changed hands: sessions opened before this point
-    // (other than the one confirming, if it is the member's own) may belong
-    // to whoever prompted the change.
-    await this.sessionRegistry.revokeOthers(row.id, currentSessionId);
-
-    await this.audit.record('email_changed', row.id, sourceAddress);
-    await enqueueAlert(
+    const kept = keepThroughBump(req?.session, row.id, result.value.sessionEpoch);
+    // Committed: neither may fail the request or hold it up on Valkey.
+    void this.sessionRegistry.tryRevokeOthers(row.id, kept ? req?.sessionID : undefined);
+    void enqueueAlert(
       this.emailQueue,
       this.logger,
       emailChangedEmail(previousEmail, payload.newEmail, row.locale),

@@ -50,7 +50,8 @@ function toError(err: unknown): Error {
  * authenticator offers its discoverable passkeys for this site, and
  * verify() learns the member from the one that answered. Asking for an
  * email would reveal which addresses are registered and allow per-email
- * lockouts. Ends by rotating the session, then setting memberId.
+ * lockouts. Ends by rotating the session, then setting memberId and the
+ * member's session epoch.
  */
 @Injectable()
 export class WebauthnAuthenticationService {
@@ -114,6 +115,7 @@ export class WebauthnAuthenticationService {
 
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
+    req.session.sessionEpoch = row.sessionEpoch;
     await this.sessionRegistry.register(row.id, req.sessionID);
     await saveSession(req);
 

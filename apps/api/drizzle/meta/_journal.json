@@ -113,6 +113,13 @@
       "when": 1793816979016,
       "tag": "0015_add_single_delete_security_event_types",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793818329737,
+      "tag": "0016_add_member_session_epoch",
+      "breakpoints": true
     }
   ]
 }

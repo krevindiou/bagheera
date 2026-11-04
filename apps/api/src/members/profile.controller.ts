@@ -64,7 +64,7 @@ export class ProfileController {
     @ClientIp() ip: string,
     @Body() dto: ConfirmEmailChangeDto,
   ): Promise<MessageResponseDto> {
-    await this.profile.confirmEmailChange(dto.key, ip, req.sessionID);
+    await this.profile.confirmEmailChange(dto.key, ip, req);
     return { message: 'Your email address has been updated.' };
   }
 }

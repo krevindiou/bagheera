@@ -5,7 +5,7 @@ import './session-data';
 /**
  * Rotates the session id on sign-in and sign-up completion, to defeat
  * session fixation. Only the browser-level fields below carry over; the
- * caller sets `memberId` afterwards.
+ * caller sets `memberId` and `sessionEpoch` afterwards.
  *
  * An allow-list, so a field added later is dropped by default: a step-up
  * proof, a pending challenge or sign-up state belongs to whoever held the

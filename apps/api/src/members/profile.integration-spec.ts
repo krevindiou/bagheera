@@ -2,10 +2,13 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { and, eq, sql } from 'drizzle-orm';
 import request from 'supertest';
+import { vi } from 'vitest';
 import { member, securityEvent } from '../db/schema';
 import type { EmailMessage } from '../email/email-message';
 import fr from '../email/i18n/fr';
+import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
+import { SessionRegistryService } from '../session/session-registry.service';
 import {
   completeStepUp,
   csrfTokenFor,
@@ -237,6 +240,97 @@ describe('POST /members/profile', () => {
 
       await fixture.agent.get('/auth/me').expect(200);
       await otherDevice.get('/auth/me').expect(401);
+    });
+
+    async function emailChangedEvents(memberId: string) {
+      return getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(eq(securityEvent.eventType, 'email_changed'), eq(securityEvent.memberId, memberId)),
+        );
+    }
+
+    // The registry lives in Valkey; the member's session epoch does not.
+    it('still signs out the other sessions and records the change when Valkey cannot revoke them', async () => {
+      const fixture = await seedSignedInMember(app);
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      const key = await startEmailChange(fixture);
+      const revoke = vi
+        .spyOn(app.get(SessionRegistryService), 'revokeOthers')
+        .mockRejectedValueOnce(new Error('Connection is closed.'));
+
+      try {
+        const res = await fixture.mutate('post', '/members/profile/confirm-email-change', { key });
+        expect(res.status).toBe(200);
+        expect(revoke).toHaveBeenCalled();
+      } finally {
+        revoke.mockRestore();
+      }
+
+      expect(await emailChangedEvents(fixture.memberId)).toHaveLength(1);
+      await fixture.agent.get('/auth/me').expect(200);
+      await otherDevice.get('/auth/me').expect(401);
+    });
+
+    it('answers without waiting for the old-address notice to be queued', async () => {
+      const fixture = await seedSignedInMember(app);
+      const key = await startEmailChange(fixture);
+      fakeEmailQueue.enqueue.mockReturnValueOnce(new Promise<void>(() => undefined));
+
+      const confirmAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(confirmAgent);
+      await confirmAgent
+        .post('/members/profile/confirm-email-change')
+        .set('x-csrf-token', csrfToken)
+        .send({ key })
+        .expect(200);
+      expect(fakeEmailQueue.enqueue).toHaveBeenCalledTimes(2);
+    });
+
+    it('changes nothing when the change cannot be recorded', async () => {
+      const fixture = await seedSignedInMember(app);
+      const otherDevice = request.agent(app.getHttpServer());
+      await signInWithPasskey(app, otherDevice, fixture.credentialId);
+      const key = await startEmailChange(fixture);
+      const recordIn = vi
+        .spyOn(app.get(AuditService), 'recordIn')
+        .mockRejectedValueOnce(new Error('insert failed'));
+
+      try {
+        const res = await fixture.mutate('post', '/members/profile/confirm-email-change', { key });
+        expect(res.status).toBe(500);
+      } finally {
+        recordIn.mockRestore();
+      }
+
+      const [row] = await getDb(app).select().from(member).where(eq(member.id, fixture.memberId));
+      expect(row.email).toBe(fixture.email);
+      expect(row.sessionEpoch).toBe(0);
+      expect(await emailChangedEvents(fixture.memberId)).toHaveLength(0);
+      await otherDevice.get('/auth/me').expect(200);
+      // The link is still good.
+      expect(
+        (await fixture.mutate('post', '/members/profile/confirm-email-change', { key })).status,
+      ).toBe(200);
+    });
+
+    // A session already ended by an earlier change must not be revived by
+    // confirming from it.
+    it('does not keep a confirming session of the member that an earlier change ended', async () => {
+      const fixture = await seedSignedInMember(app);
+      const key = await startEmailChange(fixture);
+      await getDb(app)
+        .update(member)
+        .set({ sessionEpoch: sql`${member.sessionEpoch} + 1` })
+        .where(eq(member.id, fixture.memberId));
+
+      expect(
+        (await fixture.mutate('post', '/members/profile/confirm-email-change', { key })).status,
+      ).toBe(200);
+
+      await fixture.agent.get('/auth/me').expect(401);
     });
 
     it('completes a pending change and notifies the old address', async () => {
