@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node';
 import type { ErrorEvent } from '@sentry/node';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { vi } from 'vitest';
 import { initSentry, scrubEvent } from './sentry';
 
@@ -51,6 +52,7 @@ describe('scrubEvent', () => {
     'Failed query: insert into "operation" ("id", "notes") values ($1, $2)\n' +
     'params: 0190a1a5-0000-7000-8000-000000000001,rent for flat 3B';
   const scrubbedQuery = 'Failed query: insert into "operation" ("id", "notes") values ($1, $2)';
+  const sql = 'insert into "operation" ("id", "notes") values ($1, $2)';
 
   function pgError(message: string, code: string): Error {
     return Object.assign(new Error(message), { code });
@@ -69,23 +71,46 @@ describe('scrubEvent', () => {
     };
   }
 
-  it('cuts a failed query message at its parameters, keeping the SQL', () => {
-    const event = scrubEvent(eventWith(failedQuery));
+  it('reduces a failed query to its Postgres code, keeping the stack', () => {
+    const error = new DrizzleQueryError(
+      sql,
+      ['0190a1a5-0000-7000-8000-000000000001', 'rent for flat 3B'],
+      pgError('duplicate key value violates unique constraint "x"', '23505'),
+    );
+
+    const event = scrubEvent(eventWith(error.message), { originalException: error });
 
     expect(event.exception?.values?.[0]).toEqual({
       type: 'Error',
-      value: scrubbedQuery,
+      value: 'query failed (23505)',
       stacktrace: { frames: [{ filename: 'operation.service.ts', lineno: 44 }] },
     });
   });
 
-  it('scrubs every value of a chained exception', () => {
-    const event = scrubEvent(eventWith(failedQuery, `Wrapped: ${failedQuery}`));
+  it('finds a failed query behind the error that wraps it', () => {
+    const query = new DrizzleQueryError(sql, ['rent for flat 3B'], undefined);
+    const wrapper = new Error('could not save', { cause: query });
+
+    const event = scrubEvent(eventWith(wrapper.message, query.message), {
+      originalException: wrapper,
+    });
 
     expect(event.exception?.values?.map((exception) => exception.value)).toEqual([
-      scrubbedQuery,
-      `Wrapped: ${scrubbedQuery}`,
+      'could not save',
+      'query failed',
     ]);
+  });
+
+  it('recognises a failed query by its prefix when no error is at hand', () => {
+    const event = scrubEvent(eventWith(failedQuery));
+
+    expect(event.exception?.values?.[0].value).toBe('query failed');
+  });
+
+  it('cuts the parameters from any other message that carries them', () => {
+    const event = scrubEvent(eventWith(`Wrapped: ${failedQuery}`));
+
+    expect(event.exception?.values?.[0].value).toBe(`Wrapped: ${scrubbedQuery}`);
   });
 
   it('masks the input a Postgres data exception quotes', () => {
@@ -98,7 +123,7 @@ describe('scrubEvent', () => {
 
     expect(event.exception?.values?.map((exception) => exception.value)).toEqual([
       'invalid input syntax for type uuid: "[Filtered]"',
-      scrubbedQuery,
+      'query failed',
     ]);
   });
 

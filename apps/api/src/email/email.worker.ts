@@ -1,7 +1,8 @@
 import { Inject, Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import IORedis from 'ioredis';
 import { Job, Worker } from 'bullmq';
-import { reportFinalJobFailure } from '../common/report-job-failure';
+import { errorMessage } from '../common/error-message';
+import { reportFinalJobFailure, withSafeJobErrors } from '../common/report-job-failure';
 import { SignupRequestService } from '../members/signup-request.service';
 import {
   EMAIL_PROVIDER,
@@ -32,17 +33,19 @@ export class EmailWorker implements OnModuleDestroy {
       { connection: this.connection },
     );
     this.worker.on('failed', (job, err) => {
-      this.logger.error(`Email job ${job?.id} failed: ${err.message}`);
+      this.logger.error(`Email job ${job?.id} failed: ${errorMessage(err)}`);
       reportFinalJobFailure(job, err);
     });
   }
 
-  private async process(job: Job<EmailMessage | SignupRequest>): Promise<void> {
-    if (job.name === SIGNUP_REQUEST_JOB) {
-      await this.signupRequests.handle(job.data as SignupRequest);
-      return;
-    }
-    await this.provider.send(job.data as EmailMessage);
+  private process(job: Job<EmailMessage | SignupRequest>): Promise<void> {
+    return withSafeJobErrors(async () => {
+      if (job.name === SIGNUP_REQUEST_JOB) {
+        await this.signupRequests.handle(job.data as SignupRequest);
+        return;
+      }
+      await this.provider.send(job.data as EmailMessage);
+    });
   }
 
   async onModuleDestroy(): Promise<void> {

@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Sentry } from '../../logging/sentry';
+import { errorStack } from '../error-message';
 import { categorize, ErrorResponseBody } from './error-response';
 
 const INVALID_TEXT_ENCODING = '22021';
@@ -37,7 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       !this.isExposedHttpError(exception) &&
       !this.isInvalidTextEncoding(exception)
     ) {
-      this.logger.error(exception instanceof Error ? exception.stack : exception);
+      this.logger.error(exception instanceof Error ? errorStack(exception) : exception);
       Sentry.captureException(exception);
     }
 

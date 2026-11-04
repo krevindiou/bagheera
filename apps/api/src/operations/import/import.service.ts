@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { IMPORT_LIMITS } from '@bagheera/reference-data';
+import { errorMessage } from '../../common/error-message';
 import { BusinessError } from '../../common/filters/business-error';
 import { MONEY_SCALE } from '../../common/money';
 import { AuditService } from '../../security/audit.service';
@@ -314,7 +315,7 @@ export class ImportService {
     try {
       await step();
     } catch (err) {
-      this.logger.error(`Import follow-up failed: ${(err as Error).message}`);
+      this.logger.error(`Import follow-up failed: ${errorMessage(err)}`);
     }
   }
 

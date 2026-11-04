@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import type IORedis from 'ioredis';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { reportFinalJobFailure } from '../common/report-job-failure';
 import type { GenerationJob, GenerationQueueService } from './generation-queue.service';
 import type { SchedulerGenerationService } from './generation.service';
@@ -10,7 +11,10 @@ import { vi, type Mock } from 'vitest';
 // Capture what the Worker is handed. (`mock` prefix: vi.mock's hoisted
 // factory may reference it.)
 const mockWorker = { on: vi.fn() };
-vi.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: vi.fn() }));
+vi.mock('../common/report-job-failure', async (importActual) => ({
+  ...(await importActual<typeof import('../common/report-job-failure')>()),
+  reportFinalJobFailure: vi.fn(),
+}));
 vi.mock('bullmq', () => ({
   Worker: vi.fn().mockImplementation(function Worker() {
     return mockWorker;
@@ -69,6 +73,41 @@ describe('createGenerationWorker', () => {
     expect(generationQueue.enqueueMember.mock.calls).toEqual([['m1'], ['m2']]);
     expect(generation.catchUpMember).not.toHaveBeenCalled();
     expect(generation.runForScheduler).not.toHaveBeenCalled();
+  });
+
+  it('fails a job with an error free of the failed query values', async () => {
+    generation.catchUpMember.mockRejectedValueOnce(
+      new DrizzleQueryError(
+        'insert into "operation" ("notes") values ($1)',
+        ['marker-notes'],
+        undefined,
+      ),
+    );
+
+    const thrown = await processor({ data: { memberId: 'm1' } } as Job<GenerationJob>).catch(
+      (e: Error) => e,
+    );
+
+    expect(thrown).toMatchObject({ message: 'query failed' });
+    expect((thrown as Error).stack).not.toContain('marker-notes');
+  });
+
+  it('logs a failed query without its values', () => {
+    const error = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    const [, listener] = mockWorker.on.mock.calls[0] as [
+      string,
+      (job: { id: string }, err: Error) => void,
+    ];
+
+    listener(
+      { id: '7' },
+      new DrizzleQueryError('insert into "operation" ("notes") values ($1)', ['marker-notes'], {
+        code: '40P01',
+      } as unknown as Error),
+    );
+
+    expect(error).toHaveBeenCalledWith('Generation job 7 failed: query failed (40P01)');
+    error.mockRestore();
   });
 
   it('logs a job that failed', () => {

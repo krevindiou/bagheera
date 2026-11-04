@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { errorMessage } from '../common/error-message';
 import { DRIZZLE } from '../db/db.constants';
 import { securityEvent } from '../db/schema';
 import { securityEventTypeEnum } from '../db/schema/enums';
@@ -35,9 +36,7 @@ export class AuditService {
         details,
       });
     } catch (err) {
-      this.logger.error(
-        `Failed to record security event "${eventType}": ${(err as Error).message}`,
-      );
+      this.logger.error(`Failed to record security event "${eventType}": ${errorMessage(err)}`);
     }
   }
 }

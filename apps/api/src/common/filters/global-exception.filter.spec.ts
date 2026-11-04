@@ -2,6 +2,7 @@ import { BadRequestException, HttpException, HttpStatus, Logger } from '@nestjs/
 import { BusinessError } from './business-error';
 import { GlobalExceptionFilter } from './global-exception.filter';
 import { fakeArgumentsHost, fakeRequest, fakeResponse } from '../../test-support/fake-http-context';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { vi, type Mock, type MockInstance } from 'vitest';
 
 // @sentry/node's exports are read-only bindings, so not spy-able in place.
@@ -118,6 +119,21 @@ describe('GlobalExceptionFilter', () => {
     );
     expect(errorSpy).toHaveBeenCalled();
     expect(Sentry.captureException).toHaveBeenCalled();
+  });
+
+  it('logs a failed query without its bound values', async () => {
+    const res = fakeResponse();
+    const failed = new DrizzleQueryError(
+      'insert into "operation" ("third_party") values ($1)',
+      ['marker-third-party'],
+      Object.assign(new Error('duplicate key'), { code: '23505' }),
+    );
+    await filter.catch(failed, fakeArgumentsHost(fakeRequest(), res));
+    expect(res.status).toHaveBeenCalledWith(500);
+    const [[logged]] = errorSpy.mock.calls as [[string]];
+    expect(logged).toContain('query failed (23505)');
+    expect(logged).not.toContain('marker-third-party');
+    expect(Sentry.captureException).toHaveBeenCalledWith(failed);
   });
 
   it('answers a 400, without logging or reporting, for a Postgres invalid-encoding error wrapped by Drizzle', async () => {

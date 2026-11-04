@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bullmq';
 import type IORedis from 'ioredis';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { reportFinalJobFailure } from '../common/report-job-failure';
 import type { SignupRequestService } from '../members/signup-request.service';
 import type { EmailMessage, SignupRequest } from './email-message';
@@ -12,7 +13,10 @@ import { vi } from 'vitest';
 type Processor = (job: Job<EmailMessage | SignupRequest>) => Promise<void>;
 const mockWorker = { on: vi.fn(), close: vi.fn().mockResolvedValue(undefined) };
 let mockProcessor: Processor | undefined;
-vi.mock('../common/report-job-failure', () => ({ reportFinalJobFailure: vi.fn() }));
+vi.mock('../common/report-job-failure', async (importActual) => ({
+  ...(await importActual<typeof import('../common/report-job-failure')>()),
+  reportFinalJobFailure: vi.fn(),
+}));
 vi.mock('bullmq', () => ({
   Worker: vi.fn().mockImplementation(function Worker(_queue: string, processor: Processor) {
     mockProcessor = processor;
@@ -72,6 +76,23 @@ describe('EmailWorker', () => {
 
     expect(signupRequests.handle).toHaveBeenCalledWith(request);
     expect(provider.send).not.toHaveBeenCalled();
+  });
+
+  it('fails a sign-up request with an error free of the failed query values', async () => {
+    signupRequests.handle.mockRejectedValueOnce(
+      new DrizzleQueryError(
+        'insert into "member" ("email") values ($1)',
+        ['marker@example.test'],
+        undefined,
+      ),
+    );
+
+    const thrown = await mockProcessor!(
+      job('signup-request', { email: 'marker@example.test' }),
+    ).catch((e: Error) => e);
+
+    expect(thrown).toMatchObject({ message: 'query failed' });
+    expect((thrown as Error).stack).not.toContain('marker@example.test');
   });
 
   it('logs a job that failed', () => {

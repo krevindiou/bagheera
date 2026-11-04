@@ -1,9 +1,12 @@
 import * as Sentry from '@sentry/node';
 import type { ErrorEvent, EventHint } from '@sentry/node';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
+import { errorMessage } from '../common/error-message';
 
 // Drizzle appends a failed query's bound values after this; the SQL before it
 // is parametrised and carries none.
 const QUERY_PARAMS_MARKER = '\nparams: ';
+const FAILED_QUERY_PREFIX = 'Failed query:';
 
 const FILTERED = '[Filtered]';
 
@@ -41,20 +44,46 @@ function dataExceptionMessages(error: unknown): Set<string> {
   return messages;
 }
 
+// Sentry reports a Drizzle query error as a plain `Error`, so its exception
+// value is matched by the message it carried: through the error object when
+// there is one, by prefix otherwise.
+function failedQueryTexts(error: unknown): Map<string, string> {
+  const texts = new Map<string, string>();
+  const seen = new Set<unknown>();
+  let current = error;
+  while (current instanceof Error && !seen.has(current)) {
+    seen.add(current);
+    if (current instanceof DrizzleQueryError) {
+      texts.set(current.message, errorMessage(current));
+    }
+    current = current.cause;
+  }
+  return texts;
+}
+
 /**
  * Query values are member content (notes, labels, emails, amounts), so they
- * are cut from every exception value, linked causes included. The event
+ * are cut from every exception value, linked causes included; a failed
+ * query's value is reduced to its Postgres code. The event
  * itself is always kept, so the error type and stack still get reported.
  */
 export function scrubEvent(event: ErrorEvent, hint?: EventHint): ErrorEvent {
   const dataExceptions = dataExceptionMessages(hint?.originalException);
+  const failedQueries = failedQueryTexts(hint?.originalException);
   for (const exception of event.exception?.values ?? []) {
     if (exception.value === undefined) {
       continue;
     }
-    exception.value = dataExceptions.has(exception.value)
-      ? withoutQuotedInput(exception.value)
-      : withoutQueryParams(exception.value);
+    const failedQuery =
+      failedQueries.get(exception.value) ??
+      (exception.value.startsWith(FAILED_QUERY_PREFIX) ? 'query failed' : undefined);
+    if (failedQuery !== undefined) {
+      exception.value = failedQuery;
+    } else {
+      exception.value = dataExceptions.has(exception.value)
+        ? withoutQuotedInput(exception.value)
+        : withoutQueryParams(exception.value);
+    }
   }
   if (event.message !== undefined) {
     event.message = withoutQueryParams(event.message);

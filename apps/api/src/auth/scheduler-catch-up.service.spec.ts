@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import type { GenerationQueueService } from '../schedulers/generation-queue.service';
 import type { SchedulerGenerationService } from '../schedulers/generation.service';
 import { SchedulerCatchUpService, SIGN_IN_CATCH_UP_BUDGET } from './scheduler-catch-up.service';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
 import { vi } from 'vitest';
 
 describe('SchedulerCatchUpService', () => {
@@ -43,6 +44,20 @@ describe('SchedulerCatchUpService', () => {
     expect(warn).toHaveBeenCalledWith(
       'Sign-in catch-up left to the queue: canceling statement due to statement timeout',
     );
+    warn.mockRestore();
+  });
+
+  it('logs a failed query without its bound values', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
+    const { service } = setup(
+      new DrizzleQueryError('insert into "operation" ("notes") values ($1)', ['marker-notes'], {
+        code: '57014',
+      } as unknown as Error),
+    );
+
+    await service.catchUp('m1');
+
+    expect(warn).toHaveBeenCalledWith('Sign-in catch-up left to the queue: query failed (57014)');
     warn.mockRestore();
   });
 });

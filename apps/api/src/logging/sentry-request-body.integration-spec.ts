@@ -2,8 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { createServer, type Server as HttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { gunzipSync } from 'node:zlib';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import type { Server } from 'http';
+import { bank } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { ImportStore } from '../operations/import/import.store';
 import { OperationService } from '../operations/operation.service';
@@ -126,12 +127,18 @@ describe('Sentry events for unhandled errors', () => {
     expect(raw).not.toContain(marker);
   });
 
-  it('leaves the parameters of a failed query out of the event', async () => {
+  it('leaves the values of a rejected query out of the log line and the event', async () => {
     const fixture = await seedSignedInMember(app);
     const accountId = await createAccount(fixture);
-    const marker = newMarker();
+    // Short enough for the bank name column.
+    const marker = newMarker().slice(0, 30);
+    const logged = vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+    // A foreign key violation: the insert fails with the marker as a bound value.
+    vi.spyOn(app.get(OperationService), 'create').mockImplementationOnce(async () => {
+      await getDb(app).insert(bank).values({ memberId: randomUUID(), name: marker });
+      throw new Error('unreachable');
+    });
 
-    // Postgres rejects a NUL character in text, so the insert really fails.
     const res = await fixture.mutate('post', '/operations', {
       accountId,
       type: 'debit',
@@ -139,13 +146,16 @@ describe('Sentry events for unhandled errors', () => {
       amount: 10,
       categoryId: await categoryIdOfType(getDb(app), 'debit'),
       paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
-      notes: `${marker}\u0000`,
     });
     expect(res.status).toBe(500);
 
+    expect(logged).toHaveBeenCalledTimes(1);
+    expect(String(logged.mock.calls[0][0])).toContain('query failed (23503)');
+    expect(JSON.stringify(logged.mock.calls)).not.toContain(marker);
     const { events, raw } = await reportedErrors();
     expect(events).toHaveLength(1);
-    expect(events[0].exception).toBeDefined();
+    expect(raw).toContain('query failed (23503)');
     expect(raw).not.toContain(marker);
+    logged.mockRestore();
   });
 });
