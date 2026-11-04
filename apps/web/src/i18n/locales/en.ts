@@ -94,6 +94,7 @@ export default {
     signedInAs: 'Connected as {email}',
     accountMenu: 'Account menu',
     signOut: 'Logout',
+    signOutError: 'Could not sign you out. You are still signed in; please try again.',
     accountsLink: 'Accounts',
     profileLink: 'Profile settings',
     passkeysLink: 'Passkeys',

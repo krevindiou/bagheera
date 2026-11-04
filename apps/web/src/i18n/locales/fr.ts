@@ -97,6 +97,8 @@ export default {
     signedInAs: 'Connecté en tant que {email}',
     accountMenu: 'Menu du compte',
     signOut: 'Déconnexion',
+    signOutError:
+      'Impossible de vous déconnecter. Vous êtes toujours connecté ; veuillez réessayer.',
     accountsLink: 'Comptes',
     profileLink: 'Paramètres du profil',
     passkeysLink: 'Clés d’accès',

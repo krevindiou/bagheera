@@ -6,6 +6,7 @@ import { asMockedApiClient, mockApiClient } from '../test-support/mockApiClient'
 vi.mock('../api/client', () => ({ apiClient: mockApiClient() }));
 
 import { apiClient as realApiClient } from '../api/client';
+import { useToast } from '../composables/useToast';
 import { i18n } from '../i18n';
 import { router } from '../router';
 import { useSessionStore } from '../stores/session.store';
@@ -32,6 +33,8 @@ describe('AccountMenu', () => {
     setActivePinia(createPinia());
     localStorage.clear();
     apiClient.POST.mockReset();
+    // The toast queue is module-level, shared across tests.
+    for (const { id } of [...useToast().toasts]) useToast().dismiss(id);
     await router.push({ name: 'sign-in', params: { locale: 'en' } });
   });
 
@@ -89,6 +92,7 @@ describe('AccountMenu', () => {
   });
 
   it('signs out: calls the API, clears the session, and returns to sign-in', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(AccountMenu, withGlobalPlugins());
     useSessionStore().setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
     await wrapper.vm.$nextTick();
@@ -106,6 +110,7 @@ describe('AccountMenu', () => {
   });
 
   it('flags the sign-out while it navigates, then lowers the flag', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(200));
     const wrapper = mount(AccountMenu, withGlobalPlugins());
     const session = useSessionStore();
     session.setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
@@ -122,6 +127,52 @@ describe('AccountMenu', () => {
 
     expect(flaggedDuringNavigation).toBe(true);
     pushSpy.mockRestore();
+  });
+
+  it.each([
+    ['a server error', 500],
+    ['an unreachable network', 503],
+    ['a rejected or failed CSRF token', 403],
+  ])('keeps the member signed in with a persistent error on %s', async (_label, status) => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(status));
+    const wrapper = mount(AccountMenu, withGlobalPlugins());
+    const session = useSessionStore();
+    session.setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
+    const clearSpy = vi.spyOn(session, 'clear');
+    const pushSpy = vi.spyOn(router, 'push');
+    await wrapper.vm.$nextTick();
+
+    await wrapper.get('.account-trigger').trigger('click');
+    await wrapper.get('.account-logout').trigger('click');
+
+    const { toasts } = useToast();
+    await vi.waitFor(() => expect(toasts).toHaveLength(1));
+    expect(toasts[0]).toMatchObject({ variant: 'error', text: i18n.global.t('home.signOutError') });
+    expect(apiClient.POST).toHaveBeenCalledWith('/auth/sign-out');
+    expect(clearSpy).not.toHaveBeenCalled();
+    expect(session.isAuthenticated).toBe(true);
+    expect(session.signingOut).toBe(false);
+    expect(pushSpy).not.toHaveBeenCalled();
+    pushSpy.mockRestore();
+  });
+
+  it('lets the member retry after a failed sign-out', async () => {
+    apiClient.POST.mockResolvedValueOnce(jsonResult(500)).mockResolvedValueOnce(jsonResult(200));
+    const wrapper = mount(AccountMenu, withGlobalPlugins());
+    const session = useSessionStore();
+    session.setMember({ email: 'john@example.net', locale: 'en', timeZone: 'UTC' });
+    await wrapper.vm.$nextTick();
+
+    await wrapper.get('.account-trigger').trigger('click');
+    await wrapper.get('.account-logout').trigger('click');
+    const { toasts } = useToast();
+    await vi.waitFor(() => expect(toasts).toHaveLength(1));
+    expect(session.isAuthenticated).toBe(true);
+
+    await wrapper.get('.account-trigger').trigger('click');
+    await wrapper.get('.account-logout').trigger('click');
+    await vi.waitFor(() => expect(session.isAuthenticated).toBe(false));
+    expect(router.currentRoute.value.name).toBe('sign-in');
   });
 
   it('closes on Escape', async () => {

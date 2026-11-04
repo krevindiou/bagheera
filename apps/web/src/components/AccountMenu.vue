@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { apiClient } from '../api/client';
+import { useToast } from '../composables/useToast';
 import { useLocaleSwitch } from '../composables/useLocaleSwitch';
 import type { Locale } from '../i18n/locales';
 import { useSessionStore } from '../stores/session.store';
@@ -15,6 +16,7 @@ const session = useSessionStore();
 const router = useRouter();
 const { t } = useI18n();
 const { current, choose } = useLocaleSwitch();
+const { push: toast } = useToast();
 
 const open = ref(false);
 
@@ -27,7 +29,14 @@ async function pickLocale(locale: Locale): Promise<void> {
 
 async function signOut(): Promise<void> {
   open.value = false;
-  await apiClient.POST('/auth/sign-out');
+  const { response } = await apiClient.POST('/auth/sign-out');
+  // The session cookie is httpOnly, so only the server can end it: on a
+  // failure the session survives, and looking signed out would hand it to the
+  // next person on this browser.
+  if (!response.ok) {
+    toast(t('home.signOutError'), 'error');
+    return;
+  }
   session.signingOut = true;
   try {
     session.clear();
