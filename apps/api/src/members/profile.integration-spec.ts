@@ -135,6 +135,38 @@ describe('POST /members/profile', () => {
       expect(row.pendingEmail).toBeNull();
     });
 
+    it('withdraws a pending change when the current address is submitted again, voiding its link', async () => {
+      const fixture = await seedSignedInMember(app);
+      const newEmail = uniqueEmail('withdrawn');
+      await completeStepUp(app, fixture);
+      expect((await fixture.mutate('post', '/members/profile', { email: newEmail })).status).toBe(
+        200,
+      );
+      const key = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        newEmail,
+        await versionOf(fixture.memberId),
+      );
+
+      await completeStepUp(app, fixture);
+      expect(
+        (await fixture.mutate('post', '/members/profile', { email: fixture.email.toUpperCase() }))
+          .status,
+      ).toBe(200);
+
+      const confirmAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(confirmAgent);
+      await confirmAgent
+        .post('/members/profile/confirm-email-change')
+        .set('x-csrf-token', csrfToken)
+        .send({ key })
+        .expect(400);
+      const [row] = await getDb(app).select().from(member).where(eq(member.id, fixture.memberId));
+      expect(row.email).toBe(fixture.email);
+      expect(row.pendingEmail).toBeNull();
+    });
+
     // Neither the response time nor the previous link (next test) may
     // reveal a taken address.
     it('handles an address another member holds the same way, but sends its owner a notice, not a link', async () => {

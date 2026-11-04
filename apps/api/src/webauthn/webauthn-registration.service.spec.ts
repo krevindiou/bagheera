@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -27,10 +27,23 @@ const VERIFIED = {
 
 const DTO = { response: {} } as unknown as VerifyRegistrationDto;
 
-// A verify() call that reaches the credential insert, which rejects with `insertError`.
-async function setup(insertError: unknown) {
-  const insert = vi.fn().mockReturnValue({ values: vi.fn().mockRejectedValue(insertError) });
-  const db = { insert } as unknown as NodePgDatabase;
+const MEMBER_ROW = { id: 'member-1', email: 'm@example.test', locale: 'en', sessionEpoch: 0 };
+
+// A verify() call that reaches the credential insert, which rejects with
+// `insertError` (or succeeds without one), the member row locked at `epoch`.
+async function setup(insertError: unknown, epoch = 0) {
+  const values = insertError
+    ? vi.fn().mockRejectedValue(insertError)
+    : vi.fn().mockResolvedValue(undefined);
+  const insert = vi.fn().mockReturnValue({ values });
+  const forUpdate = vi.fn().mockResolvedValue([{ ...MEMBER_ROW, sessionEpoch: epoch }]);
+  const select = vi.fn().mockReturnValue({
+    from: () => ({ where: () => ({ for: forUpdate }) }),
+  });
+  const tx = { select, insert };
+  const db = {
+    transaction: vi.fn((run: (t: typeof tx) => Promise<unknown>) => run(tx)),
+  } as unknown as NodePgDatabase;
   const config = { getOrThrow: () => 'value' } as unknown as ConfigService;
   const crypto = { verifyRegistrationResponse: vi.fn().mockResolvedValue(VERIFIED) };
   const emailQueue = { enqueue: vi.fn() };
@@ -47,7 +60,7 @@ async function setup(insertError: unknown) {
   const session = { memberId: 'member-1' } as unknown as Request['session'];
   const req = { session, sessionID: 'sid-1', ip: '203.0.113.7' } as unknown as Request;
   await storeChallenge(singleUse, req, 'registrationChallenge', { challenge: 'challenge' });
-  return { service, req, insert, crypto, emailQueue, audit };
+  return { service, req, insert, forUpdate, crypto, emailQueue, audit };
 }
 
 describe('WebauthnRegistrationService.verify', () => {
@@ -69,6 +82,33 @@ describe('WebauthnRegistrationService.verify', () => {
     const { service, req, emailQueue, audit } = await setup(outage);
 
     await expect(service.verify(req, DTO)).rejects.toBe(outage);
+    expect(emailQueue.enqueue).not.toHaveBeenCalled();
+    expect(audit.record).not.toHaveBeenCalled();
+  });
+
+  it('locks the member row, then stores the credential and alerts the member', async () => {
+    const { service, req, insert, forUpdate, emailQueue, audit } = await setup(undefined);
+
+    await service.verify(req, DTO);
+
+    expect(forUpdate).toHaveBeenCalledWith('update');
+    expect(insert).toHaveBeenCalled();
+    expect(audit.record).toHaveBeenCalledWith(
+      'webauthn_credential_registered',
+      'member-1',
+      '203.0.113.7',
+    );
+    expect(emailQueue.enqueue).toHaveBeenCalledWith(
+      expect.objectContaining({ to: MEMBER_ROW.email }),
+    );
+  });
+
+  // A passkey removal committed since the request started.
+  it('refuses with a 401 and stores nothing once the session is behind the member epoch', async () => {
+    const { service, req, insert, emailQueue, audit } = await setup(undefined, 1);
+
+    await expect(service.verify(req, DTO)).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(insert).not.toHaveBeenCalled();
     expect(emailQueue.enqueue).not.toHaveBeenCalled();
     expect(audit.record).not.toHaveBeenCalled();
   });

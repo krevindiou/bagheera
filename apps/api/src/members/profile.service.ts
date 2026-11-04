@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -14,7 +14,11 @@ import { emailChangedEmail } from '../email/templates/email-changed.template';
 import { AuditService } from '../security/audit.service';
 import { CryptoService } from '../security/crypto.service';
 import '../session/session-data';
-import { bumpedSessionEpoch, keepThroughBump } from '../session/session-epoch';
+import {
+  bumpedSessionEpoch,
+  keepThroughBump,
+  lockMemberAtSessionEpoch,
+} from '../session/session-epoch';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
@@ -64,30 +68,34 @@ export class ProfileService {
    */
   async updateEmail(req: Request, dto: UpdateProfileDto): Promise<void> {
     const memberId = requireMemberId(req);
-
-    const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
-    if (!row) {
-      throw new UnauthorizedException();
-    }
-
     await consumeStepUp(this.singleUse, req);
 
-    // Nothing to change or confirm.
-    if (dto.email.toLowerCase() === row.email.toLowerCase()) {
+    const started = await this.db.transaction(async (tx) => {
+      const row = await lockMemberAtSessionEpoch(tx, memberId, req.session);
+      if (dto.email.toLowerCase() === row.email.toLowerCase()) {
+        // Going back to the current address withdraws a pending change.
+        if (row.pendingEmail !== null) {
+          await tx
+            .update(member)
+            .set({ pendingEmail: null, emailChangeTokenVersion: row.emailChangeTokenVersion + 1 })
+            .where(eq(member.id, row.id));
+        }
+        return undefined;
+      }
+      const nextVersion = row.emailChangeTokenVersion + 1;
+      await tx
+        .update(member)
+        .set({ pendingEmail: dto.email, emailChangeTokenVersion: nextVersion })
+        .where(eq(member.id, row.id));
+      return { row, nextVersion };
+    });
+    if (!started) {
       return;
     }
 
-    const nextVersion = row.emailChangeTokenVersion + 1;
-    // Never this member: their own address returned early above.
+    const { row, nextVersion } = started;
+    // Never this member: their own address returned early.
     const owner = await findMemberByEmail(this.db, dto.email);
-    await this.db
-      .update(member)
-      .set({
-        pendingEmail: dto.email,
-        emailChangeTokenVersion: nextVersion,
-      })
-      .where(eq(member.id, row.id));
-
     if (owner) {
       await this.emailQueue.enqueue(addressInUseEmail(owner.email, owner.locale));
     } else {

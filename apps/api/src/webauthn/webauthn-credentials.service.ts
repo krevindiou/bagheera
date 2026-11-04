@@ -1,5 +1,5 @@
 import { HttpStatus, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Request } from 'express';
 import { BusinessError } from '../common/filters/business-error';
@@ -74,10 +74,15 @@ export class WebauthnCredentialsService {
         .delete(webauthnCredential)
         .where(and(eq(webauthnCredential.id, id), eq(webauthnCredential.memberId, memberId)));
       // The removed passkey may be the compromised one: any other session
-      // could belong to whoever holds it.
+      // could belong to whoever holds it, and so could a pending email
+      // change it stepped up for.
       const [row] = await tx
         .update(member)
-        .set({ sessionEpoch: bumpedSessionEpoch })
+        .set({
+          sessionEpoch: bumpedSessionEpoch,
+          pendingEmail: null,
+          emailChangeTokenVersion: sql`${member.emailChangeTokenVersion} + 1`,
+        })
         .where(eq(member.id, memberId))
         .returning({
           sessionEpoch: member.sessionEpoch,

@@ -15,6 +15,7 @@ import { passkeyRegisteredEmail } from '../email/templates/passkey-registered.te
 import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
 import { consumeStepUp } from '../session/consume-step-up';
+import { lockMemberAtSessionEpoch } from '../session/session-epoch';
 import { requireMemberId } from '../session/require-member-id';
 import { SingleUseStore } from '../session/single-use-store';
 import { buildRegistrationOptions } from './build-registration-options';
@@ -108,10 +109,16 @@ export class WebauthnRegistrationService {
       throw registrationFailed();
     }
 
+    const { registrationInfo } = verification;
+    let row: typeof member.$inferSelect;
     try {
-      await this.db
-        .insert(webauthnCredential)
-        .values(credentialInsertValues(memberId, verification.registrationInfo, dto.deviceName));
+      row = await this.db.transaction(async (tx) => {
+        const locked = await lockMemberAtSessionEpoch(tx, memberId, req.session);
+        await tx
+          .insert(webauthnCredential)
+          .values(credentialInsertValues(memberId, registrationInfo, dto.deviceName));
+        return locked;
+      });
     } catch (err) {
       // webauthn_credential_credential_id_unique: a retried request.
       if (isUniqueViolation(err)) {
@@ -120,17 +127,7 @@ export class WebauthnRegistrationService {
       throw err;
     }
 
-    const [row] = await this.db
-      .select({ email: member.email, locale: member.locale })
-      .from(member)
-      .where(eq(member.id, memberId));
     await this.audit.record('webauthn_credential_registered', memberId, clientIp(req));
-    if (row) {
-      await enqueueAlert(
-        this.emailQueue,
-        this.logger,
-        passkeyRegisteredEmail(row.email, row.locale),
-      );
-    }
+    await enqueueAlert(this.emailQueue, this.logger, passkeyRegisteredEmail(row.email, row.locale));
   }
 }

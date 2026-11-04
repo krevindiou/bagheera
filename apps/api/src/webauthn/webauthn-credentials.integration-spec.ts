@@ -2,16 +2,23 @@ import { randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { and, desc, eq, sql } from 'drizzle-orm';
+import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import request from 'supertest';
 import { member, securityEvent, webauthnCredential } from '../db/schema';
+import { buildEmailChangeToken } from '../members/email-change-token';
 import { AuditService } from '../security/audit.service';
+import { CryptoService } from '../security/crypto.service';
 import { SessionRegistryService } from '../session/session-registry.service';
 import {
   completeStepUp,
+  csrfTokenFor,
   seedSignedInMember,
   signInWithPasskey,
+  SignedInFixture,
+  uniqueEmail,
 } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
+import { WebauthnCryptoService } from './webauthn-crypto.service';
 import { vi } from 'vitest';
 
 // A v4 id would 400 at ParseUuidV7Pipe before the existence check.
@@ -48,6 +55,49 @@ async function waitForLockWaiter(db: ReturnType<typeof getDb>): Promise<void> {
     },
     { timeout: 5000, interval: 20 },
   );
+}
+
+const FAKE_REGISTRATION_RESPONSE = {
+  id: 'client-id',
+  rawId: 'client-id',
+  response: {},
+  clientExtensionResults: {},
+  type: 'public-key',
+};
+
+// Another session of the fixture's member, e.g. whoever holds one of its passkeys.
+async function signInElsewhere(
+  app: INestApplication<Server>,
+  fixture: SignedInFixture,
+): Promise<Pick<SignedInFixture, 'agent' | 'credentialId' | 'getCsrfToken' | 'mutate'>> {
+  const agent = request.agent(app.getHttpServer());
+  await signInWithPasskey(app, agent, fixture.credentialId);
+  const getCsrfToken = () => csrfTokenFor(agent);
+  return {
+    agent,
+    credentialId: fixture.credentialId,
+    getCsrfToken,
+    mutate: async (method, url, body) => {
+      const token = await getCsrfToken();
+      const req = agent[method](url).set('x-csrf-token', token);
+      return body === undefined ? req : req.send(body);
+    },
+  };
+}
+
+// Stubs the attestation check once, as the authenticator would pass it.
+function stubRegistration(app: INestApplication<Server>, credentialId: string): void {
+  vi.spyOn(app.get(WebauthnCryptoService), 'verifyRegistrationResponse').mockResolvedValueOnce({
+    verified: true,
+    registrationInfo: {
+      credential: {
+        id: credentialId,
+        publicKey: new Uint8Array([1, 2, 3, 4]),
+        counter: 0,
+        transports: ['internal'],
+      },
+    },
+  } as unknown as VerifiedRegistrationResponse);
 }
 
 describe('webauthn credentials', () => {
@@ -297,6 +347,145 @@ describe('webauthn credentials', () => {
         .from(webauthnCredential)
         .where(eq(webauthnCredential.id, only.id));
       expect(rows).toHaveLength(1);
+    });
+
+    it('withdraws a pending email change, so its link no longer confirms', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Compromised');
+      const newEmail = uniqueEmail('pending');
+      await completeStepUp(app, fixture);
+      expect((await fixture.mutate('post', '/members/profile', { email: newEmail })).status).toBe(
+        200,
+      );
+      const [before] = await getDb(app)
+        .select({ version: member.emailChangeTokenVersion })
+        .from(member)
+        .where(eq(member.id, fixture.memberId));
+      const key = buildEmailChangeToken(
+        app.get(CryptoService),
+        fixture.memberId,
+        newEmail,
+        before.version,
+      );
+
+      await completeStepUp(app, fixture);
+      const removal = await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`);
+      expect(removal.status).toBe(200);
+
+      const confirmAgent = request.agent(app.getHttpServer());
+      const csrfToken = await csrfTokenFor(confirmAgent);
+      const res = await confirmAgent
+        .post('/members/profile/confirm-email-change')
+        .set('x-csrf-token', csrfToken)
+        .send({ key });
+      expect(res.status).toBe(400);
+      expect((res.body as { code: string }).code).toBe('email_change_link_invalid');
+      const [after] = await getDb(app).select().from(member).where(eq(member.id, fixture.memberId));
+      expect(after.email).toBe(fixture.email);
+      expect(after.pendingEmail).toBeNull();
+    });
+
+    it('lets the session that removed a passkey enroll another afterwards', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Old device');
+      await completeStepUp(app, fixture);
+      expect(
+        (await fixture.mutate('delete', `/webauthn/credentials/${credential.id}`)).status,
+      ).toBe(200);
+
+      await completeStepUp(app, fixture);
+      expect((await fixture.mutate('post', '/webauthn/registration/options')).status).toBe(200);
+      const credentialId = `cred-${randomUUID()}`;
+      stubRegistration(app, credentialId);
+      const res = await fixture.mutate('post', '/webauthn/registration/verify', {
+        response: FAKE_REGISTRATION_RESPONSE,
+      });
+      expect(res.status).toBe(200);
+
+      const rows = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, credentialId));
+      expect(rows).toHaveLength(1);
+    });
+
+    // The transactions below play the removal: they hold the member row
+    // locked, and end the other sessions while the request waits on it.
+    async function heldAcrossRemoval(
+      memberId: string,
+      credentialId: string,
+      send: () => Promise<request.Response>,
+    ): Promise<request.Response> {
+      const db = getDb(app);
+      let pending!: Promise<request.Response>;
+      await db.transaction(async (tx) => {
+        await tx
+          .select({ id: member.id })
+          .from(member)
+          .where(eq(member.id, memberId))
+          .for('update');
+        pending = send();
+        await waitForLockWaiter(db);
+        await tx.delete(webauthnCredential).where(eq(webauthnCredential.id, credentialId));
+        await tx
+          .update(member)
+          .set({ sessionEpoch: sql`${member.sessionEpoch} + 1` })
+          .where(eq(member.id, memberId));
+      });
+      return pending;
+    }
+
+    it('refuses a passkey enrollment still in flight when the removal ended its session', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Compromised');
+      const otherDevice = await signInElsewhere(app, fixture);
+      await completeStepUp(app, otherDevice);
+      expect((await otherDevice.mutate('post', '/webauthn/registration/options')).status).toBe(200);
+      const csrfToken = await otherDevice.getCsrfToken();
+      const plantedId = `cred-${randomUUID()}`;
+      stubRegistration(app, plantedId);
+      fakeEmailQueue.enqueue.mockClear();
+
+      const res = await heldAcrossRemoval(fixture.memberId, credential.id, () =>
+        otherDevice.agent
+          .post('/webauthn/registration/verify')
+          .set('x-csrf-token', csrfToken)
+          .send({ response: FAKE_REGISTRATION_RESPONSE })
+          .then((response) => response),
+      );
+      expect(res.status).toBe(401);
+
+      const planted = await getDb(app)
+        .select()
+        .from(webauthnCredential)
+        .where(eq(webauthnCredential.credentialId, plantedId));
+      expect(planted).toEqual([]);
+      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
+    });
+
+    it('refuses an email change request still in flight when the removal ended its session', async () => {
+      const fixture = await seedSignedInMember(app);
+      const credential = await insertCredential(app, fixture.memberId, 'Compromised');
+      const otherDevice = await signInElsewhere(app, fixture);
+      await completeStepUp(app, otherDevice);
+      const csrfToken = await otherDevice.getCsrfToken();
+      fakeEmailQueue.enqueue.mockClear();
+
+      const res = await heldAcrossRemoval(fixture.memberId, credential.id, () =>
+        otherDevice.agent
+          .post('/members/profile')
+          .set('x-csrf-token', csrfToken)
+          .send({ email: uniqueEmail('planted') })
+          .then((response) => response),
+      );
+      expect(res.status).toBe(401);
+
+      const [row] = await getDb(app)
+        .select({ pendingEmail: member.pendingEmail })
+        .from(member)
+        .where(eq(member.id, fixture.memberId));
+      expect(row.pendingEmail).toBeNull();
+      expect(fakeEmailQueue.enqueue).not.toHaveBeenCalled();
     });
 
     // Two removals at once, one per passkey, must not both pass the
