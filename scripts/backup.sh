@@ -20,7 +20,8 @@
 #   POSTGRES_USER (default: bagheera)
 #   POSTGRES_DB (default: bagheera)
 #   BACKUP_KEEP_DAILY / BACKUP_KEEP_WEEKLY / BACKUP_KEEP_MONTHLY
-#     (defaults: 7 / 4 / 6) — retention passed to `restic forget --prune`.
+#     (defaults: 7 / 4 / 6) — retention passed to `restic forget --prune`,
+#     applied across all of this host's snapshots.
 set -euo pipefail
 
 # Host-held configuration; see the header. Skipped when absent (e.g. a
@@ -60,7 +61,11 @@ echo "==> Pushing snapshot to $RESTIC_REPOSITORY"
 restic backup --tag postgres --tag "bagheera-$(date -u +%Y-%m-%d)" "$dump_file"
 
 echo "==> Pruning old snapshots (keep daily=$BACKUP_KEEP_DAILY weekly=$BACKUP_KEEP_WEEKLY monthly=$BACKUP_KEEP_MONTHLY)"
+# Grouped by host alone: the dump path and the day tag change every run, so
+# grouping by paths (restic's default) or tags puts each snapshot in its own
+# group, where the keep rules retain it forever.
 restic forget --prune \
+  --group-by host \
   --keep-daily "$BACKUP_KEEP_DAILY" \
   --keep-weekly "$BACKUP_KEEP_WEEKLY" \
   --keep-monthly "$BACKUP_KEEP_MONTHLY" \
