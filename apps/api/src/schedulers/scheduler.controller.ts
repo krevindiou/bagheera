@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import { ClientIp } from '../common/client-ip.decorator';
 import { PageQueryDto } from '../common/dto/page-query.dto';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_SCHEDULER_READ_LIMIT, MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
@@ -57,9 +58,10 @@ export class SchedulerController {
   @HttpCode(200)
   async remove(
     @CurrentMember() memberId: MemberId,
+    @ClientIp() ip: string,
     @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<MessageResponseDto> {
-    await this.schedulers.remove(memberId, id);
+    await this.schedulers.remove(memberId, ip, id);
     return { message: 'Scheduler deleted' };
   }
 }

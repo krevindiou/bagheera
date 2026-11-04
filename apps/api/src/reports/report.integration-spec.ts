@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { eq, inArray } from 'drizzle-orm';
-import { category, report, reportAccount, reportCategory } from '../db/schema';
+import { and, eq, inArray } from 'drizzle-orm';
+import { category, report, reportAccount, reportCategory, securityEvent } from '../db/schema';
 import { MEMBER_REPORT_READ_LIMIT } from '../security/rate-limit.constants';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
 import { createTestApp, getDb } from '../test-support/create-test-app';
@@ -373,5 +373,40 @@ describe('reports', () => {
         .where(eq(reportCategory.reportId, id));
       expect(categoryLinks).toHaveLength(0);
     });
+
+    it('records one report_deleted event with the member and address', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
+      const created = await mutate('post', '/reports', reportPayload());
+      const { id } = (created.body as { report: { id: string } }).report;
+
+      expect((await mutate('delete', `/reports/${id}`)).status).toBe(200);
+
+      const events = await reportDeletedEvents(memberId);
+      expect(events).toHaveLength(1);
+      expect(events[0].sourceAddress.length).toBeGreaterThan(0);
+    });
+
+    it("404s deleting another member's report without recording an event", async () => {
+      const owner = await seedSignedInMember(app);
+      const created = await owner.mutate('post', '/reports', reportPayload());
+      const { id } = (created.body as { report: { id: string } }).report;
+      const other = await seedSignedInMember(app);
+
+      expect((await other.mutate('delete', `/reports/${id}`)).status).toBe(404);
+
+      expect(await reportDeletedEvents(other.memberId)).toHaveLength(0);
+      expect(await reportDeletedEvents(owner.memberId)).toHaveLength(0);
+      const rows = await getDb(app).select().from(report).where(eq(report.id, id));
+      expect(rows).toHaveLength(1);
+    });
+
+    function reportDeletedEvents(memberId: string) {
+      return getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(eq(securityEvent.eventType, 'report_deleted'), eq(securityEvent.memberId, memberId)),
+        );
+    }
   });
 });

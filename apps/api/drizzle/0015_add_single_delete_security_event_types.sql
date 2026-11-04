@@ -1,0 +1,2 @@
+ALTER TYPE "public"."security_event_type" ADD VALUE 'scheduler_deleted' BEFORE 'scheduler_batch_deleted';--> statement-breakpoint
+ALTER TYPE "public"."security_event_type" ADD VALUE 'report_deleted' BEFORE 'report_batch_deleted';

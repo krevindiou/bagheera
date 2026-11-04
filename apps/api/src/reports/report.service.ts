@@ -4,6 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { DataGrouping } from '@bagheera/reference-data';
 import { DRIZZLE } from '../db/db.constants';
 import { category, report, reportAccount, reportCategory } from '../db/schema';
+import { AuditService } from '../security/audit.service';
 import { MemberId, ReportId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -14,6 +15,7 @@ export class ReportService {
   constructor(
     @Inject(DRIZZLE) private readonly db: NodePgDatabase,
     private readonly ownership: OwnershipService,
+    private readonly audit: AuditService,
   ) {}
 
   private async accountIdsByReport(reportIds: string[]): Promise<Map<string, string[]>> {
@@ -177,7 +179,7 @@ export class ReportService {
     });
   }
 
-  async remove(memberId: MemberId, id: string): Promise<void> {
+  async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
     await this.ownership.requireOwnedReport(id as ReportId, memberId);
 
     await this.db.transaction(async (tx) => {
@@ -185,5 +187,6 @@ export class ReportService {
       await tx.delete(reportCategory).where(eq(reportCategory.reportId, id));
       await tx.delete(report).where(eq(report.id, id));
     });
+    await this.audit.record('report_deleted', memberId, ip);
   }
 }

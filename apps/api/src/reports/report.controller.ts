@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { ClientIp } from '../common/client-ip.decorator';
 import { ParseUuidV7Pipe } from '../common/parse-uuid-v7.pipe';
 import { MEMBER_REPORT_READ_LIMIT, MEMBER_WRITE_LIMIT } from '../security/rate-limit.constants';
 import { RateLimit } from '../security/rate-limit.decorator';
@@ -77,9 +78,10 @@ export class ReportController {
   @HttpCode(200)
   async remove(
     @CurrentMember() memberId: MemberId,
+    @ClientIp() ip: string,
     @Param('id', ParseUuidV7Pipe) id: string,
   ): Promise<MessageResponseDto> {
-    await this.reports.remove(memberId, id);
+    await this.reports.remove(memberId, ip, id);
     return { message: 'Report deleted' };
   }
 }

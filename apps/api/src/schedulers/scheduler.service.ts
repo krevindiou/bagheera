@@ -13,6 +13,7 @@ import {
 } from '../operations/entry-rules';
 import { operation, scheduler } from '../db/schema';
 import { TransferService } from '../operations/transfer.service';
+import { AuditService } from '../security/audit.service';
 import { MemberId, AccountId, SchedulerId } from '../security/ids';
 import { OwnershipService } from '../security/ownership.service';
 import { CreateSchedulerDto } from './dto/create-scheduler.dto';
@@ -47,6 +48,7 @@ export class SchedulerService {
     private readonly generator: SchedulerGenerationService,
     private readonly transfers: TransferService,
     private readonly ownership: OwnershipService,
+    private readonly audit: AuditService,
   ) {}
 
   async list(memberId: MemberId, accountId: string, page: number) {
@@ -173,7 +175,7 @@ export class SchedulerService {
     return occurrencesDue;
   }
 
-  async remove(memberId: MemberId, id: string): Promise<void> {
+  async remove(memberId: MemberId, ip: string, id: string): Promise<void> {
     const owned = await this.ownership.requireOwnedScheduler(id as SchedulerId, memberId);
     requireFullyActive(owned);
 
@@ -185,5 +187,6 @@ export class SchedulerService {
       await tx.update(operation).set({ schedulerId: null }).where(eq(operation.schedulerId, id));
       await tx.delete(scheduler).where(eq(scheduler.id, id));
     });
+    await this.audit.record('scheduler_deleted', memberId, ip);
   }
 }

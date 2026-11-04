@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
-import { eq } from 'drizzle-orm';
-import { operation, scheduler } from '../db/schema';
+import { and, eq } from 'drizzle-orm';
+import { operation, scheduler, securityEvent } from '../db/schema';
 import { PAYMENT_METHOD_ID } from '../db/seed-data';
 import { MEMBER_SCHEDULER_READ_LIMIT } from '../security/rate-limit.constants';
 import { seedSignedInMember, SignedInFixture } from '../test-support/auth-fixture';
@@ -412,5 +412,63 @@ describe('schedulers', () => {
       expect(survivor).toBeDefined();
       expect(survivor.schedulerId).toBeNull();
     });
+
+    it('records one scheduler_deleted event with the member and address', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate('post', '/schedulers', schedulerPayload(accountId));
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+
+      expect((await mutate('delete', `/schedulers/${id}`)).status).toBe(200);
+
+      const events = await schedulerDeletedEvents(memberId);
+      expect(events).toHaveLength(1);
+      expect(events[0].sourceAddress.length).toBeGreaterThan(0);
+    });
+
+    it("404s deleting another member's scheduler without recording an event", async () => {
+      const owner = await seedSignedInMember(app);
+      const bankId = await createBank(owner.mutate);
+      const accountId = await createAccount(owner.mutate, bankId);
+      const created = await owner.mutate('post', '/schedulers', schedulerPayload(accountId));
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+      const other = await seedSignedInMember(app);
+
+      expect((await other.mutate('delete', `/schedulers/${id}`)).status).toBe(404);
+
+      expect(await schedulerDeletedEvents(other.memberId)).toHaveLength(0);
+      expect(await schedulerDeletedEvents(owner.memberId)).toHaveLength(0);
+      const rows = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
+      expect(rows).toHaveLength(1);
+    });
+
+    it('rejects deleting a scheduler on a closed account without recording an event', async () => {
+      const { mutate, memberId } = await seedSignedInMember(app);
+      const bankId = await createBank(mutate);
+      const accountId = await createAccount(mutate, bankId);
+      const created = await mutate('post', '/schedulers', schedulerPayload(accountId));
+      const { id } = (created.body as { scheduler: { id: string } }).scheduler;
+      expect((await mutate('post', `/accounts/${accountId}/close`)).status).toBe(200);
+
+      const res = await mutate('delete', `/schedulers/${id}`);
+      expect(res.status).toBe(422);
+
+      expect(await schedulerDeletedEvents(memberId)).toHaveLength(0);
+      const rows = await getDb(app).select().from(scheduler).where(eq(scheduler.id, id));
+      expect(rows).toHaveLength(1);
+    });
+
+    function schedulerDeletedEvents(memberId: string) {
+      return getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(
+          and(
+            eq(securityEvent.eventType, 'scheduler_deleted'),
+            eq(securityEvent.memberId, memberId),
+          ),
+        );
+    }
   });
 });

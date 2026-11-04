@@ -106,6 +106,13 @@
       "when": 1793103972348,
       "tag": "0014_add_operation_third_party_key_index",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793816979016,
+      "tag": "0015_add_single_delete_security_event_types",
+      "breakpoints": true
     }
   ]
 }
