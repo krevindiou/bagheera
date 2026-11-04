@@ -116,6 +116,13 @@ describe('reports', () => {
       expect(res.status).toBe(400);
     });
 
+    it.each([['title'], ['thirdParties']])('rejects a NUL character in %s', async (field) => {
+      const { mutate } = await seedSignedInMember(app);
+
+      const res = await mutate('post', '/reports', reportPayload({ [field]: 'a\u0000b' }));
+      expect(res.status).toBe(400);
+    });
+
     it('accepts a value date range with the end equal to the start', async () => {
       const { mutate } = await seedSignedInMember(app);
 

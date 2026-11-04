@@ -15,7 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { FIELD_LIMITS, IMPORT_LIMITS, type EntryType } from '@bagheera/reference-data';
-import { UniqueWithin } from '../../common/dto-fields';
+import { NoNul, UniqueWithin } from '../../common/dto-fields';
 import type { InvalidReason, LabelOrigin, SuggestionOrigin } from './rows/types';
 
 export class StartImportDto {
@@ -32,6 +32,7 @@ export class LabelChangeDto {
   // The rules of a third party apply when the preview reads it; this only
   // bounds the request.
   @IsString()
+  @NoNul()
   @MaxLength(FIELD_LIMITS.SOURCE_LABEL)
   thirdParty!: string;
 

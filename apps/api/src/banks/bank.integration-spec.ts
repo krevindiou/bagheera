@@ -66,6 +66,13 @@ describe('banks', () => {
       expect(res.status).toBe(400);
     });
 
+    it('rejects a name holding a NUL character', async () => {
+      const { mutate } = await seedSignedInMember(app);
+
+      const res = await mutate('post', '/banks/choice', { name: 'My\u0000Bank' });
+      expect(res.status).toBe(400);
+    });
+
     it('rejects specifying neither bankId nor name', async () => {
       const { mutate } = await seedSignedInMember(app);
 

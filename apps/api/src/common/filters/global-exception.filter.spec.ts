@@ -120,6 +120,36 @@ describe('GlobalExceptionFilter', () => {
     expect(Sentry.captureException).toHaveBeenCalled();
   });
 
+  it('answers a 400, without logging or reporting, for a Postgres invalid-encoding error wrapped by Drizzle', async () => {
+    const res = fakeResponse();
+    const wrapped = new Error('Failed query', {
+      cause: Object.assign(new Error('invalid byte sequence for encoding "UTF8": 0x00'), {
+        code: '22021',
+      }),
+    });
+    await filter.catch(wrapped, fakeArgumentsHost(fakeRequest(), res));
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        category: 'validation_error',
+        message: 'Invalid characters in the request.',
+      }),
+    );
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('keeps any other Postgres error a reported 500', async () => {
+    const res = fakeResponse();
+    const wrapped = new Error('Failed query', {
+      cause: Object.assign(new Error('deadlock detected'), { code: '40P01' }),
+    });
+    await filter.catch(wrapped, fakeArgumentsHost(fakeRequest(), res));
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(Sentry.captureException).toHaveBeenCalled();
+  });
+
   it('passes an exposed http-errors-style error through at its own status, without logging', async () => {
     const res = fakeResponse();
     const httpError = Object.assign(new Error('CSRF token mismatch'), {

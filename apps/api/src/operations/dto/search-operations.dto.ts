@@ -15,7 +15,7 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { IsOnOrAfter, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
+import { IsOnOrAfter, NoNul, ThirdPartyField, ValueDateField } from '../../common/dto-fields';
 import { ENTRY_TYPES, FIELD_LIMITS, type EntryType } from '@bagheera/reference-data';
 
 export class AmountComparatorDto {
@@ -82,6 +82,7 @@ export class SearchOperationsDto {
   // ThirdPartyField/NotesField's caps, which bound what's actually saved.
   @IsOptional()
   @IsString()
+  @NoNul()
   @MinLength(1)
   @MaxLength(FIELD_LIMITS.SEARCH_NOTES)
   notes?: string;

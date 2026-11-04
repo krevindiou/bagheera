@@ -23,7 +23,7 @@ import {
   type PeriodGrouping,
   type ReportType,
 } from '@bagheera/reference-data';
-import { IsOnOrAfter, ReportTitleField, ValueDateField } from '../../common/dto-fields';
+import { IsOnOrAfter, NoNul, ReportTitleField, ValueDateField } from '../../common/dto-fields';
 
 export class CreateReportDto {
   @IsIn(REPORT_TYPES)
@@ -48,6 +48,7 @@ export class CreateReportDto {
   // A filter, not stored text — its own cap, unrelated to ReportTitleField's.
   @IsOptional()
   @IsString()
+  @NoNul()
   @MaxLength(FIELD_LIMITS.REPORT_THIRD_PARTIES)
   thirdParties?: string;
 

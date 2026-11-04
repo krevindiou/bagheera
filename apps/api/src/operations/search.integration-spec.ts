@@ -121,6 +121,23 @@ describe('operations search', () => {
     expect(afterClearBody.total).toBe(2);
   });
 
+  it('rejects a NUL character in a criterion and keeps listing the account', async () => {
+    const { agent, mutate } = await seedSignedInMember(app);
+    const { accountId } = await createAccount(mutate);
+    await createOperation(mutate, accountId, { thirdParty: 'Grocery Store' });
+
+    const res = await mutate('post', '/operations/search?page=1', {
+      accountId,
+      thirdParty: 'gro\u0000cery',
+    });
+    expect(res.status).toBe(400);
+
+    const listed = await agent.get(`/operations?accountId=${accountId}&page=1`).expect(200);
+    const body = listed.body as SearchResult & { active: boolean };
+    expect(body.active).toBe(false);
+    expect(body.total).toBe(1);
+  });
+
   it('matches both debit and credit operations when type is omitted', async () => {
     const { mutate } = await seedSignedInMember(app);
     const { accountId } = await createAccount(mutate);

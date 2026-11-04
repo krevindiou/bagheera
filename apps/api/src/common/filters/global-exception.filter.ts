@@ -10,6 +10,8 @@ import type { Request, Response } from 'express';
 import { Sentry } from '../../logging/sentry';
 import { categorize, ErrorResponseBody } from './error-response';
 
+const INVALID_TEXT_ENCODING = '22021';
+
 /**
  * Single point producing every error response's shape, so clients can
  * branch on `category` instead of parsing messages or status codes. Wraps
@@ -30,7 +32,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const statusCode = this.statusCodeOf(exception);
     const message = this.extractMessage(exception, statusCode);
 
-    if (!(exception instanceof HttpException) && !this.isExposedHttpError(exception)) {
+    if (
+      !(exception instanceof HttpException) &&
+      !this.isExposedHttpError(exception) &&
+      !this.isInvalidTextEncoding(exception)
+    ) {
       this.logger.error(exception instanceof Error ? exception.stack : exception);
       Sentry.captureException(exception);
     }
@@ -54,7 +60,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (this.isExposedHttpError(exception)) {
       return exception.statusCode;
     }
+    if (this.isInvalidTextEncoding(exception)) {
+      return HttpStatus.BAD_REQUEST;
+    }
     return HttpStatus.INTERNAL_SERVER_ERROR;
+  }
+
+  // Postgres refuses a value its encoding cannot hold (a NUL byte) with
+  // SQLSTATE 22021: the client's input, not a fault. Drizzle wraps the driver
+  // error, so the code sits on `cause`.
+  private isInvalidTextEncoding(exception: unknown): boolean {
+    const cause = exception instanceof Error ? exception.cause : undefined;
+    return (
+      typeof cause === 'object' &&
+      cause !== null &&
+      (cause as { code?: unknown }).code === INVALID_TEXT_ENCODING
+    );
   }
 
   // Express middleware (e.g. csrf-csrf) throws `http-errors`, not
@@ -97,6 +118,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         return message;
       }
       return exception.message;
+    }
+    if (this.isInvalidTextEncoding(exception)) {
+      return 'Invalid characters in the request.';
     }
     // A plain number: comparing against the HttpStatus enum trips the linter.
     const INTERNAL_SERVER_ERROR_STATUS = 500;

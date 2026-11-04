@@ -64,10 +64,25 @@ export function SecretField(): PropertyDecorator {
   };
 }
 
+/**
+ * A string without NUL characters, which Postgres rejects in text values.
+ * Stacks on `@IsString()`; a non-string is left to that check.
+ */
+export function NoNul(): PropertyDecorator {
+  return ValidateBy({
+    name: 'noNul',
+    validator: {
+      validate: (value: unknown) => typeof value !== 'string' || !value.includes('\u0000'),
+      defaultMessage: () => '$property must not contain NUL characters',
+    },
+  });
+}
+
 /** A required, non-empty string capped to `maxLength`. */
 function boundedName(maxLength: number): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsString()(target, propertyKey);
+    NoNul()(target, propertyKey);
     MinLength(1)(target, propertyKey);
     MaxLength(maxLength)(target, propertyKey);
   };
@@ -101,6 +116,7 @@ export function NotesField(): PropertyDecorator {
   return function (target: object, propertyKey: string | symbol): void {
     IsOptional()(target, propertyKey);
     IsString()(target, propertyKey);
+    NoNul()(target, propertyKey);
     MaxLength(FIELD_LIMITS.NOTES)(target, propertyKey);
   };
 }

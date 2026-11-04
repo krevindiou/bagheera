@@ -126,6 +126,11 @@ describe('GET /operations/autocomplete', () => {
     await agent.get('/operations/autocomplete?q=a').expect(400);
   });
 
+  it('rejects a query holding a NUL character', async () => {
+    const { agent } = await seedSignedInMember(app);
+    await agent.get('/operations/autocomplete?q=ab%00cd').expect(400);
+  });
+
   it("never returns another member's third parties", async () => {
     const { mutate: otherMutate } = await seedSignedInMember(app);
     const otherBankId = await createBank(otherMutate);

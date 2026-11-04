@@ -58,6 +58,24 @@ describe('WebauthnAssertionService', () => {
 
       await expect(service.findCredential('nope')).resolves.toBeUndefined();
     });
+
+    it.each([
+      ['empty', ''],
+      ['NUL-bearing', 'cred\u00001'],
+      ['non-base64url', 'cred+/='],
+    ])('returns undefined without querying for a %s id', async (_label, id) => {
+      const { service, db } = setup([CREDENTIAL]);
+
+      await expect(service.findCredential(id)).resolves.toBeUndefined();
+      expect(db.select).not.toHaveBeenCalled();
+    });
+
+    it('returns undefined without querying for a non-string id', async () => {
+      const { service, db } = setup([CREDENTIAL]);
+
+      await expect(service.findCredential(42 as unknown as string)).resolves.toBeUndefined();
+      expect(db.select).not.toHaveBeenCalled();
+    });
   });
 
   describe('verify', () => {

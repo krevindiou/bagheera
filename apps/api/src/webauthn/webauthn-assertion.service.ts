@@ -12,6 +12,8 @@ import { rpConfig } from './rp-config';
 import { verificationFailureReason } from './verification-failure';
 import { WebauthnCryptoService } from './webauthn-crypto.service';
 
+const BASE64URL = /^[A-Za-z0-9_-]+$/;
+
 export type WebauthnCredentialRow = typeof webauthnCredential.$inferSelect;
 
 export type AssertionVerification = { verified: true; newCounter: number } | { verified: false };
@@ -31,7 +33,10 @@ export class WebauthnAssertionService {
     private readonly crypto: WebauthnCryptoService,
   ) {}
 
+  // The id comes straight from the client; a malformed one (a NUL byte
+  // would make Postgres throw) is an unknown credential, not a fault.
   async findCredential(credentialId: string): Promise<WebauthnCredentialRow | undefined> {
+    if (typeof credentialId !== 'string' || !BASE64URL.test(credentialId)) return undefined;
     const [row] = await this.db
       .select()
       .from(webauthnCredential)

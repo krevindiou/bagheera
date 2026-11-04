@@ -132,6 +132,22 @@ describe('webauthn step-up', () => {
       expect(messageOf(res)).toBe(STEP_UP_FAILED);
     });
 
+    it('rejects a credential id holding a NUL byte with the generic failure', async () => {
+      const fixture = await seedSignedInMember(app);
+      const csrfToken = await fixture.getCsrfToken();
+      await fixture.agent
+        .post('/webauthn/step-up/options')
+        .set('x-csrf-token', csrfToken)
+        .expect(200);
+
+      const res = await fixture.agent
+        .post('/webauthn/step-up/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('abc\u0000def') })
+        .expect(422);
+      expect(messageOf(res)).toBe(STEP_UP_FAILED);
+    });
+
     it('rejects a challenge answered after it expired', async () => {
       const fixture = await seedSignedInMember(app);
       const csrfToken = await fixture.getCsrfToken();

@@ -188,6 +188,27 @@ describe('webauthn authentication', () => {
       await agent.get('/auth/me').expect(401);
     });
 
+    it('rejects a credential id holding a NUL byte, and records webauthn_sign_in_failure', async () => {
+      const { agent, csrfToken } = await startCeremony();
+      const before = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(eq(securityEvent.eventType, 'webauthn_sign_in_failure'));
+
+      const res = await agent
+        .post('/webauthn/authentication/verify')
+        .set('x-csrf-token', csrfToken)
+        .send({ response: fakeResponseFor('abc\u0000def') })
+        .expect(401);
+      expect(messageOf(res)).toBe('Passkey sign-in failed.');
+
+      const after = await getDb(app)
+        .select()
+        .from(securityEvent)
+        .where(eq(securityEvent.eventType, 'webauthn_sign_in_failure'));
+      expect(after).toHaveLength(before.length + 1);
+    });
+
     it('rejects a challenge answered after it expired', async () => {
       const { credentialId } = await insertMemberWithCredential(app);
       const { agent, csrfToken } = await startCeremony();

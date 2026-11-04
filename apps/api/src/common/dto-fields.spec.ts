@@ -8,6 +8,7 @@ import {
   BankNameField,
   EmailField,
   IsOnOrAfter,
+  NoNul,
   NotesField,
   ReportTitleField,
   SecretField,
@@ -37,6 +38,9 @@ class BankNameFieldHost {
 }
 class NotesFieldHost {
   @NotesField() value?: string;
+}
+class NoNulHost {
+  @NoNul() value!: string;
 }
 class AmountFieldHost {
   @AmountField() value!: number;
@@ -162,6 +166,37 @@ describe('NotesField', () => {
     const dto = plainToInstance(NotesFieldHost, { value: 'x'.repeat(4097) });
     const errors = await validate(dto);
     expect(errors[0]?.constraints).toHaveProperty('maxLength');
+  });
+});
+
+describe('NoNul', () => {
+  it('accepts a string without NUL characters', async () => {
+    const dto = plainToInstance(NoNulHost, { value: 'caf\u00e9 \n\t' });
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('rejects a string containing a NUL character', async () => {
+    const dto = plainToInstance(NoNulHost, { value: 'a\u0000b' });
+    const errors = await validate(dto);
+    expect(errors[0]?.constraints).toHaveProperty('noNul');
+  });
+
+  it('leaves a non-string to the type check', async () => {
+    const dto = plainToInstance(NoNulHost, { value: 42 });
+    expect(await validate(dto)).toEqual([]);
+  });
+});
+
+describe('text fields refuse NUL characters', () => {
+  it.each([
+    ['ThirdPartyField', ThirdPartyFieldHost],
+    ['AccountNameField', AccountNameFieldHost],
+    ['ReportTitleField', ReportTitleFieldHost],
+    ['BankNameField', BankNameFieldHost],
+    ['NotesField', NotesFieldHost],
+  ])('%s', async (_name, host) => {
+    const errors = await validate(plainToInstance(host, { value: 'a\u0000b' }));
+    expect(errors[0]?.constraints).toHaveProperty('noNul');
   });
 });
 

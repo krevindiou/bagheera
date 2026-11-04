@@ -64,8 +64,10 @@ export class OperationSearchService {
     await this.ownership.requireOwnedAccount(dto.accountId as AccountId, memberId);
 
     const { accountId, ...criteria } = dto;
+    // Run first so criteria that make the query fail are never stored.
+    const result = await this.run(accountId, criteria, page);
     await this.remember(memberId, accountId, criteria);
-    return this.run(accountId, criteria, page);
+    return result;
   }
 
   // Re-runs the last remembered search (empty criteria if none stored yet).
