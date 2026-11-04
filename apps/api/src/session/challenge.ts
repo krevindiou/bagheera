@@ -1,4 +1,5 @@
-import type { Session, SessionData } from 'express-session';
+import type { Request } from 'express';
+import type { SingleUseSlots, SingleUseStore } from './single-use-store';
 
 /**
  * How long a WebAuthn challenge stays answerable after its options were
@@ -8,43 +9,29 @@ import type { Session, SessionData } from 'express-session';
  */
 export const CHALLENGE_TTL_MS = 2 * 60 * 1000;
 
-/** The session fields that hold a pending ceremony's challenge. */
+/** The slots that hold a pending ceremony's challenge. */
 export type ChallengeKey =
   'webauthnChallenge' | 'registrationChallenge' | 'stepUpChallenge' | 'pendingSignupChallenge';
 
-declare module 'express-session' {
-  interface SessionData {
-    webauthnChallengeIssuedAt?: number;
-    registrationChallengeIssuedAt?: number;
-    stepUpChallengeIssuedAt?: number;
-    pendingSignupChallengeIssuedAt?: number;
-  }
-}
-
-type ChallengeSession = Session & Partial<SessionData>;
-
-/** Stashes a challenge with its issue time — always through this, so none is ever stored undated. */
-export function storeChallenge(
-  session: ChallengeSession,
-  key: ChallengeKey,
-  challenge: string,
-): void {
-  session[key] = challenge;
-  session[`${key}IssuedAt`] = Date.now();
+/** Stashes a challenge — always through this, so none outlives CHALLENGE_TTL_MS. */
+export function storeChallenge<K extends ChallengeKey>(
+  store: SingleUseStore,
+  req: Request,
+  key: K,
+  data: SingleUseSlots[K],
+): Promise<void> {
+  return store.put(req, key, data, CHALLENGE_TTL_MS);
 }
 
 /**
- * Reads and clears a pending challenge: single-use, whatever the outcome.
- * Undefined when absent, undated, or older than CHALLENGE_TTL_MS, so an
+ * Takes a pending challenge: single-use, whatever the outcome, and even when
+ * concurrent requests race for it. Undefined when absent or expired, so an
  * abandoned ceremony doesn't leave one answerable for the whole session.
  */
-export function takeChallenge(session: ChallengeSession, key: ChallengeKey): string | undefined {
-  const challenge = session[key];
-  const issuedAt = session[`${key}IssuedAt`];
-  delete session[key];
-  delete session[`${key}IssuedAt`];
-  if (!challenge || issuedAt === undefined || Date.now() - issuedAt > CHALLENGE_TTL_MS) {
-    return undefined;
-  }
-  return challenge;
+export function takeChallenge<K extends ChallengeKey>(
+  store: SingleUseStore,
+  req: Request,
+  key: K,
+): Promise<SingleUseSlots[K] | undefined> {
+  return store.take(req, key);
 }

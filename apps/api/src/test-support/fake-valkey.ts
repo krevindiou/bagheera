@@ -1,8 +1,9 @@
 import type IORedis from 'ioredis';
 
 /**
- * In-memory stand-in for the few Valkey commands SignupMailThrottle uses,
- * with expiry following `Date.now()` so fake timers drive it.
+ * In-memory stand-in for the few Valkey commands SignupMailThrottle and
+ * SingleUseStore use, with expiry following `Date.now()` so fake timers
+ * drive it.
  */
 export class FakeValkey {
   private readonly entries = new Map<string, { value: string; expiresAt?: number }>();
@@ -10,13 +11,29 @@ export class FakeValkey {
   set(
     key: string,
     value: string,
-    ...options: [mode: 'PX', ms: number, condition: 'NX']
+    ...options: [mode: 'PX', ms: number, condition?: 'NX']
   ): Promise<'OK' | null> {
-    if (this.live(key)) {
+    if (options[2] === 'NX' && this.live(key)) {
       return Promise.resolve(null);
     }
     this.entries.set(key, { value, expiresAt: Date.now() + options[1] });
     return Promise.resolve('OK');
+  }
+
+  get(key: string): Promise<string | null> {
+    return Promise.resolve(this.live(key)?.value ?? null);
+  }
+
+  getdel(key: string): Promise<string | null> {
+    const entry = this.live(key);
+    this.entries.delete(key);
+    return Promise.resolve(entry?.value ?? null);
+  }
+
+  pttl(key: string): Promise<number> {
+    const entry = this.live(key);
+    if (!entry) return Promise.resolve(-2);
+    return Promise.resolve(entry.expiresAt === undefined ? -1 : entry.expiresAt - Date.now());
   }
 
   incr(key: string): Promise<number> {

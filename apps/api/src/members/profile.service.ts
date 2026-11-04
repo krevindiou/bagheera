@@ -18,6 +18,7 @@ import { bumpedSessionEpoch, keepThroughBump } from '../session/session-epoch';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
+import { SingleUseStore } from '../session/single-use-store';
 import type { MemberId } from '../security/ids';
 import { buildEmailChangeToken, parseEmailChangeToken } from './email-change-token';
 import { UpdateLocaleDto } from './dto/update-locale.dto';
@@ -47,6 +48,7 @@ export class ProfileService {
     private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
     private readonly sessionRegistry: SessionRegistryService,
+    private readonly singleUse: SingleUseStore,
   ) {}
 
   /**
@@ -68,7 +70,7 @@ export class ProfileService {
       throw new UnauthorizedException();
     }
 
-    consumeStepUp(req);
+    await consumeStepUp(this.singleUse, req);
 
     // Nothing to change or confirm.
     if (dto.email.toLowerCase() === row.email.toLowerCase()) {

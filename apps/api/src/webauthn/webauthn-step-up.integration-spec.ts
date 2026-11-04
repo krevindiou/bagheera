@@ -70,7 +70,7 @@ describe('webauthn step-up', () => {
   });
 
   describe('POST /webauthn/step-up/verify', () => {
-    it('verifies, bumps the counter, sets stepUpVerifiedAt, and records step_up_verified', async () => {
+    it('verifies, bumps the counter, grants a step-up proof, and records step_up_verified', async () => {
       const fixture = await seedSignedInMember(app);
       const csrfToken = await fixture.getCsrfToken();
       await fixture.agent

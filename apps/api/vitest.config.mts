@@ -71,7 +71,6 @@ export default defineConfig({
         'db/seed.ts',
         'logging/sentry.ts',
         'session/session-data.ts',
-        'session/webauthn-session-data.ts',
         'session/session.constants.ts',
         'common/money.ts',
         'common/currency.ts',

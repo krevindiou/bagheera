@@ -16,7 +16,7 @@ import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
 import { consumeStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
-import '../session/webauthn-session-data';
+import { SingleUseStore } from '../session/single-use-store';
 import { buildRegistrationOptions } from './build-registration-options';
 import { credentialInsertValues } from './credential-insert-values';
 import { VerifyRegistrationDto } from './dto/verify-registration.dto';
@@ -50,14 +50,15 @@ export class WebauthnRegistrationService {
     private readonly crypto: WebauthnCryptoService,
     private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
+    private readonly singleUse: SingleUseStore,
   ) {}
 
   async generateOptions(req: Request): Promise<PublicKeyCredentialCreationOptionsJSON> {
     const memberId = requireMemberId(req);
     // Here, not in verify(), so the authenticator never mints a credential
     // the server then refuses. verify() is still gated: only this method
-    // sets `registrationChallenge`.
-    consumeStepUp(req);
+    // stores a `registrationChallenge`.
+    await consumeStepUp(this.singleUse, req);
     const [row] = await this.db.select().from(member).where(eq(member.id, memberId));
     if (!row) {
       throw registrationFailed();
@@ -76,14 +77,16 @@ export class WebauthnRegistrationService {
       })),
     });
 
-    storeChallenge(req.session, 'registrationChallenge', options.challenge);
+    await storeChallenge(this.singleUse, req, 'registrationChallenge', {
+      challenge: options.challenge,
+    });
     return options;
   }
 
   async verify(req: Request, dto: VerifyRegistrationDto): Promise<void> {
     const memberId = requireMemberId(req);
-    const expectedChallenge = takeChallenge(req.session, 'registrationChallenge');
-    if (!expectedChallenge) {
+    const pending = await takeChallenge(this.singleUse, req, 'registrationChallenge');
+    if (!pending) {
       throw registrationFailed();
     }
 
@@ -92,7 +95,7 @@ export class WebauthnRegistrationService {
     try {
       verification = await this.crypto.verifyRegistrationResponse({
         response: dto.response,
-        expectedChallenge,
+        expectedChallenge: pending.challenge,
         expectedOrigin: origin,
         expectedRPID: rpID,
       });

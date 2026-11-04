@@ -12,7 +12,7 @@ import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
-import '../session/webauthn-session-data';
+import { SingleUseStore } from '../session/single-use-store';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnAssertionService } from './webauthn-assertion.service';
@@ -64,6 +64,7 @@ export class WebauthnAuthenticationService {
     private readonly sessionRegistry: SessionRegistryService,
     private readonly schedulerCatchUp: SchedulerCatchUpService,
     private readonly audit: AuditService,
+    private readonly singleUse: SingleUseStore,
   ) {}
 
   async generateOptions(req: Request): Promise<PublicKeyCredentialRequestOptionsJSON> {
@@ -72,15 +73,18 @@ export class WebauthnAuthenticationService {
       allowCredentials: [],
       userVerification: 'required',
     });
-    storeChallenge(req.session, 'webauthnChallenge', options.challenge);
+    await storeChallenge(this.singleUse, req, 'webauthnChallenge', {
+      challenge: options.challenge,
+    });
     return options;
   }
 
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const sourceAddress = clientIp(req);
-    const expectedChallenge = takeChallenge(req.session, 'webauthnChallenge');
+    // Taken before the session id rotates below.
+    const pending = await takeChallenge(this.singleUse, req, 'webauthnChallenge');
 
-    if (!expectedChallenge) {
+    if (!pending) {
       await this.audit.record('webauthn_sign_in_failure', null, sourceAddress);
       throw invalidPasskey();
     }
@@ -95,7 +99,7 @@ export class WebauthnAuthenticationService {
     const verification = await this.assertion.verify(
       credentialRow,
       dto.response,
-      expectedChallenge,
+      pending.challenge,
     );
     if (!verification.verified) {
       await this.audit.record('webauthn_sign_in_failure', memberId, sourceAddress);

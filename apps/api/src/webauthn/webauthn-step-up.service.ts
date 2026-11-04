@@ -9,8 +9,9 @@ import { DRIZZLE } from '../db/db.constants';
 import { webauthnCredential } from '../db/schema';
 import { AuditService } from '../security/audit.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
+import { grantStepUp } from '../session/consume-step-up';
 import { requireMemberId } from '../session/require-member-id';
-import '../session/step-up-session-data';
+import { SingleUseStore } from '../session/single-use-store';
 import { VerifyAuthenticationDto } from './dto/verify-authentication.dto';
 import { rpConfig } from './rp-config';
 import { WebauthnAssertionService } from './webauthn-assertion.service';
@@ -29,8 +30,8 @@ function stepUpFailed(): BusinessError {
 /**
  * Proves the signed-in caller still holds one of their passkeys, for the
  * mutations a hijacked session could turn into a takeover. Doesn't rotate
- * the session: it only sets the single-use `stepUpVerifiedAt` flag that
- * consumeStepUp() checks.
+ * the session: it only grants the single-use proof that consumeStepUp()
+ * spends.
  */
 @Injectable()
 export class WebauthnStepUpService {
@@ -40,6 +41,7 @@ export class WebauthnStepUpService {
     private readonly crypto: WebauthnCryptoService,
     private readonly assertion: WebauthnAssertionService,
     private readonly audit: AuditService,
+    private readonly singleUse: SingleUseStore,
   ) {}
 
   async generateOptions(req: Request): Promise<PublicKeyCredentialRequestOptionsJSON> {
@@ -59,19 +61,18 @@ export class WebauthnStepUpService {
       userVerification: 'required',
     });
 
-    storeChallenge(req.session, 'stepUpChallenge', options.challenge);
-    req.session.stepUpMemberId = memberId;
+    await storeChallenge(this.singleUse, req, 'stepUpChallenge', {
+      challenge: options.challenge,
+      memberId,
+    });
     return options;
   }
 
   async verify(req: Request, dto: VerifyAuthenticationDto): Promise<{ message: string }> {
     const memberId = requireMemberId(req);
     const sourceAddress = clientIp(req);
-    const expectedChallenge = takeChallenge(req.session, 'stepUpChallenge');
-    const stashedMemberId = req.session.stepUpMemberId;
-    delete req.session.stepUpMemberId;
-
-    if (!expectedChallenge || stashedMemberId !== memberId) {
+    const pending = await takeChallenge(this.singleUse, req, 'stepUpChallenge');
+    if (!pending || pending.memberId !== memberId) {
       throw stepUpFailed();
     }
 
@@ -83,7 +84,7 @@ export class WebauthnStepUpService {
     const verification = await this.assertion.verify(
       credentialRow,
       dto.response,
-      expectedChallenge,
+      pending.challenge,
     );
     if (!verification.verified) {
       throw stepUpFailed();
@@ -93,8 +94,7 @@ export class WebauthnStepUpService {
       throw stepUpFailed();
     }
 
-    req.session.stepUpVerifiedAt = Date.now();
-    req.session.stepUpVerifiedMemberId = memberId;
+    await grantStepUp(this.singleUse, req, memberId);
     await this.audit.record('step_up_verified', memberId, sourceAddress);
 
     return { message: 'ok' };

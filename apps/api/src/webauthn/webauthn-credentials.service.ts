@@ -13,6 +13,7 @@ import { consumeStepUp } from '../session/consume-step-up';
 import { bumpedSessionEpoch, keepThroughBump } from '../session/session-epoch';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { requireMemberId } from '../session/require-member-id';
+import { SingleUseStore } from '../session/single-use-store';
 import { WebauthnCredentialSummaryDto } from './dto/webauthn-credential-response.dto';
 import { clientIp } from '../common/client-ip.decorator';
 
@@ -32,6 +33,7 @@ export class WebauthnCredentialsService {
     private readonly emailQueue: EmailQueueService,
     private readonly audit: AuditService,
     private readonly sessionRegistry: SessionRegistryService,
+    private readonly singleUse: SingleUseStore,
   ) {}
 
   async list(req: Request): Promise<WebauthnCredentialSummary[]> {
@@ -52,7 +54,7 @@ export class WebauthnCredentialsService {
   // otherwise plant its own passkey, then delete the owner's.
   async remove(req: Request, id: string): Promise<void> {
     const memberId = requireMemberId(req);
-    consumeStepUp(req);
+    await consumeStepUp(this.singleUse, req);
 
     const changed = await this.db.transaction(async (tx) => {
       // Locked, so concurrent removals can't both pass the last-passkey check.

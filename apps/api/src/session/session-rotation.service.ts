@@ -7,10 +7,10 @@ import './session-data';
  * session fixation. Only the browser-level fields below carry over; the
  * caller sets `memberId` and `sessionEpoch` afterwards.
  *
- * An allow-list, so a field added later is dropped by default: a step-up
- * proof, a pending challenge or sign-up state belongs to whoever held the
- * session before, and carrying it over would let them act on the account
- * signed in next on the same browser.
+ * An allow-list, so a field added later is dropped by default: whatever the
+ * session held belongs to whoever held it before, and carrying it over would
+ * let them act on the account signed in next on the same browser. The new id
+ * also leaves the old one's single-use state (SingleUseStore) behind.
  */
 @Injectable()
 export class SessionRotationService {

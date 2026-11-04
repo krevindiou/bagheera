@@ -13,6 +13,7 @@ import { SessionAuthGuard } from './session-auth.guard';
 import { signedInImportBody } from './signed-in-import-body';
 import { SessionRegistryService } from './session-registry.service';
 import { SessionRotationService } from './session-rotation.service';
+import { SingleUseStore } from './single-use-store';
 import {
   SESSION_COOKIE_NAME,
   SESSION_IDLE_TTL_SECONDS,
@@ -29,9 +30,10 @@ import { valkeyClientProvider } from './valkey-client.provider';
     valkeyClientProvider,
     SessionRotationService,
     SessionRegistryService,
+    SingleUseStore,
     { provide: APP_GUARD, useClass: SessionAuthGuard },
   ],
-  exports: [SessionRotationService, SessionRegistryService, VALKEY_CLIENT],
+  exports: [SessionRotationService, SessionRegistryService, SingleUseStore, VALKEY_CLIENT],
 })
 export class SessionModule implements NestModule, OnModuleDestroy {
   constructor(

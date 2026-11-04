@@ -11,6 +11,12 @@ export const CSRF_COOKIE_NAME = '__Host-bagheera.csrf';
 export const SESSION_KEY_PREFIX = 'sess:';
 
 /**
+ * Key prefix of a session's single-use state (`once:<sid>:<slot>`, see
+ * SingleUseStore). Not under `sess:`, which connect-redis scans as sessions.
+ */
+export const SINGLE_USE_KEY_PREFIX = 'once:';
+
+/**
  * Idle timeout after the last request: 30 minutes, overridable via
  * `SESSION_IDLE_TTL_SECONDS` (the E2E idle-timeout journey shortens it).
  */

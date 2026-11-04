@@ -6,6 +6,8 @@ import { vi } from 'vitest';
 import type { AuditService } from '../security/audit.service';
 import type { CryptoService } from '../security/crypto.service';
 import { storeChallenge } from '../session/challenge';
+import { SingleUseStore } from '../session/single-use-store';
+import { FakeValkey } from '../test-support/fake-valkey';
 import type { SessionRegistryService } from '../session/session-registry.service';
 import type { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import type { WebauthnCryptoService } from './webauthn-crypto.service';
@@ -14,7 +16,7 @@ import { WebauthnSignupService } from './webauthn-signup.service';
 const EMAIL = 'new.member@example.test';
 const DTO = { response: {} } as unknown as VerifyRegistrationDto;
 
-function setup() {
+async function setup() {
   const transaction = vi.fn();
   const db = { transaction } as unknown as NodePgDatabase;
   const config = { getOrThrow: () => 'value' } as unknown as ConfigService;
@@ -33,6 +35,7 @@ function setup() {
   const sessionRotation = { rotate: vi.fn() };
   const sessionRegistry = { register: vi.fn() };
   const audit = { record: vi.fn() };
+  const singleUse = new SingleUseStore(new FakeValkey().asClient());
   const service = new WebauthnSignupService(
     db,
     config,
@@ -41,10 +44,13 @@ function setup() {
     sessionRotation,
     sessionRegistry as unknown as SessionRegistryService,
     audit as unknown as AuditService,
+    singleUse,
   );
-  const session = { pendingSignupKey: 'signup-key' } as unknown as Request['session'];
-  storeChallenge(session, 'pendingSignupChallenge', 'expected-challenge');
-  const req = { session, ip: '203.0.113.7' } as unknown as Request;
+  const req = { session: {}, sessionID: 'sid-1', ip: '203.0.113.7' } as unknown as Request;
+  await storeChallenge(singleUse, req, 'pendingSignupChallenge', {
+    challenge: 'expected-challenge',
+    signupKey: 'signup-key',
+  });
   return { service, req, transaction, webauthnCrypto, audit };
 }
 
@@ -55,7 +61,7 @@ describe('WebauthnSignupService.verify', () => {
 
   it('logs why the library rejected the attestation, still answering the generic 400', async () => {
     const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const { service, req, transaction, webauthnCrypto, audit } = setup();
+    const { service, req, transaction, webauthnCrypto, audit } = await setup();
     webauthnCrypto.verifyRegistrationResponse.mockRejectedValue(
       new Error(
         'Unexpected registration response origin "https://evil.test", expected "https://example.test"',
@@ -78,7 +84,7 @@ describe('WebauthnSignupService.verify', () => {
 
   it('keeps the email, the sign-up key and the challenges out of the log', async () => {
     const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const { service, req, webauthnCrypto } = setup();
+    const { service, req, webauthnCrypto } = await setup();
     webauthnCrypto.verifyRegistrationResponse.mockRejectedValue(
       new Error(
         'Unexpected registration response challenge "received-challenge", expected "expected-challenge"',
@@ -96,7 +102,7 @@ describe('WebauthnSignupService.verify', () => {
 
   it('logs a thrown non-Error as text', async () => {
     const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const { service, req, webauthnCrypto } = setup();
+    const { service, req, webauthnCrypto } = await setup();
     webauthnCrypto.verifyRegistrationResponse.mockRejectedValue('cbor decode failed');
 
     await expect(service.verify(req, DTO)).rejects.toMatchObject({ status: 400 });

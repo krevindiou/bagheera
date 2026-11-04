@@ -7,6 +7,8 @@ import { vi } from 'vitest';
 import type { EmailQueueService } from '../email/email-queue.service';
 import type { AuditService } from '../security/audit.service';
 import { storeChallenge } from '../session/challenge';
+import { SingleUseStore } from '../session/single-use-store';
+import { FakeValkey } from '../test-support/fake-valkey';
 import type { VerifyRegistrationDto } from './dto/verify-registration.dto';
 import type { WebauthnCryptoService } from './webauthn-crypto.service';
 import { WebauthnRegistrationService } from './webauthn-registration.service';
@@ -26,29 +28,31 @@ const VERIFIED = {
 const DTO = { response: {} } as unknown as VerifyRegistrationDto;
 
 // A verify() call that reaches the credential insert, which rejects with `insertError`.
-function setup(insertError: unknown) {
+async function setup(insertError: unknown) {
   const insert = vi.fn().mockReturnValue({ values: vi.fn().mockRejectedValue(insertError) });
   const db = { insert } as unknown as NodePgDatabase;
   const config = { getOrThrow: () => 'value' } as unknown as ConfigService;
   const crypto = { verifyRegistrationResponse: vi.fn().mockResolvedValue(VERIFIED) };
   const emailQueue = { enqueue: vi.fn() };
   const audit = { record: vi.fn() };
+  const singleUse = new SingleUseStore(new FakeValkey().asClient());
   const service = new WebauthnRegistrationService(
     db,
     config,
     crypto as unknown as WebauthnCryptoService,
     emailQueue as unknown as EmailQueueService,
     audit as unknown as AuditService,
+    singleUse,
   );
   const session = { memberId: 'member-1' } as unknown as Request['session'];
-  storeChallenge(session, 'registrationChallenge', 'challenge');
-  const req = { session, ip: '203.0.113.7' } as unknown as Request;
+  const req = { session, sessionID: 'sid-1', ip: '203.0.113.7' } as unknown as Request;
+  await storeChallenge(singleUse, req, 'registrationChallenge', { challenge: 'challenge' });
   return { service, req, insert, crypto, emailQueue, audit };
 }
 
 describe('WebauthnRegistrationService.verify', () => {
   it('turns a duplicate credential id into a passkey_registration_failed 400', async () => {
-    const { service, req, emailQueue, audit } = setup(
+    const { service, req, emailQueue, audit } = await setup(
       Object.assign(new Error('duplicate key'), { cause: { code: '23505' } }),
     );
 
@@ -62,7 +66,7 @@ describe('WebauthnRegistrationService.verify', () => {
 
   it('rethrows any other insert failure instead of blaming the request', async () => {
     const outage = new Error('connection terminated');
-    const { service, req, emailQueue, audit } = setup(outage);
+    const { service, req, emailQueue, audit } = await setup(outage);
 
     await expect(service.verify(req, DTO)).rejects.toBe(outage);
     expect(emailQueue.enqueue).not.toHaveBeenCalled();
@@ -71,7 +75,7 @@ describe('WebauthnRegistrationService.verify', () => {
 
   it('logs why the library rejected the attestation, still answering the generic 400', async () => {
     const warn = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const { service, req, insert, crypto } = setup(undefined);
+    const { service, req, insert, crypto } = await setup(undefined);
     crypto.verifyRegistrationResponse.mockRejectedValue(
       new Error('Unexpected registration response challenge "received", expected "challenge"'),
     );

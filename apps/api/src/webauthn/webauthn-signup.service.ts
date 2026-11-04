@@ -15,7 +15,7 @@ import { CryptoService } from '../security/crypto.service';
 import { storeChallenge, takeChallenge } from '../session/challenge';
 import { SessionRegistryService } from '../session/session-registry.service';
 import { SessionRotationService } from '../session/session-rotation.service';
-import '../session/signup-session-data';
+import { SingleUseStore } from '../session/single-use-store';
 import { findMemberByEmail } from '../members/find-member-by-email';
 import { parseSignupToken } from '../members/signup-token';
 import { buildRegistrationOptions } from './build-registration-options';
@@ -52,6 +52,7 @@ export class WebauthnSignupService {
     private readonly sessionRotation: SessionRotationService,
     private readonly sessionRegistry: SessionRegistryService,
     private readonly audit: AuditService,
+    private readonly singleUse: SingleUseStore,
   ) {}
 
   async generateOptions(
@@ -73,23 +74,23 @@ export class WebauthnSignupService {
       excludeCredentials: [],
     });
 
-    storeChallenge(req.session, 'pendingSignupChallenge', options.challenge);
-    req.session.pendingSignupKey = dto.key;
+    await storeChallenge(this.singleUse, req, 'pendingSignupChallenge', {
+      challenge: options.challenge,
+      signupKey: dto.key,
+    });
     return options;
   }
 
   async verify(req: Request, dto: VerifyRegistrationDto): Promise<{ message: string }> {
     const sourceAddress = clientIp(req);
-    const expectedChallenge = takeChallenge(req.session, 'pendingSignupChallenge');
-    const key = req.session.pendingSignupKey;
-    delete req.session.pendingSignupKey;
-
-    if (!expectedChallenge || !key) {
+    // Taken before the session id rotates below.
+    const pending = await takeChallenge(this.singleUse, req, 'pendingSignupChallenge');
+    if (!pending) {
       throw signupFailed();
     }
 
     // Re-parsed: the token may have expired since options().
-    const payload = parseSignupToken(this.crypto, key);
+    const payload = parseSignupToken(this.crypto, pending.signupKey);
     if (!payload) {
       throw signupFailed();
     }
@@ -99,7 +100,7 @@ export class WebauthnSignupService {
     try {
       verification = await this.webauthnCrypto.verifyRegistrationResponse({
         response: dto.response,
-        expectedChallenge,
+        expectedChallenge: pending.challenge,
         expectedOrigin: origin,
         expectedRPID: rpID,
       });
