@@ -22,6 +22,7 @@ import {
 import { RATE_LIMIT_VALKEY_CLIENT } from './rate-limit-valkey-client.provider';
 import { SKIP_RATE_LIMIT_KEY } from './skip-rate-limit.decorator';
 import { clientIp } from '../common/client-ip.decorator';
+import { rateLimitAddress } from './address-group';
 import { normalizeEmail, plusTaggedMailbox } from '../common/email-address';
 
 // Strikes (lockout violations) decay after an hour of no further
@@ -102,9 +103,10 @@ export class RateLimitGuard implements CanActivate {
   }
 
   /**
-   * The source IP (or the member, for `perMember`), plus the submitted
-   * identifier when the route names one, and its plus-tagged mailbox when
-   * the route sets `taggedMailbox`, each keyed under `routeKey`.
+   * The source address (an IPv6 one by its /64; or the member, for
+   * `perMember`), plus the submitted identifier when the route names one,
+   * and its plus-tagged mailbox when the route sets `taggedMailbox`, each
+   * keyed under `routeKey`.
    */
   private dimensions(req: Request, options: RateLimitOptions, routeKey: string): Dimension[] {
     const { durationSeconds } = options;
@@ -112,7 +114,11 @@ export class RateLimitGuard implements CanActivate {
     const dims: Dimension[] = [
       memberId
         ? { key: `${routeKey}:member:${memberId}`, points: options.points, durationSeconds }
-        : { key: `${routeKey}:ip:${clientIp(req)}`, points: ipPointsFor(options), durationSeconds },
+        : {
+            key: `${routeKey}:ip:${rateLimitAddress(clientIp(req))}`,
+            points: ipPointsFor(options),
+            durationSeconds,
+          },
     ];
     const rawIdentifier = options.identifierField
       ? (req.body as Record<string, unknown> | undefined)?.[options.identifierField]

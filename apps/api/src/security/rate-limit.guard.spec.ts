@@ -140,6 +140,17 @@ describe('RateLimitGuard', () => {
     expect(mockConsume).toHaveBeenCalledWith(expect.stringContaining(':ip:unknown'));
   });
 
+  it('counts IPv6 callers by /64, so rotating host bits shares one budget', async () => {
+    const valkey = fakeValkeyClient();
+    const options: RateLimitOptions = { points: 5, durationSeconds: 60, scope: 'shared' };
+    const guard = new RateLimitGuard(valkey, fakeReflector({ options }));
+    for (const ip of ['2001:db8:1:2::1', '2001:db8:1:2:aaaa:bbbb:cccc:dddd']) {
+      await guard.canActivate(fakeExecutionContext(fakeRequest({ method: 'POST', ip })));
+    }
+    const keys = mockConsume.mock.calls.map((call) => call[0]);
+    expect(keys).toEqual(['shared:ip:2001:db8:1:2::/64', 'shared:ip:2001:db8:1:2::/64']);
+  });
+
   it('scopes the dimension key per route, so two handlers never share a counter', async () => {
     const valkey = fakeValkeyClient();
     const options: RateLimitOptions = { points: 5, durationSeconds: 60 };

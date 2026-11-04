@@ -15,9 +15,12 @@ import {
 import { createTestApp, getDb } from '../test-support/create-test-app';
 import { WebauthnCryptoService } from '../webauthn/webauthn-crypto.service';
 import { SessionRegistryService } from './session-registry.service';
+import { withClockAhead } from '../test-support/with-clock-ahead';
 import {
+  ANONYMOUS_SESSION_MAX_AGE_MS,
   CSRF_COOKIE_NAME,
   SESSION_COOKIE_NAME,
+  SESSION_IDLE_TTL_SECONDS,
   SESSION_MAX_AGE_MS,
   VALKEY_CLIENT,
 } from './session.constants';
@@ -112,15 +115,18 @@ describe('session lifecycle', () => {
     },
   );
 
-  it("starts a kept session's absolute clock on its next request", async () => {
+  // Started on a later request, the clock would give a minted session
+  // more than its cap.
+  it("starts a kept session's absolute clock when it's first stored", async () => {
     const valkey = app.get<IORedis>(VALKEY_CLIENT);
-    const agent = request.agent(app.getHttpServer());
-    const key = sessionKeyFrom(await agent.get('/auth/csrf-token').expect(200));
-
-    await agent.get('/auth/me').expect(401);
+    const before = Date.now();
+    const key = sessionKeyFrom(
+      await request(app.getHttpServer()).get('/auth/csrf-token').expect(200),
+    );
 
     const stored = JSON.parse((await valkey.get(key))!) as StoredSession;
-    expect(stored.createdAt).toEqual(expect.any(Number));
+    expect(stored.createdAt).toBeGreaterThanOrEqual(before);
+    expect(stored.createdAt).toBeLessThanOrEqual(Date.now());
   });
 
   it('rejects a mutating request with no CSRF token, even from an authenticated agent', async () => {
@@ -167,8 +173,6 @@ describe('session lifecycle', () => {
     expect(brandNewKeys.length).toBeGreaterThan(0);
   });
 
-  // absoluteSessionTtl deletes `req.session` outright: every route must still
-  // answer 401, not crash reading it.
   it('force-expires a session past the absolute TTL, regardless of activity', async () => {
     const { agent, memberId } = await seedSignedInMember(app);
     await agent.get('/auth/me').expect(200);
@@ -181,6 +185,114 @@ describe('session lifecycle', () => {
     await valkey.set(key, JSON.stringify(data));
 
     await agent.get('/auth/me').expect(401);
+  });
+
+  describe('absolute caps', () => {
+    async function mintedSession() {
+      const agent = request.agent(app.getHttpServer());
+      const res = await agent.get('/auth/csrf-token').expect(200);
+      const { csrfToken } = res.body as { csrfToken: string };
+      return { agent, key: sessionKeyFrom(res), csrfToken };
+    }
+
+    async function storedSession(key: string): Promise<StoredSession> {
+      return JSON.parse((await app.get<IORedis>(VALKEY_CLIENT).get(key))!) as StoredSession;
+    }
+
+    // Moving the clock past an idle timeout instead would expire the
+    // agent's own cookie, so the session would never be sent.
+    async function backdate(key: string, ms: number): Promise<number> {
+      const stored = await storedSession(key);
+      const createdAt = stored.createdAt! - ms;
+      await app
+        .get<IORedis>(VALKEY_CLIENT)
+        .set(key, JSON.stringify({ ...stored, createdAt }), 'KEEPTTL');
+      return createdAt;
+    }
+
+    it('lets no refresh keep an anonymous session past one idle timeout', async () => {
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { agent, key } = await mintedSession();
+
+      for (const route of ['/auth/me', '/auth/csrf-token']) {
+        await withClockAhead(ANONYMOUS_SESSION_MAX_AGE_MS - 60_000, () => agent.get(route));
+        const ttl = await valkey.pttl(key);
+        expect(ttl).toBeGreaterThan(0);
+        expect(ttl).toBeLessThanOrEqual(60_000);
+      }
+    });
+
+    it('answers the token mint on an anonymous session past its cap with a fresh one', async () => {
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { agent, key } = await mintedSession();
+      await backdate(key, ANONYMOUS_SESSION_MAX_AGE_MS + 1000);
+
+      const res = await agent.get('/auth/csrf-token');
+
+      expect(res.status).toBe(200);
+      const freshKey = sessionKeyFrom(res);
+      expect(freshKey).not.toBe(key);
+      expect(await valkey.exists(key)).toBe(0);
+      expect((await storedSession(freshKey)).createdAt).toEqual(expect.any(Number));
+    });
+
+    it('refuses a valid token pair on an anonymous session past its cap with 403, not 500', async () => {
+      const { agent, key, csrfToken } = await mintedSession();
+      await backdate(key, ANONYMOUS_SESSION_MAX_AGE_MS + 1000);
+
+      const res = await agent
+        .post('/webauthn/authentication/options')
+        .set('x-csrf-token', csrfToken);
+
+      expect(res.status).toBe(403);
+    });
+
+    // express-session saves a regenerated session even when nothing wrote to it.
+    it('stores nothing in place of an expired session a request leaves empty', async () => {
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { agent, key } = await mintedSession();
+      await backdate(key, ANONYMOUS_SESSION_MAX_AGE_MS + 1000);
+
+      const res = await agent.get('/auth/me');
+
+      expect(res.status).toBe(401);
+      expect(await valkey.exists(key)).toBe(0);
+      expect(await valkey.exists(sessionKeyFrom(res))).toBe(0);
+    });
+
+    it('keeps a signed-in session to the idle timeout and its 24h cap', async () => {
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { agent, memberId } = await seedSignedInMember(app);
+      const key = await findSessionKey(valkey, memberId);
+      await backdate(key, 2 * ANONYMOUS_SESSION_MAX_AGE_MS);
+
+      await withClockAhead(ANONYMOUS_SESSION_MAX_AGE_MS - 60_000, () =>
+        agent.get('/auth/me').expect(200),
+      );
+      expect(await valkey.pttl(key)).toBeGreaterThan((SESSION_IDLE_TTL_SECONDS - 5) * 1000);
+
+      await backdate(key, SESSION_MAX_AGE_MS);
+      const minted = await agent.get('/auth/csrf-token').expect(200);
+      expect(sessionKeyFrom(minted)).not.toBe(key);
+      expect(await valkey.exists(key)).toBe(0);
+      await agent.get('/auth/me').expect(401);
+    });
+
+    it('lifts the anonymous cap on sign-in, keeping the clock of the session first stored', async () => {
+      const valkey = app.get<IORedis>(VALKEY_CLIENT);
+      const { agent, key } = await mintedSession();
+      // Near the end of its anonymous cap, with time left for the ceremony.
+      const createdAt = await backdate(key, ANONYMOUS_SESSION_MAX_AGE_MS - 20_000);
+      const { memberId, credentialId } = await insertMemberWithCredential(app);
+
+      await signInWithPasskey(app, agent, credentialId);
+
+      const signedInKey = await findSessionKey(valkey, memberId);
+      expect(signedInKey).not.toBe(key);
+      expect((await storedSession(signedInKey)).createdAt).toBe(createdAt);
+      expect(await valkey.pttl(signedInKey)).toBeGreaterThan((SESSION_IDLE_TTL_SECONDS - 5) * 1000);
+      await withClockAhead(60_000, () => agent.get('/auth/me').expect(200));
+    });
   });
 
   // A request in flight when its session is revoked writes the session back

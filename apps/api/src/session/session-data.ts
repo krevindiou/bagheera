@@ -9,5 +9,8 @@ declare module 'express-session' {
     sessionEpoch?: number;
     // Forces session persistence (see CsrfTokenController).
     csrfIssued?: boolean;
+    // When the session was first stored (see SessionStore), the start of its
+    // absolute cap.
+    createdAt?: number;
   }
 }

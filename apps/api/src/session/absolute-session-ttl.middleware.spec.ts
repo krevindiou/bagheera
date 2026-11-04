@@ -1,6 +1,6 @@
 import type { Response } from 'express';
 import { absoluteSessionTtl } from './absolute-session-ttl.middleware';
-import { SESSION_MAX_AGE_MS } from './session.constants';
+import { ANONYMOUS_SESSION_MAX_AGE_MS, SESSION_MAX_AGE_MS } from './session.constants';
 import { fakeRequest, fakeResponse } from '../test-support/fake-http-context';
 import { vi } from 'vitest';
 
@@ -35,25 +35,47 @@ describe('absoluteSessionTtl', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('calls next() without touching the session when still within the TTL', () => {
+  it('calls next() without touching a signed-in session still within its 24h cap', () => {
+    const regenerate = vi.fn();
     const req = fakeRequest({
-      session: { createdAt: Date.now() - 1000 } as never,
+      session: {
+        memberId: 'm',
+        createdAt: Date.now() - 2 * ANONYMOUS_SESSION_MAX_AGE_MS,
+        regenerate,
+      } as never,
     });
-    const destroy = vi.fn();
-    (req.session as unknown as { destroy: typeof destroy }).destroy = destroy;
     const next = vi.fn();
     absoluteSessionTtl(req, res(), next);
-    expect(destroy).not.toHaveBeenCalled();
+    expect(regenerate).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('destroys the session and calls next() once the absolute TTL has passed', () => {
-    const createdAt = Date.now() - SESSION_MAX_AGE_MS - 1000;
+  it('calls next() without touching an anonymous session still within its cap', () => {
+    const regenerate = vi.fn();
+    const req = fakeRequest({
+      session: { csrfIssued: true, createdAt: Date.now() - 1000, regenerate } as never,
+    });
     const next = vi.fn();
-    const destroy = vi.fn((cb: () => void) => cb());
-    const req = fakeRequest({ session: { createdAt, destroy } as never });
     absoluteSessionTtl(req, res(), next);
-    expect(destroy).toHaveBeenCalled();
+    expect(regenerate).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  // A fresh session, not none: CSRF checks and the token mint read req.session.
+  it.each([
+    ['a signed-in session past 24h', { memberId: 'm', createdAt: -SESSION_MAX_AGE_MS - 1000 }],
+    [
+      'an anonymous session past its cap',
+      { csrfIssued: true, createdAt: -ANONYMOUS_SESSION_MAX_AGE_MS - 1000 },
+    ],
+  ])('swaps %s for a fresh one and calls next()', (_label, { createdAt, ...fields }) => {
+    const next = vi.fn();
+    const regenerate = vi.fn((cb: () => void) => cb());
+    const req = fakeRequest({
+      session: { ...fields, createdAt: Date.now() + createdAt, regenerate } as never,
+    });
+    absoluteSessionTtl(req, res(), next);
+    expect(regenerate).toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith();
   });
 });

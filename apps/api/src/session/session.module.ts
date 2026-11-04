@@ -1,7 +1,6 @@
 import { Inject, MiddlewareConsumer, Module, NestModule, OnModuleDestroy } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { RedisStore } from 'connect-redis';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import type IORedis from 'ioredis';
@@ -14,13 +13,8 @@ import { signedInImportBody } from './signed-in-import-body';
 import { SessionRegistryService } from './session-registry.service';
 import { SessionRotationService } from './session-rotation.service';
 import { SingleUseStore } from './single-use-store';
-import {
-  SESSION_COOKIE_NAME,
-  SESSION_IDLE_TTL_SECONDS,
-  SESSION_KEY_PREFIX,
-  VALKEY_CLIENT,
-} from './session.constants';
-import { sessionStoreClient } from './session-store-client';
+import { SESSION_COOKIE_NAME, SESSION_IDLE_TTL_SECONDS, VALKEY_CLIENT } from './session.constants';
+import { SessionStore } from './session-store';
 import { valkeyClientProvider } from './valkey-client.provider';
 
 @Module({
@@ -46,14 +40,8 @@ export class SessionModule implements NestModule, OnModuleDestroy {
   }
 
   configure(consumer: MiddlewareConsumer): void {
-    const store = new RedisStore({
-      client: sessionStoreClient(this.valkeyClient),
-      prefix: SESSION_KEY_PREFIX,
-      ttl: SESSION_IDLE_TTL_SECONDS,
-    });
-
     const sessionMiddleware = session({
-      store,
+      store: new SessionStore(this.valkeyClient),
       secret: this.config.getOrThrow<string>('SESSION_SECRET'),
       name: SESSION_COOKIE_NAME,
       resave: false,

@@ -27,3 +27,10 @@ export const SESSION_IDLE_TTL_SECONDS = process.env.SESSION_IDLE_TTL_SECONDS
 /** Absolute cap: session is force-expired 24h after it was first created,
  * regardless of activity. */
 export const SESSION_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Absolute cap of a session nobody signed in to: long enough for one
+ * sign-in or sign-up ceremony, short enough that anonymous callers can't
+ * keep sessions piling up in Valkey by refreshing them.
+ */
+export const ANONYMOUS_SESSION_MAX_AGE_MS = SESSION_IDLE_TTL_SECONDS * 1000;

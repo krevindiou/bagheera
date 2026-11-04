@@ -12,7 +12,7 @@ describe('isNewSession', () => {
     expect(isNewSession(req)).toBe(false);
   });
 
-  // absoluteSessionTtl's destroy() removes req.session outright.
+  // A destroyed session (sign-out) removes req.session outright.
   it('is true when the request has no session at all', () => {
     const req = fakeRequest({ session: undefined as never });
     expect(isNewSession(req)).toBe(true);
