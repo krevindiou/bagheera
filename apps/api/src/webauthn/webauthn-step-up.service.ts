@@ -94,6 +94,7 @@ export class WebauthnStepUpService {
     }
 
     req.session.stepUpVerifiedAt = Date.now();
+    req.session.stepUpVerifiedMemberId = memberId;
     await this.audit.record('step_up_verified', memberId, sourceAddress);
 
     return { message: 'ok' };

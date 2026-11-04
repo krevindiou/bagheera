@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import type { Request } from 'express';
 import { BusinessError } from '../common/filters/business-error';
+import './session-data';
 import './step-up-session-data';
 
 // How long a verified step-up stays usable: long enough to finish the one
@@ -14,15 +15,22 @@ export const STEP_UP_TTL_MS = 5 * 60 * 1000;
  * otherwise turn temporary access into a permanent takeover.
  *
  * Consumed on read whatever the outcome, so one ceremony authorizes exactly
- * one action.
+ * one action, and only for the member who proved it.
  *
  * 422: not malformed input (400), and a 401 would make the web client sign
  * the member out.
  */
 export function consumeStepUp(req: Request): void {
   const verifiedAt = req.session.stepUpVerifiedAt;
+  const verifiedMemberId = req.session.stepUpVerifiedMemberId;
   delete req.session.stepUpVerifiedAt;
-  if (!verifiedAt || Date.now() - verifiedAt > STEP_UP_TTL_MS) {
+  delete req.session.stepUpVerifiedMemberId;
+  if (
+    !verifiedAt ||
+    !verifiedMemberId ||
+    verifiedMemberId !== req.session.memberId ||
+    Date.now() - verifiedAt > STEP_UP_TTL_MS
+  ) {
     throw new BusinessError(
       HttpStatus.UNPROCESSABLE_ENTITY,
       'step_up_required',

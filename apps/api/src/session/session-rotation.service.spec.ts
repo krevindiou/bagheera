@@ -27,14 +27,44 @@ function fakeRequest(
 describe('SessionRotationService', () => {
   const service = new SessionRotationService();
 
-  it('regenerates the session, carries its data over, and saves it', async () => {
-    const { req, session } = fakeRequest({ memberId: 'm1', csrfIssued: true });
+  it('regenerates the session, carries its browser-level fields over, and saves it', async () => {
+    const { req, session } = fakeRequest({ createdAt: 1234, csrfIssued: true });
 
     await service.rotate(req);
 
     expect(session.regenerate).toHaveBeenCalled();
     expect(session.save).toHaveBeenCalled();
-    expect(session.memberId).toBe('m1');
+    expect(session.createdAt).toBe(1234);
+    expect(session.csrfIssued).toBe(true);
+  });
+
+  // Whatever the previous holder of the session proved or started must not
+  // reach the account signed in next.
+  it('drops identity, step-up, ceremony and sign-up state, and any unknown field', async () => {
+    const dropped = {
+      memberId: 'm1',
+      stepUpVerifiedAt: Date.now(),
+      stepUpVerifiedMemberId: 'm1',
+      stepUpChallenge: 'c1',
+      stepUpChallengeIssuedAt: Date.now(),
+      stepUpMemberId: 'm1',
+      registrationChallenge: 'c2',
+      registrationChallengeIssuedAt: Date.now(),
+      webauthnChallenge: 'c3',
+      webauthnChallengeIssuedAt: Date.now(),
+      pendingSignupChallenge: 'c4',
+      pendingSignupChallengeIssuedAt: Date.now(),
+      pendingSignupKey: 'k1',
+      someFutureField: 'x',
+    };
+    const { req, session } = fakeRequest({ ...dropped, createdAt: 1234, csrfIssued: true });
+
+    await service.rotate(req);
+
+    for (const key of Object.keys(dropped)) {
+      expect(session[key]).toBeUndefined();
+    }
+    expect(session.createdAt).toBe(1234);
     expect(session.csrfIssued).toBe(true);
   });
 

@@ -112,10 +112,6 @@ export class WebauthnAuthenticationService {
       throw invalidPasskey();
     }
 
-    // A step-up proof belongs to the session it was given in, not to the
-    // member: a sign-in starts a fresh authorization, so it is dropped here
-    // before rotation would carry it into the new session id.
-    delete req.session.stepUpVerifiedAt;
     await this.sessionRotation.rotate(req);
     req.session.memberId = row.id;
     await this.sessionRegistry.register(row.id, req.sessionID);
