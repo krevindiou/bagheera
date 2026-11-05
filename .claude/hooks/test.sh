@@ -22,6 +22,13 @@ bash_case() { # deny|ask|allow command
   report "$1" "$got" "$2"
 }
 
+reason_case() { # contains|lacks substring command
+  local out got=lacks
+  out=$(jq -n --arg c "$3" '{tool_input:{command:$c}}' | "$here/guard-bash.sh" 2>/dev/null)
+  [[ $out == *"$2"* ]] && got=contains
+  report "$1" "$got" "reason '$2' :: $3"
+}
+
 generated_case() { # deny|allow path
   local rc got=allow
   jq -n --arg f "$root/$2" '{tool_input:{file_path:$f}}' | "$here/guard-generated.sh" >/dev/null 2>&1; rc=$?
@@ -57,6 +64,9 @@ bash_case ask   'git commit -m x'
 bash_case ask   'rtk git push origin main'
 bash_case ask   'git -C /tmp/x commit -m y'
 bash_case ask   'git add . && git commit -m z'
+reason_case contains security-review 'git commit -m x'
+reason_case contains security-review 'rtk git -C /tmp/x commit -m y'
+reason_case lacks    security-review 'git push origin main'
 
 echo '# guard-generated'
 generated_case deny  apps/web/src/api/schema.d.ts

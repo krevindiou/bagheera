@@ -17,10 +17,14 @@ if [[ $cmd =~ $local_runtime ]]; then
 fi
 
 if [[ $cmd =~ $git_write ]]; then
-  jq -n '{hookSpecificOutput: {
+  reason='CLAUDE.md: never commit or push unless the user explicitly asks'
+  if [[ ${BASH_REMATCH[5]} == commit ]]; then
+    reason+=$'\nBefore committing: tests in sync, make format, make lint, make build, make test-unit, security-review skill.'
+  fi
+  jq -n --arg r "$reason" '{hookSpecificOutput: {
     hookEventName: "PreToolUse",
     permissionDecision: "ask",
-    permissionDecisionReason: "CLAUDE.md: never commit or push unless the user explicitly asks"
+    permissionDecisionReason: $r
   }}'
 fi
 
