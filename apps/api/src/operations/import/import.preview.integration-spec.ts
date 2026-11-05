@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import type { Server } from 'http';
 import { asc, eq } from 'drizzle-orm';
 import { IMPORT_LIMITS } from '@bagheera/reference-data';
+import { toMinorUnits } from '../../common/money';
 import { operation } from '../../db/schema';
 import { PAYMENT_METHOD_ID } from '../../db/seed-data';
 import { seedSignedInMember, type SignedInFixture } from '../../test-support/auth-fixture';
@@ -368,7 +369,7 @@ describe('bank file import: preview', () => {
           accountId,
           paymentMethodId: PAYMENT_METHOD_ID.CREDIT_CARD,
           thirdParty: `Shop ${i}`,
-          debit: 125000,
+          debit: toMinorUnits(12.5),
           valueDate,
         }));
       const cap = IMPORT_LIMITS.MAX_RECORDED_OPERATIONS;

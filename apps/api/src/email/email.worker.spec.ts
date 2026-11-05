@@ -88,7 +88,12 @@ describe('EmailWorker', () => {
     );
 
     const thrown = await mockProcessor!(
-      job('signup-request', { email: 'marker@example.test' }),
+      job('signup-request', {
+        email: 'marker@example.test',
+        country: 'FR',
+        locale: 'en',
+        sourceAddress: '198.51.100.7',
+      }),
     ).catch((e: Error) => e);
 
     expect(thrown).toMatchObject({ message: 'query failed' });
