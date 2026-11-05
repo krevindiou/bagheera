@@ -23,6 +23,7 @@ jobs:
       - run: pnpm format:check
       - run: pnpm --filter api exec tsc -p tsconfig.json --noEmit
       - run: node scripts/check-integration-spec-coverage.mjs
+      - run: .claude/hooks/test.sh
       - run: pnpm audit --prod --audit-level=high
       # Workspace-wide checks: no dev container mounts every package.
       - run: pnpm dedupe --check
