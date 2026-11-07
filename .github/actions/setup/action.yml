@@ -11,9 +11,8 @@ runs:
       with:
         node-version-file: .nvmrc
         cache: pnpm
-    - run: pnpm install --frozen-lockfile
-      shell: bash
-    # packages/* resolve to their built dist/ (gitignored), which every
-    # build, type-check and test needs first.
-    - run: pnpm --filter @bagheera/money --filter @bagheera/reference-data build
+    # Installs, then builds packages/*: they resolve to their built dist/
+    # (gitignored), which every build, type-check and test needs first. The
+    # `check` compose service runs the same script.
+    - run: pnpm run bootstrap
       shell: bash

@@ -4,10 +4,16 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "lint": "pnpm -r lint",
-    "format": "pnpm -r format",
-    "lint:check": "pnpm -r lint:check",
-    "format:check": "pnpm -r format:check"
+    "bootstrap": "pnpm install --frozen-lockfile && pnpm --filter @bagheera/money --filter @bagheera/reference-data build",
+    "check": "pnpm run \"/^check:/\"",
+    "check:lint": "pnpm -r lint:check",
+    "check:format": "pnpm -r format:check",
+    "check:types": "pnpm --filter api exec tsc -p tsconfig.json --noEmit",
+    "check:specs": "node scripts/check-integration-spec-coverage.mjs",
+    "check:hooks": ".claude/hooks/test.sh",
+    "check:audit": "pnpm audit --prod --audit-level=high",
+    "check:dedupe": "pnpm dedupe --check",
+    "check:knip": "pnpm dlx knip@6.41.0"
   },
   "packageManager": "pnpm@12.6.0+sha512.3ef68f951cb111ac204b4a5a16f0b2ddf0da56a96e0413e81d855d9f0b55ef926714709028e1cd00c405c2c5fb7b9e8ec4dc46777c805d0373c2f2ff00fd20ec",
   "engines": {
