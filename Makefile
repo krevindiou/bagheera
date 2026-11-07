@@ -8,11 +8,23 @@ export DOCKER_GID := $(shell stat -c %g /var/run/docker.sock)
 COMPOSE := docker compose -f docker/compose.yml
 COMPOSE_E2E := docker compose -p bagheera-e2e -f docker/compose.yml -f docker/compose.e2e.yml
 
-.PHONY: help build build-images up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e lint format
+.PHONY: help check precommit build build-images up down ps shell-api shell-web exec-api exec-web migrate test test-unit test-integration test-e2e lint format
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+# The checks are the root package.json `check:*` scripts, the same ones CI's
+# lint job runs by name; the `check` compose service has the whole workspace
+# installed. `make check-<name>` runs a single one, e.g. `make check-knip`.
+check: ## Run every root check:* script (lint, format, types, specs, hooks, audit, dedupe, knip)
+	$(COMPOSE) run --rm check pnpm run check
+
+check-%:
+	$(COMPOSE) run --rm check pnpm run check:$*
+
+# Order matters: format and lint rewrite files, check then verifies them.
+precommit: format lint check build test-unit ## Everything CLAUDE.md asks before a commit, except tests-in-sync and the security-review skill
 
 build: ## Build api + web and their packages/* deps, as CI's Build job does
 	$(COMPOSE) exec --workdir /app api pnpm --filter api... build

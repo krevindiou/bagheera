@@ -175,6 +175,27 @@ services:
         CI=true pnpm install --frozen-lockfile --filter web...
         pnpm e2e ${E2E_ARGS:-}
 
+  # Runs the root `check:*` scripts (`make check`) over the whole workspace,
+  # which neither the api nor the web dev container has installed. Profile-
+  # gated and never started by `up`: `make check` uses `docker compose run`.
+  # The entrypoint runs the same `bootstrap` script as CI's setup action
+  # (install + build packages/*), a no-op when node_modules are current.
+  check:
+    profiles: ["check"]
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.check
+    environment:
+      CI: "true"
+    entrypoint: ["sh", "-c", 'pnpm run bootstrap && exec "$$@"', "check"]
+    volumes:
+      - ..:/app
+      - check_root_node_modules:/app/node_modules
+      - check_api_node_modules:/app/apps/api/node_modules
+      - check_web_node_modules:/app/apps/web/node_modules
+      - check_money_node_modules:/app/packages/money/node_modules
+      - check_reference_data_node_modules:/app/packages/reference-data/node_modules
+
 volumes:
   postgres_data:
   valkey_data:
@@ -194,3 +215,8 @@ volumes:
   playwright_node_modules:
   playwright_money_node_modules:
   playwright_reference_data_node_modules:
+  check_root_node_modules:
+  check_api_node_modules:
+  check_web_node_modules:
+  check_money_node_modules:
+  check_reference_data_node_modules:
