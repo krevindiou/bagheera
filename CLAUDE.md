@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Docker only — no local runtime
 
-**Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, `make exec-api CMD=...`, `make exec-web CMD=...`), or you'll hit permission errors and/or touch the wrong DB. Each container mounts only its own app plus `packages/`, so workspace-wide checks (`pnpm dedupe --check`, knip) run in CI, not through `make`.
+**Everything runs in Docker containers. Never run the app, its tests, or its tooling with a local Node/pnpm/Postgres install.** `node_modules` lives only in named Docker volumes (see `docker/compose.yml`) — any `node_modules` visible on the host is a stray empty mountpoint, not real deps; ignore it, don't `pnpm install` there. Every `pnpm`/`drizzle-kit`/etc. command must run **inside** the `api`/`web` container (`make shell-api`, `make shell-web`, `make exec-api CMD=...`, `make exec-web CMD=...`), or you'll hit permission errors and/or touch the wrong DB. Each container mounts only its own app plus `packages/`, so workspace-wide checks (`pnpm dedupe --check`, knip, `pnpm audit`) run in the `check` compose service (`make check`, which installs the whole workspace), not in `api`/`web`. CI's lint job runs the same root `check:*` scripts by name: a new quality check is one `check:<name>` entry in the root `package.json` plus one step in `ci.yml`.
 
 The only host-level requirement is Docker + Docker Compose.
 
@@ -39,6 +39,10 @@ make test                # unit + integration + e2e
 make test-unit           # api + web + packages/* unit tests (all vitest)
 make test-integration    # api integration tests (vitest.integration.config.mts, uses Testcontainers)
 make test-e2e            # boots a separate `bagheera-e2e` compose stack, seeds it, runs Playwright (E2E_ARGS="auth.spec.ts" for one spec)
+
+make check               # every root `check:*` script (lint, format, types, specs, hooks, audit, dedupe, knip), in parallel, in the `check` service (~1 min warm)
+make check-knip          # one of them: `make check-<name>` runs the root `check:<name>` script
+make precommit           # the "Before committing" commands: format + lint + check + build + test-unit
 ```
 
 Anything not covered by a dedicated target goes through `make exec-api`/`make exec-web` — e.g.:
@@ -64,11 +68,8 @@ Never commit or push unless the user explicitly asks.
 Run these in order; if any fail, fix and re-run before moving to the next. Do not commit until every step passes:
 
 1. Tests in sync with the codebase: new code has new tests, changed code has updated tests, removed code has its tests removed too. Compare coverage before/after (`pnpm test:cov`, see below) — it should not drop.
-2. `make format`
-3. `make lint`
-4. `make build`
-5. `make test-unit`
-6. `security-review` skill
+2. `make precommit` — chains `format`, `lint`, `check`, `build`, `test-unit` in that order (the Makefile is the single definition of this list)
+3. `security-review` skill
 
 ## Architecture
 

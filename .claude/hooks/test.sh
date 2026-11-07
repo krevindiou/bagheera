@@ -64,9 +64,9 @@ bash_case ask   'git commit -m x'
 bash_case ask   'rtk git push origin main'
 bash_case ask   'git -C /tmp/x commit -m y'
 bash_case ask   'git add . && git commit -m z'
-reason_case contains security-review 'git commit -m x'
-reason_case contains security-review 'rtk git -C /tmp/x commit -m y'
-reason_case lacks    security-review 'git push origin main'
+reason_case contains 'make precommit' 'git commit -m x'
+reason_case contains 'make precommit' 'rtk git -C /tmp/x commit -m y'
+reason_case lacks    'make precommit' 'git push origin main'
 
 echo '# guard-generated'
 generated_case deny  apps/web/src/api/schema.d.ts
