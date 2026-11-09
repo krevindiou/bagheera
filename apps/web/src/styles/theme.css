@@ -475,8 +475,7 @@ button:focus-visible,
   text-decoration: underline;
 }
 
-/* Brand mark — BaseLayout's sidebar (30px) and AuthLayout's card (40px via
-   its own .auth-logo size override) both use this base square. */
+/* Brand mark in BaseLayout's sidebar. */
 .logo-mark {
   width: 30px;
   height: 30px;
