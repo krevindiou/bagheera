@@ -11,7 +11,10 @@ export const CHALLENGE_TTL_MS = 2 * 60 * 1000;
 
 /** The slots that hold a pending ceremony's challenge. */
 export type ChallengeKey =
-  'webauthnChallenge' | 'registrationChallenge' | 'stepUpChallenge' | 'pendingSignupChallenge';
+  | 'webauthnChallenge'
+  | 'registrationChallenge'
+  | 'stepUpChallenge'
+  | 'pendingSignupChallenge';
 
 /** Stashes a challenge — always through this, so none outlives CHALLENGE_TTL_MS. */
 export function storeChallenge<K extends ChallengeKey>(

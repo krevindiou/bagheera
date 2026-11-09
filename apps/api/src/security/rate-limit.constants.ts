@@ -2,7 +2,7 @@ import type { Request } from 'express';
 
 export const RATE_LIMIT_OPTIONS = Symbol('RATE_LIMIT_OPTIONS');
 
-// Runtime twin of eslint.config.mjs's MUTATING_HTTP_DECORATORS.
+// Runtime twin of oxlint-plugin.mjs's MUTATING_HTTP_DECORATORS.
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export function isMutatingRequest(req: Request): boolean {

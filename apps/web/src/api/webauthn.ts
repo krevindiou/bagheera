@@ -11,7 +11,8 @@ export type CeremonyFailure = 'cancelled' | 'prompt-failed' | 'rate-limited' | '
 // Only registration can hit an authenticator that already holds a passkey.
 export type RegistrationFailure = CeremonyFailure | 'already-registered';
 export type CeremonyResult<Failure extends string = CeremonyFailure> =
-  { ok: true } | { ok: false; reason: Failure };
+  | { ok: true }
+  | { ok: false; reason: Failure };
 
 type AuthenticationPath = '/webauthn/authentication' | '/webauthn/step-up';
 type RegistrationPath = '/webauthn/registration' | '/webauthn/signup';

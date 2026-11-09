@@ -12,7 +12,7 @@ import { Sentry } from '../../logging/sentry';
 describe('GlobalExceptionFilter', () => {
   const filter = new GlobalExceptionFilter();
   // Asserting on Logger.prototype.error directly trips
-  // @typescript-eslint/unbound-method.
+  // typescript/unbound-method.
   let errorSpy: MockInstance;
 
   beforeEach(() => {
@@ -101,9 +101,9 @@ describe('GlobalExceptionFilter', () => {
     }
     await filter.catch(new NoBodyException(), fakeArgumentsHost(fakeRequest(), res));
     // Nest falls back to the status text.
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.any() is untyped (any) in vitest */
+    /* oxlint-disable typescript/no-unsafe-assignment -- expect.any() is untyped (any) in vitest */
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+    /* oxlint-enable typescript/no-unsafe-assignment */
   });
 
   it('logs and reports to Sentry, then returns a generic 500 body, for a plain Error', async () => {
@@ -213,13 +213,13 @@ describe('GlobalExceptionFilter', () => {
       fakeArgumentsHost(fakeRequest({ url: '/accounts/1' }), res),
     );
 
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment -- expect.stringMatching() is untyped (any) in vitest */
+    /* oxlint-disable typescript/no-unsafe-assignment -- expect.stringMatching() is untyped (any) in vitest */
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         path: '/accounts/1',
         timestamp: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
       }),
     );
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+    /* oxlint-enable typescript/no-unsafe-assignment */
   });
 });

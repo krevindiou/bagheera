@@ -18,7 +18,7 @@ function lastConfigOptions(): DoubleCsrfConfigOptions {
 }
 
 // Not typed as ConfigService, which would trip
-// @typescript-eslint/unbound-method on `.getOrThrow` assertions.
+// typescript/unbound-method on `.getOrThrow` assertions.
 function fakeConfig(getOrThrow: Mock) {
   return { getOrThrow };
 }

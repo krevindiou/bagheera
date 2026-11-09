@@ -11,7 +11,7 @@ function escapeLikePattern(value: string): string {
 
 /**
  * The only supported way to build a "contains" ILIKE condition: escapes
- * `term` and wraps it in `%...%`. eslint.config.mjs bans importing `ilike`
+ * `term` and wraps it in `%...%`. .oxlintrc.json bans importing `ilike`
  * anywhere else.
  */
 export function ilikeContains(column: Parameters<typeof ilike>[0], term: string): SQL {

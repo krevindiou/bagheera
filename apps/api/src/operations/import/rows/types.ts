@@ -67,4 +67,5 @@ export interface ParsedRow {
 export type ReadyRow = ParsedRow & { status: 'import' | 'skipped' };
 
 export type RowOutcome =
-  ReadyRow | { status: 'invalid'; line: number; reason: InvalidReason; sourceLabel: string | null };
+  | ReadyRow
+  | { status: 'invalid'; line: number; reason: InvalidReason; sourceLabel: string | null };

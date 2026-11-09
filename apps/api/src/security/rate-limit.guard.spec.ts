@@ -1,5 +1,5 @@
 import { vi, type Mock } from 'vitest';
-/* eslint-disable @typescript-eslint/unbound-method -- vitest matchers on mocked client methods */
+/* oxlint-disable typescript/unbound-method -- vitest matchers on mocked client methods */
 import { Reflector } from '@nestjs/core';
 import type IORedis from 'ioredis';
 import { RateLimitGuard } from './rate-limit.guard';

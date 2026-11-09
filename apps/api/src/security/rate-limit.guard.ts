@@ -60,7 +60,7 @@ function hashed(identifier: string): string {
  *
  * `@SkipRateLimit()` opts out and `@RateLimit(...)` sets the budget, on any
  * verb. Without either, reads pass and mutations get `DEFAULT_RATE_LIMIT`,
- * a backstop: the `require-rate-limit-decision` eslint rule already
+ * a backstop: the `require-rate-limit-decision` lint rule already
  * demands a decision on every mutating handler.
  */
 @Injectable()

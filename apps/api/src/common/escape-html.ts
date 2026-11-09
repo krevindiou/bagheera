@@ -15,7 +15,7 @@ function escapeHtml(value: string): string {
  * email body): every value is escaped unconditionally, with no opt-out for
  * "already safe" ones.
  *
- * Not named `html`: Prettier would format that tag's contents as embedded
+ * Not named `html`: oxfmt would format that tag's contents as embedded
  * HTML, inserting line breaks into the email body.
  *
  * Not lint-enforced: a plain template literal stays possible, caught by

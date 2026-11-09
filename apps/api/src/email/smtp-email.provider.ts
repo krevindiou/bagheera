@@ -48,7 +48,7 @@ export class SmtpEmailProvider implements EmailProvider {
       // recipient in their messages, and this one reaches logs, Sentry and
       // the failed job kept in Valkey.
       const { code } = err as { code?: unknown };
-      // eslint-disable-next-line preserve-caught-error -- a `cause` would carry the recipient into Sentry
+      // oxlint-disable-next-line preserve-caught-error -- a `cause` would carry the recipient into Sentry
       throw new Error(`SMTP send failed: ${typeof code === 'string' ? code : 'unknown'}`);
     }
   }

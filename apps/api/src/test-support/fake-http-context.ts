@@ -18,7 +18,7 @@ export function fakeRequest(overrides: Partial<Request> = {}): Request {
 
 /**
  * Not typed as Express's `Response`, whose method syntax trips
- * `@typescript-eslint/unbound-method` in `expect(res.status)`. `status()`
+ * `typescript/unbound-method` in `expect(res.status)`. `status()`
  * chains like the real one.
  */
 export interface FakeResponse {
