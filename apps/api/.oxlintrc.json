@@ -1,11 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript"
-  ],
-  "jsPlugins": [
-    "./oxlint-plugin.mjs"
-  ],
+  "plugins": ["typescript"],
+  "jsPlugins": ["./oxlint-plugin.mjs"],
   "categories": {
     "correctness": "off"
   },
@@ -17,9 +13,7 @@
     "node": true,
     "vitest": true
   },
-  "ignorePatterns": [
-    "dist/**"
-  ],
+  "ignorePatterns": ["dist/**"],
   "rules": {
     "for-direction": "error",
     "no-async-promise-executor": "error",
@@ -72,9 +66,7 @@
         "paths": [
           {
             "name": "drizzle-orm",
-            "importNames": [
-              "ilike"
-            ],
+            "importNames": ["ilike"],
             "message": "Don't build ILIKE conditions by hand — a raw term needs escaping. Use ilikeContains() from '../common/like-pattern' instead."
           },
           {
@@ -132,17 +124,13 @@
   },
   "overrides": [
     {
-      "files": [
-        "src/common/like-pattern.ts"
-      ],
+      "files": ["src/common/like-pattern.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }
     },
     {
-      "files": [
-        "src/**/*.controller.ts"
-      ],
+      "files": ["src/**/*.controller.ts"],
       "rules": {
         "local/require-rate-limit-decision": "error"
       }

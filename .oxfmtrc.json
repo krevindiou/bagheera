@@ -1,0 +1,13 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "ignorePatterns": [
+    ".claude/settings.local.json",
+    "apps/api/drizzle/meta/**",
+    "config/deploy*.yml",
+    "pnpm-lock.yaml"
+  ]
+}

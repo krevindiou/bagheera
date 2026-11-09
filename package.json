@@ -5,9 +5,11 @@
   "license": "MIT",
   "scripts": {
     "bootstrap": "pnpm install --frozen-lockfile && pnpm --filter @bagheera/money --filter @bagheera/reference-data build",
+    "format": "oxfmt --disable-nested-config \"**/*.{json,yml,yaml,md,mjs,css,html}\"",
+    "format:check": "oxfmt --check --disable-nested-config \"**/*.{json,yml,yaml,md,mjs,css,html}\"",
     "check": "pnpm run \"/^check:/\"",
     "check:lint": "pnpm -r lint:check",
-    "check:format": "pnpm -r format:check",
+    "check:format": "pnpm -r format:check && pnpm run format:check",
     "check:types": "pnpm --filter api exec tsc -p tsconfig.json --noEmit",
     "check:specs": "node scripts/check-integration-spec-coverage.mjs",
     "check:hooks": ".claude/hooks/test.sh",
@@ -15,8 +17,11 @@
     "check:dedupe": "pnpm dedupe --check",
     "check:knip": "pnpm dlx knip@6.41.0"
   },
-  "packageManager": "pnpm@12.6.0+sha512.3ef68f951cb111ac204b4a5a16f0b2ddf0da56a96e0413e81d855d9f0b55ef926714709028e1cd00c405c2c5fb7b9e8ec4dc46777c805d0373c2f2ff00fd20ec",
+  "devDependencies": {
+    "oxfmt": "^0.77.0"
+  },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24"
-  }
+  },
+  "packageManager": "pnpm@12.6.0+sha512.3ef68f951cb111ac204b4a5a16f0b2ddf0da56a96e0413e81d855d9f0b55ef926714709028e1cd00c405c2c5fb7b9e8ec4dc46777c805d0373c2f2ff00fd20ec"
 }

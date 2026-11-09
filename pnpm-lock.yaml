@@ -168,7 +168,11 @@ overrides:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      oxfmt:
+        specifier: ^0.77.0
+        version: 0.77.0
 
   apps/api:
     dependencies:

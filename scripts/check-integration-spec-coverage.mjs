@@ -12,13 +12,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const SRC = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'apps',
-  'api',
-  'src',
-);
+const SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'apps', 'api', 'src');
 const OPT_OUT_PATTERN = /\/\/\s*integration-spec:\s*(.+)/;
 
 function walk(dir, out = []) {
@@ -39,10 +33,7 @@ const specs = new Set(files.filter((f) => f.endsWith('.integration-spec.ts')));
 
 let missing = 0;
 for (const controller of controllers) {
-  const expected = controller.replace(
-    /\.controller\.ts$/,
-    '.integration-spec.ts',
-  );
+  const expected = controller.replace(/\.controller\.ts$/, '.integration-spec.ts');
   const relative = path.relative(SRC, controller);
 
   if (specs.has(expected)) {
@@ -60,9 +51,7 @@ for (const controller of controllers) {
 }
 
 if (missing > 0) {
-  console.error(
-    `\n${missing} controller(s) with no integration spec and no opt-out comment.`,
-  );
+  console.error(`\n${missing} controller(s) with no integration spec and no opt-out comment.`);
   process.exit(1);
 }
 console.log(`All ${controllers.length} controllers have integration coverage.`);

@@ -25,8 +25,7 @@ const requireRateLimitDecisionRule = {
   meta: {
     type: 'problem',
     docs: {
-      description:
-        'Mutating controller handlers must declare @RateLimit(...) or @SkipRateLimit().',
+      description: 'Mutating controller handlers must declare @RateLimit(...) or @SkipRateLimit().',
     },
     schema: [],
     messages: {
@@ -41,18 +40,12 @@ const requireRateLimitDecisionRule = {
         if (![...methodDecorators].some((n) => MUTATING_HTTP_DECORATORS.has(n))) {
           return;
         }
-        if (
-          methodDecorators.includes('RateLimit') ||
-          methodDecorators.includes('SkipRateLimit')
-        ) {
+        if (methodDecorators.includes('RateLimit') || methodDecorators.includes('SkipRateLimit')) {
           return;
         }
         const classNode = node.parent?.parent;
         const classDecorators = decoratorNames(classNode);
-        if (
-          classDecorators.includes('RateLimit') ||
-          classDecorators.includes('SkipRateLimit')
-        ) {
+        if (classDecorators.includes('RateLimit') || classDecorators.includes('SkipRateLimit')) {
           return;
         }
         context.report({

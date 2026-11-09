@@ -16,6 +16,6 @@ services:
     environment:
       # Short enough for idle-timeout.spec.ts to exercise a real expiry
       # without waiting out the 30-minute production default.
-      SESSION_IDLE_TTL_SECONDS: "8"
+      SESSION_IDLE_TTL_SECONDS: '8'
   web:
     ports: !reset []

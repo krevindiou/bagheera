@@ -15,12 +15,12 @@ cp apps/api/.env.example apps/api/.env
 make up                          # start full stack (hot reload); migrations run automatically on api startup
 ```
 
-| Service | URL |
-|---|---|
-| Web | http://localhost:5173 |
-| API | http://localhost:3000 |
-| API docs (Swagger) | http://localhost:3000/api/docs |
-| Mailpit (SMTP catcher) | http://localhost:8025 |
+| Service                | URL                            |
+| ---------------------- | ------------------------------ |
+| Web                    | http://localhost:5173          |
+| API                    | http://localhost:3000          |
+| API docs (Swagger)     | http://localhost:3000/api/docs |
+| Mailpit (SMTP catcher) | http://localhost:8025          |
 
 ```bash
 make help              # list all targets

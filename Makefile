@@ -87,3 +87,4 @@ format: ## Format whole repo
 	$(COMPOSE) exec --workdir /app/packages/reference-data api pnpm format
 	$(COMPOSE) exec --workdir /app/apps/api api pnpm format
 	$(COMPOSE) exec --workdir /app/apps/web web pnpm format
+	$(COMPOSE) run --rm check pnpm format

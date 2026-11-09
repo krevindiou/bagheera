@@ -80,8 +80,8 @@ rm backup_key backup_key.pub
 `restrict` turns off port/agent/X11 forwarding, PTY allocation and
 `~/.ssh/rc`; `command=` runs the script whatever the client asks for.
 
-What this does *not* do: the `docker` group is root-equivalent for anyone
-with a shell as that user. The forced command is what keeps the *key* away
+What this does _not_ do: the `docker` group is root-equivalent for anyone
+with a shell as that user. The forced command is what keeps the _key_ away
 from a shell; the account itself is still privileged. A rootless backup
 container with only the postgres socket mounted is a further step, not
 required by this one.
@@ -129,20 +129,24 @@ its holder can sign in again, with no alert and no audit row left to show the
 removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
 
 1. **Find the snapshot.**
+
    ```sh
    restic snapshots --tag postgres
    ```
 
 2. **Restore the file.**
+
    ```sh
    restic restore <snapshot-id> --target /tmp/bagheera-restore
    ```
+
    This drops the `pg_dump` file (under a path like
    `/tmp/bagheera-backup-XXXXXX.pgdump`) into `/tmp/bagheera-restore`.
 
 3. **Load the dump into Postgres.**
    Against a fresh/scratch database (never the live one directly — restore
    to a scratch DB first, verify, then swap):
+
    ```sh
    createdb -U bagheera bagheera_restore
    pg_restore -U bagheera -d bagheera_restore --no-owner \
@@ -158,17 +162,20 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
    Export live's passkeys, and its audit rows since `<since>` — the
    snapshot's time from step 1 minus an hour or so (rows already in the
    snapshot are skipped on import):
+
    ```sh
    psql -U bagheera -d bagheera -v ON_ERROR_STOP=1 <<'SQL'
    \copy (SELECT id, member_id, credential_id, public_key, counter, transports, device_name, created_at, last_used_at FROM webauthn_credential) TO '/tmp/bagheera-restore/live-credentials.csv' CSV
    \copy (SELECT id, member_id, event_type, source_address, details, created_at FROM security_event WHERE created_at > '<since>') TO '/tmp/bagheera-restore/live-events.csv' CSV
    SQL
    ```
+
    Then make the restored passkeys match live: drop the ones removed since
    the snapshot, and copy in the ones added since — deleting alone would
    leave a member who replaced their only passkey with none. Counters take
    live's value, since a rolled-back counter would hide a cloned
    authenticator.
+
    ```sh
    psql -U bagheera -d bagheera_restore -v ON_ERROR_STOP=1 <<'SQL'
    BEGIN;
@@ -205,6 +212,7 @@ removal happened. Steps 4 and 6 below undo that; don't skip them. To restore:
    WHERE NOT EXISTS (SELECT 1 FROM webauthn_credential c WHERE c.member_id = m.id);
    SQL
    ```
+
    Keep the two CSVs until step 6 and any recovery below are done, then
    delete them.
 
@@ -248,7 +256,7 @@ recovery mechanism.
 Without a live database to compare against, the only record of removals
 made after the snapshot is one kept outside Postgres. The ideal is an
 append-only list of removed `credential_id`s, one per line, kept off the
-database host and written *before* the removal's delete commits, so no
+database host and written _before_ the removal's delete commits, so no
 committed removal can be missing from it. The app doesn't write one today,
 so at minimum the operator builds it at restore time: the "passkey removed"
 alert emails members received since the snapshot (ask them, or check
@@ -259,6 +267,7 @@ and have them confirm which to drop.
 
 Re-apply the list to the restored database in place of step 4's
 reconciliation, then carry on with step 5:
+
 ```sh
 psql -U bagheera -d bagheera_restore -v ON_ERROR_STOP=1 <<'SQL'
 CREATE TEMP TABLE removed_credential (credential_id text);
@@ -268,6 +277,7 @@ SELECT m.id, m.email FROM member m
 WHERE NOT EXISTS (SELECT 1 FROM webauthn_credential c WHERE c.member_id = m.id);
 SQL
 ```
+
 Passkeys added after the snapshot can't be recovered this way, so members
 who replaced a passkey are the likely ones left with none.
 

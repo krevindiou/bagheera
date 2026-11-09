@@ -1,6 +1,6 @@
 packages:
-  - "apps/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'packages/*'
 overrides:
   # Remove when @nestjs/platform-express pins multer >=2.5.0 and passes the release-age gate.
   multer: '>=2.5.0' # GHSA-q7qp-rjg7-q26m (high)

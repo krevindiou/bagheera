@@ -7,12 +7,12 @@ Bagheera is a manual-entry personal finance manager. Users track banks, accounts
 
 ## Stack
 
-| Layer | Choice |
-|---|---|
-| API | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, rate limiting, BullMQ queue) · BullMQ (email jobs) |
-| Web | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js |
-| Auth | Passkeys (WebAuthn), cookie-based server-side revocable sessions |
-| Infra | Docker Compose · Caddy (static SPA) · Kamal + kamal-proxy (deploy, TLS, routing) |
+| Layer | Choice                                                                                                              |
+| ----- | ------------------------------------------------------------------------------------------------------------------- |
+| API   | NestJS (TypeScript) · PostgreSQL via Drizzle · Valkey (sessions, rate limiting, BullMQ queue) · BullMQ (email jobs) |
+| Web   | Vue 3 + Pinia · TanStack Query · VeeValidate + Zod · Bootstrap · Chart.js                                           |
+| Auth  | Passkeys (WebAuthn), cookie-based server-side revocable sessions                                                    |
+| Infra | Docker Compose · Caddy (static SPA) · Kamal + kamal-proxy (deploy, TLS, routing)                                    |
 
 ## Getting started
 
@@ -26,12 +26,12 @@ make up
 
 That's it — migrations run automatically on API startup. To override the default ports or dev credentials, copy `docker/.env.example` to `docker/.env`; every var it sets already has a default in `docker/compose.yml`.
 
-| Service | URL |
-|---|---|
-| Web | http://localhost:5173 |
-| API | http://localhost:3000 |
-| API docs (Swagger) | http://localhost:3000/api/docs |
-| Mailpit (SMTP catcher) | http://localhost:8025 |
+| Service                | URL                            |
+| ---------------------- | ------------------------------ |
+| Web                    | http://localhost:5173          |
+| API                    | http://localhost:3000          |
+| API docs (Swagger)     | http://localhost:3000/api/docs |
+| Mailpit (SMTP catcher) | http://localhost:8025          |
 
 ## Common tasks
 
