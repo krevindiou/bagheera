@@ -21,7 +21,11 @@ const ownDescribedByIds = new WeakMap<Element, Set<string>>();
 const ownInvalid = new WeakSet<Element>();
 
 function syncA11y() {
-  const control = root.value?.querySelector<HTMLElement>(`#${CSS.escape(props.for)}`);
+  // Matched by hand: the `CSS` global is gone once jsdom is torn down, which
+  // a render still pending at the end of a spec would hit.
+  const control = Array.from(root.value?.querySelectorAll<HTMLElement>('[id]') ?? []).find(
+    (el) => el.id === props.for,
+  );
   if (!control) return;
 
   const ids: string[] = [];
