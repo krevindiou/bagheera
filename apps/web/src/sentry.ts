@@ -3,9 +3,19 @@ import * as Sentry from '@sentry/vue';
 import { router } from './router';
 import { scrubBreadcrumb, scrubEvent } from './sentry-scrub';
 
-/** No-op without VITE_SENTRY_DSN. */
+declare global {
+  interface Window {
+    __RUNTIME_CONFIG__?: { sentryDsn?: string };
+  }
+}
+
+/**
+ * No-op without a DSN. It comes from /runtime-config.js, which the web
+ * container renders from its env (docker/Caddyfile), so the image itself
+ * carries no DSN.
+ */
 export function initSentry(app: App): void {
-  const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+  const dsn = window.__RUNTIME_CONFIG__?.sentryDsn;
   if (!dsn) {
     return;
   }

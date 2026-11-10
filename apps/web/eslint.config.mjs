@@ -8,9 +8,11 @@ import globals from 'globals';
 export default tseslint.config(
   {
     // test-results/ and playwright-report/: Playwright output, gitignored
-    // but still found by eslint after an e2e run.
+    // but still found by eslint after an e2e run. public/: static files
+    // served as they are, outside the TypeScript project.
     ignores: [
       'dist/**',
+      'public/**',
       'coverage/**',
       'src/api/schema.d.ts',
       'test-results/**',

@@ -18,10 +18,11 @@ services:
       # Uncloud's Caddy already terminates TLS, so this Caddy serves plain HTTP.
       CADDY_SITE_ADDRESS: 'http://:80'
       # Read by the Caddyfile's security headers: HSTS, sent only here where
-      # the site is always HTTPS; and the Sentry ingest origin the SPA's
-      # Content-Security-Policy allows (empty without Sentry).
+      # the site is always HTTPS.
       HSTS_POLICY: 'max-age=63072000; includeSubDomains'
-      SENTRY_INGEST_ORIGIN: ${SENTRY_INGEST_ORIGIN:-}
+      # The SPA's own Sentry DSN, handed to the browser at load. Not the
+      # api's: the two are separate Sentry projects.
+      SENTRY_DSN: ${WEB_SENTRY_DSN:-}
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:80/health']
       interval: 5s

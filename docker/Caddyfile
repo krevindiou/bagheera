@@ -16,7 +16,7 @@
 		Strict-Transport-Security "{$HSTS_POLICY:max-age=0}"
 		# The built SPA loads nothing but its own files: no inline script or
 		# style, self-hosted fonts. The one outside origin is Sentry's ingest
-		# host, when VITE_SENTRY_DSN is set (config/deploy.yml derives it).
+		# host, when SENTRY_DSN is set (docker-entrypoint.sh derives it).
 		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' {$SENTRY_INGEST_ORIGIN}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 		X-Content-Type-Options nosniff
 		Referrer-Policy no-referrer
@@ -28,6 +28,15 @@
 	# api app.
 	handle /health {
 		respond "ok" 200
+	}
+
+	# The SPA's deployment settings, rendered from the container's env so one
+	# image serves every deployment. It shadows the empty placeholder the
+	# build ships in /srv, and must never be cached.
+	handle /runtime-config.js {
+		header Content-Type application/javascript
+		header Cache-Control no-store
+		respond `window.__RUNTIME_CONFIG__={"sentryDsn":"{$SENTRY_DSN}"};`
 	}
 
 	# Vite content-hashes everything under /assets/, so those files never change
